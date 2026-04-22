@@ -1,18 +1,19 @@
 <?php
 
 declare(strict_types=1);
-
 namespace App\Models\KKN;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Lokasi extends Model
 {
-    protected $table = 'lokasi';
+    use HasFactory, SoftDeletes;
 
+    protected $table = 'lokasi';
     protected $fillable = [
         'province_id',
         'regency_id',

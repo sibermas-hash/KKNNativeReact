@@ -22,9 +22,9 @@ const ContentPanel: React.FC<ContentPanelProps> = ({
   padding = true
 }) => {
   return (
-    <div className="bg-white border border-emerald-50 rounded-xl overflow-hidden flex flex-col">
+    <div className="bg-white border border-slate-300 rounded-xl shadow-sm overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-emerald-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="px-5 py-4 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           {Icon && (
             <div className="h-8 w-8 bg-[#e8f5ee] text-[#1a7a4a] rounded-lg flex items-center justify-center">
@@ -50,7 +50,7 @@ const ContentPanel: React.FC<ContentPanelProps> = ({
 
       {/* Footer */}
       {footer && (
-        <div className="px-5 py-3 border-t border-emerald-50">
+        <div className="px-5 py-3 border-t border-slate-200 bg-slate-50/50">
           {footer}
         </div>
       )}

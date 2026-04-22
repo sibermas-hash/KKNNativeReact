@@ -95,7 +95,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
 
   return (
     <LayoutContext.Provider value={layoutContextValue}>
-      <div className="min-h-screen bg-white font-sans">
+      <div className="min-h-screen bg-slate-200/50 font-sans">
         <Head>
           <title>{displayTitle ? `${displayTitle} | SIBERDAYA` : 'SIBERDAYA'}</title>
         </Head>
@@ -106,7 +106,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
 
 
           {/* TOP HEADER BAR */}
-          <header className="sticky top-0 z-40 h-14 bg-white border-b border-emerald-50 px-6 sm:px-8 flex items-center justify-between">
+          <header className="sticky top-0 z-40 h-14 bg-white border-b border-slate-300 shadow-sm px-6 sm:px-8 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
@@ -145,10 +145,13 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
                       }
                       if (['rejected', 'ditolak'].includes(status)) {
                         return (
-                          <>
-                            <AlertTriangle size={12} className="text-rose-600" />
-                            <span className="text-[10px] font-black text-rose-800 uppercase tracking-tighter">Perbaikan</span>
-                          </>
+                          <div className={clsx(
+                            'flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-all duration-200 relative group',
+                            'text-rose-600 font-medium'
+                          )}>
+                             <AlertTriangle size={12} />
+                             <span className="text-[10px] font-black uppercase tracking-tighter">Perbaikan</span>
+                          </div>
                         );
                       }
                       return (

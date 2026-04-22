@@ -172,7 +172,7 @@ class DplRegistrationController extends Controller
         Gate::authorize('manageDplAssignment');
 
         $validated = $request->validate([
-            'ids' => 'required|array|min:1',
+            'ids' => 'required|array|min:1|max:50',
             'ids.*' => 'exists:dpl_periode,id',
             'max_kelompok_kkn' => 'nullable|integer|min:1|max:20',
         ]);
@@ -212,7 +212,7 @@ class DplRegistrationController extends Controller
         Gate::authorize('manageDplAssignment');
 
         $validated = $request->validate([
-            'ids' => 'required|array|min:1',
+            'ids' => 'required|array|min:1|max:50',
             'ids.*' => 'exists:dpl_periode,id',
             'rejection_reason' => 'required|string|max:500',
         ]);

@@ -137,7 +137,15 @@ class LokasiController extends Controller
     public function import(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'file' => ['required', 'file', 'mimes:xlsx,xls,csv,txt', 'max:10240'],
+            'file' => [
+                'required', 
+                'file', 
+                'mimetypes:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain',
+                'mimes:xlsx,xls,csv,txt', 
+                'max:10240'
+            ],
+        ], [
+            'file.mimetypes' => 'Format file harus berupa Excel (XLSX/XLS) atau CSV yang valid.',
         ]);
 
         $import = new LokasiWilayahImport;

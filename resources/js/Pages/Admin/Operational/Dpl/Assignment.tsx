@@ -632,49 +632,6 @@ function TabButton({ active, onClick, label, icon: Icon }: { active: boolean; on
       className={clsx(
         'flex items-center gap-2.5 px-6 h-10 rounded-xl text-[10px] font-black transition-all whitespace-nowrap outline-none uppercase tracking-widest relative overflow-hidden',
         active 
-          ? 'bg-emerald-950 text-white shadow-lg shadow-emerald-950/20' 
-          : 'text-emerald-800 hover:text-emerald-950 hover:bg-emerald-50'
-      )}
-    >
-      <Icon size={14} strokeWidth={active ? 3 : 2.5} /> {label}
-      {active && (
-        <motion.div 
-          layoutId="activeTab"
-          className="absolute inset-0 bg-emerald-900 -z-10"
-          initial={false}
-          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-        />
-      )}
-    </button>
-  );
-}
-
-function EmptyState({ icon: Icon, label, desc }: { icon: any; label: string; desc: string }) {
-  return (
-    <tr>
-      <td colSpan={10} className="px-6 py-24 text-center">
-        <div className="flex flex-col items-center justify-center gap-4">
-          <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-200 border border-gray-100">
-            <Icon size={32} strokeWidth={1} />
-          </div>
-          <div className="space-y-1">
-            <span className="text-[10px] font-black text-emerald-950 uppercase tracking-widest">{label}</span>
-            <p className="text-[10px] font-bold text-emerald-700/40 uppercase tracking-wider max-w-[240px] mx-auto leading-relaxed">{desc}</p>
-          </div>
-        </div>
-      </td>
-    </tr>
-  );
-}
-
-function TabButton({ active, onClick, label, icon: Icon }: { active: boolean; onClick: () => void; label: string; icon: LucideIcon }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={clsx(
-        'flex items-center gap-2.5 px-6 h-10 rounded-xl text-[10px] font-black transition-all whitespace-nowrap outline-none uppercase tracking-widest relative overflow-hidden',
-        active 
           ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20' 
           : 'text-emerald-800 hover:text-emerald-950 hover:bg-emerald-50'
       )}

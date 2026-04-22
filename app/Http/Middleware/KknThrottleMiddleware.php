@@ -48,11 +48,10 @@ class KknThrottleMiddleware extends ThrottleRequests
             $decayMinutes = 1;
         }
 
-        // Submit login tetap dibatasi, tetapi jauh lebih longgar daripada
-        // brute-force limiter di LoginRequest karena banyak mahasiswa bisa
-        // berbagi IP yang sama saat hari-H.
+        // Submit login tetap dibatasi secara ketat untuk mencegah brute-force.
+        // Dibuat lebih ketat untuk IP/User yang sama.
         if ($routeName === 'login.store') {
-            $maxAttempts = 240;
+            $maxAttempts = 10; // Maksimal 10 percobaan per menit
             $decayMinutes = 1;
         }
 

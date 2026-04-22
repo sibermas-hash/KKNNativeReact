@@ -262,67 +262,47 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
 
       <aside
         className={clsx(
-          'fixed inset-y-0 left-0 z-50 w-60 bg-white border-r border-emerald-50 flex flex-col transition-transform duration-300 lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 shadow-sm flex flex-col transition-transform duration-300 lg:translate-x-0',
           open ? 'translate-x-0 shadow-xl' : '-translate-x-full',
         )}
       >
-        {/* LOGO AREA */}
-        <div className="h-20 px-4 flex items-center gap-3 border-b border-emerald-50 bg-white">
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="h-10 w-10 flex items-center justify-center overflow-hidden">
+        {/* LOGO AREA - Clean & Trustworthy */}
+        <div className="h-24 px-6 flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            <div className="h-11 w-11 flex items-center justify-center bg-slate-50 rounded-xl border border-slate-100 p-1.5 shadow-sm">
               <img src="/images/logo_uin_saizu.png" alt="Logo UIN SAIZU" className="h-full w-full object-contain" />
             </div>
-            <div className="h-8 w-8 flex items-center justify-center overflow-hidden">
-              <img src="/images/logo_kkn.png" alt="Logo Siberdaya" className="h-full w-full object-contain opacity-90" />
+            <div className="h-8 w-8 flex items-center justify-center">
+              <img src="/images/logo_kkn.png" alt="Logo Siberdaya" className="h-full w-full object-contain" />
             </div>
           </div>
-          <div>
-            <h1 className="text-sm font-bold text-emerald-950 leading-tight">SIBERDAYA</h1>
-            <p className="text-xs font-semibold text-[#1a7a4a] mt-0.5">
+          <div className="min-w-0">
+            <h1 className="text-base font-black text-emerald-950 leading-none tracking-tight">SIBERDAYA</h1>
+            <p className="text-[11px] font-bold text-emerald-600 mt-1 uppercase tracking-wider">
               {roles.some(r => ['admin', 'superadmin'].includes(r))
-                ? 'Portal Admin'
+                ? 'Administrator'
                 : roles.includes('dpl')
-                  ? 'Portal DPL'
+                  ? 'DPL Portal'
                   : roles.includes('dosen')
-                    ? 'Portal Dosen'
-                    : 'Portal Mahasiswa'}
+                    ? 'Dosen Portal'
+                    : 'Mahasiswa'}
             </p>
           </div>
         </div>
 
-        {/* USER INFO - untuk student */}
-        {(roles.includes('student') || roles.includes('dosen')) && auth.user && (
-          <div className="px-4 py-4 border-b border-emerald-50 bg-gradient-to-b from-emerald-50 to-white">
-            <div className="flex flex-col items-center text-center">
-              <div className="h-16 w-16 rounded-full bg-emerald-200 flex items-center justify-center overflow-hidden shrink-0 border-4 border-white shadow-md mb-3">
-                {auth.user.avatar ? (
-                  <img src={`/storage/${auth.user.avatar}`} alt="Foto" className="h-full w-full object-cover" />
-                ) : (
-                  <span className="text-2xl font-bold text-emerald-700">{auth.user.name?.charAt(0) || 'U'}</span>
-                )}
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-emerald-950 truncate">{auth.user.name}</p>
-                <p className="text-xs font-semibold text-emerald-600 truncate">
-                  {roles.includes('dosen') ? 'NIP' : 'NIM'}: {auth.user.nim || auth.user.username}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* NAVIGATION */}
+        {/* NAVIGATION AREA */}
         <nav
           ref={navRef}
           onScroll={handleScroll}
-          className="flex-1 overflow-y-auto px-4 py-4 scrollbar-hide scroll-smooth"
+          className="flex-1 overflow-y-auto px-4 py-4 scrollbar-hide scroll-smooth space-y-8"
         >
           {navGroups.map((group, groupIdx) => (
-            <div key={group.title} className={clsx(groupIdx > 0 && 'mt-6')}>
-              <h3 className="px-4 mb-2 text-xs font-semibold text-emerald-800 uppercase tracking-wider">
+            <div key={group.title} className="space-y-1.5">
+              <h3 className="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
                 {group.title}
               </h3>
-              <div className="space-y-0.5">
+              
+              <div className="space-y-1">
                 {group.items.map((item) => {
                   const getPath = (href: string) => {
                     try {
@@ -354,18 +334,21 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                         }
                       }}
                       className={clsx(
-                        'flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-all duration-200',
+                        'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 group relative',
                         isActive
-                          ? 'bg-[#e8f5ee] text-[#1a7a4a] font-semibold'
-                          : 'text-emerald-950 hover:bg-gray-50 font-medium',
+                          ? 'bg-emerald-50 text-emerald-700 font-bold'
+                          : 'text-slate-600 hover:bg-slate-50 hover:text-emerald-900',
                       )}
                     >
+                      {isActive && (
+                        <div className="absolute left-0 w-1 h-5 bg-emerald-600 rounded-r-full shadow-[0_0_8px_rgba(5,150,105,0.4)]" />
+                      )}
                       <item.icon
                         className={clsx(
-                          'h-5 w-5 shrink-0',
+                          'h-5 w-5 shrink-0 transition-colors',
                           isActive
-                            ? 'text-[#1a7a4a]'
-                            : 'text-emerald-800',
+                            ? 'text-emerald-600'
+                            : 'text-slate-400 group-hover:text-emerald-500',
                         )}
                         strokeWidth={isActive ? 2.5 : 2}
                       />
@@ -380,21 +363,20 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           ))}
         </nav>
 
-        {/* USER PROFILE SECTION */}
-        <div className="p-4 border-t border-emerald-50">
+        {/* BOTTOM PROFILE */}
+        <div className="p-4 bg-slate-50/50 border-t border-slate-100">
           <Link
             href={safeRoute('profile.show')}
-            preserveScroll
-            className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-gray-50 transition-all duration-200 group"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white hover:shadow-sm transition-all group"
           >
-            <div className="h-9 w-9 rounded-full bg-[#e8f5ee] flex items-center justify-center text-[#1a7a4a] shrink-0">
-              <UserCog size={18} strokeWidth={2.5} />
+            <div className="h-10 w-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-emerald-600 shrink-0 shadow-sm">
+              <UserCog size={20} strokeWidth={2} />
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-semibold text-emerald-950 truncate">
-                Pengaturan Profil
+              <span className="text-sm font-bold text-slate-700 truncate group-hover:text-emerald-950">
+                Pengaturan
               </span>
-              <span className="text-xs font-medium text-emerald-800 mt-0.5">
+              <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">
                 Akun & Sistem
               </span>
             </div>

@@ -40,7 +40,7 @@ Route::middleware([
         Route::get('/', [Admin\RekapNilaiController::class, 'index'])->name('index');
         Route::get('ekspor', [Admin\RekapNilaiController::class, 'export'])->name('ekspor');
         Route::get('ekspor-ledger', [Admin\RekapNilaiController::class, 'exportLedger'])->name('ekspor-ledger');
-        
+
         Route::prefix('{score}')->group(function () {
             Route::patch('finalisasi', [Admin\RekapNilaiController::class, 'finalize'])->name('finalisasi');
         });
@@ -54,25 +54,11 @@ Route::middleware([
             ->name('sertifikat-massal');
         Route::get('progres-sertifikat', [Admin\RekapNilaiController::class, 'getCertificateProgress'])->name('progres-sertifikat');
     });
-    Route::get('certificates/bulk-download', [CertificateController::class, 'downloadMass'])
-        ->middleware('throttle:2,60')
-        ->name('certificates.bulk-download');
 
-    // Backward compatibility: keep legacy rekap-nilai URLs alive as real endpoints.
-    Route::prefix('rekap-nilai')->name('rekap-nilai.')->group(function () {
-        Route::get('/', [Admin\RekapNilaiController::class, 'index'])->name('index');
-        Route::get('ekspor', [Admin\RekapNilaiController::class, 'export'])->name('ekspor');
-        Route::get('ekspor-ledger', [Admin\RekapNilaiController::class, 'exportLedger'])->name('ekspor-ledger');
-        Route::patch('{score}/finalisasi', [Admin\RekapNilaiController::class, 'finalize'])->name('finalisasi');
-        Route::post('finalisasi-massal', [Admin\RekapNilaiController::class, 'finalizeMass'])
-            ->middleware('throttle:5,60')
-            ->name('finalisasi-massal');
-        Route::get('finalisasi-progres', [Admin\RekapNilaiController::class, 'getFinalizeProgress'])->name('finalisasi-progres');
-        Route::post('sertifikat-massal', [Admin\RekapNilaiController::class, 'bulkCertificates'])
-            ->middleware('throttle:5,60')
-            ->name('sertifikat-massal');
-        Route::get('progres-sertifikat', [Admin\RekapNilaiController::class, 'getCertificateProgress'])->name('progres-sertifikat');
-    });
+    // Alias legacy routes to the new grade-reports prefix if needed, or simply use the consolidated ones.
+    // For now, we remove the duplicate 'rekap-nilai' block entirely as requested in the audit fix.
+
+    Route::get('certificates/bulk-download', [CertificateController::class, 'downloadMass']);
 
     // Yudisium
     Route::get('yudisium', [Admin\YudisiumController::class, 'index'])->name('yudisium.index');

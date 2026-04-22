@@ -36,33 +36,35 @@ Route::middleware([
     }
 
     // Grade & Score Management (Consolidated)
-    // Canonical routes: grade-reports
-    Route::get('grade-reports', [Admin\RekapNilaiController::class, 'index'])->name('grade-reports.index');
-    Route::get('grade-reports/ekspor', [Admin\RekapNilaiController::class, 'export'])->name('grade-reports.ekspor');
-    Route::get('grade-reports/ekspor-ledger', [Admin\RekapNilaiController::class, 'exportLedger'])->name('grade-reports.ekspor-ledger');
-    Route::patch('grade-reports/{score}/finalisasi', [Admin\RekapNilaiController::class, 'finalize'])->name('grade-reports.finalisasi');
-    Route::post('grade-reports/finalisasi-massal', [Admin\RekapNilaiController::class, 'finalizeMass'])
-        ->name('grade-reports.finalisasi-massal');
-    Route::get('grade-reports/finalisasi-progres', [Admin\RekapNilaiController::class, 'getFinalizeProgress'])
-        ->name('grade-reports.finalisasi-progres');
+    Route::prefix('grade-reports')->name('grade-reports.')->group(function () {
+        Route::get('/', [Admin\RekapNilaiController::class, 'index'])->name('index');
+        Route::get('ekspor', [Admin\RekapNilaiController::class, 'export'])->name('ekspor');
+        Route::get('ekspor-ledger', [Admin\RekapNilaiController::class, 'exportLedger'])->name('ekspor-ledger');
+        
+        Route::prefix('{score}')->group(function () {
+            Route::patch('finalisasi', [Admin\RekapNilaiController::class, 'finalize'])->name('finalisasi');
+        });
 
-    Route::post('grade-reports/sertifikat-massal', [Admin\RekapNilaiController::class, 'bulkCertificates'])
-        ->name('grade-reports.sertifikat-massal');
-    Route::get('grade-reports/progres-sertifikat', [Admin\RekapNilaiController::class, 'getCertificateProgress'])
-        ->name('grade-reports.progres-sertifikat');
+        Route::post('finalisasi-massal', [Admin\RekapNilaiController::class, 'finalizeMass'])->name('finalisasi-massal');
+        Route::get('finalisasi-progres', [Admin\RekapNilaiController::class, 'getFinalizeProgress'])->name('finalisasi-progres');
+        Route::post('sertifikat-massal', [Admin\RekapNilaiController::class, 'bulkCertificates'])->name('sertifikat-massal');
+        Route::get('progres-sertifikat', [Admin\RekapNilaiController::class, 'getCertificateProgress'])->name('progres-sertifikat');
+    });
     Route::get('certificates/bulk-download', [CertificateController::class, 'downloadMass'])
         ->middleware('throttle:2,60')
         ->name('certificates.bulk-download');
 
     // Backward compatibility: keep legacy rekap-nilai URLs alive as real endpoints.
-    Route::get('rekap-nilai', [Admin\RekapNilaiController::class, 'index'])->name('rekap-nilai.index');
-    Route::get('rekap-nilai/ekspor', [Admin\RekapNilaiController::class, 'export'])->name('rekap-nilai.ekspor');
-    Route::get('rekap-nilai/ekspor-ledger', [Admin\RekapNilaiController::class, 'exportLedger'])->name('rekap-nilai.ekspor-ledger');
-    Route::patch('rekap-nilai/{score}/finalisasi', [Admin\RekapNilaiController::class, 'finalize'])->name('rekap-nilai.finalisasi');
-    Route::post('rekap-nilai/finalisasi-massal', [Admin\RekapNilaiController::class, 'finalizeMass'])->name('rekap-nilai.finalisasi-massal');
-    Route::get('rekap-nilai/finalisasi-progres', [Admin\RekapNilaiController::class, 'getFinalizeProgress'])->name('rekap-nilai.finalisasi-progres');
-    Route::post('rekap-nilai/sertifikat-massal', [Admin\RekapNilaiController::class, 'bulkCertificates'])->name('rekap-nilai.sertifikat-massal');
-    Route::get('rekap-nilai/progres-sertifikat', [Admin\RekapNilaiController::class, 'getCertificateProgress'])->name('rekap-nilai.progres-sertifikat');
+    Route::prefix('rekap-nilai')->name('rekap-nilai.')->group(function () {
+        Route::get('/', [Admin\RekapNilaiController::class, 'index'])->name('index');
+        Route::get('ekspor', [Admin\RekapNilaiController::class, 'export'])->name('ekspor');
+        Route::get('ekspor-ledger', [Admin\RekapNilaiController::class, 'exportLedger'])->name('ekspor-ledger');
+        Route::patch('{score}/finalisasi', [Admin\RekapNilaiController::class, 'finalize'])->name('finalisasi');
+        Route::post('finalisasi-massal', [Admin\RekapNilaiController::class, 'finalizeMass'])->name('finalisasi-massal');
+        Route::get('finalisasi-progres', [Admin\RekapNilaiController::class, 'getFinalizeProgress'])->name('finalisasi-progres');
+        Route::post('sertifikat-massal', [Admin\RekapNilaiController::class, 'bulkCertificates'])->name('sertifikat-massal');
+        Route::get('progres-sertifikat', [Admin\RekapNilaiController::class, 'getCertificateProgress'])->name('progres-sertifikat');
+    });
 
     // Yudisium
     Route::get('yudisium', [Admin\YudisiumController::class, 'index'])->name('yudisium.index');
@@ -71,39 +73,55 @@ Route::middleware([
     // Data Management
     // AI Systems Monitor (Merged into System Settings)
 
-    Route::get('pendaftaran', [Admin\PesertaKknController::class, 'index'])->name('pendaftaran.index');
-    Route::get('pendaftaran/ekspor', [Admin\PesertaKknController::class, 'export'])->name('pendaftaran.ekspor');
-    Route::get('pendaftaran/ekspor-biodata', [Admin\PesertaKknController::class, 'exportBiodata'])->name('pendaftaran.ekspor-biodata');
-    Route::get('pendaftaran/ekspor-bpjs', [Admin\PesertaKknController::class, 'exportBpjs'])->name('pendaftaran.ekspor-bpjs');
-    Route::get('pendaftaran/berkas/unduh', [Admin\PesertaKknController::class, 'downloadDocument'])->name('pendaftaran.berkas.unduh');
-    Route::get('pendaftaran/{pesertaKkn}', [Admin\PesertaKknController::class, 'show'])->name('pendaftaran.show');
+    Route::prefix('pendaftaran')->name('pendaftaran.')->group(function () {
+        Route::get('/', [Admin\PesertaKknController::class, 'index'])->name('index');
+        Route::get('ekspor', [Admin\PesertaKknController::class, 'export'])->name('ekspor');
+        Route::get('ekspor-biodata', [Admin\PesertaKknController::class, 'exportBiodata'])->name('ekspor-biodata');
+        Route::get('ekspor-bpjs', [Admin\PesertaKknController::class, 'exportBpjs'])->name('ekspor-bpjs');
+        Route::get('berkas/unduh', [Admin\PesertaKknController::class, 'downloadDocument'])->name('berkas.unduh');
+        Route::get('{pesertaKkn}', [Admin\PesertaKknController::class, 'show'])->name('show');
+    });
 
-    Route::get('kelompok', [Admin\KelompokKknController::class, 'index'])->name('kelompok.index');
-    Route::get('kelompok/template', [Admin\KelompokKknController::class, 'downloadTemplate'])->name('kelompok.template');
-    Route::get('kelompok/{kelompokKkn}', [Admin\KelompokKknController::class, 'show'])->name('kelompok.show');
+    Route::prefix('kelompok')->name('kelompok.')->group(function () {
+        Route::get('/', [Admin\KelompokKknController::class, 'index'])->name('index');
+        Route::get('template', [Admin\KelompokKknController::class, 'downloadTemplate'])->name('template');
+        Route::get('{kelompokKkn}', [Admin\KelompokKknController::class, 'show'])->name('show');
+        Route::get('{group}/mahasiswa', [Admin\GradeController::class, 'students'])->name('mahasiswa');
+    });
 
     Route::get('nilai', [Admin\GradeController::class, 'index'])->name('nilai.index');
-    Route::get('kelompok/{group}/mahasiswa', [Admin\GradeController::class, 'students'])->name('kelompok.mahasiswa');
 
-    Route::get('laporan/harian', [Admin\KegiatanKknController::class, 'index'])->name('laporan.harian.index');
-    Route::get('laporan/program-kerja', [Admin\ProgramKerjaController::class, 'index'])->name('laporan.program-kerja.index');
-    Route::get('laporan/akhir', [Admin\LaporanAkhirController::class, 'index'])->name('laporan.akhir.index');
-    Route::get('laporan/akhir/{report}', [Admin\LaporanAkhirController::class, 'show'])->name('laporan.akhir.show');
-    Route::get('laporan/akhir/{report}/unduh', [Admin\LaporanAkhirController::class, 'download'])->name('laporan.akhir.unduh');
+    Route::prefix('laporan')->name('laporan.')->group(function () {
+        Route::get('harian', [Admin\KegiatanKknController::class, 'index'])->name('harian.index');
+        Route::get('program-kerja', [Admin\ProgramKerjaController::class, 'index'])->name('program-kerja.index');
+        Route::prefix('akhir')->name('akhir.')->group(function () {
+            Route::get('/', [Admin\LaporanAkhirController::class, 'index'])->name('index');
+            Route::get('{report}', [Admin\LaporanAkhirController::class, 'show'])->name('show');
+            Route::get('{report}/unduh', [Admin\LaporanAkhirController::class, 'download'])->name('unduh');
+        });
+    });
+
     Route::get('evaluasi', [Admin\EvaluasiController::class, 'index'])->name('evaluasi.index');
-    Route::get('evaluasi-dpl', [Admin\DplParticipantEvaluationController::class, 'index'])->name('evaluasi-dpl.index');
-    Route::get('evaluasi-dpl/ekspor', [Admin\DplParticipantEvaluationController::class, 'export'])->name('evaluasi-dpl.export');
-    Route::get('evaluasi-dpl/{dosen}', [Admin\DplParticipantEvaluationController::class, 'show'])->name('evaluasi-dpl.show');
+    
+    Route::prefix('evaluasi-dpl')->name('evaluasi-dpl.')->group(function () {
+        Route::get('/', [Admin\DplParticipantEvaluationController::class, 'index'])->name('index');
+        Route::get('ekspor', [Admin\DplParticipantEvaluationController::class, 'export'])->name('export');
+        Route::get('{dosen}', [Admin\DplParticipantEvaluationController::class, 'show'])->name('show');
+    });
 
     // Audit Kualifikasi (Cek Kelayakan)
-    Route::get('audit-kualifikasi', [Admin\EligibilityController::class, 'index'])->name('cek-kelayakan.index');
-    Route::get('audit-kualifikasi/ekspor', [Admin\EligibilityController::class, 'export'])->name('cek-kelayakan.ekspor');
-    Route::get('audit-kualifikasi/{mahasiswa}/periksa', [Admin\EligibilityController::class, 'checkStudent'])->name('cek-kelayakan.check');
+    Route::prefix('audit-kualifikasi')->name('cek-kelayakan.')->group(function () {
+        Route::get('/', [Admin\EligibilityController::class, 'index'])->name('index');
+        Route::get('ekspor', [Admin\EligibilityController::class, 'export'])->name('ekspor');
+        Route::get('{mahasiswa}/periksa', [Admin\EligibilityController::class, 'checkStudent'])->name('check');
+    });
 
     // Dispensasi KKN (Bypass Syarat Pendaftaran)
-    Route::get('dispensasi', [Admin\DispensasiController::class, 'index'])->name('dispensasi.index');
-    Route::post('dispensasi', [Admin\DispensasiController::class, 'store'])->name('dispensasi.store');
-    Route::delete('dispensasi/{dispensasi}', [Admin\DispensasiController::class, 'destroy'])->name('dispensasi.destroy');
+    Route::prefix('dispensasi')->name('dispensasi.')->group(function () {
+        Route::get('/', [Admin\DispensasiController::class, 'index'])->name('index');
+        Route::post('/', [Admin\DispensasiController::class, 'store'])->name('store');
+        Route::delete('{dispensasi}', [Admin\DispensasiController::class, 'destroy'])->name('destroy');
+    });
 
     // Workshop Management - DIHIDMATKAN SEMENTARA (tabel belum ada)
     // Route::prefix('workshops')->name('workshops.')->group(function () {
@@ -119,10 +137,14 @@ Route::middleware([
 Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->group(function () {
 
     // Periods & Academic Years
-    Route::get('periode/ekspor', [Admin\PeriodeController::class, 'export'])->name('periode.ekspor');
-    Route::post('periode/{periode}/duplikasi', [Admin\PeriodeController::class, 'duplicate'])->name('periode.duplicate');
+    Route::prefix('periode')->name('periode.')->group(function () {
+        Route::get('ekspor', [Admin\PeriodeController::class, 'export'])->name('ekspor');
+        Route::post('{periode}/duplikasi', [Admin\PeriodeController::class, 'duplicate'])->name('duplicate');
+    });
+    
     Route::resource('periode', Admin\PeriodeController::class)
         ->only(['index', 'show', 'store', 'update', 'destroy']);
+    
     Route::get('periods', [Admin\PeriodeController::class, 'index'])->name('periods.index');
 
     // Master Data
@@ -141,13 +163,19 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
         ->only(['index', 'store', 'update', 'destroy']);
 
     // Locations
-    Route::get('locations/export', [Admin\LokasiController::class, 'export'])->name('locations.export');
-    Route::get('lokasi/template', [Admin\LokasiController::class, 'downloadTemplate'])->name('lokasi.template');
-    Route::post('lokasi/impor', [Admin\LokasiController::class, 'import'])->name('lokasi.import');
-    Route::get('locations', [Admin\LokasiController::class, 'index'])->name('locations.index');
-    Route::post('locations', [Admin\LokasiController::class, 'store'])->name('locations.store');
-    Route::put('locations/{lokasi}', [Admin\LokasiController::class, 'update'])->name('locations.update');
-    Route::delete('locations/{lokasi}', [Admin\LokasiController::class, 'destroy'])->name('locations.destroy');
+    Route::prefix('lokasi')->name('lokasi.')->group(function () {
+        Route::get('template', [Admin\LokasiController::class, 'downloadTemplate'])->name('template');
+        Route::post('impor', [Admin\LokasiController::class, 'import'])->name('import');
+    });
+
+    Route::prefix('locations')->name('locations.')->group(function () {
+        Route::get('/', [Admin\LokasiController::class, 'index'])->name('index');
+        Route::get('export', [Admin\LokasiController::class, 'export'])->name('export');
+        Route::post('/', [Admin\LokasiController::class, 'store'])->name('store');
+        Route::put('{lokasi}', [Admin\LokasiController::class, 'update'])->name('update');
+        Route::delete('{lokasi}', [Admin\LokasiController::class, 'destroy'])->name('destroy');
+    });
+
     Route::resource('lokasi', Admin\LokasiController::class)
         ->only(['index', 'store', 'update', 'destroy']);
 
@@ -164,18 +192,34 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
 
     // Participant Operations (accessible by admin)
     Route::middleware('not_locked')->group(function () {
-        Route::get('peserta/pindah', [Admin\StudentTransferController::class, 'index'])->name('peserta.pindah.index');
-        Route::post('peserta/pindah', [Admin\StudentTransferController::class, 'transfer'])->name('peserta.pindah');
-        Route::post('pendaftaran/setuju-massal', [Admin\PesertaKknController::class, 'bulkApprove'])->name('pendaftaran.setuju-massal');
-        Route::post('pendaftaran/tolak-massal', [Admin\PesertaKknController::class, 'bulkReject'])->name('pendaftaran.tolak-massal');
-        Route::patch('pendaftaran/{pesertaKkn}/setujui', [Admin\PesertaKknController::class, 'approve'])->name('pendaftaran.setujui');
-        Route::patch('pendaftaran/{pesertaKkn}/tolak', [Admin\PesertaKknController::class, 'reject'])->name('pendaftaran.tolak');
-        Route::patch('pendaftaran/{pesertaKkn}/tugaskan-kelompok', [Admin\PesertaKknController::class, 'assignGroup'])->name('pendaftaran.tugaskan-kelompok');
-        Route::post('pendaftaran/{registration}/jadikan-ketua', [Admin\PesertaKknController::class, 'makeLeader'])->name('pendaftaran.jadikan-ketua');
-        Route::post('pendaftaran/{registration}/jadikan-korcam', [Admin\PesertaKknController::class, 'makeKorcam'])->name('pendaftaran.jadikan-korcam');
+        Route::prefix('peserta')->name('peserta.')->group(function () {
+            Route::get('pindah', [Admin\StudentTransferController::class, 'index'])->name('pindah.index');
+            Route::post('pindah', [Admin\StudentTransferController::class, 'transfer'])->name('pindah');
+        });
+
+        Route::prefix('pendaftaran')->name('pendaftaran.')->group(function () {
+            // Bulk Actions
+            Route::post('setuju-massal', [Admin\PesertaKknController::class, 'bulkApprove'])->name('setuju-massal');
+            Route::post('tolak-massal', [Admin\PesertaKknController::class, 'bulkReject'])->name('tolak-massal');
+            
+            // Individual Actions
+            Route::prefix('{pesertaKkn}')->group(function () {
+                Route::patch('setujui', [Admin\PesertaKknController::class, 'approve'])->name('setujui');
+                Route::patch('tolak', [Admin\PesertaKknController::class, 'reject'])->name('tolak');
+                Route::patch('tugaskan-kelompok', [Admin\PesertaKknController::class, 'assignGroup'])->name('tugaskan-kelompok');
+            });
+
+            // Role Assignments
+            Route::prefix('{registration}')->group(function () {
+                Route::post('jadikan-ketua', [Admin\PesertaKknController::class, 'makeLeader'])->name('jadikan-ketua');
+                Route::post('jadikan-korcam', [Admin\PesertaKknController::class, 'makeKorcam'])->name('jadikan-korcam');
+            });
+        });
 
         // Groups CRUD
-        Route::post('kelompok/impor', [Admin\KelompokKknController::class, 'import'])->name('kelompok.import');
+        Route::prefix('kelompok')->name('kelompok.')->group(function () {
+            Route::post('impor', [Admin\KelompokKknController::class, 'import'])->name('import');
+        });
         Route::resource('kelompok', Admin\KelompokKknController::class)
             ->only(['store', 'update', 'destroy']);
     });
@@ -224,43 +268,76 @@ Route::middleware(['role:superadmin'])->prefix('admin')->name('admin.')->group(f
 
     // Personel Sync & Assignment
     Route::middleware('not_locked')->group(function () {
-        Route::get('mahasiswa', [Admin\UserController::class, 'mahasiswaIndex'])->name('mahasiswa.index');
-        Route::get('mahasiswa/sinkron', [Admin\StudentSyncController::class, 'index'])->name('mahasiswa.sinkron');
-        Route::post('mahasiswa/sinkron', [Admin\StudentSyncController::class, 'sync'])->name('mahasiswa.sinkron.store');
-        Route::get('mahasiswa/{mahasiswa}', [Admin\UserController::class, 'mahasiswaShow'])->name('mahasiswa.show');
+        
+        // Mahasiswa Context
+        Route::prefix('mahasiswa')->name('mahasiswa.')->group(function () {
+            Route::get('/', [Admin\UserController::class, 'mahasiswaIndex'])->name('index');
+            Route::get('sinkron', [Admin\StudentSyncController::class, 'index'])->name('sinkron');
+            Route::post('sinkron', [Admin\StudentSyncController::class, 'sync'])->name('sinkron.store');
+            Route::get('{mahasiswa}', [Admin\UserController::class, 'mahasiswaShow'])->name('show');
+        });
 
-        Route::get('dosen', [Admin\UserController::class, 'dosenIndex'])->name('dpl.index');
-        Route::get('dosen/sinkron', [Admin\DplSyncController::class, 'index'])->name('dpl.sinkron');
-        Route::post('dosen/sinkron', [Admin\DplSyncController::class, 'sync'])->name('dpl.sinkron.store');
+        // Dosen & DPL Context
+        Route::prefix('dosen')->name('dpl.')->group(function () {
+            Route::get('/', [Admin\UserController::class, 'dosenIndex'])->name('index');
+            
+            Route::get('sinkron', [Admin\DplSyncController::class, 'index'])->name('sinkron');
+            Route::post('sinkron', [Admin\DplSyncController::class, 'sync'])->name('sinkron.store');
+            
+            // DPL Registration
+            Route::prefix('pendaftaran-dpl')->group(function () {
+                Route::get('/', [Admin\DplRegistrationController::class, 'index'])->name('pendaftaran');
+                Route::post('setujui-massal', [Admin\DplRegistrationController::class, 'bulkApprove'])->name('pendaftaran.setujui-massal');
+                Route::post('tolak-massal', [Admin\DplRegistrationController::class, 'bulkReject'])->name('pendaftaran.tolak-massal');
+                Route::patch('{registration}/setujui', [Admin\DplRegistrationController::class, 'approve'])->name('pendaftaran.setujui');
+                Route::patch('{registration}/tolak', [Admin\DplRegistrationController::class, 'reject'])->name('pendaftaran.tolak');
+            });
+
+            // DPL Assignment (Plotting)
+            Route::prefix('penugasan')->group(function () {
+                Route::get('/', [Admin\DplAssignmentController::class, 'index'])->name('penugasan');
+            });
+            Route::post('tugaskan-periode', [Admin\DplAssignmentController::class, 'assignToPeriod'])->name('tugaskan-periode');
+            Route::post('tugaskan-kelompok/{group}', [Admin\DplAssignmentController::class, 'assignToGroup'])->name('tugaskan-kelompok');
+            Route::post('tugaskan-wilayah', [Admin\DplAssignmentController::class, 'assignDistrictCoordinator'])->name('tugaskan-wilayah');
+            Route::post('impor', [Admin\DplAssignmentController::class, 'import'])->name('impor');
+            Route::patch('lepas-periode/{dplPeriod}', [Admin\DplAssignmentController::class, 'removeDplFromPeriod'])->name('lepas-periode');
+            Route::patch('lepas-wilayah/{districtCoordinator}', [Admin\DplAssignmentController::class, 'removeDistrictCoordinator'])->name('lepas-wilayah');
+        });
+
+        // Legacy / Alias Routes
         Route::get('dpl/sync', [Admin\DplSyncController::class, 'index'])->name('dpl.sync');
-        Route::get('dosen/pendaftaran-dpl', [Admin\DplRegistrationController::class, 'index'])->name('dpl.pendaftaran');
-        Route::patch('dosen/pendaftaran-dpl/{registration}/setujui', [Admin\DplRegistrationController::class, 'approve'])->name('dpl.pendaftaran.setujui');
-        Route::patch('dosen/pendaftaran-dpl/{registration}/tolak', [Admin\DplRegistrationController::class, 'reject'])->name('dpl.pendaftaran.tolak');
-        Route::post('dosen/pendaftaran-dpl/setujui-massal', [Admin\DplRegistrationController::class, 'bulkApprove'])->name('dpl.pendaftaran.setujui-massal');
-        Route::post('dosen/pendaftaran-dpl/tolak-massal', [Admin\DplRegistrationController::class, 'bulkReject'])->name('dpl.pendaftaran.tolak-massal');
-
-        Route::get('dosen/penugasan', [Admin\DplAssignmentController::class, 'index'])->name('dpl.penugasan');
         Route::redirect('dpl/assignment', 'admin/dosen/penugasan', 301)->name('dpl.assignment');
-        Route::post('dosen/tugaskan-periode', [Admin\DplAssignmentController::class, 'assignToPeriod'])->name('dpl.tugaskan-periode');
-        Route::post('dosen/tugaskan-kelompok/{group}', [Admin\DplAssignmentController::class, 'assignToGroup'])->name('dpl.tugaskan-kelompok');
-        Route::post('dosen/tugaskan-wilayah', [Admin\DplAssignmentController::class, 'assignDistrictCoordinator'])->name('dpl.tugaskan-wilayah');
-        Route::post('dosen/impor', [Admin\DplAssignmentController::class, 'import'])->name('dpl.impor');
-        Route::patch('dosen/lepas-periode/{dplPeriod}', [Admin\DplAssignmentController::class, 'removeDplFromPeriod'])->name('dpl.lepas-periode');
-        Route::patch('dosen/lepas-wilayah/{districtCoordinator}', [Admin\DplAssignmentController::class, 'removeDistrictCoordinator'])->name('dpl.lepas-wilayah');
 
         // Participant Operations
-        Route::get('peserta/pindah', [Admin\StudentTransferController::class, 'index'])->name('peserta.pindah.index');
-        Route::post('peserta/pindah', [Admin\StudentTransferController::class, 'transfer'])->name('peserta.pindah');
-        Route::post('pendaftaran/setuju-massal', [Admin\PesertaKknController::class, 'bulkApprove'])->name('pendaftaran.setuju-massal');
-        Route::post('pendaftaran/tolak-massal', [Admin\PesertaKknController::class, 'bulkReject'])->name('pendaftaran.tolak-massal');
-        Route::patch('pendaftaran/{pesertaKkn}/setujui', [Admin\PesertaKknController::class, 'approve'])->name('pendaftaran.setujui');
-        Route::patch('pendaftaran/{pesertaKkn}/tolak', [Admin\PesertaKknController::class, 'reject'])->name('pendaftaran.tolak');
-        Route::patch('pendaftaran/{pesertaKkn}/tugaskan-kelompok', [Admin\PesertaKknController::class, 'assignGroup'])->name('pendaftaran.tugaskan-kelompok');
-        Route::post('pendaftaran/{registration}/jadikan-ketua', [Admin\PesertaKknController::class, 'makeLeader'])->name('pendaftaran.jadikan-ketua');
-        Route::post('pendaftaran/{registration}/jadikan-korcam', [Admin\PesertaKknController::class, 'makeKorcam'])->name('pendaftaran.jadikan-korcam');
+        Route::prefix('peserta')->name('peserta.')->group(function () {
+            Route::get('pindah', [Admin\StudentTransferController::class, 'index'])->name('pindah.index');
+            Route::post('pindah', [Admin\StudentTransferController::class, 'transfer'])->name('pindah');
+        });
+
+        Route::prefix('pendaftaran')->name('pendaftaran.')->group(function () {
+            // Bulk Actions
+            Route::post('setuju-massal', [Admin\PesertaKknController::class, 'bulkApprove'])->name('setuju-massal');
+            Route::post('tolak-massal', [Admin\PesertaKknController::class, 'bulkReject'])->name('tolak-massal');
+            
+            // Individual Actions
+            Route::prefix('{pesertaKkn}')->group(function () {
+                Route::patch('setujui', [Admin\PesertaKknController::class, 'approve'])->name('setujui');
+                Route::patch('tolak', [Admin\PesertaKknController::class, 'reject'])->name('tolak');
+                Route::patch('tugaskan-kelompok', [Admin\PesertaKknController::class, 'assignGroup'])->name('tugaskan-kelompok');
+            });
+
+            // Role Assignments
+            Route::prefix('{registration}')->group(function () {
+                Route::post('jadikan-ketua', [Admin\PesertaKknController::class, 'makeLeader'])->name('jadikan-ketua');
+                Route::post('jadikan-korcam', [Admin\PesertaKknController::class, 'makeKorcam'])->name('jadikan-korcam');
+            });
+        });
 
         // Groups CRUD
-        Route::post('kelompok/impor', [Admin\KelompokKknController::class, 'import'])->name('kelompok.import');
+        Route::prefix('kelompok')->name('kelompok.')->group(function () {
+            Route::post('impor', [Admin\KelompokKknController::class, 'import'])->name('import');
+        });
         Route::resource('kelompok', Admin\KelompokKknController::class)
             ->only(['store', 'update', 'destroy']);
     });
@@ -270,10 +347,16 @@ Route::middleware(['role:superadmin'])->prefix('admin')->name('admin.')->group(f
     // Public Content Management
     Route::resource('unduhan', Admin\DownloadController::class)
         ->only(['index', 'create', 'store', 'update', 'destroy']);
-    Route::get('warta-utama', [Admin\AnnouncementController::class, 'index'])->name('warta-utama.index');
-    Route::post('warta-utama', [Admin\AnnouncementController::class, 'store'])->name('warta-utama.store');
-    Route::patch('warta-utama/{announcement}', [Admin\AnnouncementController::class, 'update'])->name('warta-utama.update');
-    Route::delete('warta-utama/{announcement}', [Admin\AnnouncementController::class, 'destroy'])->name('warta-utama.destroy');
+
+    Route::prefix('warta-utama')->name('warta-utama.')->group(function () {
+        Route::get('/', [Admin\AnnouncementController::class, 'index'])->name('index');
+        Route::post('/', [Admin\AnnouncementController::class, 'store'])->name('store');
+        Route::prefix('{announcement}')->group(function () {
+            Route::patch('/', [Admin\AnnouncementController::class, 'update'])->name('update');
+            Route::delete('/', [Admin\AnnouncementController::class, 'destroy'])->name('destroy');
+        });
+    });
+
     Route::prefix('konten-publik')->name('konten.')->group(function () {
         Route::get('profil', [PublicContentController::class, 'profile'])->name('profil.index');
         Route::patch('profil', [PublicContentController::class, 'updateProfile'])->name('profil.update');
@@ -282,15 +365,17 @@ Route::middleware(['role:superadmin'])->prefix('admin')->name('admin.')->group(f
     });
 
     // Database Sync Monitoring
-    Route::get('database-sync', [Admin\DatabaseSyncController::class, 'index'])->name('database-sync.index');
-    Route::get('database-sync/health', [Admin\DatabaseSyncController::class, 'health'])->name('database-sync.health');
-    Route::get('database-sync/statistics', [Admin\DatabaseSyncController::class, 'statistics'])->name('database-sync.statistics');
-    Route::post('database-sync/retry', [Admin\DatabaseSyncController::class, 'retry'])->name('database-sync.retry');
-    Route::post('database-sync/retry/{log}', [Admin\DatabaseSyncController::class, 'retryLog'])->name('database-sync.retry-log');
-    Route::post('database-sync/cleanup', [Admin\DatabaseSyncController::class, 'cleanup'])->name('database-sync.cleanup');
-    Route::post('database-sync/test-connection', [Admin\DatabaseSyncController::class, 'testConnection'])->name('database-sync.test-connection');
-    Route::post('database-sync/manual', [Admin\DatabaseSyncController::class, 'manualSync'])->name('database-sync.manual');
-    Route::get('database-sync/logs/{log}', [Admin\DatabaseSyncController::class, 'show'])->name('database-sync.logs.show');
+    Route::prefix('database-sync')->name('database-sync.')->group(function () {
+        Route::get('/', [Admin\DatabaseSyncController::class, 'index'])->name('index');
+        Route::get('health', [Admin\DatabaseSyncController::class, 'health'])->name('health');
+        Route::get('statistics', [Admin\DatabaseSyncController::class, 'statistics'])->name('statistics');
+        Route::post('retry', [Admin\DatabaseSyncController::class, 'retry'])->name('retry');
+        Route::post('retry/{log}', [Admin\DatabaseSyncController::class, 'retryLog'])->name('retry-log');
+        Route::post('cleanup', [Admin\DatabaseSyncController::class, 'cleanup'])->name('cleanup');
+        Route::post('test-connection', [Admin\DatabaseSyncController::class, 'testConnection'])->name('test-connection');
+        Route::post('manual', [Admin\DatabaseSyncController::class, 'manualSync'])->name('manual');
+        Route::get('logs/{log}', [Admin\DatabaseSyncController::class, 'show'])->name('logs.show');
+    });
 
     // Eligibility write operations
     Route::post('audit-kualifikasi/bulk-update-sks', [Admin\EligibilityController::class, 'bulkUpdateSks'])->name('cek-kelayakan.bulk-update-sks');
@@ -316,15 +401,19 @@ Route::middleware(['role:superadmin|dpl|admin'])->prefix('admin')->name('admin.'
     Route::get('laporan/{report}/unduh', [ReportController::class, 'download'])->name('laporan.unduh');
 
     // Grade Generator & Exports
-    Route::get('generator-nilai', [Admin\GeneratorNilaiController::class, 'index'])->name('generator-nilai.index');
-    Route::get('generator-nilai/kelompok/semua/mahasiswa', [Admin\GeneratorNilaiController::class, 'studentsAll'])->name('generator-nilai.students-all');
-    Route::get('generator-nilai/kelompok/{kelompokKkn}/mahasiswa', [Admin\GeneratorNilaiController::class, 'students'])->name('generator-nilai.students');
-    Route::post('generator-nilai/skor', [Admin\GeneratorNilaiController::class, 'saveScores'])->name('generator-nilai.save-scores');
-    Route::get('generator-nilai/ekspor/{id}', [Admin\GeneratorNilaiController::class, 'exportExcel'])->name('generator-nilai.export');
-    Route::get('generator-nilai/ekspor-pdf/{id}', [Admin\GeneratorNilaiController::class, 'exportPdf'])->name('generator-nilai.export-pdf');
-    Route::get('generator-nilai/ekspor-zip', [Admin\GeneratorNilaiController::class, 'exportZip'])->name('generator-nilai.export-zip');
+    Route::prefix('generator-nilai')->name('generator-nilai.')->group(function () {
+        Route::get('/', [Admin\GeneratorNilaiController::class, 'index'])->name('index');
+        Route::get('kelompok/semua/mahasiswa', [Admin\GeneratorNilaiController::class, 'studentsAll'])->name('students-all');
+        Route::get('kelompok/{kelompokKkn}/mahasiswa', [Admin\GeneratorNilaiController::class, 'students'])->name('students');
+        Route::post('skor', [Admin\GeneratorNilaiController::class, 'saveScores'])->name('save-scores');
+        Route::get('ekspor/{id}', [Admin\GeneratorNilaiController::class, 'exportExcel'])->name('export');
+        Route::get('ekspor-pdf/{id}', [Admin\GeneratorNilaiController::class, 'exportPdf'])->name('export-pdf');
+        Route::get('ekspor-zip', [Admin\GeneratorNilaiController::class, 'exportZip'])->name('export-zip');
+    });
 
     // Advanced Exports
-    Route::get('ekspor/laporan-harian/kelompok/{groupId}', [ReportExportController::class, 'downloadGroupDailyReports'])->name('export.laporan-harian.kelompok');
-    Route::get('ekspor/laporan-harian/mahasiswa/{studentId}', [ReportExportController::class, 'downloadStudentDailyReports'])->name('export.laporan-harian.mahasiswa');
+    Route::prefix('ekspor')->name('export.')->group(function () {
+        Route::get('laporan-harian/kelompok/{groupId}', [ReportExportController::class, 'downloadGroupDailyReports'])->name('laporan-harian.kelompok');
+        Route::get('laporan-harian/mahasiswa/{studentId}', [ReportExportController::class, 'downloadStudentDailyReports'])->name('laporan-harian.mahasiswa');
+    });
 });

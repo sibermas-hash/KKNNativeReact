@@ -173,7 +173,7 @@ class KelompokKknController extends Controller
             ];
         });
 
-        $periods = Periode::where('is_active', true)->orderByDesc('start_date')->get()
+        $periods = Periode::orderByDesc('is_active')->orderByDesc('periode')->get()
             ->map(fn ($p) => ['id' => $p->id, 'name' => $p->name]);
         $locations = Lokasi::orderBy('village_name')->get()
             ->map(fn ($l) => [

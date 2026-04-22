@@ -11,7 +11,7 @@ use App\Models\KKN\FileKegiatanKkn;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\SystemSetting;
-use App\Services\GeoService;
+use App\Services\GeofenceService;
 use App\Services\PeriodContextService;
 use App\Services\PhotoWatermarkService;
 use Carbon\Carbon;
@@ -28,7 +28,7 @@ use Inertia\Response;
 class DailyReportController extends Controller
 {
     public function __construct(
-        private readonly GeoService $geoService,
+        private readonly GeofenceService $geofenceService,
     ) {}
 
     /**
@@ -373,7 +373,7 @@ class DailyReportController extends Controller
             return;
         }
 
-        $distance = $this->geoService->calculateDistanceMeters(
+        $distance = $this->geofenceService->calculateDistanceMeters(
             (float) $validated['latitude'],
             (float) $validated['longitude'],
             $policy['reference']['latitude'],

@@ -64,12 +64,28 @@ class AuthenticatedSessionController extends Controller
 
     public function store(LoginRequest $request): RedirectResponse
     {
-        \Log::info('Login Attempt Started', ['login' => $request->input('login')]);
+        \Log::info('=== LOGIN DEBUG START ===', [
+            'login' => $request->input('login'),
+            'session_id' => $request->session()->getId(),
+            'session_started' => $request->session()->isStarted(),
+            'csrf_token' => $request->session()->token(),
+            'csrf_token_from_input' => $request->input('_token'),
+            'user_agent' => $request->userAgent(),
+            'ip' => $request->ip(),
+            'cookies' => $request->cookies->all(),
+            'headers' => $request->headers->all(),
+        ]);
 
         // Ensure session is started and regenerate token for security
         if (! $request->session()->isStarted()) {
+            \Log::warning('Session was NOT started, starting now...');
             $request->session()->start();
         }
+
+        \Log::info('Session status after start', [
+            'session_id' => $request->session()->getId(),
+            'csrf_token' => $request->session()->token(),
+        ]);
 
         // Sanitize login input (allow alphanumeric, @ and .)
         $loginInput = trim((string) $request->input('login', ''));

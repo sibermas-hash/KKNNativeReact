@@ -57,6 +57,7 @@ class EligibilityService
         $checks['no_prior_completion'] = $this->checkNoPriorCompletion($mahasiswa, $preloadedData['completed_ids'] ?? null);
         $checks['min_sks'] = $this->checkMinimumSKS($mahasiswa, $periode, $settings);
         $checks['min_gpa'] = $this->checkMinimumGPA($mahasiswa, $periode, $settings);
+        $checks['ukt_payment'] = $this->checkUkt($mahasiswa);
         $checks['bta_ppi'] = $this->checkBtaPpi($mahasiswa);
         $checks['program_prodi'] = $this->checkProgramProdiRestriction($mahasiswa, $periode);
         $checks['personal_status'] = $this->checkPersonalStatusMandate($mahasiswa, $periode);
@@ -205,6 +206,20 @@ class EligibilityService
             'current_gpa' => $studentGpa,
             'required_gpa' => $minGpa,
             'enabled' => true,
+        ];
+    }
+
+    /**
+     * Check UKT payment status
+     */
+    private function checkUkt(Mahasiswa $mahasiswa): array
+    {
+        $paid = (bool) $mahasiswa->is_paid_ukt;
+
+        return [
+            'passed' => $paid,
+            'key' => 'ukt_payment',
+            'message' => $paid ? 'UKT sudah lunas' : '[Financial requirement failure] - UKT semester ini belum lunas atau tidak terdata.',
         ];
     }
 

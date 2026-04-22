@@ -277,6 +277,12 @@ class WorkshopService
                     'is_passed' => $passed,
                 ]);
 
+                if ($passed) {
+                    $this->generateCertificate($participant);
+                } else {
+                    $this->revokeCertificate($participant);
+                }
+
                 // Sinkronisasi nilai otomatis ketika kelulusan berubah
                 $this->syncWorkshopScore($participant);
 

@@ -6,7 +6,6 @@ import { clsx } from 'clsx';
 import { 
   Award, 
   Image as ImageIcon, 
-  Save, 
   PenTool, 
   Palette, 
   ShieldCheck,
@@ -28,46 +27,66 @@ import {
 import PageHeader from '@/Components/Premium/PageHeader';
 import ContentPanel from '@/Components/Premium/ContentPanel';
 import StatCard from '@/Components/Premium/StatCard';
+import {
+  buildCertificateFormConfigs,
+  normalizeAvailablePeriods,
+  normalizeCertificateConfigs,
+  normalizeCertificateFormConfigs,
+  type CertificateConfigFormItem,
+  type CertificateConfigItem,
+} from './certificateFormUtils';
 
-
-interface ConfigItem { id: number; config_key: string; label: string; value: string | null; type: 'text' | 'longtext' | 'image'; }
 interface Props { 
-  configs: ConfigItem[]; 
+  configs: unknown;
   currentPeriodId: number;
 }
 
 export default function CertificateSettings({ configs = [], currentPeriodId }: Props) {
   const { availablePeriods = {} } = usePage().props as any;
-  
-  // Flatten periods since they come grouped by period number from the service
-  const flatPeriods = useMemo(() => {
-    if (Array.isArray(availablePeriods)) return availablePeriods;
-    return Object.values(availablePeriods).flat() as any[];
-  }, [availablePeriods]);
+
+  const normalizedConfigs = useMemo(
+    () => normalizeCertificateConfigs(configs),
+    [configs],
+  );
+  const flatPeriods = useMemo(
+    () => normalizeAvailablePeriods(availablePeriods),
+    [availablePeriods],
+  );
+  const initialFormConfigs = useMemo(
+    () => buildCertificateFormConfigs(normalizedConfigs),
+    [normalizedConfigs],
+  );
 
   const [activeTab, setActiveTab] = useState<'kkn' | 'workshop'>('kkn');
   const [selectedPeriodId, setSelectedPeriodId] = useState(currentPeriodId);
   
-  const form = useForm({ 
+  const form = useForm<{ period_id: number; configs: CertificateConfigFormItem[] | Record<string, CertificateConfigFormItem> }>({ 
     period_id: currentPeriodId,
-    configs: (configs || []).map((c) => ({ id: c.id, value: c.value ?? '' })) 
+    configs: initialFormConfigs,
   });
+  const { data, post, processing, setData } = form;
+  const formConfigs = useMemo(
+    () => normalizeCertificateFormConfigs(data.configs),
+    [data.configs],
+  );
 
-  const currentPeriodName = flatPeriods.find((p: any) => p.id === selectedPeriodId)?.name || 'Global Settings';
+  const currentPeriodName = flatPeriods.find((period) => period.id === selectedPeriodId)?.name || 'Global Settings';
 
   useEffect(() => {
-    form.setData('period_id', currentPeriodId);
+    setData('period_id', currentPeriodId);
+    setData('configs', initialFormConfigs);
     setSelectedPeriodId(currentPeriodId);
-  }, [currentPeriodId]);
+  }, [currentPeriodId, initialFormConfigs, setData]);
   
-  const updateValue = (id: number, value: string | File) => { 
-    form.setData('configs', (form.data.configs || []).map((item) => (item.id === id ? { ...item, value } : item))); 
+  const updateValue = (id: number | null, value: string | File) => { 
+    setData('configs', formConfigs.map((item) => (item.id === id ? { ...item, value } : item))); 
   };
   
   const handlePeriodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newId = parseInt(e.target.value);
-    setSelectedPeriodId(newId);
-    router.get('/admin/pengaturan/sertifikat', { period_id: newId }, { 
+    const newId = Number.parseInt(e.target.value, 10);
+    const safePeriodId = Number.isNaN(newId) ? 0 : newId;
+    setSelectedPeriodId(safePeriodId);
+    router.get('/admin/pengaturan/sertifikat', { period_id: safePeriodId }, { 
       preserveState: true,
       preserveScroll: true 
     });
@@ -75,15 +94,18 @@ export default function CertificateSettings({ configs = [], currentPeriodId }: P
 
   const handleSubmit = (e: React.FormEvent) => { 
     e.preventDefault(); 
-    form.post('/admin/pengaturan/sertifikat', { preserveScroll: true }); 
+    post('/admin/pengaturan/sertifikat', {
+      forceFormData: true,
+      preserveScroll: true,
+    }); 
   };
   
-  const getValue = (id: number) => form.data.configs.find((item) => item.id === id)?.value ?? '';
+  const getValue = (id: number | null) => formConfigs.find((item) => item.id === id)?.value ?? '';
 
-  const kknConfigs = configs.filter(c => !c.config_key.startsWith('workshop_'));
-  const workshopConfigs = configs.filter(c => c.config_key.startsWith('workshop_'));
+  const kknConfigs = normalizedConfigs.filter(c => !c.config_key.startsWith('workshop_'));
+  const workshopConfigs = normalizedConfigs.filter(c => c.config_key.startsWith('workshop_'));
 
-  const renderConfigGroup = (groupConfigs: ConfigItem[]) => {
+  const renderConfigGroup = (groupConfigs: CertificateConfigItem[]) => {
     const textConfigs = groupConfigs.filter((c) => c.type !== 'image');
     const imageConfigs = groupConfigs.filter((c) => c.type === 'image');
 
@@ -127,16 +149,16 @@ export default function CertificateSettings({ configs = [], currentPeriodId }: P
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-8">
                 {textConfigs.map((config) => (
-                  <div key={config.id} className={clsx("group space-y-2.5", config.type === 'longtext' && "md:col-span-2")}>
+                  <div key={config.id ?? config.config_key} className={clsx("group space-y-2.5", config.type === 'longtext' && "md:col-span-2")}>
                     <div className="flex items-center justify-between pl-1">
-                      <label htmlFor={`cert-config-${config.id}`} className="text-[10px] font-black text-emerald-900 uppercase tracking-widest group-focus-within:text-emerald-600 transition-colors">
+                      <label htmlFor={`cert-config-${config.id ?? config.config_key}`} className="text-[10px] font-black text-emerald-900 uppercase tracking-widest group-focus-within:text-emerald-600 transition-colors">
                         {config.label}
                       </label>
                       <span className="text-[9px] font-bold text-emerald-800/30 tabular-nums uppercase">KEY: {config.config_key}</span>
                     </div>
                     {config.type === 'longtext' ? (
                       <textarea
-                        id={`cert-config-${config.id}`}
+                        id={`cert-config-${config.id ?? config.config_key}`}
                         rows={5}
                         value={getValue(config.id)}
                         onChange={(e) => updateValue(config.id, e.target.value)}
@@ -145,7 +167,7 @@ export default function CertificateSettings({ configs = [], currentPeriodId }: P
                       />
                     ) : (
                       <input 
-                        id={`cert-config-${config.id}`}
+                        id={`cert-config-${config.id ?? config.config_key}`}
                         type="text"
                         value={getValue(config.id)} 
                         onChange={(e) => updateValue(config.id, e.target.value)} 
@@ -172,7 +194,7 @@ export default function CertificateSettings({ configs = [], currentPeriodId }: P
               {imageConfigs.length > 0 ? (
                 <div className="space-y-6">
                   {imageConfigs.map((config) => (
-                    <div key={config.id} className="space-y-3">
+                    <div key={config.id ?? config.config_key} className="space-y-3">
                       <label className="text-[10px] font-black text-emerald-900 uppercase tracking-widest pl-1">
                         {config.label}
                       </label>
@@ -341,7 +363,7 @@ export default function CertificateSettings({ configs = [], currentPeriodId }: P
             <div className="bg-white/80 backdrop-blur-xl border border-emerald-100 px-8 py-5 rounded-[2rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6 ring-1 ring-emerald-500/5">
               <div className="flex items-center gap-5">
                 <div className="h-12 w-12 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-100">
-                  <RefreshCw size={20} className={clsx(form.processing && "animate-spin")} />
+                  <RefreshCw size={20} className={clsx(processing && "animate-spin")} />
                 </div>
                 <div className="space-y-0.5">
                   <p className="text-sm font-black text-emerald-950 uppercase tracking-tighter">
@@ -357,11 +379,11 @@ export default function CertificateSettings({ configs = [], currentPeriodId }: P
               
               <button 
                 type="submit" 
-                disabled={form.processing} 
+                disabled={processing} 
                 className="w-full md:w-auto h-12 px-10 bg-emerald-600 hover:bg-emerald-500 text-white font-black uppercase tracking-widest text-[10px] rounded-xl shadow-xl shadow-emerald-600/10 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 group"
               >
-                {form.processing ? <RefreshCw size={14} className="animate-spin" /> : <Zap size={14} className="group-hover:scale-110 transition-transform" />}
-                {form.processing ? 'MEMPROSES...' : 'TERAPKAN PERUBAHAN'}
+                {processing ? <RefreshCw size={14} className="animate-spin" /> : <Zap size={14} className="group-hover:scale-110 transition-transform" />}
+                {processing ? 'MEMPROSES...' : 'TERAPKAN PERUBAHAN'}
               </button>
             </div>
           </motion.div>

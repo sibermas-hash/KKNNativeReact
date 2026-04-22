@@ -29,6 +29,7 @@ class Mahasiswa extends Model
         'total_sks',
         'gpa',
         'status_bta_ppi',
+        'is_paid_ukt',
         'semester',
         'health_certificate_path',
         'parent_permission_path',
@@ -50,6 +51,7 @@ class Mahasiswa extends Model
             'total_sks' => 'integer',
             'semester' => 'integer',
             'gpa' => 'float',
+            'is_paid_ukt' => 'boolean',
             'master_synced_at' => 'datetime',
         ];
     }

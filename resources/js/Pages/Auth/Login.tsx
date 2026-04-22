@@ -58,11 +58,26 @@ export default function Login() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    console.log('=== LOGIN FORM SUBMIT ===', {
+      url: '/login',
+      data: data,
+      csrfToken: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
+      cookies: document.cookie,
+    });
+
     post('/login', {
       replace: true,
       preserveScroll: true,
-      onFinish: () => {
+      onSuccess: (page) => {
+        console.log('=== LOGIN SUCCESS ===', page);
         reset('password', 'captcha_answer');
+      },
+      onError: (errors) => {
+        console.log('=== LOGIN ERROR ===', errors);
+      },
+      onFinish: () => {
+        console.log('=== LOGIN FINISH ===');
       },
     });
   };

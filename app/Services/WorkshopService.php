@@ -234,7 +234,9 @@ class WorkshopService
         return DB::transaction(function () use ($workshopId, $attendedUserIds) {
             $results = [];
 
-            $participants = PesertaWorkshop::where('workshop_id', $workshopId)->get();
+            $participants = PesertaWorkshop::where('workshop_id', $workshopId)
+                ->with('user.mahasiswa.peserta')
+                ->get();
 
             foreach ($participants as $participant) {
                 $attended = in_array($participant->user_id, $attendedUserIds);
@@ -268,7 +270,9 @@ class WorkshopService
         return DB::transaction(function () use ($workshopId, $passedUserIds) {
             $results = [];
 
-            $participants = PesertaWorkshop::where('workshop_id', $workshopId)->get();
+            $participants = PesertaWorkshop::where('workshop_id', $workshopId)
+                ->with('user.mahasiswa.peserta')
+                ->get();
 
             foreach ($participants as $participant) {
                 $passed = in_array($participant->user_id, $passedUserIds);

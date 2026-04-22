@@ -135,7 +135,14 @@ class AuthenticatedSessionController extends Controller
         $user = auth()->user();
         \Log::info('User authenticated successfully', ['user_id' => $user->id, 'roles' => $user->getRoleNames()]);
 
-        // Check password status first
+        // Admin/Superadmin bypass password change requirement and redirect directly to dashboard
+        if ($user->hasRole(['superadmin', 'admin', 'faculty_admin'])) {
+            \Log::info('Redirecting to admin dashboard');
+
+            return redirect()->intended(route('admin.dashboard'));
+        }
+
+        // Check password status first (only for non-admin users)
         $hasNeverChangedPassword = is_null($user->password_changed_at);
 
         // If password never changed → must go to change password page first
@@ -150,12 +157,6 @@ class AuthenticatedSessionController extends Controller
             \Log::info('Profile incomplete, redirecting to profile', ['user_id' => $user->id]);
 
             return redirect()->route('profile.show')->with('error', 'Profil belum lengkap! Anda harus melengkapi semua data terlebih dahulu.');
-        }
-
-        if ($user->hasRole(['superadmin', 'admin', 'faculty_admin'])) {
-            \Log::info('Redirecting to admin dashboard');
-
-            return redirect()->intended(route('admin.dashboard'));
         }
 
         if ($user->hasRole(['dosen', 'dpl'])) {

@@ -45,9 +45,13 @@ Route::middleware([
             Route::patch('finalisasi', [Admin\RekapNilaiController::class, 'finalize'])->name('finalisasi');
         });
 
-        Route::post('finalisasi-massal', [Admin\RekapNilaiController::class, 'finalizeMass'])->name('finalisasi-massal');
+        Route::post('finalisasi-massal', [Admin\RekapNilaiController::class, 'finalizeMass'])
+            ->middleware('throttle:5,60')
+            ->name('finalisasi-massal');
         Route::get('finalisasi-progres', [Admin\RekapNilaiController::class, 'getFinalizeProgress'])->name('finalisasi-progres');
-        Route::post('sertifikat-massal', [Admin\RekapNilaiController::class, 'bulkCertificates'])->name('sertifikat-massal');
+        Route::post('sertifikat-massal', [Admin\RekapNilaiController::class, 'bulkCertificates'])
+            ->middleware('throttle:5,60')
+            ->name('sertifikat-massal');
         Route::get('progres-sertifikat', [Admin\RekapNilaiController::class, 'getCertificateProgress'])->name('progres-sertifikat');
     });
     Route::get('certificates/bulk-download', [CertificateController::class, 'downloadMass'])
@@ -60,9 +64,13 @@ Route::middleware([
         Route::get('ekspor', [Admin\RekapNilaiController::class, 'export'])->name('ekspor');
         Route::get('ekspor-ledger', [Admin\RekapNilaiController::class, 'exportLedger'])->name('ekspor-ledger');
         Route::patch('{score}/finalisasi', [Admin\RekapNilaiController::class, 'finalize'])->name('finalisasi');
-        Route::post('finalisasi-massal', [Admin\RekapNilaiController::class, 'finalizeMass'])->name('finalisasi-massal');
+        Route::post('finalisasi-massal', [Admin\RekapNilaiController::class, 'finalizeMass'])
+            ->middleware('throttle:5,60')
+            ->name('finalisasi-massal');
         Route::get('finalisasi-progres', [Admin\RekapNilaiController::class, 'getFinalizeProgress'])->name('finalisasi-progres');
-        Route::post('sertifikat-massal', [Admin\RekapNilaiController::class, 'bulkCertificates'])->name('sertifikat-massal');
+        Route::post('sertifikat-massal', [Admin\RekapNilaiController::class, 'bulkCertificates'])
+            ->middleware('throttle:5,60')
+            ->name('sertifikat-massal');
         Route::get('progres-sertifikat', [Admin\RekapNilaiController::class, 'getCertificateProgress'])->name('progres-sertifikat');
     });
 
@@ -199,8 +207,12 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
 
         Route::prefix('pendaftaran')->name('pendaftaran.')->group(function () {
             // Bulk Actions
-            Route::post('setuju-massal', [Admin\PesertaKknController::class, 'bulkApprove'])->name('setuju-massal');
-            Route::post('tolak-massal', [Admin\PesertaKknController::class, 'bulkReject'])->name('tolak-massal');
+            Route::post('setuju-massal', [Admin\PesertaKknController::class, 'bulkApprove'])
+                ->middleware('throttle:10,60')
+                ->name('setuju-massal');
+            Route::post('tolak-massal', [Admin\PesertaKknController::class, 'bulkReject'])
+                ->middleware('throttle:10,60')
+                ->name('tolak-massal');
             
             // Individual Actions
             Route::prefix('{pesertaKkn}')->group(function () {
@@ -287,8 +299,12 @@ Route::middleware(['role:superadmin'])->prefix('admin')->name('admin.')->group(f
             // DPL Registration
             Route::prefix('pendaftaran-dpl')->group(function () {
                 Route::get('/', [Admin\DplRegistrationController::class, 'index'])->name('pendaftaran');
-                Route::post('setujui-massal', [Admin\DplRegistrationController::class, 'bulkApprove'])->name('pendaftaran.setujui-massal');
-                Route::post('tolak-massal', [Admin\DplRegistrationController::class, 'bulkReject'])->name('pendaftaran.tolak-massal');
+                Route::post('setujui-massal', [Admin\DplRegistrationController::class, 'bulkApprove'])
+                    ->middleware('throttle:10,60')
+                    ->name('pendaftaran.setujui-massal');
+                Route::post('tolak-massal', [Admin\DplRegistrationController::class, 'bulkReject'])
+                    ->middleware('throttle:10,60')
+                    ->name('pendaftaran.tolak-massal');
                 Route::patch('{registration}/setujui', [Admin\DplRegistrationController::class, 'approve'])->name('pendaftaran.setujui');
                 Route::patch('{registration}/tolak', [Admin\DplRegistrationController::class, 'reject'])->name('pendaftaran.tolak');
             });

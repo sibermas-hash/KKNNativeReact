@@ -44,6 +44,9 @@ class PlottingService
                 throw new \RuntimeException('Tidak ada kelompok yang tersedia di periode ini.');
             }
 
+            // Map current counts to group IDs for memory-efficient access
+            $groupCounts = $groups->pluck('peserta_count', 'id')->all();
+            
             $plottedCount = 0;
             $studentIndex = 0;
             $totalStudents = $unassignedStudents->count();
@@ -60,7 +63,7 @@ class PlottingService
 
                     // Check capacity (default to 15 if not set)
                     $capacity = $group->capacity ?: 15;
-                    $currentCount = PesertaKkn::where('kelompok_id', $group->id)->count();
+                    $currentCount = $groupCounts[$group->id] ?? 0;
 
                     if ($currentCount < $capacity) {
                         $student = $unassignedStudents[$studentIndex];
@@ -68,6 +71,9 @@ class PlottingService
                             'kelompok_id' => $group->id,
                             'joined_group_at' => now(),
                         ]);
+                        
+                        // Increment in-memory counter
+                        $groupCounts[$group->id]++;
                         
                         $studentIndex++;
                         $plottedCount++;

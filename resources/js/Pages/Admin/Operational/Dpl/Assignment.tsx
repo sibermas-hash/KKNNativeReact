@@ -21,12 +21,20 @@ import {
   Zap,
   CheckCircle2,
   X,
-  Info
+  Info,
+  ChevronDown,
+  RefreshCw
 } from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
 import { ConfirmDialog, Pagination } from '@/Components/ui';
+import { 
+  PageHeader, 
+  StatCard, 
+  ContentPanel, 
+  StatusTag 
+} from '@/Components/Premium';
 import { clsx } from 'clsx';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import type { LucideIcon } from '@/types';
 
 interface DosenOption {
@@ -197,397 +205,295 @@ export default function Assignment({
 
   return (
     <AppLayout title="Penugasan DPL">
-      <Head title="Penugasan DPL | SIBERDAYA"/>
+      <Head title="Penugasan DPL | SIBERDAYA" />
 
       <div className="max-w-[1600px] mx-auto space-y-8 pb-24 font-sans px-4 sm:px-6 lg:px-8">
         
         {/* --- PREMIUM HEADER --- */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pt-10 pb-2 border-b border-emerald-50/50">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="h-12 w-12 bg-[#e8f5ee] text-[#1a7a4a] rounded-2xl flex items-center justify-center border border-emerald-100 shadow-sm transition-transform hover:scale-105">
-                <Briefcase size={24} strokeWidth={2.5} />
-              </div>
-              <div className="space-y-0.5">
-                <h1 className="text-3xl font-black text-emerald-950 tracking-tight leading-none">
-                  Penugasan DPL.
-                </h1>
-                <p className="text-xs font-bold text-emerald-700 uppercase tracking-widest flex items-center gap-2">
-                  <Activity size={12} strokeWidth={3} /> Manajemen Otoritas & Plotting
-                </p>
-              </div>
-            </div>
-            <p className="text-sm font-medium text-emerald-800 max-w-2xl leading-relaxed">
-              Pusat kendali untuk aktivasi Dosen Pembimbing Lapangan, orkestrasi plotting unit kelompok, serta penetapan yurisdiksi Koordinator Wilayah (Korwil).
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-3 shrink-0">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+        <PageHeader
+          title="Penugasan DPL"
+          subtitle="Pusat kendali aktivasi DPL, orkestrasi plotting unit kelompok, serta penetapan yurisdiksi Koordinator Wilayah (Korwil)."
+          icon={Briefcase}
+          breadcrumb={[
+            { label: 'Dashboard', href: route('admin.dashboard') },
+            { label: 'Operasional', href: '#' },
+            { label: 'Penugasan DPL' }
+          ]}
+        >
+          <div className="flex items-center gap-3">
+            <button
               onClick={() => setActiveFormMode(activeFormMode === 'import' ? 'default' : 'import')}
               className={clsx(
-                "h-12 px-6 rounded-xl font-black transition-all flex items-center gap-3 text-xs shadow-sm uppercase tracking-wider",
+                "h-10 px-5 rounded-xl font-black transition-all flex items-center gap-2.5 text-[10px] shadow-sm uppercase tracking-wider",
                 activeFormMode === 'import' 
-                  ? "bg-[#16a34a] text-white border border-emerald-700" 
-                  : "bg-white border border-emerald-100 text-[#1a7a4a] hover:bg-emerald-50/50"
+                  ? "bg-emerald-600 text-white shadow-emerald-600/20" 
+                  : "bg-white border border-emerald-100 text-emerald-700 hover:bg-emerald-50/50"
               )}
             >
-              <FileSpreadsheet size={16} strokeWidth={2.5} /> Data Impor Massal
-            </motion.button>
+              <FileSpreadsheet size={14} strokeWidth={2.5} /> Data Impor Massal
+            </button>
           </div>
+        </PageHeader>
+
+        {/* --- STATS GRID --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard label="Aktivasi DPL" value={summary?.active_assignments} icon={UserCheck} variant="info" />
+          <StatCard label="Total Unit" value={summary?.groups_total} icon={Briefcase} variant="gray" />
+          <StatCard label="Butuh Plotting" value={summary?.active_groups_without_dpl} icon={AlertTriangle} variant={summary?.active_groups_without_dpl ? "danger" : "success"} />
+          <StatCard label="Koordinator" value={summary?.district_coordinators} icon={MapPinned} variant="success" />
         </div>
 
         {/* TWO-COLUMN MASTER DATA LAYOUT */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mt-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           
-          {/* --- LEFT COLUMN: INTELLIGENCE HUB (FORM & STATS) --- */}
-          <div className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
-            <div className="bg-white border border-emerald-100 rounded-2xl overflow-hidden shadow-sm">
-              <div className="p-5 border-b border-emerald-50 bg-gray-50/50 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-[#1a7a4a] border border-emerald-100 shadow-sm">
-                    {activeFormMode === 'import' ? <Upload size={20} strokeWidth={3} /> :
-                     activeTab === 'assignments' ? <UserPlus size={20} strokeWidth={3} /> :
-                     activeTab === 'groups' ? <Target size={20} strokeWidth={3} /> :
-                     <ShieldCheck size={20} strokeWidth={3} />}
-                  </div>
-                  <div>
-                    <h3 className="text-xs font-black text-emerald-950 uppercase tracking-widest">
-                      {activeFormMode === 'import' ? 'Transmisi Massal' :
-                       activeTab === 'assignments' ? 'Aktivasi Otoritas' :
-                       activeTab === 'groups' ? 'Validasi Unit' :
-                       'Penunjukan Korwil'}
-                    </h3>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
-                      <p className="text-[10px] font-black text-emerald-700 uppercase tracking-tighter">
-                        Mode: {activeFormMode === 'import' ? 'Impor Data' : activeTab}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                {activeFormMode === 'import' && (
-                  <button onClick={() => setActiveFormMode('default')} className="h-8 w-8 rounded-lg bg-white border border-emerald-100 flex items-center justify-center text-emerald-800 hover:text-rose-500 hover:border-rose-100 transition-colors shadow-sm">
-                    <X size={16} strokeWidth={3} />
-                  </button>
-                )}
-              </div>
-              
-              {/* RENDERING DYNAMIC FORMS BASED ON STATE & TABS */}
-
+          {/* --- LEFT COLUMN: CONTROL HUB (1/3) --- */}
+          <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24">
+            <ContentPanel
+              title={activeFormMode === 'import' ? 'Transmisi Massal' :
+                     activeTab === 'assignments' ? 'Aktivasi Otoritas' :
+                     activeTab === 'groups' ? 'Validasi Unit' :
+                     'Penunjukan Korwil'}
+              description={activeFormMode === 'import' ? 'Mode: Impor Data' : `Mode: ${activeTab.toUpperCase()}`}
+              icon={activeFormMode === 'import' ? Upload :
+                    activeTab === 'assignments' ? UserPlus :
+                    activeTab === 'groups' ? Target :
+                    ShieldCheck}
+              padding={true}
+              actions={activeFormMode === 'import' ? (
+                <button onClick={() => setActiveFormMode('default')} className="p-1.5 rounded-lg hover:bg-rose-50 text-rose-500 transition-colors">
+                  <X size={16} strokeWidth={3} />
+                </button>
+              ) : null}
+            >
               {/* FORM: IMPORT */}
               {activeFormMode === 'import' && (
-                <form onSubmit={submitImport} className="p-8 space-y-6">
-                   <div className="border-4 border-dashed border-[#f3f4f6] rounded-xl p-8 flex flex-col items-center justify-center gap-6 hover:bg-gray-50 transition-all relative group/upload">
-                    <div className="h-16 w-16 rounded-xl bg-white border border-emerald-50 shadow-sm flex items-center justify-center text-[#1a7a4a] group-hover/upload:scale-110 group-hover/upload:rotate-12 transition-all">
+                <form onSubmit={submitImport} className="space-y-6">
+                  <div className="border-2 border-dashed border-gray-100 rounded-xl p-8 flex flex-col items-center justify-center gap-4 hover:bg-gray-50/50 transition-all relative group/upload">
+                    <div className="h-14 w-14 rounded-xl bg-white border border-emerald-50 shadow-sm flex items-center justify-center text-emerald-600 group-hover/upload:scale-110 transition-all">
                       <Upload size={24} strokeWidth={2.5} />
                     </div>
-                    <div className="flex flex-col items-center text-center gap-2">
+                    <div className="flex flex-col items-center text-center gap-1.5">
                       {importForm.data.file ? (
-                        <>
-                          <span className="text-sm font-bold text-emerald-950">{importForm.data.file.name}</span>
-                          <span className="text-xs font-bold text-[#1a7a4a] uppercase">File Siap Ditransmisikan</span>
-                        </>
+                        <span className="text-xs font-black text-emerald-950 uppercase tracking-tight">{importForm.data.file.name}</span>
                       ) : (
-                        <>
-                          <p className="text-xs font-bold text-emerald-950">Pilih Berkas Spreadsheet</p>
-                          <p className="text-xs font-bold text-[#1a7a4a]/60 leading-none">FORMAT: .XLSX, .CSV</p>
-                        </>
+                        <p className="text-[10px] font-black text-emerald-950 uppercase tracking-widest">Pilih Berkas Spreadsheet</p>
                       )}
                     </div>
                     <input type="file" onChange={(e) => importForm.setData('file', e.target.files?.[0] ?? null)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" required accept=".xlsx,.csv"/>
                   </div>
-                  
-                  <div className="bg-[#e8f5ee] rounded-xl p-6 flex flex-col gap-2">
-                    <span className="text-xs font-bold text-emerald-950 uppercase tracking-widest">Informasi Sinkronisasi</span>
-                    <p className="text-xs font-bold text-emerald-800 leading-relaxed">
-                      Kolom dalam file harus mengikuti template sistem secara kaku (strict typing). Data akan meng-override konfigurasi aktif.
-                    </p>
-                  </div>
-                  
-                  <div className="pt-2 border-t border-[#f3f4f6]">
-                    <button type="submit" disabled={importForm.processing} className="w-full h-14 bg-[#16a34a] hover:bg-[#15803d] text-white font-bold rounded-xl shadow-lg shadow-none transition-all flex items-center justify-center gap-3 text-xs active:scale-95 disabled:opacity-50">
-                      <Zap size={20} strokeWidth={2.5} /> RUN TRANSMISSION
-                    </button>
-                  </div>
+                  <button type="submit" disabled={importForm.processing} className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-xl shadow-lg shadow-emerald-600/10 transition-all flex items-center justify-center gap-2.5 text-[10px] uppercase tracking-[0.2em] disabled:opacity-50">
+                    <Zap size={16} strokeWidth={2.5} /> Run Transmission
+                  </button>
                 </form>
               )}
 
               {/* FORM: AKTIVASI DPL (assignments tab) */}
               {activeFormMode === 'default' && activeTab === 'assignments' && (
-                <form onSubmit={submitPeriodAssignment} className="p-8 space-y-6">
-                  <div>
-                    <label className="block text-xs font-bold text-emerald-950 uppercase tracking-widest pl-1 mb-2">Dosen Pengampu <span className="text-rose-500">*</span></label>
-                    <select value={periodForm.data.dosen_id} onChange={(e) => periodForm.setData('dosen_id', e.target.value)} className="w-full h-12 px-4 bg-gray-50 border border-emerald-50 rounded-xl text-xs font-bold text-emerald-950 focus:border-[#f3f4f6]0 outline-none transition-all shadow-sm appearance-none" required>
-                      <option value="">PILIH DOSEN TERVALIDASI...</option>
-                      {allDosen?.map((d) => (
-                        <option key={d.id} value={d.id} disabled={d.is_qualified === false}>
-                          {d.nama.toUpperCase()} &middot; {d.nip} {!d.is_qualified ? ` [❌ ${d.qualification_reason}]` : ''}
-                        </option>
-                      ))}
-                    </select>
-                    {allDosen?.find(d => String(d.id) === periodForm.data.dosen_id)?.is_qualified === false && (
-                      <p className="mt-2 text-xs font-bold text-rose-500 flex items-center gap-2 uppercase tracking-tight">
-                        <ShieldAlert size={12} /> DITOLAK: {allDosen.find(d => String(d.id) === periodForm.data.dosen_id)?.qualification_reason}
-                      </p>
-                    )}
+                <form onSubmit={submitPeriodAssignment} className="space-y-6">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Dosen Pengampu</label>
+                    <div className="relative group">
+                      <select value={periodForm.data.dosen_id} onChange={(e) => periodForm.setData('dosen_id', e.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-black text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none uppercase" required>
+                        <option value="">PILIH DOSEN...</option>
+                        {allDosen?.map((d) => (
+                          <option key={d.id} value={d.id} disabled={d.is_qualified === false}>
+                            {d.nama} &middot; {d.nip}
+                          </option>
+                        ))}
+                      </select>
+                      <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform" />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-emerald-950 uppercase tracking-widest pl-1 mb-2">Target Periode <span className="text-rose-500">*</span></label>
-                    <select value={periodForm.data.period_id} onChange={(e) => periodForm.setData('period_id', e.target.value)} className="w-full h-12 px-4 bg-gray-50 border border-emerald-50 rounded-xl text-xs font-bold text-emerald-950 focus:border-[#f3f4f6]0 outline-none transition-all appearance-none" required>
-                      <option value="">PILIH PERIODE AKADEMIK...</option>
-                      {allPeriods?.map((p) => <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>)}
-                    </select>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Target Periode</label>
+                    <div className="relative group">
+                      <select value={periodForm.data.period_id} onChange={(e) => periodForm.setData('period_id', e.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-black text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none uppercase" required>
+                        <option value="">PILIH PERIODE...</option>
+                        {allPeriods?.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                      </select>
+                      <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform" />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-emerald-950 uppercase tracking-widest pl-1 mb-2">Kuota Bimbingan <span className="text-rose-500">*</span></label>
-                    <input type="number" min="1" value={periodForm.data.max_groups} onChange={(e) => periodForm.setData('max_groups', parseInt(e.target.value))} className="w-full h-12 px-4 bg-gray-50 border border-emerald-50 rounded-xl text-sm font-bold text-emerald-950 text-center focus:border-[#f3f4f6]0 outline-none transition-all shadow-sm tabular-nums" required />
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Kuota Bimbingan</label>
+                    <input type="number" min="1" value={periodForm.data.max_groups} onChange={(e) => periodForm.setData('max_groups', parseInt(e.target.value))} className="w-full h-11 px-4 bg-white border border-gray-200 rounded-xl text-sm font-black text-emerald-950 focus:border-emerald-600 outline-none transition-all shadow-sm tabular-nums" required />
                   </div>
 
-                  <div className="pt-2 border-t border-[#f3f4f6]">
-                    <button type="submit" disabled={periodForm.processing} className="w-full h-14 bg-[#16a34a] hover:bg-[#15803d] text-white font-bold rounded-xl shadow-lg shadow-none transition-all flex items-center justify-center gap-3 text-xs active:scale-95 disabled:opacity-50">
-                      <CheckCircle2 size={20} strokeWidth={2.5} /> REGISTRASIKAN DPL
-                    </button>
-                  </div>
+                  <button type="submit" disabled={periodForm.processing} className="w-full h-12 bg-emerald-950 hover:bg-black text-white font-black rounded-xl shadow-lg transition-all flex items-center justify-center gap-2.5 text-[10px] uppercase tracking-[0.2em] disabled:opacity-50">
+                    <CheckCircle2 size={16} strokeWidth={2.5} /> Registrasikan DPL
+                  </button>
                 </form>
               )}
 
               {/* FORM: PLOTTING KELOMPOK (groups tab) */}
               {activeFormMode === 'default' && activeTab === 'groups' && (
-                <form onSubmit={submitGroupAssignment} className="p-6 space-y-6">
+                <form onSubmit={submitGroupAssignment} className="space-y-6">
                   {selectedGroup ? (
-                    <motion.div 
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100 flex items-center justify-between shadow-sm"
-                    >
+                    <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100 flex items-center justify-between shadow-sm">
                       <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-white flex items-center justify-center text-emerald-700 border border-emerald-100 shadow-sm font-black text-xs">
+                        <div className="h-10 w-10 rounded-lg bg-white flex items-center justify-center text-emerald-700 border border-emerald-100 shadow-sm font-black text-[10px]">
                           {selectedGroup.code}
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[10px] font-black text-[#1a7a4a] uppercase tracking-widest leading-none mb-1">Unit Terseleksi</span>
-                          <span className="text-sm font-bold text-emerald-950 leading-tight">{selectedGroup.name}</span>
+                          <span className="text-[10px] font-black text-emerald-800 uppercase tracking-widest leading-none mb-1">Unit Terpilih</span>
+                          <span className="text-xs font-bold text-emerald-950 leading-tight">{selectedGroup.name}</span>
                         </div>
                       </div>
                       <button type="button" onClick={() => groupForm.reset()} className="h-8 w-8 rounded-lg hover:bg-rose-50 text-emerald-800 hover:text-rose-500 transition-colors flex items-center justify-center">
                         <X size={14} strokeWidth={3} />
                       </button>
-                    </motion.div>
+                    </div>
                   ) : (
-                    <div className="bg-gray-50/50 border-2 border-dashed border-emerald-100 p-8 rounded-2xl flex flex-col items-center justify-center gap-4 text-center group/select">
-                       <div className="h-14 w-14 rounded-2xl bg-white border border-emerald-100 flex items-center justify-center text-emerald-300 group-hover/select:text-emerald-500 group-hover/select:scale-110 transition-all shadow-sm">
-                        <Target size={28} strokeWidth={2} />
-                       </div>
-                       <div className="space-y-1">
-                        <span className="text-xs font-black text-emerald-900 uppercase tracking-widest block">Inisiasi Pemilihan Unit</span>
-                        <p className="text-[10px] font-bold text-emerald-600 uppercase leading-relaxed max-w-[200px]">
-                          Klik pada baris tabel kelompok di sebelah kanan untuk memulai plotting.
-                        </p>
-                       </div>
+                    <div className="bg-gray-50 border border-gray-100 p-8 rounded-xl flex flex-col items-center justify-center gap-4 text-center group/select">
+                      <div className="h-12 w-12 rounded-xl bg-white border border-gray-200 flex items-center justify-center text-gray-300 group-hover/select:text-emerald-500 transition-all shadow-sm">
+                        <Target size={24} strokeWidth={2} />
+                      </div>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-relaxed max-w-[180px]">
+                        Pilih unit kelompok dari tabel untuk memulai plotting.
+                      </p>
                     </div>
                   )}
 
-                  <div>
-                    <label className="block text-xs font-bold text-emerald-950 uppercase tracking-widest pl-1 mb-2">Alokasi DPL <span className="text-rose-500">*</span></label>
-                    <select value={groupForm.data.dpl_period_id} onChange={(e) => groupForm.setData('dpl_period_id', e.target.value)} disabled={!selectedGroup} className="w-full h-12 px-4 bg-gray-50 border border-emerald-50 rounded-xl text-xs font-bold text-emerald-950 focus:border-[#f3f4f6]0 outline-none transition-all shadow-sm appearance-none disabled:opacity-50" required>
-                      <option value="">PILIH DOSEN BERBENTUK KUOTA...</option>
-                      {availableAssignments?.map((a) => <option key={a.id} value={a.id}>{a.dosen?.nama.toUpperCase()} &middot; {a.dosen?.nip} [SISA {a.remaining_slots || 0} KELOMPOK]</option>)}
-                    </select>
-                    {availableAssignments.length === 0 && selectedGroup && (
-                      <p className="mt-2 text-xs font-bold text-rose-500 flex items-center gap-1 uppercase tracking-tight">
-                        <AlertTriangle size={12} /> PERINGATAN: TIDAK ADA KUOTA DPL TERSISA
-                      </p>
-                    )}
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Alokasi DPL</label>
+                    <div className="relative group">
+                      <select value={groupForm.data.dpl_period_id} onChange={(e) => groupForm.setData('dpl_period_id', e.target.value)} disabled={!selectedGroup} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-black text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none uppercase disabled:opacity-50" required>
+                        <option value="">PILIH DOSEN BERKUOTA...</option>
+                        {availableAssignments?.map((a) => <option key={a.id} value={a.id}>{a.dosen?.nama} &middot; [SISA {a.remaining_slots}]</option>)}
+                      </select>
+                      <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform" />
+                    </div>
                   </div>
 
-                  <div className="pt-2 border-t border-[#f3f4f6]">
-                    <button type="submit" disabled={groupForm.processing || !selectedGroup || availableAssignments.length === 0} className="w-full h-14 bg-[#16a34a] hover:bg-[#15803d] text-white font-bold rounded-xl shadow-lg shadow-none transition-all flex items-center justify-center gap-3 text-xs active:scale-95 disabled:opacity-50 mt-4">
-                      <Target size={20} strokeWidth={2.5} /> PLOT KE KELOMPOK
-                    </button>
-                    {selectedGroup && (
-                      <button type="button" onClick={() => groupForm.reset()} className="mt-2 w-full h-10 text-xs font-bold text-emerald-800 hover:text-rose-500 transition-colors uppercase tracking-widest">
-                        Batalkan Pilihan
-                      </button>
-                    )}
-                  </div>
+                  <button type="submit" disabled={groupForm.processing || !selectedGroup || availableAssignments.length === 0} className="w-full h-12 bg-emerald-950 hover:bg-black text-white font-black rounded-xl shadow-lg transition-all flex items-center justify-center gap-2.5 text-[10px] uppercase tracking-[0.2em] disabled:opacity-50">
+                    <Target size={16} strokeWidth={2.5} /> Plot ke Unit
+                  </button>
                 </form>
               )}
 
               {/* FORM: KOORDINATOR WILAYAH (regions tab) */}
               {activeFormMode === 'default' && activeTab === 'regions' && (
-                <form onSubmit={submitDistrictCoordinator} className="p-8 space-y-6">
-                  <div>
-                    <label className="block text-xs font-bold text-emerald-950 uppercase tracking-widest pl-1 mb-2">Wilayah Kecamatan <span className="text-rose-500">*</span></label>
-                    <select value={coordForm.data.district_id} onChange={(e) => coordForm.setData('district_id', e.target.value)} className="w-full h-12 px-4 bg-gray-50 border border-emerald-50 rounded-xl text-xs font-bold text-emerald-950 focus:border-[#f3f4f6]0 outline-none transition-all shadow-sm appearance-none" required>
-                      <option value="">PILIH ZONA EKSISTING...</option>
-                      {districts?.map((d) => <option key={d.id} value={d.id}>{d.name.toUpperCase()}</option>)}
-                    </select>
+                <form onSubmit={submitDistrictCoordinator} className="space-y-6">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Wilayah Kecamatan</label>
+                    <div className="relative group">
+                      <select value={coordForm.data.district_id} onChange={(e) => coordForm.setData('district_id', e.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-black text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none uppercase" required>
+                        <option value="">PILIH WILAYAH...</option>
+                        {districts?.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                      </select>
+                      <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform" />
+                    </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-emerald-950 uppercase tracking-widest pl-1 mb-2">Otoritas Korwil <span className="text-rose-500">*</span></label>
-                    <select value={coordForm.data.dpl_period_id} onChange={(e) => coordForm.setData('dpl_period_id', e.target.value)} className="w-full h-12 px-4 bg-gray-50 border border-emerald-50 rounded-xl text-xs font-bold text-emerald-950 focus:border-[#f3f4f6]0 outline-none transition-all shadow-sm appearance-none" required>
-                      <option value="">PILIH DPL AKTIF SEBAGAI KORWIL...</option>
-                      {assignments?.filter((a) => a.is_active).map((a) => <option key={a.id} value={a.id}>{a.dosen?.nama.toUpperCase()} &middot; {a.dosen?.nip}</option>)}
-                    </select>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Otoritas Korwil</label>
+                    <div className="relative group">
+                      <select value={coordForm.data.dpl_period_id} onChange={(e) => coordForm.setData('dpl_period_id', e.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-black text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none uppercase" required>
+                        <option value="">PILIH DPL AKTIF...</option>
+                        {assignments?.filter((a) => a.is_active).map((a) => <option key={a.id} value={a.id}>{a.dosen?.nama}</option>)}
+                      </select>
+                      <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform" />
+                    </div>
                   </div>
 
-                  <div className="pt-2 border-t border-[#f3f4f6]">
-                    <button type="submit" disabled={coordForm.processing} className="w-full h-14 bg-[#16a34a] hover:bg-[#15803d] text-white font-bold rounded-xl shadow-lg shadow-none transition-all flex items-center justify-center gap-3 text-xs active:scale-95 disabled:opacity-50">
-                      <ShieldCheck size={20} strokeWidth={2.5} /> TETAPKAN OTORITAS
-                    </button>
-                  </div>
+                  <button type="submit" disabled={coordForm.processing} className="w-full h-12 bg-emerald-950 hover:bg-black text-white font-black rounded-xl shadow-lg transition-all flex items-center justify-center gap-2.5 text-[10px] uppercase tracking-[0.2em] disabled:opacity-50">
+                    <ShieldCheck size={16} strokeWidth={2.5} /> Tetapkan Otoritas
+                  </button>
                 </form>
               )}
-            </div>
+            </ContentPanel>
 
-            {/* QUICK METRICS (High Contrast Layout) */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-white border border-emerald-100 rounded-2xl p-4 flex flex-col gap-3 shadow-sm hover:border-emerald-200 transition-colors">
-                <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-[#e8f5ee] text-[#1a7a4a] border border-emerald-50 shadow-sm">
-                  <UserCheck size={18} strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="text-xs font-black text-[#1a7a4a] uppercase tracking-wider">Aktivasi DPL</p>
-                  <p className="text-2xl font-black text-emerald-950 leading-none tabular-nums mt-0.5">{summary?.active_assignments}</p>
-                </div>
+            <div className="bg-emerald-950 rounded-2xl p-6 text-white border-b-4 border-emerald-900 shadow-xl relative overflow-hidden group/alert">
+              <div className="absolute top-0 right-0 h-32 w-32 bg-white/5 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover/alert:scale-110" />
+              <div className="flex items-center gap-3 mb-3 relative z-10">
+                <ShieldCheck size={18} className="text-emerald-400" />
+                <h4 className="text-[10px] font-black uppercase tracking-widest">Integritas Plotting</h4>
               </div>
-              <div className="bg-white border border-emerald-100 rounded-2xl p-4 flex flex-col gap-3 shadow-sm hover:border-emerald-200 transition-colors">
-                <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-[#e8f5ee] text-[#1a7a4a] border border-emerald-50 shadow-sm">
-                  <Briefcase size={18} strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="text-xs font-black text-[#1a7a4a] uppercase tracking-wider">Total Unit</p>
-                  <p className="text-2xl font-black text-emerald-950 leading-none tabular-nums mt-0.5">{summary?.groups_total}</p>
-                </div>
-              </div>
-            </div>
-
-            {(summary?.active_groups_without_dpl ?? 0) > 0 && (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-white border border-rose-100 rounded-2xl p-4 flex items-center gap-4 shadow-sm relative overflow-hidden group/alert"
-              >
-                <div className="absolute top-0 right-0 h-16 w-16 bg-rose-50/30 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover/alert:scale-110" />
-                <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-rose-50 text-rose-500 border border-rose-100 shadow-sm z-10">
-                  <AlertTriangle size={22} strokeWidth={2.5} className="animate-pulse" />
-                </div>
-                <div className="z-10">
-                  <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest leading-none mb-1">Kritis: Butuh Plotting</p>
-                  <p className="text-2xl font-black text-rose-950 leading-none tabular-nums">{summary?.active_groups_without_dpl} <span className="text-xs">UNIT</span></p>
-                </div>
-              </motion.div>
-            )}
-
-            <div className="bg-emerald-950 rounded-2xl p-5 flex items-center justify-between shadow-lg shadow-emerald-950/10 relative overflow-hidden group/korwil">
-              <div className="absolute top-0 right-0 h-24 w-24 bg-white/5 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover/korwil:scale-110" />
-              <div className="flex items-center gap-4 z-10">
-                <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-white/10 text-emerald-200 border border-white/10 shadow-inner">
-                  <MapPinned size={22} strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest leading-none mb-1">Otoritas Wilayah</p>
-                  <p className="text-xl font-black text-white leading-none tabular-nums">{summary?.district_coordinators} Korwil</p>
-                </div>
-              </div>
-              <div className="h-8 w-8 bg-white/10 rounded-lg flex items-center justify-center text-emerald-400 z-10">
-                <Target size={16} strokeWidth={2.5} />
-              </div>
+              <p className="text-[10px] font-bold text-emerald-400/70 leading-relaxed uppercase relative z-10">
+                Setiap penugasan akan disinkronkan secara real-time ke log mahasiswa dan DPL terkait. Pastikan ketersediaan kuota bimbingan mencukupi.
+              </p>
             </div>
           </div>
 
-          {/* --- RIGHT COLUMN: TABEL MASTER DATA (2/3 Width) --- */}
-          <div className="lg:col-span-8 flex flex-col h-full">
-            <div className="bg-white border border-emerald-50 rounded-xl shadow-sm flex flex-col h-full overflow-hidden">
+          {/* --- RIGHT COLUMN: MASTER DATA (2/3) --- */}
+          <div className="lg:col-span-2 space-y-6">
+            <div className="bg-white border border-emerald-100 rounded-2xl shadow-sm flex flex-col overflow-hidden min-h-[600px]">
               
               {/* TABS & SEARCH */}
               <div className="p-6 border-b border-emerald-50 bg-gray-50/50 flex flex-col xl:flex-row xl:items-center justify-between gap-6">
-                <div className="flex items-center p-1.5 bg-white border border-emerald-100 rounded-2xl overflow-x-auto shadow-sm">
+                <div className="flex items-center p-1 bg-white border border-gray-200 rounded-2xl overflow-x-auto shadow-sm">
                   <TabButton active={activeTab === 'assignments'} onClick={() => { setActiveTab('assignments'); setActiveFormMode('default'); }} label="DPL AKTIF" icon={ShieldCheck} />
                   <TabButton active={activeTab === 'groups'} onClick={() => { setActiveTab('groups'); setActiveFormMode('default'); }} label="PLOTTING" icon={Users} />
                   <TabButton active={activeTab === 'regions'} onClick={() => { setActiveTab('regions'); setActiveFormMode('default'); }} label="KORWIL" icon={Target} />
                 </div>
 
-                <form onSubmit={(e) => { e.preventDefault(); handleApplyFilters(); }} className="relative w-full xl:w-80 shrink-0 group/search">
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400 group-focus-within/search:text-emerald-600 transition-colors">
-                    <Search size={16} strokeWidth={3} />
+                <form onSubmit={(e) => { e.preventDefault(); handleApplyFilters(); }} className="relative w-full xl:w-80 group/search">
+                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/search:text-emerald-600 transition-colors">
+                    <Search size={14} strokeWidth={3} />
                   </div>
                   <input
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full h-11 pl-10 pr-4 bg-white border border-emerald-100 rounded-xl text-xs font-black text-emerald-950 placeholder:text-emerald-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/5 outline-none transition-all shadow-sm uppercase tracking-wider"
-                    placeholder="CARI NIP, NAMA, ATAU WILAYAH..."
+                    className="w-full h-11 pl-10 pr-4 bg-white border border-gray-200 rounded-xl text-xs font-black text-emerald-950 placeholder:text-gray-300 focus:border-emerald-500 outline-none transition-all shadow-sm uppercase tracking-wider"
+                    placeholder="CARI DATA..."
                   />
                   {search && (
-                    <button type="button" onClick={() => { setSearch(''); router.get(route('admin.dpl.penugasan'), {}, { replace: true }); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-400 hover:text-rose-500 transition-colors">
-                      <X size={16} strokeWidth={3} />
+                    <button type="button" onClick={() => { setSearch(''); router.get(route('admin.dpl.penugasan'), {}, { replace: true }); }} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-rose-500 transition-colors">
+                      <X size={14} strokeWidth={3} />
                     </button>
                   )}
                 </form>
               </div>
 
-              {/* CONTENT AREA */}
-              <div className="overflow-x-auto min-h-[500px]">
+              {/* TABLE AREA */}
+              <div className="overflow-x-auto">
                 {activeTab === 'assignments' && (
                   <table className="w-full text-left">
                     <thead>
                       <tr className="border-b border-emerald-50 bg-white">
-                        <th className="px-6 py-4 text-xs font-extrabold text-emerald-950 tracking-widest uppercase">Identitas Dosen [NIP]</th>
-                        <th className="px-6 py-4 text-xs font-extrabold text-emerald-950 tracking-widest uppercase text-center">Periode Akademik</th>
-                        <th className="px-6 py-4 text-xs font-extrabold text-emerald-950 tracking-widest uppercase text-center">Beban Kerja Bimbingan</th>
-                        <th className="px-6 py-4 text-right text-xs font-extrabold text-emerald-950 tracking-widest uppercase">Otoritas</th>
+                        <th className="px-6 py-4 text-[10px] font-black text-emerald-950 tracking-widest uppercase">Identitas DPL</th>
+                        <th className="px-6 py-4 text-[10px] font-black text-emerald-950 tracking-widest uppercase text-center">Periode</th>
+                        <th className="px-6 py-4 text-[10px] font-black text-emerald-950 tracking-widest uppercase text-center w-48">Beban Kerja</th>
+                        <th className="px-6 py-4 text-right text-[10px] font-black text-emerald-950 tracking-widest uppercase">Aksi</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#f3f4f6]">
-                      {(!assignments || assignments.length === 0) ? (
+                    <tbody className="divide-y divide-gray-50">
+                      {assignments.length === 0 ? (
                         <EmptyState icon={ShieldCheck} label="DPL AKTIF BELUM TERSEDIA" desc="Tidak ada dosen yang diaktivasi pada periode ini." />
                       ) : (
                         assignments.map((a) => (
-                          <tr key={a.id} className="group hover:bg-gray-50 transition-all">
-                            <td className="px-6 py-4 align-top">
+                          <tr key={a.id} className="group hover:bg-gray-50/50 transition-all">
+                            <td className="px-6 py-4">
                               <div className="flex flex-col">
-                                <span className="text-sm font-bold text-emerald-950 mb-1">{a.dosen?.nama || 'N/A'}</span>
-                                <span className="text-xs font-bold text-emerald-800 font-mono">NIP: {a.dosen?.nip || '-'}</span>
+                                <span className="text-sm font-black text-emerald-950 mb-0.5">{a.dosen?.nama}</span>
+                                <span className="text-[10px] font-bold text-emerald-700/60 font-mono">NIP: {a.dosen?.nip}</span>
                               </div>
                             </td>
-                            <td className="px-6 py-4 text-center align-top">
-                              <span className="inline-flex px-2 py-0.5 text-xs font-bold rounded bg-[#e8f5ee] text-[#1a7a4a] uppercase">{a.period?.name || 'UMUM'}</span>
+                            <td className="px-6 py-4 text-center">
+                              <span className="inline-flex px-2 py-0.5 text-[9px] font-black rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 uppercase tracking-tighter shadow-sm">{a.period?.name}</span>
                             </td>
-                            <td className="px-6 py-4 align-top">
-                              <div className="flex flex-col items-center gap-2 w-32 mx-auto">
-                                <div className="flex justify-between text-[10px] font-black w-full uppercase tracking-tighter">
-                                  <span className="text-emerald-950 tabular-nums">{a.current_groups || 0} Terisi</span>
-                                  <span className="text-emerald-500 tabular-nums">{a.max_groups || 0} Kuota</span>
+                            <td className="px-6 py-4">
+                              <div className="flex flex-col gap-1.5">
+                                <div className="flex justify-between text-[9px] font-black uppercase tracking-tight tabular-nums">
+                                  <span className="text-emerald-900">{a.current_groups} Terisi</span>
+                                  <span className="text-emerald-500">{a.max_groups} Kuota</span>
                                 </div>
-                                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden border border-emerald-50/50 p-0.5">
+                                <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden border border-emerald-50/30">
                                   <motion.div 
                                     initial={{ width: 0 }}
-                                    animate={{ width: `${Math.min(100, ((a.current_groups || 0) / (a.max_groups || 1)) * 100)}%` }}
-                                    className={clsx(
-                                      "h-full rounded-full transition-all duration-1000",
-                                      ((a.current_groups || 0) / (a.max_groups || 1)) >= 1 ? "bg-rose-500" : "bg-emerald-500"
-                                    )}
+                                    animate={{ width: `${Math.min(100, (a.current_groups / a.max_groups) * 100)}%` }}
+                                    className={clsx("h-full rounded-full transition-all duration-1000", a.current_groups >= a.max_groups ? "bg-rose-500" : "bg-emerald-600")}
                                   />
                                 </div>
                               </div>
                             </td>
-                            <td className="px-6 py-4 text-right align-top">
-                              <div className="flex items-center justify-end opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button
-                                  onClick={() => setDeletingId({ type: 'period', id: a.id })}
-                                  className="h-8 w-8 flex items-center justify-center text-rose-500 bg-white hover:bg-rose-50 border border-rose-100 rounded-lg transition-all active:scale-90"
-                                  title="Cabut Aktivasi"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </div>
+                            <td className="px-6 py-4 text-right">
+                              <button onClick={() => setDeletingId({ type: 'period', id: a.id })} className="h-8 w-8 inline-flex items-center justify-center text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all active:scale-90">
+                                <Trash2 size={14} />
+                              </button>
                             </td>
                           </tr>
                         ))
@@ -600,67 +506,48 @@ export default function Assignment({
                   <table className="w-full text-left">
                     <thead>
                       <tr className="border-b border-emerald-50 bg-white">
-                        <th className="px-6 py-4 text-xs font-extrabold text-emerald-950 tracking-widest uppercase">Identitas Kelompok [KODE]</th>
-                        <th className="px-6 py-4 text-xs font-extrabold text-emerald-950 tracking-widest uppercase">Titik Lokasi Wilayah</th>
-                        <th className="px-6 py-4 text-xs font-extrabold text-emerald-950 tracking-widest uppercase">Otoritas DPL Pengampu</th>
-                        <th className="px-6 py-4 text-right text-xs font-extrabold text-emerald-950 tracking-widest uppercase">Aksi</th>
+                        <th className="px-6 py-4 text-[10px] font-black text-emerald-950 tracking-widest uppercase">Identitas Unit</th>
+                        <th className="px-6 py-4 text-[10px] font-black text-emerald-950 tracking-widest uppercase text-center">Wilayah</th>
+                        <th className="px-6 py-4 text-[10px] font-black text-emerald-950 tracking-widest uppercase">DPL Pengampu</th>
+                        <th className="px-6 py-4 text-right text-[10px] font-black text-emerald-950 tracking-widest uppercase">Aksi</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#f3f4f6]">
-                      {(!groups || groups.length === 0) ? (
+                    <tbody className="divide-y divide-gray-50">
+                      {groups.length === 0 ? (
                         <EmptyState icon={Users} label="DATA KELOMPOK KOSONG" desc="Belum ada unit kelompok yang didefinisikan." />
                       ) : (
                         groups.map((g) => (
-                          <tr key={g.id} className={clsx("group transition-all", groupForm.data.group_id === String(g.id) ? "bg-emerald-50/70" : "hover:bg-gray-50")}>
-                            <td className="px-6 py-4 align-top">
+                          <tr key={g.id} className={clsx("group transition-all", groupForm.data.group_id === String(g.id) ? "bg-emerald-50/70" : "hover:bg-gray-50/50")}>
+                            <td className="px-6 py-4">
                               <div className="flex flex-col">
-                                <span className="text-sm font-bold text-emerald-950 mb-1">{g.name}</span>
-                                <span className="text-xs font-bold text-emerald-800 font-mono">CODE: {g.code} &middot; {g.status.toUpperCase()}</span>
+                                <span className="text-sm font-black text-emerald-950 mb-0.5">{g.name}</span>
+                                <span className="text-[10px] font-bold text-emerald-700/60 font-mono">CODE: {g.code} &middot; {g.status.toUpperCase()}</span>
                               </div>
                             </td>
-                            <td className="px-6 py-4 align-top">
-                              <div className="flex flex-col">
-                                <span className="text-xs font-bold text-emerald-950 truncate max-w-xs mb-1">{g.location?.district_name || 'UMUM'}</span>
-                                <span className="text-xs font-bold text-emerald-800">{g.location?.village_name || 'BELUM TERPLOT'}</span>
-                              </div>
+                            <td className="px-6 py-4 text-center">
+                              <span className="text-[10px] font-bold text-emerald-900 uppercase tracking-widest leading-none block">{g.location?.district_name || 'N/A'}</span>
+                              <span className="text-[9px] font-bold text-emerald-700/40 uppercase">{g.location?.village_name}</span>
                             </td>
-                            <td className="px-6 py-4 align-top">
+                            <td className="px-6 py-4">
                               {g.dpl ? (
                                 <div className="flex flex-col">
-                                  <span className="text-xs font-bold text-emerald-950 leading-tight mb-1">{g.dpl.nama}</span>
-                                  <span className="text-xs font-bold text-emerald-800 font-mono text-ellipsis overflow-hidden">NIP: {g.dpl.nip}</span>
+                                  <span className="text-xs font-black text-emerald-950 leading-tight mb-0.5">{g.dpl.nama}</span>
+                                  <span className="text-[9px] font-bold text-emerald-700/50 font-mono">NIP: {g.dpl.nip}</span>
                                 </div>
                               ) : (
-                                <div className="flex items-center gap-2">
-                                  <div className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
-                                  <span className="text-xs font-bold text-rose-500 uppercase tracking-widest">Otoritas Kosong</span>
-                                </div>
+                                <StatusTag label="MENUNGGU PLOTTING" variant="danger" pulse={true} />
                               )}
                             </td>
-                            <td className="px-6 py-4 text-right align-top">
-                              <div className="flex items-center justify-end">
-                                <motion.button
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  onClick={() => { groupForm.setData('group_id', String(g.id)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                                  className={clsx(
-                                    "h-9 px-4 text-[10px] font-black rounded-xl border flex items-center justify-center gap-2 transition-all uppercase tracking-widest shadow-sm",
-                                    g.dpl 
-                                      ? "bg-[#e8f5ee] text-[#1a7a4a] border-emerald-100 hover:bg-emerald-100" 
-                                      : "bg-emerald-600 text-white border-emerald-700 hover:bg-emerald-700 shadow-emerald-600/10"
-                                  )}
-                                >
-                                  {g.dpl ? (
-                                    <>
-                                      <Zap size={12} strokeWidth={3} /> Re-Plotting
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Target size={12} strokeWidth={3} /> Plot Unit
-                                    </>
-                                  )}
-                                </motion.button>
-                              </div>
+                            <td className="px-6 py-4 text-right">
+                              <button
+                                onClick={() => { groupForm.setData('group_id', String(g.id)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                className={clsx(
+                                  "h-9 px-4 text-[10px] font-black rounded-xl border flex items-center justify-center gap-2 transition-all uppercase tracking-widest shadow-sm",
+                                  g.dpl ? "bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100" : "bg-emerald-950 text-white border-emerald-900 hover:bg-black"
+                                )}
+                              >
+                                <Target size={12} strokeWidth={3} /> {g.dpl ? 'Re-Plot' : 'Plot Unit'}
+                              </button>
                             </td>
                           </tr>
                         ))
@@ -673,39 +560,33 @@ export default function Assignment({
                   <table className="w-full text-left">
                     <thead>
                       <tr className="border-b border-emerald-50 bg-white">
-                        <th className="px-6 py-4 text-xs font-extrabold text-emerald-950 tracking-widest uppercase">Kecamatan Administratif</th>
-                        <th className="px-6 py-4 text-xs font-extrabold text-emerald-950 tracking-widest uppercase">Otoritas Koordinator Wilayah</th>
-                        <th className="px-6 py-4 text-right text-xs font-extrabold text-emerald-950 tracking-widest uppercase">Aksi</th>
+                        <th className="px-6 py-4 text-[10px] font-black text-emerald-950 tracking-widest uppercase">Kecamatan</th>
+                        <th className="px-6 py-4 text-[10px] font-black text-emerald-950 tracking-widest uppercase">Otoritas Korwil</th>
+                        <th className="px-6 py-4 text-right text-[10px] font-black text-emerald-950 tracking-widest uppercase">Aksi</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#f3f4f6]">
-                      {(!districtCoordinators || districtCoordinators.length === 0) ? (
+                    <tbody className="divide-y divide-gray-50">
+                      {districtCoordinators.length === 0 ? (
                         <EmptyState icon={Target} label="DATA KORWIL BELUM TERISI" desc="Belum ada DPL yang ditugaskan sebagai koordinator wilayah." />
                       ) : (
                         districtCoordinators.map((c) => (
-                          <tr key={c.id} className="group hover:bg-gray-50 transition-all">
-                            <td className="px-6 py-4 align-top">
+                          <tr key={c.id} className="group hover:bg-gray-50/50 transition-all">
+                            <td className="px-6 py-4">
                               <div className="flex flex-col">
-                                <span className="text-sm font-bold text-emerald-950 mb-1">{c.district_name || 'N/A'}</span>
-                                <span className="text-xs font-bold text-emerald-800 uppercase tracking-widest">{c.regency_name || 'BANYUMAS'}</span>
+                                <span className="text-sm font-black text-emerald-950 mb-0.5">{c.district_name}</span>
+                                <span className="text-[10px] font-bold text-emerald-700/60 uppercase tracking-widest">{c.regency_name || 'BANYUMAS'}</span>
                               </div>
                             </td>
-                            <td className="px-6 py-4 align-top">
+                            <td className="px-6 py-4">
                               <div className="flex flex-col">
-                                <span className="text-xs font-bold text-emerald-950 mb-1">{c.dosen?.nama || 'N/A'}</span>
-                                <span className="text-xs font-bold text-emerald-800 font-mono">NIP: {c.dosen?.nip || '-'}</span>
+                                <span className="text-xs font-black text-emerald-950 mb-0.5">{c.dosen?.nama}</span>
+                                <span className="text-[9px] font-bold text-emerald-700/50 font-mono">NIP: {c.dosen?.nip}</span>
                               </div>
                             </td>
-                            <td className="px-6 py-4 text-right align-top">
-                              <div className="flex items-center justify-end">
-                                <button
-                                  onClick={() => setDeletingId({ type: 'region', id: c.id })}
-                                  className="h-9 w-9 flex items-center justify-center text-rose-500 bg-white hover:bg-rose-50 border border-emerald-100 hover:border-rose-200 rounded-xl transition-all active:scale-90 shadow-sm"
-                                  title="Copot Korwil"
-                                >
-                                  <Trash2 size={16} strokeWidth={2.5} />
-                                </button>
-                              </div>
+                            <td className="px-6 py-4 text-right">
+                              <button onClick={() => setDeletingId({ type: 'region', id: c.id })} className="h-8 w-8 inline-flex items-center justify-center text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all active:scale-90">
+                                <Trash2 size={14} />
+                              </button>
                             </td>
                           </tr>
                         ))
@@ -716,7 +597,7 @@ export default function Assignment({
               </div>
 
               {/* PAGINATION */}
-              <div className="px-6 py-4 border-t border-[#f3f4f6] bg-gray-50 flex items-center justify-center">
+              <div className="p-6 border-t border-gray-50 bg-gray-50/50 flex items-center justify-center">
                 <Pagination
                   meta={
                     (activeTab === 'assignments' ? assignments_pagination
@@ -734,12 +615,55 @@ export default function Assignment({
         open={deletingId !== null}
         onClose={() => setDeletingId(null)}
         onConfirm={handleDelete}
-        title="Otorisasi Pencabutan Tugas"
-        message={`Apakah Anda yakin ingin melenyapkan otoritas ${deletingId?.type === 'period' ? 'aktivasi periode dpl' : 'koordinator wilayah'} ini secara permanen dari sistem? Tindakan ini tidak dapat dibatalkan.`}
+        title="Konfirmasi Pencabutan Tugas"
+        message={`Apakah Anda yakin ingin menghapus otoritas ${deletingId?.type === 'period' ? 'aktivasi periode dpl' : 'koordinator wilayah'} ini secara permanen?`}
         confirmVariant="danger"
-        confirmLabel="Pusnahkan Otoritas"
+        confirmLabel="Hapus Otoritas"
       />
     </AppLayout>
+  );
+}
+
+function TabButton({ active, onClick, label, icon: Icon }: { active: boolean; onClick: () => void; label: string; icon: LucideIcon }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={clsx(
+        'flex items-center gap-2.5 px-6 h-10 rounded-xl text-[10px] font-black transition-all whitespace-nowrap outline-none uppercase tracking-widest relative overflow-hidden',
+        active 
+          ? 'bg-emerald-950 text-white shadow-lg shadow-emerald-950/20' 
+          : 'text-emerald-800 hover:text-emerald-950 hover:bg-emerald-50'
+      )}
+    >
+      <Icon size={14} strokeWidth={active ? 3 : 2.5} /> {label}
+      {active && (
+        <motion.div 
+          layoutId="activeTab"
+          className="absolute inset-0 bg-emerald-900 -z-10"
+          initial={false}
+          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+        />
+      )}
+    </button>
+  );
+}
+
+function EmptyState({ icon: Icon, label, desc }: { icon: any; label: string; desc: string }) {
+  return (
+    <tr>
+      <td colSpan={10} className="px-6 py-24 text-center">
+        <div className="flex flex-col items-center justify-center gap-4">
+          <div className="h-16 w-16 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-200 border border-gray-100">
+            <Icon size={32} strokeWidth={1} />
+          </div>
+          <div className="space-y-1">
+            <span className="text-[10px] font-black text-emerald-950 uppercase tracking-widest">{label}</span>
+            <p className="text-[10px] font-bold text-emerald-700/40 uppercase tracking-wider max-w-[240px] mx-auto leading-relaxed">{desc}</p>
+          </div>
+        </div>
+      </td>
+    </tr>
   );
 }
 

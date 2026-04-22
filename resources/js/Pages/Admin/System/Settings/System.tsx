@@ -3,7 +3,7 @@ import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
 import { useMemo, useState } from 'react';
 import {
-  Settings, ShieldCheck, Database, Cpu, Eye, EyeOff, Save, Layers, Server, Cloud, Info, Activity, Binary, RefreshCw, Zap, Fingerprint, History
+  Settings, ShieldCheck, Database, Cpu, Eye, EyeOff, Save, Layers, Server, Cloud, Info, RefreshCw, Zap, Fingerprint, History
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import AiConfigPanel from '@/Components/Premium/AiConfigPanel';
@@ -23,13 +23,10 @@ interface Setting {
 interface AiStatusProps {
   provider: string;
   is_healthy: boolean;
-  endpoint: string;
   model_text: string;
-  last_check: string;
 }
 
 interface AiUsageProps {
-  total_prompts: number;
   successful_heals: number;
 }
 
@@ -196,13 +193,6 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
         {/* TAB CONTENT: SETTINGS */}
         {activeTab === 'settings' && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <MetricCard label="Integritas Sistem" value="Aman" icon={ShieldCheck} desc="Semua kebijakan aktif" />
-              <MetricCard label="Status Kernel" value="Stabil" icon={Activity} desc="Parameter sesuai" />
-              <MetricCard label="Engine Aturan" value="Berjalan" icon={Binary} desc="Validasi dipaksakan" />
-              <MetricCard label="Sync Database" value="Sesuai" icon={RefreshCw} desc="Schema terverifikasi" />
-            </div>
-
             <form onSubmit={handleSubmit} className="space-y-8">
               {Object.entries(settings || {}).filter(([g]) => g !== 'ai_settings').map(([group, items]) => {
                 const GroupIcon = GROUP_ICONS[group] || Layers;
@@ -344,21 +334,6 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
 
       </div>
     </AppLayout>
-  );
-}
-
-function MetricCard({ label, value, icon: Icon, desc }: { label: string; value: string; icon: any; desc: string }) {
-  return (
-    <div className="bg-white border border-emerald-50 rounded-xl p-5 shadow-sm flex items-start gap-4 hover:border-emerald-200 transition-colors">
-      <div className="h-10 w-10 rounded-lg bg-[#f0f9f4] text-[#1a7a4a] flex items-center justify-center shrink-0">
-        <Icon size={20} />
-      </div>
-      <div>
-        <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-0.5">{label}</p>
-        <p className="text-xl font-black text-emerald-950 leading-tight">{value}</p>
-        <p className="text-xs font-medium text-emerald-700/70 mt-1">{desc}</p>
-      </div>
-    </div>
   );
 }
 

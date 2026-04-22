@@ -18,8 +18,10 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Inertia\Inertia;
+use Illuminate\Session\Middleware\ValidateCsrfToken;
 use Spatie\Permission\Exceptions\UnauthorizedException;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
@@ -97,11 +99,11 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo('/login');
         $middleware->redirectUsersTo('/');
 
-        // CSRF Protection: Aktif untuk semua rute web, kecuali endpoint API & webhook
-        $middleware->validateCsrfTokens(except: [
-            'api/*',
-            'webhooks/*',
-        ]);
+        // CSRF Protection: Nonaktifkan sementara untuk debugging local
+        // $middleware->validateCsrfTokens(except: [
+        //     'api/*',
+        //     'webhooks/*',
+        // ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         /* AI Self-Healing Disabled

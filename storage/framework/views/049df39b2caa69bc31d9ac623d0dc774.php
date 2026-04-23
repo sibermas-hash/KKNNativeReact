@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>" />
     <link rel="icon" type="image/png" href="/favicon_kkn.png" />
 
-    <title inertia><?php echo e(config('app.name', 'SIBERDAYA')); ?></title>
+    <title inertia><?php echo e(config('app.name', 'SIBERMAS')); ?></title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

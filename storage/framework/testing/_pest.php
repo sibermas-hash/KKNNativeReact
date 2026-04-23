@@ -40,7 +40,7 @@ namespace {
 namespace _Pest\Global {
 
     class TestCase {
-	use \Pest\Arch\Concerns\Architectable;
+        use \Pest\Arch\Concerns\Architectable;
     }
 
 }
@@ -48,7 +48,7 @@ namespace _Pest\Global {
 namespace Pest {
 
     /**
-	 * @method self toBeCollection()
+     * @method self toBeCollection()
      */
     class Expectation {}
 
@@ -57,7 +57,7 @@ namespace Pest {
 namespace Pest\Expectations {
 
     /**
-	 * @method self toBeCollection()
+     * @method self toBeCollection()
      */
     class OppositeExpectation {}
 

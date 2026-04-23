@@ -7,12 +7,12 @@ use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\RefreshPostgresDatabase;
 use Tests\TestCase;
 
 class AttendanceControllerTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshPostgresDatabase;
 
     private User $user;
 

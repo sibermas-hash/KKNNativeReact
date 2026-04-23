@@ -15,10 +15,12 @@ use App\Services\DplProvisioningService;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 use Mockery;
+use Tests\Concerns\RefreshPostgresDatabase;
 use Tests\TestCase;
 
 class DplAssignmentServiceTest extends TestCase
 {
+    use RefreshPostgresDatabase;
     private DplProvisioningService $provisioningMock;
 
     private DplEligibilityService $eligibilityMock;

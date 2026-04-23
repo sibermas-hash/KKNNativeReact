@@ -4,7 +4,6 @@ namespace Tests\Unit\Services;
 
 use App\Models\KKN\Dosen;
 use App\Models\KKN\Fakultas;
-use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\LaporanAkhir;
 use App\Models\KKN\Lokasi;
@@ -16,10 +15,13 @@ use App\Models\KKN\Prodi;
 use App\Models\KKN\ProgramKerja;
 use App\Services\DashboardStatisticsService;
 use Illuminate\Support\Facades\Cache;
+use Tests\Concerns\RefreshPostgresDatabase;
 use Tests\TestCase;
 
 class DashboardStatisticsServiceTest extends TestCase
 {
+    use RefreshPostgresDatabase;
+
     private DashboardStatisticsService $service;
 
     protected function setUp(): void

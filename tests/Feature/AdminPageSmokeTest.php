@@ -28,7 +28,7 @@ class AdminPageSmokeTest extends TestCase
             '/admin/pendaftaran',
             '/admin/kelompok',
             '/admin/nilai',
-            '/admin/rekap-nilai',
+            '/admin/rekapitulasi',
             '/admin/laporan/harian',
             '/admin/laporan/program-kerja',
             '/admin/laporan/akhir',
@@ -87,7 +87,7 @@ class AdminPageSmokeTest extends TestCase
             '/admin/pendaftaran',
             '/admin/kelompok',
             '/admin/nilai',
-            '/admin/rekap-nilai',
+            '/admin/rekapitulasi',
             '/admin/laporan/harian',
             '/admin/laporan/program-kerja',
             '/admin/laporan/akhir',
@@ -117,7 +117,7 @@ class AdminPageSmokeTest extends TestCase
         $paths = [
             '/admin',
             '/admin/pendaftaran',
-            '/admin/rekap-nilai',
+            '/admin/rekapitulasi',
         ];
 
         foreach ($paths as $path) {

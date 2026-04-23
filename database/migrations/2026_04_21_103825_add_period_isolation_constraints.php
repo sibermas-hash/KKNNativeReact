@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Sprint 1 — Fondasi Database: Isolasi Kamar per Periode
@@ -25,9 +26,11 @@ return new class extends Migration
         // Hanya berlaku untuk kelompok yang belum di-soft-delete dan punya lokasi.
         // ──────────────────────────────────────────────
         Schema::table('kelompok_kkn', function (Blueprint $table) {
-            // Composite unique: location + periode (non-deleted records only via app-level check)
-            // PostgreSQL partial unique index for non-deleted records with location
-            $table->unique(['location_id', 'periode_id'], 'one_village_one_group_per_period');
+            // Check if constraint already exists before adding
+            $exists = DB::select("SELECT 1 FROM pg_constraint WHERE conname = 'one_village_one_group_per_period'");
+            if (empty($exists)) {
+                $table->unique(['location_id', 'periode_id'], 'one_village_one_group_per_period');
+            }
         });
 
         // ──────────────────────────────────────────────

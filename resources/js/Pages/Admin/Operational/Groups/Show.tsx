@@ -120,11 +120,11 @@ export default function GroupShow({ group, members = [] }: Props) {
  <div className="flex items-center gap-4">
  <Link
  href="/admin/kelompok"
- className="h-14 w-14 bg-white border border-emerald-50 rounded-xl flex items-center justify-center text-emerald-800 hover:text-[#1a7a4a] hover:border-gray-300 transition-all shadow-sm group/back active:scale-90"
+ className="h-14 w-14 bg-white border border-emerald-50 rounded-xl flex items-center justify-center text-emerald-800 hover:text-[#0d9488] hover:border-gray-300 transition-all shadow-sm group/back active:scale-90"
  >
  <ArrowLeft size={24} strokeWidth={3} className="group-hover/back:-translate-x-1 transition-transform"/>
  </Link>
- <div className="flex items-center gap-3 text-[#1a7a4a]">
+ <div className="flex items-center gap-3 text-[#0d9488]">
  <Users size={18} />
  <span className="text-xs font-semibold opacity-80">Audit Struktur & Operasional Unit</span>
  </div>
@@ -134,9 +134,9 @@ export default function GroupShow({ group, members = [] }: Props) {
  <div className="space-y-4">
  <div className="flex items-center gap-4">
  <h1 className="text-4xl font-semibold text-emerald-950 er leading-none">
- Unit <span className="text-[#1a7a4a]">{group.code || 'NULL'}.</span>
+ Unit <span className="text-[#0d9488]">{group.code || 'NULL'}.</span>
  </h1>
- <div className="h-10 px-5 bg-[#16a34a] text-white rounded-xl flex items-center gap-2 text-xs font-semibold shadow-sm shadow-none">
+ <div className="h-10 px-5 bg-[#0d9488] text-white rounded-xl flex items-center gap-2 text-xs font-semibold shadow-sm shadow-none">
  <div className="h-2 w-2 rounded-full bg-white animate-pulse"/>
  {group.status.toUpperCase()}
  </div>
@@ -208,7 +208,7 @@ export default function GroupShow({ group, members = [] }: Props) {
  <td className="px-10 py-8">
  <div className="flex flex-col gap-3">
  <span className="text-sm font-semibold text-emerald-950 leading-none group-hover:text-emerald-800 transition-colors">{m.mahasiswa?.nama || 'PESERTA'}</span>
- <span className="text-xs font-semibold text-[#1a7a4a] font-mono">NIM: {m.mahasiswa?.nim || 'UNKNOWN'}</span>
+ <span className="text-xs font-semibold text-[#0d9488] font-mono">NIM: {m.mahasiswa?.nim || 'UNKNOWN'}</span>
  </div>
  </td>
  <td className="px-8 py-8">
@@ -220,7 +220,7 @@ export default function GroupShow({ group, members = [] }: Props) {
  <td className="px-8 py-8 text-center">
  <div className={clsx(
 "h-10 px-6 rounded-xl flex items-center justify-center gap-3 text-xs font-semibold border shadow-sm inline-flex mx-auto",
-  m.role === 'Ketua' ? 'bg-[#16a34a] border-[#1a7a4a] text-white'
+  m.role === 'Ketua' ? 'bg-[#0d9488] border-[#0d9488] text-white'
   : m.role === 'Korcam' ? 'bg-amber-500 border-amber-600 text-white'
   : 'bg-white border-emerald-50 text-emerald-800'
   )}>
@@ -248,7 +248,7 @@ export default function GroupShow({ group, members = [] }: Props) {
  <Link 
  href={`/admin/pendaftaran/${m.id}/jadikan-ketua`}
  method="post"
- className="h-10 w-10 bg-white border border-emerald-50 text-emerald-800 hover:bg-[#16a34a] hover:text-white rounded-xl flex items-center justify-center transition-all active:scale-90"
+ className="h-10 w-10 bg-white border border-emerald-50 text-emerald-800 hover:bg-[#0d9488] hover:text-white rounded-xl flex items-center justify-center transition-all active:scale-90"
  title="Tetapkan sebagai Kordes (Ketua Kelompok)"
  >
  <ShieldCheck size={16} strokeWidth={2.5} />
@@ -278,7 +278,7 @@ export default function GroupShow({ group, members = [] }: Props) {
  <section className="bg-white border border-emerald-50 rounded-xl overflow-hidden shadow-sm flex flex-col">
  <div className="px-10 py-10 bg-gray-50 border-b-2 border-emerald-50 flex items-center justify-between">
  <div className="flex items-center gap-6">
- <div className="h-16 w-16 bg-white border border-emerald-50 rounded-xl flex items-center justify-center text-[#1a7a4a] shadow-sm">
+ <div className="h-16 w-16 bg-white border border-emerald-50 rounded-xl flex items-center justify-center text-[#0d9488] shadow-sm">
  <ClipboardList size={32} strokeWidth={2.5} />
  </div>
  <div className="flex flex-col">
@@ -297,9 +297,9 @@ export default function GroupShow({ group, members = [] }: Props) {
  <EmptyBox icon={ClipboardList} label="Data Proker Kosong"desc="Unit belum melakukan unggah rencana program kerja."/>
  ) : (
  workPrograms.map((p) => (
- <div key={p.id} className="group/pro p-8 bg-gray-50 border border-emerald-50 rounded-xl hover:bg-white hover:border-[#1a7a4a] transition-all duration-500 flex items-center justify-between gap-8 shadow-sm">
+ <div key={p.id} className="group/pro p-8 bg-gray-50 border border-emerald-50 rounded-xl hover:bg-white hover:border-[#0d9488] transition-all duration-500 flex items-center justify-between gap-8 shadow-sm">
  <div className="flex items-center gap-6">
- <div className="h-16 w-16 bg-white border border-emerald-50 rounded-xl flex items-center justify-center text-emerald-800 group-hover/pro:bg-[#16a34a] group-hover/pro:text-white transition-all duration-500 scale-90 group-hover/pro:scale-100">
+ <div className="h-16 w-16 bg-white border border-emerald-50 rounded-xl flex items-center justify-center text-emerald-800 group-hover/pro:bg-[#0d9488] group-hover/pro:text-white transition-all duration-500 scale-90 group-hover/pro:scale-100">
  <Zap size={28} strokeWidth={2.5} />
  </div>
  <div className="flex flex-col gap-3">
@@ -320,7 +320,7 @@ export default function GroupShow({ group, members = [] }: Props) {
  {/* RIGHT SIDEBAR: DOSEN & LOKASI */}
  <div className="xl:col-span-4 space-y-12">
  {/* DOSEN PEMBIMBING */}
- <section className="bg-[#16a34a] rounded-xl p-10 text-white relative overflow-hidden shadow-sm border border-[#1a7a4a] group/dpl">
+ <section className="bg-[#0d9488] rounded-xl p-10 text-white relative overflow-hidden shadow-sm border border-[#0d9488] group/dpl">
  <div className="absolute top-0 right-0 p-12 opacity-10 rotate-12 -mr-16 -mt-16 group-hover/dpl:rotate-45 transition-transform duration-1000">
  <ShieldCheck size={200} strokeWidth={1} />
  </div>
@@ -338,17 +338,17 @@ export default function GroupShow({ group, members = [] }: Props) {
 
  <div className="space-y-6">
  {lecturerRows.length === 0 ? (
- <div className="p-8 border border-dashed border-[#1a7a4a] rounded-xl flex flex-col items-center justify-center opacity-40">
+ <div className="p-8 border border-dashed border-[#0d9488] rounded-xl flex flex-col items-center justify-center opacity-40">
  <span className="text-xs font-semibold">DPL Belum Terplot</span>
  </div>
  ) : (
  lecturerRows.map((l) => (
- <div key={l.id} className="p-8 bg-emerald-700/50 border border-[#1a7a4a] rounded-xl hover:bg-white hover:text-emerald-950 transition-all duration-500 group/card shadow-sm">
+ <div key={l.id} className="p-8 bg-emerald-700/50 border border-[#0d9488] rounded-xl hover:bg-white hover:text-emerald-950 transition-all duration-500 group/card shadow-sm">
  <span className="text-xs font-semibold text-emerald-800 block mb-1">Ketua Pembimbing</span>
  <h4 className="text-lg font-semibold leading-tight mb-4">{l.nama || '-'}</h4>
- <div className="h-px w-full bg-[#16a34a] group-hover/card:bg-[#e8f5ee] mb-4 transition-colors"/>
+ <div className="h-px w-full bg-[#0d9488] group-hover/card:bg-[#f0fdfa] mb-4 transition-colors"/>
  <div className="flex items-center justify-between">
- <span className="text-xs font-semibold font-mono opacity-60 group-hover/card:text-[#1a7a4a]">NIP: {l.nip || '-'}</span>
+ <span className="text-xs font-semibold font-mono opacity-60 group-hover/card:text-[#0d9488]">NIP: {l.nip || '-'}</span>
  <CheckCircle size={18} className="text-emerald-800"/>
  </div>
  </div>
@@ -361,7 +361,7 @@ export default function GroupShow({ group, members = [] }: Props) {
  {/* LOKASI POSKO */}
  <section className="bg-white border border-emerald-50 rounded-xl p-10 space-y-10 shadow-sm relative overflow-hidden group/loc">
  <div className="flex items-center gap-6">
- <div className="h-16 w-16 bg-gray-50 text-rose-500 border border-emerald-50 rounded-xl flex items-center justify-center shadow-sm group-hover/loc:bg-[#16a34a] group-hover/loc:text-white group-hover/loc:rotate-12 transition-all duration-500">
+ <div className="h-16 w-16 bg-gray-50 text-rose-500 border border-emerald-50 rounded-xl flex items-center justify-center shadow-sm group-hover/loc:bg-[#0d9488] group-hover/loc:text-white group-hover/loc:rotate-12 transition-all duration-500">
  <MapPinned size={32} strokeWidth={2.5} />
  </div>
  <div className="flex flex-col">
@@ -411,7 +411,7 @@ export default function GroupShow({ group, members = [] }: Props) {
  href={group.posko.gmaps_link} 
  target="_blank"
  rel="noopener noreferrer"
- className="h-14 w-full bg-[#16a34a] hover:bg-white hover:text-emerald-950 rounded-xl flex items-center justify-center gap-4 text-xs font-semibold shadow-sm shadow-emerald-900/50 transition-all active:scale-95 no-underline relative z-10"
+ className="h-14 w-full bg-[#0d9488] hover:bg-white hover:text-emerald-950 rounded-xl flex items-center justify-center gap-4 text-xs font-semibold shadow-sm shadow-emerald-900/50 transition-all active:scale-95 no-underline relative z-10"
  >
  <ArrowRight size={18} strokeWidth={3} /> BUKA GOOGLE MAPS
  </a>
@@ -446,7 +446,7 @@ export default function GroupShow({ group, members = [] }: Props) {
  </div>
  </div>
  <p className="text-sm font-bold text-emerald-800 leading-relaxed max-w-4xl">
- Seluruh parameter yang terdata pada unit operasional ini merupakan representasi entitas valid dari program SIBERDAYA. Perubahan pada struktur kepemimpinan, proker, maupun titik koordinat posko akan terekam dalam audit trail transparan untuk menjamin integritas monitoring dan evaluasi terpusat.
+ Seluruh parameter yang terdata pada unit operasional ini merupakan representasi entitas valid dari program <span className="text-cyan-600">SIBER</span><span className="text-lime-600">DAYA</span>. Perubahan pada struktur kepemimpinan, proker, maupun titik koordinat posko akan terekam dalam audit trail transparan untuk menjamin integritas monitoring dan evaluasi terpusat.
  </p>
  </div>
  <div className="h-20 w-px bg-white/10 hidden lg:block"/>
@@ -465,7 +465,7 @@ function MetricCard({ label, value, icon: Icon, type, desc }: { label: string; v
  return (
  <div className="bg-white border border-emerald-50 rounded-xl p-6 flex items-center gap-5 shadow-sm hover:border-emerald-50 transition-all group overflow-hidden relative">
  <div className={clsx("h-14 w-14 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all shadow-sm border", 
- type === 'warning' ? 'bg-amber-50 text-amber-500 border-amber-100' : 'bg-gray-50 text-[#1a7a4a] border-emerald-50'
+ type === 'warning' ? 'bg-amber-50 text-amber-500 border-amber-100' : 'bg-gray-50 text-[#0d9488] border-emerald-50'
  )}>
  <Icon size={24} strokeWidth={2.5} />
  </div>

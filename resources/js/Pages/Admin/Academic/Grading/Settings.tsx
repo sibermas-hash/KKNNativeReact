@@ -16,7 +16,11 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Button } from '@/Components/ui';
-import PageHeader from '@/Components/Premium/PageHeader';
+import { 
+  PageHeader, 
+  StatCard, 
+  ContentPanel 
+} from '@/Components/Premium';
 
 interface GradingItem { id: number; config_key: string; label: string; percentage: number; description: string; }
 interface Section { group: string; title: string; description: string; enforce_total: boolean; total: number; items: GradingItem[]; }
@@ -67,7 +71,7 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
         
         <PageHeader
           title="Matriks Penilaian."
-          subtitle="Distribusi bobot komponen nilai SIBERDAYA untuk kalkulasi yudisium otomatis."
+          subtitle={<>Distribusi bobot komponen nilai <span className="text-cyan-600">SIBER</span><span className="text-lime-600">DAYA</span> untuk kalkulasi yudisium otomatis.</>}
           icon={Scale}
           groupLabel="Akademik & Penilaian"
           stats={{
@@ -81,7 +85,7 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
               <select 
                 value={filters.kkn_type} 
                 onChange={(e) => handleTypeChange(e.target.value)} 
-                className="h-10 pl-4 pr-10 bg-white border border-gray-300 rounded-lg text-xs font-black text-emerald-950 uppercase tracking-widest outline-none focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] appearance-none cursor-pointer shadow-sm transition-all"
+                className="h-10 pl-4 pr-10 bg-white border border-gray-300 rounded-lg text-xs font-black text-emerald-950 uppercase tracking-widest outline-none focus:border-[#0d9488] focus:ring-1 focus:ring-[#0d9488] appearance-none cursor-pointer shadow-sm transition-all"
               >
                 {programOptions.map(opt => <option key={opt.value} value={opt.value}>{opt.label.toUpperCase()}</option>)}
               </select>
@@ -94,7 +98,7 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
               className={clsx(
                 "h-10 px-6 rounded-lg text-xs font-black uppercase tracking-widest transition-all shadow-sm flex items-center gap-2",
                 allGroupsValid 
-                  ? "bg-[#16a34a] text-white hover:bg-[#15803d] shadow-emerald-200" 
+                  ? "bg-[#0d9488] text-white hover:bg-[#0f766e] shadow-emerald-200" 
                   : "bg-rose-500 text-white shadow-rose-200"
               )}
             >
@@ -106,15 +110,15 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
 
         {/* Statistik Minimalis */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <MiniStat 
+          <StatCard 
             icon={ShieldCheck} 
-            label="INTEGRITAS" 
+            label="Integritas Matriks" 
             value={allGroupsValid ? "VALID" : "INVALID"} 
             variant={allGroupsValid ? 'success' : 'danger'} 
           />
-          <MiniStat icon={Binary} label="MATRIKS" value="CALCULATED" />
-          <MiniStat icon={ListChecks} label="PERIODE AKADEMIK" value={academicYear} />
-          <MiniStat icon={Zap} label="OTORITAS" value="SUPERADMIN" />
+          <StatCard icon={Binary} label="Mode Kalkulasi" value="OTOMATIS" variant="info" />
+          <StatCard icon={ListChecks} label="Tahun Akademik" value={academicYear} variant="gray" />
+          <StatCard icon={Zap} label="Otoritas Akses" value="SUPERADMIN" variant="success" />
         </div>
 
         {/* --- CONFIGURATION PANELS --- */}
@@ -123,83 +127,79 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
             const groupTotal = getGroupTotal(section.group);
             const isValid = isGroupValid(section.group);
             return (
-              <div key={section.group} className="bg-white border border-emerald-50 rounded-xl overflow-hidden shadow-sm flex flex-col hover:border-emerald-200 transition-colors">
-                {/* Panel Header */}
-                <div className="px-6 py-4 bg-gray-50/50 border-b border-emerald-50 flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-xs font-black text-emerald-950 uppercase tracking-widest mb-0.5">{section.title}</span>
-                    <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-tight">Grup: {section.group}</span>
-                  </div>
+              <ContentPanel
+                key={section.group}
+                title={section.title}
+                description={`Grup: ${section.group}`}
+                icon={LayoutGrid}
+                padding={false}
+                headerAction={
                   <div className={clsx(
-                    "flex flex-col items-end px-3 py-1 rounded-lg border transition-all",
-                    isValid ? "bg-white border-emerald-100 text-emerald-950 shadow-inner" : "bg-rose-50 border-rose-200 text-rose-600 animate-pulse"
+                    "flex flex-col items-end px-5 py-2 rounded-2xl border-2 transition-all shadow-sm",
+                    isValid ? "bg-white border-emerald-50 text-emerald-950" : "bg-rose-50 border-rose-100 text-rose-600 animate-pulse"
                   )}>
-                    <span className="text-[8px] font-black uppercase tracking-tighter opacity-40 leading-none mb-0.5">Kumulatif</span>
-                    <span className="text-sm font-black tabular-nums leading-none">{groupTotal}%</span>
+                    <span className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40 leading-none mb-1.5 font-display">Kumulatif</span>
+                    <span className="text-xl font-black tabular-nums leading-none font-display">{groupTotal}%</span>
                   </div>
-                </div>
-
-                {/* Table Look */}
-                <div className="flex-1">
-                  <table className="w-full text-left">
-                    <tbody className="divide-y divide-gray-100">
-                      {(section.items || []).map((item) => (
-                        <tr key={item.id} className="group hover:bg-emerald-50/20 transition-all duration-300">
-                          <td className="px-6 py-4">
-                            <div className="flex flex-col gap-1">
-                              <span className="text-xs font-bold text-emerald-950 uppercase tracking-tight leading-none">{item.label}</span>
-                              <span className="text-[10px] font-medium text-emerald-800/60 leading-tight">
-                                {item.description}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 w-28 border-l border-gray-50 bg-gray-50/30">
-                            <div className="relative">
-                              <input 
-                                type="number"
-                                step="1"
-                                min="0"
-                                max="100"
-                                value={data.configs?.find(c => c.id === item.id)?.percentage ?? 0} 
-                                onChange={e => updatePercentage(item.id, e.target.value)} 
-                                className={clsx(
-                                  "w-full h-9 bg-white border rounded-lg text-center text-sm font-black text-emerald-950 outline-none transition-all tabular-nums shadow-sm",
-                                  isValid ? "border-emerald-100 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500" : "border-rose-200 focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
-                                )}
-                              />
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Section Footer */}
-                <div className="px-6 py-2.5 bg-gray-50/30 border-t border-gray-100">
-                   <p className="text-[9px] font-bold text-emerald-800/30 uppercase tracking-widest flex items-center gap-1.5">
-                     <Activity size={10} /> Parameter Penilaian Aktif
+                }
+                footer={
+                   <p className="text-[10px] font-black text-emerald-800/30 uppercase tracking-[0.2em] flex items-center gap-2.5 font-display">
+                     <Activity size={12} strokeWidth={3} /> Parameter Penilaian Aktif
                    </p>
-                </div>
-              </div>
+                }
+              >
+                <table className="w-full text-left">
+                  <tbody className="divide-y divide-emerald-50/50">
+                    {(section.items || []).map((item) => (
+                      <tr key={item.id} className="group hover:bg-slate-50 transition-all duration-300">
+                        <td className="px-8 py-5">
+                          <div className="flex flex-col gap-1.5">
+                            <span className="text-[11px] font-black text-emerald-950 uppercase tracking-wider leading-none font-display">{item.label}</span>
+                            <span className="text-[10px] font-bold text-slate-400 leading-relaxed uppercase max-w-sm">
+                              {item.description}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-5 w-32 bg-slate-50/30 border-l border-emerald-50/50">
+                          <div className="relative">
+                            <input 
+                              type="number"
+                              step="1"
+                              min="0"
+                              max="100"
+                              value={data.configs?.find(c => c.id === item.id)?.percentage ?? 0} 
+                              onChange={e => updatePercentage(item.id, e.target.value)} 
+                              className={clsx(
+                                "w-full h-11 bg-white border-2 rounded-xl text-center text-sm font-black text-emerald-950 outline-none transition-all tabular-nums shadow-sm font-display",
+                                isValid ? "border-emerald-50 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-500/5" : "border-rose-100 focus:border-rose-500 focus:ring-4 focus:ring-rose-500/5"
+                              )}
+                            />
+                            <span className="absolute -right-2 top-1/2 -translate-y-1/2 text-[10px] font-black text-emerald-800/20">%</span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </ContentPanel>
             );
           })}
         </div>
 
         {/* Global Footer Notes */}
-        <div className="mt-8 p-6 bg-emerald-900 rounded-2xl flex items-start gap-6 relative overflow-hidden shadow-xl shadow-emerald-950/20">
-          <div className="absolute top-0 right-0 p-8 text-white/5 pointer-events-none">
-            <ShieldCheck size={140} />
+        <div className="mt-8 p-10 bg-emerald-950 rounded-[2.5rem] flex items-start gap-10 relative overflow-hidden shadow-2xl group">
+          <div className="absolute top-0 right-0 p-12 text-white/5 pointer-events-none group-hover:rotate-12 transition-transform duration-1000">
+            <ShieldCheck size={280} />
           </div>
-          <div className="h-12 w-12 bg-white/10 rounded-xl flex items-center justify-center text-emerald-100 shrink-0 border border-white/10">
-            <Zap size={24} />
+          <div className="h-16 w-16 bg-emerald-900 rounded-2xl flex items-center justify-center text-emerald-400 shrink-0 border border-emerald-800 shadow-inner">
+            <Zap size={32} strokeWidth={3} />
           </div>
-          <div className="space-y-2 relative z-10">
-            <h4 className="text-sm font-black text-white uppercase tracking-widest">Otoritas Validasi Akademik</h4>
-            <p className="text-xs font-bold text-emerald-100/60 uppercase leading-relaxed max-w-4xl">
-              Matriks konfigurasi ini merupakan basis logika inti kalkulasi nilai otomatis pada sistem SIBERDAYA. 
-              Segala penyesuaian akan berdampak langsung pada seluruh data pendaftaran aktif. 
-              <span className="text-white ml-1">PASTIKAN TOTAL SETIAP GRUP ADALAH 100% UNTUK MENJAGA INTEGRITAS DATA PENILAIAN.</span>
+          <div className="space-y-4 relative z-10">
+            <h4 className="text-xl font-black text-white uppercase tracking-tight font-display">Otoritas Validasi Akademik.</h4>
+            <p className="text-sm font-bold text-emerald-300 leading-relaxed max-w-4xl font-display opacity-80 uppercase tracking-wide">
+              Matriks konfigurasi ini merupakan basis logika inti kalkulasi nilai otomatis pada sistem <span className="text-cyan-600">SIBER</span><span className="text-lime-600">DAYA</span>. 
+              Segala penyesuaian akan berdampak langsung pada seluruh data pendaftaran aktif di periode ini. 
+              <span className="text-white block mt-4 border-l-4 border-emerald-500 pl-4 py-1 bg-emerald-900/50 rounded-r-lg">PASTIKAN TOTAL SETIAP GRUP ADALAH 100% UNTUK MENJAGA INTEGRITAS DATA PENILAIAN.</span>
             </p>
           </div>
         </div>
@@ -208,23 +208,4 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
   );
 }
 
-function MiniStat({ icon: Icon, label, value, variant = 'default' }: { icon: any, label: string, value: string | number, variant?: 'default' | 'success' | 'danger' }) {
-  return (
-    <div className="p-4 bg-white border border-emerald-50 rounded-xl flex items-center gap-4 shadow-sm group hover:border-emerald-300 transition-all">
-      <div className={clsx(
-        "h-10 w-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110",
-        variant === 'success' ? 'bg-[#e8f5ee] text-[#1a7a4a]' : 
-        variant === 'danger' ? 'bg-rose-50 text-rose-600' : 'bg-gray-50 text-emerald-800'
-      )}>
-        <Icon size={18} strokeWidth={2.5} />
-      </div>
-      <div className="flex flex-col min-w-0">
-        <span className="text-[9px] font-black text-emerald-800/40 uppercase tracking-widest leading-none mb-1.5">{label}</span>
-        <span className={clsx(
-          "text-sm font-black tabular-nums leading-none tracking-wider uppercase",
-          variant === 'danger' ? 'text-rose-600' : 'text-emerald-950'
-        )}>{value}</span>
-      </div>
-    </div>
-  );
-}
+

@@ -302,7 +302,7 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
                     <PremiumTableCell>
                       <div className="flex flex-col py-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-[13px] font-black text-emerald-950 uppercase tracking-tight group-hover:text-emerald-700 transition-colors">{item.name}</span>
+                          <span className="text-[13px] font-black text-emerald-950 uppercase tracking-tight group-hover:text-emerald-700 transition-colors font-display">{item.name}</span>
                           <span className="px-1.5 py-0.5 bg-gray-50 text-emerald-800/40 rounded text-[8px] font-black border border-emerald-50 uppercase tracking-widest">{item.code}</span>
                         </div>
                         <span className="text-[10px] font-medium text-emerald-800/40 mt-1 line-clamp-1 max-w-[200px]">{item.description || 'Tidak ada deskripsi.'}</span>
@@ -356,23 +356,9 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
               </PremiumTable>
             </ContentPanel>
 
-            <div className="mt-6 p-6 bg-emerald-950 rounded-2xl text-white relative overflow-hidden shadow-xl border-b-4 border-emerald-900">
-               <div className="absolute top-0 right-0 opacity-5 -mr-10 -mt-10 rotate-12 pointer-events-none"><Layers size={200} /></div>
-               <div className="flex items-start gap-4 relative z-10">
-                  <div className="h-10 w-10 bg-white/10 rounded-xl flex items-center justify-center text-emerald-400 border border-white/10 shrink-0">
-                    <Info size={20} />
-                  </div>
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-black uppercase tracking-widest">Konteks Operasional Skema</h4>
-                    <p className="text-[10px] font-medium text-emerald-400/70 uppercase tracking-widest leading-relaxed">
-                      Setiap skema KKN memiliki aturan validasi pendaftaran yang berbeda. Pastikan Ambang Batas SKS dan IPK telah sesuai dengan Panduan KKN UIN SAIZU untuk menjamin validitas pendaftar secara otomatis oleh sistem.
-                    </p>
-                  </div>
-               </div>
             </div>
           </div>
         </div>
-      </div>
     </AppLayout>
   );
 }

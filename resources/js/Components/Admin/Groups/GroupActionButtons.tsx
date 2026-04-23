@@ -14,7 +14,7 @@ export const GroupActionButtons = ({ canManage, onOpenCreateForm }: GroupActionB
           Unit <span className="text-emerald-600">Pelaksana.</span>
         </h1>
         <p className="text-sm font-medium text-emerald-950 max-w-2xl">
-          Otoritas penempatan mahasiswa dan strategi distribusi wilayah kerja terpadu SIBERDAYA.
+          Otoritas penempatan mahasiswa dan strategi distribusi wilayah kerja terpadu <span className="text-cyan-600">SIBER</span><span className="text-lime-600">DAYA</span>.
         </p>
       </div>
 
@@ -29,7 +29,7 @@ export const GroupActionButtons = ({ canManage, onOpenCreateForm }: GroupActionB
         <button
           onClick={onOpenCreateForm}
           disabled={!canManage}
-          className="h-11 px-8 bg-[#16a34a] hover:bg-[#15803d] text-white rounded-xl font-bold transition-all shadow-xl shadow-emerald-100 flex items-center gap-3 active:scale-95 disabled:opacity-20 text-xs uppercase tracking-widest border border-[#f3f4f6]0"
+          className="h-11 px-8 bg-[#0d9488] hover:bg-[#0f766e] text-white rounded-xl font-bold transition-all shadow-xl shadow-emerald-100 flex items-center gap-3 active:scale-95 disabled:opacity-20 text-xs uppercase tracking-widest border border-[#f3f4f6]0"
         >
           <Plus size={18} />
           Inisialisasi Unit

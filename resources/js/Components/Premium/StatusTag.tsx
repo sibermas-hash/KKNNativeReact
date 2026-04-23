@@ -9,7 +9,7 @@ interface StatusTagProps {
 }
 
 const VARIANTS = {
-    success: 'bg-[#dcfce7] text-[#15803d]',
+    success: 'bg-[#ccfbf1] text-[#0f766e]',
     warning: 'bg-amber-50 text-amber-700',
     danger: 'bg-rose-50 text-rose-700',
     info: 'bg-sky-50 text-sky-700',

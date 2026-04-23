@@ -151,7 +151,7 @@ export default function StudentFinalReportCreate({ group, existingReport, upload
                                         placeholder="https://youtube.com/watch?v=..."
                                         value={form.data.video_link}
                                         onChange={(event) => form.setData('video_link', event.target.value)}
-                                        className="w-full rounded-2xl bg-emerald-50/30/50 border-emerald-50/60 px-5 py-4 text-sm font-bold text-emerald-950 focus:ring-[#1a7a4a] focus:border-[#f3f4f6]0"
+                                        className="w-full rounded-2xl bg-emerald-50/30/50 border-emerald-50/60 px-5 py-4 text-sm font-bold text-emerald-950 focus:ring-[#0d9488] focus:border-[#f3f4f6]0"
                                     />
                                     {form.errors.video_link && <p className="text-sm font-bold text-rose-500 uppercase px-1">{form.errors.video_link}</p>}
                                 </div>
@@ -164,7 +164,7 @@ export default function StudentFinalReportCreate({ group, existingReport, upload
                                         placeholder="https://media-online.com/kkn-uin-saizu"
                                         value={form.data.news_link}
                                         onChange={(event) => form.setData('news_link', event.target.value)}
-                                        className="w-full rounded-2xl bg-emerald-50/30/50 border-emerald-50/60 px-5 py-4 text-sm font-bold text-emerald-950 focus:ring-[#1a7a4a] focus:border-[#f3f4f6]0"
+                                        className="w-full rounded-2xl bg-emerald-50/30/50 border-emerald-50/60 px-5 py-4 text-sm font-bold text-emerald-950 focus:ring-[#0d9488] focus:border-[#f3f4f6]0"
                                     />
                                     {form.errors.news_link && <p className="text-sm font-bold text-rose-500 uppercase px-1">{form.errors.news_link}</p>}
                                 </div>
@@ -299,7 +299,7 @@ function FileInput({ label, icon, accept, onChange }: { label: string, icon: Rea
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" 
             />
             <div className="bg-emerald-50/30 border border-emerald-50/60 rounded-2xl p-5 flex items-center gap-4 group-hover/file:bg-white group-hover/file:border-emerald-200 transition-all">
-                <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-emerald-950 group-hover/file:text-[#1a7a4a] shadow-sm shrink-0 transition-colors">
+                <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center text-emerald-950 group-hover/file:text-[#0d9488] shadow-sm shrink-0 transition-colors">
                     {icon}
                 </div>
                 <div className="overflow-hidden">

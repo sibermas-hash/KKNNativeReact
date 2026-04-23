@@ -1,143 +1,153 @@
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { route } from 'ziggy-js';
-import { ChevronLeft, Clock, User, Layers, Code2, Info } from 'lucide-react';
+import { 
+  ChevronLeft, 
+  Clock, 
+  User, 
+  Layers, 
+  Code2, 
+  Info,
+  Terminal,
+  ShieldCheck,
+  Zap,
+  Activity,
+  History,
+  Binary,
+  Fingerprint
+} from 'lucide-react';
 import { clsx } from 'clsx';
 
+// Premium Components
+import PageHeader from '@/Components/Premium/PageHeader';
+import ContentPanel from '@/Components/Premium/ContentPanel';
+
 interface AuditLog {
- id: number; description: string; subject_type: string | null; subject_id: number | null;
- causer_type: string | null; causer_id: number | null; causer?: { name: string };
- properties: Record<string, unknown>; created_at: string;
+  id: number; 
+  description: string; 
+  subject_type: string | null; 
+  subject_id: number | null;
+  causer_type: string | null; 
+  causer_id: number | null; 
+  causer?: { name: string };
+  properties: Record<string, unknown>; 
+  created_at: string;
 }
+
 interface Props { log: AuditLog; }
 
 export default function AuditLogShow({ log }: Props) {
- const subjectModel = log.subject_type?.split('\\').pop() || 'Sistem';
- const causerModel = log.causer_type?.split('\\').pop() || 'Internal';
+  const subjectModel = log.subject_type?.split('\\').pop() || 'Sistem';
+  const causerModel = log.causer_type?.split('\\').pop() || 'Internal';
 
- return (
- <AppLayout title="Detail Log Aktivitas">
- <Head title={`Detail Log #${log.id} | POS-KKN`} />
+  return (
+    <AppLayout title="Detail Log Aktivitas">
+      <Head title={`Detail Log #${log.id} | SIBERDAYA`} />
 
- <div className="min-h-screen bg-gray-50/50 pb-20">
- {/* Header */}
- <div className="bg-white border-b border-emerald-50/60">
- <div className="max-w-[1600px] mx-auto px-8 py-6">
- <div className="flex items-center gap-6">
- <Link href={route('admin.audit-log.index')} className="h-12 w-12 rounded-xl bg-gray-50 text-emerald-950 hover:bg-[#16a34a] hover:text-white flex items-center justify-center transition-all active:scale-90 border border-emerald-50/60">
- <ChevronLeft size={20} />
- </Link>
- <div className="space-y-3">
- <div className="flex items-center gap-3">
- <div className="h-2 w-2 bg-gray-500 rounded-full"/>
- <span className="text-xs font-semibold text-[#1a7a4a] font-semibold text-xs">Detail Aktivitas</span>
- </div>
- <h1 className="text-3xl font-semibold text-emerald-950">
- Log <span className="text-[#1a7a4a]">#{log.id.toString().padStart(6, '0')}</span>
- </h1>
- <p className="text-emerald-950 text-base font-medium">
- Analisis perubahan data dan aktor yang terlibat dalam aktivitas ini.
- </p>
- </div>
- </div>
- </div>
- </div>
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
+        
+        {/* PAGE HEADER */}
+        <PageHeader
+          title={`Log #${log.id.toString().padStart(6, '0')}.`}
+          subtitle="Analisis mendalam mutasi data, aktor otoritas, dan jejak kronologis aktivitas sistem."
+          icon={Terminal}
+          groupLabel="Chronological Integrity Audit"
+          backUrl={route('admin.audit-log.index')}
+        />
 
- <div className="max-w-[1600px] mx-auto px-8 mt-8">
- <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
- {/* Main */}
- <div className="xl:col-span-8 space-y-8">
- {/* Description */}
- <div className="bg-white rounded-xl border border-emerald-50/60 shadow-sm overflow-hidden">
- <div className="px-8 py-6 border-b border-emerald-50/60 bg-gray-50/30 flex items-center gap-5">
- <div className="h-12 w-12 rounded-xl bg-gray-50 text-[#1a7a4a] flex items-center justify-center border border-emerald-50 shadow-sm">
- <Info size={22} />
- </div>
- <div>
- <h2 className="text-base font-bold text-emerald-950">Ringkasan Aktivitas</h2>
- <p className="text-sm text-emerald-950 mt-0.5">Deskripsi dan waktu kejadian</p>
- </div>
- </div>
- <div className="p-8 space-y-6">
- <p className="text-lg font-bold text-emerald-950">{log.description}</p>
- <div className="flex items-center gap-3 text-emerald-950">
- <Clock size={16} />
- <span className="text-sm font-medium tabular-nums">{log.created_at}</span>
- </div>
- </div>
- </div>
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+          {/* MAIN CONTENT */}
+          <div className="xl:col-span-8 space-y-8">
+            
+            {/* SUMMARY */}
+            <ContentPanel
+              title="Ringkasan Aktivitas"
+              description="Deskripsi kejadian dan timestamp eksekusi runtime."
+              icon={Info}
+            >
+              <div className="space-y-6 py-4">
+                <p className="text-xl font-black text-emerald-950 uppercase tracking-tight leading-tight">
+                  {log.description}
+                </p>
+                <div className="flex items-center gap-3 text-emerald-600/50">
+                  <Clock size={16} strokeWidth={3} />
+                  <span className="text-[12px] font-black tabular-nums uppercase tracking-widest">{log.created_at}</span>
+                </div>
+              </div>
+            </ContentPanel>
 
- {/* Info Cards */}
- <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
- <InfoCard label="Aktor"value={log.causer?.name || 'Sistem'} sub={`Tipe: ${causerModel}`} icon={User} />
- <InfoCard label="Subjek"value={subjectModel} sub={log.subject_id ? `ID: #${log.subject_id}` : 'Tidak ada ID subjek'} icon={Layers} />
- </div>
+            {/* INFO CARDS */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="bg-white border-2 border-slate-50 rounded-[2rem] p-8 shadow-sm group hover:border-emerald-600 transition-all">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                    <User size={18} />
+                  </div>
+                  <span className="text-[10px] font-black text-emerald-950/20 uppercase tracking-[0.2em]">Otoritas Aktor</span>
+                </div>
+                <p className="text-xl font-black text-emerald-950 uppercase tracking-tight leading-none mb-2">{log.causer?.name || 'SYSTEM_DAEMON'}</p>
+                <p className="text-[10px] font-black text-emerald-600/50 uppercase tracking-widest">Tipe: {causerModel}</p>
+              </div>
 
- {/* Properties JSON */}
- <div className="bg-white rounded-xl border border-emerald-50/60 shadow-sm overflow-hidden">
- <div className="px-8 py-6 border-b border-emerald-50/60 bg-gray-50/30 flex items-center gap-5">
- <div className="h-12 w-12 rounded-xl bg-gray-50 text-emerald-950 flex items-center justify-center border border-emerald-50/60 shadow-sm">
- <Code2 size={22} />
- </div>
- <div>
- <h2 className="text-base font-bold text-emerald-950">Data Properti</h2>
- <p className="text-sm text-emerald-950 mt-0.5">Detail perubahan data dalam format JSON</p>
- </div>
- </div>
- <div className="p-6 bg-gray-100 rounded-b-3xl">
- <pre className="text-sm text-white leading-relaxed overflow-x-auto whitespace-pre-wrap font-mono tabular-nums">
- {JSON.stringify(log.properties, null, 4)}
- </pre>
- </div>
- </div>
- </div>
+              <div className="bg-white border-2 border-slate-50 rounded-[2rem] p-8 shadow-sm group hover:border-emerald-600 transition-all">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                    <Layers size={18} />
+                  </div>
+                  <span className="text-[10px] font-black text-emerald-950/20 uppercase tracking-[0.2em]">Subjek Event</span>
+                </div>
+                <p className="text-xl font-black text-emerald-950 uppercase tracking-tight leading-none mb-2">{subjectModel}</p>
+                <p className="text-[10px] font-black text-emerald-600/50 uppercase tracking-widest">
+                  {log.subject_id ? `ID: #${log.subject_id}` : 'GLOBAL_EVENT'}
+                </p>
+              </div>
+            </div>
 
- {/* Sidebar */}
- <div className="xl:col-span-4 space-y-8">
- <div className="bg-white rounded-xl border border-emerald-50/60 shadow-sm p-8 space-y-6">
- <h3 className="text-sm font-bold text-emerald-950">Metadata</h3>
- <div className="space-y-4">
- <MetaRow label="ID Subjek"value={log.subject_id ? `#${log.subject_id.toString().padStart(4, '0')}` : '-'} />
- <MetaRow label="Tipe Aktor"value={causerModel} />
- <MetaRow label="Aksi"value={log.description.split(' ')[0]} />
- <MetaRow label="Modul"value={subjectModel} />
- </div>
- </div>
+            {/* PROPERTIES JSON */}
+            <ContentPanel
+              title="Data Properti (Payload)"
+              description="Detail mutasi data dan metadata tambahan dalam format JSON terenkripsi."
+              icon={Code2}
+              padding={false}
+            >
+              <div className="bg-emerald-950 p-8 rounded-b-[2rem] overflow-hidden relative">
+                <div className="absolute top-0 right-0 p-8 opacity-5 pointer-events-none">
+                  <Binary size={120} className="text-emerald-400" />
+                </div>
+                <pre className="text-[12px] text-emerald-400 leading-relaxed overflow-x-auto whitespace-pre-wrap font-mono tabular-nums relative z-10 selection:bg-emerald-500/30">
+                  {JSON.stringify(log.properties, null, 4)}
+                </pre>
+              </div>
+            </ContentPanel>
+          </div>
 
- <div className="bg-gray-50 rounded-xl border border-emerald-50 p-8 space-y-4">
- <h3 className="text-sm font-bold text-bg-[#e8f5ee]">Catatan</h3>
- <p className="text-sm text-emerald-950 leading-relaxed">
- Log ini bersifat permanen dan tidak dapat diubah. Seluruh data mutasi tercatat untuk menjamin akuntabilitas operasional sistem KKN.
- </p>
- </div>
- </div>
- </div>
- </div>
- </div>
- </AppLayout>
- );
-}
+          {/* SIDEBAR */}
+          <div className="xl:col-span-4 space-y-8">
+            <ContentPanel
+              title="System Metadata"
+              description="Parameter internal log."
+              icon={Binary}
+            >
+              <div className="space-y-4 py-2">
+                <MetaRow label="SUBJECT_ID" value={log.subject_id ? `#${log.subject_id.toString().padStart(4, '0')}` : 'NULL'} />
+                <MetaRow label="ACTOR_TYPE" value={causerModel} />
+                <MetaRow label="ACTION_NODE" value={log.description.split(' ')[0].toUpperCase()} />
+                <MetaRow label="MODULE_SCOPE" value={subjectModel.toUpperCase()} />
+              </div>
+            </ContentPanel>
 
-function InfoCard({ label, value, sub, icon: Icon }: { label: string; value: string; sub: string; icon: React.ElementType }) {
- return (
- <div className="bg-white rounded-xl border border-emerald-50/60 shadow-sm p-8 space-y-4">
- <div className="flex items-center gap-4">
- <div className="h-10 w-10 rounded-xl bg-gray-50 text-[#1a7a4a] flex items-center justify-center border border-emerald-50">
- <Icon size={18} />
- </div>
- <span className="text-xs font-bold text-emerald-950 font-semibold text-xs">{label}</span>
- </div>
- <p className="text-lg font-bold text-emerald-950">{value}</p>
- <p className="text-xs text-emerald-950">{sub}</p>
- </div>
- );
+          </div>
+        </div>
+      </div>
+    </AppLayout>
+  );
 }
 
 function MetaRow({ label, value }: { label: string; value: string }) {
- return (
- <div className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0">
- <span className="text-xs font-semibold text-emerald-950">{label}</span>
- <span className="text-xs font-bold text-[#1a7a4a] bg-gray-50 px-3 py-1 rounded-lg border border-emerald-50">{value}</span>
- </div>
- );
+  return (
+    <div className="flex items-center justify-between py-3 border-b-2 border-slate-50 last:border-0 group">
+      <span className="text-[10px] font-black text-emerald-950/30 uppercase tracking-widest group-hover:text-emerald-950 transition-colors">{label}</span>
+      <span className="text-[10px] font-black text-emerald-900 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-100 uppercase">{value}</span>
+    </div>
+  );
 }

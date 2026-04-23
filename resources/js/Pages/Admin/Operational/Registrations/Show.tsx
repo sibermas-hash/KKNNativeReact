@@ -127,7 +127,7 @@ export default function RegistrationShow({ registration }: Props) {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-emerald-50 pt-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <ShieldCheck size={16} className="text-[#1a7a4a]"/>
+              <ShieldCheck size={16} className="text-[#0d9488]"/>
               <span className="text-xs font-bold text-emerald-800 uppercase tracking-widest">Audit & Otorisasi</span>
             </div>
             <h1 className="text-2xl font-black text-emerald-950 leading-tight">Detail Pendaftaran.</h1>
@@ -196,7 +196,7 @@ export default function RegistrationShow({ registration }: Props) {
                   documents.map((doc) => (
                     <div key={doc.id} className="px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
                       <div className="flex items-center gap-3 overflow-hidden">
-                        <div className="h-8 w-8 bg-[#e8f5ee] text-[#1a7a4a] rounded-lg flex items-center justify-center shrink-0">
+                        <div className="h-8 w-8 bg-[#f0fdfa] text-[#0d9488] rounded-lg flex items-center justify-center shrink-0">
                           <FileText size={16} />
                         </div>
                         <div className="flex flex-col overflow-hidden">
@@ -278,7 +278,7 @@ export default function RegistrationShow({ registration }: Props) {
                             required placeholder="Tulis alasan penolakan..."
                             value={rejectForm.data.notes}
                             onChange={(e) => rejectForm.setData('notes', e.target.value)}
-                            className="w-full h-24 p-3 bg-gray-50 border border-emerald-50 rounded-xl text-xs font-bold text-emerald-950 focus:ring-[#1a7a4a] focus:border-[#f3f4f6]0 outline-none transition-all placeholder:text-black"
+                            className="w-full h-24 p-3 bg-gray-50 border border-emerald-50 rounded-xl text-xs font-bold text-emerald-950 focus:ring-[#0d9488] focus:border-[#f3f4f6]0 outline-none transition-all placeholder:text-black"
                           />
                           <div className="flex gap-2">
                             <button type="button" onClick={() => setShowRejectForm(false)} className="flex-1 h-9 bg-gray-100 text-emerald-800 text-[9px] font-black uppercase rounded-lg">Batal</button>
@@ -311,7 +311,7 @@ export default function RegistrationShow({ registration }: Props) {
 function CompactStat({ label, value, icon: Icon }: { label: string; value: any; icon: any }) {
   return (
     <div className="bg-white border border-emerald-50 p-4 rounded-xl shadow-sm flex items-center gap-4 hover:border-emerald-50 transition-colors group">
-       <div className="h-10 w-10 bg-[#e8f5ee] text-[#1a7a4a] rounded-lg flex items-center justify-center shrink-0 shadow-inner group-hover:scale-110 transition-transform">
+       <div className="h-10 w-10 bg-[#f0fdfa] text-[#0d9488] rounded-lg flex items-center justify-center shrink-0 shadow-inner group-hover:scale-110 transition-transform">
          <Icon size={18} strokeWidth={3} />
        </div>
        <div className="flex flex-col overflow-hidden">
@@ -336,8 +336,8 @@ function StatusItem({ label, value, isValid }: { label: string; value: string; i
     <div className="flex items-center justify-between p-3 bg-white border border-gray-100 rounded-xl">
       <span className="text-xs font-black text-emerald-800 uppercase tracking-tight">{label}</span>
       <div className="flex items-center gap-2">
-        <span className={clsx("text-xs font-black", isValid ? "text-[#1a7a4a]" : "text-rose-600")}>{value}</span>
-        {isValid ? <CheckCircle size={14} className="text-[#1a7a4a]" strokeWidth={3} /> : <AlertCircle size={14} className="text-rose-400" strokeWidth={3} />}
+        <span className={clsx("text-xs font-black", isValid ? "text-[#0d9488]" : "text-rose-600")}>{value}</span>
+        {isValid ? <CheckCircle size={14} className="text-[#0d9488]" strokeWidth={3} /> : <AlertCircle size={14} className="text-rose-400" strokeWidth={3} />}
       </div>
     </div>
   );

@@ -82,10 +82,10 @@ export default function JenisKknShow({ jenisKkn, stats, registrations, filters }
  <div className="max-w-[1600px] mx-auto space-y-12 pb-24 font-sans px-4 sm:px-6 lg:px-8">
  {/* --- MODERN HEADER --- */}
  <div className="space-y-6 pt-12">
- <div className="flex items-center gap-4 text-[#1a7a4a]">
+ <div className="flex items-center gap-4 text-[#0d9488]">
  <Link 
  href="/admin/jenis-kkn"
- className="h-12 w-12 rounded-xl bg-white border border-emerald-50 flex items-center justify-center text-emerald-700 hover:text-[#1a7a4a] hover:border-gray-300 transition-all shadow-sm"
+ className="h-12 w-12 rounded-xl bg-white border border-emerald-50 flex items-center justify-center text-emerald-700 hover:text-[#0d9488] hover:border-gray-300 transition-all shadow-sm"
  >
  <ChevronLeft size={24} strokeWidth={2.5} />
  </Link>
@@ -94,14 +94,14 @@ export default function JenisKknShow({ jenisKkn, stats, registrations, filters }
  </div>
  <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
  <div className="space-y-4">
- <h1 className="text-2xl font-bold text-emerald-950 leading-tight pt-2">
+ <h1 className="text-2xl font-black font-display uppercase tracking-tighter text-emerald-950 leading-tight pt-2">
  {jenisKkn.name.split(' ')[0]} <span>{jenisKkn.name.split(' ').slice(1).join(' ')}</span>
  </h1>
  <p className="text-sm font-bold text-emerald-800/40 text-xs font-semibold mt-4">KODE PROTOKOL: {jenisKkn.code}</p>
  </div>
  <Link 
  href={`/admin/pendaftaran?search=${jenisKkn.name}`}
- className="h-10 px-6 bg-[#16a34a] text-white rounded-xl font-bold shadow-sm flex items-center gap-6 text-sm transition-all active:scale-95 text-xs font-semibold hover:bg-[#16a34a] border-none no-underline"
+ className="h-10 px-6 bg-[#0d9488] text-white rounded-xl font-bold shadow-sm flex items-center gap-6 text-sm transition-all active:scale-95 text-xs font-semibold hover:bg-[#0d9488] border-none no-underline"
  >
  <ArrowUpRight size={24} strokeWidth={3} /> VALIDASI MASSAL PROTOKOL
  </Link>
@@ -120,7 +120,7 @@ export default function JenisKknShow({ jenisKkn, stats, registrations, filters }
  <section className="bg-white border border-emerald-50 rounded-xl p-10 shadow-sm font-sans">
  <div className="flex flex-col lg:flex-row lg:items-center gap-6 lg:gap-20">
  <div className="flex items-center gap-6 shrink-0">
- <div className="h-16 w-16 bg-[#16a34a] text-white rounded-xl flex items-center justify-center shadow-sm shadow-emerald-900/20">
+ <div className="h-16 w-16 bg-[#0d9488] text-white rounded-xl flex items-center justify-center shadow-sm shadow-emerald-900/20">
  <Info size={28} strokeWidth={2.5} />
  </div>
  <div className="flex flex-col">
@@ -154,7 +154,7 @@ export default function JenisKknShow({ jenisKkn, stats, registrations, filters }
  <section className="bg-white border border-emerald-50 rounded-xl overflow-hidden shadow-sm">
  <div className="px-6 py-6 border-b border-emerald-50/50 flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-gray-50/50">
  <div className="flex items-center gap-8">
- <div className="h-16 w-16 bg-white border border-emerald-50 text-[#1a7a4a] rounded-xl flex items-center justify-center shadow-sm">
+ <div className="h-16 w-16 bg-white border border-emerald-50 text-[#0d9488] rounded-xl flex items-center justify-center shadow-sm">
  <Layers size={28} strokeWidth={2.5} />
  </div>
  <div className="flex flex-col">
@@ -163,13 +163,13 @@ export default function JenisKknShow({ jenisKkn, stats, registrations, filters }
  </div>
  </div>
  <form onSubmit={handleSearch} className="relative w-full lg:w-[450px] group">
- <Search size={22} className="absolute left-8 top-1/2 -translated-y-1/2 text-emerald-700 group-focus-within:text-[#1a7a4a] transition-colors"strokeWidth={3} />
+ <Search size={22} className="absolute left-8 top-1/2 -translated-y-1/2 text-emerald-700 group-focus-within:text-[#0d9488] transition-colors"strokeWidth={3} />
  <input 
  type="text"
  placeholder="CARI DATA PESERTA..."
  value={search}
  onChange={(e) => setSearch(e.target.value)}
- className="w-full h-18 pl-20 pr-8 bg-white border border-emerald-50 rounded-xl text-sm font-bold text-emerald-950 focus:border-[#1a7a4a] outline-none transition-all placeholder:text-emerald-50/50"
+ className="w-full h-18 pl-20 pr-8 bg-white border border-emerald-50 rounded-xl text-sm font-bold text-emerald-950 focus:border-[#0d9488] outline-none transition-all placeholder:text-emerald-50/50"
  />
  </form>
  </div>
@@ -191,7 +191,7 @@ export default function JenisKknShow({ jenisKkn, stats, registrations, filters }
  <tr key={reg.id} className="hover:bg-gray-50 transition-all duration-300 group">
  <td className="px-6 py-6">
  <div className="flex items-center gap-8">
- <div className="h-16 w-16 bg-[#16a34a] text-white border border-emerald-800 flex items-center justify-center font-bold text-xl rounded-xl group-hover:scale-110 transition-all shadow-sm">{reg.mahasiswa.nama.charAt(0)}</div>
+ <div className="h-16 w-16 bg-[#0d9488] text-white border border-emerald-800 flex items-center justify-center font-bold text-xl rounded-xl group-hover:scale-110 transition-all shadow-sm">{reg.mahasiswa.nama.charAt(0)}</div>
  <div className="flex flex-col">
  <span className="text-lg font-bold text-emerald-950 group-hover:text-emerald-800 transition-colors leading-none truncate max-w-[300px]">{reg.mahasiswa.nama}</span>
  <span className="text-sm font-bold text-emerald-800/20 mt-3 font-semibold text-xs leading-none">{reg.mahasiswa.nim}</span>
@@ -226,7 +226,7 @@ export default function JenisKknShow({ jenisKkn, stats, registrations, filters }
  {reg.kelompok ? (
  <div className="flex flex-col items-end">
  <span className="text-sm font-bold text-emerald-950">{reg.kelompok.nama_kelompok}</span>
- <span className="text-sm font-bold text-[#1a7a4a] font-semibold text-xs mt-2">{reg.kelompok.code}</span>
+ <span className="text-sm font-bold text-[#0d9488] font-semibold text-xs mt-2">{reg.kelompok.code}</span>
  </div>
  ) : (
  <span className="text-sm font-bold text-emerald-800/10 text-xs font-semibold leading-none">Belum Terdistribusi</span>
@@ -254,10 +254,10 @@ export default function JenisKknShow({ jenisKkn, stats, registrations, filters }
 
 function MetricCard({ label, value, icon: Icon, color, isText = false, desc }: { label: string; value: string | number; icon: any; color: 'emerald' | 'rose' | 'amber' | 'slate'; isText?: boolean, desc: string }) {
  const colorMap = {
- emerald: 'bg-gray-50 text-[#1a7a4a] border-emerald-50 hover:border-[#1a7a4a]',
+ emerald: 'bg-gray-50 text-[#0d9488] border-emerald-50 hover:border-[#0d9488]',
  rose: 'bg-rose-50 text-rose-600 border-rose-100 hover:border-rose-500',
  amber: 'bg-amber-50 text-amber-600 border-amber-100 hover:border-amber-500',
- slate: 'bg-gray-50 text-emerald-800/40 border-emerald-50 hover:border-[#1a7a4a]'
+ slate: 'bg-gray-50 text-emerald-800/40 border-emerald-50 hover:border-[#0d9488]'
  };
  return (
  <div className="bg-white border border-emerald-50 p-8 rounded-xl shadow-sm hover:shadow-emerald-950/10 transition-all group overflow-hidden relative font-sans">

@@ -1,243 +1,257 @@
 import { useState } from 'react';
 import { router, Head, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Pagination, Button } from '@/Components/ui';
-import type { PageProps, Download, LucideIcon } from '@/types';
+import { Pagination } from '@/Components/ui';
+import type { PageProps, Download } from '@/types';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
 import { route } from 'ziggy-js';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
- Plus,
- Trash2,
- Edit2,
- CheckCircle2,
- X,
- ExternalLink,
- FileText,
- FileDown,
- Link as LinkIcon,
- CloudUpload,
- Save,
- FileIcon,
- Globe,
- ShieldCheck,
- Database,
- Archive,
- RefreshCw,
- Activity,
- Target,
- Zap,
- Cpu,
+  Plus,
+  Trash2,
+  Pencil,
+  CheckCircle2,
+  X,
+  FileDown,
+  CloudUpload,
+  Save,
+  FileIcon,
+  Globe,
+  ShieldCheck,
+  Database,
+  Archive,
+  RefreshCw,
+  Activity,
+  Zap,
+  Cpu,
+  LayoutGrid
 } from 'lucide-react';
 import dayjs from 'dayjs';
 import { clsx } from 'clsx';
 
+// Premium Components
+import PageHeader from '@/Components/Premium/PageHeader';
+import StatCard from '@/Components/Premium/StatCard';
+import ContentPanel from '@/Components/Premium/ContentPanel';
+import PremiumTable, { PremiumTableRow, PremiumTableCell } from '@/Components/Premium/PremiumTable';
+import StatusTag from '@/Components/Premium/StatusTag';
+
 interface Props extends PageProps {
- downloads: { data: Download[]; meta: PaginationMeta; };
+  downloads: { data: Download[]; meta: PaginationMeta; };
 }
 
 export default function DownloadIndex({ downloads }: Props) {
- const [isModalOpen, setIsModalOpen] = useState(false);
- const [editingDownload, setEditingDownload] = useState<Download | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingDownload, setEditingDownload] = useState<Download | null>(null);
 
- const { data, setData, post, processing, reset, errors, clearErrors } = useForm({
- title: '', file: null as File | null, external_url: '', is_active: true,
- });
+  const { data, setData, post, processing, reset, errors, clearErrors } = useForm({
+    title: '', file: null as File | null, external_url: '', is_active: true,
+  });
 
- const openCreateModal = () => { setEditingDownload(null); reset(); clearErrors(); setIsModalOpen(true); };
- const openEditModal = (d: Download) => { setEditingDownload(d); setData({ title: d.title, file: null, external_url: d.external_url || '', is_active: d.is_active }); clearErrors(); setIsModalOpen(true); };
+  const openCreateModal = () => { setEditingDownload(null); reset(); clearErrors(); setIsModalOpen(true); };
+  const openEditModal = (d: Download) => { setEditingDownload(d); setData({ title: d.title, file: null, external_url: d.external_url || '', is_active: d.is_active }); clearErrors(); setIsModalOpen(true); };
 
- const submit = (e: React.FormEvent) => {
- e.preventDefault();
- const url = editingDownload ? route('admin.unduhan.update', editingDownload.id) : route('admin.unduhan.store');
- router.post(url, { ...data, _method: editingDownload ? 'PATCH' : 'POST', is_active: data.is_active ? 1 : 0 }, { forceFormData: true, onSuccess: () => { setIsModalOpen(false); reset(); } });
- };
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const url = editingDownload ? route('admin.unduhan.update', editingDownload.id) : route('admin.unduhan.store');
+    router.post(url, { ...data, _method: editingDownload ? 'PATCH' : 'POST', is_active: data.is_active ? 1 : 0 }, { forceFormData: true, onSuccess: () => { setIsModalOpen(false); reset(); } });
+  };
 
- return (
- <AppLayout title="Manajemen Pusat Unduhan">
- <Head title="Pusat Unduhan"/>
+  return (
+    <AppLayout title="Pusat Unduhan">
+      <Head title="Manajemen Aset Digital | SIBERDAYA" />
 
- <div className="space-y-8 pb-24 text-emerald-950 font-sans">
- {/* --- PREMIUM HEADER --- */}
- <div className="space-y-4">
- <div className="flex items-center gap-3 text-[#1a7a4a]">
- <FileDown size={18} />
- <span className="text-xs font-bold opacity-80">Konten Publik & Repositori</span>
- </div>
- <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
- <div className="space-y-1">
- <h1 className="text-2xl font-semibold text-emerald-950">
- Pusat <span className="text-[#1a7a4a]">Unduhan.</span>
- </h1>
- <p className="text-sm font-semibold text-emerald-950 font-semibold text-xs mt-2 leading-relaxed max-w-2xl">
- Repositori Aset Digital, Panduan Operasional, dan Berkas Administrasi Utama Mahasiswa KKN
- </p>
- </div>
- <div className="flex items-center gap-4">
- <div className="h-14 px-8 bg-white border border-emerald-50/60 rounded-xl flex items-center gap-4 shadow-sm">
- <Archive size={18} className="text-[#1a7a4a]"/>
- <div className="flex flex-col">
- <span className="text-sm font-bold text-emerald-950 font-semibold text-xs leading-none mb-1">Total Aset</span>
- <span className="text-sm font-bold text-emerald-950 tabular-nums leading-none">{downloads.meta?.total || 0} BERKAS</span>
- </div>
- </div>
- <button 
- onClick={openCreateModal} 
- className="h-14 px-8 bg-[#16a34a] hover:bg-[#15803d] text-white rounded-xl font-bold shadow-sm shadow-none flex items-center gap-3 text-sm transition-all active:scale-95"
- >
- <Plus size={20} className="text-white"/> TAMBAH ASET
- </button>
- </div>
- </div>
- </div>
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
+        
+        {/* PAGE HEADER */}
+        <PageHeader
+          title="Pusat Unduhan."
+          subtitle="Repositori aset digital, panduan operasional, dan berkas administrasi utama."
+          icon={FileDown}
+          groupLabel="Website & Repositori"
+        >
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={openCreateModal} 
+              className="h-12 px-8 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center gap-3 shadow-lg shadow-emerald-600/20 active:scale-95"
+            >
+              <Plus size={18} strokeWidth={2.5} /> Tambah Aset
+            </button>
+          </div>
+        </PageHeader>
 
- {/* --- METRIC STRIP --- */}
- <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
- <AssetMetric label="Active Vaults"value={downloads.data.filter(d => d.is_active).length} icon={Database} />
- <AssetMetric label="IOPS Status"value="LATENCY_LOW"icon={Activity} />
- <AssetMetric label="Storage"value="vBINARY 1.2"icon={Cpu} />
- <AssetMetric label="Broadcast"value="GLOBAL_CDN"icon={Globe} />
- </div>
+        {/* STATS GRID */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard label="Total Aset" value={downloads.meta.total} icon={Archive} variant="gray" />
+          <StatCard label="Vaults Aktif" value={downloads.data.filter(d => d.is_active).length} icon={Database} variant="success" />
+          <StatCard label="IOPS Status" value="LOW_LATENCY" icon={Activity} variant="info" />
+          <StatCard label="Sync Mode" value="GLOBAL_CDN" icon={Globe} variant="gray" />
+        </div>
 
- {/* --- LEDGER --- */}
- <section className="bg-white border border-emerald-50/60 rounded-xl overflow-hidden shadow-sm">
- <div className="p-3 bg-gray-50/20 border-b border-slate-50 flex items-center justify-between">
- <div className="flex items-center gap-3">
- <FileIcon size={14} className="text-[#1a7a4a]"/>
- <span className="text-sm font-bold text-emerald-950 font-semibold text-xs">Global Binary Archive Ledger</span>
- </div>
- </div>
+        {/* MAIN CONTENT */}
+        <ContentPanel
+          title="Global Binary Archive Ledger"
+          description="Daftar berkas administrasi dan panduan operasional yang dapat diunduh publik."
+          icon={LayoutGrid}
+          padding={false}
+          footer={
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] font-black text-emerald-950/40 uppercase tracking-widest tabular-nums">
+                  Integritas Binary Terverifikasi &middot; {downloads.meta.total} Aset Terdaftar
+                </span>
+              </div>
+              <Pagination meta={downloads.meta} />
+            </div>
+          }
+        >
+          <PremiumTable
+            headers={['Asset Identifier', 'Infrastructure Source', 'Release Status', 'Opsi']}
+            isEmpty={downloads.data.length === 0}
+            emptyText="Belum ada aset digital yang terdaftar."
+          >
+            {downloads.data.map((d) => (
+              <PremiumTableRow key={d.id} className="group">
+                <PremiumTableCell>
+                  <div className="flex items-center gap-4 py-1">
+                    <div className="h-10 w-10 bg-gray-50 border border-emerald-50 text-emerald-200 rounded-xl flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all">
+                      <FileDown size={20} />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[13px] font-black text-emerald-950 uppercase tracking-tight leading-none group-hover:text-emerald-700 transition-colors line-clamp-1">{d.title}</span>
+                      <span className="text-[9px] font-black text-emerald-950/40 font-mono tracking-tighter uppercase">ID_{String(d.id).padStart(4,'0')} &middot; {dayjs(d.created_at).format('YYYY-MM-DD')}</span>
+                    </div>
+                  </div>
+                </PremiumTableCell>
+                <PremiumTableCell align="center">
+                  <span className={clsx(
+                    "inline-flex px-2 py-0.5 rounded-lg text-[9px] font-black border uppercase tracking-widest",
+                    d.file_path ? "bg-emerald-50 text-emerald-700 border-emerald-100" : "bg-amber-50 text-amber-700 border-amber-100"
+                  )}>
+                    {d.file_path ? 'LOCAL_VAULT' : 'EXTERNAL_CDN'}
+                  </span>
+                </PremiumTableCell>
+                <PremiumTableCell align="center">
+                  <StatusTag status={d.is_active ? 'active' : 'draft'} label={d.is_active ? 'RELEASED' : 'DRAFT_STG'} size="sm" />
+                </PremiumTableCell>
+                <PremiumTableCell align="right">
+                  <div className="flex items-center justify-end gap-2">
+                    <button onClick={() => openEditModal(d)} className="h-9 px-3 bg-white border border-gray-100 text-emerald-900 rounded-xl hover:bg-emerald-50 hover:border-emerald-200 transition-all shadow-sm active:scale-95 flex items-center gap-2 text-[10px] font-black uppercase">
+                      <Pencil size={14} /> Edit
+                    </button>
+                    <button 
+                      onClick={() => { if(confirm('Hapus aset?')) router.delete(route('admin.unduhan.destroy', d.id)) }} 
+                      className="h-9 w-9 flex items-center justify-center bg-white border border-gray-100 text-rose-600 rounded-xl hover:bg-rose-50 hover:border-rose-200 transition-all shadow-sm active:scale-95"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </PremiumTableCell>
+              </PremiumTableRow>
+            ))}
+          </PremiumTable>
+        </ContentPanel>
 
- <div className="overflow-x-auto min-h-[400px]">
- <table className="w-full text-left">
- <thead className="bg-gray-50 border-b border-slate-50 text-sm font-bold font-semibold text-xs text-emerald-950">
- <tr>
- <th className="px-6 py-4">Asset Identifier</th>
- <th className="px-6 py-4 text-center">Infrastructure Source</th>
- <th className="px-6 py-4 text-center">Release Status</th>
- <th className="px-6 py-4 text-right">Control</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-slate-50">
- {downloads.data.map((d) => (
- <tr key={d.id} className="group hover:bg-gray-50/50 transition-all">
- <td className="px-6 py-4">
- <div className="flex items-center gap-4">
- <div className="h-10 w-10 bg-gray-50 border border-emerald-50/60 text-slate-300 rounded-lg flex items-center justify-center group-hover:bg-[#16a34a] group-hover:text-white transition-all"><FileDown size={18} /></div>
- <div className="flex flex-col">
- <span className="text-sm font-bold text-emerald-950 group-hover:text-emerald-800 transition-colors truncate max-w-[300px]">{d.title}</span>
- <span className="text-sm font-bold text-emerald-950 font-mono tracking-normal mt-1 opacity-60">ID_{String(d.id).padStart(4,'0')} • {dayjs(d.created_at).format('YYYY-MM-DD')}</span>
- </div>
- </div>
- </td>
- <td className="px-6 py-4 text-center">
- <div className={clsx('inline-flex h-6 items-center px-4 rounded-md text-sm font-bold tracking-normal border transition-all', d.file_path ? 'bg-gray-50 text-[#1a7a4a] border-emerald-50' : 'bg-amber-50 text-amber-600 border-amber-100')}>
- {d.file_path ? 'LOCAL_VAULT' : 'EXTERNAL_CDN'}
- </div>
- </td>
- <td className="px-6 py-4 text-center">
- <div className={clsx('inline-flex h-7 items-center px-4 rounded-full text-sm font-bold tracking-normal border transition-all', d.is_active ? 'bg-[#16a34a] text-white border-[#1a7a4a]' : 'bg-gray-50 text-slate-300 border-emerald-50/60')}>
- {d.is_active ? 'RELEASED' : 'DRAFT_STG'}
- </div>
- </td>
- <td className="px-6 py-4 text-right">
- <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all scale-95 group-hover:scale-100">
- <button onClick={() => openEditModal(d)} className="h-8 w-8 bg-white/90 backdrop-blur-xl border-emerald-50/60 border-emerald-50/60 text-emerald-950 hover:text-[#1a7a4a] hover:border-gray-300 rounded-xl flex items-center justify-center transition-all shadow-sm shadow-emerald-900/5 transition-all"><Edit2 size={14} /></button>
- <button onClick={() => { if(confirm('Hapus aset?')) router.delete(route('admin.unduhan.destroy', d.id)) }} className="h-8 w-8 bg-white/90 backdrop-blur-xl border-emerald-50/60 border-emerald-50/60 text-emerald-950 hover:text-rose-500 hover:border-rose-200 rounded-xl flex items-center justify-center transition-all shadow-sm shadow-emerald-900/5 transition-all"><Trash2 size={14} /></button>
- </div>
- </td>
- </tr>
- ))}
- {downloads.data.length === 0 && (
- <tr><td colSpan={4} className="py-20 text-center text-sm font-bold text-slate-300 tracking-normal">Vault buffer null.</td></tr>
- )}
- </tbody>
- </table>
- </div>
+      </div>
 
- <div className="px-6 py-4 border-t border-slate-50 bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
- <span className="text-sm font-bold text-emerald-950 font-semibold text-xs leading-none">Binary Integrity 0xBF32 • Sync Nominal.</span>
- <Pagination meta={downloads.meta} />
- </div>
- </section>
+      {/* ASSET MODAL */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-emerald-950/40 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 20 }} 
+              animate={{ scale: 1, opacity: 1, y: 0 }} 
+              exit={{ scale: 0.95, opacity: 0, y: 20 }} 
+              className="relative w-full max-w-lg bg-white shadow-2xl overflow-hidden rounded-[2rem] border border-emerald-50 flex flex-col"
+            >
+              <div className="px-10 py-6 border-b border-emerald-50 flex items-center justify-between bg-gray-50/50">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 bg-emerald-600 text-white flex items-center justify-center rounded-2xl shadow-lg shadow-emerald-600/20">
+                    <CloudUpload size={24} strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-emerald-950 uppercase tracking-[0.2em]">{editingDownload ? 'Revisi Aset' : 'Injeksi Binary'}</h3>
+                    <p className="text-[10px] font-bold text-emerald-700/50 uppercase tracking-widest">Panel Repositori Digital</p>
+                  </div>
+                </div>
+                <button onClick={() => setIsModalOpen(false)} className="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-rose-50 text-emerald-900 hover:text-rose-600 transition-all">
+                  <X size={24} />
+                </button>
+              </div>
 
- {/* MODAL */}
- <AnimatePresence>
- {isModalOpen && (
- <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
- <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-emerald-600/40 backdrop-blur-sm"onClick={() => setIsModalOpen(false)} />
- <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="relative w-full max-w-lg bg-white shadow-sm overflow-hidden rounded-xl border border-emerald-50/60 flex flex-col">
- <div className="px-6 py-4 border-b border-slate-50 flex items-center justify-between bg-gray-50/20">
- <div className="flex items-center gap-4">
- <div className="h-10 w-10 bg-[#16a34a] text-white flex items-center justify-center rounded-lg shadow-sm"><CloudUpload size={20} /></div>
- <h3 className="text-sm font-bold font-semibold text-xs">{editingDownload ? 'Asset_Revision' : 'Binary_Injection'}</h3>
- </div>
- <button onClick={() => setIsModalOpen(false)} className="text-slate-300 hover:text-rose-500 transition-colors"><X size={20} /></button>
- </div>
- <form onSubmit={submit} className="p-6 space-y-6">
- <div className="space-y-1">
- <label className="text-sm font-bold text-emerald-950 font-semibold text-xs ml-1">Asset_Identifier_Title</label>
- <input value={data.title} onChange={e => setData('title', e.target.value.toUpperCase())} className="w-full h-12 bg-gray-50 border border-emerald-50/60 rounded-lg px-6 text-sm font-bold text-emerald-950 focus:bg-white focus:border-[#1a7a4a] outline-none transition-all"placeholder="OPERATIONAL_GUIDE_2026"required />
- </div>
- <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
- <div className="space-y-1">
- <label className="text-sm font-bold text-emerald-950 font-semibold text-xs ml-1">Binary_Source</label>
- <div className="relative h-12 w-full bg-gray-50 rounded-lg border border-dashed border-emerald-50/60 flex flex-col items-center justify-center gap-1 overflow-hidden group/img transition-colors hover:border-gray-300">
- <input type="file"onChange={e => setData('file', e.target.files?.[0] || null)} className="absolute inset-0 opacity-0 cursor-pointer z-10"/>
- {data.file ? <CheckCircle2 className="text-[#1a7a4a]"size={20} /> : <FileDown size={20} className="text-slate-200"/>}
- <span className="text-sm font-bold text-slate-300 font-semibold text-xs">{data.file ? 'BINARY_QUEUED' : 'INJECT_LOCAL_FILE'}</span>
- </div>
- </div>
- <div className="space-y-1">
- <label className="text-sm font-bold text-emerald-950 font-semibold text-xs ml-1">External_Proxy</label>
- <div className="h-12 w-full bg-gray-50 border border-emerald-50/60 rounded-lg p-3 space-y-2">
- <div className="flex items-center gap-2"><Globe size={10} className="text-[#1a7a4a]"/><span className="text-sm font-bold text-emerald-950">CDN_Link</span></div>
- <input value={data.external_url} onChange={e => setData('external_url', e.target.value)} className="w-full h-8 bg-white/50 border border-emerald-50/60 rounded-md px-3 text-sm font-bold outline-none focus:bg-white"placeholder="https://drive.google.com/..."/>
- </div>
- </div>
- </div>
- <div className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border border-emerald-50/60">
- <div className="flex items-center gap-3">
- <ShieldCheck size={16} className={clsx(data.is_active ?"text-[#1a7a4a]":"text-slate-300")} />
- <span className="text-sm font-bold text-emerald-950 font-semibold text-xs">Broadcast Visibility</span>
- </div>
- <input type="checkbox"checked={data.is_active} onChange={e => setData('is_active', e.target.checked)} className="h-5 w-5 rounded border-emerald-50/60 text-[#1a7a4a] focus:ring-[#1a7a4a]"/>
- </div>
- <div className="flex justify-end gap-3 pt-4 border-t border-slate-50">
- <button type="button"onClick={() => setIsModalOpen(false)} className="text-sm font-bold text-slate-300 hover:text-emerald-950 transition-colors">Abort_Dep</button>
- <Button type="submit"disabled={processing} className="h-10 px-8 bg-[#16a34a] hover:bg-[#15803d] text-white rounded-lg text-sm font-bold font-semibold text-xs shadow-sm shadow-none flex items-center gap-3 active:scale-95">{processing ? <RefreshCw size={14} className="animate-spin"/> : <Save size={14} className="text-white"/>} COMMIT_DEP</Button>
- </div>
- </form>
- </motion.div>
- </div>
- )}
- </AnimatePresence>
+              <form onSubmit={submit} className="p-10 space-y-8">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Judul Identitas Aset</label>
+                  <input 
+                    value={data.title} 
+                    onChange={e => setData('title', e.target.value.toUpperCase())} 
+                    className="w-full h-14 bg-[#F8FAF9] border-2 border-slate-50 rounded-2xl px-6 text-sm font-black text-emerald-950 focus:bg-white focus:border-emerald-600 outline-none transition-all" 
+                    placeholder="PANDUAN_OPERASIONAL_2026" 
+                    required 
+                  />
+                </div>
 
- <div className="bg-[#16a34a] rounded-xl p-8 text-white relative overflow-hidden shadow-sm shadow-none">
- <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12"><Cpu size={200} /></div>
- <div className="flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
- <div className="flex items-center gap-6">
- <div className="h-14 w-14 bg-white/20 rounded-xl flex items-center justify-center shrink-0 border border-white/20 backdrop-blur-md text-white"><Zap size={28} strokeWidth={1.5} /></div>
- <div className="space-y-1">
- <h4 className="text-lg font-bold leading-none">Institutional Binary Oversight</h4>
- <p className="text-sm font-bold text-emerald-50 font-semibold text-xs leading-relaxed max-w-xl">Repositori ini adalah aset intelektual UIN Saizu. Setiap pembaruan binary dicatat otomatis dalam audit log sistem untuk menjamin integritas dataset publik.</p>
- </div>
- </div>
- </div>
- </div>
- </div>
- </AppLayout>
- );
-}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Binary Source</label>
+                    <div className="relative h-14 w-full bg-[#F8FAF9] rounded-2xl border-2 border-dashed border-emerald-100 flex flex-col items-center justify-center gap-1 overflow-hidden group/img transition-all hover:border-emerald-400">
+                      <input type="file" onChange={e => setData('file', e.target.files?.[0] || null)} className="absolute inset-0 opacity-0 cursor-pointer z-10" />
+                      {data.file ? (
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="text-emerald-500" size={20} strokeWidth={2.5} />
+                          <span className="text-[9px] font-black text-emerald-950 uppercase tracking-tight truncate w-24">{data.file.name}</span>
+                        </div>
+                      ) : (
+                        <>
+                          <FileDown size={20} className="text-emerald-100 group-hover:scale-110 transition-transform" />
+                          <span className="text-[9px] font-black text-emerald-800/30 uppercase tracking-widest">Local Binary</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">External Proxy</label>
+                    <div className="h-14 w-full bg-[#F8FAF9] border-2 border-slate-50 rounded-2xl px-4 flex items-center gap-3">
+                      <Globe size={18} className="text-emerald-300 shrink-0" />
+                      <input value={data.external_url} onChange={e => setData('external_url', e.target.value)} className="w-full bg-transparent border-none p-0 focus:ring-0 text-[10px] font-black text-emerald-950 placeholder:text-gray-200" placeholder="https://drive.google.com/..." />
+                    </div>
+                  </div>
+                </div>
 
-function AssetMetric({ label, value, icon: Icon }: { label: string, value: string | number, icon: LucideIcon }) {
- return (
- <div className="bg-white border border-emerald-50/60 rounded-xl p-4 flex items-center gap-4 shadow-sm hover:border-gray-300 transition-all group overflow-hidden relative">
- <div className="h-8 w-8 bg-gray-50 text-[#1a7a4a] rounded-lg flex items-center justify-center shrink-0 group-hover:rotate-6 transition-transform shadow-sm"><Icon size={16} /></div>
- <div className="flex flex-col z-10">
- <span className="text-sm font-bold text-emerald-950 font-semibold text-xs leading-none mb-1">{label}</span>
- <span className="text-xl font-bold text-emerald-950 tabular-nums leading-none group-hover:text-[#1a7a4a] transition-colors">{value}</span>
- </div>
- </div>
- );
+                <div className="flex items-center justify-between bg-emerald-50 px-6 py-4 rounded-2xl border border-emerald-100/50">
+                  <div className="flex items-center gap-4">
+                    <ShieldCheck size={20} className={clsx(data.is_active ? "text-emerald-600" : "text-emerald-200")} />
+                    <div className="flex flex-col">
+                      <span className="text-[10px] font-black text-emerald-950 uppercase tracking-widest leading-none mb-1">Status Visibilitas</span>
+                      <span className="text-[9px] font-bold text-emerald-700/50 uppercase tracking-tight">Siap dipublikasi ke portal.</span>
+                    </div>
+                  </div>
+                  <input 
+                    type="checkbox" 
+                    checked={data.is_active} 
+                    onChange={e => setData('is_active', e.target.checked)} 
+                    className="h-6 w-6 rounded-lg border-emerald-200 text-emerald-600 focus:ring-emerald-500 cursor-pointer shadow-sm transition-all"
+                  />
+                </div>
+
+                <div className="flex items-center gap-4 pt-4">
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 h-14 text-[10px] font-black text-emerald-950 uppercase tracking-widest hover:bg-gray-50 rounded-2xl transition-all">Batalkan</button>
+                  <button 
+                    type="submit" 
+                    disabled={processing} 
+                    className="flex-[2] h-14 bg-emerald-950 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all flex items-center justify-center gap-3 shadow-xl shadow-emerald-900/10 active:scale-95 disabled:opacity-50"
+                  >
+                    {processing ? <RefreshCw size={18} className="animate-spin" /> : <Save size={18} />} 
+                    Komit Binary
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </AppLayout>
+  );
 }

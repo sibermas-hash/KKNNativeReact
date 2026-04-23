@@ -268,7 +268,7 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
                               onChange={(e) =>
                                 updateItem(index, 'volume', parseInt(e.target.value) || 0)
                               }
-                              className="w-14 h-11 bg-emerald-50/30 border-none rounded-xl text-center text-sm font-bold text-emerald-950 focus:ring-2 focus:ring-[#1a7a4a] font-mono"
+                              className="w-14 h-11 bg-emerald-50/30 border-none rounded-xl text-center text-sm font-bold text-emerald-950 focus:ring-2 focus:ring-[#0d9488] font-mono"
                             />
                             <input
                               type="text"
@@ -323,7 +323,7 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
                           <ShieldAlert size={28} />
                         </div>
                         <div className="space-y-1">
-                          <p className="text-sm font-bold uppercase tracking-wider text-xs font-semibold text-[#1a7a4a]">
+                          <p className="text-sm font-bold uppercase tracking-wider text-xs font-semibold text-[#0d9488]">
                             Global Aggregator
                           </p>
                           <p className="text-xl font-bold font-bold text-center">
@@ -422,7 +422,7 @@ function BentoCard({
         <p
           className={clsx(
             'text-sm font-bold uppercase tracking-wider text-xs font-semibold mb-2',
-            color === 'emerald' ? 'text-[#1a7a4a]' : 'text-emerald-950',
+            color === 'emerald' ? 'text-[#0d9488]' : 'text-emerald-950',
           )}
         >
           {label}
@@ -440,7 +440,7 @@ function LedgerInput({ value, onChange }: { value: number; onChange: (v: number)
         type="number"
         value={value}
         onChange={(e) => onChange(parseInt(e.target.value) || 0)}
-        className="w-24 h-11 bg-emerald-50/30 border-none rounded-xl text-right text-sm font-bold text-emerald-800 focus:ring-2 focus:ring-[#1a7a4a] font-mono placeholder:opacity-20 translate-x-2"
+        className="w-24 h-11 bg-emerald-50/30 border-none rounded-xl text-right text-sm font-bold text-emerald-800 focus:ring-2 focus:ring-[#0d9488] font-mono placeholder:opacity-20 translate-x-2"
         placeholder="0"
       />
     </td>

@@ -66,13 +66,13 @@ export default function CertificateIndex({
                   <Award size={20} strokeWidth={3} />
                 </div>
                 <div className="h-px w-12 bg-emerald-500/30" />
-                <span className="text-sm font-bold uppercase tracking-wider text-xs font-semibold text-[#1a7a4a]">
+                <span className="text-sm font-bold uppercase tracking-wider text-xs font-semibold text-[#0d9488]">
                   Official Accreditation
                 </span>
               </div>
               <div className="space-y-4">
                 <h1 className="text-2xl md:text-2xl font-bold tracking-tighter uppercase leading-[0.9]">
-                  E-Sertifikat <span className="text-[#1a7a4a]">Pengabdian.</span>
+                  E-Sertifikat <span className="text-[#0d9488]">Pengabdian.</span>
                 </h1>
                 <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs leading-relaxed opacity-80">
                   Dokumen resmi tanda kelulusan dan kontribusi nyata Anda dalam program KKN UIN
@@ -175,7 +175,7 @@ export default function CertificateIndex({
                       <p className="text-3xl font-bold text-emerald-950 font-bold text-center">
                         Approved.
                       </p>
-                      <p className="text-sm font-bold text-[#1a7a4a] uppercase tracking-wider text-xs font-semibold">
+                      <p className="text-sm font-bold text-[#0d9488] uppercase tracking-wider text-xs font-semibold">
                         Access Granted for Download
                       </p>
                     </div>

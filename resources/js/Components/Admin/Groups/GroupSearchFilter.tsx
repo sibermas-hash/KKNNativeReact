@@ -59,7 +59,7 @@ export const GroupSearchFilter = ({
             className={clsx(
               'h-12 px-6 rounded-xl text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-all border',
               showFilters
-                ? 'bg-[#16a34a] text-white border-emerald-600'
+                ? 'bg-[#0d9488] text-white border-emerald-600'
                 : 'bg-white text-emerald-800 hover:text-emerald-600 hover:border-emerald-200'
             )}
           >
@@ -87,7 +87,7 @@ export const GroupSearchFilter = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-emerald-950 uppercase tracking-widest ml-1 flex items-center gap-2">
-                       <Layers size={14} className="text-[#1a7a4a]" /> Sesi Akademik
+                       <Layers size={14} className="text-[#0d9488]" /> Sesi Akademik
                     </label>
                     <div className="relative group/select">
                       <select
@@ -110,7 +110,7 @@ export const GroupSearchFilter = ({
                   </div>
                   <div className="space-y-2">
                     <label className="text-xs font-bold text-emerald-950 uppercase tracking-widest ml-1 flex items-center gap-2">
-                       <RefreshCw size={14} className="text-[#1a7a4a]" /> Status Operasional
+                       <RefreshCw size={14} className="text-[#0d9488]" /> Status Operasional
                     </label>
                     <div className="relative group/select">
                       <select

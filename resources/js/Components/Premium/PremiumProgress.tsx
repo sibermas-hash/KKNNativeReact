@@ -14,14 +14,14 @@ export default function PremiumProgress({ label, count, total }: PremiumProgress
         <div className="space-y-2">
             <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-emerald-950">{label}</span>
-                <span className="text-sm font-semibold text-[#1a7a4a]">{p}%</span>
+                <span className="text-sm font-semibold text-[#0d9488]">{p}%</span>
             </div>
-            <div className="h-2 w-full bg-[#e8f5ee] rounded-full overflow-hidden">
+            <div className="h-2 w-full bg-[#f0fdfa] rounded-full overflow-hidden">
                 <motion.div 
                     initial={{ width: 0 }}
                     animate={{ width: `${p}%` }}
                     transition={{ duration: 1, ease: "easeOut" }}
-                    className="h-full bg-[#1a7a4a] rounded-full" 
+                    className="h-full bg-[#0d9488] rounded-full" 
                 />
             </div>
         </div>

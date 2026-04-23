@@ -8,8 +8,9 @@ export default {
   ],
   theme: {
     fontFamily: {
-      sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-      display: ['Outfit', 'system-ui', 'sans-serif'],
+      sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+      dm: ['"DM Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+      display: ['"Outfit"', 'system-ui', 'sans-serif'],
     },
     extend: {
       colors: {

@@ -64,7 +64,7 @@ export default function VisualDiff({ oldValues, newValues }: Props) {
  </span>
  </div>
  <div className="col-span-4">
- <span className="inline-flex rounded-md bg-[#e8f5ee] px-2 py-1 text-xs text-emerald-800">
+ <span className="inline-flex rounded-md bg-[#f0fdfa] px-2 py-1 text-xs text-emerald-800">
  {after === undefined ? 'Dihapus' : formatValue(after)}
  </span>
  </div>

@@ -43,7 +43,7 @@ const AttendanceSyncMonitor: React.FC = () => {
         };
     }, []);
 
-    const checkSyncStatus = async () => {
+    async function checkSyncStatus() {
         setLoading(true);
 
         try {
@@ -63,9 +63,9 @@ const AttendanceSyncMonitor: React.FC = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }
 
-    const handleManualSync = async () => {
+    async function handleManualSync() {
         setSyncing(true);
 
         try {
@@ -82,15 +82,15 @@ const AttendanceSyncMonitor: React.FC = () => {
         } finally {
             setSyncing(false);
         }
-    };
+    }
 
-    const handleSyncSuccess = () => {
+    function handleSyncSuccess() {
         checkSyncStatus();
-    };
+    }
 
-    const handleSyncFailed = () => {
+    function handleSyncFailed() {
         checkSyncStatus();
-    };
+    }
 
     if (!stats) {
         return null;

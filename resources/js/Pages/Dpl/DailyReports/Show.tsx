@@ -159,7 +159,7 @@ export default function DplDailyReportShow({ report }: Props) {
                         </div>
                         {report.group.location?.village_name && (
                             <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-xl border border-emerald-100">
-                                <Navigation size={14} className="text-[#1a7a4a]" />
+                                <Navigation size={14} className="text-[#0d9488]" />
                                 <span className="text-xs font-bold text-emerald-800">{report.group.location.village_name}</span>
                             </div>
                         )}
@@ -172,7 +172,7 @@ export default function DplDailyReportShow({ report }: Props) {
                         {/* Narasi Kegiatan */}
                         <section className="bg-white rounded-xl border border-emerald-50 shadow-sm overflow-hidden">
                             <div className="px-8 py-5 border-b border-emerald-50 flex items-center gap-3">
-                                <FileText size={18} className="text-[#1a7a4a]" />
+                                <FileText size={18} className="text-[#0d9488]" />
                                 <h2 className="text-sm font-bold text-emerald-950 uppercase">Deskripsi Kegiatan</h2>
                             </div>
                             <div className="p-8">
@@ -182,7 +182,7 @@ export default function DplDailyReportShow({ report }: Props) {
                                 {report.output && (
                                     <div className="mt-8 pt-6 border-t border-emerald-50">
                                         <div className="flex items-center gap-2 mb-3">
-                                            <Target size={14} className="text-[#1a7a4a]" />
+                                            <Target size={14} className="text-[#0d9488]" />
                                             <span className="text-sm font-bold text-emerald-950 uppercase">Target & Output</span>
                                         </div>
                                         <p className="text-sm text-emerald-950 leading-relaxed bg-emerald-50/30 p-6 rounded-2xl border border-emerald-50 whitespace-pre-line">
@@ -197,7 +197,7 @@ export default function DplDailyReportShow({ report }: Props) {
                         <section className="bg-white rounded-xl border border-emerald-50 shadow-sm overflow-hidden">
                             <div className="px-8 py-5 border-b border-emerald-50 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <Camera size={18} className="text-[#1a7a4a]" />
+                                    <Camera size={18} className="text-[#0d9488]" />
                                     <h2 className="text-sm font-bold text-emerald-950 uppercase">Bukti Dokumentasi</h2>
                                 </div>
                                 <span className="text-sm font-bold text-emerald-300 uppercase bg-emerald-50/30 px-3 py-1 rounded-full border border-emerald-50">
@@ -355,7 +355,7 @@ export default function DplDailyReportShow({ report }: Props) {
                         {/* Geotagging Section */}
                         <section className="bg-white rounded-xl border border-emerald-50 shadow-sm overflow-hidden">
                             <div className="px-6 py-4 border-b border-emerald-50 flex items-center gap-3">
-                                <Navigation size={16} className="text-[#1a7a4a]" />
+                                <Navigation size={16} className="text-[#0d9488]" />
                                 <h2 className="text-sm font-bold text-emerald-950 uppercase">Verifikasi Lokasi</h2>
                             </div>
                             <div className="p-6 space-y-4">
@@ -408,7 +408,7 @@ export default function DplDailyReportShow({ report }: Props) {
                                                     </span>
                                                 </div>
                                                 {report.gps.distance_to_reference_meters <= 5000 
-                                                    ? <CheckCircle2 size={24} className="text-[#1a7a4a]" />
+                                                    ? <CheckCircle2 size={24} className="text-[#0d9488]" />
                                                     : <AlertCircle size={24} className="text-rose-500" />
                                                 }
                                             </div>

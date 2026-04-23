@@ -489,7 +489,7 @@ export default function ProfileShow() {
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-sm font-medium text-emerald-800 flex items-center gap-1">Jenis Kelamin <span className="text-rose-500">*</span></label>
-                      <select value={profileForm.data.gender} onChange={e => profileForm.setData('gender', e.target.value as 'L' | 'P')} className="w-full h-10 pl-3 pr-8 rounded-md border-gray-300 bg-white text-sm text-emerald-800 focus:border-[#1a7a4a] focus:ring-emerald-500 shadow-sm transition-colors">
+                      <select value={profileForm.data.gender} onChange={e => profileForm.setData('gender', e.target.value as 'L' | 'P')} className="w-full h-10 pl-3 pr-8 rounded-md border-gray-300 bg-white text-sm text-emerald-800 focus:border-[#0d9488] focus:ring-emerald-500 shadow-sm transition-colors">
                         <option value="">Pilih Jenis Kelamin</option>
                         <option value="L">Laki-laki</option>
                         <option value="P">Perempuan</option>
@@ -500,7 +500,7 @@ export default function ProfileShow() {
                     {isStudent && (
                       <div className="space-y-1.5">
                         <label className="text-sm font-medium text-emerald-800 flex items-center gap-1">Ukuran Baju / Jaket <span className="text-rose-500">*</span></label>
-                        <select value={profileForm.data.shirt_size} onChange={e => profileForm.setData('shirt_size', e.target.value)} className="w-full h-10 pl-3 pr-8 rounded-md border-gray-300 bg-white text-sm text-emerald-800 focus:border-[#1a7a4a] focus:ring-emerald-500 shadow-sm transition-colors">
+                        <select value={profileForm.data.shirt_size} onChange={e => profileForm.setData('shirt_size', e.target.value)} className="w-full h-10 pl-3 pr-8 rounded-md border-gray-300 bg-white text-sm text-emerald-800 focus:border-[#0d9488] focus:ring-emerald-500 shadow-sm transition-colors">
                           <option value="">Pilih Ukuran</option>
                           {['S', 'M', 'L', 'XL', 'XXL', '3XL'].map(s => <option key={s} value={s}>{s}</option>)}
                         </select>

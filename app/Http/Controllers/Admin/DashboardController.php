@@ -33,6 +33,58 @@ class DashboardController extends Controller
         private IntelligenceService $intelligenceService,
     ) {}
 
+    public function hub(Request $request): Response
+    {
+        Gate::authorize('access-admin-panel');
+        $user = $request->user();
+
+        $canManageContent = $user?->hasRole('superadmin') || Gate::allows('manage-content');
+        $canManageSystem = $user?->hasRole('superadmin')
+            || Gate::allows('manage-settings')
+            || Gate::allows('manage-users')
+            || Gate::allows('manage-database-sync')
+            || Gate::allows('view-audit-logs');
+
+        return Inertia::render('Admin/Hub', [
+            'identity' => [
+                'name' => $user?->name,
+                'primary_role' => $user?->getRoleNames()->first() ?? 'admin',
+            ],
+            'areas' => [
+                [
+                    'key' => 'operational',
+                    'title' => 'Dashboard Admin',
+                    'badge' => 'Operasional KKN',
+                    'description' => 'Manajemen pendaftaran, penempatan kelompok, penugasan DPL, monitoring lapangan, dan penilaian akademik.',
+                    'href' => route('admin.dashboard'),
+                    'available' => true,
+                    'highlights' => ['Pendaftaran', 'Kelompok', 'Penugasan DPL', 'Penilaian'],
+                    'locked_message' => null,
+                ],
+                [
+                    'key' => 'blog',
+                    'title' => 'Dashboard Blog',
+                    'badge' => 'Portal Publik',
+                    'description' => 'Kelola warta utama, informasi publik, dan pusat unduhan yang tampil di halaman depan website.',
+                    'href' => route('admin.warta-utama.index'),
+                    'available' => $canManageContent,
+                    'highlights' => ['Warta Utama', 'Konten Publik', 'Unduhan'],
+                    'locked_message' => 'Area ini dibuka untuk admin yang menangani konten publik.',
+                ],
+                [
+                    'key' => 'system',
+                    'title' => 'Pengaturan Sistem (API)',
+                    'badge' => 'Konfigurasi Inti',
+                    'description' => 'Atur konfigurasi global, sinkronisasi data master, audit log, dan parameter sistem inti.',
+                    'href' => route('admin.pengaturan.sistem'),
+                    'available' => $canManageSystem,
+                    'highlights' => ['Pengaturan Global', 'Sinkronisasi', 'Audit Log'],
+                    'locked_message' => 'Area ini dibuka untuk admin sistem dan pengelola konfigurasi.',
+                ],
+            ],
+        ]);
+    }
+
     public function index(Request $request): Response|JsonResponse
     {
         \Log::info('DashboardController@index hit. User: '.(auth()->user()?->username ?? 'null').' Request expects JSON: '.($request->wantsJson() ? 'YES' : 'NO'));
@@ -51,7 +103,7 @@ class DashboardController extends Controller
         $activePeriods = Periode::where('is_active', true)->latest()->get();
 
         // Get selected period from request or default to the primary active one
-        $periodId = $request->query('periode_id') ?? ($this->contextService->getActivePeriodId() ?? $this->contextService->getDefaultPeriodId());
+        $periodId = $request->query('periode_id') ? (int) $request->query('periode_id') : ($this->contextService->getActivePeriodId() ?? $this->contextService->getDefaultPeriodId());
         $periodData = $periodId ? Periode::find($periodId) : $this->contextService->getActivePeriodData();
         $isLocal = config('app.env') === 'local';
 

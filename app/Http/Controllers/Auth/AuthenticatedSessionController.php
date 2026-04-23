@@ -137,9 +137,9 @@ class AuthenticatedSessionController extends Controller
 
         // Admin/Superadmin bypass password change requirement and redirect directly to dashboard
         if ($user->hasRole(['superadmin', 'admin', 'faculty_admin'])) {
-            \Log::info('Redirecting to admin dashboard');
+            \Log::info('Redirecting to admin hub');
 
-            return redirect()->intended(route('admin.dashboard'));
+            return redirect()->intended(route('admin.hub'));
         }
 
         // Check password status first (only for non-admin users)

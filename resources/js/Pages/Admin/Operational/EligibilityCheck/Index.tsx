@@ -164,7 +164,7 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
                 onClick={() => setShowFilters(!showFilters)}
                 className={clsx(
                   "h-11 px-5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all border-2",
-                  showFilters ? "bg-[#16a34a] border-emerald-600 text-white" : "bg-white border-emerald-50 text-emerald-950 hover:border-emerald-600"
+                  showFilters ? "bg-[#0d9488] border-emerald-600 text-white" : "bg-white border-emerald-50 text-emerald-950 hover:border-emerald-600"
                 )}
               >
                 <Filter size={14} strokeWidth={2.5} />
@@ -235,7 +235,7 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
                     onClick={() => handleToggleEligible(true)} 
                     className={clsx(
                       "flex-1 rounded-lg text-xs font-extrabold transition-all tracking-wider",
-                      showEligible ? "bg-white text-[#1a7a4a] shadow-sm" : "text-emerald-800 hover:text-emerald-950"
+                      showEligible ? "bg-white text-[#0d9488] shadow-sm" : "text-emerald-800 hover:text-emerald-950"
                     )}
                   >
                     LAYAK
@@ -267,13 +267,13 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
               <PremiumTableRow key={s.mahasiswa_id}>
                 <PremiumTableCell>
                   <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-[#e8f5ee] text-[#1a7a4a] flex items-center justify-center text-xs font-bold border border-emerald-50">
+                    <div className="h-10 w-10 rounded-lg bg-[#f0fdfa] text-[#0d9488] flex items-center justify-center text-xs font-bold border border-emerald-50">
                       {s.nama.charAt(0)}
                     </div>
                     <div className="flex flex-col gap-1">
                       <span className="text-xs font-bold text-emerald-950 leading-tight uppercase tracking-tight">{s.nama}</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-[#1a7a4a] font-mono tracking-wider">{s.nim}</span>
+                        <span className="text-xs font-bold text-[#0d9488] font-mono tracking-wider">{s.nim}</span>
                         <span className="text-xs font-extrabold text-emerald-950/30 uppercase tracking-wide truncate max-w-[180px]">{s.prodi_nama || '-'}</span>
                       </div>
                       {s.fakultas_nama && (
@@ -286,7 +286,7 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
                   <div className="flex flex-col items-center gap-1.5">
                     <span className={clsx(
                       "text-xs font-extrabold px-3 py-1 rounded-lg border tabular-nums tracking-wider leading-none", 
-                      s.sks_completed >= 100 ? 'bg-[#e8f5ee] border-emerald-50 text-[#1a7a4a]' : 'bg-rose-50 border-rose-100 text-rose-600'
+                      s.sks_completed >= 100 ? 'bg-[#f0fdfa] border-emerald-50 text-[#0d9488]' : 'bg-rose-50 border-rose-100 text-rose-600'
                     )}>
                       {s.sks_completed} SKS
                     </span>
@@ -315,7 +315,7 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
         {/* --- FOOTER INFO --- */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8">
            <div className="flex gap-4 p-6 bg-white border-2 border-[#f3f4f6] rounded-xl shadow-sm">
-            <div className="h-10 w-10 bg-[#e8f5ee] rounded-xl flex items-center justify-center shrink-0 text-[#1a7a4a]">
+            <div className="h-10 w-10 bg-[#f0fdfa] rounded-xl flex items-center justify-center shrink-0 text-[#0d9488]">
               <RefreshCw size={20} strokeWidth={2.5} />
             </div>
             <div className="space-y-1">
@@ -324,7 +324,7 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
             </div>
           </div>
           <div className="flex gap-4 p-6 bg-white border-2 border-[#f3f4f6] rounded-xl shadow-sm">
-            <div className="h-10 w-10 bg-[#e8f5ee] rounded-xl flex items-center justify-center shrink-0 text-[#1a7a4a]">
+            <div className="h-10 w-10 bg-[#f0fdfa] rounded-xl flex items-center justify-center shrink-0 text-[#0d9488]">
               <RefreshCw size={20} strokeWidth={2.5} />
             </div>
             <div className="space-y-1">
@@ -333,7 +333,7 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
             </div>
           </div>
           <div className="flex gap-4 p-6 bg-white border-2 border-[#f3f4f6] rounded-xl shadow-sm">
-            <div className="h-10 w-10 bg-[#e8f5ee] rounded-xl flex items-center justify-center shrink-0 text-[#1a7a4a]">
+            <div className="h-10 w-10 bg-[#f0fdfa] rounded-xl flex items-center justify-center shrink-0 text-[#0d9488]">
               <RefreshCw size={20} strokeWidth={2.5} />
             </div>
             <div className="space-y-1">

@@ -190,12 +190,18 @@ export interface EvaluationItem {
 export interface Announcement {
   id: number;
   title: string;
-  slug?: string;
+  slug?: string | null;
   category: string;
+  excerpt?: string | null;
   content: string;
-  image?: string;
+  image?: string | null;
+  image_url?: string | null;
+  file_path?: string | null;
+  file_name?: string | null;
+  attachment_url?: string | null;
   is_active: boolean;
   published_at: string;
+  status?: string;
   meta_title?: string;
   meta_description?: string;
   meta_keywords?: string;

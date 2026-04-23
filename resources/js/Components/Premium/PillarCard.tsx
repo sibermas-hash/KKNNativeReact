@@ -17,7 +17,7 @@ export function PillarCard({ icon: Icon, title, desc, className }: PillarCardPro
                 className
             )}
         >
-             <div className="h-12 w-12 bg-[#e8f5ee] text-[#1a7a4a] rounded-lg flex items-center justify-center group-hover:bg-[#1a7a4a] group-hover:text-white transition-colors duration-200">
+             <div className="h-12 w-12 bg-[#f0fdfa] text-[#0d9488] rounded-lg flex items-center justify-center group-hover:bg-[#0d9488] group-hover:text-white transition-colors duration-200">
                 <Icon size={24} strokeWidth={2} />
              </div>
              <div className="space-y-2">

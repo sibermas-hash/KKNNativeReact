@@ -181,22 +181,22 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
     <div className="space-y-8 pb-24 font-sans text-emerald-950">
         
         <PageHeader 
-          title="Workshop & Pembekalan"
-          subtitle="Manajemen agenda pelatihan terpusat untuk membekali mahasiswa dan DPL sebelum terjun ke lokasi pengabdian."
+          title="Workshop & Pembekalan."
+          subtitle="Manajemen agenda pelatihan terpusat untuk membekali mahasiswa dan Dosen Pembimbing Lapangan sebelum terjun ke lokasi pengabdian."
           icon={GraduationCap}
           groupLabel="Operasional Sistem"
           stats={{
             label: 'Total Peserta',
-            value: `${workshops.reduce((acc, w) => acc + (w.registered || 0), 0).toLocaleString()} Data`,
+            value: `${workshops.reduce((acc, w) => acc + (w.registered || 0), 0).toLocaleString()} Peserta`,
             icon: Users
           }}
         >
           {isAdmin && (
             <button 
               onClick={() => { setSelectedWorkshop(null); reset(); setShowForm(true); }} 
-              className="h-10 px-4 bg-[#16a34a] hover:bg-[#15803d] text-white rounded-lg font-bold text-sm shadow-sm active:scale-95 transition-all flex items-center gap-2"
+              className="h-12 px-8 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-[10px] shadow-lg shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-3 uppercase tracking-widest font-display"
             >
-              <Plus size={16} /> Tambah Agenda
+              <Plus size={18} strokeWidth={3} /> Tambah Agenda
             </button>
           )}
         </PageHeader>
@@ -210,25 +210,28 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
         </div>
 
         {/* PERIOD FILTER */}
-        <ContentPanel title="Filter Konteks Periode" icon={Filter} padding={true}>
-          <div className="flex items-center gap-4">
-             <div className="flex-1 max-w-sm space-y-1.5">
-                <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Pilih Periode KKN</label>
+        <ContentPanel title="Konfigurasi Konteks Periode" icon={Filter} padding={true}>
+          <div className="flex flex-col md:flex-row md:items-end gap-6">
+             <div className="flex-1 max-w-sm space-y-3">
+                <label className="text-[10px] font-black text-emerald-950/40 uppercase tracking-[0.2em] pl-1 font-display">Target Periode KKN</label>
                 <div className="relative group">
                   <select 
                     value={selectedPeriodId} 
                     onChange={e => { setSelectedPeriodId(e.target.value); applyFilters(e.target.value); }}
-                    className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none"
+                    className="w-full h-12 pl-6 pr-12 rounded-2xl border-2 border-emerald-50 bg-white text-[11px] font-black text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none uppercase tracking-widest font-display"
                   >
                     <option value="">SEMUA PERIODE</option>
-                    {periods.map(p => <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>)}
+                    {periods.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                   </select>
-                  <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform"/>
+                  <ChevronDown size={16} className="absolute right-5 top-1/2 -translate-y-1/2 text-emerald-300 pointer-events-none group-focus-within:rotate-180 transition-transform" />
                 </div>
              </div>
-             <div className="pt-5">
-                <button onClick={() => { setSelectedPeriodId(''); applyFilters(''); }} className="text-xs font-bold text-emerald-600 hover:text-rose-600 uppercase tracking-widest transition-all px-4 py-2 border border-emerald-100 rounded-lg">Reset Filter</button>
-             </div>
+             <button 
+              onClick={() => { setSelectedPeriodId(''); applyFilters(''); }} 
+              className="h-12 px-6 text-[10px] font-black text-emerald-600 hover:text-rose-600 uppercase tracking-widest transition-all border-2 border-emerald-50 hover:border-rose-100 rounded-2xl bg-white font-display"
+             >
+               Reset Filter
+             </button>
           </div>
         </ContentPanel>
 
@@ -277,26 +280,32 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
                       </h3>
                       <div className="flex flex-col gap-1.5">
                         <div className="flex items-center gap-2 text-emerald-800 font-medium text-xs">
-                          <Calendar size={14} className="text-[#1a7a4a]" />
+                          <Calendar size={14} className="text-[#0d9488]" />
                           {w.date}
                         </div>
                         <div className="flex items-center gap-2 text-emerald-800 font-medium text-xs">
-                          <MapPin size={14} className="text-[#1a7a4a]" />
+                          <MapPin size={14} className="text-[#0d9488]" />
                           <span className="truncate">{w.location || '—'}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold text-emerald-800 uppercase leading-none mb-1">Pendaftar</span>
+                    <div className="pt-5 border-t border-emerald-50/50 flex flex-col gap-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[9px] font-black text-emerald-950/30 uppercase tracking-[0.2em] font-display">Okupansi Peserta</span>
                         <div className="flex items-baseline gap-1">
-                          <span className="text-sm font-bold text-emerald-950">{w.registered}</span>
-                          <span className="text-xs font-medium text-emerald-800">/ {w.max_participants || '∞'}</span>
+                          <span className="text-sm font-black text-emerald-950 tabular-nums font-display">{w.registered}</span>
+                          <span className="text-[10px] font-black text-slate-300 font-display">/ {w.max_participants || '∞'}</span>
                         </div>
                       </div>
-                      <div className="h-2 w-24 bg-gray-100 rounded-full overflow-hidden">
-                        <div className="h-full bg-emerald-500" style={{ width: `${Math.min((w.registered / (w.max_participants || 100)) * 100, 100)}%` }} />
+                      <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
+                        <div 
+                          className={clsx(
+                            "h-full transition-all duration-1000 shadow-sm",
+                            (w.registered / (w.max_participants || 100)) > 0.8 ? "bg-rose-500" : "bg-emerald-500"
+                          )} 
+                          style={{ width: `${Math.min((w.registered / (w.max_participants || 100)) * 100, 100)}%` }} 
+                        />
                       </div>
                     </div>
                   </div>
@@ -306,7 +315,7 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
                       <>
                         <button 
                           onClick={() => handleEdit(w)} 
-                          className="h-8 w-8 rounded-lg border border-emerald-50 bg-white flex items-center justify-center text-emerald-800 hover:text-[#1a7a4a] transition-colors"
+                          className="h-8 w-8 rounded-lg border border-emerald-50 bg-white flex items-center justify-center text-emerald-800 hover:text-[#0d9488] transition-colors"
                         >
                           <Pencil size={14} />
                         </button>
@@ -318,21 +327,21 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
                         </button>
                         <button 
                           onClick={() => handleOpenParticipants(w)}
-                          className="h-8 px-4 bg-white border border-emerald-50 text-[#1a7a4a] rounded-lg text-xs font-bold hover:bg-gray-50"
+                          className="h-8 px-4 bg-white border border-emerald-50 text-[#0d9488] rounded-lg text-xs font-bold hover:bg-gray-50"
                         >
                           Daftar Peserta
                         </button>
                       </>
                     ) : isParticipant && (
                       w.is_registered ? (
-                        <div className="h-8 px-4 rounded-lg bg-[#e8f5ee] border border-emerald-50 flex items-center gap-2 text-[#1a7a4a] font-bold text-xs uppercase">
+                        <div className="h-8 px-4 rounded-lg bg-[#f0fdfa] border border-emerald-50 flex items-center gap-2 text-[#0d9488] font-bold text-xs uppercase">
                           <CheckCircle2 size={12} /> {w.attendance_status === 'attended' ? 'HADIR' : 'TERDAFTAR'}
                         </div>
                       ) : (
                         <button 
                           onClick={() => handleRegister(w.id)}
                           disabled={w.is_full}
-                          className="h-8 px-4 rounded-lg bg-[#16a34a] text-white font-bold text-xs uppercase disabled:opacity-50"
+                          className="h-8 px-4 rounded-lg bg-[#0d9488] text-white font-bold text-xs uppercase disabled:opacity-50"
                         >
                           {w.is_full ? 'PENUH' : 'DAFTAR'}
                         </button>
@@ -351,7 +360,7 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
         <div className="bg-white rounded-xl shadow-sm border border-emerald-50 font-sans text-emerald-950">
           <div className="px-6 py-4 border-b border-emerald-50 flex items-center justify-between bg-gray-50">
             <div className="flex items-center gap-3">
-              <div className="h-8 w-8 bg-[#16a34a] text-white rounded-lg flex items-center justify-center">
+              <div className="h-8 w-8 bg-[#0d9488] text-white rounded-lg flex items-center justify-center">
                 <GraduationCap size={18} />
               </div>
               <h3 className="text-sm font-bold uppercase tracking-tight">Data Konfigurasi Agenda</h3>
@@ -456,7 +465,7 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
               <button 
                 type="submit"
                 disabled={processing} 
-                className="h-11 px-8 bg-[#16a34a] hover:bg-[#15803d] text-white font-bold text-sm rounded-xl shadow-sm active:scale-95 transition-all disabled:opacity-50"
+                className="h-11 px-8 bg-[#0d9488] hover:bg-[#0f766e] text-white font-bold text-sm rounded-xl shadow-sm active:scale-95 transition-all disabled:opacity-50"
               >
                 {selectedWorkshop ? 'Simpan Perbarui' : 'Tambah Agenda'}
               </button>
@@ -468,8 +477,8 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
         <div className="max-h-[85vh] flex flex-col font-sans bg-white text-emerald-950">
           <div className="p-8 border-b-2 border-[#f3f4f6] bg-gray-50 flex items-center justify-between">
             <div className="space-y-1">
-              <h3 className="text-xl font-black uppercase tracking-tight">Peserta <span className="text-[#1a7a4a]">Terdata.</span></h3>
-              <p className="text-xs font-extrabold text-[#1a7a4a] uppercase tracking-widest">{selectedWorkshop?.title}</p>
+              <h3 className="text-xl font-black uppercase tracking-tight">Peserta <span className="text-[#0d9488]">Terdata.</span></h3>
+              <p className="text-xs font-extrabold text-[#0d9488] uppercase tracking-widest">{selectedWorkshop?.title}</p>
             </div>
             <button onClick={() => setShowParticipants(false)} className="h-10 w-10 bg-white border-2 border-[#f3f4f6] text-emerald-950 hover:bg-rose-500 hover:text-white rounded-xl flex items-center justify-center transition-all active:scale-95">
               <X size={24} />
@@ -486,15 +495,15 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
                 <PremiumTableRow key={p.id}>
                   <PremiumTableCell>
                     <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-xl bg-[#e8f5ee] flex items-center justify-center text-[#1a7a4a] font-black border-2 border-emerald-50 uppercase">
+                      <div className="h-10 w-10 rounded-xl bg-[#f0fdfa] flex items-center justify-center text-[#0d9488] font-black border-2 border-emerald-50 uppercase">
                         {p.name.charAt(0)}
                       </div>
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-emerald-950 group-hover:text-[#1a7a4a] transition-colors uppercase tracking-tight">{p.name}</span>
-                          <span className="text-[10px] font-black bg-emerald-50 text-[#1a7a4a] px-1.5 py-0.5 rounded border border-emerald-100 tabular-nums">{p.identity_number}</span>
+                          <span className="text-sm font-bold text-emerald-950 group-hover:text-[#0d9488] transition-colors uppercase tracking-tight">{p.name}</span>
+                          <span className="text-[10px] font-black bg-emerald-50 text-[#0d9488] px-1.5 py-0.5 rounded border border-emerald-100 tabular-nums">{p.identity_number}</span>
                         </div>
-                        <span className="text-xs font-bold text-[#1a7a4a]/40 tabular-nums lowercase">{p.email || 'system@uinsaizu.ac.id'}</span>
+                        <span className="text-xs font-bold text-[#0d9488]/40 tabular-nums lowercase">{p.email || 'system@uinsaizu.ac.id'}</span>
                       </div>
                     </div>
                   </PremiumTableCell>
@@ -503,12 +512,12 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
                       type="checkbox"
                       checked={attendedIds.includes(p.user_id)}
                       onChange={() => toggleAttendance(p.user_id)}
-                      className="w-5 h-5 rounded border-gray-300 text-[#16a34a] focus:ring-[#16a34a] transition-all cursor-pointer"
+                      className="w-5 h-5 rounded border-gray-300 text-[#0d9488] focus:ring-[#0d9488] transition-all cursor-pointer"
                     />
                   </PremiumTableCell>
                   <PremiumTableCell align="right">
                     {p.certificate_generated ? (
-                      <span className="inline-flex items-center gap-2 text-[10px] font-black text-[#1a7a4a] bg-[#e8f5ee] px-2 py-1 rounded border border-emerald-100 tracking-widest uppercase">
+                      <span className="inline-flex items-center gap-2 text-[10px] font-black text-[#0d9488] bg-[#f0fdfa] px-2 py-1 rounded border border-emerald-100 tracking-widest uppercase">
                         <CheckCircle2 size={10} strokeWidth={3} /> TERBIT
                       </span>
                     ) : (
@@ -527,7 +536,7 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
               <button 
                 onClick={saveAttendance}
                 disabled={processing}
-                className="h-11 px-8 bg-[#16a34a] text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-[#15803d] transition-all active:scale-95 shadow-md shadow-emerald-600/20 disabled:opacity-50"
+                className="h-11 px-8 bg-[#0d9488] text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-[#0f766e] transition-all active:scale-95 shadow-md shadow-emerald-600/20 disabled:opacity-50"
               >
                 {processing ? 'Menyimpan...' : 'Simpan Presensi'}
               </button>

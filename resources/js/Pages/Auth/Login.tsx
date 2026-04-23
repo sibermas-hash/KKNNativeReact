@@ -1,18 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import GuestLayout from '@/Layouts/GuestLayout';
-import type { PageProps, AuthLoginErrors } from '@/types';
+import type { PageProps } from '@/types';
 import { hasErrors as checkErrors, getErrorMessages } from '@/types';
 import { Link, router, useForm, usePage } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Lock,
-  Eye,
-  EyeOff,
-  RefreshCw,
-  User,
-  AlertCircle,
-  ArrowRight,
-} from 'lucide-react';
+import { Lock, Eye, EyeOff, RefreshCw, User, AlertCircle, ArrowRight } from 'lucide-react';
 
 export default function Login() {
   const {
@@ -38,7 +30,6 @@ export default function Login() {
     captcha_answer: '',
     remember: false,
   });
-  const formRef = useRef<HTMLFormElement | null>(null);
 
   const [showPassword, setShowPassword] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -47,10 +38,6 @@ export default function Login() {
     initialCaptchaGeneratedAt ?? null,
   );
 
-
-
-
-
   const activeCaptchaQuestion = (captchaQuestion || '0 + 0')
     .replace(/Berapa\s+hasil\s+/i, '')
     .replace(/\?$/, '')
@@ -58,27 +45,10 @@ export default function Login() {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    console.log('=== LOGIN FORM SUBMIT ===', {
-      url: '/login',
-      data: data,
-      csrfToken: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content'),
-      cookies: document.cookie,
-    });
-
     post('/login', {
       replace: true,
       preserveScroll: true,
-      onSuccess: (page) => {
-        console.log('=== LOGIN SUCCESS ===', page);
-        reset('password', 'captcha_answer');
-      },
-      onError: (errors) => {
-        console.log('=== LOGIN ERROR ===', errors);
-      },
-      onFinish: () => {
-        console.log('=== LOGIN FINISH ===');
-      },
+      onSuccess: () => reset('password', 'captcha_answer'),
     });
   };
 
@@ -116,7 +86,6 @@ export default function Login() {
     return () => window.clearTimeout(timer);
   }, [captchaGeneratedAt, captchaTtlSeconds, refreshCaptcha]);
 
-  // Auto-clear sensitive fields and sync captcha on login error
   useEffect(() => {
     if (checkErrors(errors)) {
       reset('password', 'captcha_answer');
@@ -136,7 +105,7 @@ export default function Login() {
   };
 
   return (
-    <GuestLayout title="Masuk ke Sistem">
+    <GuestLayout title="Otentikasi Sistem">
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -145,37 +114,38 @@ export default function Login() {
       >
         {/* --- HEADER --- */}
         <motion.div variants={itemVariants} className="space-y-6 flex flex-col items-center">
-          <div className="flex flex-col items-center gap-4">
-            <div className="flex items-center gap-5">
-              <img src="/images/logo_uin_saizu.png" alt="Logo UIN SAIZU" className="h-14 w-auto object-contain" />
-              <div className="w-px h-8 bg-emerald-100" />
-              <img src="/images/logo_siberdaya.png" alt="Logo Siberdaya" className="h-12 w-auto object-contain" />
+          <div className="flex flex-col items-center gap-5">
+            {/* Logos simply displayed on the bright glass */}
+            <div className="flex items-center gap-4">
+              <img src="/images/logo_uinsaizu.png" alt="Logo UIN SAIZU" className="h-12 w-auto object-contain drop-shadow-sm" />
+              <div className="w-px h-8 bg-emerald-200" />
+              <img src="/images/logo_siberdaya.png" alt="Logo Siberdaya" className="h-10 w-auto object-contain drop-shadow-sm" />
             </div>
-            <div className="text-center">
-              <p className="text-[10px] font-black text-emerald-800 uppercase tracking-[0.2em] mb-1">LPPM UIN SAIZU PURWOKERTO</p>
-              <h1 className="text-2xl font-black text-emerald-950 tracking-tight uppercase italic">
-                Siberdaya <span className="text-emerald-600">Portal.</span>
+            
+            <div className="text-center space-y-2">
+              <h1 className="text-[2.5rem] font-black text-emerald-950 tracking-tight font-display leading-none uppercase">
+                Portal <span className="text-cyan-500">Siber</span><span className="text-lime-500">daya.</span>
               </h1>
+              <p className="text-[10px] font-black text-slate-400/80 font-display uppercase tracking-[0.2em]">
+                LPPM UIN Profesor Kiai Haji Saifuddin Zuhri Purwokerto
+              </p>
             </div>
           </div>
-          <p className="text-xs font-bold text-emerald-900 leading-relaxed text-center w-full">
-            Silakan masukkan NIM / Username / NIP dan kata sandi Anda untuk mengakses portal.
-          </p>
         </motion.div>
 
         {/* --- ERRORS --- */}
         <AnimatePresence>
           {checkErrors(errors) && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-rose-50 border border-rose-100 rounded-xl p-4 flex gap-3"
+              initial={{ opacity: 0, height: 0, scale: 0.95 }}
+              animate={{ opacity: 1, height: 'auto', scale: 1 }}
+              exit={{ opacity: 0, height: 0, scale: 0.95 }}
+              className="bg-rose-50 border border-rose-100 rounded-2xl p-4 flex gap-3 overflow-hidden shadow-sm"
             >
-              <AlertCircle className="text-rose-500 shrink-0" size={18} />
+              <AlertCircle className="text-rose-500 shrink-0 mt-0.5" size={16} />
               <div className="space-y-1">
-                <p className="text-xs font-bold text-rose-600 uppercase tracking-wider">Akses Gagal</p>
-                <div className="text-xs font-bold text-emerald-950 space-y-0.5">
+                <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">Otentikasi Gagal</p>
+                <div className="text-xs font-medium text-rose-900 space-y-0.5 leading-relaxed">
                   {getErrorMessages(errors).map((err, i) => (
                     <p key={i}>{err}</p>
                   ))}
@@ -187,14 +157,14 @@ export default function Login() {
 
         {/* --- FORM --- */}
         <form onSubmit={submit} className="space-y-6">
-          <div className="space-y-4">
-            {/* Username/NIM/Email */}
-            <motion.div variants={itemVariants} className="space-y-1">
-              <label className="text-xs font-bold text-emerald-950 uppercase tracking-wider ml-1">
-                Username / NIM / NIP
+          <div className="space-y-5">
+            {/* Username/NIM */}
+            <motion.div variants={itemVariants} className="space-y-2">
+              <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">
+                Identitas Pengguna
               </label>
               <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-200 group-focus-within:text-emerald-600 transition-colors">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400 group-focus-within:text-emerald-600 transition-colors">
                   <User size={16} />
                 </div>
                 <input
@@ -202,9 +172,9 @@ export default function Login() {
                   type="text"
                   value={data.login}
                   onChange={(e) => setData('login', e.target.value)}
-                  style={{ paddingLeft: '3.5rem' }}
-                  className="w-full h-12 bg-emerald-50/30 border border-emerald-100 rounded-xl pr-4 text-xs font-bold text-emerald-950 placeholder:text-black focus:ring-4 focus:ring-emerald-600/10 focus:border-emerald-600 transition-all"
-                  placeholder="NIM / Username"
+                  style={{ paddingLeft: '3.2rem' }}
+                  className="w-full h-12 bg-white/60 border border-white focus:bg-white rounded-xl pr-4 text-sm font-bold text-emerald-950 placeholder:text-emerald-800/40 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none shadow-sm"
+                  placeholder="NIM / NIP / Username"
                   required
                   autoFocus
                 />
@@ -212,12 +182,12 @@ export default function Login() {
             </motion.div>
 
             {/* Password */}
-            <motion.div variants={itemVariants} className="space-y-1">
-              <label className="text-xs font-bold text-emerald-950 uppercase tracking-wider ml-1">
+            <motion.div variants={itemVariants} className="space-y-2">
+              <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">
                 Kata Sandi
               </label>
               <div className="relative group">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-200 group-focus-within:text-emerald-600 transition-colors">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400 group-focus-within:text-emerald-600 transition-colors">
                   <Lock size={16} />
                 </div>
                 <input
@@ -225,15 +195,15 @@ export default function Login() {
                   type={showPassword ? 'text' : 'password'}
                   value={data.password}
                   onChange={(e) => setData('password', e.target.value)}
-                  style={{ paddingLeft: '3.5rem' }}
-                  className="w-full h-12 bg-emerald-50/30 border border-emerald-100 rounded-xl pr-11 text-xs font-bold text-emerald-950 placeholder:text-black focus:ring-4 focus:ring-emerald-600/10 focus:border-emerald-600 transition-all"
+                  style={{ paddingLeft: '3.2rem' }}
+                  className="w-full h-12 bg-white/60 border border-white focus:bg-white rounded-xl pr-11 text-sm font-bold text-emerald-950 placeholder:text-emerald-800/40 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none shadow-sm"
                   placeholder="••••••••"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-200 hover:text-emerald-600 transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-400 hover:text-emerald-600 transition-colors"
                 >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -241,21 +211,21 @@ export default function Login() {
             </motion.div>
 
             {/* Captcha */}
-            <motion.div variants={itemVariants} className="space-y-1">
-              <label className="text-xs font-bold text-emerald-950 uppercase tracking-wider ml-1">
-                Verifikasi
+            <motion.div variants={itemVariants} className="space-y-2">
+              <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">
+                Verifikasi Keamanan
               </label>
-              <div className="flex gap-2">
-                <div className="flex-1 h-12 bg-white border border-emerald-100 rounded-xl px-4 flex items-center justify-between">
-                  <span className="text-xs font-bold text-emerald-950 tabular-nums uppercase">
+              <div className="flex gap-3">
+                <div className="flex-1 h-12 bg-white/60 border border-white rounded-xl px-4 flex items-center justify-between group shadow-sm">
+                  <span className="text-sm font-black text-emerald-950 tabular-nums tracking-wider">
                     <span data-testid="login-captcha-question">{activeCaptchaQuestion}</span>{' '}
-                    <span className="text-emerald-600 font-bold ml-1">=</span>
+                    <span className="text-emerald-500 font-black ml-1 group-hover:text-teal-500 transition-colors">=</span>
                   </span>
                   <button
                     type="button"
                     onClick={refreshCaptcha}
                     disabled={isRefreshing}
-                    className="p-1.5 text-emerald-950 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                    className="p-1.5 text-emerald-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
                     title="Refresh Verifikasi"
                   >
                     <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
@@ -267,7 +237,7 @@ export default function Login() {
                   inputMode="numeric"
                   value={data.captcha_answer}
                   onChange={(e) => setData('captcha_answer', e.target.value.replace(/[^0-9]/g, ''))}
-                  className="w-24 h-12 bg-emerald-50/30 border-2 border-emerald-100 rounded-xl text-center text-md font-bold text-emerald-950 focus:border-emerald-600 focus:ring-4 focus:ring-emerald-600/10 transition-all placeholder:text-black"
+                  className="w-24 h-12 bg-white/60 border border-white focus:bg-white rounded-xl text-center text-base font-bold text-emerald-950 placeholder:text-emerald-800/40 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none shadow-sm"
                   placeholder="???"
                   required
                 />
@@ -277,31 +247,38 @@ export default function Login() {
 
           {/* Controls */}
           <motion.div variants={itemVariants} className="flex items-center justify-between px-1">
-             <label className="flex items-center gap-2 cursor-pointer group">
-              <input
-                type="checkbox"
-                checked={data.remember}
-                onChange={(e) => setData('remember', e.target.checked)}
-                className="w-3.5 h-3.5 rounded border-emerald-200 text-emerald-600 focus:ring-emerald-600"
-              />
-              <span className="text-xs font-bold text-emerald-950 uppercase tracking-wider group-hover:text-emerald-600 transition-colors">Ingat Saya</span>
+             <label className="flex items-center gap-2.5 cursor-pointer group">
+              <div className="relative flex items-center justify-center">
+                <input
+                  type="checkbox"
+                  checked={data.remember}
+                  onChange={(e) => setData('remember', e.target.checked)}
+                  className="peer appearance-none w-4 h-4 rounded-md border-2 border-emerald-200 bg-white checked:bg-emerald-500 checked:border-emerald-500 transition-all cursor-pointer"
+                />
+                <svg className="absolute w-2.5 h-2.5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <span className="text-[10px] font-black text-cyan-600 uppercase tracking-widest group-hover:text-cyan-500 transition-colors">Ingat Sesi Saya</span>
             </label>
-            <Link href="/lupa-kata-sandi" className="text-xs font-bold text-emerald-600 hover:text-emerald-800 uppercase tracking-wider">Lupa Sandi?</Link>
+            <Link href="/lupa-kata-sandi" className="text-[10px] font-black text-emerald-600 hover:text-emerald-800 hover:underline underline-offset-4 uppercase tracking-widest transition-colors">
+              Lupa Sandi?
+            </Link>
           </motion.div>
 
           {/* Submit */}
-          <motion.div variants={itemVariants} className="pt-2">
+          <motion.div variants={itemVariants} className="pt-4">
             <button
               data-testid="login-submit"
               type="submit"
               disabled={processing}
-              className="w-full h-12 bg-emerald-600 text-white rounded-xl flex items-center justify-center gap-2 group hover:bg-emerald-800 transition-all shadow-lg shadow-emerald-100 active:scale-[0.98] disabled:opacity-50"
+              className="w-full h-12 bg-amber-500 hover:bg-amber-600 text-white rounded-xl flex items-center justify-center gap-2 group transition-all shadow-[0_8px_20px_rgba(245,158,11,0.3)] hover:shadow-[0_8px_25px_rgba(245,158,11,0.4)] hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
             >
               {processing ? (
-                <RefreshCw size={18} className="animate-spin" />
+                <RefreshCw size={18} className="animate-spin text-white" />
               ) : (
                 <>
-                  <span className="text-xs font-bold uppercase tracking-widest">Masuk Sekarang</span>
+                  <span className="text-[11px] font-bold uppercase tracking-widest">Otentikasi Masuk</span>
                   <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                 </>
               )}

@@ -146,7 +146,7 @@ export default function DosenIndex({ users, filters, stats }: Props) {
               <PremiumTableRow key={user.id}>
                 <PremiumTableCell>
                   <div className="flex items-center gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-[#e8f5ee] text-[#1a7a4a] flex items-center justify-center text-xs font-bold border border-emerald-50">
+                    <div className="h-10 w-10 rounded-lg bg-[#f0fdfa] text-[#0d9488] flex items-center justify-center text-xs font-bold border border-emerald-50">
                       {user.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="flex flex-col gap-0.5">
@@ -158,7 +158,7 @@ export default function DosenIndex({ users, filters, stats }: Props) {
                   </div>
                 </PremiumTableCell>
                 <PremiumTableCell>
-                  <span className="text-xs font-bold text-[#1a7a4a] font-mono tracking-wider">
+                  <span className="text-xs font-bold text-[#0d9488] font-mono tracking-wider">
                     {user.dosen?.nip || '—'}
                   </span>
                 </PremiumTableCell>

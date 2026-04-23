@@ -3,7 +3,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import {
   CheckCheck, Clock, ClipboardList, Download, IdCard, Search, Users,
   XCircle, Filter, ChevronDown, X, Database, ShieldCheck, Activity, ArrowRight, Zap, Target,
-  FileCheck, FileX, ShieldPlus, HeartPulse, UserPlus, CreditCard, Stethoscope, Globe, HardDrive
+  FileCheck, FileX, ShieldPlus, HeartPulse, UserPlus, CreditCard, Stethoscope, Globe, HardDrive, RefreshCw
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import AppLayout from '@/Layouts/AppLayout';
@@ -57,7 +57,7 @@ const DocIcon = ({ active, label, icon: Icon }: { active?: boolean; label: strin
   <div 
     className={clsx(
       "transition-all",
-      active ? "text-[#1a7a4a]" : "text-gray-200"
+      active ? "text-[#0d9488]" : "text-gray-200"
     )}
     title={`${label}: ${active ? 'Tersedia' : 'Kosong'}`}
   >
@@ -301,7 +301,7 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
                   <PremiumTableCell>
                     <div className="flex flex-col gap-2 py-1">
                       <div className="flex flex-col">
-                        <span className="text-[13px] font-black text-emerald-950 uppercase leading-tight tracking-tight">{r.student.name}</span>
+                        <span className="text-[13px] font-black text-emerald-950 uppercase leading-tight tracking-tight font-display">{r.student.name}</span>
                         <span className="text-[10px] font-bold text-emerald-600 font-mono tracking-wider">{r.student.nim}</span>
                       </div>
                       <div className="flex flex-wrap gap-1.5">
@@ -375,25 +375,7 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
               ))}
             </PremiumTable>
           </ContentPanel>
-        </div>
-
-        {/* --- GOVERNANCE FOOTER --- */}
-        <div className="bg-emerald-950 rounded-3xl p-10 text-white relative overflow-hidden shadow-2xl border-b-[6px] border-emerald-900">
-          <div className="absolute top-0 right-0 p-8 opacity-5 rotate-12 -mr-16 -mt-16 pointer-events-none"><ShieldCheck size={320} /></div>
-          <div className="flex flex-col md:flex-row items-center gap-10 relative z-10">
-            <div className="h-20 w-20 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 border border-white/10 shadow-inner shrink-0 backdrop-blur-sm">
-              <Activity size={40} strokeWidth={2.5} />
-            </div>
-            <div className="space-y-3 text-center md:text-left">
-              <h2 className="text-2xl font-black uppercase tracking-tight">Protokol Audit Registrasi KKN</h2>
-              <p className="text-xs font-medium text-emerald-400/60 uppercase tracking-widest leading-relaxed max-w-4xl">
-                Setiap entri yang masuk telah melewati validasi awal sistem. Sebagai administrator, tugas Anda adalah memastikan integritas dokumen fisik dan persyaratan khusus. Kesalahan dalam validasi akan berdampak langsung pada proses plotting kelompok dan beban kerja DPL.
-              </p>
-            </div>
-          </div>
-        </div>
-
-      </div>
+        </div>      </div>
     </AppLayout>
   );
 }

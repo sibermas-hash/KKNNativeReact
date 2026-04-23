@@ -219,7 +219,7 @@ export default function RegistrationStatus({ registration, student }: Props) {
         {/* Footer Info */}
         <div className="text-center opacity-40">
            <p className="text-[10px] font-black text-emerald-950 uppercase tracking-widest">
-             Sistem Informasi Manajemen SIBERDAYA
+             Sistem Informasi Manajemen <span className="text-cyan-600">SIBER</span><span className="text-lime-600">DAYA</span>
            </p>
         </div>
       </div>

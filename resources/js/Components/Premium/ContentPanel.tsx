@@ -22,18 +22,18 @@ const ContentPanel: React.FC<ContentPanelProps> = ({
   padding = true
 }) => {
   return (
-    <div className="bg-white border border-slate-300 rounded-xl shadow-sm overflow-hidden flex flex-col">
+    <div className="bg-white border border-emerald-100 rounded-2xl shadow-sm overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="px-5 py-4 border-b border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+      <div className="px-6 py-5 border-b border-emerald-50 bg-slate-50/20 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
           {Icon && (
-            <div className="h-8 w-8 bg-[#e8f5ee] text-[#1a7a4a] rounded-lg flex items-center justify-center">
-              <Icon size={16} />
+            <div className="h-10 w-10 bg-emerald-50 text-emerald-700 rounded-xl flex items-center justify-center border border-emerald-100 shadow-sm">
+              <Icon size={18} strokeWidth={2.5} />
             </div>
           )}
           <div className="flex flex-col">
-            <h3 className="text-sm font-bold text-emerald-950">{title}</h3>
-            {description && <p className="text-xs text-emerald-800">{description}</p>}
+            <h3 className="text-[11px] font-black text-emerald-950 uppercase tracking-[0.2em] font-display">{title}</h3>
+            {description && <p className="text-sm font-medium text-emerald-800/50 font-elegant italic mt-0.5 lowercase tracking-tight">{description}</p>}
           </div>
         </div>
         {headerAction && (
@@ -50,7 +50,7 @@ const ContentPanel: React.FC<ContentPanelProps> = ({
 
       {/* Footer */}
       {footer && (
-        <div className="px-5 py-3 border-t border-slate-200 bg-slate-50/50">
+        <div className="px-6 py-4 border-t border-emerald-50 bg-slate-50/30">
           {footer}
         </div>
       )}

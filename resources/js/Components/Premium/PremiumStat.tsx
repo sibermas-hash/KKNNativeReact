@@ -19,7 +19,7 @@ export default function PremiumStat({ label, value, icon: Icon, highlight = fals
             <div className="flex items-center gap-4">
                 <div className={clsx(
                     "h-12 w-12 rounded-lg flex items-center justify-center shrink-0", 
-                    highlight ? "bg-amber-50 text-amber-600" : "bg-[#e8f5ee] text-[#1a7a4a]"
+                    highlight ? "bg-amber-50 text-amber-600" : "bg-[#f0fdfa] text-[#0d9488]"
                 )}>
                     <Icon size={22} strokeWidth={2} />
                 </div>

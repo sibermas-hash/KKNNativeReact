@@ -16,7 +16,7 @@ const SearchInput: React.FC<SearchInputProps> = ({ className, onSearch, ...props
       <input
         {...props}
         onKeyDown={(e) => e.key === 'Enter' && onSearch?.()}
-        className="w-full h-10 pl-9 pr-4 bg-white border border-gray-300 rounded-lg text-sm text-emerald-950 focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] outline-none transition-all placeholder:text-black"
+        className="w-full h-10 pl-9 pr-4 bg-white border border-gray-300 rounded-lg text-sm text-emerald-950 focus:border-[#0d9488] focus:ring-1 focus:ring-[#0d9488] outline-none transition-all placeholder:text-black"
       />
     </div>
   );

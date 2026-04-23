@@ -49,10 +49,10 @@ export default function CertificateVerify({ sertifikat, token }: Props) {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 bg-white rounded-xl flex items-center justify-center shadow-lg">
-              <Award size={24} className="text-[#1a7a4a]" />
+              <Award size={24} className="text-[#0d9488]" />
             </div>
             <div>
-              <h1 className="text-white font-bold tracking-wide">SIBERDAYA</h1>
+              <h1 className="text-white font-bold tracking-wide"><span className="text-cyan-400">SIBER</span><span className="text-lime-400">DAYA</span></h1>
               <p className="text-emerald-200 text-[10px] uppercase tracking-widest font-bold">Verifikasi Elektronik</p>
             </div>
           </div>
@@ -78,7 +78,7 @@ export default function CertificateVerify({ sertifikat, token }: Props) {
               <div className="relative z-10">
                 <div className="inline-flex items-center justify-center h-24 w-24 rounded-full bg-white shadow-xl mb-6">
                   {isValid ? (
-                    <ShieldCheck size={48} className="text-[#1a7a4a]" />
+                    <ShieldCheck size={48} className="text-[#0d9488]" />
                   ) : isRevoked ? (
                     <ShieldAlert size={48} className="text-rose-600" />
                   ) : (
@@ -107,7 +107,7 @@ export default function CertificateVerify({ sertifikat, token }: Props) {
               {/* Decorative Background */}
               {isValid && (
                 <div className="absolute top-0 left-0 w-full h-full opacity-[0.03] pointer-events-none">
-                  <Award size={400} className="absolute -top-20 -right-20 text-[#1a7a4a] rotate-12" />
+                  <Award size={400} className="absolute -top-20 -right-20 text-[#0d9488] rotate-12" />
                 </div>
               )}
             </div>

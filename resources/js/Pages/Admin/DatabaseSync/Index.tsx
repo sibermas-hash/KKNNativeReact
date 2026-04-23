@@ -164,7 +164,7 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
                       className="flex items-center justify-between px-4 py-3.5 bg-white hover:bg-emerald-50 hover:border-emerald-200 border border-emerald-100 text-emerald-950 shadow-sm transition-all rounded-xl group disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <div className="flex items-center gap-3">
-                        <div className={clsx("h-8 w-8 rounded-lg flex items-center justify-center transition-colors", isSyncing === type.toLowerCase() ? "bg-emerald-100 text-emerald-700" : "bg-gray-50 border border-gray-100 text-emerald-800 group-hover:bg-white group-hover:border-emerald-200 group-hover:text-[#1a7a4a]")}>
+                        <div className={clsx("h-8 w-8 rounded-lg flex items-center justify-center transition-colors", isSyncing === type.toLowerCase() ? "bg-emerald-100 text-emerald-700" : "bg-gray-50 border border-gray-100 text-emerald-800 group-hover:bg-white group-hover:border-emerald-200 group-hover:text-[#0d9488]")}>
                           <RefreshCw size={14} className={clsx(isSyncing === type.toLowerCase() ? "animate-spin" : "group-hover:rotate-180 transition-transform duration-700")} />
                         </div>
                         <span className="text-xs font-bold uppercase tracking-wider">Data {translateEntityType(type)}</span>
@@ -181,18 +181,18 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
             </ContentPanel>
 
             <div className="bg-white rounded-2xl p-6 relative overflow-hidden shadow-sm border border-emerald-100">
-              <div className="absolute -top-4 -right-4 p-6 opacity-[0.03] rotate-12 pointer-events-none text-[#1a7a4a]">
+              <div className="absolute -top-4 -right-4 p-6 opacity-[0.03] rotate-12 pointer-events-none text-[#0d9488]">
                 <Zap size={120} />
               </div>
               <div className="relative z-10 space-y-5">
-               <div className="h-10 w-10 bg-[#e8f5ee] rounded-xl flex items-center justify-center border border-emerald-100">
-                  <Activity size={20} className="text-[#1a7a4a]" />
+               <div className="h-10 w-10 bg-[#f0fdfa] rounded-xl flex items-center justify-center border border-emerald-100">
+                  <Activity size={20} className="text-[#0d9488]" />
                </div>
                 <div>
                   <h4 className="text-xs font-bold uppercase tracking-widest text-emerald-800 mb-1">Efisiensi Hari Ini</h4>
                   <div className="flex items-baseline gap-2">
                     <span className="text-4xl font-bold tabular-nums leading-none tracking-tight text-emerald-950">{dashboard.summary.success_rate_today}%</span>
-                    <span className="text-xs font-bold text-[#1a7a4a] uppercase tracking-widest">Berhasil</span>
+                    <span className="text-xs font-bold text-[#0d9488] uppercase tracking-widest">Berhasil</span>
                   </div>
                 </div>
                 
@@ -226,7 +226,7 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
                     <select 
                       value={filters.entity_type} 
                       onChange={(e) => handleFilterChange('entity_type', e.target.value)}
-                      className="h-9 pl-9 pr-9 bg-gray-50 hover:bg-emerald-50 border border-emerald-100 rounded-lg text-xs font-bold uppercase tracking-wider text-emerald-950 outline-none focus:border-[#1a7a4a] focus:ring-1 focus:ring-[#1a7a4a] shadow-sm appearance-none transition-colors cursor-pointer"
+                      className="h-9 pl-9 pr-9 bg-gray-50 hover:bg-emerald-50 border border-emerald-100 rounded-lg text-xs font-bold uppercase tracking-wider text-emerald-950 outline-none focus:border-[#0d9488] focus:ring-1 focus:ring-[#0d9488] shadow-sm appearance-none transition-colors cursor-pointer"
                     >
                       <option value="all">Semua Data</option>
                       {entityTypes.map(et => (
@@ -235,7 +235,7 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
                         </option>
                       ))}
                     </select>
-                    <ChevronRight size={14} className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-emerald-700 pointer-events-none group-hover:text-[#1a7a4a] transition-colors" />
+                    <ChevronRight size={14} className="absolute right-3 top-1/2 -translate-y-1/2 rotate-90 text-emerald-700 pointer-events-none group-hover:text-[#0d9488] transition-colors" />
                   </div>
                 </div>
               }
@@ -264,7 +264,7 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
                     <PremiumTableCell align="center">
                       <span className={clsx(
                         "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-widest border",
-                        log.status === 'success' ? "bg-emerald-50 text-[#1a7a4a] border-emerald-200" : 
+                        log.status === 'success' ? "bg-emerald-50 text-[#0d9488] border-emerald-200" : 
                         log.status === 'failed' ? "bg-rose-50 text-rose-700 border-rose-200" : 
                         "bg-amber-50 text-amber-700 border-amber-200"
                       )}>
@@ -283,7 +283,7 @@ export default function DatabaseSyncIndex({ health, apiHealth, dashboard, logs, 
                     <PremiumTableCell align="right">
                       <Link 
                         href={route('admin.database-sync.logs.show', log.id)} 
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-100 text-emerald-700 bg-white hover:bg-[#1a7a4a] hover:text-white hover:border-[#1a7a4a] transition-all shadow-sm opacity-0 group-hover:opacity-100"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-100 text-emerald-700 bg-white hover:bg-[#0d9488] hover:text-white hover:border-[#0d9488] transition-all shadow-sm opacity-0 group-hover:opacity-100"
                         title="Lihat Detail Log"
                       >
                         <ArrowUpRight size={14} strokeWidth={2.5} />

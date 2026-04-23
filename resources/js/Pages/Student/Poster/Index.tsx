@@ -128,7 +128,7 @@ export default function StudentPosterIndex({ kelompok, allowedTypes, maxSize }: 
                             { label: 'Identitas Kelompok KKN', desc: 'Logo UIN Saizu, nama kelompok, periode KKN, nama DPL' },
                         ].map((item, idx) => (
                             <div key={idx} className="flex items-start gap-3 rounded-lg border border-emerald-50/60 bg-emerald-50/30/50 p-3">
-                                <CheckCircle className="h-4 w-4 text-[#1a7a4a] mt-0.5 shrink-0" />
+                                <CheckCircle className="h-4 w-4 text-[#0d9488] mt-0.5 shrink-0" />
                                 <div>
                                     <p className="text-sm font-semibold text-emerald-950">{item.label}</p>
                                     <p className="text-xs text-emerald-950 mt-0.5">{item.desc}</p>

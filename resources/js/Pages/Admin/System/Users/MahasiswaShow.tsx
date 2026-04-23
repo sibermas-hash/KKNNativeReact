@@ -42,7 +42,7 @@ interface Props {
 
 const STATUS_BADGE: Record<string, string> = {
   pending: 'bg-amber-50 text-amber-700 border border-amber-200', 
-  approved: 'bg-[#e8f5ee] text-[#1a7a4a] border border-emerald-200', 
+  approved: 'bg-[#f0fdfa] text-[#0d9488] border border-emerald-200', 
   rejected: 'bg-rose-50 text-rose-700 border border-rose-200',
 };
 const STATUS_LABEL: Record<string, string> = { 
@@ -93,11 +93,11 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-emerald-50 pt-6">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <Link href="/admin/mahasiswa" className="text-emerald-800 hover:text-[#1a7a4a] transition-colors flex items-center gap-1.5 text-sm">
+                <Link href="/admin/mahasiswa" className="text-emerald-800 hover:text-[#0d9488] transition-colors flex items-center gap-1.5 text-sm">
                   <ArrowLeft size={15} /> Direktori Mahasiswa
                 </Link>
               </div>
-              <h1 className="text-2xl font-bold text-emerald-950 leading-tight">{mahasiswa.nama}</h1>
+              <h1 className="text-2xl font-black font-display uppercase tracking-tighter text-emerald-950 leading-tight">{mahasiswa.nama}</h1>
               <p className="text-sm text-emerald-800">NIM: <strong className="text-emerald-800">{mahasiswa.nim}</strong> · Angkatan <strong className="text-emerald-800">{mahasiswa.batch_year || '—'}</strong></p>
             </div>
             {account && (
@@ -114,7 +114,7 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
                     "h-10 px-4 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2 transition-colors",
                     account.is_active 
                       ? "bg-white border border-gray-300 text-emerald-800 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-700" 
-                      : "bg-[#16a34a] text-white hover:bg-[#15803d] shadow-none"
+                      : "bg-[#0d9488] text-white hover:bg-[#0f766e] shadow-none"
                   )}
                 >
                   {account.is_active ? <><Lock size={15} /> Kunci Akun</> : <><Unlock size={15} /> Aktifkan Akun</>}
@@ -129,7 +129,7 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
               {/* PROFIL AKADEMIK */}
               <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-2">
-                  <GraduationCap size={16} className="text-[#1a7a4a]"/>
+                  <GraduationCap size={16} className="text-[#0d9488]"/>
                   <h2 className="text-sm font-semibold text-[#1f2937]">Profil Akademik</h2>
                 </div>
                 <div className="p-5 grid grid-cols-2 sm:grid-cols-3 gap-6">
@@ -148,16 +148,16 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
               {/* KELAYAKAN */}
               <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-2">
-                  <ShieldCheck size={16} className="text-[#1a7a4a]"/>
+                  <ShieldCheck size={16} className="text-[#0d9488]"/>
                   <h2 className="text-sm font-semibold text-[#1f2937]">Kelayakan KKN</h2>
                 </div>
                 <div className="p-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div className="p-4 rounded-lg bg-gray-50 border border-emerald-50 text-center space-y-1">
-                    <p className="text-2xl font-bold text-emerald-950 tabular-nums">{mahasiswa.sks_completed ?? 0}</p>
+                    <p className="text-2xl font-black font-display uppercase tracking-tighter text-emerald-950 tabular-nums">{mahasiswa.sks_completed ?? 0}</p>
                     <p className="text-xs text-emerald-800 font-medium">SKS Selesai</p>
                   </div>
                   <div className="p-4 rounded-lg bg-gray-50 border border-emerald-50 text-center space-y-1">
-                    <p className="text-2xl font-bold text-emerald-950 tabular-nums">{Number(mahasiswa.gpa ?? 0).toFixed(2)}</p>
+                    <p className="text-2xl font-black font-display uppercase tracking-tighter text-emerald-950 tabular-nums">{Number(mahasiswa.gpa ?? 0).toFixed(2)}</p>
                     <p className="text-xs text-emerald-800 font-medium">IPK</p>
                   </div>
                   <div className={clsx(
@@ -166,7 +166,7 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
                   )}>
                     <div className="flex items-center justify-center gap-2">
                       {mahasiswa.is_bta_ppi_passed
-                        ? <><CheckCircle2 size={18} className="text-[#1a7a4a]"/><p className="text-sm font-bold text-emerald-950">Lulus BTA-PPI</p></>
+                        ? <><CheckCircle2 size={18} className="text-[#0d9488]"/><p className="text-sm font-bold text-emerald-950">Lulus BTA-PPI</p></>
                         : <><XCircle size={18} className="text-rose-600"/><p className="text-sm font-bold text-rose-800">Belum Lulus BTA-PPI</p></>
                       }
                     </div>
@@ -178,7 +178,7 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
               {/* PENDAFTARAN */}
               <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-2">
-                  <ClipboardList size={16} className="text-[#1a7a4a]"/>
+                  <ClipboardList size={16} className="text-[#0d9488]"/>
                   <h2 className="text-sm font-semibold text-[#1f2937]">Status Pendaftaran</h2>
                 </div>
                 {registration ? (
@@ -198,7 +198,7 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
                       </div>
                     )}
                     <div className="col-span-3 pt-2 text-right">
-                      <Link href={`/admin/pendaftaran/${registration.id}`} className="text-sm text-[#1a7a4a] hover:text-[#1a7a4a] font-bold flex items-center gap-1 justify-end transition-colors">
+                      <Link href={`/admin/pendaftaran/${registration.id}`} className="text-sm text-[#0d9488] hover:text-[#0d9488] font-bold flex items-center gap-1 justify-end transition-colors">
                         Lihat Berkas Pendaftaran <ArrowLeft size={14} className="rotate-180" />
                       </Link>
                     </div>
@@ -215,7 +215,7 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
               {group && (
                 <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
                   <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-2">
-                    <Users size={16} className="text-[#1a7a4a]"/>
+                    <Users size={16} className="text-[#0d9488]"/>
                     <h2 className="text-sm font-semibold text-[#1f2937]">Penempatan Kelompok</h2>
                   </div>
                   <div className="p-5 grid grid-cols-2 sm:grid-cols-3 gap-6">
@@ -238,7 +238,7 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
               {/* AKUN */}
               <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-2">
-                  <ShieldCheck size={16} className="text-[#1a7a4a]"/>
+                  <ShieldCheck size={16} className="text-[#0d9488]"/>
                   <h2 className="text-sm font-semibold text-[#1f2937]">Hak Akses & Akun</h2>
                 </div>
                 {account ? (
@@ -247,7 +247,7 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
                       <span className="text-xs font-medium text-emerald-800">Status Akun</span>
                       <span className={clsx(
                         "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase", 
-                        account.is_active ? "bg-[#e8f5ee] text-[#1a7a4a] border border-emerald-200" : "bg-rose-50 text-rose-700 border border-rose-200"
+                        account.is_active ? "bg-[#f0fdfa] text-[#0d9488] border border-emerald-200" : "bg-rose-50 text-rose-700 border border-rose-200"
                       )}>
                         {account.is_active ? 'Aktif' : 'Terkunci'}
                       </span>

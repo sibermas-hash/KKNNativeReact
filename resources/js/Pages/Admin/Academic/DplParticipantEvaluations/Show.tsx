@@ -77,7 +77,7 @@ export default function DplParticipantEvaluationShow({
               <ArrowLeft size={16} />
               Kembali ke Rekap
             </Link>
-            <h1 className="mt-3 text-2xl font-bold text-emerald-950">{summary.dosen_name}</h1>
+            <h1 className="mt-3 text-2xl font-black font-display uppercase tracking-tighter text-emerald-950">{summary.dosen_name}</h1>
             <p className="mt-1 text-sm font-semibold text-emerald-950">
               NIP {summary.nip} • {summary.faculty_name}
             </p>

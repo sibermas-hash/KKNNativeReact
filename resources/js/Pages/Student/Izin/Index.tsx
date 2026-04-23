@@ -148,7 +148,7 @@ export default function StudentIzinIndex({ izins, akumulasiTanpaKeterangan }: Pr
                 <h3 className="text-3xl font-bold tracking-tighter uppercase leading-none mb-2">
                   {akumulasiTanpaKeterangan >= 3 ? 'Mission Terminated' : 'Integrity Matrix'}
                 </h3>
-                <p className="text-sm font-bold uppercase tracking-wider text-xs font-semibold text-[#1a7a4a] opacity-80">
+                <p className="text-sm font-bold uppercase tracking-wider text-xs font-semibold text-[#0d9488] opacity-80">
                   Absensi Tanpa Keterangan (Alpha)
                 </p>
               </div>

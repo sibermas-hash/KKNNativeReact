@@ -45,11 +45,11 @@ Route::middleware(['guest', 'kkn.throttle', 'disable.debugbar'])->group(function
 
 // Home / Landing Page
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/profil-lppm', [HomeController::class, 'about'])->name('public.about');
-Route::get('/skema-kkn', [HomeController::class, 'schemes'])->name('public.schemes');
-Route::get('/pengumuman', [HomeController::class, 'announcements'])->name('public.announcements');
+Route::get('/berita', [HomeController::class, 'announcements'])->name('public.announcements');
+Route::get('/berita/{slug}', [HomeController::class, 'announcementShow'])->name('public.announcements.show');
 Route::get('/unduhan', [HomeController::class, 'downloads'])->name('public.downloads');
 Route::get('/lokasi', [HomeController::class, 'map'])->name('public.locations');
+Route::get('/lokasi/{locationPath}', [HomeController::class, 'mapShow'])->name('public.locations.show');
 Route::get('/verify-certificate/{token}', [CertificateVerificationController::class, 'verify'])->name('certificate.verify');
 // Health Check Endpoint
 Route::get('/health', [HealthController::class, 'check'])->name('health');

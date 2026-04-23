@@ -50,10 +50,10 @@ export default function MahasiswaIndex({ students, filters, faculties, programs,
  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-emerald-50 pt-6">
  <div className="space-y-1">
  <div className="flex items-center gap-2">
- <GraduationCap size={16} className="text-[#1a7a4a]"/>
+ <GraduationCap size={16} className="text-[#0d9488]"/>
  <span className="text-sm font-medium text-emerald-800">Manajemen Pengguna</span>
  </div>
- <h1 className="text-2xl font-bold text-emerald-950 leading-tight">Direktori Mahasiswa</h1>
+ <h1 className="text-2xl font-black font-display uppercase tracking-tighter text-emerald-950 leading-tight">Direktori Mahasiswa</h1>
  <p className="text-sm text-emerald-800 max-w-2xl mt-1">Pengelolaan data kepesertaan dan sinkronisasi registrasi mahasiswa KKN.</p>
  </div>
  <div className="flex items-center gap-3 shrink-0">
@@ -84,19 +84,19 @@ export default function MahasiswaIndex({ students, filters, faculties, programs,
  value={formFilters.search}
  onChange={e => setFormFilters({ ...formFilters, search: e.target.value })}
  onKeyDown={e => e.key === 'Enter' && submitFilters()}
- className="w-full h-10 pl-9 pr-4 bg-white border border-gray-300 rounded-lg text-sm text-emerald-950 focus:border-[#1a7a4a] focus:ring-[#1a7a4a] shadow-sm"
+ className="w-full h-10 pl-9 pr-4 bg-white border border-gray-300 rounded-lg text-sm text-emerald-950 focus:border-[#0d9488] focus:ring-[#0d9488] shadow-sm"
  placeholder="Cari berdasarkan NIM atau Nama..."
  />
  </div>
  <div className="flex items-center gap-2">
  <button
  onClick={() => setShowFilters(!showFilters)}
- className={clsx("h-10 px-4 rounded-lg text-sm font-medium flex items-center gap-2 border shadow-sm transition-colors", showFilters ?"bg-[#16a34a] text-white border-emerald-600":"bg-white border-gray-300 text-emerald-800 hover:bg-gray-50")}
+ className={clsx("h-10 px-4 rounded-lg text-sm font-medium flex items-center gap-2 border shadow-sm transition-colors", showFilters ?"bg-[#0d9488] text-white border-emerald-600":"bg-white border-gray-300 text-emerald-800 hover:bg-gray-50")}
  >
  <Filter size={15} />
  {activeFilterCount > 0 ? `Filter (${activeFilterCount})` : 'Filter'}
  </button>
- <button onClick={submitFilters} className="h-10 px-4 bg-[#16a34a] text-white rounded-lg text-sm font-medium hover:bg-[#15803d] transition-colors shadow-sm">
+ <button onClick={submitFilters} className="h-10 px-4 bg-[#0d9488] text-white rounded-lg text-sm font-medium hover:bg-[#0f766e] transition-colors shadow-sm">
  Terapkan
  </button>
  </div>
@@ -155,7 +155,7 @@ export default function MahasiswaIndex({ students, filters, faculties, programs,
  <span className="text-emerald-700">·</span>
  <span>Angk. <strong>{s.batch_year || '—'}</strong></span>
  </div>
- <span className={clsx("text-xs font-medium px-2 py-0.5 rounded w-fit", s.is_bta_ppi_passed ?"bg-[#e8f5ee] text-emerald-800":"bg-rose-100 text-rose-800")}>
+ <span className={clsx("text-xs font-medium px-2 py-0.5 rounded w-fit", s.is_bta_ppi_passed ?"bg-[#f0fdfa] text-emerald-800":"bg-rose-100 text-rose-800")}>
  {s.is_bta_ppi_passed ? 'Lulus BTA-PPI' : 'Belum BTA-PPI'}
  </span>
  </div>
@@ -164,14 +164,14 @@ export default function MahasiswaIndex({ students, filters, faculties, programs,
  {!s.account ? (
  <span className="text-xs text-emerald-800">Tanpa Akun</span>
  ) : (
- <span className={clsx("inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold", s.account.is_active ?"bg-[#e8f5ee] text-emerald-800":"bg-rose-100 text-rose-800")}>
+ <span className={clsx("inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold", s.account.is_active ?"bg-[#f0fdfa] text-emerald-800":"bg-rose-100 text-rose-800")}>
  {s.account.is_active ? 'Aktif' : 'Terkunci'}
  </span>
  )}
  </td>
  <td className="px-6 py-4 text-right">
  <div className="flex items-center justify-end gap-2">
- <button onClick={() => s.account && setConfirmReset(s)} disabled={!s.account} className="p-1.5 text-emerald-800 hover:text-[#1a7a4a] hover:bg-gray-50 rounded-md transition-colors disabled:opacity-30"title="Reset Password">
+ <button onClick={() => s.account && setConfirmReset(s)} disabled={!s.account} className="p-1.5 text-emerald-800 hover:text-[#0d9488] hover:bg-gray-50 rounded-md transition-colors disabled:opacity-30"title="Reset Password">
  <KeyRound size={16} />
  </button>
  <button onClick={() => s.account && setConfirmToggle(s)} disabled={!s.account} className="p-1.5 text-emerald-800 hover:text-amber-600 hover:bg-amber-50 rounded-md transition-colors disabled:opacity-30"title={s.account?.is_active ? 'Nonaktifkan' : 'Aktifkan'}>
@@ -234,7 +234,7 @@ export default function MahasiswaIndex({ students, filters, faculties, programs,
 function StatCard({ label, value, icon: Icon, color = 'slate' }: { label: string; value: number; icon: LucideIcon; color?: 'emerald' | 'slate' }) {
  return (
  <div className="bg-white border border-emerald-50 rounded-xl shadow-sm p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
- <div className={clsx("h-9 w-9 rounded-lg flex items-center justify-center shrink-0", color === 'emerald' ? 'bg-gray-50 text-[#1a7a4a]' : 'bg-gray-100 text-emerald-800')}>
+ <div className={clsx("h-9 w-9 rounded-lg flex items-center justify-center shrink-0", color === 'emerald' ? 'bg-gray-50 text-[#0d9488]' : 'bg-gray-100 text-emerald-800')}>
  <Icon size={18} strokeWidth={2} />
  </div>
  <div>
@@ -250,7 +250,7 @@ function FilterGroup({ label, value, onChange, options }: { label: string; value
  <div className="space-y-1.5">
  <label className="text-xs font-medium text-emerald-800">{label}</label>
  <div className="relative">
- <select value={value} onChange={e => onChange(e.target.value)} className="w-full h-10 pl-3 pr-8 rounded-lg border border-gray-300 bg-white text-sm text-emerald-800 focus:border-[#1a7a4a] focus:ring-[#1a7a4a] appearance-none shadow-sm">
+ <select value={value} onChange={e => onChange(e.target.value)} className="w-full h-10 pl-3 pr-8 rounded-lg border border-gray-300 bg-white text-sm text-emerald-800 focus:border-[#0d9488] focus:ring-[#0d9488] appearance-none shadow-sm">
  {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
  </select>
  <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none"/>

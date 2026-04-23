@@ -10,6 +10,7 @@ import {
   ArrowRight,
   ClipboardList,
   CheckCircle,
+  CheckCircle2,
   Presentation,
   Download,
   AlertTriangle,
@@ -22,6 +23,9 @@ import {
   UserCheck,
   Users,
   Lightbulb,
+  GraduationCap,
+  ShieldCheck,
+  Activity
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import type {
@@ -32,7 +36,8 @@ import type {
   ColorPalette,
   FinalReport,
 } from '@/types';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import StatusTag from '@/Components/Premium/StatusTag';
 
 interface Registration {
   id: number;
@@ -72,7 +77,6 @@ interface Props {
 }
 
 export default function StudentDashboard({
-  student,
   registration,
   dailyReportCount,
   workProgramCount,
@@ -91,11 +95,9 @@ export default function StudentDashboard({
   const notificationForm = useForm({});
 
   const shouldShowPopup = isApproved && registration && !registration.notification_shown;
-  const isGradingOrLater = ['grading', 'finished'].includes(activePhase);
-  const hasGroup = Boolean(registration?.group);
-  const groupName = registration?.group?.name || 'Menunggu penugasan';
+  const groupName = registration?.group?.name || 'Belum Ditentukan';
   const groupLocation = registration?.group?.location?.name || '-';
-  const dplName = registration?.group?.lecturer?.name || 'Akan ditentukan';
+  const dplName = registration?.group?.lecturer?.name || 'Belum Ditentukan';
   const periodName = registration?.period?.name || 'Periode KKN';
 
   const handleClosePopup = () => {
@@ -110,319 +112,227 @@ export default function StudentDashboard({
   }
 
   const phases = [
-    {
-      id: 1,
-      label: isRejected ? 'Pendaftaran' : (isPending ? 'Pendaftaran' : (isApproved ? 'Pendaftaran' : 'Pendaftaran')),
-      desc: isRejected ? 'Registrasi Unit - PERBAIKAN' : (isPending ? 'Sedang Diverifikasi' : (isApproved ? 'Terverifikasi' : 'Registrasi Unit')),
-      isCompleted: isApproved,
-      isActive: isPending || (!registration),
-      isLocked: isApproved,
-    },
-    {
-      id: 2,
-      label: 'Persiapan',
-      desc: 'Program Kerja',
-      isCompleted: workProgramCount > 0,
-      isActive: isApproved && workProgramCount === 0,
-      isLocked: !isApproved,
-    },
-    {
-      id: 3,
-      label: 'Pelaksanaan',
-      desc: 'Laporan Harian',
-      isCompleted: dailyReportCount >= (registration?.period?.min_logbook ?? 30),
-      isActive:
-        workProgramCount > 0 && dailyReportCount < (registration?.period?.min_logbook ?? 30),
-    },
-    {
-      id: 4,
-      label: 'Pelaporan',
-      desc: 'Laporan Akhir',
-      isCompleted: !!finalReport,
-      isActive: dailyReportCount >= (registration?.period?.min_logbook ?? 30) && !finalReport,
-    },
-    {
-      id: 5,
-      label: 'Penilaian',
-      desc: 'Sertifikasi',
-      isCompleted: grade?.is_finalized,
-      isActive: !!finalReport && !grade?.is_finalized,
-    },
+    { id: 1, label: 'Registrasi', done: isApproved, active: isPending || !registration },
+    { id: 2, label: 'Persiapan', done: workProgramCount > 0, active: isApproved && workProgramCount === 0 },
+    { id: 3, label: 'Pelaksanaan', done: dailyReportCount >= (registration?.period?.min_logbook ?? 30), active: workProgramCount > 0 && dailyReportCount < (registration?.period?.min_logbook ?? 30) },
+    { id: 4, label: 'Pelaporan', done: !!finalReport, active: dailyReportCount >= (registration?.period?.min_logbook ?? 30) && !finalReport },
+    { id: 5, label: 'Penilaian', done: grade?.is_finalized, active: !!finalReport && !grade?.is_finalized },
   ];
 
   const progressPercent = Math.floor(
-    (phases.filter((p) => p.isCompleted).length / phases.length) * 100,
+    (phases.filter((p) => p.done).length / phases.length) * 100,
   );
 
   return (
     <ErrorBoundary>
-      <AppLayout title="Portal Mahasiswa">
+      <AppLayout title="Dashboard Mahasiswa">
         <Head title="Beranda Mahasiswa" />
 
-        {/* --- APPROVAL/REJECTION POPUP --- */}
-        {showPopup && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          >
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={handleClosePopup} />
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
-            >
-              <button
-                onClick={handleClosePopup}
-                className="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 transition-colors"
-              >
-                <X size={20} className="text-gray-400" />
-              </button>
-
-              {isApproved ? (
+        {/* POPUP NOTIFICATION */}
+        <AnimatePresence>
+          {showPopup && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+              <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 border ring-1 ring-slate-200">
                 <div className="text-center">
-                  <div className="h-16 w-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle size={32} className="text-emerald-600" />
+                  <div className={clsx("h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-6", isApproved ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600")}>
+                    {isApproved ? <ShieldCheck size={32} /> : <AlertTriangle size={32} />}
                   </div>
-                  <h2 className="text-xl font-black text-emerald-950 mb-4">PENDAFTARAN DITERIMA</h2>
-                  <div className="text-left bg-emerald-50 rounded-xl p-4 space-y-3">
-                    <div className="flex items-start gap-3">
-                      <Calendar size={18} className="text-emerald-600 mt-0.5 shrink-0" />
-                      <div>
-                        <p className="text-xs font-bold text-emerald-800 uppercase">Periode</p>
-                        <p className="text-sm font-semibold text-emerald-950">{periodName}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <Users size={18} className="text-emerald-600 mt-0.5 shrink-0" />
-                      <div>
-                        <p className="text-xs font-bold text-emerald-800 uppercase">Kelompok</p>
-                        <p className="text-sm font-semibold text-emerald-950">{groupName}</p>
-                        <p className="text-xs text-emerald-700">{groupLocation}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                      <UserCheck size={18} className="text-emerald-600 mt-0.5 shrink-0" />
-                      <div>
-                        <p className="text-xs font-bold text-emerald-800 uppercase">Dosen Pembimbing Lapangan</p>
-                        <p className="text-sm font-semibold text-emerald-950">{dplName}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-100">
-                    <div className="flex items-center gap-2">
-                      <Lightbulb size={16} className="text-amber-600" />
-                      <p className="text-xs font-semibold text-amber-800">Langkah Selanjutnya: Isi Program Kerja</p>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <div className="h-16 w-16 bg-rose-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <X size={32} className="text-rose-600" />
-                  </div>
-                  <h2 className="text-xl font-black text-rose-950 mb-4">PENDAFTARAN DITOLAK</h2>
-                  <div className="text-left bg-rose-50 rounded-xl p-4">
-                    <p className="text-xs font-bold text-rose-800 uppercase mb-1">Alasan Penolakan</p>
-                    <p className="text-sm font-semibold text-rose-950">{registration?.rejection_reason || '-'}</p>
-                  </div>
-                  <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-100">
-                    <div className="flex items-center gap-2">
-                      <AlertTriangle size={16} className="text-amber-600" />
-                      <p className="text-xs font-semibold text-amber-800">Silakan Perbaiki Berkas & Upload Ulang</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <button
-                onClick={handleClosePopup}
-                className="w-full mt-6 h-11 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-black uppercase tracking-widest rounded-xl transition-colors"
-              >
-                {isApproved ? 'Mengerti' : 'Tutup'}
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-
-        <div className="space-y-6">
-          {/* --- TOP BANNER / PLACEMENT INFO --- */}
-          {isGroupPinned && (
-            <motion.div 
-              initial={{ y: -20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-emerald-50 flex flex-col md:flex-row items-center justify-between gap-8"
-            >
-              <div className="flex items-center gap-6">
-                <div className="h-16 w-16 bg-emerald-600 rounded-[1.5rem] flex items-center justify-center text-white shadow-lg shadow-emerald-200 shrink-0">
-                  <MapPin size={32} />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-black text-emerald-600 uppercase tracking-[0.2em]">Penempatan Aktif</span>
-                    <div className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
-                  </div>
-                  <h2 className="text-3xl font-black text-emerald-950 tracking-tight uppercase">
-                    {registration?.group?.location?.name ?? 'Lokasi KKN'}
+                  <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">
+                    Status Pendaftaran: {isApproved ? 'DISETUJUI' : 'DITOLAK'}
                   </h2>
-                  <p className="text-sm font-bold text-slate-400 mt-1 uppercase tracking-wider">
-                    {registration?.group?.name} • {registration?.group?.code}
+                  <p className="text-sm text-slate-500 mb-6 font-medium">
+                    {isApproved ? 'Selamat! Anda telah resmi terdaftar sebagai peserta KKN.' : 'Maaf, berkas Anda memerlukan perbaikan.'}
                   </p>
+                  
+                  <div className="bg-slate-50 rounded-lg p-5 border text-left space-y-4">
+                    {isApproved ? (
+                      <>
+                        <div className="flex gap-3">
+                          <MapPin size={16} className="text-emerald-600 shrink-0" />
+                          <div>
+                            <p className="text-[10px] font-black text-slate-400 uppercase">Lokasi Penempatan</p>
+                            <p className="text-sm font-bold text-slate-900 leading-tight">{groupLocation}</p>
+                            <p className="text-xs text-slate-500 font-medium">{groupName}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-3">
+                          <Users size={16} className="text-emerald-600 shrink-0" />
+                          <div>
+                            <p className="text-[10px] font-black text-slate-400 uppercase">Dosen Pembimbing</p>
+                            <p className="text-sm font-bold text-slate-900 leading-tight">{dplName}</p>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div>
+                        <p className="text-[10px] font-black text-rose-600 uppercase mb-1">Catatan Penolakan</p>
+                        <p className="text-sm font-bold text-slate-900 italic leading-relaxed">"{registration?.rejection_reason || 'Periksa kembali kelengkapan berkas Anda.'}"</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-6 md:border-l md:border-emerald-50 md:pl-8">
-                 <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Dosen Pembimbing</span>
-                    <span className="text-sm font-bold text-emerald-950">{registration?.group?.lecturer?.name || 'Akan Ditentukan'}</span>
-                 </div>
-                 <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest mb-1">Periode</span>
-                    <span className="text-sm font-bold text-emerald-950">{registration?.period?.name}</span>
-                 </div>
-                 <Link 
-                  href={route('student.posko.index')}
-                  className="px-6 py-3 bg-emerald-50 text-emerald-700 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all shadow-sm"
-                 >
-                   Detail Posko
-                 </Link>
-              </div>
-            </motion.div>
+                <button onClick={handleClosePopup} className="w-full mt-8 h-12 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-widest rounded-lg shadow-lg shadow-emerald-600/20 transition-all active:scale-[0.98]">
+                  Selesai & Mengerti
+                </button>
+              </motion.div>
+            </div>
           )}
+        </AnimatePresence>
 
-          {/* --- MAIN GRID --- */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-6 pb-12">
+          
+          {/* COMPACT HEADER */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] font-black text-emerald-700 uppercase tracking-[0.2em]">Sistem Informasi KKN</span>
+              </div>
+              <h1 className="text-2xl font-black text-slate-900 tracking-tight">Halo, {auth.user.name.split(' ')[0]}. 👋</h1>
+            </div>
             
-            {/* Left Content (8 Cols) */}
+            <div className="flex items-center gap-4 bg-white ring-1 ring-slate-200 rounded-lg px-4 py-3">
+              <div className="flex flex-col border-r border-slate-100 pr-4">
+                <span className="text-[8px] font-black text-slate-400 uppercase mb-0.5">Status Registrasi</span>
+                <StatusTag status={registration?.status || 'unregistered'} />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[8px] font-black text-slate-400 uppercase mb-0.5">Tahun Akademik</span>
+                <span className="text-xs font-black text-slate-900 uppercase tracking-tight">{periodName}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* MAIN CONTENT AREA */}
             <div className="lg:col-span-8 space-y-6">
               
-              {/* Progress Tracker Card */}
-              <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-emerald-50">
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-3">
-                    <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl">
-                      <Target size={20} />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-black text-emerald-950 uppercase tracking-tight">Progres Pengabdian</h3>
-                      <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Lacak tahapan KKN Anda</p>
-                    </div>
-                  </div>
-                  <span className="text-2xl font-black text-emerald-600">{progressPercent}%</span>
+              {/* PROGRESS BAR COMPACT */}
+              <div className="bg-white ring-1 ring-slate-200 rounded-xl p-6 shadow-sm overflow-hidden relative">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                    <Target size={16} className="text-emerald-600" /> Milestone Pengabdian
+                  </h3>
+                  <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded tracking-tighter">{progressPercent}% COMPLETED</span>
+                </div>
+                
+                <div className="w-full bg-slate-100 h-1.5 rounded-full mb-6 overflow-hidden">
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${progressPercent}%` }} className="bg-emerald-600 h-full rounded-full" />
                 </div>
 
-                <div className="w-full bg-emerald-50 rounded-full h-3 mb-10 overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progressPercent}%` }}
-                    className="bg-emerald-600 h-full rounded-full shadow-[0_0_12px_rgba(5,150,105,0.4)]"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                   {phases.map((phase) => (
-                    <div 
-                      key={phase.id}
-                      className={clsx(
-                        "flex flex-col gap-3 p-4 rounded-[1.5rem] border-2 transition-all",
-                        phase.isCompleted 
-                          ? "bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-200"
-                          : phase.isActive
-                            ? "bg-white border-emerald-100 text-emerald-950 shadow-sm"
-                            : "bg-slate-50 border-transparent text-slate-300"
-                      )}
-                    >
-                      <div className={clsx(
-                        "h-8 w-8 rounded-xl flex items-center justify-center text-xs font-black",
-                        phase.isCompleted ? "bg-white/20" : "bg-emerald-50"
-                      )}>
-                        {phase.isCompleted ? <CheckCircle size={16} /> : phase.id}
+                    <div key={phase.id} className={clsx(
+                      "p-3 rounded-lg border-l-4 transition-all flex flex-col gap-1",
+                      phase.done ? "bg-emerald-50/50 border-emerald-500" : phase.active ? "bg-white border-slate-300 ring-1 ring-inset ring-slate-100" : "bg-slate-50/50 border-slate-200 opacity-60"
+                    )}>
+                      <div className="flex items-center justify-between">
+                         <span className="text-[9px] font-black text-slate-400">0{phase.id}</span>
+                         {phase.done && <CheckCircle2 size={12} className="text-emerald-600" />}
                       </div>
-                      <div>
-                        <p className="text-xs font-black uppercase tracking-tight mb-0.5">{phase.label}</p>
-                        <p className={clsx(
-                          "text-[9px] font-bold uppercase tracking-widest",
-                          phase.isCompleted ? "text-emerald-100" : "text-slate-400"
-                        )}>{phase.desc}</p>
-                      </div>
+                      <span className={clsx("text-[10px] font-black uppercase tracking-tight", phase.done ? "text-emerald-900" : "text-slate-600")}>{phase.label}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Quick Action Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <StatBox
-                  icon={ClipboardList}
-                  label="Logbook Harian"
-                  value={`${dailyReportCount} Laporan`}
+              {/* STATS & METRICS */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <CompactStat 
+                  icon={ClipboardList} 
+                  label="Logbook Harian" 
+                  value={dailyReportCount} 
+                  suffix={`/ ${registration?.period?.min_logbook ?? 30} Laporan`}
                   color="emerald"
                 />
-                <StatBox
-                  icon={ScrollText}
-                  label="Laporan Akhir"
-                  value={finalReport ? 'Terkirim' : 'Belum Unggah'}
+                <CompactStat 
+                  icon={ScrollText} 
+                  label="Laporan Akhir" 
+                  value={finalReport ? 'TERSEDIA' : 'BELUM ADA'} 
+                  suffix={finalReport ? 'Dokumen Terkunci' : 'Segera Unggah'}
                   color="blue"
                 />
               </div>
 
-              {/* Status Section for Unregistered */}
+              {/* ACTION CALLOUT FOR UNAPPROVED */}
               {!isApproved && (
-                <div className="bg-white rounded-[2.5rem] p-12 text-center border-2 border-dashed border-emerald-100 flex flex-col items-center">
-                   <div className="h-20 w-20 bg-emerald-50 rounded-[2rem] flex items-center justify-center text-emerald-600 mb-6">
-                     <GraduationCap size={40} />
-                   </div>
-                   <h3 className="text-2xl font-black text-emerald-950 uppercase tracking-tight mb-2">
-                     {isRejected ? 'Perlu Perbaikan Berkas' : isPending ? 'Menunggu Verifikasi' : 'Siap Berpengabdian?'}
-                   </h3>
-                   <p className="text-sm font-bold text-slate-500 max-w-sm mb-8 leading-relaxed">
-                     {isRejected ? registration?.rejection_reason : 'Lengkapi pendaftaran Anda untuk mendapatkan penempatan kelompok dan mulai aksi nyata.'}
-                   </p>
-                   {!isApproved && (
-                      <Link
-                        href={registration ? route('student.registration.status') : '/mahasiswa/daftar'}
-                        className="px-10 py-4 bg-emerald-950 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:scale-105 transition-all shadow-2xl shadow-emerald-900/20"
-                      >
-                        {registration ? 'Cek Status' : 'Mulai Daftar'}
-                      </Link>
-                   )}
+                <div className="bg-slate-900 rounded-xl p-8 text-white relative overflow-hidden shadow-xl">
+                  <div className="absolute right-0 top-0 p-8 opacity-10 rotate-12 -mr-10 -mt-10"><GraduationCap size={160} /></div>
+                  <div className="relative z-10 space-y-6">
+                    <div className="space-y-2">
+                      <h3 className="text-xl font-black uppercase tracking-tight">
+                        {isRejected ? 'Perbaikan Berkas Diperlukan' : isPending ? 'Audit Pendaftaran Berjalan' : 'Belum Terdaftar?'}
+                      </h3>
+                      <p className="text-sm font-medium text-slate-400 max-w-xl leading-relaxed">
+                        {isRejected ? `Alasan: "${registration?.rejection_reason}"` : isPending ? 'Sistem sedang meninjau berkas Anda. Mohon tunggu hingga admin atau DPL memberikan validasi status.' : 'Daftarkan diri Anda sekarang untuk mengikuti program KKN Periode 2026/2027.'}
+                      </p>
+                    </div>
+                    <Link 
+                      href={registration ? route('student.registration.status') : '/mahasiswa/daftar'} 
+                      className="inline-flex h-12 px-8 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-black uppercase tracking-widest transition-all items-center gap-3 active:scale-95 shadow-lg shadow-emerald-600/20"
+                    >
+                      {registration ? 'Cek Detail Status' : 'Mulai Pendaftaran'} <ArrowRight size={16} />
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              {/* GROUP INFO IF PINNED */}
+              {isGroupPinned && (
+                <div className="bg-white ring-1 ring-slate-200 rounded-xl p-8 shadow-sm">
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className="h-12 w-12 bg-emerald-600 text-white rounded-lg flex items-center justify-center shadow-lg shadow-emerald-100">
+                      <MapPin size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight leading-none mb-1">{groupLocation}</h3>
+                      <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{groupName} • {registration?.group?.code}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <InfoItem label="Dosen Pembimbing" value={dplName} icon={UserCheck} />
+                    <InfoItem label="Ketua Kelompok" value="Sedang Ditentukan" icon={Users} />
+                    <InfoItem label="Wilayah / Desa" value={groupLocation} icon={MapPin} />
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Right Content (4 Cols) */}
+            {/* SIDEBAR WIDGETS */}
             <div className="lg:col-span-4 space-y-6">
-              {/* Quick Links Widget */}
-              <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-emerald-50">
-                <h3 className="text-lg font-black text-emerald-950 uppercase tracking-tight mb-6 flex items-center gap-2">
-                  <LayoutGrid size={20} className="text-emerald-600" />
-                  Menu Utama
+              {/* MENU UTAMA */}
+              <div className="bg-white ring-1 ring-slate-200 rounded-xl p-6 shadow-sm">
+                <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+                  <LayoutGrid size={16} className="text-emerald-600" /> Menu Navigasi
                 </h3>
-                <div className="space-y-2">
-                  <PremiumLink href={route('student.laporan-harian.index')} icon={ClipboardList} label="Logbook" desc="Laporan harian KKN" />
-                  <PremiumLink href={route('student.program-kerja.index')} icon={Presentation} label="Proker" desc="Target & realisasi" />
-                  <PremiumLink href={route('student.posko.index')} icon={MapPin} label="Detail Posko" desc="Info lokasi & DPL" />
-                  <PremiumLink href={route('student.laporan-akhir.index')} icon={ScrollText} label="Laporan Akhir" desc="Unggah hasil akhir" />
+                <div className="grid gap-2">
+                  <NavButton href={route('student.laporan-harian.index')} icon={ClipboardList} label="Logbook Harian" />
+                  <NavButton href={route('student.program-kerja.index')} icon={Presentation} label="Program Kerja" />
+                  <NavButton href={route('student.posko.index')} icon={MapPin} label="Detail Posko" />
+                  <NavButton href={route('student.laporan-akhir.index')} icon={ScrollText} label="Laporan Akhir" />
+                  <NavButton href={route('student.rekapitulasi.index')} icon={Activity} label="Rekapitulasi Nilai" />
                 </div>
               </div>
 
-              {/* Info Widget */}
-              <div className="bg-emerald-950 rounded-[2.5rem] p-8 text-white relative overflow-hidden shadow-2xl shadow-emerald-950/20">
-                <div className="absolute top-0 right-0 p-8 opacity-5"><Lightbulb size={120} /></div>
-                <h3 className="text-sm font-black uppercase tracking-[0.3em] text-emerald-400 mb-4">Pusat Informasi</h3>
-                <div className="space-y-4 relative z-10">
-                   <div className="p-4 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10">
-                      <p className="text-[11px] font-bold text-emerald-100 uppercase tracking-widest mb-1">Ketentuan Logbook</p>
-                      <p className="text-xs font-medium text-white/70">Minimal 30 laporan harian untuk syarat kelulusan.</p>
-                   </div>
-                   <div className="p-4 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10">
-                      <p className="text-[11px] font-bold text-emerald-100 uppercase tracking-widest mb-1">Batas Validasi</p>
-                      <p className="text-xs font-medium text-white/70">DPL memiliki waktu 72 jam untuk memvalidasi laporan.</p>
-                   </div>
-                </div>
+              {/* ANNOUNCEMENT / TIPS */}
+              <div className="bg-emerald-50/50 ring-1 ring-emerald-100 rounded-xl p-6">
+                 <div className="flex items-center gap-2 text-emerald-800 mb-4">
+                    <Lightbulb size={18} />
+                    <span className="text-xs font-black uppercase tracking-widest">Informasi Penting</span>
+                 </div>
+                 <ul className="space-y-4">
+                    <li className="flex gap-3">
+                       <div className="h-5 w-5 bg-emerald-600 text-white rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold">1</div>
+                       <p className="text-xs font-semibold text-emerald-950 leading-relaxed">Pastikan Logbook diisi setiap hari paling lambat pukul 23:59 WIB.</p>
+                    </li>
+                    <li className="flex gap-3">
+                       <div className="h-5 w-5 bg-emerald-600 text-white rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold">2</div>
+                       <p className="text-xs font-semibold text-emerald-950 leading-relaxed">Minimal 30 laporan harian yang divalidasi DPL untuk syarat kelulusan.</p>
+                    </li>
+                 </ul>
               </div>
             </div>
-
           </div>
         </div>
       </AppLayout>
@@ -430,72 +340,47 @@ export default function StudentDashboard({
   );
 }
 
-function StatBox({ icon: Icon, label, value, color = 'emerald' }: DashboardStatProps) {
-  const colors: ColorPalette = {
-    emerald: 'bg-white border-emerald-50 text-emerald-600',
-    blue: 'bg-white border-blue-50 text-blue-600',
-  };
+// ── Shared UI Components ───────────────────────────────────────────
+
+function CompactStat({ icon: Icon, label, value, suffix, color }: any) {
   return (
-    <motion.div 
-      whileHover={{ y: -5 }}
-      className={clsx(
-        "rounded-[2rem] p-6 shadow-sm border-2 flex items-center gap-6 transition-all bg-white",
-        color === 'emerald' ? 'border-emerald-50' : 'border-blue-50'
-      )}
-    >
-      <div className={clsx(
-        "h-14 w-14 rounded-2xl flex items-center justify-center shadow-inner",
-        color === 'emerald' ? 'bg-emerald-50 text-emerald-600' : 'bg-blue-50 text-blue-600'
-      )}>
+    <div className="bg-white ring-1 ring-slate-200 rounded-xl p-5 flex items-center gap-5 shadow-sm">
+      <div className={clsx("h-12 w-12 rounded-lg flex items-center justify-center shrink-0", color === 'emerald' ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-blue-600")}>
         <Icon size={24} />
       </div>
       <div>
-        <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1">
-          {label}
-        </p>
-        <p className="text-xl font-black text-emerald-950">{value}</p>
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{label}</p>
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-lg font-black text-slate-900 tabular-nums">{value}</span>
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{suffix}</span>
+        </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
-function PremiumLink({ href, icon: Icon, label, desc }: { href: string; icon: any; label: string; desc: string }) {
+function InfoItem({ label, value, icon: Icon }: any) {
   return (
-    <Link
-      href={href}
-      className="group flex items-center gap-4 p-4 rounded-2xl hover:bg-emerald-50 transition-all border border-transparent hover:border-emerald-100"
-    >
-      <div className="h-10 w-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-white group-hover:text-emerald-600 group-hover:shadow-sm transition-all">
-        <Icon size={18} />
-      </div>
+    <div className="flex items-start gap-3">
+      <div className="p-2 bg-slate-50 rounded-lg text-slate-400"><Icon size={16} /></div>
       <div className="flex flex-col">
-        <span className="text-sm font-black text-emerald-950 group-hover:text-emerald-700 transition-colors uppercase tracking-tight">
-          {label}
-        </span>
-        <span className="text-[10px] font-bold text-slate-400 group-hover:text-emerald-600/60 uppercase tracking-wider">
-          {desc}
-        </span>
+        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">{label}</span>
+        <span className="text-xs font-bold text-slate-900 uppercase leading-tight">{value}</span>
       </div>
-      <ArrowRight size={16} className="ml-auto text-slate-200 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
+    </div>
+  );
+}
+
+function NavButton({ href, icon: Icon, label }: any) {
+  return (
+    <Link href={href} className="flex items-center gap-3 p-3 rounded-lg border border-transparent hover:border-emerald-100 hover:bg-emerald-50 transition-all group">
+      <div className="p-2 bg-slate-50 text-slate-400 rounded-md group-hover:bg-emerald-600 group-hover:text-white transition-all"><Icon size={16} /></div>
+      <span className="text-xs font-bold text-slate-700 group-hover:text-emerald-900 transition-colors uppercase tracking-tight">{label}</span>
+      <ArrowRight size={14} className="ml-auto text-slate-200 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
     </Link>
   );
 }
 
-function QuickLink({ href, icon: Icon, label }: DashboardQuickLinkProps) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center gap-2.5 p-3 rounded-xl hover:bg-emerald-50 text-emerald-900 hover:text-emerald-950 transition-all group font-bold text-sm uppercase"
-    >
-      <Icon size={16} className="text-emerald-200 group-hover:text-emerald-600 transition-colors" />
-      {label}
-      <ArrowRight
-        size={12}
-        className="ml-auto text-emerald-100 group-hover:text-emerald-950 transition-all group-hover:translate-x-1"
-      />
-    </Link>
-  );
-}
 
 function normalizeStatus(status?: string): 'approved' | 'pending' | 'rejected' | 'unknown' {
   if (!status) return 'unknown';

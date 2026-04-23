@@ -12,7 +12,7 @@ interface MetricItemProps {
 export function MetricItem({ label, value, icon: Icon, className }: MetricItemProps) {
     return (
         <div className={clsx("flex flex-col items-center gap-3", className)}>
-             <div className="h-12 w-12 bg-[#e8f5ee] rounded-lg flex items-center justify-center text-[#1a7a4a]">
+             <div className="h-12 w-12 bg-[#f0fdfa] rounded-lg flex items-center justify-center text-[#0d9488]">
                 <Icon size={22} strokeWidth={2} />
              </div>
              <div className="text-center">

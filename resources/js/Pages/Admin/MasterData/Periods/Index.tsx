@@ -544,20 +544,6 @@ export default function PeriodsIndex({
           </PremiumTable>
         </ContentPanel>
 
-        <div className="bg-emerald-950 rounded-3xl p-10 text-white relative overflow-hidden shadow-2xl border-b-[6px] border-emerald-900">
-          <div className="absolute top-0 right-0 p-8 opacity-5 rotate-12 -mr-16 -mt-16 pointer-events-none"><Activity size={320} /></div>
-          <div className="flex flex-col md:flex-row items-center gap-10 relative z-10">
-            <div className="h-20 w-20 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 border border-white/10 shadow-inner shrink-0 backdrop-blur-sm">
-              <Activity size={40} strokeWidth={2.5} />
-            </div>
-            <div className="space-y-3 text-center md:text-left">
-              <h2 className="text-2xl font-black uppercase tracking-tight">Otoritas Manajemen Siklus</h2>
-              <p className="text-xs font-medium text-emerald-400/60 uppercase tracking-widest leading-relaxed max-w-4xl">
-                Setiap transisi fase memicu perubahan akses fitur bagi mahasiswa dan DPL secara otomatis. Pastikan linimasa pendaftaran, pelaksanaan, dan penilaian tidak tumpang tindih untuk menjaga integritas data akademik dan efisiensi koordinasi lapangan.
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Head, router } from '@inertiajs/react';
+import { Head, router, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Pagination } from '@/Components/ui';
 import { clsx } from 'clsx';
@@ -9,19 +9,24 @@ import {
   Search,
   Filter,
   Activity,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
   MapPin,
-  Sparkles,
   Target,
-  BarChart3,
-  Calendar,
   ChevronRight,
-  TrendingUp,
-  Award
+  LayoutGrid,
+  Zap,
+  ShieldCheck,
+  Award,
+  Eye,
+  Globe
 } from 'lucide-react';
 import type { PaginationMeta } from '@/Components/ui/Pagination';
+
+// Premium Components
+import PageHeader from '@/Components/Premium/PageHeader';
+import StatCard from '@/Components/Premium/StatCard';
+import ContentPanel from '@/Components/Premium/ContentPanel';
+import PremiumTable, { PremiumTableRow, PremiumTableCell } from '@/Components/Premium/PremiumTable';
+import StatusTag from '@/Components/Premium/StatusTag';
 
 interface WorkProgram {
   id: number;
@@ -41,7 +46,6 @@ interface Props {
   totalStats: { total: number; approved: number; pending: number };
 }
 
-// Mapping SDG Names
 const sdgNames: Record<string, string> = {
   '1': 'Tanpa Kemiskinan',
   '2': 'Tanpa Kelaparan',
@@ -71,177 +75,164 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
 
   return (
     <AppLayout title="Program Kerja Mahasiswa">
+      <Head title="Manajemen Program Kerja | SIBERDAYA" />
 
-      <div className="py-8 font-sans transition-all pb-20">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
         
-        {/* HEADER SECTION (Gold Standard) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 border-b border-emerald-50/50 pb-8">
-          <div className="space-y-1">
-            <h1 className="text-xl font-bold text-emerald-950">Program Kerja Mahasiswa.</h1>
-            <p className="text-xs text-emerald-950/40 font-black uppercase tracking-widest">
-              Pusat pemantauan kegiatan pengabdian mahasiswa di lapangan
-            </p>
-          </div>
-          
-          <div className="flex items-center gap-3">
-            <div className="px-4 py-2 bg-[#e8f5ee] border border-emerald-50/60 rounded-lg flex items-center gap-4">
-              <div className="flex flex-col text-right">
-                <span className="text-[9px] font-black text-emerald-950/20 uppercase tracking-widest mb-0.5">Jumlah Data</span>
-                <span className="text-xs font-black text-emerald-950 uppercase leading-none">
-                  {workPrograms.meta.total.toLocaleString('id-ID')} Data
-                </span>
-              </div>
-              <Award size={18} className="text-[#1a7a4a] opacity-40 ml-2" />
-            </div>
-          </div>
+        {/* PAGE HEADER */}
+        <PageHeader
+          title="Program Kerja."
+          subtitle="Pusat pemantauan, validasi, dan analisis distribusi target SDGs kegiatan pengabdian mahasiswa."
+          icon={LayoutGrid}
+          groupLabel="Monitoring & Evaluasi"
+        />
+
+        {/* STATS GRID */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard label="Total Program" value={workPrograms.meta.total} icon={FileText} variant="success" />
+          <StatCard label="Disetujui" value={totalStats.approved} icon={Award} variant="info" />
+          <StatCard label="Menunggu Audit" value={totalStats.pending} icon={Activity} variant="gray" />
+          <StatCard label="SDG Mapping" value="ACTIVE" icon={Globe} variant="gray" />
         </div>
 
-        {/* --- SDG DISTRIBUTION PANEL (Premium Edition) --- */}
-        <div className="bg-white border border-emerald-50 rounded-xl mb-8 p-6 shadow-sm overflow-hidden relative">
-          <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
-            <Target size={120} />
-          </div>
-          
-          <div className="flex items-center gap-2 mb-6 border-b border-[#f3f4f6] pb-4">
-             <div className="h-6 w-1 bg-emerald-500 rounded-full" />
-             <div className="flex flex-col">
-               <span className="text-xs font-black text-emerald-950 uppercase tracking-widest">Distribusi Peta SDGs Global</span>
-               <span className="text-[10px] text-emerald-700 mt-0.5">Arahkan kursor (hover) ke nomor SDG untuk melihat detail tujuan</span>
-             </div>
-          </div>
-
-          <div className="relative overflow-x-auto pb-6">
-            <div className="flex gap-3 pb-2 min-w-max">
+        {/* SDG DISTRIBUTION PANEL */}
+        <ContentPanel
+          title="Distribusi Peta SDGs Global"
+          description="Visualisasi sebaran fokus program kerja berdasarkan 17 tujuan pembangunan berkelanjutan."
+          icon={Target}
+        >
+          <div className="py-4">
+            <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
               {Array.from({ length: 17 }, (_, i) => String(i + 1)).map((sdg) => {
                 const count = sdg_distribution ? Number(sdg_distribution[sdg as keyof typeof sdg_distribution] || 0) : 0;
                 return (
-                  <div key={sdg} className="relative flex flex-col items-center group">
-                    <div className="w-16 h-20 bg-gray-50 border border-emerald-50/60 rounded-xl p-3 flex flex-col justify-between transition-all group-hover:bg-[#16a34a] group-hover:border-emerald-600">
-                      <div className="h-1 bg-rose-500 w-full rounded-full" />
+                  <motion.div 
+                    key={sdg} 
+                    whileHover={{ y: -5 }}
+                    className="relative flex flex-col items-center group shrink-0"
+                  >
+                    <div className="w-20 h-24 bg-[#F8FAF9] border-2 border-slate-50 rounded-2xl p-4 flex flex-col justify-between transition-all group-hover:bg-emerald-600 group-hover:border-emerald-600 shadow-sm">
+                      <div className="h-1.5 bg-emerald-500 w-full rounded-full group-hover:bg-white/30" />
                       <div className="text-center">
-                        <span className="text-[8px] font-black text-emerald-950/30 uppercase tracking-tighter block group-hover:text-emerald-100">SDG {sdg}</span>
-                        <span className="text-sm font-bold text-emerald-950 group-hover:text-white">{count}</span>
+                        <span className="text-[10px] font-black text-emerald-950/20 uppercase tracking-tighter block group-hover:text-white/40">SDG {sdg}</span>
+                        <span className="text-xl font-black text-emerald-950 group-hover:text-white tabular-nums leading-none">{count}</span>
                       </div>
                     </div>
                     
-                    {/* Real Tooltip Element */}
-                    <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 group-hover:-translate-y-1 transition-all duration-200 pointer-events-none z-50">
-                      <div className="bg-gray-900 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg whitespace-nowrap shadow-xl flex flex-col items-center">
-                        <span className="text-emerald-400">SDG {sdg}</span>
-                        <span>{sdgNames[sdg]}</span>
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+                    {/* Tooltip */}
+                    <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-50">
+                      <div className="bg-emerald-950 text-white text-[10px] font-black px-4 py-2 rounded-xl whitespace-nowrap shadow-2xl flex flex-col items-center border border-white/10 uppercase tracking-widest">
+                        <span className="text-emerald-400 mb-1">SDG {sdg}</span>
+                        <span className="text-white/80">{sdgNames[sdg]}</span>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-emerald-950" />
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
           </div>
-        </div>
+        </ContentPanel>
 
-        {/* --- DATA TABLE CARD (Gold Standard) --- */}
-        <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[500px]">
-          {/* TOOLBAR Sederhana */}
-          <div className="px-6 py-4 border-b border-[#f3f4f6]/50 bg-emerald-50/10 flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <FileText size={16} className="text-[#1a7a4a]" />
-              <h3 className="text-xs font-black text-emerald-950 uppercase tracking-widest">Daftar Kegiatan Mahasiswa</h3>
-            </div>
-            
-            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-              <div className="relative flex-1 md:flex-none">
-                <Sparkles size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#1a7a4a] animate-pulse" />
+        {/* MAIN DATA TABLE */}
+        <ContentPanel
+          title="Work Program Transaction Ledger"
+          description="Daftar lengkap rencana dan implementasi program kerja mahasiswa di lokasi pengabdian."
+          icon={FileText}
+          padding={false}
+          headerAction={
+            <div className="flex items-center gap-3">
+              <div className="relative group min-w-[300px]">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-emerald-950/20 group-focus-within:text-emerald-600 transition-colors" />
                 <input 
-                  type="text" 
+                  type="text"
                   value={search} 
-                  onChange={(e) => setSearch(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleFilterChange('search', search)}
-                  placeholder="Cari program cerdas (AI) ..." 
-                  className="w-full md:w-64 h-9 pl-9 pr-8 bg-white border border-emerald-50/60 rounded-lg text-xs font-bold text-emerald-950 placeholder:text-black/20 focus:border-[#f3f4f6]0 outline-none transition-all shadow-sm"
+                  onChange={(e) => setSearch(e.target.value)} 
+                  onKeyDown={(e) => e.key === 'Enter' && handleFilterChange('search', search)} 
+                  className="w-full h-11 pl-11 pr-4 bg-gray-50 border-2 border-slate-50 rounded-xl text-[12px] font-bold text-emerald-950 focus:bg-white focus:border-emerald-600 outline-none transition-all placeholder:text-emerald-950/20"
+                  placeholder="CARI PROGRAM CERDAS..."
                 />
-                <Search size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-700" />
               </div>
-              
-              <select 
-                value={filters.status} 
-                onChange={(e) => handleFilterChange('status', e.target.value)}
-                className="h-9 px-3 bg-white border border-emerald-50 rounded-lg text-[9px] font-black text-emerald-950 uppercase tracking-widest outline-none focus:border-[#f3f4f6]0 shadow-sm"
+              <div className="relative min-w-[200px]">
+                <select 
+                  value={filters.status} 
+                  onChange={(e) => handleFilterChange('status', e.target.value)}
+                  className="w-full h-11 pl-4 pr-10 bg-gray-50 border-2 border-slate-50 rounded-xl text-[11px] font-black uppercase tracking-widest text-emerald-950 focus:bg-white focus:border-emerald-600 outline-none transition-all appearance-none cursor-pointer"
+                >
+                  <option value="all">SEMUA KONDISI</option>
+                  <option value="approved">DISETUJUI (VERIFIED)</option>
+                  <option value="pending">DIAJUKAN (PENDING)</option>
+                  <option value="revision">REVISI (NEED FIX)</option>
+                </select>
+                <ChevronRight size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-950/20 rotate-90 pointer-events-none" />
+              </div>
+              <button 
+                onClick={() => handleFilterChange('search', search)} 
+                className="h-11 px-6 bg-emerald-950 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-black transition-all flex items-center gap-2 active:scale-95 shadow-lg shadow-emerald-950/10"
               >
-                <option value="all">Semua Kondisi</option>
-                <option value="approved">Disetujui</option>
-                <option value="pending">Menunggu</option>
-                <option value="revision">Revisi</option>
-              </select>
+                <Filter size={16} /> Filter
+              </button>
             </div>
-          </div>
+          }
+          footer={
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2">
+                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] font-black text-emerald-950/40 uppercase tracking-widest tabular-nums">
+                  Real-time Monitoring &middot; {workPrograms.meta.total} Program Terdeteksi
+                </span>
+              </div>
+              <Pagination meta={workPrograms.meta} />
+            </div>
+          }
+        >
+          <PremiumTable
+            headers={['Judul Program & ID', 'Unit / Lokasi', 'Kondisi Audit', 'Opsi']}
+            isEmpty={workPrograms.data.length === 0}
+            emptyText="Tidak ada program kerja yang ditemukan."
+          >
+            {workPrograms.data.map((proker) => (
+              <PremiumTableRow key={proker.id} className="group">
+                <PremiumTableCell>
+                  <div className="flex flex-col gap-1 py-1">
+                    <span className="text-[13px] font-black text-emerald-950 uppercase tracking-tight leading-none group-hover:text-emerald-700 transition-colors line-clamp-1">{proker.title}</span>
+                    <span className="text-[9px] font-black text-emerald-950/40 font-mono tracking-tighter uppercase">PROKERID: #{proker.proker_id}</span>
+                  </div>
+                </PremiumTableCell>
+                <PremiumTableCell>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[11px] font-black text-emerald-950 uppercase tracking-tight leading-none">{proker.group_name}</span>
+                    <div className="flex items-center gap-1.5 text-emerald-600/50">
+                      <MapPin size={10} strokeWidth={3} />
+                      <span className="text-[9px] font-black uppercase tracking-widest truncate max-w-[150px]">{proker.location}</span>
+                    </div>
+                  </div>
+                </PremiumTableCell>
+                <PremiumTableCell>
+                  <StatusTag 
+                    status={
+                      proker.status === 'approved' ? 'active' : 
+                      proker.status === 'revision' ? 'error' : 'pending'
+                    } 
+                    label={
+                      proker.status === 'approved' ? 'VERIFIED' : 
+                      proker.status === 'pending' ? 'PENDING' : 'REVISION'
+                    } 
+                    size="sm" 
+                  />
+                </PremiumTableCell>
+                <PremiumTableCell align="right">
+                  <button 
+                    className="h-9 w-9 bg-white border border-gray-100 text-emerald-900 rounded-xl hover:bg-emerald-50 hover:border-emerald-200 transition-all shadow-sm active:scale-95 flex items-center justify-center"
+                  >
+                    <Eye size={14} />
+                  </button>
+                </PremiumTableCell>
+              </PremiumTableRow>
+            ))}
+          </PremiumTable>
+        </ContentPanel>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-emerald-50/20 border-b border-emerald-50/50">
-                  <th className="px-8 py-4 text-xs font-black text-emerald-950 uppercase tracking-widest">Judul Program & ID</th>
-                  <th className="px-8 py-4 text-xs font-black text-emerald-950 uppercase tracking-widest">Unit / Kelompok</th>
-                  <th className="px-8 py-4 text-xs font-black text-emerald-950 uppercase tracking-widest text-center">Kondisi</th>
-                  <th className="px-8 py-4 text-xs font-black text-emerald-950 uppercase tracking-widest text-right">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[#f3f4f6]/60 font-sans">
-                {workPrograms.data.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="py-32 text-center text-emerald-950/10">
-                      <div className="flex flex-col items-center gap-2">
-                        <Activity size={40} />
-                        <span className="text-xs font-black uppercase tracking-widest">Data laporan tidak ditemukan</span>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  workPrograms.data.map((proker) => (
-                    <tr key={proker.id} className="hover:bg-gray-50/20 transition-all group">
-                      <td className="px-8 py-5">
-                        <div className="flex flex-col">
-                          <span className="text-xs font-bold text-emerald-950 uppercase leading-normal line-clamp-1 mb-1">{proker.title}</span>
-                          <span className="text-[9px] text-emerald-950/40 font-black tabular-nums tracking-wider uppercase">PROKER: #{proker.proker_id}</span>
-                        </div>
-                      </td>
-                      <td className="px-8 py-5">
-                        <div className="flex flex-col">
-                          <span className="text-xs font-bold text-emerald-950 leading-none mb-1.5 uppercase">{proker.group_name}</span>
-                          <div className="flex items-center gap-1.5">
-                            <MapPin size={10} className="text-[#1a7a4a] opacity-40 shrink-0" />
-                            <span className="text-xs text-emerald-950/40 font-black uppercase tracking-tight truncate">{proker.location}</span>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-8 py-5 text-center">
-                        <span className={clsx(
-                          "inline-flex px-3 py-1 rounded-lg text-[9px] font-black uppercase border transition-all",
-                          proker.status === 'approved' ? "bg-[#e8f5ee] text-[#1a7a4a] border-emerald-200" : 
-                          proker.status === 'pending' ? "bg-white text-emerald-950/20 border-[#f3f4f6]" : 
-                          "bg-rose-50 text-rose-600 border-rose-200"
-                        )}>
-                          {proker.status === 'approved' ? 'Disetujui' : proker.status === 'pending' ? 'Diajukan' : 'Revisi'}
-                        </span>
-                      </td>
-                      <td className="px-8 py-5 text-right">
-                         <button className="h-8 w-8 rounded-lg border border-emerald-50 flex items-center justify-center text-[#1a7a4a] hover:bg-[#16a34a] hover:text-white transition-all ml-auto opacity-0 group-hover:opacity-100 shadow-sm translate-x-2 group-hover:translate-x-0">
-                           <ChevronRight size={14} />
-                         </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="px-8 py-4 border-t border-[#f3f4f6]/50 bg-emerald-50/10 flex items-center justify-between mt-auto">
-            <span className="text-xs font-black text-emerald-950/20 uppercase tracking-widest">
-              Laporan Real-Time | Informasi Kegiatan Terkini
-            </span>
-            <Pagination meta={workPrograms.meta} />
-          </div>
-        </div>
       </div>
     </AppLayout>
   );

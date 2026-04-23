@@ -103,7 +103,7 @@ export default function DispensasiIndex({ dispensasi, izins, periods, filters }:
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-white border border-emerald-50 rounded-xl overflow-hidden shadow-sm">
               <div className="p-6 border-b border-[#f3f4f6] bg-gray-50 flex items-center gap-4">
-                <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center text-[#1a7a4a] border border-emerald-50">
+                <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center text-[#0d9488] border border-emerald-50">
                   <Plus size={20} strokeWidth={3} />
                 </div>
                 <div>
@@ -160,10 +160,10 @@ export default function DispensasiIndex({ dispensasi, izins, periods, filters }:
                           onClick={() => toggleRequirement(opt.value)} 
                           className={clsx(
                             "flex items-center gap-3 px-4 py-3 rounded-lg border text-left transition-all",
-                            isChecked ? "bg-[#16a34a] border-emerald-600 text-white" : "bg-white border-emerald-50 text-emerald-950 hover:bg-gray-50"
+                            isChecked ? "bg-[#0d9488] border-emerald-600 text-white" : "bg-white border-emerald-50 text-emerald-950 hover:bg-gray-50"
                           )}
                         >
-                          <div className={clsx("h-4 w-4 rounded border flex items-center justify-center", isChecked ? "bg-white border-white text-[#1a7a4a]" : "bg-gray-50 border-emerald-200")}>
+                          <div className={clsx("h-4 w-4 rounded border flex items-center justify-center", isChecked ? "bg-white border-white text-[#0d9488]" : "bg-gray-50 border-emerald-200")}>
                             {isChecked && <Plus size={12} strokeWidth={4} />}
                           </div>
                           <span className="text-xs font-bold tracking-tight">{opt.label}</span>
@@ -176,22 +176,12 @@ export default function DispensasiIndex({ dispensasi, izins, periods, filters }:
                 <button 
                   type="submit"
                   disabled={form.processing}
-                  className="w-full h-14 bg-[#16a34a] hover:bg-[#15803d] text-white rounded-xl shadow-lg shadow-none font-bold text-xs flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50 mt-4"
+                  className="w-full h-14 bg-[#0d9488] hover:bg-[#0f766e] text-white rounded-xl shadow-lg shadow-none font-bold text-xs flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50 mt-4"
                 >
                   {form.processing ? <RefreshCw size={18} className="animate-spin"/> : <Plus size={18} strokeWidth={3} />}
                   SIMPAN DATA DISPENSASI
                 </button>
               </form>
-            </div>
-            
-            <div className="bg-emerald-950 rounded-xl p-6 text-white relative overflow-hidden">
-               <ShieldCheck className="absolute -right-4 -bottom-4 h-32 w-32 text-emerald-950 opacity-30 rotate-12" />
-               <div className="relative z-10 space-y-2">
-                  <p className="text-xs font-bold text-[#1a7a4a] uppercase tracking-widest">Informasi Keamanan</p>
-                  <p className="text-xs font-semibold leading-relaxed opacity-80">
-                    Semua data dispensasi bersifat permanent audit log. Hanya dipublikasikan untuk keperluan verifikasi operasional.
-                  </p>
-               </div>
             </div>
           </div>
 
@@ -205,7 +195,7 @@ export default function DispensasiIndex({ dispensasi, izins, periods, filters }:
                     onClick={() => setActiveTab('dispensasi')}
                     className={clsx(
                       "px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2",
-                      activeTab === 'dispensasi' ? "bg-[#16a34a] text-white shadow-md":"text-emerald-950 hover:bg-gray-50"
+                      activeTab === 'dispensasi' ? "bg-[#0d9488] text-white shadow-md":"text-emerald-950 hover:bg-gray-50"
                     )}
                   >
                     <ShieldCheck size={14} /> DISPENSASI
@@ -214,7 +204,7 @@ export default function DispensasiIndex({ dispensasi, izins, periods, filters }:
                     onClick={() => setActiveTab('izin')}
                     className={clsx(
                       "px-6 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-2",
-                      activeTab === 'izin' ? "bg-[#16a34a] text-white shadow-md":"text-emerald-950 hover:bg-gray-50"
+                      activeTab === 'izin' ? "bg-[#0d9488] text-white shadow-md":"text-emerald-950 hover:bg-gray-50"
                     )}
                   >
                     <Activity size={14} /> IZIN MONITORING
@@ -222,7 +212,7 @@ export default function DispensasiIndex({ dispensasi, izins, periods, filters }:
                 </div>
 
                 <form onSubmit={handleSearch} className="relative w-full md:w-64">
-                  <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#1a7a4a]"/>
+                  <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[#0d9488]"/>
                   <input 
                     value={search} 
                     onChange={e => setSearch(e.target.value)} 
@@ -254,14 +244,14 @@ export default function DispensasiIndex({ dispensasi, izins, periods, filters }:
                             <td className="px-8 py-6">
                               <div className="flex flex-col gap-1">
                                 <span className="text-sm font-bold text-emerald-950 font-mono">{item.nim}</span>
-                                <span className="text-xs font-bold text-[#1a7a4a] truncate max-w-[200px]" title={item.alasan}>{item.alasan}</span>
+                                <span className="text-xs font-bold text-[#0d9488] truncate max-w-[200px]" title={item.alasan}>{item.alasan}</span>
                               </div>
                             </td>
                             <td className="px-6 py-6 text-xs font-bold text-emerald-800">{item.periode?.name || 'GLOBAL'}</td>
                             <td className="px-6 py-6">
                               <div className="flex flex-wrap gap-1">
                                 {item.bypassed_requirements?.map(r => (
-                                  <span key={r} className="px-1.5 py-0.5 bg-white border border-emerald-50 text-[#1a7a4a] rounded text-[9px] font-bold">{r.toUpperCase()}</span>
+                                  <span key={r} className="px-1.5 py-0.5 bg-white border border-emerald-50 text-[#0d9488] rounded text-[9px] font-bold">{r.toUpperCase()}</span>
                                 )) || <span className="text-[9px] font-bold text-emerald-800">MASTER BYPASS</span>}
                               </div>
                             </td>
@@ -292,20 +282,20 @@ export default function DispensasiIndex({ dispensasi, izins, periods, filters }:
                             <td className="px-8 py-6">
                               <div className="flex flex-col gap-0.5">
                                 <span className="text-sm font-bold text-emerald-950">{item.mahasiswa?.nama}</span>
-                                <span className="text-xs font-bold text-[#1a7a4a] font-mono">{item.mahasiswa?.nim}</span>
+                                <span className="text-xs font-bold text-[#0d9488] font-mono">{item.mahasiswa?.nim}</span>
                               </div>
                             </td>
                             <td className="px-6 py-6">
                               <div className="flex flex-col gap-1">
                                 <span className="text-xs font-bold text-emerald-800">{item.tanggal_mulai} — {item.tanggal_kembali}</span>
-                                <span className="text-[9px] font-bold text-[#1a7a4a] italic truncate max-w-[200px]" title={item.alasan}>"{item.alasan}"</span>
+                                <span className="text-[9px] font-bold text-[#0d9488] italic truncate max-w-[200px]" title={item.alasan}>"{item.alasan}"</span>
                               </div>
                             </td>
                             <td className="px-6 py-6 text-xs font-bold text-emerald-800">{item.kelompok?.nama_kelompok}</td>
                             <td className="px-8 py-6 text-right">
                               <span className={clsx(
                                 "px-2.5 py-1 rounded-md text-[9px] font-bold uppercase tracking-widest",
-                                item.status === 'disetujui' ? "bg-[#e8f5ee] text-[#1a7a4a] border border-emerald-200" :
+                                item.status === 'disetujui' ? "bg-[#f0fdfa] text-[#0d9488] border border-emerald-200" :
                                 item.status === 'ditolak' ? "bg-rose-100 text-rose-700 border border-rose-200" :
                                 "bg-amber-100 text-amber-700 border border-amber-200"
                               )}>
@@ -347,7 +337,7 @@ function EmptyState({ label = 'Data Dispensasi Kosong' }: { label?: string }) {
     <tr>
       <td colSpan={10} className="py-24 text-center">
         <div className="flex flex-col items-center justify-center gap-4">
-          <div className="h-16 w-16 bg-[#e8f5ee] rounded-xl flex items-center justify-center text-emerald-700">
+          <div className="h-16 w-16 bg-[#f0fdfa] rounded-xl flex items-center justify-center text-emerald-700">
             <Fingerprint size={32} />
           </div>
           <span className="text-xs font-bold text-emerald-950 uppercase tracking-widest">{label}</span>

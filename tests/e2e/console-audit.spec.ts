@@ -10,8 +10,8 @@ test.describe('Console Audit - All Pages', () => {
   const pagesToTest = [
     { url: '/', name: 'Landing Page' },
     { url: '/login', name: 'Login Page' },
-    { url: '/warta', name: 'Announcements Page' },
-    { url: '/repositori', name: 'Downloads Page' },
+    { url: '/berita', name: 'Announcements Page' },
+    { url: '/unduhan', name: 'Downloads Page' },
   ];
 
   for (const pageInfo of pagesToTest) {

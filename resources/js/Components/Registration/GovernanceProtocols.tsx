@@ -10,7 +10,7 @@ export const GovernanceProtocols = ({
   governance_notes,
 }: GovernanceProtocolsProps) => {
   return (
-    <div className="p-12 rounded-[4rem] bg-bg-[#e8f5ee] text-white shadow-2xl relative overflow-hidden group">
+    <div className="p-12 rounded-[4rem] bg-bg-[#f0fdfa] text-white shadow-2xl relative overflow-hidden group">
       <div className="absolute top-0 right-0 p-12 text-emerald-950/10 group-hover:rotate-12 transition-transform duration-[2s]">
         <Lock size={180} />
       </div>
@@ -22,7 +22,7 @@ export const GovernanceProtocols = ({
           <ul className="space-y-6">
             {requirements.map((item, i) => (
               <li key={i} className="flex gap-4 group/li">
-                <div className="h-6 w-6 rounded-lg bg-bg-[#e8f5ee] border border-emerald-800 flex items-center justify-center shrink-0 mt-0.5 group-hover/li:bg-[#16a34a] transition-colors">
+                <div className="h-6 w-6 rounded-lg bg-bg-[#f0fdfa] border border-emerald-800 flex items-center justify-center shrink-0 mt-0.5 group-hover/li:bg-[#0d9488] transition-colors">
                   <Activity className="h-4 w-4 text-emerald-400 group-hover:text-white" />
                 </div>
                 <span className="text-sm font-bold text-emerald-800/70 leading-relaxed uppercase tracking-tight">
@@ -39,7 +39,7 @@ export const GovernanceProtocols = ({
           <ul className="space-y-6">
             {governance_notes.map((item, i) => (
               <li key={i} className="flex gap-4 group/li">
-                <div className="h-6 w-6 rounded-lg bg-bg-[#e8f5ee] border border-emerald-800 flex items-center justify-center shrink-0 mt-0.5 group-hover/li:bg-[#16a34a] transition-colors">
+                <div className="h-6 w-6 rounded-lg bg-bg-[#f0fdfa] border border-emerald-800 flex items-center justify-center shrink-0 mt-0.5 group-hover/li:bg-[#0d9488] transition-colors">
                   <Activity className="h-4 w-4 text-emerald-400 group-hover:text-white" />
                 </div>
                 <span className="text-sm font-bold text-emerald-800/70 leading-relaxed uppercase tracking-tight">

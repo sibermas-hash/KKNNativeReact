@@ -44,10 +44,10 @@ export default function RekapitulasiList({ kelompokList }: Props) {
  <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-emerald-50 pt-6">
  <div className="space-y-1">
  <div className="flex items-center gap-2">
- <Database size={16} className="text-[#1a7a4a]"/>
+ <Database size={16} className="text-[#0d9488]"/>
  <span className="text-sm font-medium text-emerald-800">Website Publik</span>
  </div>
- <h1 className="text-2xl font-bold text-emerald-950 leading-tight">Rekapitulasi Anggaran</h1>
+ <h1 className="text-2xl font-black font-display uppercase tracking-tighter text-emerald-950 leading-tight">Rekapitulasi Anggaran</h1>
  <p className="text-sm text-emerald-800 max-w-2xl mt-1">
  Laporan penggunaan dana swadaya dan kegiatan per kelompok KKN.
  </p>
@@ -55,7 +55,7 @@ export default function RekapitulasiList({ kelompokList }: Props) {
 
  <div className="flex items-center gap-4 shrink-0">
  <div className="px-4 py-2 bg-white border border-emerald-50 rounded-lg shadow-sm flex items-center gap-3">
- <Trophy size={18} className="text-[#1a7a4a]"/>
+ <Trophy size={18} className="text-[#0d9488]"/>
  <div className="flex flex-col">
  <span className="text-xs font-medium text-emerald-800">Total Kelompok</span>
  <span className="text-sm font-semibold text-emerald-950">{kelompokList.length} Unit Tersedia</span>
@@ -72,7 +72,7 @@ export default function RekapitulasiList({ kelompokList }: Props) {
  value={search}
  onChange={(e) => setSearch(e.target.value)}
  placeholder="Cari kelompok atau wilayah..."
- className="w-full h-10 pl-9 pr-4 bg-white border border-gray-300 rounded-md text-sm text-emerald-950 focus:border-[#1a7a4a] focus:ring-[#1a7a4a] shadow-sm transition-all"
+ className="w-full h-10 pl-9 pr-4 bg-white border border-gray-300 rounded-md text-sm text-emerald-950 focus:border-[#0d9488] focus:ring-[#0d9488] shadow-sm transition-all"
  />
  </div>
 
@@ -93,7 +93,7 @@ export default function RekapitulasiList({ kelompokList }: Props) {
  <div className="p-5 flex-grow z-10 space-y-4">
  <div className="flex items-start justify-between">
  <div className="flex flex-col">
- <span className="text-xs font-medium text-[#1a7a4a] mb-1">{k.periode || '-'}</span>
+ <span className="text-xs font-medium text-[#0d9488] mb-1">{k.periode || '-'}</span>
  <h3 className="text-lg font-bold text-emerald-950 leading-tight">{k.nama_kelompok}</h3>
  </div>
  </div>
@@ -120,7 +120,7 @@ export default function RekapitulasiList({ kelompokList }: Props) {
  
  <Link 
  href={route('admin.rekapitulasi.index', { kelompok_id: k.id })}
- className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 text-emerald-800 hover:bg-[#e8f5ee] border border-gray-300 rounded-md text-sm font-medium transition-colors"
+ className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 text-emerald-800 hover:bg-[#f0fdfa] border border-gray-300 rounded-md text-sm font-medium transition-colors"
  >
  Detail <ArrowRight size={14} />
  </Link>

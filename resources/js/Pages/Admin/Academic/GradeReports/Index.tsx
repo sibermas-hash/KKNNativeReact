@@ -150,7 +150,7 @@ export default function RekapNilaiIndex({
               </Button>
             )}
             {canFinalizeMass && (
-              <Button onClick={handleBulkFinalize} className="h-9 bg-[#16a34a] hover:bg-[#15803d] text-white text-xs font-black uppercase tracking-widest px-4">
+              <Button onClick={handleBulkFinalize} className="h-9 bg-[#0d9488] hover:bg-[#0f766e] text-white text-xs font-black uppercase tracking-widest px-4">
                 <ShieldCheck size={16} className="mr-2" /> Kunci Massal
               </Button>
             )}
@@ -202,7 +202,7 @@ export default function RekapNilaiIndex({
                 <option value="">Nilai Huruf</option>
                 {['A','B','C','D','E'].map(h => <option key={h} value={h}>{h}</option>)}
               </select>
-              <Button onClick={() => applyFilters()} className="h-9 px-4 bg-[#e8f5ee] border border-emerald-50 text-[#1a7a4a] hover:bg-[#e8f5ee] text-xs font-black uppercase tracking-widest">
+              <Button onClick={() => applyFilters()} className="h-9 px-4 bg-[#f0fdfa] border border-emerald-50 text-[#0d9488] hover:bg-[#f0fdfa] text-xs font-black uppercase tracking-widest">
                 Terapkan
               </Button>
             </div>
@@ -237,13 +237,13 @@ export default function RekapNilaiIndex({
                     <td className="px-8 py-5 text-center">
                       <div className="flex flex-col items-center">
                         <span className="text-base font-bold text-emerald-950 tabular-nums leading-none mb-1.5">{Number(grade.final_grade_value || 0).toFixed(2)}</span>
-                        <span className="text-[9px] font-black text-white bg-[#16a34a] px-2 py-0.5 rounded shadow-sm">{grade.final_grade_letter || '-'}</span>
+                        <span className="text-[9px] font-black text-white bg-[#0d9488] px-2 py-0.5 rounded shadow-sm">{grade.final_grade_letter || '-'}</span>
                       </div>
                     </td>
                     <td className="px-8 py-5 text-center">
                       <span className={clsx(
                         "inline-flex px-3 py-1 rounded-lg text-[9px] font-black uppercase border transition-all",
-                        grade.is_locked ? "bg-[#e8f5ee] text-[#1a7a4a] border-emerald-200" : "bg-white text-emerald-950/10 border-[#f3f4f6]"
+                        grade.is_locked ? "bg-[#f0fdfa] text-[#0d9488] border-emerald-200" : "bg-white text-emerald-950/10 border-[#f3f4f6]"
                       )}>{grade.is_locked ? 'DIKUNCI' : 'DRAF'}</span>
                     </td>
                     <td className="px-8 py-5 text-right">
@@ -259,7 +259,7 @@ export default function RekapNilaiIndex({
                             </button>
                             <button 
                               onClick={() => handleDownloadWord(grade.score_id!)}
-                              className="h-9 w-9 bg-white text-[#1a7a4a] hover:bg-emerald-50 border border-emerald-100 flex items-center justify-center rounded-xl shadow-sm transition-all"
+                              className="h-9 w-9 bg-white text-[#0d9488] hover:bg-emerald-50 border border-emerald-100 flex items-center justify-center rounded-xl shadow-sm transition-all"
                               title="Unduh format Word (.docx)"
                             >
                               <Download size={16} />
@@ -274,7 +274,7 @@ export default function RekapNilaiIndex({
                           </>
                         )}
                         {grade.can_finalize && !grade.is_locked && (
-                          <button onClick={() => handleFinalize(grade.score_id!)} className="h-9 px-5 bg-[#e8f5ee] text-[#1a7a4a] hover:bg-[#16a34a] hover:text-white border border-emerald-50 text-xs font-black uppercase tracking-widest rounded-xl shadow-sm transition-all">
+                          <button onClick={() => handleFinalize(grade.score_id!)} className="h-9 px-5 bg-[#f0fdfa] text-[#0d9488] hover:bg-[#0d9488] hover:text-white border border-emerald-50 text-xs font-black uppercase tracking-widest rounded-xl shadow-sm transition-all">
                             Validasi
                           </button>
                         )}
@@ -353,7 +353,7 @@ export default function RekapNilaiIndex({
 function MiniStat({ icon: Icon, label, value }: { icon: any, label: string, value: string | number }) {
   return (
     <div className="p-4 bg-white border border-emerald-50/60 rounded-xl flex items-center gap-4 shadow-sm group hover:border-emerald-300 transition-all">
-      <div className="h-10 w-10 bg-[#e8f5ee] rounded-xl flex items-center justify-center text-[#1a7a4a] shrink-0 group-hover:rotate-6 transition-transform">
+      <div className="h-10 w-10 bg-[#f0fdfa] rounded-xl flex items-center justify-center text-[#0d9488] shrink-0 group-hover:rotate-6 transition-transform">
         <Icon size={18} />
       </div>
       <div className="flex flex-col min-w-0">

@@ -1,10 +1,26 @@
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { route } from 'ziggy-js';
-import { Printer, Download, ArrowLeft, FileText, Database, Activity, Target, MapPin, Layers, ShieldCheck, Cpu } from 'lucide-react';
+import { 
+  Printer, 
+  Download, 
+  ArrowLeft, 
+  FileText, 
+  Database, 
+  Activity, 
+  MapPin, 
+  Layers, 
+  ShieldCheck, 
+  Cpu,
+  Calendar,
+  Wallet
+} from 'lucide-react';
 import { clsx } from 'clsx';
-import { Button } from '@/Components/ui';
-import type { LucideIcon } from '@/types';
+
+// Premium Components
+import PageHeader from '@/Components/Premium/PageHeader';
+import StatCard from '@/Components/Premium/StatCard';
+import ContentPanel from '@/Components/Premium/ContentPanel';
 
 interface RekapRow { id: number; uraian_kegiatan: string; satuan: string; volume: number; swadaya_mhs: number; swadaya_masyarakat: number; bantuan_pemerintah: number; donatur_lain: number; jumlah: number; keterangan?: string; }
 interface Lokasi { village_name: string; district_name: string; regency_name: string; }
@@ -16,165 +32,174 @@ interface Props { kelompok: KelompokData; rekapitulasi: RekapRow[]; dpl: DplData
 function formatCurrency(v: number): string { return v.toLocaleString('id-ID'); }
 
 export default function AdminRekapitulasiIndex({ kelompok, rekapitulasi, dpl }: Props) {
- const totals = rekapitulasi.reduce((acc, item) => ({
- mhs: acc.mhs + (item.swadaya_mhs || 0),
- masy: acc.masy + (item.swadaya_masyarakat || 0),
- bant: acc.bant + (item.bantuan_pemerintah || 0),
- don: acc.don + (item.donatur_lain || 0),
- total: acc.total + (item.jumlah || 0)
- }), { mhs: 0, masy: 0, bant: 0, don: 0, total: 0 });
+  const totals = rekapitulasi.reduce((acc, item) => ({
+    mhs: acc.mhs + (item.swadaya_mhs || 0),
+    masy: acc.masy + (item.swadaya_masyarakat || 0),
+    bant: acc.bant + (item.bantuan_pemerintah || 0),
+    don: acc.don + (item.donatur_lain || 0),
+    total: acc.total + (item.jumlah || 0)
+  }), { mhs: 0, masy: 0, bant: 0, don: 0, total: 0 });
 
- return (
- <AppLayout title="Financial Audit">
- <Head title="Rekapitulasi Kegiatan | SIKKKN"/>
+  return (
+    <AppLayout title="Audit Finansial">
+      <Head title={`Rekapitulasi ${kelompok.nama_kelompok} | SIBERDAYA`} />
 
- <div className="space-y-4 font-sans text-emerald-950 print:space-y-0">
- {/* --- HEADER --- */}
- <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden">
- <div className="space-y-0.5">
- <h1 className="text-base font-bold leading-none">Activity Recap & Fiscal Audit</h1>
- <p className="text-sm font-bold text-emerald-950 font-semibold text-xs leading-none">Financial Oversight / Operational Ledger</p>
- </div>
- <div className="flex items-center gap-3">
- <Link href={route('admin.kelompok.index')} className="h-14 px-8 bg-[#16a34a] hover:bg-[#15803d] text-white rounded-xl font-bold shadow-sm shadow-none flex items-center gap-3 text-sm transition-all active:scale-95 disabled:opacity-20"><ArrowLeft size={14} /> Back</Link>
- <div className="h-10 w-[1px] bg-slate-200 mx-2"/>
- <button onClick={() => window.print()} className="h-10 px-4 bg-white/90 backdrop-blur-xl border-emerald-50/60 border-emerald-50/60 rounded-xl flex items-center gap-2 text-sm font-bold font-semibold text-xs text-emerald-950 hover:border-[#1a7a4a] hover:text-[#1a7a4a] transition-all shadow-sm shadow-emerald-900/5 transition-all"><Printer size={14} /> Print_Node</button>
- <Button className="h-10 px-6 bg-[#16a34a] hover:bg-[#15803d] text-white rounded-lg flex items-center gap-3 shadow-sm shadow-none active:scale-95 group transition-all">
- <Download size={16} className="text-[#1a7a4a]"/>
- <span className="text-sm font-bold font-semibold text-xs">Inference_Export</span>
- </Button>
- </div>
- </div>
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans print:p-0 print:space-y-0">
+        
+        {/* PAGE HEADER */}
+        <PageHeader
+          title="Fiscal Audit."
+          subtitle={`Rekapitulasi laporan kegiatan dan pengawasan finansial kelompok ${kelompok.nama_kelompok}.`}
+          icon={Database}
+          groupLabel="Operational Ledger"
+          className="print:hidden"
+        >
+          <div className="flex items-center gap-3">
+            <Link 
+              href={route('admin.kelompok.index')} 
+              className="h-11 px-6 bg-white border border-gray-100 text-emerald-950 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-50 hover:border-emerald-200 transition-all flex items-center gap-2 shadow-sm"
+            >
+              <ArrowLeft size={16} /> Kembali
+            </Link>
+            <div className="h-8 w-[1px] bg-emerald-50 mx-1" />
+            <button 
+              onClick={() => window.print()} 
+              className="h-11 px-6 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-700 transition-all flex items-center gap-2 shadow-lg shadow-emerald-600/20 active:scale-95"
+            >
+              <Printer size={16} /> Cetak Node
+            </button>
+          </div>
+        </PageHeader>
 
- {/* --- METRIC STRIP --- */}
- <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
- <RekapMetric label="Total Investment"value={`Rp ${formatCurrency(totals.total)}`} icon={Database} />
- <RekapMetric label="Swadaya Mhs"value={`Rp ${formatCurrency(totals.mhs)}`} icon={Activity} />
- <RekapMetric label="Sync Status"value="AUDITED"icon={ShieldCheck} />
- <RekapMetric label="Audit Mode"value="vFIN 1.2"icon={Cpu} />
- </div>
+        {/* STATS GRID */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
+          <StatCard label="Total Investasi" value={`Rp ${formatCurrency(totals.total)}`} icon={Wallet} variant="success" />
+          <StatCard label="Swadaya Mhs" value={`Rp ${formatCurrency(totals.mhs)}`} icon={Activity} variant="info" />
+          <StatCard label="Audit Status" value="VERIFIED" icon={ShieldCheck} variant="gray" />
+          <StatCard label="Fiscal Kernel" value="vFIN 1.2" icon={Cpu} variant="gray" />
+        </div>
 
- {/* --- DOCUMENT CANVAS --- */}
- <section className="bg-white border border-emerald-50/60 rounded-xl overflow-hidden shadow-sm print:shadow-none print:border-0 print:m-0 print:p-0">
- <div className="p-8 space-y-8 print:p-0 print:space-y-4">
- {/* Doc Header */}
- <div className="text-center border-b-2 border-emerald-900 pb-4 mb-6">
- <h2 className="text-lg font-bold text-emerald-950 font-bold text-center leading-none">REKAPITULASI LAPORAN KEGIATAN KKN</h2>
- <p className="text-sm font-bold text-emerald-950 font-semibold text-xs mt-2">Lembaga Penelitian dan Pengabdian Masyarakat (LPPM) UIN Saizu</p>
- </div>
+        {/* DOCUMENT CANVAS */}
+        <ContentPanel
+          title="Rekapitulasi Laporan Kegiatan"
+          description="Lembaga Penelitian dan Pengabdian Masyarakat (LPPM) UIN Saizu"
+          icon={FileText}
+          padding={true}
+          className="print:border-0 print:shadow-none print:p-0"
+        >
+          <div className="space-y-8">
+            {/* Header Cetak (Hanya tampil saat print) */}
+            <div className="hidden print:block text-center border-b-2 border-emerald-950 pb-6 mb-8">
+              <h2 className="text-xl font-black text-emerald-950 uppercase tracking-tight">REKAPITULASI LAPORAN KEGIATAN KKN</h2>
+              <p className="text-[10px] font-bold text-emerald-700 uppercase tracking-[0.2em] mt-2">LPPM UIN PROF. KH. SAIFUDDIN ZUHRI PURWOKERTO</p>
+            </div>
 
- {/* Info Registry */}
- <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 p-6 bg-gray-50 border border-emerald-50/60 rounded-xl print:grid-cols-2 print:p-2 print:bg-white print:border-0 print:gap-y-1">
- <InfoItem label="Territory"value={kelompok.lokasi.village_name.toUpperCase()} icon={MapPin} />
- <InfoItem label="Group_ID"value={kelompok.nama_kelompok.toUpperCase()} icon={Layers} />
- <InfoItem label="District"value={kelompok.lokasi.district_name.toUpperCase()} />
- <InfoItem label="Temporal"value={kelompok.periode.name.toUpperCase()} />
- <InfoItem label="Regency"value={kelompok.lokasi.regency_name.toUpperCase()} />
- </div>
+            {/* Info Registry */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 p-8 bg-[#F8FAF9] border border-emerald-50/50 rounded-3xl print:grid-cols-2 print:p-4 print:bg-white print:border-0 print:gap-y-2">
+              <InfoItem label="Wilayah" value={kelompok.lokasi.village_name} icon={MapPin} />
+              <InfoItem label="Identitas" value={kelompok.nama_kelompok} icon={Layers} />
+              <InfoItem label="Kecamatan" value={kelompok.lokasi.district_name} />
+              <InfoItem label="Temporal" value={kelompok.periode.name} icon={Calendar} />
+              <InfoItem label="Kabupaten" value={kelompok.lokasi.regency_name} />
+            </div>
 
- {/* Data Ledger */}
- <div className="overflow-x-auto">
- <table className="w-full border-collapse border border-slate-400 text-sm font-sans">
- <thead>
- <tr className="bg-gray-50 text-emerald-950 border-b border-slate-400">
- <th rowSpan={2} className="border border-slate-400 p-2 text-center font-bold w-8">No</th>
- <th rowSpan={2} className="border border-slate-400 p-2 text-left font-bold">Uraian Kegiatan</th>
- <th rowSpan={2} className="border border-slate-400 p-2 text-center font-bold w-14">Unit</th>
- <th rowSpan={2} className="border border-slate-400 p-2 text-center font-bold w-10">Vol</th>
- <th colSpan={4} className="border border-slate-400 p-2 text-center font-bold bg-slate-200">Fiscal Component (Rp)</th>
- <th rowSpan={2} className="border border-slate-400 p-2 text-right font-bold w-24 bg-[#16a34a] text-white">Total (Rp)</th>
- <th rowSpan={2} className="border border-slate-400 p-2 text-left font-bold w-32">Note</th>
- </tr>
- <tr className="bg-gray-50 text-sm border-b border-slate-400">
- <th className="border border-slate-400 p-1 text-center font-bold">Mhs</th>
- <th className="border border-slate-400 p-1 text-center font-bold">Masy</th>
- <th className="border border-slate-400 p-1 text-center font-bold">Gov</th>
- <th className="border border-slate-400 p-1 text-center font-bold">Other</th>
- </tr>
- </thead>
- <tbody className="divide-y divide-emerald-100/60">
- {rekapitulasi.map((item, idx) => (
- <tr key={item.id} className="hover:bg-gray-50/50 transition-all font-medium text-emerald-950">
- <td className="border border-slate-400 p-2 text-center">{idx + 1}</td>
- <td className="border border-slate-400 p-2 font-bold">{item.uraian_kegiatan}</td>
- <td className="border border-slate-400 p-2 text-center font-bold text-emerald-950">{item.satuan}</td>
- <td className="border border-slate-400 p-2 text-center tabular-nums">{item.volume}</td>
- <td className="border border-slate-400 p-2 text-right tabular-nums text-emerald-950">{formatCurrency(item.swadaya_mhs)}</td>
- <td className="border border-slate-400 p-2 text-right tabular-nums text-emerald-950">{formatCurrency(item.swadaya_masyarakat)}</td>
- <td className="border border-slate-400 p-2 text-right tabular-nums text-emerald-950">{formatCurrency(item.bantuan_pemerintah)}</td>
- <td className="border border-slate-4 fundamental p-2 text-right tabular-nums text-emerald-950">{formatCurrency(item.donatur_lain)}</td>
- <td className="border border-slate-400 p-2 text-right tabular-nums font-bold bg-gray-50">{formatCurrency(item.jumlah)}</td>
- <td className="border border-slate-400 p-2 text-slate-300">{item.keterangan || '-'}</td>
- </tr>
- ))}
- <tr className="bg-[#16a34a] text-white font-bold text-sm">
- <td colSpan={4} className="border border-emerald-700 p-3 text-right">Aggregate Total</td>
- <td className="border border-emerald-700 p-3 text-right tabular-nums text-emerald-800">{formatCurrency(totals.mhs)}</td>
- <td className="border border-emerald-700 p-3 text-right tabular-nums text-emerald-800">{formatCurrency(totals.masy)}</td>
- <td className="border border-emerald-700 p-3 text-right tabular-nums text-emerald-800">{formatCurrency(totals.bant)}</td>
- <td className="border border-emerald-700 p-3 text-right tabular-nums text-emerald-800">{formatCurrency(totals.don)}</td>
- <td className="border border-emerald-700 p-3 text-right tabular-nums bg-emerald-700 shadow-inner">{formatCurrency(totals.total)}</td>
- <td className="border border-emerald-700 p-3"></td>
- </tr>
- </tbody>
- </table>
- </div>
+            {/* Data Ledger */}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse border border-emerald-950/10 text-[11px] font-sans">
+                <thead>
+                  <tr className="bg-emerald-950 text-white border-b border-emerald-950">
+                    <th rowSpan={2} className="border border-emerald-900 p-3 text-center font-black w-10">NO</th>
+                    <th rowSpan={2} className="border border-emerald-900 p-3 text-left font-black">URAIAN KEGIATAN</th>
+                    <th rowSpan={2} className="border border-emerald-900 p-3 text-center font-black w-16">UNIT</th>
+                    <th rowSpan={2} className="border border-emerald-900 p-3 text-center font-black w-12">VOL</th>
+                    <th colSpan={4} className="border border-emerald-900 p-3 text-center font-black bg-emerald-900/50 uppercase tracking-widest text-[9px]">Komponen Fiskal (RP)</th>
+                    <th rowSpan={2} className="border border-emerald-900 p-3 text-right font-black w-32 bg-emerald-600">TOTAL (RP)</th>
+                    <th rowSpan={2} className="border border-emerald-900 p-3 text-left font-black w-40">KETERANGAN</th>
+                  </tr>
+                  <tr className="bg-emerald-900 text-white text-[9px]">
+                    <th className="border border-emerald-800 p-2 text-center font-black">MHS</th>
+                    <th className="border border-emerald-800 p-2 text-center font-black">MASY</th>
+                    <th className="border border-emerald-800 p-2 text-center font-black">PEM</th>
+                    <th className="border border-emerald-800 p-2 text-center font-black">LAIN</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-emerald-50">
+                  {rekapitulasi.map((item, idx) => (
+                    <tr key={item.id} className="hover:bg-emerald-50/30 transition-all font-bold text-emerald-950">
+                      <td className="border border-emerald-50 p-3 text-center">{idx + 1}</td>
+                      <td className="border border-emerald-50 p-3 uppercase tracking-tight">{item.uraian_kegiatan}</td>
+                      <td className="border border-emerald-50 p-3 text-center opacity-40 uppercase">{item.satuan}</td>
+                      <td className="border border-emerald-50 p-3 text-center tabular-nums">{item.volume}</td>
+                      <td className="border border-emerald-50 p-3 text-right tabular-nums">{formatCurrency(item.swadaya_mhs)}</td>
+                      <td className="border border-emerald-50 p-3 text-right tabular-nums">{formatCurrency(item.swadaya_masyarakat)}</td>
+                      <td className="border border-emerald-50 p-3 text-right tabular-nums">{formatCurrency(item.bantuan_pemerintah)}</td>
+                      <td className="border border-emerald-50 p-3 text-right tabular-nums">{formatCurrency(item.donatur_lain)}</td>
+                      <td className="border border-emerald-50 p-3 text-right tabular-nums bg-gray-50/50">{formatCurrency(item.jumlah)}</td>
+                      <td className="border border-emerald-50 p-3 text-[9px] font-medium text-emerald-950/40 italic uppercase">{item.keterangan || '-'}</td>
+                    </tr>
+                  ))}
+                  {/* TOTAL ROW */}
+                  <tr className="bg-emerald-50 text-emerald-950 font-black text-xs">
+                    <td colSpan={4} className="border border-emerald-100 p-4 text-right uppercase tracking-widest">Aggregate Total</td>
+                    <td className="border border-emerald-100 p-4 text-right tabular-nums">{formatCurrency(totals.mhs)}</td>
+                    <td className="border border-emerald-100 p-4 text-right tabular-nums">{formatCurrency(totals.masy)}</td>
+                    <td className="border border-emerald-100 p-4 text-right tabular-nums">{formatCurrency(totals.bant)}</td>
+                    <td className="border border-emerald-100 p-4 text-right tabular-nums">{formatCurrency(totals.don)}</td>
+                    <td className="border border-emerald-100 p-4 text-right tabular-nums bg-emerald-600 text-white shadow-xl">{formatCurrency(totals.total)}</td>
+                    <td className="border border-emerald-100 p-4"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
- {/* Signatures */}
- <div className="mt-16 grid grid-cols-2 gap-20 text-center text-sm font-bold font-semibold text-xs print:mt-12">
- <div className="space-y-20">
- <p className="text-emerald-950">Dosen Pembimbing Lapangan (DPL)</p>
- <div className="space-y-1">
- <p className="text-emerald-950 underline decoration-2 underline-offset-4">{dpl.nama}</p>
- <p className="text-sm text-slate-300">NIP. ................................</p>
- </div>
- </div>
- <div className="space-y-20">
- <p className="text-emerald-950">Ketua Kelompok KKN</p>
- <div className="space-y-1">
- <p className="text-emerald-950 underline decoration-2 underline-offset-4">{kelompok.nama_kelompok}</p>
- <p className="text-sm text-slate-300">NIM. ................................</p>
- </div>
- </div>
- </div>
- </div>
- </section>
- </div>
+            {/* Signatures */}
+            <div className="mt-20 grid grid-cols-2 gap-20 text-center text-[10px] font-black uppercase tracking-widest print:mt-12">
+              <div className="space-y-24">
+                <p className="text-emerald-950">Dosen Pembimbing Lapangan (DPL)</p>
+                <div className="space-y-2">
+                  <p className="text-emerald-950 underline decoration-2 underline-offset-8">{dpl.nama}</p>
+                  <p className="text-emerald-950/30">NIP. ................................</p>
+                </div>
+              </div>
+              <div className="space-y-24">
+                <p className="text-emerald-950">Ketua Kelompok KKN</p>
+                <div className="space-y-2">
+                  <p className="text-emerald-950 underline decoration-2 underline-offset-8">{kelompok.nama_kelompok}</p>
+                  <p className="text-emerald-950/30">NIM. ................................</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </ContentPanel>
 
- <style dangerouslySetInnerHTML={{ __html: `
- @media print {
- @page { margin: 1.5cm; }
- body { background: white !important; }
- aside, header, footer, .print\\:hidden { display: none !important; }
- .lg\\:pl-64 { padding-left: 0 !important; }
- main { padding: 0 !important; }
- }
- `}} />
- </AppLayout>
- );
+        {/* PRINT STYLE */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          @media print {
+            @page { margin: 2cm; }
+            body { background: white !important; -webkit-print-color-adjust: exact; }
+            .lg\\:pl-64 { padding-left: 0 !important; }
+            main { padding: 0 !important; }
+            table { border-collapse: collapse !important; width: 100% !important; }
+            th, td { border: 1px solid #064e3b !important; }
+            .bg-emerald-950 { background-color: #064e3b !important; color: white !important; }
+            .bg-emerald-600 { background-color: #059669 !important; color: white !important; }
+            .bg-emerald-50 { background-color: #ecfdf5 !important; }
+            .text-emerald-950 { color: #064e3b !important; }
+          }
+        `}} />
+      </div>
+    </AppLayout>
+  );
 }
 
-function RekapMetric({ label, value, icon: Icon }: { label: string, value: string | number, icon: LucideIcon }) {
- return (
- <div className="bg-white border border-emerald-50/60 rounded-xl p-4 flex items-center gap-4 shadow-sm hover:border-gray-300 transition-all group overflow-hidden relative">
- <div className="h-8 w-8 bg-gray-50 text-[#1a7a4a] rounded-lg flex items-center justify-center shrink-0 group-hover:rotate-6 transition-transform shadow-sm"><Icon size={16} /></div>
- <div className="flex flex-col z-10">
- <span className="text-sm font-bold text-emerald-950 font-semibold text-xs leading-none mb-1">{label}</span>
- <span className="text-lg font-bold text-emerald-950 tabular-nums leading-none group-hover:text-[#1a7a4a] transition-colors">{value}</span>
- </div>
- </div>
- );
-}
-
-function InfoItem({ label, value, icon: Icon }: { label: string, value: string, icon?:LucideIcon }) {
- return (
- <div className="flex items-center gap-4">
- <div className="w-24 text-sm font-bold text-emerald-950 text-xs font-semibold shrink-0">{label}</div>
- <div className="text-slate-300 font-bold px-1">:</div>
- <div className="flex items-center gap-3">
- {Icon && <Icon size={12} className="text-[#1a7a4a]"/>}
- <span className="text-sm font-bold text-emerald-950">{value}</span>
- </div>
- </div>
- );
+function InfoItem({ label, value, icon: Icon }: { label: string, value: string, icon?:any }) {
+  return (
+    <div className="flex items-center gap-6">
+      <div className="w-24 text-[10px] font-black text-emerald-950/40 uppercase tracking-widest shrink-0">{label}</div>
+      <div className="flex items-center gap-3 flex-1 border-b border-emerald-950/5 pb-1">
+        {Icon && <Icon size={14} className="text-emerald-600" />}
+        <span className="text-[11px] font-black text-emerald-950 uppercase tracking-tight">{value}</span>
+      </div>
+    </div>
+  );
 }

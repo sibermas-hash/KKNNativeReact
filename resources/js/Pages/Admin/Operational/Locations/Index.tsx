@@ -414,21 +414,6 @@ export default function LocationsIndex({ locations, filters, summary, workflow, 
           </ContentPanel>
         </div>
 
-        {/* --- PROTOCOL INFO --- */}
-        <div className="bg-emerald-950 rounded-3xl p-10 text-white relative overflow-hidden shadow-2xl border-b-[6px] border-emerald-900">
-          <div className="absolute top-0 right-0 p-8 opacity-5 rotate-12 -mr-16 -mt-16 pointer-events-none"><MapPinned size={320} /></div>
-          <div className="flex flex-col md:flex-row items-center gap-10 relative z-10">
-            <div className="h-20 w-20 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 border border-white/10 shadow-inner shrink-0 backdrop-blur-sm">
-              <Info size={40} strokeWidth={2.5} />
-            </div>
-            <div className="space-y-3 text-center md:text-left">
-              <h2 className="text-2xl font-black uppercase tracking-tight">Manajemen Kapasitas & Lokasi</h2>
-              <p className="text-xs font-medium text-emerald-400/60 uppercase tracking-widest leading-relaxed max-w-4xl">
-                Pengaturan kapasitas desa memengaruhi algoritma penempatan kelompok secara otomatis. Pastikan kapasitas mencerminkan ketersediaan posko fisik di lapangan. Perubahan pada data induk wilayah akan memengaruhi data historis pada laporan plotting masa depan.
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* IMPORT MODAL */}

@@ -103,7 +103,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <div className="flex gap-3">
                 <button
                   onClick={() => window.location.reload()}
-                  className="flex-1 bg-[#16a34a] hover:bg-[#15803d] text-white font-semibold py-3 rounded-xl transition-all"
+                  className="flex-1 bg-[#0d9488] hover:bg-[#0f766e] text-white font-semibold py-3 rounded-xl transition-all"
                 >
                   Refresh Halaman
                 </button>

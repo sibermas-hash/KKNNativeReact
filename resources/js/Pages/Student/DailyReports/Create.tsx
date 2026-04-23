@@ -361,7 +361,7 @@ export default function StudentDailyReportCreate({ group, geoPolicy }: Props) {
                 <div className="bg-emerald-50/30 border-2 border-dashed border-emerald-50/60 rounded-xl p-12 text-center group-hover:bg-emerald-50/30 transition-all">
                   <CloudUpload
                     size={48}
-                    className="mx-auto text-slate-300 mb-4 group-hover:text-[#1a7a4a]"
+                    className="mx-auto text-slate-300 mb-4 group-hover:text-[#0d9488]"
                   />
                   <p className="text-sm font-bold text-emerald-950 uppercase tracking-tight">
                     {form.data.files.length > 0

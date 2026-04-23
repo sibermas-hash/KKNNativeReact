@@ -12,7 +12,7 @@ export const EmptyEnrollmentState = () => {
       variants={itemVariants}
       className="p-20 text-center rounded-[4rem] bg-white border border-dashed border-emerald-50/60 group"
     >
-      <div className="h-24 w-24 bg-gray-50 rounded-[2.5rem] mx-auto flex items-center justify-center border border-emerald-50/60 mb-8 text-emerald-400 group-hover:text-[#1a7a4a] group-hover:scale-110 transition-all">
+      <div className="h-24 w-24 bg-gray-50 rounded-[2.5rem] mx-auto flex items-center justify-center border border-emerald-50/60 mb-8 text-emerald-400 group-hover:text-[#0d9488] group-hover:scale-110 transition-all">
         <FolderKanban size={48} />
       </div>
       <h3 className="text-2xl font-bold text-emerald-950 uppercase tracking-tighter mb-4">

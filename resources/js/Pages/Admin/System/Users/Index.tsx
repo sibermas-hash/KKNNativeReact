@@ -70,10 +70,10 @@ export default function UsersIndex({ users = { data: [], meta: { total: 0, curre
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-emerald-50 pt-6">
           <div className="space-y-1">
              <div className="flex items-center gap-2">
-                <KeyRound size={16} className="text-[#1a7a4a]" />
+                <KeyRound size={16} className="text-[#0d9488]" />
                 <span className="text-sm font-medium text-emerald-800">Administrasi Keamanan</span>
              </div>
-             <h1 className="text-2xl font-bold text-emerald-950 leading-tight">Manajemen Akses Sistem</h1>
+             <h1 className="text-2xl font-black font-display uppercase tracking-tighter text-emerald-950 leading-tight">Manajemen Akses Sistem</h1>
              <p className="text-sm text-emerald-800 mt-1">
                 Registri kredensial dan pengelolaan hak akses tingkat civitas akademika KKN.
              </p>
@@ -82,7 +82,7 @@ export default function UsersIndex({ users = { data: [], meta: { total: 0, curre
           <div className="flex items-center gap-3 shrink-0">
              <Link 
                href="/admin/pengguna/buat"
-               className="inline-flex items-center gap-2 px-4 py-2 bg-[#16a34a] text-white text-sm font-medium rounded-lg shadow-sm hover:bg-[#15803d] transition-colors"
+               className="inline-flex items-center gap-2 px-4 py-2 bg-[#0d9488] text-white text-sm font-medium rounded-lg shadow-sm hover:bg-[#0f766e] transition-colors"
              >
                <UserPlus size={16} /> Tambah Pengguna
              </Link>
@@ -134,7 +134,7 @@ export default function UsersIndex({ users = { data: [], meta: { total: 0, curre
                 type="text"
                 value={search} 
                 onChange={(e) => setSearch(e.target.value)} 
-                className="w-full h-9 pl-9 pr-4 bg-white border border-gray-300 rounded-md text-sm text-emerald-950 focus:border-[#f3f4f6]0 focus:ring-[#1a7a4a] shadow-sm"
+                className="w-full h-9 pl-9 pr-4 bg-white border border-gray-300 rounded-md text-sm text-emerald-950 focus:border-[#f3f4f6]0 focus:ring-[#0d9488] shadow-sm"
                 placeholder="Cari nama, email, username..."
               />
             </form>
@@ -175,7 +175,7 @@ export default function UsersIndex({ users = { data: [], meta: { total: 0, curre
                         <span className={clsx(
                           "inline-flex px-2 py-0.5 rounded text-xs font-bold uppercase border",
                           user.roles?.[0]?.toLowerCase() === 'superadmin' 
-                            ? "bg-[#e8f5ee] text-[#1a7a4a] border-emerald-50" 
+                            ? "bg-[#f0fdfa] text-[#0d9488] border-emerald-50" 
                             : "bg-gray-50 text-emerald-800 border-emerald-50"
                         )}>
                           {user.roles?.[0] || 'Member'}
@@ -183,7 +183,7 @@ export default function UsersIndex({ users = { data: [], meta: { total: 0, curre
                       </td>
                       <td className="px-6 py-4 text-center">
                         {user.email_verified_at ? (
-                          <div className="flex items-center justify-center gap-1.5 text-[#1a7a4a]">
+                          <div className="flex items-center justify-center gap-1.5 text-[#0d9488]">
                             <ShieldCheck size={14} />
                             <span className="text-xs font-bold uppercase">Verified</span>
                           </div>
@@ -198,7 +198,7 @@ export default function UsersIndex({ users = { data: [], meta: { total: 0, curre
                         <div className="flex items-center justify-end gap-2">
                           <button 
                             onClick={() => resetTemporaryPassword(user)} 
-                            className="p-1.5 text-emerald-800 hover:text-[#1a7a4a] bg-white border border-emerald-50 rounded-md hover:bg-gray-50 transition-colors"
+                            className="p-1.5 text-emerald-800 hover:text-[#0d9488] bg-white border border-emerald-50 rounded-md hover:bg-gray-50 transition-colors"
                             title="Reset Password"
                           >
                             <KeyRound size={16} />
@@ -216,7 +216,7 @@ export default function UsersIndex({ users = { data: [], meta: { total: 0, curre
                           </button>
                           <Link 
                             href={`/admin/pengguna/${user.id}/edit`} 
-                            className="inline-flex items-center gap-1.5 text-xs text-[#1a7a4a] font-bold hover:text-[#1a7a4a] transition-colors px-2 py-1"
+                            className="inline-flex items-center gap-1.5 text-xs text-[#0d9488] font-bold hover:text-[#0d9488] transition-colors px-2 py-1"
                           >
                             Edit <ChevronRight size={14} />
                           </Link>

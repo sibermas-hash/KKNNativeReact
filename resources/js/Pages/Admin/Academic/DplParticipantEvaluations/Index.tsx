@@ -85,7 +85,7 @@ export default function DplParticipantEvaluationIndex({
               <MessageSquareQuote size={22} />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-emerald-950">Evaluasi DPL oleh Peserta</h1>
+              <h1 className="text-2xl font-black font-display uppercase tracking-tighter text-emerald-950">Evaluasi DPL oleh Peserta</h1>
               <p className="mt-2 max-w-3xl text-sm font-semibold leading-relaxed text-emerald-950">
                 Halaman ini merangkum umpan balik mahasiswa terhadap DPL pada akhir KKN. Data ini
                 dipakai untuk quality assurance pembimbingan dan tidak mengubah nilai akhir mahasiswa.

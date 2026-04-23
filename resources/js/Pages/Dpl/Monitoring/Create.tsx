@@ -135,7 +135,7 @@ export default function DplMonitoringCreate({ groups, selectedGroupId }: Props) 
                                 rows={2}
                                 value={data.catatan_tambahan}
                                 onChange={(e) => setData('catatan_tambahan', e.target.value)}
-                                className="w-full rounded-lg border border-emerald-50/60 px-4 py-2 text-sm text-emerald-800 focus:border-[#f3f4f6]0 focus:ring-[#1a7a4a]"
+                                className="w-full rounded-lg border border-emerald-50/60 px-4 py-2 text-sm text-emerald-800 focus:border-[#f3f4f6]0 focus:ring-[#0d9488]"
                                 placeholder="Catatan tambahan (opsional)..."
                             />
                             {errors.catatan_tambahan && (

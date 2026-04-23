@@ -20,7 +20,8 @@ Route::middleware([
     'role:superadmin|faculty_admin|admin',
     EnsureAdminAuthorization::class,
 ])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', [Admin\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/', [Admin\DashboardController::class, 'hub'])->name('hub');
+    Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('dashboard');
     Route::post('/dashboard/switch-phase', [Admin\DashboardController::class, 'switchPhase'])->name('dashboard.switch-phase');
 
     // TEMPORARY: Dev route to seed dummy data for stabilization testing
@@ -230,9 +231,13 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
     // Public Content Management
     Route::resource('unduhan', Admin\DownloadController::class)
         ->only(['index', 'create', 'store', 'update', 'destroy']);
-    Route::get('warta-utama', [Admin\AnnouncementController::class, 'index'])->name('warta-utama.index');
-    Route::post('warta-utama', [Admin\AnnouncementController::class, 'store'])->name('warta-utama.store');
-    Route::patch('warta-utama/{announcement}', [Admin\AnnouncementController::class, 'update'])->name('warta-utama.update');
+    Route::prefix('warta-utama')->name('warta-utama.')->group(function () {
+        Route::get('/', [Admin\AnnouncementController::class, 'index'])->name('index');
+        Route::post('/', [Admin\AnnouncementController::class, 'store'])->name('store');
+        Route::get('{announcement}/preview', [Admin\AnnouncementController::class, 'preview'])->name('preview');
+        Route::patch('{announcement}', [Admin\AnnouncementController::class, 'update'])->name('update');
+        Route::delete('{announcement}', [Admin\AnnouncementController::class, 'destroy'])->name('destroy');
+    });
 
     // Settings
     Route::prefix('pengaturan')->name('pengaturan.')->group(function () {
@@ -348,19 +353,6 @@ Route::middleware(['role:superadmin'])->prefix('admin')->name('admin.')->group(f
     });
 
     Route::get('rekapitulasi', [Admin\RekapitulasiController::class, 'index'])->name('rekapitulasi.index');
-
-    // Public Content Management
-    Route::resource('unduhan', Admin\DownloadController::class)
-        ->only(['index', 'create', 'store', 'update', 'destroy']);
-
-    Route::prefix('warta-utama')->name('warta-utama.')->group(function () {
-        Route::get('/', [Admin\AnnouncementController::class, 'index'])->name('index');
-        Route::post('/', [Admin\AnnouncementController::class, 'store'])->name('store');
-        Route::prefix('{announcement}')->group(function () {
-            Route::patch('/', [Admin\AnnouncementController::class, 'update'])->name('update');
-            Route::delete('/', [Admin\AnnouncementController::class, 'destroy'])->name('destroy');
-        });
-    });
 
     Route::prefix('konten-publik')->name('konten.')->group(function () {
         Route::get('profil', [PublicContentController::class, 'profile'])->name('profil.index');

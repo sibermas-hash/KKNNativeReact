@@ -11,7 +11,10 @@ use App\Models\KKN\Lokasi;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\SystemSetting;
 use App\Models\KKN\TahunAkademik;
+use App\Traits\HandlesPagination;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 /**
@@ -20,6 +23,8 @@ use Inertia\Inertia;
  */
 class HomeController extends Controller
 {
+    use HandlesPagination;
+
     public function index()
     {
         try {
@@ -30,17 +35,12 @@ class HomeController extends Controller
                 'academic_years' => TahunAkademik::count() ?: 1,
             ];
 
-            $announcements = Announcement::active()->orderBy('published_at', 'desc')->take(3)->get();
+            $announcements = Announcement::active()->ordered()->take(5)->get();
             $downloads = Download::active()->orderBy('created_at', 'desc')->take(3)->get();
 
             return Inertia::render('Home', [
                 'stats' => $stats,
-                'featuredAnnouncements' => $announcements->map(fn ($a) => [
-                    'id' => $a->id,
-                    'title' => $a->title,
-                    'category' => $a->category,
-                    'published_at' => $a->published_at?->toIso8601String(),
-                ]),
+                'featuredAnnouncements' => $announcements->map(fn ($announcement) => $this->serializeAnnouncementCard($announcement)),
                 'featuredDownloads' => $downloads->map(fn ($d) => [
                     'id' => $d->id,
                     'title' => $d->title,
@@ -75,47 +75,55 @@ class HomeController extends Controller
         }
     }
 
-    public function about()
-    {
-        return Inertia::render('Public/About', [
-            'aboutContent' => [
-                'about' => SystemSetting::get('site_about', 'LPPM UIN Saizu merupakan lembaga yang mengoordinasikan kegiatan penelitian dan pengabdian masyarakat.'),
-                'visi' => SystemSetting::get('site_visi', 'Menjadi pusat unggulan riset dan pengabdian masyarakat yang inovatif dan transformatif.'),
-                'misi' => SystemSetting::get('site_misi', 'Menyelenggarakan pengabdian masyarakat berbasis riset untuk pemberdayaan masyarakat desa.'),
-            ],
-        ]);
-    }
-
-    public function schemes()
-    {
-        return Inertia::render('Public/Schemes', [
-            'content' => [
-                'title' => SystemSetting::get('site_schemes_title', 'Skema Pelaksanaan KKN UIN Saizu'),
-                'intro' => SystemSetting::get('site_schemes_intro', 'Sistem Informasi Manajemen memberikan fleksibilitas untuk berbagai jenis pengabdian masyarakat.'),
-                'items' => json_decode((string) SystemSetting::get('site_schemes_items', '[]'), true) ?: [
-                    [
-                        'id' => 1,
-                        'title' => 'KKN Reguler',
-                        'description' => 'Program pengabdian masyarakat yang dilakukan secara berkala sesuai kalender akademik.',
-                        'is_active' => true,
-                    ],
-                    [
-                        'id' => 2,
-                        'title' => 'KKN Tematik',
-                        'description' => 'Program KKN yang berfokus pada tema tertentu sesuai dengan kebutuhan masyarakat atau instansi.',
-                        'is_active' => true,
-                    ],
-                ],
-            ],
-        ]);
-    }
-
     public function announcements()
     {
-        $announcements = Announcement::active()->orderBy('published_at', 'desc')->paginate(12);
+        $announcements = Announcement::active()
+            ->ordered()
+            ->paginate(8)
+            ->through(fn (Announcement $announcement) => [
+                ...$this->serializeAnnouncementCard($announcement),
+                'meta_title' => $announcement->meta_title,
+                'meta_description' => $announcement->meta_description,
+                'file_name' => $announcement->file_name,
+                'attachment_url' => $announcement->file_path ? Storage::url($announcement->file_path) : null,
+            ]);
 
         return Inertia::render('Public/Announcements', [
-            'announcements' => $announcements,
+            'announcements' => $this->formatPaginator($announcements),
+        ]);
+    }
+
+    public function announcementShow(string $slug)
+    {
+        $announcement = Announcement::active()
+            ->where('slug', $slug)
+            ->firstOrFail();
+
+        $relatedAnnouncements = Announcement::active()
+            ->where('id', '!=', $announcement->id)
+            ->ordered()
+            ->take(3)
+            ->get()
+            ->map(fn (Announcement $item) => [
+                'id' => $item->id,
+                'title' => $item->title,
+                'slug' => $item->slug,
+                'category' => $item->category,
+                'excerpt' => $item->excerpt_text,
+                'published_at' => $item->published_at?->toIso8601String(),
+            ]);
+
+        return Inertia::render('Public/AnnouncementShow', [
+            'announcement' => [
+                ...$this->serializeAnnouncementCard($announcement),
+                'content' => $announcement->content,
+                'meta_title' => $announcement->meta_title,
+                'meta_description' => $announcement->meta_description,
+                'meta_keywords' => $announcement->meta_keywords,
+                'file_name' => $announcement->file_name,
+                'attachment_url' => $announcement->file_path ? Storage::url($announcement->file_path) : null,
+            ],
+            'relatedAnnouncements' => $relatedAnnouncements,
         ]);
     }
 
@@ -134,47 +142,6 @@ class HomeController extends Controller
         ]);
     }
 
-    public function locations()
-    {
-        $query = Lokasi::orderBy('village_name', 'asc');
-
-        if (request('search')) {
-            $search = request('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('village_name', 'like', "%{$search}%")
-                    ->orWhere('district_name', 'like', "%{$search}%")
-                    ->orWhere('regency_name', 'like', "%{$search}%");
-            });
-        }
-
-        $locations = $query->withCount('kelompok')->paginate(12);
-
-        return Inertia::render('Public/Locations', [
-            'locations' => [
-                'data' => $locations->map(fn ($loc) => [
-                    'id' => $loc->id,
-                    'name' => $loc->village_name,
-                    'address' => $loc->address,
-                    'district' => $loc->district_name,
-                    'city' => $loc->regency_name,
-                    'groups_count' => $loc->kelompok_count,
-                ]),
-                'links' => $locations->toArray()['links'],
-                'meta' => [
-                    'current_page' => $locations->currentPage(),
-                    'from' => $locations->firstItem(),
-                    'last_page' => $locations->lastPage(),
-                    'path' => $locations->path(),
-                    'per_page' => $locations->perPage(),
-                    'to' => $locations->lastItem(),
-                    'total' => $locations->total(),
-                    'links' => $locations->toArray()['links'],
-                ],
-            ],
-            'filters' => request()->all('search'),
-        ]);
-    }
-
     /**
      * Display interactive map of KKN locations.
      */
@@ -183,25 +150,12 @@ class HomeController extends Controller
         $locations = Lokasi::whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->with(['kelompok' => function ($q) {
-                $q->withCount('mahasiswa');
+                $q->withCount('peserta');
             }])
             ->get();
 
         return Inertia::render('Public/LocationsMap', [
-            'locations' => $locations->map(fn ($loc) => [
-                'id' => $loc->id,
-                'name' => $loc->village_name,
-                'district' => $loc->district_name,
-                'regency' => $loc->regency_name,
-                'latitude' => (float) $loc->latitude,
-                'longitude' => (float) $loc->longitude,
-                'address' => $loc->address,
-                'groups' => $loc->kelompok->map(fn ($k) => [
-                    'id' => $k->id,
-                    'nama' => $k->nama,
-                    'students_count' => $k->mahasiswa_count,
-                ]),
-            ]),
+            'locations' => $locations->map(fn ($loc) => $this->serializePublicLocation($loc)),
             'config' => [
                 'center' => [
                     (float) SystemSetting::get('map_center_lat', -7.4243),
@@ -209,6 +163,89 @@ class HomeController extends Controller
                 ],
                 'zoom' => (int) SystemSetting::get('map_default_zoom', 11),
             ],
+            'filters' => request()->only('search', 'district', 'regency'),
+            'activeLocationId' => null,
         ]);
+    }
+
+    public function mapShow(string $locationPath)
+    {
+        $locations = Lokasi::whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->with(['kelompok' => function ($q) {
+                $q->withCount('peserta');
+            }])
+            ->get();
+
+        $activeLocation = $this->findPublicLocationFromPath($locations, $locationPath);
+
+        return Inertia::render('Public/LocationsMap', [
+            'locations' => $locations->map(fn ($loc) => $this->serializePublicLocation($loc)),
+            'config' => [
+                'center' => [
+                    (float) SystemSetting::get('map_center_lat', -7.4243),
+                    (float) SystemSetting::get('map_center_lng', 109.2302),
+                ],
+                'zoom' => (int) SystemSetting::get('map_default_zoom', 11),
+            ],
+            'filters' => request()->only('search', 'district', 'regency'),
+            'activeLocationId' => $activeLocation->id,
+        ]);
+    }
+
+    protected function serializeAnnouncementCard(Announcement $announcement): array
+    {
+        return [
+            'id' => $announcement->id,
+            'title' => $announcement->title,
+            'slug' => $announcement->slug,
+            'category' => $announcement->category,
+            'excerpt' => $announcement->excerpt_text,
+            'image_url' => $announcement->image ? Storage::url($announcement->image) : null,
+            'published_at' => $announcement->published_at?->toIso8601String(),
+            'reading_time' => $announcement->reading_time_minutes,
+            'word_count' => $announcement->word_count,
+        ];
+    }
+
+    protected function serializePublicLocation(Lokasi $location): array
+    {
+        $groups = $location->kelompok->map(fn ($group) => [
+            'id' => $group->id,
+            'nama' => $group->nama_kelompok,
+            'students_count' => $group->peserta_count,
+        ])->values();
+
+        $slug = Str::slug($location->village_name ?: 'lokasi');
+
+        return [
+            'id' => $location->id,
+            'slug' => $slug,
+            'path' => route('public.locations.show', ['locationPath' => "{$location->id}-{$slug}"]),
+            'name' => $location->village_name,
+            'district' => $location->district_name,
+            'regency' => $location->regency_name,
+            'full_name' => $location->full_name,
+            'latitude' => (float) $location->latitude,
+            'longitude' => (float) $location->longitude,
+            'address' => $location->address,
+            'capacity' => $location->capacity,
+            'maps_url' => sprintf('https://www.google.com/maps/search/?api=1&query=%s,%s', $location->latitude, $location->longitude),
+            'groups' => $groups,
+            'students_count' => $groups->sum('students_count'),
+        ];
+    }
+
+    protected function findPublicLocationFromPath(Collection $locations, string $locationPath): Lokasi
+    {
+        if (preg_match('/^(?<id>\d+)(?:-.+)?$/', $locationPath, $matches) === 1) {
+            $location = $locations->firstWhere('id', (int) $matches['id']);
+
+            if ($location) {
+                return $location;
+            }
+        }
+
+        abort(404);
     }
 }

@@ -31,7 +31,11 @@ import {
   PageHeader, 
   StatCard, 
   ContentPanel, 
-  StatusTag 
+  StatusTag,
+  PremiumTable,
+  PremiumTableRow,
+  PremiumTableCell,
+  SearchInput
 } from '@/Components/Premium';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -211,7 +215,7 @@ export default function Assignment({
         
         {/* --- PREMIUM HEADER --- */}
         <PageHeader
-          title="Penugasan DPL"
+          title="Penugasan DPL."
           subtitle="Pusat kendali aktivasi DPL, orkestrasi plotting unit kelompok, serta penetapan yurisdiksi Koordinator Wilayah (Korwil)."
           icon={Briefcase}
           breadcrumb={[
@@ -291,7 +295,7 @@ export default function Assignment({
               {activeFormMode === 'default' && activeTab === 'assignments' && (
                 <form onSubmit={submitPeriodAssignment} className="space-y-6">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Dosen Pengampu</label>
+                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1 font-display">Dosen Pengampu</label>
                     <div className="relative group">
                       <select value={periodForm.data.dosen_id} onChange={(e) => periodForm.setData('dosen_id', e.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-black text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none uppercase" required>
                         <option value="">PILIH DOSEN...</option>
@@ -306,7 +310,7 @@ export default function Assignment({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Target Periode</label>
+                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1 font-display">Target Periode</label>
                     <div className="relative group">
                       <select value={periodForm.data.period_id} onChange={(e) => periodForm.setData('period_id', e.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-black text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none uppercase" required>
                         <option value="">PILIH PERIODE...</option>
@@ -317,7 +321,7 @@ export default function Assignment({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Kuota Bimbingan</label>
+                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1 font-display">Kuota Bimbingan</label>
                     <input type="number" min="1" value={periodForm.data.max_groups} onChange={(e) => periodForm.setData('max_groups', parseInt(e.target.value))} className="w-full h-11 px-4 bg-white border border-gray-200 rounded-xl text-sm font-black text-emerald-950 focus:border-emerald-600 outline-none transition-all shadow-sm tabular-nums" required />
                   </div>
 
@@ -337,8 +341,8 @@ export default function Assignment({
                           {selectedGroup.code}
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[10px] font-black text-emerald-800 uppercase tracking-widest leading-none mb-1">Unit Terpilih</span>
-                          <span className="text-xs font-bold text-emerald-950 leading-tight">{selectedGroup.name}</span>
+                          <span className="text-[10px] font-black text-emerald-800 uppercase tracking-widest leading-none mb-1 font-display">Unit Terpilih</span>
+                          <span className="text-xs font-bold text-emerald-950 leading-tight font-display">{selectedGroup.name}</span>
                         </div>
                       </div>
                       <button type="button" onClick={() => groupForm.reset()} className="h-8 w-8 rounded-lg hover:bg-rose-50 text-emerald-800 hover:text-rose-500 transition-colors flex items-center justify-center">
@@ -357,7 +361,7 @@ export default function Assignment({
                   )}
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Alokasi DPL</label>
+                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1 font-display">Alokasi DPL</label>
                     <div className="relative group">
                       <select value={groupForm.data.dpl_period_id} onChange={(e) => groupForm.setData('dpl_period_id', e.target.value)} disabled={!selectedGroup} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-black text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none uppercase disabled:opacity-50" required>
                         <option value="">PILIH DOSEN BERKUOTA...</option>
@@ -377,7 +381,7 @@ export default function Assignment({
               {activeFormMode === 'default' && activeTab === 'regions' && (
                 <form onSubmit={submitDistrictCoordinator} className="space-y-6">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Wilayah Kecamatan</label>
+                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1 font-display">Wilayah Kecamatan</label>
                     <div className="relative group">
                       <select value={coordForm.data.district_id} onChange={(e) => coordForm.setData('district_id', e.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-black text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none uppercase" required>
                         <option value="">PILIH WILAYAH...</option>
@@ -388,7 +392,7 @@ export default function Assignment({
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Otoritas Korwil</label>
+                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1 font-display">Otoritas Korwil</label>
                     <div className="relative group">
                       <select value={coordForm.data.dpl_period_id} onChange={(e) => coordForm.setData('dpl_period_id', e.target.value)} className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-black text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none uppercase" required>
                         <option value="">PILIH DPL AKTIF...</option>
@@ -404,17 +408,6 @@ export default function Assignment({
                 </form>
               )}
             </ContentPanel>
-
-            <div className="bg-emerald-950 rounded-2xl p-6 text-white border-b-4 border-emerald-900 shadow-xl relative overflow-hidden group/alert">
-              <div className="absolute top-0 right-0 h-32 w-32 bg-white/5 rounded-bl-full -mr-12 -mt-12 transition-transform group-hover/alert:scale-110" />
-              <div className="flex items-center gap-3 mb-3 relative z-10">
-                <ShieldCheck size={18} className="text-emerald-400" />
-                <h4 className="text-[10px] font-black uppercase tracking-widest">Integritas Plotting</h4>
-              </div>
-              <p className="text-[10px] font-bold text-emerald-400/70 leading-relaxed uppercase relative z-10">
-                Setiap penugasan akan disinkronkan secara real-time ke log mahasiswa dan DPL terkait. Pastikan ketersediaan kuota bimbingan mencukupi.
-              </p>
-            </div>
           </div>
 
           {/* --- RIGHT COLUMN: MASTER DATA (2/3) --- */}
@@ -451,148 +444,121 @@ export default function Assignment({
               {/* TABLE AREA */}
               <div className="overflow-x-auto">
                 {activeTab === 'assignments' && (
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="border-b border-emerald-50 bg-white">
-                        <th className="px-6 py-4 text-[10px] font-black text-emerald-950 tracking-widest uppercase">Identitas DPL</th>
-                        <th className="px-6 py-4 text-[10px] font-black text-emerald-950 tracking-widest uppercase text-center">Periode</th>
-                        <th className="px-6 py-4 text-[10px] font-black text-emerald-950 tracking-widest uppercase text-center w-48">Beban Kerja</th>
-                        <th className="px-6 py-4 text-right text-[10px] font-black text-emerald-950 tracking-widest uppercase">Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {assignments.length === 0 ? (
-                        <EmptyState icon={ShieldCheck} label="DPL AKTIF BELUM TERSEDIA" desc="Tidak ada dosen yang diaktivasi pada periode ini." />
-                      ) : (
-                        assignments.map((a) => (
-                          <tr key={a.id} className="group hover:bg-gray-50/50 transition-all">
-                            <td className="px-6 py-4">
-                              <div className="flex flex-col">
-                                <span className="text-sm font-black text-emerald-950 mb-0.5">{a.dosen?.nama}</span>
-                                <span className="text-[10px] font-bold text-emerald-700/60 font-mono">NIP: {a.dosen?.nip}</span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 text-center">
-                              <span className="inline-flex px-2 py-0.5 text-[9px] font-black rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 uppercase tracking-tighter shadow-sm">{a.period?.name}</span>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="flex flex-col gap-1.5">
-                                <div className="flex justify-between text-[9px] font-black uppercase tracking-tight tabular-nums">
-                                  <span className="text-emerald-900">{a.current_groups} Terisi</span>
-                                  <span className="text-emerald-500">{a.max_groups} Kuota</span>
-                                </div>
-                                <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden border border-emerald-50/30">
-                                  <motion.div 
-                                    initial={{ width: 0 }}
-                                    animate={{ width: `${Math.min(100, (a.current_groups / a.max_groups) * 100)}%` }}
-                                    className={clsx("h-full rounded-full transition-all duration-1000", a.current_groups >= a.max_groups ? "bg-rose-500" : "bg-emerald-600")}
-                                  />
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 text-right">
-                              <button onClick={() => setDeletingId({ type: 'period', id: a.id })} className="h-8 w-8 inline-flex items-center justify-center text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all active:scale-90">
-                                <Trash2 size={14} />
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                  <PremiumTable
+                    headers={['Identitas DPL', 'Periode', 'Beban Kerja', 'Aksi']}
+                    isEmpty={assignments.length === 0}
+                    emptyText="Tidak ada dosen yang diaktivasi pada periode ini."
+                  >
+                    {assignments.map((a) => (
+                      <PremiumTableRow key={a.id}>
+                        <PremiumTableCell>
+                          <div className="flex flex-col py-1">
+                            <span className="text-sm font-black text-emerald-950 mb-1 font-display">{a.dosen?.nama}</span>
+                            <span className="text-[10px] font-bold text-emerald-700/60 font-mono">NIP: {a.dosen?.nip}</span>
+                          </div>
+                        </PremiumTableCell>
+                        <PremiumTableCell align="center">
+                          <span className="inline-flex px-3 py-1 text-[9px] font-black rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100 uppercase tracking-widest shadow-sm font-display">{a.period?.name}</span>
+                        </PremiumTableCell>
+                        <PremiumTableCell>
+                          <div className="flex flex-col gap-2 w-40">
+                            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest tabular-nums font-display">
+                              <span className="text-emerald-900">{a.current_groups} Terisi</span>
+                              <span className="text-emerald-300">{a.max_groups} Kuota</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden border border-emerald-50/30">
+                              <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${Math.min(100, (a.current_groups / a.max_groups) * 100)}%` }}
+                                className={clsx("h-full rounded-full transition-all duration-1000", a.current_groups >= a.max_groups ? "bg-rose-500" : "bg-emerald-600")}
+                              />
+                            </div>
+                          </div>
+                        </PremiumTableCell>
+                        <PremiumTableCell align="right">
+                          <button onClick={() => setDeletingId({ type: 'period', id: a.id })} className="h-9 w-9 inline-flex items-center justify-center text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all active:scale-90">
+                            <Trash2 size={16} />
+                          </button>
+                        </PremiumTableCell>
+                      </PremiumTableRow>
+                    ))}
+                  </PremiumTable>
                 )}
 
                 {activeTab === 'groups' && (
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="border-b border-emerald-50 bg-white">
-                        <th className="px-6 py-4 text-[10px] font-black text-emerald-950 tracking-widest uppercase">Identitas Unit</th>
-                        <th className="px-6 py-4 text-[10px] font-black text-emerald-950 tracking-widest uppercase text-center">Wilayah</th>
-                        <th className="px-6 py-4 text-[10px] font-black text-emerald-950 tracking-widest uppercase">DPL Pengampu</th>
-                        <th className="px-6 py-4 text-right text-[10px] font-black text-emerald-950 tracking-widest uppercase">Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {groups.length === 0 ? (
-                        <EmptyState icon={Users} label="DATA KELOMPOK KOSONG" desc="Belum ada unit kelompok yang didefinisikan." />
-                      ) : (
-                        groups.map((g) => (
-                          <tr key={g.id} className={clsx("group transition-all", groupForm.data.group_id === String(g.id) ? "bg-emerald-50/70" : "hover:bg-gray-50/50")}>
-                            <td className="px-6 py-4">
-                              <div className="flex flex-col">
-                                <span className="text-sm font-black text-emerald-950 mb-0.5">{g.name}</span>
-                                <span className="text-[10px] font-bold text-emerald-700/60 font-mono">CODE: {g.code} &middot; {g.status.toUpperCase()}</span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 text-center">
-                              <span className="text-[10px] font-bold text-emerald-900 uppercase tracking-widest leading-none block">{g.location?.district_name || 'N/A'}</span>
-                              <span className="text-[9px] font-bold text-emerald-700/40 uppercase">{g.location?.village_name}</span>
-                            </td>
-                            <td className="px-6 py-4">
-                              {g.dpl ? (
-                                <div className="flex flex-col">
-                                  <span className="text-xs font-black text-emerald-950 leading-tight mb-0.5">{g.dpl.nama}</span>
-                                  <span className="text-[9px] font-bold text-emerald-700/50 font-mono">NIP: {g.dpl.nip}</span>
-                                </div>
-                              ) : (
-                                <StatusTag label="MENUNGGU PLOTTING" variant="danger" pulse={true} />
-                              )}
-                            </td>
-                            <td className="px-6 py-4 text-right">
-                              <button
-                                onClick={() => { groupForm.setData('group_id', String(g.id)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-                                className={clsx(
-                                  "h-9 px-4 text-[10px] font-black rounded-xl border flex items-center justify-center gap-2 transition-all uppercase tracking-widest shadow-sm",
-                                  g.dpl ? "bg-emerald-50 text-emerald-700 border-emerald-100 hover:bg-emerald-100" : "bg-emerald-950 text-white border-emerald-900 hover:bg-black"
-                                )}
-                              >
-                                <Target size={12} strokeWidth={3} /> {g.dpl ? 'Re-Plot' : 'Plot Unit'}
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                  <PremiumTable
+                    headers={['Identitas Unit', 'Wilayah Kerja', 'DPL Pengampu', 'Aksi']}
+                    isEmpty={groups.length === 0}
+                    emptyText="Belum ada unit kelompok yang didefinisikan."
+                  >
+                    {groups.map((g) => (
+                      <PremiumTableRow key={g.id} className={clsx(groupForm.data.group_id === String(g.id) && "bg-emerald-50/70")}>
+                        <PremiumTableCell>
+                          <div className="flex flex-col py-1">
+                            <span className="text-sm font-black text-emerald-950 mb-1 font-display">{g.name}</span>
+                            <span className="text-[10px] font-bold text-emerald-700/60 font-mono uppercase tracking-widest">CODE: {g.code} &middot; {g.status}</span>
+                          </div>
+                        </PremiumTableCell>
+                        <PremiumTableCell>
+                          <div className="flex flex-col gap-1">
+                            <span className="text-[11px] font-black text-emerald-900 uppercase tracking-widest leading-none block font-display">{g.location?.district_name || 'N/A'}</span>
+                            <span className="text-[9px] font-bold text-emerald-700/40 uppercase">{g.location?.village_name}</span>
+                          </div>
+                        </PremiumTableCell>
+                        <PremiumTableCell>
+                          {g.dpl ? (
+                            <div className="flex flex-col">
+                              <span className="text-xs font-black text-emerald-950 leading-tight mb-1 font-display">{g.dpl.nama}</span>
+                              <span className="text-[9px] font-bold text-emerald-700/50 font-mono">NIP: {g.dpl.nip}</span>
+                            </div>
+                          ) : (
+                            <StatusTag label="MENUNGGU PLOTTING" variant="danger" pulse={true} />
+                          )}
+                        </PremiumTableCell>
+                        <PremiumTableCell align="right">
+                          <button
+                            onClick={() => { groupForm.setData('group_id', String(g.id)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                            className={clsx(
+                              "h-9 px-5 text-[10px] font-black rounded-xl border flex items-center justify-center gap-2.5 transition-all uppercase tracking-widest shadow-sm font-display",
+                              g.dpl ? "bg-white text-emerald-700 border-emerald-100 hover:bg-emerald-50" : "bg-emerald-950 text-white border-emerald-900 hover:bg-black"
+                            )}
+                          >
+                            <Target size={14} strokeWidth={3} /> {g.dpl ? 'Re-Plot' : 'Plot Unit'}
+                          </button>
+                        </PremiumTableCell>
+                      </PremiumTableRow>
+                    ))}
+                  </PremiumTable>
                 )}
 
                 {activeTab === 'regions' && (
-                  <table className="w-full text-left">
-                    <thead>
-                      <tr className="border-b border-emerald-50 bg-white">
-                        <th className="px-6 py-4 text-[10px] font-black text-emerald-950 tracking-widest uppercase">Kecamatan</th>
-                        <th className="px-6 py-4 text-[10px] font-black text-emerald-950 tracking-widest uppercase">Otoritas Korwil</th>
-                        <th className="px-6 py-4 text-right text-[10px] font-black text-emerald-950 tracking-widest uppercase">Aksi</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-50">
-                      {districtCoordinators.length === 0 ? (
-                        <EmptyState icon={Target} label="DATA KORWIL BELUM TERISI" desc="Belum ada DPL yang ditugaskan sebagai koordinator wilayah." />
-                      ) : (
-                        districtCoordinators.map((c) => (
-                          <tr key={c.id} className="group hover:bg-gray-50/50 transition-all">
-                            <td className="px-6 py-4">
-                              <div className="flex flex-col">
-                                <span className="text-sm font-black text-emerald-950 mb-0.5">{c.district_name}</span>
-                                <span className="text-[10px] font-bold text-emerald-700/60 uppercase tracking-widest">{c.regency_name || 'BANYUMAS'}</span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="flex flex-col">
-                                <span className="text-xs font-black text-emerald-950 mb-0.5">{c.dosen?.nama}</span>
-                                <span className="text-[9px] font-bold text-emerald-700/50 font-mono">NIP: {c.dosen?.nip}</span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 text-right">
-                              <button onClick={() => setDeletingId({ type: 'region', id: c.id })} className="h-8 w-8 inline-flex items-center justify-center text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-all active:scale-90">
-                                <Trash2 size={14} />
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
+                  <PremiumTable
+                    headers={['Wilayah Kecamatan', 'Otoritas Korwil', 'Aksi']}
+                    isEmpty={districtCoordinators.length === 0}
+                    emptyText="Belum ada DPL yang ditugaskan sebagai koordinator wilayah."
+                  >
+                    {districtCoordinators.map((c) => (
+                      <PremiumTableRow key={c.id}>
+                        <PremiumTableCell>
+                          <div className="flex flex-col py-1">
+                            <span className="text-sm font-black text-emerald-950 mb-1 font-display">{c.district_name}</span>
+                            <span className="text-[10px] font-bold text-emerald-700/60 uppercase tracking-widest">{c.regency_name || 'BANYUMAS'}</span>
+                          </div>
+                        </PremiumTableCell>
+                        <PremiumTableCell>
+                          <div className="flex flex-col">
+                            <span className="text-xs font-black text-emerald-950 mb-1 font-display">{c.dosen?.nama}</span>
+                            <span className="text-[9px] font-bold text-emerald-700/50 font-mono">NIP: {c.dosen?.nip}</span>
+                          </div>
+                        </PremiumTableCell>
+                        <PremiumTableCell align="right">
+                          <button onClick={() => setDeletingId({ type: 'region', id: c.id })} className="h-9 w-9 inline-flex items-center justify-center text-gray-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all active:scale-90">
+                            <Trash2 size={16} />
+                          </button>
+                        </PremiumTableCell>
+                      </PremiumTableRow>
+                    ))}
+                  </PremiumTable>
                 )}
               </div>
 
@@ -649,20 +615,4 @@ function TabButton({ active, onClick, label, icon: Icon }: { active: boolean; on
   );
 }
 
-function EmptyState({ icon: Icon, label, desc }: { icon: any; label: string; desc: string }) {
-  return (
-    <tr>
-      <td colSpan={10} className="px-6 py-32 text-center bg-gray-50/20">
-        <div className="flex flex-col items-center justify-center gap-4">
-          <div className="h-20 w-20 rounded-3xl bg-white border border-emerald-100 shadow-sm flex items-center justify-center text-emerald-200">
-            <Icon size={40} strokeWidth={1} />
-          </div>
-          <div className="space-y-1">
-            <span className="text-xs font-black text-emerald-950 uppercase tracking-[0.2em]">{label}</span>
-            <p className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider max-w-xs mx-auto">{desc}</p>
-          </div>
-        </div>
-      </td>
-    </tr>
-  );
-}
+

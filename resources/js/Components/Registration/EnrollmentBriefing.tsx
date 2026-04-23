@@ -28,7 +28,7 @@ export const EnrollmentBriefing = ({
   return (
     <div className="p-10 rounded-[3rem] bg-white border border-emerald-50/60 shadow-md sticky top-12 space-y-10">
       <div className="flex items-center gap-5 border-b border-[#f3f4f6] pb-8">
-        <div className="h-14 w-14 bg-[#16a34a] rounded-[1.5rem] flex items-center justify-center text-white shadow-xl shadow-emerald-200">
+        <div className="h-14 w-14 bg-[#0d9488] rounded-[1.5rem] flex items-center justify-center text-white shadow-xl shadow-emerald-200">
           <ShieldCheck size={28} strokeWidth={2.5} />
         </div>
         <div>
@@ -93,7 +93,7 @@ export const EnrollmentBriefing = ({
         className={clsx(
           'w-full py-6 rounded-[2rem] text-xs font-bold uppercase tracking-[0.3em] shadow-2xl transition-all relative overflow-hidden group flex items-center justify-center gap-4',
           canSubmit && !formProcessing
-            ? 'bg-[#16a34a] text-white shadow-emerald-200 hover:bg-[#15803d] hover:-translate-y-2 active:scale-95'
+            ? 'bg-[#0d9488] text-white shadow-emerald-200 hover:bg-[#0f766e] hover:-translate-y-2 active:scale-95'
             : 'bg-emerald-50/60 text-emerald-400 cursor-not-allowed',
         )}
       >

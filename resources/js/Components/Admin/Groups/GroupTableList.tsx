@@ -103,7 +103,7 @@ export const GroupTableList = ({
                           className={clsx(
                             'px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-widest border shadow-sm',
                             group.status === 'active'
-                              ? 'bg-[#e8f5ee] text-emerald-800 border-emerald-50'
+                              ? 'bg-[#f0fdfa] text-emerald-800 border-emerald-50'
                               : group.status === 'closed'
                               ? 'bg-rose-50 text-rose-600 border-rose-100'
                               : 'bg-amber-50 text-amber-700 border-amber-100',
@@ -133,7 +133,7 @@ export const GroupTableList = ({
                         <span className="text-sm font-bold text-emerald-950 tabular-nums">{group.approved_participants_count}</span>
                         <span className="text-xs font-bold text-emerald-950 uppercase tracking-widest">{group.capacity} PK</span>
                       </div>
-                      <div className="h-1.5 bg-[#e8f5ee] rounded-full overflow-hidden border border-emerald-50/50">
+                      <div className="h-1.5 bg-[#f0fdfa] rounded-full overflow-hidden border border-emerald-50/50">
                         <div
                           className={clsx(
                             'h-full rounded-full transition-all duration-1000',

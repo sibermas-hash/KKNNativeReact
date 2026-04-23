@@ -33,7 +33,7 @@ export default function StudentIzinCreate() {
 
                 <section className="rounded-[2.5rem] border border-emerald-50/60 bg-white p-12 shadow-sm">
                     <div className="space-y-2 mb-12">
-                        <h1 className="text-3xl font-bold text-emerald-950 tracking-tight uppercase">Ajukan Izin <span className="text-[#1a7a4a]">Meninggalkan.</span></h1>
+                        <h1 className="text-3xl font-bold text-emerald-950 tracking-tight uppercase">Ajukan Izin <span className="text-[#0d9488]">Meninggalkan.</span></h1>
                         <p className="text-xs font-bold text-emerald-950 font-semibold uppercase text-xs">
                             Permohonan izin akan diverifikasi oleh Dosen Pembimbing Lapangan.
                         </p>

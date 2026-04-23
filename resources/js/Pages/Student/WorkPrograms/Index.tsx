@@ -69,13 +69,13 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
                   <Briefcase size={24} strokeWidth={3} />
                 </div>
                 <div className="h-px w-12 bg-emerald-500/30" />
-                <span className="text-sm font-bold uppercase tracking-wider text-xs font-semibold text-[#1a7a4a]">
+                <span className="text-sm font-bold uppercase tracking-wider text-xs font-semibold text-[#0d9488]">
                   Operation Pipeline
                 </span>
               </div>
               <div className="space-y-2">
                 <h1 className="text-2xl md:text-2xl font-bold tracking-tighter uppercase leading-[0.9]">
-                  Program <span className="text-[#1a7a4a]">Kerja Unit.</span>
+                  Program <span className="text-[#0d9488]">Kerja Unit.</span>
                 </h1>
                 <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs leading-relaxed max-w-md opacity-80">
                   Matriks strategi pengabdian dan pemberdayaan masyarakat oleh kelompok Anda.
@@ -196,7 +196,7 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
             animate={{ opacity: 1, scale: 1 }}
             className="rounded-xl border-4 border-dashed border-emerald-50/60 bg-white py-32 text-center group hover:bg-emerald-50/30 transition-all duration-700"
           >
-            <div className="mx-auto h-12 w-24 rounded-3xl bg-emerald-50/30 flex items-center justify-center text-slate-200 mb-10 group-hover:scale-110 group-hover:bg-emerald-50 group-hover:text-[#1a7a4a] transition-all duration-500">
+            <div className="mx-auto h-12 w-24 rounded-3xl bg-emerald-50/30 flex items-center justify-center text-slate-200 mb-10 group-hover:scale-110 group-hover:bg-emerald-50 group-hover:text-[#0d9488] transition-all duration-500">
               <FolderKanban size={48} strokeWidth={1} />
             </div>
             <h3 className="text-3xl font-bold text-emerald-950 font-bold text-center">

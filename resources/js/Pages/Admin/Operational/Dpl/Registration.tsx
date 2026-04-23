@@ -112,10 +112,10 @@ export default function DplRegistration({ registrations, pagination, stats, filt
 
   const pendingIds = registrations.filter((r) => r.status === 'pending').map((r) => r.id);
   const statusTabs = [
-    { key: 'all', label: 'Semua', count: stats.total },
-    { key: 'pending', label: 'Menunggu', count: stats.pending },
-    { key: 'approved', label: 'Disetujui', count: stats.approved },
-    { key: 'rejected', label: 'Ditolak', count: stats.rejected },
+    { key: 'all', label: 'SEMUA', count: stats.total },
+    { key: 'pending', label: 'MENUNGGU', count: stats.pending },
+    { key: 'approved', label: 'DISETUJUI', count: stats.approved },
+    { key: 'rejected', label: 'DITOLAK', count: stats.rejected },
   ];
 
   return (
@@ -124,10 +124,10 @@ export default function DplRegistration({ registrations, pagination, stats, filt
       <div className="space-y-8 pb-24 text-emerald-950">
         <PageHeader
           title="Pendaftaran DPL."
-          subtitle="Kelola permohonan dosen yang mendaftar sebagai Dosen Pembimbing Lapangan (DPL)."
+          subtitle="Kelola permohonan dosen yang mendaftar sebagai Dosen Pembimbing Lapangan (DPL) secara terintegrasi."
           icon={ClipboardList}
           groupLabel="Kelompok & Penugasan"
-          stats={{ label: 'Menunggu Verifikasi', value: `${stats.pending}`, icon: Clock }}
+          stats={{ label: 'Menunggu Verifikasi', value: `${stats.pending} Dosen`, icon: Clock }}
         />
 
         {/* FLASH */}
@@ -164,22 +164,35 @@ export default function DplRegistration({ registrations, pagination, stats, filt
           padding={false}
           headerAction={
             <div className="flex flex-wrap items-center gap-3">
-              <div className="flex bg-gray-100 rounded-lg p-0.5">
+              <div className="flex bg-slate-100/50 rounded-xl p-1 border border-emerald-50 shadow-sm">
                 {statusTabs.map((t) => (
-                  <button key={t.key} onClick={() => handleStatusFilter(t.key)} className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all uppercase tracking-wider ${statusFilter === t.key ? 'bg-white text-emerald-950 shadow-sm' : 'text-emerald-800 hover:text-emerald-950'}`}>
-                    {t.label} <span className="ml-1 text-emerald-600">{t.count}</span>
+                  <button 
+                    key={t.key} 
+                    onClick={() => handleStatusFilter(t.key)} 
+                    className={clsx(
+                      "px-4 py-2 text-[10px] font-black rounded-lg transition-all uppercase tracking-widest flex items-center gap-2 font-display",
+                      statusFilter === t.key 
+                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/10' 
+                        : 'text-emerald-800/40 hover:text-emerald-950 hover:bg-white/50'
+                    )}
+                  >
+                    {t.label} 
+                    <span className={clsx(
+                      "px-1.5 py-0.5 rounded-md text-[9px] font-black",
+                      statusFilter === t.key ? 'bg-emerald-500/50 text-white' : 'bg-emerald-50 text-emerald-600'
+                    )}>{t.count}</span>
                   </button>
                 ))}
               </div>
 
-              <div className="relative group min-w-[200px]">
+              <div className="relative group w-64">
                 <select 
                   value={selectedPeriodId} 
                   onChange={(e) => handlePeriodChange(e.target.value)}
-                  className="w-full h-10 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none"
+                  className="w-full h-11 pl-4 pr-10 rounded-xl border-2 border-emerald-50 bg-white text-[10px] font-black text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none uppercase tracking-widest font-display"
                 >
                   <option value="">SEMUA PERIODE</option>
-                  {periods.map(p => <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>)}
+                  {periods.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
                 <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform"/>
               </div>
@@ -224,32 +237,32 @@ export default function DplRegistration({ registrations, pagination, stats, filt
                     </PremiumTableCell>
                   )}
                   <PremiumTableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-lg bg-[#e8f5ee] text-[#1a7a4a] flex items-center justify-center text-xs font-bold border border-emerald-50">
+                    <div className="flex items-center gap-4 py-1">
+                      <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-xs font-black border border-emerald-100 shadow-sm font-display">
                         {reg.dosen.nama.charAt(0)}
                       </div>
-                      <div className="flex flex-col gap-0.5">
-                        <span className="text-xs font-bold text-emerald-950 uppercase tracking-tight">{reg.dosen.nama}</span>
+                      <div className="flex flex-col gap-1">
+                        <span className="text-sm font-black text-emerald-950 uppercase tracking-tight font-display">{reg.dosen.nama}</span>
                         {(reg.dosen.is_cpns || reg.dosen.is_tugas_belajar) && (
-                          <div className="flex gap-1">
-                            {reg.dosen.is_cpns && <span className="text-[9px] font-bold bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded border border-amber-100">CPNS</span>}
-                            {reg.dosen.is_tugas_belajar && <span className="text-[9px] font-bold bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded border border-blue-100">TB</span>}
+                          <div className="flex gap-1.5">
+                            {reg.dosen.is_cpns && <span className="text-[8px] font-black bg-amber-50 text-amber-700 px-2 py-0.5 rounded border border-amber-100 uppercase tracking-widest">CPNS</span>}
+                            {reg.dosen.is_tugas_belajar && <span className="text-[8px] font-black bg-emerald-950 text-white px-2 py-0.5 rounded border border-emerald-800 uppercase tracking-widest">Tugas Belajar</span>}
                           </div>
                         )}
                       </div>
                     </div>
                   </PremiumTableCell>
                   <PremiumTableCell>
-                    <span className="text-xs font-bold text-[#1a7a4a] font-mono tracking-wider">{reg.dosen.nip}</span>
+                    <span className="text-xs font-bold text-[#0d9488] font-mono tracking-wider">{reg.dosen.nip}</span>
                   </PremiumTableCell>
                   <PremiumTableCell>
                     <span className="text-xs font-semibold text-emerald-950">{reg.dosen.fakultas}</span>
                   </PremiumTableCell>
-                  <PremiumTableCell>
-                    <span className="text-xs font-bold text-emerald-950">{reg.periode.name}</span>
+                  <PremiumTableCell align="center">
+                    <span className="text-[10px] font-black text-emerald-950 bg-slate-50 px-3 py-1 rounded-lg border border-emerald-50 uppercase tracking-widest font-display">{reg.periode.name}</span>
                   </PremiumTableCell>
-                  <PremiumTableCell>
-                    <span className="text-xs font-semibold text-emerald-800">{reg.created_at || '-'}</span>
+                  <PremiumTableCell align="center">
+                    <span className="text-[10px] font-black text-emerald-800/40 tabular-nums uppercase tracking-widest font-display">{reg.created_at || '-'}</span>
                   </PremiumTableCell>
                   <PremiumTableCell align="center">
                     <StatusTag status={st.tag} label={st.label} size="sm" />
@@ -259,20 +272,23 @@ export default function DplRegistration({ registrations, pagination, stats, filt
                   </PremiumTableCell>
                   <PremiumTableCell align="right">
                     {reg.status === 'pending' ? (
-                      <div className="flex items-center justify-end gap-1.5">
+                      <div className="flex items-center justify-end gap-2">
                         <button onClick={() => approve(reg.id)}
-                          className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 active:scale-95">
-                          <CheckCircle2 size={12} /> Setujui
+                          className="h-9 px-5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all flex items-center gap-2 active:scale-95 shadow-md shadow-emerald-600/20 font-display">
+                          <CheckCircle2 size={14} strokeWidth={2.5} /> Setujui
                         </button>
                         <button onClick={() => { setRejectModal({ open: true, id: reg.id, bulk: false }); setRejectReason(''); }}
-                          className="h-8 px-3 bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all active:scale-95 flex items-center gap-1.5">
-                          <XCircle size={12} /> Tolak
+                          className="h-9 px-5 bg-white hover:bg-rose-50 text-rose-600 border-2 border-rose-50 rounded-xl text-[10px] font-black uppercase tracking-[0.15em] transition-all active:scale-95 flex items-center gap-2 font-display">
+                          <XCircle size={14} strokeWidth={2.5} /> Tolak
                         </button>
                       </div>
                     ) : reg.status === 'approved' ? (
-                      <span className="text-[11px] font-bold text-emerald-600">{reg.approved_at}</span>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest font-display">Disetujui</span>
+                        <span className="text-[9px] font-bold text-slate-300 tabular-nums">{reg.approved_at}</span>
+                      </div>
                     ) : (
-                      <span className="text-[11px] font-bold text-rose-400">—</span>
+                      <span className="text-[10px] font-black text-rose-300 uppercase tracking-widest">—</span>
                     )}
                   </PremiumTableCell>
                 </PremiumTableRow>

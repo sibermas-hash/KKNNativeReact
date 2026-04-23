@@ -32,7 +32,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
     <div className="space-y-10">
       {/* Section Heading — konsisten dengan IdentityForm & AcademicForm */}
       <div className="flex items-center gap-6">
-        <div className="h-1 w-24 bg-[#16a34a] rounded-full" />
+        <div className="h-1 w-24 bg-[#0d9488] rounded-full" />
         <h3 className="text-xs font-bold text-emerald-950 uppercase tracking-[0.4em]">
           Unggah Dokumen Persyaratan
         </h3>

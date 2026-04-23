@@ -1,7 +1,6 @@
 import { useState, useEffect, createContext, useContext, useMemo, useRef } from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
-import type { User } from '@/types';
-import { Menu, Power, BadgeCheck, Lock, AlertTriangle, X, ShieldCheck, GraduationCap } from 'lucide-react';
+import { Head, usePage } from '@inertiajs/react';
+import { Menu, Power, BadgeCheck, ShieldCheck } from 'lucide-react';
 import Sidebar from '@/Components/Sidebar';
 import AiAssistant from '@/Components/AiAssistant';
 import { ErrorBoundary } from '@/Components/ErrorBoundary';
@@ -95,7 +94,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
 
   return (
     <LayoutContext.Provider value={layoutContextValue}>
-      <div className="min-h-screen bg-slate-200/50 font-sans">
+      <div className="min-h-screen bg-slate-50 font-sans">
         <Head>
           <title>{displayTitle ? `${displayTitle} | SIBERDAYA` : 'SIBERDAYA'}</title>
         </Head>
@@ -104,95 +103,46 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
 
         <div className="lg:pl-64 flex flex-col min-h-screen transition-all duration-300 w-full overflow-x-hidden">
 
-
-          {/* TOP HEADER BAR */}
-          <header className="sticky top-0 z-40 h-14 bg-white border-b border-slate-300 shadow-sm px-6 sm:px-8 flex items-center justify-between">
+          {/* Header */}
+          <header className="sticky top-0 z-40 h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="p-2 text-emerald-800 hover:bg-gray-50 rounded-lg lg:hidden transition-colors"
-                aria-label="Buka Menu"
+                className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg lg:hidden transition-colors"
               >
-                <Menu className="h-5 w-5" strokeWidth={2} />
+                <Menu className="h-5 w-5" />
               </button>
-
-              <h2 className="text-lg font-bold text-emerald-950">{displayTitle}</h2>
+              <h2 className="text-[1.1rem] font-black text-emerald-950 uppercase tracking-tighter font-display leading-none">{displayTitle}</h2>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              {auth?.user?.roles?.some((r: any) => ['admin', 'superadmin', 'faculty_admin'].includes(r.name)) && (
+                <span className="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-md text-xs font-medium text-emerald-700">
+                  <ShieldCheck size={12} />
+                  Admin
+                </span>
+              )}
+
               {auth?.user?.roles?.some((r: any) => r.name === 'student') && (
-                <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100">
-                  <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Status:</span>
-                  <div className="flex items-center gap-1.5">
-                    {(() => {
-                      const reg = props.registration;
-                      const status = reg?.status?.toLowerCase();
-                      if (['approved', 'disetujui', 'completed'].includes(status)) {
-                        return (
-                          <>
-                            <BadgeCheck size={12} className="text-emerald-600" />
-                            <span className="text-[10px] font-black text-emerald-950 uppercase">Peserta Aktif</span>
-                          </>
-                        );
-                      }
-                      if (['pending', 'menunggu'].includes(status)) {
-                        return (
-                          <>
-                            <Lock size={12} className="text-amber-600" />
-                            <span className="text-[10px] font-black text-amber-800 uppercase tracking-tighter">Verifikasi</span>
-                          </>
-                        );
-                      }
-                      if (['rejected', 'ditolak'].includes(status)) {
-                        return (
-                          <div className={clsx(
-                            'flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm transition-all duration-200 relative group',
-                            'text-rose-600 font-medium'
-                          )}>
-                             <AlertTriangle size={12} />
-                             <span className="text-[10px] font-black uppercase tracking-tighter">Perbaikan</span>
-                          </div>
-                        );
-                      }
-                      return (
-                        <>
-                          <X size={12} className="text-slate-400" />
-                          <span className="text-[10px] font-black text-slate-500 uppercase tracking-tight">Belum Terdaftar</span>
-                        </>
-                      );
-                    })()}
-                  </div>
-                </div>
+                <span className="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-md text-xs font-medium text-emerald-700">
+                  <BadgeCheck size={12} />
+                  Mahasiswa
+                </span>
               )}
 
-              {auth?.user?.roles?.some((r: any) => r.name === 'dpl') && (
-                <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100">
-                   <ShieldCheck size={12} className="text-emerald-600" />
-                   <span className="text-[10px] font-black text-emerald-950 uppercase tracking-tight">Dosen Pembimbing</span>
-                </div>
-              )}
-
-              {auth?.user?.roles?.some((r: any) => r.name === 'dosen') && !auth?.user?.roles?.some((r: any) => r.name === 'dpl') && (
-                <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100">
-                   <GraduationCap size={12} className="text-emerald-600" />
-                   <span className="text-[10px] font-black text-emerald-950 uppercase tracking-tight">Dosen</span>
-                </div>
-              )}
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={logout}
-                  className="flex items-center gap-2 px-3 py-1.5 text-[#ef4444] hover:bg-red-50 rounded-lg transition-colors text-sm font-medium"
-                >
-                  <Power className="h-4 w-4" strokeWidth={2.5} />
-                  <span className="hidden sm:inline">Keluar</span>
-                </button>
-              </div>
+              <button
+                onClick={logout}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              >
+                <Power className="h-4 w-4" />
+                <span className="hidden sm:inline">Keluar</span>
+              </button>
             </div>
           </header>
 
-          {/* MAIN CONTENT AREA */}
-          <main className="flex-1 p-8">
+          {/* Main content */}
+          <main className="flex-1 p-6 lg:p-8">
+
             <ErrorBoundary>
               {children}
             </ErrorBoundary>

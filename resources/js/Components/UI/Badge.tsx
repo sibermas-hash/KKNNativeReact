@@ -15,7 +15,7 @@ const variants: Record<Variant, string> = {
     info: 'bg-accent-sky-100 text-accent-sky-600 border border-accent-sky-200',
     default: 'bg-emerald-50/60 text-emerald-800 border border-emerald-50/60',
     gray: 'bg-emerald-50/60 text-emerald-950 border border-emerald-50/60',
-    primary: 'bg-[#e8f5ee] text-emerald-950 border border-emerald-200',
+    primary: 'bg-[#f0fdfa] text-emerald-950 border border-emerald-200',
 };
 
 export default function Badge({ variant = 'default', children, className }: BadgeProps) {

@@ -2,295 +2,391 @@ import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import {
- Users, Activity, CheckCircle2, Calendar, ChevronRight, ChevronDown, LayoutGrid, FileText, ClipboardList, Loader2, Clock, AlertTriangle, ArrowRight, MapPin, ShieldCheck, Zap, Trophy, Binary, Target
+  Users, LayoutGrid, FileText, ClipboardList, AlertTriangle, 
+  MapPin, Clock, ArrowRight, ShieldCheck, CheckCircle2, ChevronRight, Loader2
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { PageProps } from '@/types';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
 
+// ── Config ───────────────────────────────────────────
+interface DashboardProps extends PageProps {
+  active_periode_id?: number | null;
+  active_period_name?: string | null;
+  active_periods?: any[];
+  stats?: Record<string, any>;
+  current_phase?: Record<string, any> | string;
+  recentRegistrations?: any[];
+}
+
+const PHASES = [
+  { id: 'registration', label: 'Pendaftaran' },
+  { id: 'placement',    label: 'Penempatan' },
+  { id: 'execution',    label: 'Pelaksanaan' },
+  { id: 'grading',      label: 'Penilaian' },
+];
+
+const PHASE_LABELS: Record<string, string> = {
+  registration: 'Pendaftaran', placement: 'Penempatan',
+  execution: 'Pelaksanaan', grading: 'Penilaian',
+  upcoming: 'Belum Dimulai', finished: 'Selesai',
+};
+
+// ── Main ─────────────────────────────────────────────
 export default function Dashboard({
-  active_periode_id, active_period_name, active_periods = [], stats = {}, current_phase = {}, recentRegistrations = []
-}: PageProps & {
-  active_periode_id?: number | null; active_period_name?: string | null; active_periods?: any[]; stats?: Record<string, any>; current_phase?: Record<string, any>; recentRegistrations?: any[];
-}) {
- const [periodDropdown, setPeriodDropdown] = useState(false);
- const [switching, setSwitching] = useState(false);
- const [confirmPhase, setConfirmPhase] = useState<string | null>(null);
- const currentPhaseKey = typeof current_phase === 'string' ? current_phase : (current_phase?.key || 'upcoming');
+  active_periode_id, active_periods = [],
+  stats = {}, current_phase = {}, recentRegistrations = [],
+}: DashboardProps) {
+  const [switching, setSwitching] = useState(false);
+  const [confirmPhase, setConfirmPhase] = useState<string | null>(null);
 
- const phases = [
- { id: 'registration', label: 'Pendaftaran' },
- { id: 'placement', label: 'Plotting' },
- { id: 'execution', label: 'Pelaksanaan' },
- { id: 'grading', label: 'Penilaian' },
- ];
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
+    }
+  };
 
- const phaseLabels: Record<string, string> = {
- registration: 'Pendaftaran', placement: 'Plotting', execution: 'Pelaksanaan', grading: 'Penilaian', upcoming: 'Pra-Pendaftaran', finished: 'Selesai',
- };
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
+  };
 
-function handleSwitchPhase(target: string) {
-  if (!active_periode_id || switching) return;
-  setSwitching(true);
-  router.post('/admin/dashboard/switch-phase', { target, periode_id: active_periode_id }, {
-  preserveScroll: true,
-  onError: (errors) => {
-    console.error('Switch phase error:', errors);
-    setSwitching(false);
-    alert('Gagal切换 fase: ' + JSON.stringify(errors));
-  },
-  onSuccess: () => {
-    console.log('Phase switched successfully to:', target);
-    setSwitching(false);
-    setConfirmPhase(null);
-  },
-  });
+  const phaseKey = typeof current_phase === 'string'
+    ? current_phase : (current_phase?.key || 'upcoming');
+
+  function handlePeriodChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const val = e.target.value;
+    if (val) router.get(route('admin.dashboard', { periode_id: val }));
   }
 
- const isPlottingCrisis = (stats?.unassigned_students || 0) > 0 && currentPhaseKey === 'placement';
+  function handlePhaseChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const val = e.target.value;
+    if (val && val !== phaseKey && active_periode_id) {
+      setConfirmPhase(val);
+      // Reset select back to current phase until confirmed
+      e.target.value = phaseKey; 
+    }
+  }
 
- return (
- <AppLayout title="Dasbor Utama Administrasi">
- <Head title="Dasbor Utama"/>
+  function submitPhaseChange() {
+    if (!active_periode_id || !confirmPhase || switching) return;
+    setSwitching(true);
+    router.post('/admin/dashboard/switch-phase',
+      { target: confirmPhase, periode_id: active_periode_id },
+      { preserveScroll: true, onFinish: () => { setSwitching(false); setConfirmPhase(null); } }
+    );
+  }
 
- <div className="space-y-8 pb-24 text-emerald-950 font-sans">
- 
- {/* --- PREMIUM HEADER --- */}
- <div className="space-y-4">
- <div className="flex items-center gap-3 text-[#1a7a4a]">
- <Activity size={18} />
- <span className="text-xs font-bold opacity-80">Pusat Kendali Operasional</span>
- </div>
- <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
- <div className="space-y-1">
- <h1 className="text-3xl font-extrabold text-emerald-950">
- Dashboard <span className="text-[#1a7a4a]">Utama.</span>
- </h1>
- <p className="font-semibold text-xs text-emerald-800 mt-2 leading-relaxed max-w-2xl">
- Selamat datang kembali. Berikut adalah ringkasan eksekutif dan monitoring status pelaksanaan SIBERDAYA secara real-time.
- </p>
- </div>
- 
- <div className="relative">
- <button onClick={() => setPeriodDropdown(!periodDropdown)} className="flex items-center gap-4 px-5 py-3 bg-white border border-emerald-50 rounded-xl shadow-sm hover:border-gray-300 hover:shadow-md transition-all">
- <div className="h-10 w-10 rounded-xl bg-gray-50 flex items-center justify-center text-[#1a7a4a] shadow-inner">
- <Calendar size={18} strokeWidth={2.5} />
- </div>
- <div className="flex flex-col items-start pr-4">
- <span className="text-xs font-bold text-[#1a7a4a] leading-none mb-1.5">Periode Aktif</span>
- <span className="text-sm font-bold text-emerald-950 leading-none">{active_period_name || 'BELUM DITENTUKAN'}</span>
- </div>
- <ChevronDown size={16} className={clsx("text-emerald-800 transition-transform", periodDropdown &&"rotate-180")} />
- </button>
- 
- <AnimatePresence>
- {periodDropdown && (
- <>
- <div className="fixed inset-0 z-40"onClick={() => setPeriodDropdown(false)} />
- <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="absolute right-0 mt-3 w-72 bg-white border border-emerald-50 rounded-xl shadow-sm z-50 p-2 overflow-hidden">
- {active_periods.length > 0 ? active_periods.map((p: any) => (
- <Link key={p.id} href={`/admin?period_id=${p.id}`} onClick={() => setPeriodDropdown(false)} className={clsx("flex items-center justify-between px-4 py-3 rounded-xl text-sm transition-all", p.id === active_periode_id ?"bg-gray-50 text-emerald-800 font-bold":"text-emerald-950 hover:bg-gray-50 hover:text-[#1a7a4a]")}>
- <span className="tracking-wide">{p.nama}</span>
- {p.id === active_periode_id && <CheckCircle2 size={16} className="text-[#1a7a4a]"strokeWidth={3} />}
- </Link>
- )) : (
- <div className="px-4 py-6 text-xs font-bold text-emerald-800 text-center">Tiada Periode Tersedia</div>
- )}
- </motion.div>
- </>
- )}
- </AnimatePresence>
- </div>
- </div>
- </div>
+  const pendingCount = stats?.pending_registrations ?? 0;
+  const unassignedCount = stats?.unassigned_students ?? 0;
 
- {/* METRICS GRID */}
- <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
- <DashboardStat label="Total Pendaftar"value={stats?.total_students} icon={Users} status="success"/>
- <DashboardStat label="Validasi Pending"value={stats?.pending_registrations} icon={ClipboardList} status={stats?.pending_registrations > 0 ? 'warning' : 'success'} />
- <DashboardStat label="Belum Di-Plotting"value={stats?.unassigned_students} icon={AlertTriangle} status={stats?.unassigned_students > 0 ? 'danger' : 'success'} alert={isPlottingCrisis} />
- <DashboardStat label="Total Kelompok"value={stats?.total_groups} icon={LayoutGrid} status="success"/>
- <DashboardStat label="Laporan Masuk"value={stats?.total_reports} icon={FileText} status="success"/>
- </div>
+  return (
+    <AppLayout title="Dashboard">
+      <Head title="Dashboard Admin" />
 
- {/* PHASE CONTROL PANEL */}
- <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
- <div className="px-6 py-6 border-b-2 border-emerald-50 bg-gray-50 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
- <div className="flex items-center gap-4">
- <div className="h-10 w-10 bg-white border border-emerald-50 rounded-xl flex items-center justify-center shadow-sm">
- <Zap size={18} className="text-[#1a7a4a]"/>
- </div>
- <div className="flex flex-col">
- <h2 className="text-sm font-bold text-emerald-950 leading-none mb-1">Kontrol Fase Pelaksanaan</h2>
- <p className="text-xs font-bold text-[#1a7a4a]">Manajemen Alur Kerja KKN</p>
- </div>
- </div>
- <div className="flex items-center gap-3">
- <span className="text-xs font-bold text-emerald-800">Status Saat Ini:</span>
- <div className={clsx("h-8 px-4 flex items-center justify-center rounded-lg border font-bold text-xs transition-all", currentPhaseKey === 'upcoming' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-[#16a34a] text-white border-[#1a7a4a] shadow-sm shadow-none') }>
- {phaseLabels[currentPhaseKey] || currentPhaseKey}
- </div>
- </div>
- </div>
- <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-4 bg-white">
- {phases.map((p) => {
- const isActive = currentPhaseKey === p.id;
- return (
- <button key={p.id} onClick={() => !isActive && active_periode_id && setConfirmPhase(p.id)} disabled={switching} className={clsx("relative group px-5 py-6 rounded-xl border transition-all text-left overflow-hidden", isActive ?"bg-gray-50 border-gray-300 shadow-inner":"bg-white border-emerald-50 hover:border-gray-300 hover:bg-gray-50")}>
- <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity"><Target size={40} /></div>
- <div className="flex flex-col gap-1.5 relative z-10">
- <span className={clsx("text-xs font-bold", isActive ?"text-emerald-800":"text-emerald-950")}>{p.label}</span>
- <span className={clsx("text-xs font-semibold", isActive ?"text-[#1a7a4a]":"text-emerald-800")}>{isActive ? 'Tahap Aktif' : 'Aktifkan'}</span>
- </div>
- {isActive && <div className="absolute top-4 right-4"><CheckCircle2 size={18} className="text-[#1a7a4a]"strokeWidth={3} /></div>}
- </button>
- );
- })}
- </div>
- </div>
+      {/* ── Background Kontras (Slate-50) ── */}
+      <div className="min-h-screen bg-slate-50 -m-6 lg:-m-8 p-4 sm:p-6 lg:p-8">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+          className="max-w-7xl mx-auto space-y-4"
+        >
+          
+          {/* ── HEADER PANEL (Minimalist & Padat) ── */}
+          <motion.div variants={itemVariants} className="bg-white rounded-2xl border-2 border-cyan-100 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative overflow-hidden">
+            {/* Subtle accent line on top of header */}
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 via-lime-500 to-amber-500" />
+            <div>
+              <h1 className="text-4xl font-black text-cyan-950 leading-none tracking-tighter uppercase font-display">
+                Dashboard <span className="text-amber-500">Admin.</span>
+              </h1>
+              <p className="text-[10px] font-black text-slate-500 mt-2 uppercase tracking-[0.25em] font-display">Ringkasan operasional & status pendaftaran real-time</p>
+            </div>
+            
+            <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto z-10">
+              {/* Form Select Periode */}
+              <div className="w-full sm:w-56">
+                <label className="block text-[10px] font-black text-cyan-900 uppercase tracking-widest mb-1.5 font-display">
+                  Periode KKN
+                </label>
+                <select
+                  value={active_periode_id || ''}
+                  onChange={handlePeriodChange}
+                  className="w-full h-11 bg-slate-50 border-2 border-cyan-100 text-cyan-950 text-xs font-black rounded-xl focus:ring-cyan-600 focus:border-cyan-600 py-2 px-4 shadow-sm font-display uppercase"
+                >
+                  <option value="" disabled>Pilih Periode...</option>
+                  {active_periods.map((p: any) => (
+                    <option key={p.id} value={p.id}>{p.nama}</option>
+                  ))}
+                </select>
+              </div>
 
- {/* DATA PANELS ROW */}
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
- 
- {/* RECENT REGISTRATIONS LIST */}
- <div className="lg:col-span-2 bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden flex flex-col h-[400px]">
- <div className="px-6 py-5 border-b-2 border-emerald-50 bg-gray-50 flex justify-between items-center shrink-0">
- <div className="flex items-center gap-4">
- <div className="h-8 w-8 bg-white border border-emerald-50 rounded-lg flex items-center justify-center"><Binary size={14} className="text-[#1a7a4a]"/></div>
- <h3 className="text-xs font-bold text-emerald-950">Pendaftar Terbaru</h3>
- <div className="flex items-center gap-2 bg-[#16a34a] px-2.5 py-1 rounded-md">
- <div className="h-1.5 w-1.5 bg-white rounded-full animate-pulse"/>
- <span className="text-xs font-semibold text-white">Live</span>
- </div>
- </div>
- <Link href="/admin/pendaftaran"className="h-9 px-4 bg-white border border-emerald-50 text-[#1a7a4a] hover:bg-gray-50 rounded-xl flex items-center gap-2 text-xs font-bold shadow-sm transition-all">
- Semua Data <ChevronRight size={14} strokeWidth={2.5} />
- </Link>
- </div>
- <div className="divide-y divide-[#f3f4f6] overflow-y-auto flex-1 p-3">
- {recentRegistrations.length > 0 ? recentRegistrations.map((reg: any) => (
- <div key={reg.id} className="flex items-center justify-between p-4 hover:bg-gray-50 rounded-xl transition-all cursor-pointer group">
- <div className="flex items-center gap-5">
- <div className="h-11 w-11 bg-gray-50 border border-emerald-50 text-emerald-800 rounded-xl flex items-center justify-center font-semibold group-hover:bg-[#16a34a] group-hover:text-white group-hover:rotate-6 transition-all shadow-sm">
- {reg.mahasiswa?.user?.name ? reg.mahasiswa.user.name[0].toUpperCase() : 'M'}
- </div>
- <div className="flex flex-col">
- <p className="text-sm font-bold text-emerald-950 mb-1">{reg.mahasiswa?.user?.name || 'BELUM TERIDENTIFIKASI'}</p>
- <div className="flex items-center gap-3">
- <span className="text-xs font-bold text-[#1a7a4a] font-mono bg-gray-50 px-2 py-0.5 rounded border border-emerald-50">{reg.mahasiswa?.nim || 'NO_NIM'}</span>
- <span className="text-xs font-bold text-amber-600">Menunggu Validasi</span>
- </div>
- </div>
- </div>
- <ArrowRight size={18} className="text-emerald-800 group-hover:text-[#1a7a4a] transition-colors"/>
- </div>
- )) : (
- <div className="flex flex-col items-center justify-center h-full text-center p-8">
- <ShieldCheck size={48} className="text-emerald-800 mb-4"strokeWidth={1.5} />
- <span className="text-sm font-bold text-[#1f2937]">Sistem Bersih</span>
- <p className="text-xs font-semibold text-[#1a7a4a] mt-2">Tidak ada pendaftar baru yang menunggu validasi.</p>
- </div>
- )}
- </div>
- </div>
+              {/* Form Select Fase */}
+              <div className="w-full sm:w-56">
+                <label className="block text-[10px] font-black text-cyan-900 uppercase tracking-widest mb-1.5 font-display">
+                  Fase Saat Ini
+                </label>
+                <select
+                  value={phaseKey}
+                  onChange={handlePhaseChange}
+                  className={clsx(
+                    "w-full h-11 text-xs font-black rounded-xl border-2 focus:ring-2 focus:outline-none py-2 px-4 shadow-sm font-display uppercase transition-colors",
+                    "bg-cyan-600 border-cyan-500 text-white focus:ring-cyan-400 focus:border-cyan-400"
+                  )}
+                >
+                  <option value="upcoming" disabled>Belum Dimulai</option>
+                  {PHASES.map((p) => (
+                    <option key={p.id} value={p.id}>{p.label}</option>
+                  ))}
+                  <option value="finished" disabled>Selesai</option>
+                </select>
+              </div>
+            </div>
+          </motion.div>
 
- {/* LOGISTICS & ALERTS */}
- <div className="space-y-6">
- <div className="bg-white border border-emerald-50 rounded-xl shadow-sm p-6">
- <h3 className="text-xs font-bold text-emerald-950 flex items-center justify-between border-b border-emerald-50 pb-4 mb-6">
- Kesiapan Penempatan <MapPin size={18} className="text-[#1a7a4a]"/>
- </h3>
- <div className="space-y-6">
- <DashboardProgress label="Posko Terverifikasi"count={stats?.reported_posko ?? 0} total={stats?.total_groups ?? 1} />
- <DashboardProgress label="Mahasiswa Terplot"count={stats?.assigned_students ?? 0} total={stats?.total_students ?? 1} />
- </div>
- </div>
- 
- <div className="bg-white rounded-xl p-6 shadow-sm border border-emerald-800 relative overflow-hidden group">
- <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity rotate-12"><AlertTriangle size={80} /></div>
- <h4 className="text-xs font-bold text-emerald-800 mb-3 flex items-center gap-2 relative z-10">
- <AlertTriangle size={14} className="text-amber-500"/> Peringatan Sistem
- </h4>
- <p className="text-xs font-semibold text-emerald-800 leading-relaxed relative z-10">
- Pastikan seluruh mahasiswa telah dialokasikan ke kelompok sebelum memindahkan fase ke Pelaksanaan. Sistem akan mengunci mutasi data setelahnya demi integritas laporan akademik.
- </p>
- </div>
- </div>
- </div>
- </div>
+          {/* ── METRICS ROW (Kecil, Kompak, Terbaca Jelas) ── */}
+          <motion.div variants={containerVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <motion.div variants={itemVariants}><MetricCard title="Total Pendaftar" value={stats?.total_students ?? 0} icon={Users} /></motion.div>
+            <motion.div variants={itemVariants}>
+              <MetricCard 
+                title="Menunggu Review" 
+                value={pendingCount} 
+                icon={Clock} 
+                alert={pendingCount > 0} 
+                color="amber" 
+                href={route('admin.pendaftaran.index')} 
+              />
+            </motion.div>
+            <motion.div variants={itemVariants}>
+              <MetricCard 
+                title="Belum Ditempatkan" 
+                value={unassignedCount} 
+                icon={AlertTriangle} 
+                alert={unassignedCount > 0} 
+                color="rose" 
+              />
+            </motion.div>
+            <motion.div variants={itemVariants}><MetricCard title="Total Kelompok" value={stats?.total_groups ?? 0} icon={LayoutGrid} /></motion.div>
+          </motion.div>
 
- {/* CONFIRMATION MODAL */}
- <AnimatePresence>
- {confirmPhase && (
- <div className="fixed inset-0 z-[60] flex items-center justify-center bg-white/40 backdrop-blur-md p-4">
- <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-white rounded-xl shadow-sm max-w-md w-full overflow-hidden border border-emerald-50">
- <div className="p-10 flex flex-col gap-6 text-center items-center">
- <div className="h-20 w-20 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center shadow-inner border border-amber-100"><AlertTriangle size={40} /></div>
- <div className="space-y-3">
- <h3 className="text-xl font-semibold text-emerald-950">Aktifkan Fase {phaseLabels[confirmPhase]}?</h3>
- <p className="text-sm font-bold text-[#1a7a4a] leading-relaxed">Hak akses pengguna dan dosen pendamping akan disesuaikan secara otomatis sesuai protokol fase ini. Tindakan ini bersifat krusial.</p>
- </div>
- </div>
- <div className="px-8 py-6 bg-gray-50 flex justify-end gap-3 border-t-2 border-emerald-50">
- <button onClick={() => setConfirmPhase(null)} className="px-6 py-3 text-xs font-bold text-emerald-800 bg-white border border-emerald-50 hover:bg-gray-50 rounded-xl transition-all active:scale-95">Batalkan</button>
- <button onClick={() => handleSwitchPhase(confirmPhase)} disabled={switching} className="px-6 py-3 bg-[#16a34a] text-white text-xs font-bold rounded-xl shadow-sm shadow-none flex items-center gap-3 hover:bg-[#15803d] transition-all active:scale-95">
- {switching ? <Loader2 size={16} className="animate-spin"/> : <Zap size={16} />}
- Ya, Eksekusi Fase
- </button>
- </div>
- </motion.div>
- </div>
- )}
- </AnimatePresence>
- </AppLayout>
- );
+          {/* ── MAIN CONTENT (List Padat & Ringkas) ── */}
+          <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            
+            {/* KOLOM KIRI: Pendaftaran Terbaru (Lebar 2/3) */}
+            <div className="lg:col-span-2 bg-white rounded-2xl border-2 border-cyan-100 shadow-sm overflow-hidden flex flex-col">
+              <div className="bg-slate-50/50 px-6 py-4 border-b border-cyan-100 flex justify-between items-center">
+                <h2 className="text-[10px] font-black text-cyan-950 uppercase tracking-[0.2em] flex items-center gap-3 font-display">
+                  <ClipboardList size={16} className="text-cyan-600" strokeWidth={2.5} /> Antrian Pendaftaran
+                </h2>
+                <Link href={route('admin.pendaftaran.index')} className="text-[10px] font-black uppercase tracking-widest text-cyan-600 hover:text-cyan-800 transition-colors font-display">
+                  Lihat Semua &rarr;
+                </Link>
+              </div>
+              
+              <div className="flex-1">
+                {recentRegistrations.length > 0 ? (
+                  <div className="divide-y divide-slate-100">
+                    {recentRegistrations.slice(0, 6).map((reg: any) => (
+                      <div key={reg.id} className="flex items-center justify-between px-6 py-4 hover:bg-cyan-50/50 transition-all group">
+                        <div className="flex items-center gap-4 overflow-hidden">
+                          <div className="h-10 w-10 rounded-xl bg-white border-2 border-cyan-100 text-cyan-700 flex items-center justify-center text-xs font-black shrink-0 shadow-sm group-hover:scale-110 transition-transform">
+                            {reg.mahasiswa?.user?.name?.[0]?.toUpperCase() || '?'}
+                          </div>
+                          <div className="truncate">
+                            <p className="text-sm font-bold text-cyan-950 truncate tracking-tight group-hover:text-cyan-600 transition-colors font-dm">{reg.mahasiswa?.user?.name || '—'}</p>
+                            <p className="text-[11px] font-medium text-slate-500 truncate tracking-wide mt-0.5 font-dm">{reg.mahasiswa?.nim || '—'}</p>
+                          </div>
+                        </div>
+                        <span className="shrink-0 ml-4 inline-flex items-center px-3 py-1 rounded-lg text-[9px] font-black bg-lime-500 text-white border border-lime-600 uppercase tracking-widest font-display shadow-[0_2px_10px_rgba(132,204,22,0.2)]">
+                          Audit
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-8 flex flex-col items-center justify-center text-center">
+                    <ShieldCheck size={32} className="text-slate-300 mb-2" />
+                    <p className="text-sm font-bold text-slate-700">Antrian Kosong</p>
+                    <p className="text-xs text-slate-500">Semua pendaftaran telah divalidasi.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* KOLOM KANAN: Progres & Pintasan (Lebar 1/3) */}
+            <div className="space-y-4">
+              
+              {/* Progres Penempatan */}
+              <div className="bg-white rounded-2xl border-2 border-cyan-100 shadow-sm p-6">
+                <h2 className="text-[10px] font-black text-cyan-950 uppercase tracking-[0.2em] mb-6 flex items-center gap-3 font-display">
+                  <MapPin size={16} className="text-cyan-600" strokeWidth={2.5} /> Progres Penempatan
+                </h2>
+                <div className="space-y-4">
+                  <CompactProgress label="Verifikasi Posko" current={stats?.reported_posko ?? 0} total={stats?.total_groups ?? 1} />
+                  <CompactProgress label="Alokasi Mahasiswa" current={stats?.assigned_students ?? 0} total={stats?.total_students ?? 1} />
+                </div>
+              </div>
+
+              {/* Pesan Peringatan (Jika ada yang belum ditempatkan) */}
+              {unassignedCount > 0 && (
+                <div className="bg-rose-50 rounded-lg ring-1 ring-rose-200 p-3 flex gap-3">
+                  <AlertTriangle size={16} className="text-rose-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-bold text-rose-900 mb-0.5">Tindakan Diperlukan</p>
+                    <p className="text-[11px] text-rose-700 leading-tight">
+                      <strong className="font-bold">{unassignedCount} mahasiswa</strong> belum dialokasikan ke kelompok KKN.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Menu Pintasan */}
+              <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm overflow-hidden">
+                <div className="bg-slate-50/80 px-4 py-2 border-b border-slate-200">
+                  <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Akses Cepat</h2>
+                </div>
+                <div className="divide-y divide-slate-100">
+                  <QuickMenu href={route('admin.lokasi.index')} icon={MapPin} label="Kelola Wilayah & Lokasi" />
+                  <QuickMenu href={route('admin.mahasiswa.index')} icon={Users} label="Direktori Mahasiswa" />
+                  <QuickMenu href={route('admin.kelompok.index')} icon={LayoutGrid} label="Manajemen Kelompok" />
+                  <QuickMenu href={route('admin.laporan.harian.index')} icon={FileText} label="Laporan Harian" />
+                </div>
+              </div>
+
+            </div>
+          </motion.div>
+        </motion.div>
+      </div>
+
+      {/* ── Modal Konfirmasi Ubah Fase ── */}
+      <AnimatePresence>
+        {confirmPhase && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-lg shadow-xl w-full max-w-sm overflow-hidden"
+            >
+              <div className="p-5 border-b border-slate-100">
+                <h3 className="text-lg font-bold text-cyan-950 flex items-center gap-2">
+                  <AlertTriangle className="text-amber-500" size={20} />
+                  Konfirmasi Fase
+                </h3>
+              </div>
+              <div className="p-5 bg-slate-50">
+                <p className="text-sm text-slate-700 mb-3">
+                  Anda akan mengubah status sistem ke fase <strong className="font-bold text-cyan-950">"{PHASE_LABELS[confirmPhase]}"</strong>.
+                </p>
+                <p className="text-xs text-rose-600 font-medium">
+                  Perhatian: Tindakan ini akan seketika mengubah menu dan hak akses bagi mahasiswa serta DPL di seluruh portal.
+                </p>
+              </div>
+              <div className="p-4 bg-white flex justify-end gap-2 border-t border-slate-100">
+                <button
+                  onClick={() => setConfirmPhase(null)}
+                  className="px-4 py-2 text-sm font-bold text-slate-700 bg-white border border-slate-300 rounded hover:bg-slate-50"
+                >
+                  Batal
+                </button>
+                <button
+                  onClick={submitPhaseChange}
+                  disabled={switching}
+                  className="px-4 py-2 text-sm font-bold text-white bg-amber-500 rounded hover:bg-amber-600 flex items-center gap-2 disabled:opacity-50 shadow-[0_4px_14px_rgba(245,158,11,0.3)] transition-all"
+                >
+                  {switching && <Loader2 size={14} className="animate-spin" />}
+                  Ya, Ubah Sekarang
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </AppLayout>
+  );
 }
 
 Dashboard.layout = AppLayout.layout;
 
-function DashboardStat({ label, value, icon: Icon, status, alert }: any) {
- const colors: any = {
- success: { bg: 'bg-gray-50', text: 'text-emerald-950', icon: 'text-[#1a7a4a]', border: 'border-emerald-50' },
- warning: { bg: 'bg-amber-50', text: 'text-emerald-950', icon: 'text-amber-600', border: 'border-amber-50' },
- danger: { bg: 'bg-rose-50', text: 'text-emerald-950', icon: 'text-rose-600', border: 'border-rose-50' },
- };
- const c = colors[status] || colors.success;
- 
- return (
- <div className={clsx("bg-white border rounded-xl p-4 flex flex-col justify-between h-32 hover:border-gray-300 transition-all group relative overflow-hidden", c.border)}>
- {alert && <div className="absolute top-2 right-2"><span className="relative flex h-2.5 w-2.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span></span></div>}
- 
- <div className="flex justify-between items-start z-10 relative">
- <div className={clsx("h-10 w-10 rounded-xl flex items-center justify-center shadow-sm group-hover:scale-110 group-hover:rotate-6 transition-all border", c.bg, c.icon, c.border)}>
- <Icon size={20} strokeWidth={2.5} />
- </div>
- </div>
- <div className="z-10 relative">
- <div className="flex flex-col">
- <span className="text-2xl font-semibold text-emerald-950 tabular-nums leading-none mb-2 slashed-zero">{value ?? 0}</span>
- <span className="text-xs font-bold text-emerald-800 truncate leading-none">{label}</span>
- </div>
- </div>
- </div>
- );
+// ── Sub-components (Kompak & Bersih) ───────────────────────────────────
+
+function AnimatedCounter({ value, className }: { value: number; className?: string }) {
+  const spring = useSpring(value, { mass: 0.8, stiffness: 75, damping: 15 });
+  const display = useTransform(spring, (current) => Math.round(current));
+  
+  React.useEffect(() => {
+    spring.set(value);
+  }, [spring, value]);
+
+  return <motion.p className={className}>{display}</motion.p>;
 }
 
-function DashboardProgress({ label, count, total }: any) {
- const safeTotal = total && total > 0 ? total : 1;
- const p = Math.min(100, Math.round((count / safeTotal) * 100));
- 
- return (
- <div className="space-y-3">
- <div className="flex justify-between items-end">
- <span className="text-xs font-bold text-emerald-800">{label}</span>
- <div className="text-right flex items-center gap-2">
- <span className="text-xs font-semibold text-emerald-950 tabular-nums">{count}/{total}</span>
- <span className="text-xs font-semibold text-[#1a7a4a] bg-gray-50 px-1.5 py-0.5 rounded border border-emerald-50">{p}%</span>
- </div>
- </div>
- <div className="h-2 w-full bg-gray-50 border border-emerald-50 rounded-full overflow-hidden shadow-inner">
- <motion.div initial={{ width: 0 }} animate={{ width: `${p}%` }} transition={{ duration: 1.5, ease:"easeOut"}} className="h-full bg-gray-500 rounded-full"/>
- </div>
- </div>
- );
+function MetricCard({ title, value, icon: Icon, alert = false, color = 'cyan', href }: any) {
+  const Wrapper = href ? Link : 'div';
+  const numericValue = typeof value === 'number' ? value : parseInt(value) || 0;
+
+  return (
+    <Wrapper 
+      {...(href ? { href } : {})}
+      className={clsx(
+        "bg-white rounded-2xl border-2 p-6 flex items-start justify-between transition-all duration-300 shadow-sm group",
+        alert && color === 'amber' ? "border-amber-100 bg-amber-50/20 hover:bg-amber-50" : 
+        alert && color === 'rose' ? "border-rose-100 bg-rose-50/20 hover:bg-rose-50" : "border-cyan-100 hover:bg-cyan-50/50",
+        href && "cursor-pointer hover:shadow-lg hover:shadow-cyan-900/5 active:scale-95"
+      )}
+    >
+      <div>
+        <p className="text-[10px] font-black text-slate-500 mb-2 uppercase tracking-[0.2em] font-display">{title}</p>
+        <AnimatedCounter 
+          value={numericValue} 
+          className={clsx(
+            "text-4xl font-black tabular-nums tracking-tighter font-display leading-none",
+            alert && color === 'amber' ? "text-amber-700" :
+            alert && color === 'rose' ? "text-rose-700" : "text-cyan-950"
+          )} 
+        />
+      </div>
+      <div className={clsx(
+        "h-12 w-12 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:rotate-6",
+        alert && color === 'amber' ? "bg-amber-100 text-amber-600" :
+        alert && color === 'rose' ? "bg-rose-100 text-rose-600" : "bg-cyan-50 text-cyan-600"
+      )}>
+        <Icon size={22} strokeWidth={2.5} />
+      </div>
+    </Wrapper>
+  );
+}
+
+function CompactProgress({ label, current, total }: { label: string; current: number; total: number }) {
+  const safe = total > 0 ? total : 1;
+  const pct = Math.min(100, Math.round((current / safe) * 100));
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-2">
+        <span className="text-[10px] font-black text-cyan-950 uppercase tracking-widest font-display">{label}</span>
+        <span className="text-[10px] font-black text-lime-700 tabular-nums bg-lime-50 px-2 py-0.5 rounded-lg border border-lime-100 font-display">
+          {current}/{total} ({pct}%)
+        </span>
+      </div>
+      <div className="h-2 bg-slate-100 rounded-full border border-slate-200 overflow-hidden">
+        <div className="h-full bg-lime-500 transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(132,204,22,0.5)]" style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
+function QuickMenu({ href, icon: Icon, label }: any) {
+  return (
+    <Link href={href} className="flex items-center justify-between px-4 py-3 hover:bg-cyan-50 group transition-colors">
+      <div className="flex items-center gap-3 text-cyan-950 group-hover:text-cyan-700 transition-colors">
+        <Icon size={16} strokeWidth={2.5} className="text-cyan-600/70 group-hover:text-cyan-600" />
+        <span className="text-sm font-black uppercase tracking-tight font-display">{label}</span>
+      </div>
+      <ChevronRight size={16} className="text-cyan-300 group-hover:text-cyan-500 transition-transform group-hover:translate-x-1" />
+    </Link>
+  );
 }

@@ -21,7 +21,7 @@ export function MetricCard({
   className 
 }: MetricCardProps) {
   const colorMap: Record<string, string> = {
-    emerald: 'bg-[#e8f5ee] text-emerald-600 border-emerald-50 shadow-emerald-50',
+    emerald: 'bg-[#f0fdfa] text-emerald-600 border-emerald-50 shadow-emerald-50',
     sky: 'bg-sky-50 text-sky-600 border-sky-100 shadow-sky-50',
     amber: 'bg-amber-50 text-amber-600 border-amber-100 shadow-amber-50',
     rose: 'bg-rose-50 text-rose-600 border-rose-100 shadow-rose-50',
@@ -65,12 +65,12 @@ export function MetricCardSkeleton() {
   return (
     <div className="bg-white border border-emerald-50/50 rounded-xl p-6 space-y-6 animate-pulse">
       <div className="flex items-center justify-between">
-        <div className="h-12 w-12 rounded-xl bg-[#e8f5ee] border border-[#f3f4f6]/50" />
-        <div className="h-2 w-16 bg-[#e8f5ee] rounded" />
+        <div className="h-12 w-12 rounded-xl bg-[#f0fdfa] border border-[#f3f4f6]/50" />
+        <div className="h-2 w-16 bg-[#f0fdfa] rounded" />
       </div>
       <div className="space-y-3">
-        <div className="h-2 w-24 bg-[#e8f5ee] rounded" />
-        <div className="h-8 w-16 bg-[#e8f5ee] rounded" />
+        <div className="h-2 w-24 bg-[#f0fdfa] rounded" />
+        <div className="h-8 w-16 bg-[#f0fdfa] rounded" />
       </div>
     </div>
   );

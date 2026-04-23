@@ -9,7 +9,7 @@ interface Props {
 }
 
 const phaseInfo: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-    upcoming: { label: 'Pra-Pendaftaran', icon: Clock, color: 'text-[#1a7a4a] bg-emerald-50 border-emerald-50' },
+    upcoming: { label: 'Pra-Pendaftaran', icon: Clock, color: 'text-[#0d9488] bg-emerald-50 border-emerald-50' },
     registration: { label: 'Masa Pendaftaran', icon: CheckCircle2, color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
     placement: { label: 'Seleksi & Plotting', icon: CheckCircle2, color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
     execution: { label: 'Pelaksanaan KKN', icon: CheckCircle2, color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
@@ -30,7 +30,7 @@ export default function PhaseBlocked({ message, current_phase }: Props) {
                 <div className="max-w-md w-full text-center space-y-8 p-8 rounded-3xl border border-gray-100 shadow-xl shadow-emerald-50/20 bg-white">
                     {/* Icon */}
                     <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-emerald-50 border border-emerald-50 mx-auto shadow-inner">
-                        <ShieldAlert size={42} className="text-[#1a7a4a]" />
+                        <ShieldAlert size={42} className="text-[#0d9488]" />
                     </div>
 
                     {/* Title */}

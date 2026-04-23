@@ -16,23 +16,23 @@ export const RegistrationHeader: React.FC<RegistrationHeaderProps> = ({ readyToR
   return (
     <motion.section
       variants={itemVariants}
-      className="relative rounded-[4rem] bg-[#e8f5ee] border border-emerald-50 p-12 lg:p-20 text-bg-[#e8f5ee] shadow-lg group"
+      className="relative rounded-[4rem] bg-[#f0fdfa] border border-emerald-50 p-12 lg:p-20 text-bg-[#f0fdfa] shadow-lg group"
     >
-      <div className="absolute top-0 right-0 h-full w-1/2 bg-[#16a34a] opacity-5 -skew-x-12 translate-x-1/4 pointer-events-none" />
+      <div className="absolute top-0 right-0 h-full w-1/2 bg-[#0d9488] opacity-5 -skew-x-12 translate-x-1/4 pointer-events-none" />
       <div className="absolute -bottom-24 -left-24 h-64 w-64 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
 
       <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-16">
         <div className="space-y-8 max-w-3xl">
           <div className="flex items-center gap-6">
-            <div className="h-16 w-16 rounded-xl bg-[#16a34a] flex items-center justify-center text-white shadow-2xl shadow-emerald-500/20">
+            <div className="h-16 w-16 rounded-xl bg-[#0d9488] flex items-center justify-center text-white shadow-2xl shadow-emerald-500/20">
               <Zap size={30} strokeWidth={2.5} />
             </div>
             <div className="space-y-1">
-              <h4 className="text-xs font-bold uppercase tracking-[0.4em] text-[#1a7a4a]">
+              <h4 className="text-xs font-bold uppercase tracking-[0.4em] text-[#0d9488]">
                 Pendaftaran KKN
               </h4>
               <p className="text-4xl md:text-6xl font-bold tracking-tighter uppercase leading-none">
-                Mulai <span className="text-[#1a7a4a]">Pendaftaran.</span>
+                Mulai <span className="text-[#0d9488]">Pendaftaran.</span>
               </p>
             </div>
           </div>
@@ -45,7 +45,7 @@ export const RegistrationHeader: React.FC<RegistrationHeaderProps> = ({ readyToR
         <div className="flex flex-col gap-4 min-w-[320px]">
           <div className="bg-white/5 backdrop-blur-3xl p-8 rounded-[3rem] border border-white/10 space-y-4">
             <div className="flex justify-between items-center px-2">
-              <span className="text-xs font-bold text-[#1a7a4a] uppercase tracking-widest">
+              <span className="text-xs font-bold text-[#0d9488] uppercase tracking-widest">
                 Status Syarat
               </span>
               <div className="flex items-center gap-2">

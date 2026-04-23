@@ -45,22 +45,22 @@ export default function UserForm({ faculties, programs }: Props) {
  {/* --- HEADER CARD --- */}
  <section className="bg-white rounded-xl border border-emerald-50/60 p-10 lg:p-12 shadow-sm flex flex-col md:flex-row justify-between items-center gap-8 relative overflow-hidden group">
  <div className="absolute top-0 right-0 p-16 opacity-[0.03] rotate-12 pointer-events-none group-hover:rotate-0 transition-transform duration-1000">
- <UserPlus size={160} className="text-[#1a7a4a]"/>
+ <UserPlus size={160} className="text-[#0d9488]"/>
  </div>
  
  <div className="flex items-center gap-8 relative z-10">
- <div className="h-10 w-20 rounded-xl bg-[#16a34a] shadow-sm shadow-emerald-600/20 flex items-center justify-center text-white">
+ <div className="h-10 w-20 rounded-xl bg-[#0d9488] shadow-sm shadow-emerald-600/20 flex items-center justify-center text-white">
  <UserPlus size={32} />
  </div>
  <div className="space-y-1">
- <h1 className="text-3xl font-extrabold text-emerald-950">Tambah <span className="text-[#1a7a4a]">Pengguna</span></h1>
+ <h1 className="text-3xl font-extrabold text-emerald-950">Tambah <span className="text-[#0d9488]">Pengguna</span></h1>
  <p className="text-sm font-medium text-emerald-800">Registrasi Akun Baru Sistem KKN</p>
  </div>
  </div>
 
  <Link
  href="/admin/pengguna"
- className="relative z-10 inline-flex items-center gap-3 px-8 py-4 bg-gray-50 border border-emerald-50/60 rounded-xl text-sm font-bold text-emerald-950 hover:bg-white hover:border-emerald-900 hover:text-[#1a7a4a] transition-all shadow-sm group/btn"
+ className="relative z-10 inline-flex items-center gap-3 px-8 py-4 bg-gray-50 border border-emerald-50/60 rounded-xl text-sm font-bold text-emerald-950 hover:bg-white hover:border-emerald-900 hover:text-[#0d9488] transition-all shadow-sm group/btn"
  >
  <ArrowLeft size={14} className="group-hover/btn:-translate-x-2 transition-transform"/>
  Kembali
@@ -71,7 +71,7 @@ export default function UserForm({ faculties, programs }: Props) {
  {/* --- ACCCOUNT SECTION --- */}
  <section className="bg-white rounded-xl border border-emerald-50/60 p-10 lg:p-12 shadow-sm relative group">
  <div className="flex items-center gap-4 mb-10 border-b border-slate-50 pb-8">
- <div className="p-3 bg-gray-50 rounded-xl border border-emerald-50/60 text-[#1a7a4a]">
+ <div className="p-3 bg-gray-50 rounded-xl border border-emerald-50/60 text-[#0d9488]">
  <ShieldCheck size={20} />
  </div>
  <div>
@@ -173,13 +173,13 @@ export default function UserForm({ faculties, programs }: Props) {
  {/* --- STUDENT DATA --- */}
  {isStudent && (
  <section className="bg-white rounded-xl border border-emerald-50/60 p-10 lg:p-12 shadow-sm relative group">
- <div className="flex items-center gap-4 mb-10 border-b border-emerald-50/60 pb-8 text-[#1a7a4a]">
+ <div className="flex items-center gap-4 mb-10 border-b border-emerald-50/60 pb-8 text-[#0d9488]">
  <div className="p-3 bg-gray-50 rounded-xl border border-emerald-50/60">
  <GraduationCap size={20} />
  </div>
  <div>
  <h2 className="text-sm font-bold text-emerald-950 uppercase tracking-wider">Data Mahasiswa</h2>
- <p className="text-xs font-semibold text-[#1a7a4a] mt-1">Kewajiban Pengisian Data Pokok</p>
+ <p className="text-xs font-semibold text-[#0d9488] mt-1">Kewajiban Pengisian Data Pokok</p>
  </div>
  </div>
 
@@ -266,7 +266,7 @@ export default function UserForm({ faculties, programs }: Props) {
  <button
  type="submit"
  disabled={form.processing}
- className="group inline-flex items-center gap-6 px-6 py-5 bg-gray-100 text-white rounded-xl font-bold text-sm tracking-normal hover:bg-[#16a34a] shadow-sm shadow-none transition-all active:scale-95"
+ className="group inline-flex items-center gap-6 px-6 py-5 bg-gray-100 text-white rounded-xl font-bold text-sm tracking-normal hover:bg-[#0d9488] shadow-sm shadow-none transition-all active:scale-95"
  >
  {form.processing ? 'MENYIMPAN...' : 'SIMPAN AKUN'}
  <Save size={18} className="group-hover:translate-y-1 transition-transform"/>
@@ -277,7 +277,7 @@ export default function UserForm({ faculties, programs }: Props) {
 
  <footer className="text-center pt-20 border-t border-emerald-50/60">
  <p className="text-sm font-bold text-slate-300 font-semibold text-xs">
- SIBERDAYA &bull; UIN SAIFUDDIN ZUHRI &copy; 2026
+ <span className="text-cyan-600">SIBER</span><span className="text-lime-600">DAYA</span> &bull; UIN SAIFUDDIN ZUHRI &copy; 2026
  </p>
  </footer>
  </div>

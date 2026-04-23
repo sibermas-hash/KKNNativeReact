@@ -1,6 +1,9 @@
 <?php
 
+namespace Tests\Feature;
+
 use App\Enums\KknType;
+use App\Http\Middleware\HandleActivePeriod;
 use App\Models\KKN\AntrianKkn;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\Fakultas;
@@ -24,6 +27,8 @@ beforeEach(function () {
     Role::firstOrCreate(['name' => 'superadmin', 'guard_name' => 'web']);
     SystemSetting::set('group_male_min_ratio', '20');
     SystemSetting::set('group_male_target_ratio', '30');
+
+    $this->withoutMiddleware(HandleActivePeriod::class);
 });
 
 function createStudentUser(array $studentOverrides = []): array

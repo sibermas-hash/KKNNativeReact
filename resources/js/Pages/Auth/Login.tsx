@@ -119,12 +119,12 @@ export default function Login() {
             <div className="flex items-center gap-4">
               <img src="/images/logo_uinsaizu.png" alt="Logo UIN SAIZU" className="h-12 w-auto object-contain drop-shadow-sm" />
               <div className="w-px h-8 bg-emerald-200" />
-              <img src="/images/logo_siberdaya.png" alt="Logo Siberdaya" className="h-10 w-auto object-contain drop-shadow-sm" />
+              <img src="/images/Logo_SIBERMAS.png" alt="Logo SIBERMAS" className="h-10 w-auto object-contain drop-shadow-sm" />
             </div>
             
             <div className="text-center space-y-2">
               <h1 className="text-[2.5rem] font-black text-emerald-950 tracking-tight font-display leading-none uppercase">
-                Portal <span className="text-cyan-500">Siber</span><span className="text-lime-500">daya.</span>
+                Portal <span className="text-sky-500">SIBER</span><span className="text-emerald-500">MAS.</span>
               </h1>
               <p className="text-[10px] font-black text-slate-400/80 font-display uppercase tracking-[0.2em]">
                 LPPM UIN Profesor Kiai Haji Saifuddin Zuhri Purwokerto

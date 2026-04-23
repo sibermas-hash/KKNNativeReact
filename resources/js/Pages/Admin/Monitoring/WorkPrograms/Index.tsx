@@ -75,7 +75,7 @@ export default function AdminWorkProgramsIndex({ workPrograms, sdg_distribution,
 
   return (
     <AppLayout title="Program Kerja Mahasiswa">
-      <Head title="Manajemen Program Kerja | SIBERDAYA" />
+      <Head title="Manajemen Program Kerja | SIBERMAS" />
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
         

@@ -82,7 +82,7 @@ export default function StudentIzinIndex({ izins, akumulasiTanpaKeterangan }: Pr
 
   return (
     <AppLayout title="Clearance Protocol">
-      <Head title="Izin & Absensi | SIBERDAYA" />
+      <Head title="Izin & Absensi | SIBERMAS" />
 
       <div className="max-w-[1240px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-12 font-sans">
         {/* --- AUTHORITATIVE HEADER --- */}

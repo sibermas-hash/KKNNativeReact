@@ -88,7 +88,7 @@ export default function AdminFinalReportShow({ report }: Props) {
 
   return (
     <AppLayout title="Detail Audit Laporan">
-      <Head title={`Audit Laporan: ${report.mahasiswa?.nama} | SIBERDAYA`} />
+      <Head title={`Audit Laporan: ${report.mahasiswa?.nama} | SIBERMAS`} />
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
         

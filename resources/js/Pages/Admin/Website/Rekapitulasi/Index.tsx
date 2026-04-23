@@ -42,7 +42,7 @@ export default function AdminRekapitulasiIndex({ kelompok, rekapitulasi, dpl }: 
 
   return (
     <AppLayout title="Audit Finansial">
-      <Head title={`Rekapitulasi ${kelompok.nama_kelompok} | SIBERDAYA`} />
+      <Head title={`Rekapitulasi ${kelompok.nama_kelompok} | SIBERMAS`} />
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans print:p-0 print:space-y-0">
         

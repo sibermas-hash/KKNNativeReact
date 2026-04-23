@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Sertifikat KKN SIBERDAYA</title>
+    <title>Sertifikat KKN SIBERMAS</title>
     <style>
         body { font-family: 'Helvetica', sans-serif; margin: 0; padding: 0; color: #1a4731; }
         .border { border: 20px solid #10b981; padding: 50px; height: 90%; }
@@ -45,7 +45,7 @@
             </div>
 
             <div class="legal">
-                Sertifikat ini diterbitkan secara elektronik oleh Portal SIBERDAYA.<br>
+                Sertifikat ini diterbitkan secara elektronik oleh Portal SIBERMAS.<br>
                 ID Sertifikat: {{ strtoupper(substr(md5($score->id), 0, 8)) }}
             </div>
         </div>

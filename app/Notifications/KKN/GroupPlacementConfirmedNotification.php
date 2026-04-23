@@ -27,7 +27,7 @@ class GroupPlacementConfirmedNotification extends Notification implements Should
     public function toMail(object $notifiable): MailMessage
     {
         $mail = (new MailMessage)
-            ->subject('Penempatan Kelompok KKN Dikonfirmasi — SIBERDAYA')
+            ->subject('Penempatan Kelompok KKN Dikonfirmasi — SIBERMAS')
             ->greeting("Assalamu'alaikum, {$notifiable->name}")
             ->line("Anda telah ditempatkan di kelompok **{$this->groupName}** untuk periode **{$this->periodName}**.");
 

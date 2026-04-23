@@ -28,7 +28,7 @@ export default function Downloads({ downloads }: Props) {
 
     return (
         <PublicLayout>
-            <Head title="Unduhan | SIBERDAYA KKN UIN SAIZU" />
+            <Head title="Unduhan | SIBERMAS KKN UIN SAIZU" />
 
             <section className="border-b border-emerald-100 bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.10),_transparent_28%),linear-gradient(180deg,#f8fcfa_0%,#ffffff_68%)] pb-10 pt-28 lg:pt-32">
                 <div className="mx-auto max-w-7xl px-6 lg:px-8">

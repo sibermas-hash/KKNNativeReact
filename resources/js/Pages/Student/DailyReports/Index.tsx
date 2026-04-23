@@ -144,7 +144,7 @@ export default function DailyReportIndex({ reports, flash }: Props) {
 
   return (
     <AppLayout title="Operational Logbook">
-      <Head title="Logbook Harian | SIBERDAYA" />
+      <Head title="Logbook Harian | SIBERMAS" />
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
         

@@ -195,7 +195,7 @@ export default function GroupsIndex({
 
   return (
     <AppLayout title="Manajemen Kelompok">
-      <Head title="Manajemen Kelompok | SIBERDAYA" />
+      <Head title="Manajemen Kelompok | SIBERMAS" />
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-10 py-10 font-sans">
         

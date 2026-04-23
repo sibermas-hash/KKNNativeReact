@@ -167,7 +167,7 @@ export default function AdminGradesIndex({ groups }: Props) {
 
  return (
  <AppLayout title="Pusat Penilaian Akademik">
- <Head title="Koreksi Nilai - SIBERDAYA"/>
+ <Head title="Koreksi Nilai - SIBERMAS"/>
 
  <div className="max-w-full mx-auto space-y-6 pb-24 font-sans px-6 lg:px-12 bg-white">
  {/* --- DYNAMIC ANALYTICS HEADER --- */}
@@ -349,7 +349,7 @@ export default function AdminGradesIndex({ groups }: Props) {
  <ShieldCheck className="text-[#0d9488]"size={24} />
  <p className="text-xs font-semibold text-emerald-950">Protokol Kepatuhan Aktif • Sesuai Panduan Penilaian</p>
  </div>
- <p className="text-xs font-semibold text-emerald-800">Sistem Informasi <span className="text-cyan-600">SIBER</span><span className="text-lime-600">DAYA</span></p>
+ <p className="text-xs font-semibold text-emerald-800">Sistem Informasi <span className="text-sky-600">SIBER</span><span className="text-emerald-600">MAS</span></p>
  </div>
  </div>
  </AppLayout>

@@ -24,7 +24,7 @@ export default function PhaseBlocked({ message, current_phase }: Props) {
 
     return (
         <AppLayout title="Akses Dibatasi">
-            <Head title="Akses Dibatasi | SIBERDAYA" />
+            <Head title="Akses Dibatasi | SIBERMAS" />
 
             <div className="min-h-[60vh] flex items-center justify-center px-4 bg-white">
                 <div className="max-w-md w-full text-center space-y-8 p-8 rounded-3xl border border-gray-100 shadow-xl shadow-emerald-50/20 bg-white">

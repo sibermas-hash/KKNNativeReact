@@ -48,7 +48,7 @@ class ResetPasswordNotification extends Notification implements ShouldQueue
         ], false));
 
         return (new MailMessage)
-            ->subject(Lang::get('Atur Ulang Kata Sandi - SIBERDAYA'))
+            ->subject(Lang::get('Atur Ulang Kata Sandi - SIBERMAS'))
             ->greeting('Halo, '.$notifiable->name.'!')
             ->line(Lang::get('Anda menerima email ini karena kami menerima permintaan atur ulang kata sandi untuk akun Anda.'))
             ->action(Lang::get('Atur Ulang Kata Sandi'), $url)

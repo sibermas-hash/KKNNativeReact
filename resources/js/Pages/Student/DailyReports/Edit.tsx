@@ -164,7 +164,7 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
 
   return (
     <AppLayout title="Revisi Logbook">
-      <Head title="Revisi Logbook | SIBERDAYA" />
+      <Head title="Revisi Logbook | SIBERMAS" />
 
       <div className="mx-auto max-w-5xl space-y-10 pb-20">
         {/* --- HEADER --- */}

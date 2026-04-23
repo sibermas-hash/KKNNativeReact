@@ -2,7 +2,7 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "laravel/laravel",
     "type": "project",
-    "description": "SIBERDAYA - Laravel 13 Ultimate AI-Native Stack",
+    "description": "SIBERMAS - Laravel 13 Ultimate AI-Native Stack",
     "keywords": [
         "laravel",
         "framework"

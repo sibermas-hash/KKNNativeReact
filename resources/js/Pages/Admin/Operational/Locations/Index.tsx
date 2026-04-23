@@ -149,7 +149,7 @@ export default function LocationsIndex({ locations, filters, summary, workflow, 
 
   return (
     <AppLayout title="Manajemen Wilayah KKN">
-      <Head title="Manajemen Lokasi | SIBERDAYA"/>
+      <Head title="Manajemen Lokasi | SIBERMAS"/>
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pb-24 font-sans">
         

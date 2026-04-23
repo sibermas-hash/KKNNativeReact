@@ -71,7 +71,7 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
         
         <PageHeader
           title="Matriks Penilaian."
-          subtitle={<>Distribusi bobot komponen nilai <span className="text-cyan-600">SIBER</span><span className="text-lime-600">DAYA</span> untuk kalkulasi yudisium otomatis.</>}
+          subtitle={<>Distribusi bobot komponen nilai <span className="text-sky-600">SIBER</span><span className="text-emerald-600">MAS</span> untuk kalkulasi yudisium otomatis.</>}
           icon={Scale}
           groupLabel="Akademik & Penilaian"
           stats={{
@@ -197,7 +197,7 @@ export default function GradingSettings({ sections = [], programOptions = [], fi
           <div className="space-y-4 relative z-10">
             <h4 className="text-xl font-black text-white uppercase tracking-tight font-display">Otoritas Validasi Akademik.</h4>
             <p className="text-sm font-bold text-emerald-300 leading-relaxed max-w-4xl font-display opacity-80 uppercase tracking-wide">
-              Matriks konfigurasi ini merupakan basis logika inti kalkulasi nilai otomatis pada sistem <span className="text-cyan-600">SIBER</span><span className="text-lime-600">DAYA</span>. 
+              Matriks konfigurasi ini merupakan basis logika inti kalkulasi nilai otomatis pada sistem <span className="text-sky-600">SIBER</span><span className="text-emerald-600">MAS</span>. 
               Segala penyesuaian akan berdampak langsung pada seluruh data pendaftaran aktif di periode ini. 
               <span className="text-white block mt-4 border-l-4 border-emerald-500 pl-4 py-1 bg-emerald-900/50 rounded-r-lg">PASTIKAN TOTAL SETIAP GRUP ADALAH 100% UNTUK MENJAGA INTEGRITAS DATA PENILAIAN.</span>
             </p>

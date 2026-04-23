@@ -446,7 +446,7 @@ export default function GroupShow({ group, members = [] }: Props) {
  </div>
  </div>
  <p className="text-sm font-bold text-emerald-800 leading-relaxed max-w-4xl">
- Seluruh parameter yang terdata pada unit operasional ini merupakan representasi entitas valid dari program <span className="text-cyan-600">SIBER</span><span className="text-lime-600">DAYA</span>. Perubahan pada struktur kepemimpinan, proker, maupun titik koordinat posko akan terekam dalam audit trail transparan untuk menjamin integritas monitoring dan evaluasi terpusat.
+ Seluruh parameter yang terdata pada unit operasional ini merupakan representasi entitas valid dari program <span className="text-sky-600">SIBER</span><span className="text-emerald-600">MAS</span>. Perubahan pada struktur kepemimpinan, proker, maupun titik koordinat posko akan terekam dalam audit trail transparan untuk menjamin integritas monitoring dan evaluasi terpusat.
  </p>
  </div>
  <div className="h-20 w-px bg-white/10 hidden lg:block"/>

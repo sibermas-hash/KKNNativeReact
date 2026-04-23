@@ -261,7 +261,7 @@ export default function CertificateSettings({ configs = [], currentPeriodId }: P
 
   return (
     <AppLayout title="Pengaturan Sertifikat">
-      <Head title="Pengaturan Sertifikat | SIBERDAYA"/>
+      <Head title="Pengaturan Sertifikat | SIBERMAS"/>
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 pb-24 font-sans">
         

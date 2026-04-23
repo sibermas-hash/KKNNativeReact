@@ -209,7 +209,7 @@ export default function Assignment({
 
   return (
     <AppLayout title="Penugasan DPL">
-      <Head title="Penugasan DPL | SIBERDAYA" />
+      <Head title="Penugasan DPL | SIBERMAS" />
 
       <div className="max-w-[1600px] mx-auto space-y-8 pb-24 font-sans px-4 sm:px-6 lg:px-8">
         

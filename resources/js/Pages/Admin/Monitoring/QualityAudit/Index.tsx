@@ -47,7 +47,7 @@ interface Props {
 export default function QualityAuditIndex({ reports, stats }: Props) {
   return (
     <AppLayout title="Audit Integritas Aktivitas">
-      <Head title="Audit Integritas | SIBERDAYA" />
+      <Head title="Audit Integritas | SIBERMAS" />
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
         

@@ -324,7 +324,7 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
 
   return (
     <AppLayout title="Manajemen Berita">
-      <Head title="Manajemen Berita | SIBERDAYA" />
+      <Head title="Manajemen Berita | SIBERMAS" />
 
       <div className="mx-auto max-w-[1480px] space-y-10 px-4 py-10 font-sans text-emerald-950 sm:px-6 lg:px-8">
         <PageHeader

@@ -26,7 +26,7 @@ class DailyLogbookReminderNotification extends Notification implements ShouldQue
     public function toMail(object $notifiable): MailMessage
     {
         $mail = (new MailMessage)
-            ->subject('⏰ Pengingat: Isi Logbook Harian KKN — SIBERDAYA')
+            ->subject('⏰ Pengingat: Isi Logbook Harian KKN — SIBERMAS')
             ->greeting("Assalamu'alaikum, {$notifiable->name}");
 
         if ($this->missedDays >= 3) {

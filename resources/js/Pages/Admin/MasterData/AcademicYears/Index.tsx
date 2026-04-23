@@ -146,7 +146,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
 
   return (
     <AppLayout title="Data Tahun Akademik">
-      <Head title="Data Tahun Akademik | SIBERDAYA" />
+      <Head title="Data Tahun Akademik | SIBERMAS" />
 
       <motion.div 
         initial={{ opacity: 0, y: 20 }}

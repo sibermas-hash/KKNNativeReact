@@ -418,7 +418,7 @@ export default function LocationsMap({ locations, config, filters, activeLocatio
 
     return (
         <PublicLayout>
-            <Head title="Lokasi | SIBERDAYA KKN UIN SAIZU" />
+            <Head title="Lokasi | SIBERMAS KKN UIN SAIZU" />
 
             <div className="bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.12),_transparent_24%),radial-gradient(circle_at_top_right,_rgba(245,158,11,0.10),_transparent_18%),radial-gradient(circle_at_50%_0%,_rgba(16,185,129,0.10),_transparent_34%),linear-gradient(180deg,#f7fbfb_0%,#ffffff_52%,#f8fcfa_100%)]">
                 <section className="border-b border-slate-200/80 pb-8 pt-12 lg:pt-14">

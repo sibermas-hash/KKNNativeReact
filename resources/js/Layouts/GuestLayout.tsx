@@ -9,7 +9,7 @@ interface GuestLayoutProps {
 export default function GuestLayout({ children, title }: GuestLayoutProps) {
     return (
         <div className="relative min-h-screen flex flex-col sm:justify-center items-center overflow-hidden font-sans selection:bg-cyan-500/30">
-            <Head title={title ? `${title} | SIBERDAYA` : 'Portal | SIBERDAYA'} />
+            <Head title={title ? `${title} | SIBERMAS` : 'Portal | SIBERMAS'} />
             
             {/* Dark Cinematic Background with Image */}
             <div className="absolute inset-0 z-0 bg-slate-950">

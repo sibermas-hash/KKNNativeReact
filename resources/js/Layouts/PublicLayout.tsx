@@ -74,8 +74,8 @@ export default function PublicLayout({
                                 className="h-9 w-auto object-contain sm:h-10"
                             />
                             <img
-                                src="/images/logo_siberdaya.png"
-                                alt="Logo Siberdaya"
+                                src="/images/Logo_SIBERMAS.png"
+                                alt="Logo SIBERMAS"
                                 className="h-9 w-auto object-contain sm:h-10"
                             />
                         </Link>
@@ -153,8 +153,8 @@ export default function PublicLayout({
                                 className="h-9 w-auto object-contain"
                             />
                             <img
-                                src="/images/logo_siberdaya.png"
-                                alt="Logo Siberdaya"
+                                src="/images/Logo_SIBERMAS.png"
+                                alt="Logo SIBERMAS"
                                 className="h-9 w-auto object-contain"
                             />
                         </div>

@@ -75,7 +75,7 @@ export default function ErrorPage({ status, message }: Props) {
                 <div className="mt-16 flex items-center justify-center gap-2 opacity-50">
                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
                     <span className="text-xs font-bold uppercase tracking-widest text-emerald-100">
-                        <span className="text-cyan-400">SIBER</span><span className="text-lime-400">DAYA</span>
+                        <span className="text-sky-400">SIBER</span><span className="text-emerald-400">MAS</span>
                     </span>
                     <div className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
                 </div>

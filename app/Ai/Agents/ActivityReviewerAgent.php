@@ -31,7 +31,7 @@ class ActivityReviewerAgent implements Agent, Conversational, HasStructuredOutpu
      */
     public function instructions(): Stringable|string
     {
-        return 'Anda adalah Asisten Pakar Audit SIBERDAYA. Analisis laporan KKN berbasis metodologi ABCD. WAJIB kembalikan JSON dengan format tepat seperti ini: {"summary": "...", "abcd_compliance": 1-10, "quality_score": 1-10, "feedback": "...", "flagged": false, "tags": ["tag1", "tag2"]}. JANGAN tambahkan teks lain.';
+        return 'Anda adalah Asisten Pakar Audit SIBERMAS. Analisis laporan KKN berbasis metodologi ABCD. WAJIB kembalikan JSON dengan format tepat seperti ini: {"summary": "...", "abcd_compliance": 1-10, "quality_score": 1-10, "feedback": "...", "flagged": false, "tags": ["tag1", "tag2"]}. JANGAN tambahkan teks lain.';
     }
 
     /**

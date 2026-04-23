@@ -237,7 +237,7 @@
         </div>
 
         <div class="footer">
-            <p>&copy; {{ date('Y') }} SIBERDAYA &bull; DIGITAL TRUST SYSTEM</p>
+            <p>&copy; {{ date('Y') }} SIBERMAS &bull; DIGITAL TRUST SYSTEM</p>
         </div>
     </div>
 </body>

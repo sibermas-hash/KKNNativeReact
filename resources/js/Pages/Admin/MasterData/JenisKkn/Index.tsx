@@ -23,6 +23,7 @@ import ContentPanel from '@/Components/Premium/ContentPanel';
 import StatusTag from '@/Components/Premium/StatusTag';
 import SearchInput from '@/Components/Premium/SearchInput';
 import PremiumTable, { PremiumTableRow, PremiumTableCell } from '@/Components/Premium/PremiumTable';
+import SlideOver from '@/Components/Premium/SlideOver';
 
 interface JenisKkn {
   id: number;
@@ -51,6 +52,7 @@ interface Props {
 export default function JenisKknIndex({ jenisKkn, filters, registrationModes, placementModes }: Props) {
   const [search, setSearch] = useState(filters.search ?? '');
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const form = useForm({
     code: '',
@@ -86,12 +88,16 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
         onSuccess: () => {
           form.reset();
           setEditingId(null);
+          setIsDrawerOpen(false);
         },
       });
     } else {
       form.post('/admin/jenis-kkn', {
         preserveScroll: true,
-        onSuccess: () => form.reset(),
+        onSuccess: () => {
+          form.reset();
+          setIsDrawerOpen(false);
+        },
       });
     }
   };
@@ -110,12 +116,13 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
       is_active: item.is_active,
       sort_order: item.sort_order,
     });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setIsDrawerOpen(true);
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     form.reset();
+    setIsDrawerOpen(false);
   };
 
   const destroy = (item: JenisKkn) => {
@@ -160,7 +167,7 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
         animate="show"
         className="max-w-[1600px] mx-auto space-y-8 font-sans pb-12 px-4 sm:px-6 lg:px-8"
       >
-        <motion.div variants={itemVariants}>
+        <motion.div variants={itemVariants} className="flex justify-between items-end gap-6">
           <PageHeader 
             title="Skema Program."
             subtitle="Konfigurasi parameter akademik dan aturan operasional untuk setiap kategori KKN."
@@ -172,146 +179,155 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
               icon: Database
             }}
           />
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              setEditingId(null);
+              form.reset();
+              setIsDrawerOpen(true);
+            }}
+            className="mb-8 h-12 px-6 bg-cyan-600 text-white text-sm font-semibold rounded-2xl hover:bg-cyan-700 transition-all flex items-center gap-3 shadow-lg shadow-cyan-600/20 active:scale-[0.98] font-sans tracking-tight shrink-0"
+          >
+            <Plus size={18} strokeWidth={3} />
+            Tambah Skema Baru
+          </motion.button>
         </motion.div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
-          {/* FORM PANEL */}
-          <motion.div variants={itemVariants} className="xl:col-span-1">
-            <ContentPanel
-              title={editingId ? "Perbarui Skema" : "Tambah Skema Baru"}
-              description="Atur parameter kualifikasi dan alur kerja skema."
-              icon={editingId ? Settings : Plus}
-              padding={true}
-            >
-              <form onSubmit={submit} className="space-y-5">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Kode Skema</label>
-                    <input
-                      type="text"
-                      value={form.data.code}
-                      onChange={(e) => form.setData('code', e.target.value.toUpperCase())}
-                      className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none uppercase font-sans bg-[#F8FAF9]"
-                      placeholder="REGULER"
-                      required
-                    />
-                    {form.errors.code && <p className="text-[11px] font-medium text-rose-600 mt-1 font-sans">{form.errors.code}</p>}
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Nama Program</label>
-                    <input
-                      type="text"
-                      value={form.data.name}
-                      onChange={(e) => form.setData('name', e.target.value)}
-                      className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none font-sans bg-[#F8FAF9]"
-                      placeholder="KKN Reguler"
-                      required
-                    />
-                  </div>
-                </div>
+        <SlideOver
+          isOpen={isDrawerOpen}
+          onClose={cancelEdit}
+          title={editingId ? "Perbarui Skema" : "Tambah Skema Baru"}
+          description="Atur parameter kualifikasi dan alur kerja skema."
+          width="md"
+        >
+          <form onSubmit={submit} className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Kode Skema</label>
+                <input
+                  type="text"
+                  value={form.data.code}
+                  onChange={(e) => form.setData('code', e.target.value.toUpperCase())}
+                  className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none uppercase font-sans bg-[#F8FAF9]"
+                  placeholder="REGULER"
+                  required
+                />
+                {form.errors.code && <p className="text-[11px] font-medium text-rose-600 mt-1 font-sans">{form.errors.code}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Nama Program</label>
+                <input
+                  type="text"
+                  value={form.data.name}
+                  onChange={(e) => form.setData('name', e.target.value)}
+                  className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none font-sans bg-[#F8FAF9]"
+                  placeholder="KKN Reguler"
+                  required
+                />
+              </div>
+            </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Deskripsi Singkat</label>
-                  <textarea
-                    value={form.data.description}
-                    onChange={(e) => form.setData('description', e.target.value)}
-                    className="w-full p-4 rounded-xl border-2 border-slate-50 text-sm font-medium text-cyan-950 focus:border-cyan-600 outline-none min-h-[80px] font-sans bg-[#F8FAF9]"
-                    placeholder="Penjelasan mengenai skema program ini..."
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Deskripsi Singkat</label>
+              <textarea
+                value={form.data.description}
+                onChange={(e) => form.setData('description', e.target.value)}
+                className="w-full p-4 rounded-xl border-2 border-slate-50 text-sm font-medium text-cyan-950 focus:border-cyan-600 outline-none min-h-[100px] font-sans bg-[#F8FAF9]"
+                placeholder="Penjelasan mengenai skema program ini..."
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Minimal SKS</label>
+                <input
+                  type="number"
+                  value={form.data.min_sks}
+                  onChange={(e) => form.setData('min_sks', parseInt(e.target.value))}
+                  className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none tabular-nums font-sans bg-[#F8FAF9]"
+                  required
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Minimal IPK</label>
+                <input
+                  type="text"
+                  value={form.data.min_gpa}
+                  onChange={(e) => form.setData('min_gpa', e.target.value)}
+                  className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none tabular-nums font-sans bg-[#F8FAF9]"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Mode Pendaftaran</label>
+              <select
+                value={form.data.registration_mode}
+                onChange={(e) => form.setData('registration_mode', e.target.value)}
+                className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none bg-[#F8FAF9] font-sans"
+              >
+                {registrationModes.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+              </select>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Mode Penempatan</label>
+              <select
+                value={form.data.placement_mode}
+                onChange={(e) => form.setData('placement_mode', e.target.value)}
+                className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none bg-[#F8FAF9] font-sans"
+              >
+                {placementModes.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-4 pt-2">
+              <div className="flex items-center gap-3 flex-1">
+                 <input
+                    type="checkbox"
+                    id="is_active"
+                    checked={form.data.is_active}
+                    onChange={(e) => form.setData('is_active', e.target.checked)}
+                    className="w-5 h-5 text-cyan-600 border-slate-200 rounded-lg focus:ring-cyan-500 cursor-pointer"
                   />
-                </div>
+                  <label htmlFor="is_active" className="text-sm font-semibold text-cyan-950 cursor-pointer tracking-tight font-sans">Skema Aktif</label>
+              </div>
+              <div className="flex items-center gap-3">
+                <label className="text-[11px] font-semibold text-cyan-950 uppercase tracking-wider font-sans">Urutan</label>
+                <input
+                  type="number"
+                  value={form.data.sort_order}
+                  onChange={(e) => form.setData('sort_order', parseInt(e.target.value))}
+                  className="w-16 h-10 text-center rounded-xl border-2 border-slate-50 text-sm font-bold font-sans bg-[#F8FAF9]"
+                />
+              </div>
+            </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Minimal SKS</label>
-                    <input
-                      type="number"
-                      value={form.data.min_sks}
-                      onChange={(e) => form.setData('min_sks', parseInt(e.target.value))}
-                      className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none tabular-nums font-sans bg-[#F8FAF9]"
-                      required
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Minimal IPK</label>
-                    <input
-                      type="text"
-                      value={form.data.min_gpa}
-                      onChange={(e) => form.setData('min_gpa', e.target.value)}
-                      className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none tabular-nums font-sans bg-[#F8FAF9]"
-                      required
-                    />
-                  </div>
-                </div>
+            <div className="flex items-center gap-3 pt-6 border-t border-cyan-50">
+              <button
+                type="button"
+                onClick={cancelEdit}
+                className="flex-1 h-12 border-2 border-slate-100 text-slate-500 text-sm font-semibold rounded-xl hover:bg-slate-50 transition-all font-sans tracking-tight"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                disabled={form.processing}
+                className="flex-[2] h-12 bg-cyan-600 text-white text-sm font-semibold rounded-xl hover:bg-cyan-700 transition-all flex items-center justify-center gap-3 shadow-lg shadow-cyan-600/20 active:scale-[0.98] font-sans tracking-tight disabled:opacity-50"
+              >
+                {form.processing ? <RefreshCw size={16} className="animate-spin" /> : (editingId ? <Settings size={16} /> : <CheckCircle2 size={16} />)}
+                {editingId ? 'Simpan Perubahan' : 'Daftarkan Skema'}
+              </button>
+            </div>
+          </form>
+        </SlideOver>
 
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Mode Pendaftaran</label>
-                  <select
-                    value={form.data.registration_mode}
-                    onChange={(e) => form.setData('registration_mode', e.target.value)}
-                    className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none bg-[#F8FAF9] font-sans"
-                  >
-                    {registrationModes.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-                  </select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Mode Penempatan</label>
-                  <select
-                    value={form.data.placement_mode}
-                    onChange={(e) => form.setData('placement_mode', e.target.value)}
-                    className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none bg-[#F8FAF9] font-sans"
-                  >
-                    {placementModes.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-                  </select>
-                </div>
-
-                <div className="flex items-center gap-4 pt-2">
-                  <div className="flex items-center gap-3 flex-1">
-                     <input
-                        type="checkbox"
-                        id="is_active"
-                        checked={form.data.is_active}
-                        onChange={(e) => form.setData('is_active', e.target.checked)}
-                        className="w-5 h-5 text-cyan-600 border-slate-200 rounded-lg focus:ring-cyan-500 cursor-pointer"
-                      />
-                      <label htmlFor="is_active" className="text-sm font-semibold text-cyan-950 cursor-pointer tracking-tight font-sans">Skema Aktif</label>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <label className="text-[11px] font-semibold text-cyan-950 uppercase tracking-wider font-sans">Urutan</label>
-                    <input
-                      type="number"
-                      value={form.data.sort_order}
-                      onChange={(e) => form.setData('sort_order', parseInt(e.target.value))}
-                      className="w-16 h-10 text-center rounded-xl border-2 border-slate-50 text-sm font-bold font-sans bg-[#F8FAF9]"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 pt-4">
-                  {editingId && (
-                    <button
-                      type="button"
-                      onClick={cancelEdit}
-                      className="flex-1 h-12 border-2 border-slate-50 text-cyan-950 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-all font-sans tracking-tight"
-                    >
-                      Batal
-                    </button>
-                  )}
-                  <button
-                    type="submit"
-                    disabled={form.processing}
-                    className="flex-[2] h-12 bg-cyan-600 text-white text-sm font-semibold rounded-xl hover:bg-cyan-700 transition-all flex items-center justify-center gap-3 shadow-lg shadow-cyan-600/20 active:scale-[0.98] font-sans tracking-tight disabled:opacity-50"
-                  >
-                    {form.processing ? <RefreshCw size={16} className="animate-spin" /> : (editingId ? <Settings size={16} /> : <CheckCircle2 size={16} />)}
-                    {editingId ? 'Simpan Perubahan' : 'Daftarkan Skema'}
-                  </button>
-                </div>
-              </form>
-            </ContentPanel>
-          </motion.div>
-
+        <div className="grid grid-cols-1 gap-8 items-start">
           {/* DATA TABLE PANEL */}
-          <motion.div variants={itemVariants} className="xl:col-span-2">
+          <motion.div variants={itemVariants} className="w-full">
             <ContentPanel
               title="Indeks Skema Program"
               icon={LayoutGrid}

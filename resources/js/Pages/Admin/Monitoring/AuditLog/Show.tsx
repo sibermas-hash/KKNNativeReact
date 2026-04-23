@@ -42,7 +42,7 @@ export default function AuditLogShow({ log }: Props) {
 
   return (
     <AppLayout title="Detail Log Aktivitas">
-      <Head title={`Detail Log #${log.id} | SIBERDAYA`} />
+      <Head title={`Detail Log #${log.id} | SIBERMAS`} />
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
         

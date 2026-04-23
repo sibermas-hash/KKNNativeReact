@@ -129,7 +129,7 @@ export default function StudentRekapitulasiIndex({ kelompok, rekapitulasi, dpl }
 
   return (
     <AppLayout title="Financial Ledger">
-      <Head title="Rekapitulasi Kegiatan | SIBERDAYA" />
+      <Head title="Rekapitulasi Kegiatan | SIBERMAS" />
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-16 font-sans">
         {/* --- STRATEGIC HEADER --- */}

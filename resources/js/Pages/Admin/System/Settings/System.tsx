@@ -145,7 +145,7 @@ export default function SystemSettings({ settings = {}, ai_status, ai_usage }: P
 
   return (
     <AppLayout title="Pengaturan Sistem">
-      <Head title="Pusat Kendali Sistem | SIBERDAYA" />
+      <Head title="Pusat Kendali Sistem | SIBERMAS" />
 
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12 font-sans text-emerald-950">
         

@@ -96,7 +96,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
     <LayoutContext.Provider value={layoutContextValue}>
       <div className="min-h-screen bg-slate-50 font-sans">
         <Head>
-          <title>{displayTitle ? `${displayTitle} | SIBERDAYA` : 'SIBERDAYA'}</title>
+          <title>{displayTitle ? `${displayTitle} | SIBERMAS` : 'SIBERMAS'}</title>
         </Head>
 
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />

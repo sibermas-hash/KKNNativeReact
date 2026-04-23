@@ -95,7 +95,7 @@ export default function KknRequirementsIndex({ requirements, availableColumns, o
 
   return (
     <AppLayout title="Konfigurasi Validasi">
-      <Head title="Validation Registry | SIBERDAYA" />
+      <Head title="Validation Registry | SIBERMAS" />
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-10 py-10 font-sans">
         

@@ -77,24 +77,60 @@ export default function Home({
     const featuredAnnouncement = featuredAnnouncements[0];
     const latestAnnouncements = featuredAnnouncements.slice(1, 5);
     const [typedTitle, setTypedTitle] = useState('');
+    const [typingPhase, setTypingPhase] = useState<'typing' | 'holding' | 'deleting'>('typing');
 
     const visi =
         aboutContent?.visi ||
         'Menjadi Lembaga Penelitian dan Pengabdian kepada Masyarakat yang unggul dan kompetitif dalam pengembangan ilmu pengetahuan, teknologi, dan seni yang berbasis pada nilai-nilai moderasi Islam dan kearifan lokal.';
 
     useEffect(() => {
-        if (typedTitle.length >= heroTitle.length) return;
+        const isComplete = typedTitle.length >= heroTitle.length;
+        const isEmpty = typedTitle.length === 0;
+
+        let timeoutDelay = 0;
+
+        if (typingPhase === 'typing') {
+            if (isComplete) {
+                setTypingPhase('holding');
+
+                return;
+            }
+
+            timeoutDelay = 165;
+        } else if (typingPhase === 'holding') {
+            timeoutDelay = 2200;
+        } else {
+            if (isEmpty) {
+                setTypingPhase('typing');
+
+                return;
+            }
+
+            timeoutDelay = 90;
+        }
 
         const timeoutId = window.setTimeout(() => {
-            setTypedTitle(heroTitle.slice(0, typedTitle.length + 1));
-        }, 185);
+            if (typingPhase === 'typing') {
+                setTypedTitle(heroTitle.slice(0, typedTitle.length + 1));
+
+                return;
+            }
+
+            if (typingPhase === 'holding') {
+                setTypingPhase('deleting');
+
+                return;
+            }
+
+            setTypedTitle(heroTitle.slice(0, typedTitle.length - 1));
+        }, timeoutDelay);
 
         return () => window.clearTimeout(timeoutId);
-    }, [heroTitle, typedTitle]);
+    }, [heroTitle, typedTitle, typingPhase]);
 
     return (
         <PublicLayout overlayNav>
-            <Head title="Beranda | SIBERDAYA KKN UIN SAIZU" />
+            <Head title="Beranda | SIBERMAS KKN UIN SAIZU" />
 
             <section className="relative h-screen min-h-[100svh] overflow-hidden bg-emerald-950">
                 <video
@@ -113,7 +149,7 @@ export default function Home({
 
                 <div className="relative z-10 flex h-screen min-h-[100svh] items-center justify-center px-6 pb-16 pt-24 sm:pt-28 lg:px-8">
                     <div className="mx-auto max-w-3xl text-center">
-                        <h1 className="font-display text-[1.85rem] font-semibold uppercase tracking-[0.06em] text-white sm:text-3xl lg:text-[2.7rem]">
+                        <h1 className="mx-auto max-w-[18ch] font-display text-[1.28rem] font-semibold uppercase tracking-[0.04em] text-white sm:text-[1.72rem] lg:text-[1.95rem]">
                             {typedTitle}
                             <span className="typing-cursor ml-1 inline-block text-white/90">|</span>
                         </h1>

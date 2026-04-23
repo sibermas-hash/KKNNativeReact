@@ -29,11 +29,11 @@ class RegistrationRejectedNotification extends Notification implements ShouldQue
     {
         return (new MailMessage)
             ->error()
-            ->subject('Pendaftaran KKN Ditolak — SIBERDAYA')
+            ->subject('Pendaftaran KKN Ditolak — SIBERMAS')
             ->greeting("Assalamu'alaikum, {$notifiable->name}")
             ->line("Pendaftaran Anda untuk **{$this->periodName}** belum dapat disetujui.")
             ->line("**Alasan:** {$this->reason}")
-            ->line('Anda dapat memperbaiki data atau dokumen yang diminta, lalu mengajukan ulang melalui portal SIBERDAYA.')
+            ->line('Anda dapat memperbaiki data atau dokumen yang diminta, lalu mengajukan ulang melalui portal SIBERMAS.')
             ->action('Perbaiki & Ajukan Ulang', url('/student/registration'))
             ->line('Jika ada pertanyaan, silakan hubungi kantor LPPM.');
     }

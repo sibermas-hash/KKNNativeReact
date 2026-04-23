@@ -52,7 +52,7 @@ export default function CertificateVerify({ sertifikat, token }: Props) {
               <Award size={24} className="text-[#0d9488]" />
             </div>
             <div>
-              <h1 className="text-white font-bold tracking-wide"><span className="text-cyan-400">SIBER</span><span className="text-lime-400">DAYA</span></h1>
+              <h1 className="text-white font-bold tracking-wide"><span className="text-sky-400">SIBER</span><span className="text-emerald-400">MAS</span></h1>
               <p className="text-emerald-200 text-[10px] uppercase tracking-widest font-bold">Verifikasi Elektronik</p>
             </div>
           </div>

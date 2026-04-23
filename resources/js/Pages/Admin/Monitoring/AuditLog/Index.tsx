@@ -56,7 +56,7 @@ export default function AuditLogIndex({ logs, filters, stats }: Props) {
 
   return (
     <AppLayout title="Audit Log Sistem">
-      <Head title="Audit Log Intelijen | SIBERDAYA" />
+      <Head title="Audit Log Intelijen | SIBERMAS" />
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
         

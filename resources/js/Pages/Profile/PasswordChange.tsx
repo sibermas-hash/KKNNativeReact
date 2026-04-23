@@ -91,7 +91,7 @@ export default function PasswordChange() {
                   <div className="space-y-1">
                     <p className="text-sm font-semibold text-rose-900">Akses Diblokir</p>
                     <p className="text-sm text-rose-700">
-                      Anda wajib mengganti kata sandi default sebelum dapat mengakses portal <span className="text-cyan-600">SIBER</span><span className="text-lime-600">DAYA</span>.
+                      Anda wajib mengganti kata sandi default sebelum dapat mengakses portal <span className="text-sky-600">SIBER</span><span className="text-emerald-600">MAS</span>.
                     </p>
                   </div>
                 </div>

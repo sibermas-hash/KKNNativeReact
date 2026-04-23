@@ -267,13 +267,13 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               <img src="/images/logo_uinsaizu.png" alt="Logo UIN" className="h-full w-full object-contain" />
             </div>
             <div className="h-12 w-12 flex items-center justify-center bg-white rounded-2xl border border-emerald-100 p-1 shadow-sm shrink-0">
-              <img src="/images/logo_siberdaya.png" alt="Logo Siberdaya" className="h-full w-full object-contain" />
+              <img src="/images/Logo_SIBERMAS.png" alt="Logo SIBERMAS" className="h-full w-full object-contain" />
             </div>
           </div>
           <div className="mt-4">
             <h1 className="text-base font-black leading-none tracking-tight flex items-center gap-2 font-display uppercase">
               {isBlogContext ? 'CONTENT HUB' : isSystemContext ? 'SYSTEM REGISTRY' : (
-                <span><span className="text-cyan-600">SIBER</span><span className="text-lime-600">DAYA</span></span>
+                <span><span className="text-sky-600">SIBER</span><span className="text-emerald-600">MAS</span></span>
               )}
               <span className={clsx("h-1.5 w-1.5 rounded-full animate-pulse", isBlogContext ? 'bg-lime-500 shadow-[0_0_8px_rgba(132,204,22,0.5)]' : isSystemContext ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)]')} />
             </h1>

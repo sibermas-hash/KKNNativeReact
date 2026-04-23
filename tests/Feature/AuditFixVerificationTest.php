@@ -4,7 +4,7 @@
  * SIMULASI VERIFIKASI PERBAIKAN AUDIT
  *
  * Test file ini memverifikasi semua perbaikan yang dilakukan berdasarkan
- * laporan audit SIBERDAYA. Setiap test group mewakili satu
+ * laporan audit SIBERMAS. Setiap test group mewakili satu
  * kategori temuan audit.
  */
 

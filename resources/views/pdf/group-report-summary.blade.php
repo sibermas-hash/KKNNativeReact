@@ -67,7 +67,7 @@
     </table>
 
     <div class="footer">
-        Dokumen ini digenerate otomatis oleh SIBERDAYA pada {{ $generatedAt }}.
+        Dokumen ini digenerate otomatis oleh SIBERMAS pada {{ $generatedAt }}.
     </div>
 </body>
 </html>

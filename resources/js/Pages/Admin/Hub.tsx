@@ -64,7 +64,7 @@ export default function AdminHub() {
 
   return (
     <div className="min-h-screen bg-white text-cyan-950 selection:bg-cyan-100 font-sans">
-      <Head title="Gerbang Kendali | SIBERDAYA KKN" />
+      <Head title="Gerbang Kendali | SIBERMAS KKN" />
 
       {/* Solid formal background accent - Very Clean */}
       <div className="absolute inset-x-0 top-0 h-[300px] bg-cyan-50/50 border-b border-cyan-50" />
@@ -80,14 +80,14 @@ export default function AdminHub() {
             <div className="flex items-center gap-3">
               <img src="/images/logo_uinsaizu.png" alt="Logo UIN SAIZU" className="h-12 w-12 object-contain" />
               <div className="h-8 w-px bg-cyan-100" />
-              <img src="/images/logo_siberdaya.png" alt="Logo Siberdaya" className="h-10 w-auto object-contain" />
+              <img src="/images/Logo_SIBERMAS.png" alt="Logo SIBERMAS" className="h-10 w-auto object-contain" />
             </div>
             <div className="min-w-0 border-l border-cyan-50 pl-5">
               <p className="text-[10px] font-black uppercase tracking-[0.25em] text-cyan-600">
                 Pusat Kendali Sistem.
               </p>
               <h1 className="text-[1.2rem] font-black tracking-tighter uppercase mt-0.5 font-display">
-                <span className="text-cyan-500">SIBER</span><span className="text-lime-500">DAYA</span> <span className="text-cyan-950">KKN UIN SAIZU</span>
+                <span className="text-sky-500">SIBER</span><span className="text-emerald-500">MAS</span> <span className="text-cyan-950">KKN UIN SAIZU</span>
               </h1>
             </div>
           </div>

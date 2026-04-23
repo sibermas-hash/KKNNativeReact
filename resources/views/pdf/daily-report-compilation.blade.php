@@ -115,7 +115,7 @@
     @endforelse
 
     <div class="footer">
-        Dokumen ini digenerate otomatis oleh SIBERDAYA pada {{ $generatedAt }}.
+        Dokumen ini digenerate otomatis oleh SIBERMAS pada {{ $generatedAt }}.
         <br>Untuk keperluan arsip dan verifikasi.
     </div>
 </body>

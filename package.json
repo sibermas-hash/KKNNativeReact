@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "prebuild": "node scripts/check-case-sensitivity.mjs",
     "build": "vite build",
+    "check:case-sensitive": "node scripts/check-case-sensitivity.mjs",
     "dev": "vite",
     "lint": "eslint \"resources/**/*.{ts,tsx}\"",
     "test": "vitest",

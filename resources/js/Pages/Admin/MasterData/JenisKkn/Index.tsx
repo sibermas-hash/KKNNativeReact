@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
+import { motion, AnimatePresence } from 'framer-motion';
+
 // Premium Components
 import PageHeader from '@/Components/Premium/PageHeader';
 import ContentPanel from '@/Components/Premium/ContentPanel';
@@ -124,26 +126,57 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
     }
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { 
+        type: "spring", 
+        stiffness: 100, 
+        damping: 20 
+      } 
+    }
+  };
+
   return (
     <AppLayout title="Manajemen Jenis KKN">
       <Head title="Konfigurasi Skema KKN" />
 
-      <div className="max-w-[1600px] mx-auto space-y-8 font-sans pb-12 px-4 sm:px-6 lg:px-8">
-        <PageHeader 
-          title="Skema Program."
-          subtitle="Konfigurasi parameter akademik dan aturan operasional untuk setiap kategori KKN."
-          icon={Layers}
-          groupLabel="Data Master Sistem"
-          stats={{
-            label: 'Total Skema',
-            value: `${jenisKkn.length} Kategori`,
-            icon: Database
-          }}
-        />
+      <motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="max-w-[1600px] mx-auto space-y-8 font-sans pb-12 px-4 sm:px-6 lg:px-8"
+      >
+        <motion.div variants={itemVariants}>
+          <PageHeader 
+            title="Skema Program."
+            subtitle="Konfigurasi parameter akademik dan aturan operasional untuk setiap kategori KKN."
+            icon={Layers}
+            groupLabel="Data Master Sistem"
+            stats={{
+              label: 'Total Skema',
+              value: jenisKkn.length,
+              icon: Database
+            }}
+          />
+        </motion.div>
 
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
           {/* FORM PANEL */}
-          <div className="xl:col-span-1">
+          <motion.div variants={itemVariants} className="xl:col-span-1">
             <ContentPanel
               title={editingId ? "Perbarui Skema" : "Tambah Skema Baru"}
               description="Atur parameter kualifikasi dan alur kerja skema."
@@ -153,24 +186,24 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
               <form onSubmit={submit} className="space-y-5">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Kode Skema</label>
+                    <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Kode Skema</label>
                     <input
                       type="text"
                       value={form.data.code}
                       onChange={(e) => form.setData('code', e.target.value.toUpperCase())}
-                      className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none uppercase"
+                      className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none uppercase font-sans bg-[#F8FAF9]"
                       placeholder="REGULER"
                       required
                     />
-                    {form.errors.code && <p className="text-[10px] font-bold text-rose-600 mt-1 uppercase">{form.errors.code}</p>}
+                    {form.errors.code && <p className="text-[11px] font-medium text-rose-600 mt-1 font-sans">{form.errors.code}</p>}
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Nama Program</label>
+                    <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Nama Program</label>
                     <input
                       type="text"
                       value={form.data.name}
                       onChange={(e) => form.setData('name', e.target.value)}
-                      className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none"
+                      className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none font-sans bg-[#F8FAF9]"
                       placeholder="KKN Reguler"
                       required
                     />
@@ -178,78 +211,78 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Deskripsi Singkat</label>
+                  <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Deskripsi Singkat</label>
                   <textarea
                     value={form.data.description}
                     onChange={(e) => form.setData('description', e.target.value)}
-                    className="w-full p-4 rounded-xl border border-gray-200 text-xs font-medium text-emerald-950 focus:border-emerald-600 outline-none min-h-[80px]"
+                    className="w-full p-4 rounded-xl border-2 border-slate-50 text-sm font-medium text-cyan-950 focus:border-cyan-600 outline-none min-h-[80px] font-sans bg-[#F8FAF9]"
                     placeholder="Penjelasan mengenai skema program ini..."
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Minimal SKS</label>
+                    <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Minimal SKS</label>
                     <input
                       type="number"
                       value={form.data.min_sks}
                       onChange={(e) => form.setData('min_sks', parseInt(e.target.value))}
-                      className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none tabular-nums"
+                      className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none tabular-nums font-sans bg-[#F8FAF9]"
                       required
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Minimal IPK</label>
+                    <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Minimal IPK</label>
                     <input
                       type="text"
                       value={form.data.min_gpa}
                       onChange={(e) => form.setData('min_gpa', e.target.value)}
-                      className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none tabular-nums"
+                      className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none tabular-nums font-sans bg-[#F8FAF9]"
                       required
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Mode Pendaftaran</label>
+                  <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Mode Pendaftaran</label>
                   <select
                     value={form.data.registration_mode}
                     onChange={(e) => form.setData('registration_mode', e.target.value)}
-                    className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none bg-white"
+                    className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none bg-[#F8FAF9] font-sans"
                   >
                     {registrationModes.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
                   </select>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Mode Penempatan</label>
+                  <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">Mode Penempatan</label>
                   <select
                     value={form.data.placement_mode}
                     onChange={(e) => form.setData('placement_mode', e.target.value)}
-                    className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none bg-white"
+                    className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none bg-[#F8FAF9] font-sans"
                   >
                     {placementModes.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
                   </select>
                 </div>
 
                 <div className="flex items-center gap-4 pt-2">
-                  <div className="flex items-center gap-2 flex-1">
+                  <div className="flex items-center gap-3 flex-1">
                      <input
                         type="checkbox"
                         id="is_active"
                         checked={form.data.is_active}
                         onChange={(e) => form.setData('is_active', e.target.checked)}
-                        className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500 cursor-pointer"
+                        className="w-5 h-5 text-cyan-600 border-slate-200 rounded-lg focus:ring-cyan-500 cursor-pointer"
                       />
-                      <label htmlFor="is_active" className="text-[10px] font-black text-emerald-950 uppercase tracking-widest cursor-pointer">Skema Aktif</label>
+                      <label htmlFor="is_active" className="text-sm font-semibold text-cyan-950 cursor-pointer tracking-tight font-sans">Skema Aktif</label>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest">Urutan</label>
+                  <div className="flex items-center gap-3">
+                    <label className="text-[11px] font-semibold text-cyan-950 uppercase tracking-wider font-sans">Urutan</label>
                     <input
                       type="number"
                       value={form.data.sort_order}
                       onChange={(e) => form.setData('sort_order', parseInt(e.target.value))}
-                      className="w-16 h-8 text-center rounded-lg border border-gray-200 text-[10px] font-bold"
+                      className="w-16 h-10 text-center rounded-xl border-2 border-slate-50 text-sm font-bold font-sans bg-[#F8FAF9]"
                     />
                   </div>
                 </div>
@@ -259,7 +292,7 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
                     <button
                       type="button"
                       onClick={cancelEdit}
-                      className="flex-1 h-11 border border-gray-200 text-emerald-950 text-xs font-black rounded-xl hover:bg-gray-50 transition-all uppercase tracking-widest"
+                      className="flex-1 h-12 border-2 border-slate-50 text-cyan-950 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-all font-sans tracking-tight"
                     >
                       Batal
                     </button>
@@ -267,18 +300,18 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
                   <button
                     type="submit"
                     disabled={form.processing}
-                    className="flex-[2] h-11 bg-emerald-600 text-white text-xs font-black rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-lg shadow-emerald-600/20 active:scale-[0.98] uppercase tracking-widest disabled:opacity-50"
+                    className="flex-[2] h-12 bg-cyan-600 text-white text-sm font-semibold rounded-xl hover:bg-cyan-700 transition-all flex items-center justify-center gap-3 shadow-lg shadow-cyan-600/20 active:scale-[0.98] font-sans tracking-tight disabled:opacity-50"
                   >
-                    {form.processing ? <RefreshCw size={14} className="animate-spin" /> : (editingId ? <Settings size={14} /> : <CheckCircle2 size={14} />)}
+                    {form.processing ? <RefreshCw size={16} className="animate-spin" /> : (editingId ? <Settings size={16} /> : <CheckCircle2 size={16} />)}
                     {editingId ? 'Simpan Perubahan' : 'Daftarkan Skema'}
                   </button>
                 </div>
               </form>
             </ContentPanel>
-          </div>
+          </motion.div>
 
           {/* DATA TABLE PANEL */}
-          <div className="xl:col-span-2">
+          <motion.div variants={itemVariants} className="xl:col-span-2">
             <ContentPanel
               title="Indeks Skema Program"
               icon={LayoutGrid}
@@ -298,32 +331,32 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
                 emptyText="Belum ada skema KKN yang terkonfigurasi."
               >
                 {jenisKkn.map((item) => (
-                  <PremiumTableRow key={item.id} className={clsx("group", editingId === item.id && "bg-emerald-50/50")}>
+                  <PremiumTableRow key={item.id} className={clsx("group", editingId === item.id && "bg-cyan-50/50")}>
                     <PremiumTableCell>
-                      <div className="flex flex-col py-1">
+                      <div className="flex flex-col py-1 font-sans">
                         <div className="flex items-center gap-2">
-                          <span className="text-[13px] font-black text-emerald-950 uppercase tracking-tight group-hover:text-emerald-700 transition-colors font-display">{item.name}</span>
-                          <span className="px-1.5 py-0.5 bg-gray-50 text-emerald-800/40 rounded text-[8px] font-black border border-emerald-50 uppercase tracking-widest">{item.code}</span>
+                          <span className="text-sm font-bold text-cyan-950 tracking-tight group-hover:text-cyan-600 transition-colors">{item.name}</span>
+                          <span className="px-1.5 py-0.5 bg-slate-50 text-cyan-800/60 rounded text-[9px] font-bold border border-cyan-100 uppercase tracking-wider">{item.code}</span>
                         </div>
-                        <span className="text-[10px] font-medium text-emerald-800/40 mt-1 line-clamp-1 max-w-[200px]">{item.description || 'Tidak ada deskripsi.'}</span>
+                        <span className="text-[11px] font-medium text-slate-500 mt-1 line-clamp-1 max-w-[200px]">{item.description || 'Tidak ada deskripsi.'}</span>
                       </div>
                     </PremiumTableCell>
                     <PremiumTableCell>
-                      <div className="flex flex-col gap-1">
+                      <div className="flex flex-col gap-1.5 font-sans">
                         <div className="flex items-center gap-2">
-                           <Database size={10} className="text-emerald-600" />
-                           <span className="text-[10px] font-black text-emerald-950 tabular-nums">{item.min_sks} SKS</span>
+                           <Database size={12} className="text-cyan-600" />
+                           <span className="text-[11px] font-bold text-cyan-950 tabular-nums">{item.min_sks} SKS</span>
                         </div>
                         <div className="flex items-center gap-2">
-                           <LayoutGrid size={10} className="text-emerald-600" />
-                           <span className="text-[10px] font-black text-emerald-950 tabular-nums">IPK {item.min_gpa}</span>
+                           <LayoutGrid size={12} className="text-cyan-600" />
+                           <span className="text-[11px] font-bold text-cyan-950 tabular-nums">IPK {item.min_gpa}</span>
                         </div>
                       </div>
                     </PremiumTableCell>
                     <PremiumTableCell>
-                       <div className="flex flex-col gap-1">
-                        <span className="text-[9px] font-black text-emerald-950 uppercase tracking-tighter leading-none">{item.registration_mode_label}</span>
-                        <span className="text-[9px] font-bold text-emerald-800/30 uppercase tracking-tighter leading-none">{item.placement_mode_label}</span>
+                       <div className="flex flex-col gap-1 font-sans">
+                        <span className="text-[10px] font-bold text-cyan-950 uppercase tracking-wider leading-none">{item.registration_mode_label}</span>
+                        <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider leading-none">{item.placement_mode_label}</span>
                       </div>
                     </PremiumTableCell>
                     <PremiumTableCell>
@@ -333,9 +366,9 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
                       <div className="flex items-center justify-end gap-2">
                         <Link 
                           href={`/admin/jenis-kkn/${item.id}`}
-                          className="h-8 px-3 bg-white border border-gray-100 text-emerald-950 rounded-lg hover:bg-emerald-50 hover:border-emerald-200 transition-all flex items-center gap-2 text-[10px] font-black uppercase no-underline"
+                          className="h-9 px-3 bg-white border-2 border-slate-50 text-cyan-950 rounded-xl hover:bg-cyan-50 hover:border-cyan-100 transition-all flex items-center gap-2 text-[11px] font-semibold tracking-tight no-underline font-sans"
                         >
-                          <Eye size={14} /> Detail
+                          <Eye size={16} /> Detail
                         </Link>
                         <button
                           onClick={() => startEdit(item)}
@@ -355,10 +388,9 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
                 ))}
               </PremiumTable>
             </ContentPanel>
-
-            </div>
-          </div>
+          </motion.div>
         </div>
+      </motion.div>
     </AppLayout>
   );
 }

@@ -161,7 +161,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
           groupLabel="Data Master Sistem"
           stats={{
             label: 'Total Terdaftar',
-            value: `${(paginationMeta?.total ?? processedRows.length).toLocaleString()} Data`,
+            value: (paginationMeta?.total ?? processedRows.length).toLocaleString(),
             icon: Database
           }}
         />
@@ -181,14 +181,14 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
             >
               <form onSubmit={submit} className="space-y-8">
                 <div className="space-y-2">
-                  <label htmlFor="academic-year" className="text-[10px] font-black text-cyan-900 uppercase tracking-[0.2em] pl-1 font-display">
+                  <label htmlFor="academic-year" className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">
                     Tahun Akademik
                   </label>
                   <select
                     id="academic-year"
                     value={form.data.year}
                     onChange={(event) => form.setData('year', event.target.value)}
-                    className="w-full px-5 py-3.5 rounded-2xl border-2 border-slate-50 text-sm font-black text-cyan-950 focus:border-cyan-600 outline-none transition-all bg-[#F8FAF9] font-display hover:border-cyan-100"
+                    className="w-full px-5 py-3.5 rounded-2xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none transition-all bg-[#F8FAF9] font-sans hover:border-cyan-100"
                   >
                     <option value="" disabled>Pilih Tahun Akademik</option>
                     {yearOptions.map((yearOption) => (
@@ -198,7 +198,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                     ))}
                   </select>
                   {form.errors.year && (
-                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[10px] font-black text-rose-600 mt-1 uppercase tracking-widest pl-1">{form.errors.year}</motion.p>
+                    <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[11px] font-medium text-rose-600 mt-1 pl-1 font-sans">{form.errors.year}</motion.p>
                   )}
                 </div>
 
@@ -216,10 +216,10 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                     />
                   </div>
                   <div className="flex flex-col">
-                    <label htmlFor="is_active" className="text-xs font-black text-cyan-950 cursor-pointer uppercase tracking-widest leading-none mb-1 font-display">
+                    <label htmlFor="is_active" className="text-sm font-semibold text-cyan-950 cursor-pointer tracking-tight leading-none mb-1 font-sans">
                       Jadikan Aktif
                     </label>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Otomatis diatur sebagai tahun ajaran berjalan.</p>
+                    <p className="text-[11px] font-medium text-slate-500 tracking-normal font-sans">Otomatis diatur sebagai tahun ajaran berjalan.</p>
                   </div>
                 </motion.div>
 
@@ -228,7 +228,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                   whileTap={{ scale: 0.98 }}
                   type="submit"
                   disabled={form.processing}
-                  className="w-full h-14 bg-cyan-600 text-white text-xs font-black rounded-2xl hover:bg-cyan-700 transition-colors flex items-center justify-center gap-4 shadow-[0_8px_20px_rgba(6,182,212,0.25)] disabled:opacity-50 font-display uppercase tracking-[0.2em]"
+                  className="w-full h-14 bg-cyan-600 text-white text-sm font-semibold rounded-2xl hover:bg-cyan-700 transition-colors flex items-center justify-center gap-4 shadow-[0_8px_20px_rgba(6,182,212,0.25)] disabled:opacity-50 font-sans tracking-tight"
                 >
                   {form.processing ? (
                     <RefreshCw size={18} className="animate-spin" />
@@ -272,14 +272,21 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                 <table className="w-full text-left border-collapse">
                    <thead>
                       <tr className="bg-cyan-50/30 border-b border-cyan-100">
-                         <th 
-                          onClick={() => toggleSort('year')}
-                          className="p-6 text-[10px] font-black text-cyan-900 uppercase tracking-[0.2em] cursor-pointer hover:bg-cyan-50 transition-colors font-display"
-                         >
-                            <div className="flex items-center gap-2">Tahun Akademik <ArrowUpDown size={12} className="text-cyan-400" /></div>
-                         </th>
-                         <th className="p-6 text-[10px] font-black text-cyan-900 uppercase tracking-[0.2em]">Status Operasional</th>
-                         <th className="p-6 text-[10px] font-black text-cyan-900 uppercase tracking-[0.2em] text-right">Manajemen</th>
+                        <th className="px-6 py-5 text-left">
+                          <button 
+                            onClick={() => toggleSort('year')}
+                            className="group flex items-center gap-2 text-[11px] font-semibold text-slate-500 uppercase tracking-wider font-sans hover:text-cyan-600 transition-colors"
+                          >
+                            Tahun Akademik
+                            <ArrowUpDown size={12} className={clsx("transition-colors", sortConfig.key === 'year' ? "text-cyan-600" : "text-slate-300")} />
+                          </button>
+                        </th>
+                        <th className="px-6 py-5 text-left">
+                          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider font-sans">Status</span>
+                        </th>
+                        <th className="px-6 py-5 text-right">
+                          <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider font-sans pr-4">Aksi</span>
+                        </th>
                       </tr>
                    </thead>
                    <tbody className="divide-y divide-slate-50">
@@ -292,7 +299,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                               transition={{ delay: index * 0.05 }}
                               className={clsx("group transition-all hover:bg-cyan-50/40", expandedId === year.id && "bg-cyan-50/20")}
                             >
-                              <td className="p-6">
+                              <td className="px-6 py-5">
                                 <div className="flex items-center gap-4">
                                    <button 
                                     onClick={() => setExpandedId(expandedId === year.id ? null : year.id)}
@@ -300,7 +307,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                                    >
                                       <ChevronDown size={14} className={clsx("transition-transform duration-500", expandedId === year.id && "rotate-180")} />
                                    </button>
-                                   <span className="text-base font-black text-cyan-950 uppercase tracking-tight font-display">{year.year}</span>
+                                   <span className="text-sm font-bold text-cyan-950 tracking-tight font-sans tabular-nums">{year.year}</span>
                                 </div>
                               </td>
                               <td className="p-6">

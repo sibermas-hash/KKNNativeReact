@@ -7,7 +7,13 @@ import {
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { PageProps } from '@/types';
-import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// Premium Components
+import PageHeader from '@/Components/Premium/PageHeader';
+import ContentPanel from '@/Components/Premium/ContentPanel';
+import MetricCard from '@/Components/Premium/MetricCard';
+import StatusTag from '@/Components/Premium/StatusTag';
 
 // ── Config ───────────────────────────────────────────
 interface DashboardProps extends PageProps {
@@ -100,22 +106,22 @@ export default function Dashboard({
             {/* Subtle accent line on top of header */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 via-lime-500 to-amber-500" />
             <div>
-              <h1 className="text-4xl font-black text-cyan-950 leading-none tracking-tighter uppercase font-display">
+              <h1 className="text-4xl font-extrabold text-cyan-950 leading-none tracking-tight font-sans">
                 Dashboard <span className="text-amber-500">Admin.</span>
               </h1>
-              <p className="text-[10px] font-black text-slate-500 mt-2 uppercase tracking-[0.25em] font-display">Ringkasan operasional & status pendaftaran real-time</p>
+              <p className="text-[11px] font-medium text-slate-500 mt-2 tracking-wide font-sans">Ringkasan operasional & status pendaftaran real-time</p>
             </div>
             
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto z-10">
               {/* Form Select Periode */}
               <div className="w-full sm:w-56">
-                <label className="block text-[10px] font-black text-cyan-900 uppercase tracking-widest mb-1.5 font-display">
+                <label className="block text-[11px] font-semibold text-cyan-900 uppercase tracking-wider mb-1.5 font-sans">
                   Periode KKN
                 </label>
                 <select
                   value={active_periode_id || ''}
                   onChange={handlePeriodChange}
-                  className="w-full h-11 bg-slate-50 border-2 border-cyan-100 text-cyan-950 text-xs font-black rounded-xl focus:ring-cyan-600 focus:border-cyan-600 py-2 px-4 shadow-sm font-display uppercase"
+                  className="w-full h-11 bg-slate-50 border-2 border-cyan-100 text-cyan-950 text-xs font-semibold rounded-xl focus:ring-cyan-600 focus:border-cyan-600 py-2 px-4 shadow-sm font-sans"
                 >
                   <option value="" disabled>Pilih Periode...</option>
                   {active_periods.map((p: any) => (
@@ -126,14 +132,14 @@ export default function Dashboard({
 
               {/* Form Select Fase */}
               <div className="w-full sm:w-56">
-                <label className="block text-[10px] font-black text-cyan-900 uppercase tracking-widest mb-1.5 font-display">
+                <label className="block text-[11px] font-semibold text-cyan-900 uppercase tracking-wider mb-1.5 font-sans">
                   Fase Saat Ini
                 </label>
                 <select
                   value={phaseKey}
                   onChange={handlePhaseChange}
                   className={clsx(
-                    "w-full h-11 text-xs font-black rounded-xl border-2 focus:ring-2 focus:outline-none py-2 px-4 shadow-sm font-display uppercase transition-colors",
+                    "w-full h-11 text-xs font-semibold rounded-xl border-2 focus:ring-2 focus:outline-none py-2 px-4 shadow-sm font-sans transition-colors",
                     "bg-cyan-600 border-cyan-500 text-white focus:ring-cyan-400 focus:border-cyan-400"
                   )}
                 >
@@ -178,10 +184,10 @@ export default function Dashboard({
             {/* KOLOM KIRI: Pendaftaran Terbaru (Lebar 2/3) */}
             <div className="lg:col-span-2 bg-white rounded-2xl border-2 border-cyan-100 shadow-sm overflow-hidden flex flex-col">
               <div className="bg-slate-50/50 px-6 py-4 border-b border-cyan-100 flex justify-between items-center">
-                <h2 className="text-[10px] font-black text-cyan-950 uppercase tracking-[0.2em] flex items-center gap-3 font-display">
+                <h2 className="text-[11px] font-semibold text-cyan-950 uppercase tracking-wider flex items-center gap-3 font-sans">
                   <ClipboardList size={16} className="text-cyan-600" strokeWidth={2.5} /> Antrian Pendaftaran
                 </h2>
-                <Link href={route('admin.pendaftaran.index')} className="text-[10px] font-black uppercase tracking-widest text-cyan-600 hover:text-cyan-800 transition-colors font-display">
+                <Link href={route('admin.pendaftaran.index')} className="text-[11px] font-semibold tracking-wide text-cyan-600 hover:text-cyan-800 transition-colors font-sans">
                   Lihat Semua &rarr;
                 </Link>
               </div>
@@ -196,8 +202,8 @@ export default function Dashboard({
                             {reg.mahasiswa?.user?.name?.[0]?.toUpperCase() || '?'}
                           </div>
                           <div className="truncate">
-                            <p className="text-sm font-bold text-cyan-950 truncate tracking-tight group-hover:text-cyan-600 transition-colors font-dm">{reg.mahasiswa?.user?.name || '—'}</p>
-                            <p className="text-[11px] font-medium text-slate-500 truncate tracking-wide mt-0.5 font-dm">{reg.mahasiswa?.nim || '—'}</p>
+                            <p className="text-sm font-bold text-cyan-950 truncate tracking-tight group-hover:text-cyan-600 transition-colors font-sans capitalize">{(reg.mahasiswa?.user?.name || '—').toLowerCase()}</p>
+                            <p className="text-[12px] font-medium text-slate-500 truncate tracking-normal mt-0.5 font-sans">NIM : {reg.mahasiswa?.nim || '—'}</p>
                           </div>
                         </div>
                         <span className="shrink-0 ml-4 inline-flex items-center px-3 py-1 rounded-lg text-[9px] font-black bg-lime-500 text-white border border-lime-600 uppercase tracking-widest font-display shadow-[0_2px_10px_rgba(132,204,22,0.2)]">
@@ -221,7 +227,7 @@ export default function Dashboard({
               
               {/* Progres Penempatan */}
               <div className="bg-white rounded-2xl border-2 border-cyan-100 shadow-sm p-6">
-                <h2 className="text-[10px] font-black text-cyan-950 uppercase tracking-[0.2em] mb-6 flex items-center gap-3 font-display">
+                <h2 className="text-[11px] font-semibold text-cyan-950 uppercase tracking-wider mb-6 flex items-center gap-3 font-sans">
                   <MapPin size={16} className="text-cyan-600" strokeWidth={2.5} /> Progres Penempatan
                 </h2>
                 <div className="space-y-4">
@@ -246,7 +252,7 @@ export default function Dashboard({
               {/* Menu Pintasan */}
               <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm overflow-hidden">
                 <div className="bg-slate-50/80 px-4 py-2 border-b border-slate-200">
-                  <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Akses Cepat</h2>
+                  <h2 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Akses Cepat</h2>
                 </div>
                 <div className="divide-y divide-slate-100">
                   <QuickMenu href={route('admin.lokasi.index')} icon={MapPin} label="Kelola Wilayah & Lokasi" />
@@ -311,64 +317,15 @@ export default function Dashboard({
 
 Dashboard.layout = AppLayout.layout;
 
-// ── Sub-components (Kompak & Bersih) ───────────────────────────────────
-
-function AnimatedCounter({ value, className }: { value: number; className?: string }) {
-  const spring = useSpring(value, { mass: 0.8, stiffness: 75, damping: 15 });
-  const display = useTransform(spring, (current) => Math.round(current));
-  
-  React.useEffect(() => {
-    spring.set(value);
-  }, [spring, value]);
-
-  return <motion.p className={className}>{display}</motion.p>;
-}
-
-function MetricCard({ title, value, icon: Icon, alert = false, color = 'cyan', href }: any) {
-  const Wrapper = href ? Link : 'div';
-  const numericValue = typeof value === 'number' ? value : parseInt(value) || 0;
-
-  return (
-    <Wrapper 
-      {...(href ? { href } : {})}
-      className={clsx(
-        "bg-white rounded-2xl border-2 p-6 flex items-start justify-between transition-all duration-300 shadow-sm group",
-        alert && color === 'amber' ? "border-amber-100 bg-amber-50/20 hover:bg-amber-50" : 
-        alert && color === 'rose' ? "border-rose-100 bg-rose-50/20 hover:bg-rose-50" : "border-cyan-100 hover:bg-cyan-50/50",
-        href && "cursor-pointer hover:shadow-lg hover:shadow-cyan-900/5 active:scale-95"
-      )}
-    >
-      <div>
-        <p className="text-[10px] font-black text-slate-500 mb-2 uppercase tracking-[0.2em] font-display">{title}</p>
-        <AnimatedCounter 
-          value={numericValue} 
-          className={clsx(
-            "text-4xl font-black tabular-nums tracking-tighter font-display leading-none",
-            alert && color === 'amber' ? "text-amber-700" :
-            alert && color === 'rose' ? "text-rose-700" : "text-cyan-950"
-          )} 
-        />
-      </div>
-      <div className={clsx(
-        "h-12 w-12 rounded-2xl flex items-center justify-center transition-all duration-300 group-hover:rotate-6",
-        alert && color === 'amber' ? "bg-amber-100 text-amber-600" :
-        alert && color === 'rose' ? "bg-rose-100 text-rose-600" : "bg-cyan-50 text-cyan-600"
-      )}>
-        <Icon size={22} strokeWidth={2.5} />
-      </div>
-    </Wrapper>
-  );
-}
-
 function CompactProgress({ label, current, total }: { label: string; current: number; total: number }) {
   const safe = total > 0 ? total : 1;
   const pct = Math.min(100, Math.round((current / safe) * 100));
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-2">
-        <span className="text-[10px] font-black text-cyan-950 uppercase tracking-widest font-display">{label}</span>
-        <span className="text-[10px] font-black text-lime-700 tabular-nums bg-lime-50 px-2 py-0.5 rounded-lg border border-lime-100 font-display">
+      <div className="flex justify-between items-center mb-2 font-sans">
+        <span className="text-[11px] font-semibold text-cyan-950 tracking-normal">{label}</span>
+        <span className="text-[11px] font-bold text-lime-700 tabular-nums bg-lime-50 px-2 py-0.5 rounded-lg border border-lime-100">
           {current}/{total} ({pct}%)
         </span>
       </div>
@@ -381,10 +338,10 @@ function CompactProgress({ label, current, total }: { label: string; current: nu
 
 function QuickMenu({ href, icon: Icon, label }: any) {
   return (
-    <Link href={href} className="flex items-center justify-between px-4 py-3 hover:bg-cyan-50 group transition-colors">
+    <Link href={href} className="flex items-center justify-between px-4 py-3 hover:bg-cyan-50 group transition-colors font-sans">
       <div className="flex items-center gap-3 text-cyan-950 group-hover:text-cyan-700 transition-colors">
         <Icon size={16} strokeWidth={2.5} className="text-cyan-600/70 group-hover:text-cyan-600" />
-        <span className="text-sm font-black uppercase tracking-tight font-display">{label}</span>
+        <span className="text-sm font-medium tracking-tight">{label}</span>
       </div>
       <ChevronRight size={16} className="text-cyan-300 group-hover:text-cyan-500 transition-transform group-hover:translate-x-1" />
     </Link>

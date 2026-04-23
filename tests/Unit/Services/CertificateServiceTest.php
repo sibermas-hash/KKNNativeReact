@@ -307,7 +307,7 @@ class CertificateServiceTest extends TestCase
 
         $otherKelompok = KelompokKkn::factory()->create([
             'periode_id' => $periode->id,
-            'location_id' => $lokasi->id,
+            'location_id' => Lokasi::factory()->create()->id,
         ]);
 
         // Create approved laporan akhir for a different group

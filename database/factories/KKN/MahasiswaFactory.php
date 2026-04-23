@@ -31,6 +31,7 @@ class MahasiswaFactory extends Factory
             'gender' => $this->faker->randomElement(['L', 'P']),
             'birth_place' => $this->faker->city(),
             'birth_date' => $this->faker->date(),
+            'is_paid_ukt' => true,
         ];
     }
 }

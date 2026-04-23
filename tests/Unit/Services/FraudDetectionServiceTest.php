@@ -8,12 +8,12 @@ use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\User;
 use App\Services\KKN\FraudDetectionService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Concerns\RefreshPostgresDatabase;
 use Tests\TestCase;
 
 class FraudDetectionServiceTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshPostgresDatabase;
 
     private FraudDetectionService $service;
 

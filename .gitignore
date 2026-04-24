@@ -142,6 +142,10 @@ uploads/
 .qwen/
 .codex-psysh/
 .venv_pdf/
+.antigravity/
+.codeium/
+.windsurf/
 
 # Test results & reports (regeneratable)
 /docs/
+lint_report.json

@@ -1,6 +1,6 @@
 # KKN UIN SAIZU — Project Context for AI Assistant
 
-> **Last Updated:** 2026-02-15
+> **Last Updated:** 2026-04-24
 > **Maintained by:** Tholib (tholib_server)
 > **Repo:** https://github.com/putrihati-cmd/kknuinsaizu
 > **Local/Staging:** http://localhost:8000
@@ -18,12 +18,13 @@ A full-stack web application managing the entire KKN lifecycle: student registra
 
 | Layer | Technology |
 |---|---|
-| Backend | Laravel 11, PHP 8.2 |
-| Frontend | React 18 + TypeScript, Inertia.js |
-| Styling | Vanilla CSS, clsx utility |
-| Icons | @heroicons/react/24/outline |
-| Auth | Spatie Laravel Permission (roles: `superadmin`, `admin`, `dpl`, `student`) |
-| Database | MySQL, connection name: `kkn` |
+| Backend | Laravel 13, PHP 8.4 |
+| Frontend | React 19 + TypeScript, Inertia.js |
+| Styling | Tailwind CSS 4, clsx utility |
+| Icons | lucide-react |
+| Animations | framer-motion |
+| Auth | Spatie Laravel Permission (roles: `superadmin`, `admin`, `faculty_admin`, `dosen`, `dpl`, `student`) |
+| Database | PostgreSQL 16, Redis 7 |
 | Server | Ubuntu, Nginx, path: `/var/www/kknuinsaizu` |
 | Domain | localhost:8000 (Development) |
 | Server | Local-First (Mac mini) |
@@ -168,18 +169,20 @@ Pages/Admin/
 
 ## 7. Sidebar Navigation (Current State)
 
-The sidebar in `resources/js/Components/Sidebar.tsx` has 4 groups for admin:
+The sidebar in `resources/js/Components/Sidebar.tsx` uses **contextual navigation** with 3 admin contexts:
 
-- **Utama:** Dashboard
-- **Master Data:** Tahun Akademik, Periode, Fakultas, Prodi, Lokasi, Dosen, Mahasiswa
-- **Kelola KKN:** Kelompok, Pengguna, Pendaftaran
-- **Aktivitas Global:** Laporan Harian, Program Kerja, Laporan Akhir, Evaluasi, Workshop, Proposal, Generator Nilai, Rekap Nilai, Log Audit, Pengaturan Nilai
+- **OPERATIONS (default):** Statistik KKN, Struktur Program, Manajemen Peserta, Penempatan & Monitoring, Penilaian & Output
+- **BLOG/CONTENT:** Warta Utama, Pusat Unduhan, Profil Lembaga, Skema KKN Publik
+- **SYSTEM:** Intelijen Sistem, Sinkronisasi Master, Manajemen Pengguna, Pengaturan Global, Skema Penilaian, Template Sertifikat
 
-**⚠️ MISSING sidebar links:**
-- `/admin/dpl/assignment` (Penugasan DPL) — page exists, no sidebar link
-- `/admin/peserta/transfer` (Transfer Peserta) — page exists, no sidebar link
+Context is auto-detected from the current URL path. A "Hub Switcher" link at the bottom allows switching between contexts.
 
-**⚠️ BUG:** Line 210 has debug output: `DEBUG: {JSON.stringify(roles)}` — should be removed.
+Dosen/DPL and Student roles have their own dedicated navigation sets.
+
+**✅ Previously reported issues (FIXED):**
+- ~~DEBUG output on line 210~~ — Sidebar fully refactored, debug removed
+- ~~Missing DPL Assignment link~~ — Now included as 'Penugasan DPL' in Operations context
+- ~~Missing Student Transfer link~~ — Needs verification
 
 ## 8. Key Services
 
@@ -221,10 +224,12 @@ php artisan view:cache
 
 ## 11. Known Issues / TODO
 
-- [ ] Sidebar missing links for DPL Assignment and Student Transfer
-- [ ] Sidebar has DEBUG output on line 210
+- [x] ~~Sidebar missing links for DPL Assignment~~ — Fixed: included in Operations nav
+- [x] ~~Sidebar has DEBUG output on line 210~~ — Fixed: sidebar fully refactored
+- [ ] Verify Student Transfer link is accessible from sidebar
 - [ ] Dashboard could use more visualizations (charts, trends)
 - [ ] Some admin pages may not be fully period-scoped
 - [ ] `npm run build` needed on server after frontend changes
 - [ ] Run `MigrateDplPeriodDataSeeder` on server
 - [ ] Comprehensive prompt for full dashboard overhaul saved at `PROMPT_SUPERADMIN_DASHBOARD.md`
+- [ ] `context.md` tech stack was outdated (previously said Laravel 11/React 18) — now corrected to Laravel 13/React 19

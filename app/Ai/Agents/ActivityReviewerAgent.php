@@ -19,6 +19,14 @@ class ActivityReviewerAgent implements Agent, Conversational, HasStructuredOutpu
     use Promptable;
 
     /**
+     * Get the provider that the agent should use.
+     */
+    public function provider(): string
+    {
+        return 'alibaba';
+    }
+
+    /**
      * Get the model that the agent should use.
      */
     public function model(): string

@@ -86,12 +86,12 @@ return [
             'url' => env('GEMINI_URL', 'https://generativelanguage.googleapis.com/v1'),
             'models' => [
                 'text' => [
-                    // Production: gemini-2.5-flash (optimal untuk speed + quality)
-                    'default' => 'gemini-2.5-flash',
+                    // Production: gemini-2.0-flash (optimal untuk speed + quality)
+                    'default' => 'gemini-2.0-flash',
                     // Fastest model untuk real-time responses (student notifications, etc)
-                    'cheapest' => 'gemini-2.5-flash-lite',
+                    'cheapest' => 'gemini-2.0-flash-lite',
                     // Most capable model untuk complex reasoning (admin review, verification)
-                    'smartest' => 'gemini-2.5-pro',
+                    'smartest' => 'gemini-1.5-pro',
                 ],
             ],
         ],

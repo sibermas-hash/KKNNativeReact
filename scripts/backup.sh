@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # ╔═══════════════════════════════════════════════════════════════════════╗
 # ║         KKN UIN Saizu - Database Backup Script                        ║
@@ -164,8 +164,8 @@ backup_filesystems() {
 # ─────────────────────────────────────────────────────────────────────────
 
 rotate_daily_to_weekly() {
-    # Move oldest daily backup to weekly
-    local oldest_daily=$(find "${DAILY_DIR}" -type f -name "*.sql.gz" -printf '%T@ %p\n' | sort -n | head -1 | cut -d' ' -f2-)
+    # Move oldest daily backup to weekly (FreeBSD compatible)
+    local oldest_daily=$(ls -tr "${DAILY_DIR}"/*.sql.gz 2>/dev/null | head -n 1)
     
     if [ -n "${oldest_daily}" ]; then
         mv "${oldest_daily}" "${WEEKLY_DIR}/"
@@ -174,10 +174,14 @@ rotate_daily_to_weekly() {
 }
 
 rotate_weekly_to_monthly() {
-    # Move oldest weekly backup to monthly
-    local oldest_weekly=$(find "${WEEKLY_DIR}" -type f -name "*.sql.gz" -printf '%T@ %p\n' | sort -n | head -1 | cut -d' ' -f2-)
+    # Move oldest weekly backup to monthly (FreeBSD compatible)
+    local oldest_weekly=$(ls -tr "${WEEKLY_DIR}"/*.sql.gz 2>/dev/null | head -n 1)
     
     if [ -n "${oldest_weekly}" ]; then
+        mv "${oldest_weekly}" "${MONTHLY_DIR}/"
+        log "Rotated weekly backup to monthly: $(basename ${oldest_weekly})"
+    fi
+}
         mv "${oldest_weekly}" "${MONTHLY_DIR}/"
         log "Rotated weekly backup to monthly: $(basename ${oldest_weekly})"
     fi

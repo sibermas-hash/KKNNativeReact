@@ -177,16 +177,23 @@ echo ""
 echo "Step 8: Fixing file permissions..."
 echo "─────────────────────────────────────────────────────────────"
 
-# Get web server user (usually www-data or _www)
-WEB_USER="${WEB_USER:-www-data}"
-WEB_GROUP="${WEB_GROUP:-www-data}"
+# Get web server user (usually www in FreeBSD, www-data in Linux)
+WEB_USER="${WEB_USER:-www}"
+WEB_GROUP="${WEB_GROUP:-www}"
 
-if id "$WEB_USER" &>/dev/null 2>&1; then
+if id "$WEB_USER" >/dev/null 2>&1; then
     chown -R "$WEB_USER:$WEB_GROUP" storage bootstrap/cache 2>/dev/null || true
     chmod -R 775 storage bootstrap/cache 2>/dev/null || true
     success "File permissions fixed for $WEB_USER:$WEB_GROUP"
 else
-    warning "Web server user '$WEB_USER' not found, skipping chown"
+    # Fallback for Linux if running on Linux
+    if id "www-data" >/dev/null 2>&1; then
+        chown -R "www-data:www-data" storage bootstrap/cache 2>/dev/null || true
+        chmod -R 775 storage bootstrap/cache 2>/dev/null || true
+        success "File permissions fixed for www-data:www-data"
+    else
+        warning "Web server user not found, skipping chown"
+    fi
 fi
 
 # ─────────────────────────────────────────────────────────────────────────
@@ -245,7 +252,7 @@ echo "  6. Enable application monitoring"
 echo ""
 echo "Troubleshooting:"
 echo "  • Database issues: php artisan migrate --force"
-echo "  • Permission issues: chown -R www-data:www-data storage bootstrap/cache"
+echo "  • Permission issues: chown -R \$WEB_USER:\$WEB_GROUP storage bootstrap/cache"
 echo "  • Cache issues: php artisan cache:clear && php artisan route:clear"
 echo ""
 echo "Documentation:"

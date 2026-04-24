@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Dependency Update Script
 # This script updates dependencies safely in minor/patch versions only

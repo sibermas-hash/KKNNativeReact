@@ -1,15 +1,15 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # ╔═══════════════════════════════════════════════════════════════════════╗
 # ║    Setup Backup Automation with Cron for KKN System                   ║
 # ║    Run this script as root to configure automatic backups              ║
+# ║    Compatible with FreeBSD & Linux                                    ║
 # ╚═══════════════════════════════════════════════════════════════════════╝
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKUP_SCRIPT="${SCRIPT_DIR}/backup.sh"
-CRON_FILE="/etc/cron.d/kkn-backup"
 LOG_DIR="/var/log/kkn"
 
 echo "╔════════════════════════════════════════════════════════════╗"
@@ -36,48 +36,49 @@ echo "✓ Log directory created: ${LOG_DIR}"
 chmod +x "${BACKUP_SCRIPT}"
 echo "✓ Backup script made executable"
 
-# Create cron job
-cat > "${CRON_FILE}" << 'EOF'
-# ─────────────────────────────────────────────────────────────────────
-# KKN System Automated Backups
-# ─────────────────────────────────────────────────────────────────────
+# OS Detection
+IS_FREEBSD=false
+if [ "$(uname)" == "FreeBSD" ]; then
+    IS_FREEBSD=true
+fi
 
-# Environment variables
+echo "✓ OS Detected: $(uname)"
+
+# Create cron job entry
+CRON_ENTRY="30 2 * * * root ${BACKUP_SCRIPT} >> ${LOG_DIR}/backup.log 2>&1"
+
+if [ "$IS_FREEBSD" = true ]; then
+    echo ""
+    echo "📝 FreeBSD detected. Please add the following line to /etc/crontab:"
+    echo "─────────────────────────────────────────────────────────────"
+    echo "${CRON_ENTRY}"
+    echo "─────────────────────────────────────────────────────────────"
+    echo ""
+    echo "Or run this command to append it automatically:"
+    echo "echo \"${CRON_ENTRY}\" >> /etc/crontab"
+else
+    CRON_FILE="/etc/cron.d/kkn-backup"
+    cat > "${CRON_FILE}" << EOF
+# KKN System Automated Backups
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-MAILTO=root
-
-# Schedule: Daily at 2:30 AM
-30 2 * * * root /var/www/kkn-system/scripts/backup.sh >> /var/log/kkn/backup.log 2>&1
-
-# Schedule: Weekly summary every Sunday at 3:00 AM
-0 3 * * 0 root /var/www/kkn-system/scripts/backup-summary.sh >> /var/log/kkn/backup.log 2>&1
+${CRON_ENTRY}
 EOF
-
-chmod 644 "${CRON_FILE}"
-echo "✓ Cron job installed: ${CRON_FILE}"
+    chmod 644 "${CRON_FILE}"
+    echo "✓ Cron job installed: ${CRON_FILE}"
+fi
 
 echo ""
 echo "╔════════════════════════════════════════════════════════════╗"
 echo "║  Setup Complete!                                           ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 echo ""
-echo "Backup Schedule:"
-echo "  • Daily:   2:30 AM (7 days retention)"
-echo "  • Weekly:  4 weeks retention"
-echo "  • Monthly: 12 months retention"
+echo "Backup Schedule: 2:30 AM Daily"
+echo "Log Location:    ${LOG_DIR}/backup.log"
 echo ""
-echo "Logs:"
-echo "  • Location: /var/log/kkn/backup.log"
-echo "  • View:     tail -f /var/log/kkn/backup.log"
-echo ""
-echo "Manual Backup:"
-echo "  • Run: ${BACKUP_SCRIPT}"
-echo ""
-echo "Test Backup:"
-echo "  • Run: sudo -u www-data ${BACKUP_SCRIPT}"
-echo ""
-echo "Next backup: $(date -d 'tomorrow 02:30' '+%Y-%m-%d %H:%M')"
+echo "Manual Backup Test:"
+echo "  • FreeBSD: sudo -u www ${BACKUP_SCRIPT}"
+echo "  • Linux:   sudo -u www-data ${BACKUP_SCRIPT}"
 echo ""
 
 exit 0

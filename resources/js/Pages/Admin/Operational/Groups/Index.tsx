@@ -2,7 +2,7 @@ import { type FormEvent, useState } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import {
- Download, MapPin, Pencil, Plus, Search, Trash2, Users, UserCheck, Filter, CheckCircle2, Activity, Layers, ArrowRight, Save, X, RefreshCw, Upload, Info
+ Download, MapPin, Pencil, Plus, Search, Trash2, Users, UserCheck, Filter, CheckCircle2, Activity, Layers, ArrowRight, Save, X, RefreshCw, Upload, Info, Target
 } from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
 import { ConfirmDialog, Pagination, Modal, FormInput, FormSelect, Button, Badge } from '@/Components/ui';
@@ -13,6 +13,7 @@ import PageHeader from '@/Components/Premium/PageHeader';
 import SearchInput from '@/Components/Premium/SearchInput';
 import StatusTag from '@/Components/Premium/StatusTag';
 import ContentPanel from '@/Components/Premium/ContentPanel';
+import StatCard from '@/Components/Premium/StatCard';
 import PremiumTable, { PremiumTableRow, PremiumTableCell } from '@/Components/Premium/PremiumTable';
 
 interface Group {

@@ -15,6 +15,7 @@ interface MahasiswaData {
 }
 interface AccountData {
   id: number; username: string; name: string; email: string | null;
+  avatar: string | null;
   is_active: boolean; must_change_password: boolean; roles: string[];
   created_at: string | null;
 }
@@ -88,19 +89,51 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
               </p>
             </div>
           )}
+{/* HEADER */}
+<div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-emerald-50 pt-6">
+  <div className="flex flex-col md:flex-row items-center md:items-start gap-5 text-center md:text-left">
+    {/* AVATAR / PHOTO */}
+    <div className="relative shrink-0 group">
+      <div className="h-24 w-24 md:h-28 md:w-28 rounded-2xl bg-white border-4 border-emerald-50 shadow-sm overflow-hidden flex items-center justify-center ring-4 ring-emerald-50/30">
+        {account?.avatar ? (
+          <img 
+            src={`/storage/${account.avatar}`} 
+            alt={mahasiswa.nama} 
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="h-full w-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <span className="text-3xl font-black font-display uppercase tracking-tighter">
+              {mahasiswa.nama.charAt(0)}
+            </span>
+          </div>
+        )}
+      </div>
+      {account?.is_active && (
+        <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center shadow-sm" title="Akun Aktif">
+          <CheckCircle2 size={12} className="text-white" />
+        </div>
+      )}
+    </div>
 
-          {/* HEADER */}
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-emerald-50 pt-6">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <Link href="/admin/mahasiswa" className="text-emerald-800 hover:text-[#0d9488] transition-colors flex items-center gap-1.5 text-sm">
-                  <ArrowLeft size={15} /> Direktori Mahasiswa
-                </Link>
-              </div>
-              <h1 className="text-2xl font-black font-display uppercase tracking-tighter text-emerald-950 leading-tight">{mahasiswa.nama}</h1>
-              <p className="text-sm text-emerald-800">NIM: <strong className="text-emerald-800">{mahasiswa.nim}</strong> · Angkatan <strong className="text-emerald-800">{mahasiswa.batch_year || '—'}</strong></p>
-            </div>
-            {account && (
+    <div className="space-y-1">
+      <div className="flex items-center justify-center md:justify-start gap-2">
+        <Link href="/admin/mahasiswa" className="text-emerald-800 hover:text-[#0d9488] transition-colors flex items-center gap-1.5 text-sm font-medium">
+          <ArrowLeft size={14} strokeWidth={2.5} /> Kembali ke Direktori
+        </Link>
+      </div>
+      <h1 className="text-2xl md:text-3xl font-black font-display uppercase tracking-tight text-emerald-950 leading-none py-1">{mahasiswa.nama}</h1>
+      <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-1 text-sm text-emerald-800/70 font-bold uppercase tracking-wide">
+        <span>NIM: <strong className="text-emerald-900">{mahasiswa.nim}</strong></span>
+        <span className="hidden md:inline opacity-30">•</span>
+        <span>Angkatan <strong className="text-emerald-900">{mahasiswa.batch_year || '—'}</strong></span>
+        <span className="hidden md:inline opacity-30">•</span>
+        <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded text-[10px] font-black">{mahasiswa.prodi?.nama || 'UMUM'}</span>
+      </div>
+    </div>
+  </div>
+  {account && (
+...
               <div className="flex items-center gap-3 shrink-0">
                 <button
                   onClick={() => setConfirmReset(true)}

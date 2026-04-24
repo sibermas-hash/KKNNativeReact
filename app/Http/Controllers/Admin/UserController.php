@@ -321,6 +321,7 @@ class UserController extends Controller
                 'username' => $account->username,
                 'name' => $account->name,
                 'email' => $account->email,
+                'avatar' => $account->avatar,
                 'is_active' => (bool) $account->is_active,
                 'must_change_password' => (bool) $account->must_change_password,
                 'roles' => $account->roles->pluck('name')->toArray(),

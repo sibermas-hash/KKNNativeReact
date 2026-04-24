@@ -44,7 +44,7 @@ class JenisKknController extends Controller
                 'require_parent_permission' => (bool) $j->require_parent_permission,
                 'require_health_certificate' => (bool) $j->require_health_certificate,
                 'require_bta_ppi' => (bool) $j->require_bta_ppi,
-                'specific_prodi_ids' => $j->specific_prodi_ids ?? [],
+                'specific_prodi_ids' => is_array($j->specific_prodi_ids) ? array_map('intval', $j->specific_prodi_ids) : [],
                 'color' => $j->color,
                 'is_active' => $j->is_active,
                 'sort_order' => $j->sort_order,

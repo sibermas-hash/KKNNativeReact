@@ -260,12 +260,12 @@ class EligibilityService
 
         $specificProdiIds = $periode->jenisKkn->specific_prodi_ids;
 
-        if (empty($specificProdiIds)) {
+        if (empty($specificProdiIds) || !is_array($specificProdiIds)) {
             return ['passed' => true, 'key' => 'program_prodi', 'message' => 'Terbuka untuk semua program studi'];
         }
 
         $studentProdiId = $mahasiswa->prodi_id;
-        $isAllowed = in_array($studentProdiId, $specificProdiIds);
+        $isAllowed = in_array((int)$studentProdiId, array_map('intval', $specificProdiIds));
 
         return [
             'passed' => $isAllowed,

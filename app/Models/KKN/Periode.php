@@ -24,6 +24,7 @@ class Periode extends Model
         'jenis_kkn_id',
         'periode',
         'name',
+        'theme',
         'start_date',
         'end_date',
         'registration_start',

@@ -42,8 +42,8 @@ class PeriodeController extends Controller
             'jenis_kkn_id' => ['required', 'exists:App\Models\KKN\JenisKkn,id'],
             'periode' => ['required', 'integer'],
             'name' => ['nullable', 'string', 'max:100'],
-            'start_date' => ['required', 'date', function ($attribute, $value, $fail) use ($request) {
-                $registrationEnd = $request->input('registration_end');
+            'theme' => ['nullable', 'string', 'max:255'],
+            'start_date' => ['required', 'date', function ($attribute, $value, $fail) use ($request) {                $registrationEnd = $request->input('registration_end');
                 if ($registrationEnd && $value) {
                     $endDate = Carbon::parse($registrationEnd);
                     $startDate = Carbon::parse($value);

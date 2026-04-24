@@ -42,6 +42,8 @@ interface JenisKkn {
   require_bta_ppi: boolean;
   specific_prodi_ids: number[];
   custom_requirements: string[];
+  required_documents: string[];
+  allowed_regencies: string[];
   color: string;
   is_active: boolean;
   sort_order: number;
@@ -75,6 +77,8 @@ export default function JenisKknIndex({ jenisKkn, filters, prodis, registrationM
     require_bta_ppi: true,
     specific_prodi_ids: [] as number[],
     custom_requirements: [] as string[],
+    required_documents: [] as string[],
+    allowed_regencies: [] as string[],
     color: 'emerald',
     is_active: true,
     sort_order: 0,
@@ -94,6 +98,30 @@ export default function JenisKknIndex({ jenisKkn, filters, prodis, registrationM
     const updated = form.data.custom_requirements.filter((_, i) => i !== index);
     form.setData('custom_requirements', updated);
   };
+
+  const addRequiredDocument = () => {
+    form.setData('required_documents', [...form.data.required_documents, '']);
+  };
+
+  const updateRequiredDocument = (index: number, value: string) => {
+    const updated = [...form.data.required_documents];
+    updated[index] = value;
+    form.setData('required_documents', updated);
+  };
+
+  const removeRequiredDocument = (index: number) => {
+    const updated = form.data.required_documents.filter((_, i) => i !== index);
+    form.setData('required_documents', updated);
+  };
+
+  const JAWA_TENGAH_REGENCIES = [
+    'BANYUMAS', 'PURBALINGGA', 'BANJARNEGARA', 'KEBUMEN', 'CILACAP', 
+    'BREBES', 'TEGAL', 'PEMALANG', 'PEKALONGAN', 'BATANG', 'KENDAL', 
+    'SEMARANG', 'DEMAK', 'KUDUS', 'PATI', 'JEPARA', 'REMBANG', 'BLORA', 
+    'GROBOGAN', 'SRAGEN', 'KARANGANYAR', 'WONOGIRI', 'SUKOHARJO', 
+    'KLATEN', 'BOYOLALI', 'MAGELANG', 'TEMANGGUNG', 'WONOSOBO', 'PURWOREJO',
+    'PANGANDARAN'
+  ];
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -146,6 +174,8 @@ export default function JenisKknIndex({ jenisKkn, filters, prodis, registrationM
       require_bta_ppi: item.require_bta_ppi,
       specific_prodi_ids: item.specific_prodi_ids ?? [],
       custom_requirements: item.custom_requirements ?? [],
+      required_documents: item.required_documents ?? [],
+      allowed_regencies: item.allowed_regencies ?? [],
       color: item.color,
       is_active: item.is_active,
       sort_order: item.sort_order,
@@ -422,6 +452,63 @@ export default function JenisKknIndex({ jenisKkn, filters, prodis, registrationM
                     <p className="text-[10px] text-slate-400 italic text-center py-2 bg-white/50 rounded-xl border border-dashed border-slate-200">Belum ada persyaratan kustom.</p>
                   )}
                 </div>
+              </div>
+
+              <div className="space-y-1.5 pt-4 border-t border-slate-100">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider pl-1">Daftar Dokumen Wajib (Upload File)</label>
+                  <button
+                    type="button"
+                    onClick={addRequiredDocument}
+                    className="text-[10px] font-bold text-cyan-600 hover:text-cyan-700 flex items-center gap-1 uppercase tracking-tight"
+                  >
+                    <Plus size={12} /> Tambah Dokumen
+                  </button>
+                </div>
+                
+                <div className="space-y-2">
+                  {form.data.required_documents.map((doc, index) => (
+                    <div key={index} className="flex items-center gap-2 group animate-in slide-in-from-left-2 duration-200">
+                      <input
+                        type="text"
+                        value={doc}
+                        onChange={(e) => updateRequiredDocument(index, e.target.value)}
+                        className="flex-1 h-10 px-4 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 focus:border-cyan-600 outline-none bg-white"
+                        placeholder="Cth: Karya Ilmiah / Paspor"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeRequiredDocument(index)}
+                        className="h-8 w-8 flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-1.5 pt-4 border-t border-slate-100">
+                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider pl-1">Batasan Wilayah Kabupaten (Opsional)</label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-40 overflow-y-auto p-3 bg-white border border-slate-100 rounded-xl scrollbar-hide">
+                  {JAWA_TENGAH_REGENCIES.map(regency => (
+                    <label key={regency} className="flex items-center gap-2 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        checked={form.data.allowed_regencies.includes(regency)}
+                        onChange={(e) => {
+                          const updated = e.target.checked 
+                            ? [...form.data.allowed_regencies, regency]
+                            : form.data.allowed_regencies.filter(r => r !== regency);
+                          form.setData('allowed_regencies', updated);
+                        }}
+                        className="w-3.5 h-3.5 text-cyan-600 border-slate-300 rounded focus:ring-cyan-500"
+                      />
+                      <span className="text-[10px] font-bold text-slate-600 group-hover:text-cyan-600 transition-colors uppercase">{regency}</span>
+                    </label>
+                  ))}
+                </div>
+                <p className="text-[9px] text-slate-400 font-medium pl-1 italic">* Jika kosong, maka semua wilayah diizinkan.</p>
               </div>
             </div>
 

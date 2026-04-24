@@ -28,6 +28,8 @@ class JenisKkn extends Model
         'specific_prodi_ids',
         'require_bta_ppi',
         'custom_requirements',
+        'required_documents',
+        'allowed_regencies',
         'color',
         'is_active',
         'sort_order',
@@ -42,6 +44,8 @@ class JenisKkn extends Model
         'require_bta_ppi' => 'boolean',
         'specific_prodi_ids' => 'array',
         'custom_requirements' => 'array',
+        'required_documents' => 'array',
+        'allowed_regencies' => 'array',
     ];
 
     // ─── Label helpers ─────────────────────────────────

@@ -36,6 +36,11 @@ interface JenisKkn {
   placement_mode_label: string;
   min_sks: number;
   min_gpa: string;
+  require_not_married: boolean;
+  require_parent_permission: boolean;
+  require_health_certificate: boolean;
+  require_bta_ppi: boolean;
+  specific_prodi_ids: number[];
   color: string;
   is_active: boolean;
   sort_order: number;
@@ -45,11 +50,12 @@ interface JenisKkn {
 interface Props {
   jenisKkn: JenisKkn[];
   filters: { search?: string };
+  prodis: { id: number; nama: string }[];
   registrationModes: { value: string; label: string }[];
   placementModes: { value: string; label: string }[];
 }
 
-export default function JenisKknIndex({ jenisKkn, filters, registrationModes, placementModes }: Props) {
+export default function JenisKknIndex({ jenisKkn, filters, prodis, registrationModes, placementModes }: Props) {
   const [search, setSearch] = useState(filters.search ?? '');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -62,6 +68,11 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
     placement_mode: 'automatic_after_approval',
     min_sks: 0,
     min_gpa: '0.00',
+    require_not_married: false,
+    require_parent_permission: false,
+    require_health_certificate: false,
+    require_bta_ppi: true,
+    specific_prodi_ids: [] as number[],
     color: 'emerald',
     is_active: true,
     sort_order: 0,
@@ -112,6 +123,11 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
       placement_mode: item.placement_mode,
       min_sks: item.min_sks,
       min_gpa: item.min_gpa,
+      require_not_married: item.require_not_married,
+      require_parent_permission: item.require_parent_permission,
+      require_health_certificate: item.require_health_certificate,
+      require_bta_ppi: item.require_bta_ppi,
+      specific_prodi_ids: item.specific_prodi_ids ?? [],
       color: item.color,
       is_active: item.is_active,
       sort_order: item.sort_order,
@@ -281,6 +297,74 @@ export default function JenisKknIndex({ jenisKkn, filters, registrationModes, pl
               >
                 {placementModes.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
               </select>
+            </div>
+
+            <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
+              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Persyaratan Tambahan</h4>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl cursor-pointer hover:border-cyan-200 transition-all">
+                  <input
+                    type="checkbox"
+                    checked={form.data.require_bta_ppi}
+                    onChange={(e) => form.setData('require_bta_ppi', e.target.checked)}
+                    className="w-4 h-4 text-cyan-600 border-slate-300 rounded focus:ring-cyan-500"
+                  />
+                  <span className="text-xs font-bold text-slate-700">Wajib Lulus BTA-PPI</span>
+                </label>
+
+                <label className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl cursor-pointer hover:border-cyan-200 transition-all">
+                  <input
+                    type="checkbox"
+                    checked={form.data.require_not_married}
+                    onChange={(e) => form.setData('require_not_married', e.target.checked)}
+                    className="w-4 h-4 text-cyan-600 border-slate-300 rounded focus:ring-cyan-500"
+                  />
+                  <span className="text-xs font-bold text-slate-700">Belum Menikah</span>
+                </label>
+
+                <label className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl cursor-pointer hover:border-cyan-200 transition-all">
+                  <input
+                    type="checkbox"
+                    checked={form.data.require_parent_permission}
+                    onChange={(e) => form.setData('require_parent_permission', e.target.checked)}
+                    className="w-4 h-4 text-cyan-600 border-slate-300 rounded focus:ring-cyan-500"
+                  />
+                  <span className="text-xs font-bold text-slate-700">Izin Orang Tua</span>
+                </label>
+
+                <label className="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl cursor-pointer hover:border-cyan-200 transition-all">
+                  <input
+                    type="checkbox"
+                    checked={form.data.require_health_certificate}
+                    onChange={(e) => form.setData('require_health_certificate', e.target.checked)}
+                    className="w-4 h-4 text-cyan-600 border-slate-300 rounded focus:ring-cyan-500"
+                  />
+                  <span className="text-xs font-bold text-slate-700">Surat Keterangan Sehat</span>
+                </label>
+              </div>
+
+              <div className="space-y-1.5 pt-2">
+                <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider pl-1">Khusus Program Studi (Opsional)</label>
+                <select
+                  multiple
+                  value={form.data.specific_prodi_ids.map(id => id.toString())}
+                  onChange={(e) => {
+                    const options = e.target.options;
+                    const value = [];
+                    for (let i = 0, l = options.length; i < l; i++) {
+                      if (options[i].selected) {
+                        value.push(parseInt(options[i].value));
+                      }
+                    }
+                    form.setData('specific_prodi_ids', value);
+                  }}
+                  className="w-full h-24 px-4 py-2 rounded-xl border-2 border-slate-50 text-sm font-semibold text-slate-700 focus:border-cyan-600 outline-none bg-white font-sans scrollbar-hide"
+                >
+                  {prodis.map(p => <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>)}
+                </select>
+                <p className="text-[10px] text-slate-400 font-medium pl-1 italic">* Tahan Ctrl/Cmd untuk memilih lebih dari satu prodi.</p>
+              </div>
             </div>
 
             <div className="flex items-center gap-4 pt-2">

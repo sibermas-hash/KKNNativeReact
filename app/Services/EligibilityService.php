@@ -58,13 +58,13 @@ class EligibilityService
         $checks['min_sks'] = $this->checkMinimumSKS($mahasiswa, $periode, $settings);
         $checks['min_gpa'] = $this->checkMinimumGPA($mahasiswa, $periode, $settings);
         $checks['ukt_payment'] = $this->checkUkt($mahasiswa);
-        $checks['bta_ppi'] = $this->checkBtaPpi($mahasiswa);
+        $checks['bta_ppi'] = $this->checkBtaPpi($mahasiswa, $periode);
         $checks['program_prodi'] = $this->checkProgramProdiRestriction($mahasiswa, $periode);
         $checks['personal_status'] = $this->checkPersonalStatusMandate($mahasiswa, $periode);
 
         // Cek dokumen & registrasi aktif: hanya untuk konteks pendaftaran
         if ($context === 'registration') {
-            $checks['documents'] = $this->checkDocuments($mahasiswa);
+            $checks['documents'] = $this->checkDocuments($mahasiswa, $periode);
             $checks['no_active_registration'] = $this->checkNoActiveRegistration($mahasiswa, $periodeId, $preloadedData['active_reg_ids'] ?? null);
         }
 
@@ -224,21 +224,33 @@ class EligibilityService
     }
 
     /**
-     * Check BTA-PPI certification
+     * Check BTA-PPI certification (Data-driven from Jenis KKN)
      */
-    private function checkBtaPpi(Mahasiswa $mahasiswa): array
+    private function checkBtaPpi(Mahasiswa $mahasiswa, ?Periode $periode): array
     {
+        $required = $periode?->jenisKkn ? (bool) $periode->jenisKkn->require_bta_ppi : true;
+        
+        if (! $required) {
+            return [
+                'passed' => true,
+                'key' => 'bta_ppi',
+                'message' => 'Lulus BTA-PPI tidak diwajibkan untuk skema ini.',
+                'required' => false,
+            ];
+        }
+
         $passed = in_array(strtoupper(trim($mahasiswa->status_bta_ppi ?? '')), ['LULUS', 'PASSED', 'SUCCESS']);
 
         return [
             'passed' => $passed,
             'key' => 'bta_ppi',
-            'message' => $passed ? 'Lulus BTA-PPI' : '[Prerequisite failure] - Belum lulus BTA/PPI atau syarat khusus skema.',
+            'message' => $passed ? 'Lulus BTA-PPI' : '[Prerequisite failure] - Belum lulus BTA/PPI.',
+            'required' => true,
         ];
     }
 
     /**
-     * Restriction check for specific programs like Kampung Zakat (Mazawa only)
+     * Restriction check for specific programs (Data-driven from Jenis KKN)
      */
     private function checkProgramProdiRestriction(Mahasiswa $mahasiswa, ?Periode $periode): array
     {
@@ -246,31 +258,25 @@ class EligibilityService
             return ['passed' => true, 'key' => 'program_prodi', 'message' => 'N/A'];
         }
 
-        $kknTypeLabel = strtolower($periode->jenisKkn->name);
+        $specificProdiIds = $periode->jenisKkn->specific_prodi_ids;
 
-        if (str_contains($kknTypeLabel, 'zakat')) {
-            $prodiName = strtolower($mahasiswa->prodi?->nama ?? '');
-
-            // Re-check if relation missing
-            if (empty($prodiName) && ! $mahasiswa->relationLoaded('prodi')) {
-                $prodiName = strtolower($mahasiswa->prodi()->first()?->nama ?? '');
-            }
-
-            $isMazawa = str_contains($prodiName, 'zakat') || str_contains($prodiName, 'mazawa');
-
-            return [
-                'passed' => $isMazawa,
-                'key' => 'program_prodi',
-                'message' => $isMazawa ? 'Prodi sesuai (Mazawa)' : 'Skema ini khusus untuk mahasiswa Prodi Mazawa',
-                'reason' => 'Khusus Program Studi Manajemen Zakat dan Wakaf (Mazawa).',
-            ];
+        if (empty($specificProdiIds)) {
+            return ['passed' => true, 'key' => 'program_prodi', 'message' => 'Terbuka untuk semua program studi'];
         }
 
-        return ['passed' => true, 'key' => 'program_prodi', 'message' => 'Lolos sensor fakultas/prodi'];
+        $studentProdiId = $mahasiswa->prodi_id;
+        $isAllowed = in_array($studentProdiId, $specificProdiIds);
+
+        return [
+            'passed' => $isAllowed,
+            'key' => 'program_prodi',
+            'message' => $isAllowed ? 'Program studi sesuai' : 'Skema ini dibatasi untuk program studi tertentu.',
+            'reason' => 'Pembatasan khusus program studi sesuai Edaran.',
+        ];
     }
 
     /**
-     * Mandatory status notices for special KKN (Panduan KKN 56)
+     * Mandatory status notices (Data-driven from Jenis KKN)
      */
     private function checkPersonalStatusMandate(Mahasiswa $mahasiswa, ?Periode $periode): array
     {
@@ -278,45 +284,60 @@ class EligibilityService
             return ['passed' => true, 'key' => 'personal_status', 'message' => 'N/A'];
         }
 
-        $specialKeywords = ['nusantara', 'internasional', 'kolaborasi', 'tematik', 'katana', 'zakat'];
-        $kknTypeLabel = strtolower($periode->jenisKkn->name);
-
-        $isSpecial = false;
-        foreach ($specialKeywords as $word) {
-            if (str_contains($kknTypeLabel, $word)) {
-                $isSpecial = true;
-                break;
-            }
+        $jkkn = $periode->jenisKkn;
+        $messages = [];
+        
+        if ($jkkn->require_not_married) {
+            $messages[] = 'Belum Menikah';
+        }
+        if ($jkkn->require_parent_permission) {
+            $messages[] = 'Izin Orang Tua';
         }
 
-        if ($isSpecial) {
-            return [
-                'passed' => true, // Notice only, as system doesn't track marriage/pregnancy yet
-                'key' => 'personal_status',
-                'message' => 'WAJIB: Belum Menikah & Tidak Sedang Hamil/Menyusui (Khusus Perempuan)',
-                'is_warning' => true,
-            ];
+        if (empty($messages)) {
+            return ['passed' => true, 'key' => 'personal_status', 'message' => 'Lolos kriteria umum'];
         }
 
-        return ['passed' => true, 'key' => 'personal_status', 'message' => 'Lolos kriteria umum'];
+        return [
+            'passed' => true, // Notice only
+            'key' => 'personal_status',
+            'message' => 'SYARAT KHUSUS: ' . implode(', ', $messages),
+            'is_warning' => true,
+        ];
     }
 
     /**
-     * Check required documents
+     * Check required documents (Data-driven from Jenis KKN)
      */
-    private function checkDocuments(Mahasiswa $mahasiswa): array
+    private function checkDocuments(Mahasiswa $mahasiswa, ?Periode $periode): array
     {
+        $jkkn = $periode?->jenisKkn;
+        
         $hasHealthCert = ! empty($mahasiswa->health_certificate_path);
         $hasParentPerm = ! empty($mahasiswa->parent_permission_path);
-        $allDocs = $hasHealthCert && $hasParentPerm;
+        
+        $healthRequired = $jkkn ? (bool) $jkkn->require_health_certificate : false;
+        $parentRequired = $jkkn ? (bool) $jkkn->require_parent_permission : false;
+
+        $passed = true;
+        $details = [];
+
+        if ($healthRequired && ! $hasHealthCert) {
+            $passed = false;
+        }
+        if ($parentRequired && ! $hasParentPerm) {
+            $passed = false;
+        }
 
         return [
-            'passed' => $allDocs,
+            'passed' => $passed,
             'key' => 'documents',
-            'message' => $allDocs ? 'Dokumen lengkap' : 'Dokumen tidak lengkap',
+            'message' => $passed ? 'Dokumen persyaratan lengkap' : 'Dokumen persyaratan belum lengkap.',
             'details' => [
                 'health_certificate' => $hasHealthCert,
+                'health_required' => $healthRequired,
                 'parent_permission' => $hasParentPerm,
+                'parent_required' => $parentRequired,
             ],
         ];
     }

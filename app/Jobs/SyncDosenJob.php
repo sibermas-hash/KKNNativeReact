@@ -147,7 +147,7 @@ class SyncDosenJob implements ShouldQueue
             $user->name = $data['nama'] ?? $data['name'] ?? 'Unknown';
             $user->save();
 
-            if (! $user->hasRole('dpl')) {
+            if (! $user->hasRole('dosen')) {
                 $user->assignRole('dosen');
             }
 

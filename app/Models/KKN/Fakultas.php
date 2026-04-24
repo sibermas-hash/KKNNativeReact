@@ -13,9 +13,16 @@ class Fakultas extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'fakultas';
-    protected $fillable = ['nama', 'code', 'master_id'];
+    protected $fillable = ['nama', 'code', 'master_id', 'master_synced_at'];
 
     use HasFactory;
+
+    protected function casts(): array
+    {
+        return [
+            'master_synced_at' => 'datetime',
+        ];
+    }
 
     public function prodi(): HasMany
     {

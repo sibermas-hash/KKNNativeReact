@@ -22,6 +22,11 @@ class JenisKkn extends Model
         'placement_mode',
         'min_sks',
         'min_gpa',
+        'require_not_married',
+        'require_parent_permission',
+        'require_health_certificate',
+        'specific_prodi_ids',
+        'require_bta_ppi',
         'color',
         'is_active',
         'sort_order',
@@ -30,6 +35,11 @@ class JenisKkn extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'min_gpa' => 'decimal:2',
+        'require_not_married' => 'boolean',
+        'require_parent_permission' => 'boolean',
+        'require_health_certificate' => 'boolean',
+        'require_bta_ppi' => 'boolean',
+        'specific_prodi_ids' => 'array',
     ];
 
     // ─── Label helpers ─────────────────────────────────

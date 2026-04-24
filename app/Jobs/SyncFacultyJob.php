@@ -24,7 +24,7 @@ class SyncFacultyJob implements ShouldQueue
         Log::info('SyncFacultyJob: starting faculty sync');
 
         $exitCode = Artisan::call('sync:master-data', [
-            '--type' => 'faculty',
+            '--type' => 'fakultas',
             '--source' => 'api',
             '--force' => true,
         ]);

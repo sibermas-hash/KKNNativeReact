@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Jobs\SyncFacultyJob;
+use App\Jobs\SyncProgramJob;
 use App\Jobs\SyncDosenJob;
 use App\Jobs\SyncMahasiswaJob;
 use App\Models\KKN\DatabaseSyncLog;
@@ -300,6 +302,8 @@ class DatabaseSyncMonitoringService
         match ($failedSync->entity_type) {
             'mahasiswa' => SyncMahasiswaJob::dispatch($failedSync->entity_id),
             'dosen' => SyncDosenJob::dispatch($failedSync->entity_id),
+            'faculty', 'fakultas' => SyncFacultyJob::dispatch(),
+            'program', 'prodi' => SyncProgramJob::dispatch(),
             default => throw new \InvalidArgumentException("Unknown entity type: {$failedSync->entity_type}"),
         };
     }

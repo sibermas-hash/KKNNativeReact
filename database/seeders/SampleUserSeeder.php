@@ -94,7 +94,7 @@ class SampleUserSeeder extends Seeder
             ]
         );
 
-        if (! $lecturerUser->hasRole('dpl')) {
+        if (! $lecturerUser->hasRole('dosen')) {
             $lecturerUser->assignRole('dosen');
         }
     }

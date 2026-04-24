@@ -16,9 +16,12 @@ class Prodi extends Model
 
     protected $table = 'prodi';
 
-    protected $fillable = ['fakultas_id', 'nama', 'code', 'jenjang', 'master_id'];
+    protected $fillable = ['fakultas_id', 'nama', 'code', 'jenjang', 'master_id', 'master_synced_at'];
 
-    protected $casts = ['fakultas_id' => 'integer'];
+    protected $casts = [
+        'fakultas_id' => 'integer',
+        'master_synced_at' => 'datetime',
+    ];
 
     public function fakultas(): BelongsTo
     {

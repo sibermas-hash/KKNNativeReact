@@ -130,7 +130,7 @@ class DatabaseSyncController extends Controller implements HasMiddleware
      */
     public function statistics(Request $request)
     {
-        $entityType = $request->get('entity_type', 'all');
+        $entityType = $this->normalizeEntityType((string) $request->get('entity_type', 'all'));
         $period = $request->get('period', '7');
 
         if ($entityType === 'all') {
@@ -150,11 +150,11 @@ class DatabaseSyncController extends Controller implements HasMiddleware
     public function retry(Request $request)
     {
         $request->validate([
-            'entity_type' => 'required|in:mahasiswa,dosen,faculty,program',
+            'entity_type' => 'required|in:mahasiswa,dosen,faculty,fakultas,program,prodi',
             'limit' => 'nullable|integer|min:1|max:100',
         ]);
 
-        $entityType = $request->input('entity_type');
+        $entityType = $this->normalizeEntityType((string) $request->input('entity_type'));
         $limit = $request->input('limit', 10);
 
         $retried = $this->monitoringService->retryFailedSyncs($entityType, $limit);
@@ -229,12 +229,12 @@ class DatabaseSyncController extends Controller implements HasMiddleware
     public function manualSync(Request $request)
     {
         $request->validate([
-            'entity_type' => 'required|in:mahasiswa,dosen,faculty,program',
+            'entity_type' => 'required|in:mahasiswa,dosen,faculty,fakultas,program,prodi',
             'entity_id' => 'nullable|string',
             'sync_mode' => 'required|in:full,incremental',
         ]);
 
-        $entityType = $request->input('entity_type');
+        $entityType = $this->normalizeEntityType((string) $request->input('entity_type'));
         $entityId = $request->input('entity_id');
         $syncMode = $request->input('sync_mode');
 
@@ -254,7 +254,7 @@ class DatabaseSyncController extends Controller implements HasMiddleware
             'dosen' => $syncMode === 'full'
                 ? SyncAllDosenJob::dispatch()
                 : SyncDosenJob::dispatch($entityId),
-            'faculty' => SyncFacultyJob::dispatch(),
+            'fakultas' => SyncFacultyJob::dispatch(),
             'program' => SyncProgramJob::dispatch(),
         };
 
@@ -276,5 +276,14 @@ class DatabaseSyncController extends Controller implements HasMiddleware
         return Inertia::render('Admin/DatabaseSync/Show', [
             'log' => $log,
         ]);
+    }
+
+    private function normalizeEntityType(string $entityType): string
+    {
+        return match (strtolower(trim($entityType))) {
+            'faculty', 'fakultas' => 'fakultas',
+            'program', 'prodi' => 'program',
+            default => strtolower(trim($entityType)),
+        };
     }
 }

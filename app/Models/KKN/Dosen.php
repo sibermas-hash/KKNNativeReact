@@ -19,6 +19,7 @@ class Dosen extends Model
         'user_id',
         'nip',
         'nama',
+        'phone',
         'jabatan',
         'golongan',
         'no_rekening',
@@ -37,6 +38,7 @@ class Dosen extends Model
         'birth_date' => 'date',
         'is_cpns' => 'boolean',
         'is_tugas_belajar' => 'boolean',
+        'master_synced_at' => 'datetime',
     ];
 
     use HasFactory;

@@ -15,13 +15,14 @@ class EntityMapperService
     {
         return [
             'nip' => $dosen->nip,
-            'name' => $dosen->name,
+            'name' => $dosen->nama,
             'faculty' => [
-                'code' => $dosen->faculty?->code,
-                'name' => $dosen->faculty?->name,
+                'code' => $dosen->fakultas?->code,
+                'name' => $dosen->fakultas?->nama,
             ],
             'email' => $dosen->user?->email,
-            'phone' => $dosen->phone,
+            'phone' => $dosen->phone ?? $dosen->user?->phone,
+            'master_id' => $dosen->master_id,
             'updated_at' => $dosen->updated_at?->toIso8601String(),
         ];
     }
@@ -29,8 +30,9 @@ class EntityMapperService
     public function formatFaculty(Fakultas $faculty): array
     {
         return [
+            'id' => $faculty->master_id,
             'code' => $faculty->code,
-            'name' => $faculty->name,
+            'name' => $faculty->nama,
             'updated_at' => $faculty->updated_at?->toIso8601String(),
         ];
     }
@@ -39,18 +41,19 @@ class EntityMapperService
     {
         return [
             'nim' => $mhs->nim,
-            'name' => $mhs->name,
+            'name' => $mhs->nama,
             'faculty' => [
-                'code' => $mhs->faculty?->code,
-                'name' => $mhs->faculty?->name,
+                'code' => $mhs->fakultas?->code,
+                'name' => $mhs->fakultas?->nama,
             ],
             'program' => [
-                'code' => $mhs->program?->code,
-                'name' => $mhs->program?->name,
+                'code' => $mhs->prodi?->code,
+                'name' => $mhs->prodi?->nama,
             ],
             'batch_year' => $mhs->batch_year,
             'gpa' => $mhs->gpa,
             'sks_completed' => $mhs->sks_completed,
+            'master_id' => $mhs->master_id,
             'updated_at' => $mhs->updated_at?->toIso8601String(),
         ];
     }
@@ -58,11 +61,13 @@ class EntityMapperService
     public function formatProgram(Prodi $program): array
     {
         return [
+            'id' => $program->master_id,
             'code' => $program->code,
-            'name' => $program->name,
+            'name' => $program->nama,
+            'organization_id' => $program->fakultas?->master_id,
             'faculty' => [
-                'code' => $program->faculty?->code,
-                'name' => $program->faculty?->name,
+                'code' => $program->fakultas?->code,
+                'name' => $program->fakultas?->nama,
             ],
             'updated_at' => $program->updated_at?->toIso8601String(),
         ];
@@ -71,23 +76,26 @@ class EntityMapperService
     public function getFromDatabase(string $entityType, array $params = []): array
     {
         return match ($entityType) {
-            'dosen' => Dosen::with('user', 'faculty')
+            'dosen' => Dosen::with('user', 'fakultas')
                 ->when(isset($params['since']), fn ($q) => $q->where('updated_at', '>=', $params['since']))
                 ->get()
                 ->map(fn ($d) => $this->formatDosen($d))
                 ->toArray(),
 
-            'mahasiswa' => Mahasiswa::with('user', 'faculty', 'program')
+            'mahasiswa' => Mahasiswa::with('user', 'fakultas', 'prodi')
                 ->when(isset($params['since']), fn ($q) => $q->where('updated_at', '>=', $params['since']))
                 ->get()
                 ->map(fn ($m) => $this->formatMahasiswa($m))
                 ->toArray(),
 
-            'faculty', 'organizations' => Fakultas::all()
+            'faculty', 'fakultas', 'organizations' => Fakultas::query()
+                ->when(isset($params['since']), fn ($q) => $q->where('updated_at', '>=', $params['since']))
+                ->get()
                 ->map(fn ($f) => $this->formatFaculty($f))
                 ->toArray(),
 
-            'program' => Prodi::with('faculty')
+            'program', 'prodi' => Prodi::with('fakultas')
+                ->when(isset($params['since']), fn ($q) => $q->where('updated_at', '>=', $params['since']))
                 ->get()
                 ->map(fn ($p) => $this->formatProgram($p))
                 ->toArray(),
@@ -101,8 +109,8 @@ class EntityMapperService
         return match ($entityType) {
             'dosen' => '/sync/dosen',
             'mahasiswa' => '/sync/mahasiswa',
-            'faculty' => '/organizations',
-            'program' => '/programs',
+            'faculty', 'fakultas', 'organizations' => '/sync/organizations',
+            'program', 'prodi' => '/programs',
             default => '/sync/'.$entityType,
         };
     }

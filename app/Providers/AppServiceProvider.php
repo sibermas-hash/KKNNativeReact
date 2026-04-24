@@ -10,6 +10,7 @@ use App\Models\KKN\KonfigurasiSertifikat;
 use App\Models\KKN\Laporan;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\NilaiKkn;
+use App\Models\KKN\SystemSetting;
 use App\Observers\AuditObserver;
 use App\Policies\AdminOperationPolicy;
 use App\Policies\KknScorePolicy;
@@ -40,6 +41,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $this->applyMasterApiRuntimeOverrides();
+
         // 1. Unified Authorization Gates (from AuthServiceProvider)
         Gate::before(function ($user, $ability) {
             if ($user->hasRole('admin') || $user->hasRole('superadmin')) {
@@ -118,5 +121,29 @@ class AppServiceProvider extends ServiceProvider
             URL::forceScheme('https');
         }
 
+    }
+
+    private function applyMasterApiRuntimeOverrides(): void
+    {
+        $settingsMap = [
+            'services.master_api.url' => 'master_api_url',
+            'services.master_api.client_id' => 'master_api_client_id',
+            'services.master_api.client_secret' => 'master_api_client_secret',
+            'services.master_api.token' => 'master_api_token',
+        ];
+
+        $overrides = [];
+
+        foreach ($settingsMap as $configKey => $settingKey) {
+            $value = SystemSetting::get($settingKey);
+
+            if ($value !== null && $value !== '') {
+                $overrides[$configKey] = $value;
+            }
+        }
+
+        if ($overrides !== []) {
+            config($overrides);
+        }
     }
 }

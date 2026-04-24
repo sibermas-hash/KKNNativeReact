@@ -148,7 +148,7 @@ class DplSyncController extends Controller
                     $user->name = $name;
                     $user->save();
 
-                    if (! $user->hasRole('dpl')) {
+                    if (! $user->hasRole('dosen')) {
                         $user->assignRole('dosen');
                     }
 

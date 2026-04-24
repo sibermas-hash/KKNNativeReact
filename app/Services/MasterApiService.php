@@ -36,6 +36,7 @@ class MasterApiService
     public function clearCache(): void
     {
         Cache::forget('master_api_token_'.config('services.master_api.client_id'));
+        Cache::forget('master_api_token_'.config('services.master_api.client_id').'_fallback');
         $this->circuitBreaker->reset();
         $this->fallbackCache->flush();
     }
@@ -103,12 +104,27 @@ class MasterApiService
         return $this->getAllPagesWithFallback('/sync/organizations', $params, 'organizations');
     }
 
+    public function getAllPrograms(?string $since = null): array
+    {
+        $params = $since ? ['since' => $since] : [];
+
+        return $this->getAllPagesWithFallback('/programs', $params, 'program');
+    }
+
     public function yieldAllOrganizations(?string $since = null): \Generator
     {
         $params = $since ? ['since' => $since] : [];
         $this->client->setToken($this->tokenService->getToken() ?? '');
 
         return $this->client->yieldAllPages('/sync/organizations', $params);
+    }
+
+    public function yieldAllPrograms(?string $since = null): \Generator
+    {
+        $params = $since ? ['since' => $since] : [];
+        $this->client->setToken($this->tokenService->getToken() ?? '');
+
+        return $this->client->yieldAllPages('/programs', $params);
     }
 
     public function getWithDatabaseFallback(string $entityType, array $params = []): array

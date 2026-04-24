@@ -108,7 +108,7 @@ class AccountSeeder extends Seeder
         );
         $this->command->info('Lecturer profile created.');
 
-        if (! $lecturerUser->hasRole('dpl')) {
+        if (! $lecturerUser->hasRole('dosen')) {
             $lecturerUser->assignRole('dosen');
             $this->command->info('DPL role assigned.');
         }

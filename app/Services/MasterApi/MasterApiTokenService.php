@@ -23,6 +23,8 @@ class MasterApiTokenService
 
     private int $cacheMinutes;
 
+    private int $timeoutSeconds;
+
     public function __construct()
     {
         $this->clientId = (string) config('services.master_api.client_id', '');
@@ -30,6 +32,7 @@ class MasterApiTokenService
         $this->staticToken = (string) config('services.master_api.token', '');
         $this->baseUrl = rtrim((string) config('services.master_api.url', ''), '/');
         $this->verifySsl = config('app.env') !== 'local';
+        $this->timeoutSeconds = max(5, (int) config('services.master_api.timeout', 30));
         $this->cacheMinutes = max(5, (int) config('services.master_api.cache_minutes', 60));
     }
 
@@ -46,6 +49,8 @@ class MasterApiTokenService
                 $token = $this->fetchToken();
 
                 if ($token) {
+                    Cache::put($cacheKey.'_fallback', $token, now()->addMinutes($this->cacheMinutes));
+
                     return $token;
                 }
             } catch (Exception $e) {
@@ -59,7 +64,7 @@ class MasterApiTokenService
     private function fetchToken(): ?string
     {
         $response = Http::withOptions(['verify' => $this->verifySsl])
-            ->timeout(30)
+            ->timeout($this->timeoutSeconds)
             ->post($this->baseUrl.'/auth/token', [
                 'client_id' => $this->clientId,
                 'client_secret' => $this->clientSecret,

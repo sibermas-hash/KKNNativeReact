@@ -16,12 +16,15 @@ class MasterApiClient
 
     private bool $verifySsl;
 
+    private int $timeoutSeconds;
+
     public function __construct(
         private readonly CircuitBreakerService $circuitBreaker,
         private readonly FallbackCacheService $fallbackCache,
     ) {
         $this->baseUrl = rtrim((string) config('services.master_api.url', ''), '/');
         $this->verifySsl = config('app.env') !== 'local';
+        $this->timeoutSeconds = max(5, (int) config('services.master_api.timeout', 30));
         $this->token = '';
     }
 
@@ -135,7 +138,7 @@ class MasterApiClient
 
         try {
             $response = Http::withOptions(['verify' => $this->verifySsl])
-                ->timeout(10)
+                ->timeout(min(10, $this->timeoutSeconds))
                 ->get($this->baseUrl.'/health');
 
             $data = $response->json();
@@ -180,7 +183,7 @@ class MasterApiClient
 
         $response = Http::withToken($this->token)
             ->withOptions(['verify' => $this->verifySsl])
-            ->timeout(30)
+            ->timeout($this->timeoutSeconds)
             ->get($this->baseUrl.$endpoint, $params);
 
         if ($response->successful()) {

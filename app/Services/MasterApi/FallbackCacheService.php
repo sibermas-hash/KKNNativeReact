@@ -10,31 +10,33 @@ class FallbackCacheService
 {
     private string $prefix = 'master_api_fallback_';
 
+    private string $tag = 'master_api_fallback';
+
     private int $ttlHours = 24;
 
     public function get(string $endpoint, array $params = []): array
     {
         $key = $this->getKey($endpoint, $params);
 
-        return Cache::get($key, []);
+        return $this->cacheStore()->get($key, []);
     }
 
     public function store(string $endpoint, array $params, mixed $data): void
     {
         $key = $this->getKey($endpoint, $params);
-        Cache::put($key, $data, now()->addHours($this->ttlHours));
+        $this->cacheStore()->put($key, $data, now()->addHours($this->ttlHours));
     }
 
     public function forget(string $endpoint, array $params = []): void
     {
         $key = $this->getKey($endpoint, $params);
-        Cache::forget($key);
+        $this->cacheStore()->forget($key);
     }
 
     public function flush(): void
     {
         if (Cache::supportsTags()) {
-            Cache::tags(['master_api_fallback'])->flush();
+            Cache::tags([$this->tag])->flush();
         }
     }
 
@@ -43,5 +45,12 @@ class FallbackCacheService
         $paramsHash = md5(json_encode($params));
 
         return $this->prefix.md5($endpoint).'_'.$paramsHash;
+    }
+
+    private function cacheStore()
+    {
+        return Cache::supportsTags()
+            ? Cache::tags([$this->tag])
+            : Cache::store();
     }
 }

@@ -17,6 +17,8 @@ class Roles
 
     public const FACULTY_ADMIN = 'faculty_admin';
 
+    public const DOSEN = 'dosen';
+
     public const DPL = 'dpl';
 
     public const STUDENT = 'student';
@@ -29,6 +31,7 @@ class Roles
         return [
             self::SUPERADMIN,
             self::FACULTY_ADMIN,
+            self::DOSEN,
             self::DPL,
             self::STUDENT,
         ];

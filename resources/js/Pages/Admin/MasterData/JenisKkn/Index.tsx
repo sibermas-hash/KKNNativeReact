@@ -361,7 +361,7 @@ export default function JenisKknIndex({ jenisKkn, filters, prodis, registrationM
                   }}
                   className="w-full h-24 px-4 py-2 rounded-xl border-2 border-slate-50 text-sm font-semibold text-slate-700 focus:border-cyan-600 outline-none bg-white font-sans scrollbar-hide"
                 >
-                  {prodis.map(p => <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>)}
+                  {prodis.map(p => <option key={p.id} value={p.id}>{(p.name || 'TANPA NAMA').toUpperCase()}</option>)}
                 </select>
                 <p className="text-[10px] text-slate-400 font-medium pl-1 italic">* Tahan Ctrl/Cmd untuk memilih lebih dari satu prodi.</p>
               </div>

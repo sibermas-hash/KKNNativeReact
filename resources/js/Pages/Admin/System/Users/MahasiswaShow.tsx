@@ -133,30 +133,29 @@ export default function MahasiswaShow({ mahasiswa, account, registration, group,
     </div>
   </div>
   {account && (
-...
-              <div className="flex items-center gap-3 shrink-0">
-                <button
-                  onClick={() => setConfirmReset(true)}
-                  className="h-10 px-4 bg-white border border-gray-300 text-emerald-800 rounded-lg text-sm font-medium shadow-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
-                >
-                  <KeyRound size={15} /> Reset Password
-                </button>
-                <button
-                  onClick={() => setConfirmToggle(true)}
-                  className={clsx(
-                    "h-10 px-4 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2 transition-colors",
-                    account.is_active 
-                      ? "bg-white border border-gray-300 text-emerald-800 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-700" 
-                      : "bg-[#0d9488] text-white hover:bg-[#0f766e] shadow-none"
-                  )}
-                >
-                  {account.is_active ? <><Lock size={15} /> Kunci Akun</> : <><Unlock size={15} /> Aktifkan Akun</>}
-                </button>
-              </div>
-            )}
-          </div>
+    <div className="flex items-center gap-3 shrink-0">
+      <button
+        onClick={() => setConfirmReset(true)}
+        className="h-10 px-4 bg-white border border-gray-300 text-emerald-800 rounded-lg text-sm font-medium shadow-sm hover:bg-gray-50 transition-colors flex items-center gap-2"
+      >
+        <KeyRound size={15} /> Reset Password
+      </button>
+      <button
+        onClick={() => setConfirmToggle(true)}
+        className={clsx(
+          "h-10 px-4 rounded-lg text-sm font-medium shadow-sm flex items-center gap-2 transition-colors",
+          account.is_active 
+            ? "bg-white border border-gray-300 text-emerald-800 hover:bg-rose-50 hover:border-rose-300 hover:text-rose-700" 
+            : "bg-[#0d9488] text-white hover:bg-[#0f766e] shadow-none"
+        )}
+      >
+        {account.is_active ? <><Lock size={15} /> Kunci Akun</> : <><Unlock size={15} /> Aktifkan Akun</>}
+      </button>
+    </div>
+  )}
+</div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* LEFT: BIODATA */}
             <div className="lg:col-span-2 space-y-6">
               {/* PROFIL AKADEMIK */}

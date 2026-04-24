@@ -41,6 +41,7 @@ interface JenisKkn {
   require_health_certificate: boolean;
   require_bta_ppi: boolean;
   specific_prodi_ids: number[];
+  custom_requirements: string[];
   color: string;
   is_active: boolean;
   sort_order: number;
@@ -73,10 +74,26 @@ export default function JenisKknIndex({ jenisKkn, filters, prodis, registrationM
     require_health_certificate: false,
     require_bta_ppi: true,
     specific_prodi_ids: [] as number[],
+    custom_requirements: [] as string[],
     color: 'emerald',
     is_active: true,
     sort_order: 0,
   });
+
+  const addCustomRequirement = () => {
+    form.setData('custom_requirements', [...form.data.custom_requirements, '']);
+  };
+
+  const updateCustomRequirement = (index: number, value: string) => {
+    const updated = [...form.data.custom_requirements];
+    updated[index] = value;
+    form.setData('custom_requirements', updated);
+  };
+
+  const removeCustomRequirement = (index: number) => {
+    const updated = form.data.custom_requirements.filter((_, i) => i !== index);
+    form.setData('custom_requirements', updated);
+  };
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -128,6 +145,7 @@ export default function JenisKknIndex({ jenisKkn, filters, prodis, registrationM
       require_health_certificate: item.require_health_certificate,
       require_bta_ppi: item.require_bta_ppi,
       specific_prodi_ids: item.specific_prodi_ids ?? [],
+      custom_requirements: item.custom_requirements ?? [],
       color: item.color,
       is_active: item.is_active,
       sort_order: item.sort_order,
@@ -364,6 +382,46 @@ export default function JenisKknIndex({ jenisKkn, filters, prodis, registrationM
                   {prodis.map(p => <option key={p.id} value={p.id}>{(p.name || 'TANPA NAMA').toUpperCase()}</option>)}
                 </select>
                 <p className="text-[10px] text-slate-400 font-medium pl-1 italic">* Tahan Ctrl/Cmd untuk memilih lebih dari satu prodi.</p>
+              </div>
+
+              <div className="space-y-1.5 pt-4 border-t border-slate-100">
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider pl-1">Persyaratan Manual (Lain-lain)</label>
+                  <button
+                    type="button"
+                    onClick={addCustomRequirement}
+                    className="text-[10px] font-bold text-cyan-600 hover:text-cyan-700 flex items-center gap-1 uppercase tracking-tight"
+                  >
+                    <Plus size={12} /> Tambah Baris
+                  </button>
+                </div>
+                
+                <div className="space-y-2">
+                  {form.data.custom_requirements.map((req, index) => (
+                    <div key={index} className="flex items-center gap-2 group animate-in slide-in-from-left-2 duration-200">
+                      <div className="flex-1 relative">
+                        <input
+                          type="text"
+                          value={req}
+                          onChange={(e) => updateCustomRequirement(index, e.target.value)}
+                          className="w-full h-10 px-4 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 focus:border-cyan-600 outline-none bg-white"
+                          placeholder="Ketik persyaratan tambahan..."
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeCustomRequirement(index)}
+                        className="h-8 w-8 flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  
+                  {form.data.custom_requirements.length === 0 && (
+                    <p className="text-[10px] text-slate-400 italic text-center py-2 bg-white/50 rounded-xl border border-dashed border-slate-200">Belum ada persyaratan kustom.</p>
+                  )}
+                </div>
               </div>
             </div>
 

@@ -27,6 +27,7 @@ class JenisKkn extends Model
         'require_health_certificate',
         'specific_prodi_ids',
         'require_bta_ppi',
+        'custom_requirements',
         'color',
         'is_active',
         'sort_order',
@@ -40,6 +41,7 @@ class JenisKkn extends Model
         'require_health_certificate' => 'boolean',
         'require_bta_ppi' => 'boolean',
         'specific_prodi_ids' => 'array',
+        'custom_requirements' => 'array',
     ];
 
     // ─── Label helpers ─────────────────────────────────

@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,8 +15,6 @@ class Fakultas extends Model
 
     protected $table = 'fakultas';
     protected $fillable = ['nama', 'code', 'master_id', 'master_synced_at'];
-
-    use HasFactory;
 
     protected function casts(): array
     {

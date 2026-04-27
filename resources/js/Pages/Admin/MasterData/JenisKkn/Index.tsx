@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   X,
   ShieldAlert,
+  ChevronDown,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react';
@@ -54,10 +55,11 @@ interface JenisKkn {
   periodes_count: number;
   requirements_config: any[] | null;
   attendance_config: {
-    radius_check: boolean;
-    radius_meter: number;
+    geofence_enabled: boolean;
+    radius_meters: number;
     location_source: string;
     require_photo: boolean;
+    allow_offline_sync?: boolean;
   } | null;
 }
 
@@ -107,8 +109,8 @@ export default function JenisKknIndex({
     sort_order: 0,
     requirements_config: [] as any[],
     attendance_config: {
-      radius_check: true,
-      radius_meter: 500,
+      geofence_enabled: true,
+      radius_meters: 500,
       location_source: 'posko',
       require_photo: true,
     },
@@ -225,8 +227,8 @@ export default function JenisKknIndex({
       sort_order: item.sort_order,
       requirements_config: item.requirements_config ?? [],
       attendance_config: item.attendance_config ?? {
-        radius_check: true,
-        radius_meter: 500,
+        geofence_enabled: true,
+        radius_meters: 500,
         location_source: 'posko',
         require_photo: true,
       },
@@ -481,11 +483,70 @@ export default function JenisKknIndex({
               </div>
             </div>
 
+            {/* --- STANDAR PERSYARATAN (CEKLIS) --- */}
+            <div className="p-5 bg-white rounded-2xl border border-slate-100 space-y-4 shadow-sm">
+              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                PERSYARATAN STANDAR (CEKLIS)
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl cursor-pointer hover:border-cyan-200 transition-all">
+                  <input
+                    type="checkbox"
+                    checked={form.data.require_bta_ppi}
+                    onChange={(e) => form.setData('require_bta_ppi', e.target.checked)}
+                    className="w-5 h-5 text-cyan-600 border-slate-300 rounded-lg focus:ring-cyan-500"
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-xs font-black text-cyan-950 uppercase tracking-tight">Lulus BTA-PPI</span>
+                    <span className="text-[10px] text-slate-500 font-medium">Validasi otomatis kelulusan BTA.</span>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl cursor-pointer hover:border-cyan-200 transition-all">
+                  <input
+                    type="checkbox"
+                    checked={form.data.require_health_certificate}
+                    onChange={(e) => form.setData('require_health_certificate', e.target.checked)}
+                    className="w-5 h-5 text-cyan-600 border-slate-300 rounded-lg focus:ring-cyan-500"
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-xs font-black text-cyan-950 uppercase tracking-tight">Surat Sehat</span>
+                    <span className="text-[10px] text-slate-500 font-medium">Wajib unggah Surat Keterangan Sehat.</span>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl cursor-pointer hover:border-cyan-200 transition-all">
+                  <input
+                    type="checkbox"
+                    checked={form.data.require_parent_permission}
+                    onChange={(e) => form.setData('require_parent_permission', e.target.checked)}
+                    className="w-5 h-5 text-cyan-600 border-slate-300 rounded-lg focus:ring-cyan-500"
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-xs font-black text-cyan-950 uppercase tracking-tight">Izin Orang Tua/Suami</span>
+                    <span className="text-[10px] text-slate-500 font-medium">Wajib unggah Surat Izin.</span>
+                  </div>
+                </label>
+
+                <label className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl cursor-pointer hover:border-cyan-200 transition-all">
+                  <input
+                    type="checkbox"
+                    checked={form.data.require_not_married}
+                    onChange={(e) => form.setData('require_not_married', e.target.checked)}
+                    className="w-5 h-5 text-cyan-600 border-slate-300 rounded-lg focus:ring-cyan-500"
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-xs font-black text-cyan-950 uppercase tracking-tight">Belum Menikah</span>
+                    <span className="text-[10px] text-slate-500 font-medium">Validasi status pernikahan.</span>
+                  </div>
+                </label>
+              </div>
+            </div>
 
             <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-6">
               <div>
                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">
-                  SISTEM PERSYARATAN DINAMIS (HYBRID)
+                  SISTEM PERSYARATAN TAMBAHAN (OPSIONAL)
                 </h4>
                 
                 <div className="flex gap-2 mb-4">
@@ -494,14 +555,14 @@ export default function JenisKknIndex({
                     onClick={() => addDynamicRequirement('upload')}
                     className="h-9 px-4 bg-white border border-slate-200 text-cyan-700 text-[10px] font-black uppercase tracking-wider rounded-xl hover:bg-cyan-50 transition-all flex items-center gap-2 shadow-sm"
                   >
-                    <Plus size={14} /> Syarat Upload File
+                    <Plus size={14} /> Syarat Wajib Upload Dokumen
                   </button>
                   <button
                     type="button"
                     onClick={() => addDynamicRequirement('db_check')}
                     className="h-9 px-4 bg-white border border-slate-200 text-emerald-700 text-[10px] font-black uppercase tracking-wider rounded-xl hover:bg-emerald-50 transition-all flex items-center gap-2 shadow-sm"
                   >
-                    <Database size={14} /> Syarat Cek Database
+                    <Database size={14} /> Syarat Validasi Sistem Otomatis
                   </button>
                 </div>
 
@@ -514,45 +575,51 @@ export default function JenisKknIndex({
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div className="space-y-1.5">
-                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Nama Syarat</label>
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Nama / Judul Syarat</label>
                             <input
                               type="text"
                               value={req.name}
                               onChange={(e) => updateDynamicRequirement(index, 'name', e.target.value)}
                               className="w-full h-10 px-4 rounded-xl border border-slate-100 text-xs font-bold text-cyan-950 focus:border-cyan-600 outline-none bg-slate-50/30"
-                              placeholder="Cth: Bukti Lulus BTA-PPI"
+                              placeholder="Cth: Surat Izin Orang Tua"
                             />
                           </div>
                           
                           <div className="space-y-1.5">
-                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tipe Validasi</label>
-                            <div className="flex items-center h-10 gap-2">
-                              <span className={clsx(
-                                "px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border",
-                                req.type === 'upload' ? "bg-cyan-50 border-cyan-100 text-cyan-600" : "bg-emerald-50 border-emerald-100 text-emerald-600"
-                              )}>
-                                {req.type === 'upload' ? 'FILE UPLOAD' : 'DATABASE CHECK'}
-                              </span>
+                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tipe Persyaratan</label>
+                            <div className="relative group">
+                              <select
+                                value={req.type}
+                                onChange={(e) => updateDynamicRequirement(index, 'type', e.target.value)}
+                                className="w-full h-10 pl-4 pr-10 rounded-xl border border-slate-100 text-xs font-bold text-cyan-950 focus:border-cyan-600 appearance-none outline-none bg-white shadow-sm"
+                              >
+                                <option value="upload">Mewajibkan Upload Dokumen</option>
+                                <option value="db_check">Validasi Sistem Otomatis (Database)</option>
+                              </select>
+                              <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-cyan-600 pointer-events-none group-focus-within:rotate-180 transition-transform" />
                             </div>
                           </div>
 
                           {req.type === 'db_check' && (
                             <>
                               <div className="space-y-1.5">
-                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Field Database</label>
-                                <select
-                                  value={req.field}
-                                  onChange={(e) => updateDynamicRequirement(index, 'field', e.target.value)}
-                                  className="w-full h-10 px-4 rounded-xl border border-slate-100 text-xs font-bold text-cyan-950 focus:border-cyan-600 outline-none bg-slate-50/30"
-                                >
-                                  <option value="sks_completed">SKS Completed</option>
-                                  <option value="gpa">GPA (IPK)</option>
-                                  <option value="is_bta_ppi_passed">BTA PPI Status</option>
-                                  <option value="is_paid_ukt">UKT Payment Status</option>
-                                </select>
+                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Parameter yang Dicek</label>
+                                <div className="relative group">
+                                  <select
+                                    value={req.field}
+                                    onChange={(e) => updateDynamicRequirement(index, 'field', e.target.value)}
+                                    className="w-full h-10 pl-4 pr-10 rounded-xl border border-slate-100 text-xs font-bold text-cyan-950 focus:border-cyan-600 appearance-none outline-none bg-white shadow-sm"
+                                  >
+                                    <option value="sks_completed">Jumlah SKS Lulus</option>
+                                    <option value="gpa">IPK Mahasiswa</option>
+                                    <option value="is_bta_ppi_passed">Status Kelulusan BTA-PPI</option>
+                                    <option value="is_paid_ukt">Status Pembayaran UKT Terakhir</option>
+                                  </select>
+                                  <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-cyan-600 pointer-events-none group-focus-within:rotate-180 transition-transform" />
+                                </div>
                               </div>
                               <div className="space-y-1.5">
-                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Nilai Minimal / Ekspektasi</label>
+                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Nilai Minimum / Target</label>
                                 <input
                                   type="text"
                                   value={req.min_value || req.expected_value || ''}
@@ -565,7 +632,7 @@ export default function JenisKknIndex({
                                     }
                                   }}
                                   className="w-full h-10 px-4 rounded-xl border border-slate-100 text-xs font-bold text-cyan-950 focus:border-cyan-600 outline-none bg-slate-50/30"
-                                  placeholder="Cth: 100 atau LULUS"
+                                  placeholder="Cth: 100 (SKS) atau LULUS"
                                 />
                               </div>
                             </>
@@ -586,8 +653,8 @@ export default function JenisKknIndex({
                   {(form.data.requirements_config || []).length === 0 && (
                     <div className="text-center py-8 border-2 border-dashed border-slate-200 rounded-2xl bg-white/50">
                       <ShieldAlert size={32} className="mx-auto text-slate-300 mb-2" />
-                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Belum ada persyaratan khusus.</p>
-                      <p className="text-[10px] text-slate-400 mt-1">Gunakan tombol di atas untuk menambah syarat.</p>
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Belum ada persyaratan tambahan.</p>
+                      <p className="text-[10px] text-slate-400 mt-1">Gunakan tombol di atas untuk menambah syarat baru.</p>
                     </div>
                   )}
                 </div>
@@ -603,8 +670,8 @@ export default function JenisKknIndex({
                     <label className="flex items-center gap-3 p-4 bg-white border border-slate-200 rounded-2xl cursor-pointer hover:border-cyan-200 transition-all shadow-sm">
                       <input
                         type="checkbox"
-                        checked={form.data.attendance_config?.radius_check}
-                        onChange={(e) => form.setData('attendance_config', { ...form.data.attendance_config, radius_check: e.target.checked })}
+                        checked={form.data.attendance_config?.geofence_enabled}
+                        onChange={(e) => form.setData('attendance_config', { ...form.data.attendance_config, geofence_enabled: e.target.checked })}
                         className="w-5 h-5 text-cyan-600 border-slate-300 rounded-lg focus:ring-cyan-500"
                       />
                       <div className="flex flex-col">
@@ -613,14 +680,14 @@ export default function JenisKknIndex({
                       </div>
                     </label>
 
-                    {form.data.attendance_config?.radius_check && (
+                    {form.data.attendance_config?.geofence_enabled && (
                       <div className="space-y-1.5 pl-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Radius Absensi (Meter)</label>
                         <div className="relative">
                           <input
                             type="number"
-                            value={form.data.attendance_config?.radius_meter}
-                            onChange={(e) => form.setData('attendance_config', { ...form.data.attendance_config, radius_meter: parseInt(e.target.value) })}
+                            value={form.data.attendance_config?.radius_meters}
+                            onChange={(e) => form.setData('attendance_config', { ...form.data.attendance_config, radius_meters: parseInt(e.target.value) })}
                             className="w-full h-11 px-4 rounded-xl border border-slate-200 text-sm font-bold text-cyan-950 focus:border-cyan-600 outline-none bg-white"
                           />
                           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">METER</span>

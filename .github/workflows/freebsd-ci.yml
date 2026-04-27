@@ -1,0 +1,21 @@
+name: FreeBSD CI
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+jobs:
+  freebsd:
+    name: FreeBSD self-hosted
+    runs-on: [self-hosted, freebsd]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: npm ci
+      - name: Case-sensitivity check
+        run: npm run check:case-sensitive
+      - name: Build
+        run: npm run build

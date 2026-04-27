@@ -1,0 +1,7 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+npm run check:case-sensitive || {
+  echo "Case-sensitivity check failed. Aborting push."
+  exit 1
+}

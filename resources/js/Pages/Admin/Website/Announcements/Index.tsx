@@ -388,7 +388,7 @@ return (
             variant="warning"
           />
           <StatCard label="Draft" value={summary.draft} icon={PenSquare} variant="info" />
-        </div>
+         </motion.div>
 
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)]">
           <div className="space-y-6 lg:sticky lg:top-24">
@@ -475,7 +475,7 @@ return (
                       </p>
                     )}
                   </div>
-                </div>
+                </motion.div>
 
                 <div className="space-y-2">
                   <label
@@ -675,10 +675,8 @@ return (
                       </div>
                     </div>
                   </ContentPanel>
-</motion.div>
 
-                  <motion.div variants={itemVariants}>
-<ContentPanel
+                  <ContentPanel
                     title="SEO & Preview"
                     description="Siapkan meta dan cek bagaimana artikel akan terlihat di publik."
                     icon={Sparkles}
@@ -811,235 +809,10 @@ return (
                       </div>
                     </div>
                   </ContentPanel>
-</motion.div>
-                </div>
-
-                <div className="flex flex-wrap items-center gap-3">
-                  <button
-                    type="submit"
-                    disabled={form.processing}
-                    className="inline-flex h-12 items-center gap-3 rounded-2xl bg-emerald-950 px-6 text-xs font-black uppercase tracking-[0.18em] text-white transition hover:bg-emerald-900 disabled:opacity-60"
-                  >
-                    <Save size={16} />
-                    {selectedAnnouncement ? 'Perbarui Berita' : 'Simpan Berita'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={startCreate}
-                    className="inline-flex h-12 items-center gap-3 rounded-2xl border border-slate-200 px-6 text-xs font-black uppercase tracking-[0.18em] text-emerald-950 transition hover:border-emerald-300 hover:bg-emerald-50"
-                  >
-                    <Plus size={16} />
-                    Reset Composer
-                  </button>
-                  {selectedAnnouncement && (
-                    <a
-                      href={selectedAnnouncement.preview_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex h-12 items-center gap-3 rounded-2xl border border-emerald-200 px-6 text-xs font-black uppercase tracking-[0.18em] text-emerald-700 transition hover:bg-emerald-50"
-                    >
-                      <Eye size={16} />
-                      Preview Admin
-                    </a>
-                  )}
-                  {selectedAnnouncement?.status === 'published' && (
-                    <a
-                      href={selectedAnnouncement.public_url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex h-12 items-center gap-3 rounded-2xl border border-slate-200 px-6 text-xs font-black uppercase tracking-[0.18em] text-emerald-950 transition hover:border-emerald-300 hover:bg-emerald-50"
-                    >
-                      <Eye size={16} />
-                      Buka Live
-                    </a>
-                  )}
                 </div>
               </form>
             </ContentPanel>
-          </div>
-
-          <div className="space-y-6">
-            <motion.div variants={itemVariants}>
-<ContentPanel
-              title="Arsip Berita /berita"
-              description="Cari, filter, dan pilih artikel untuk diedit. Panel ini menjadi pusat navigasi editorial."
-              icon={SearchCheck}
-              headerAction={
-                <div className="flex flex-col gap-3 lg:flex-row">
-                  <SearchInput
-                    placeholder="Cari judul, slug, atau isi berita..."
-                    value={search}
-                    onChange={(event) => setSearch(event.target.value)}
-                    className="w-full lg:w-72"
-                  />
-                  <select
-                    value={statusFilter}
-                    onChange={(event) => setStatusFilter(event.target.value)}
-                    className="min-w-40 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-emerald-950"
-                  >
-                    <option value="">Semua status</option>
-                    <option value="published">Terbit</option>
-                    <option value="scheduled">Terjadwal</option>
-                    <option value="draft">Draft</option>
-                  </select>
-                  <select
-                    value={categoryFilter}
-                    onChange={(event) => setCategoryFilter(event.target.value)}
-                    className="min-w-44 rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-emerald-950"
-                  >
-                    <option value="">Semua kategori</option>
-                    {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              }
-              footer={
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <PageInfo meta={announcements.meta} />
-                  <Pagination meta={announcements.meta} />
-                </div>
-              }
-            >
-              <div className="space-y-4">
-                {announcements.data.length === 0 && (
-                  <div className="rounded-[1.5rem] border border-dashed border-emerald-200 bg-[#fbfdfc] px-6 py-12 text-center">
-                    <h3 className="text-lg font-semibold text-emerald-950">
-                      Belum ada artikel pada hasil filter ini.
-                    </h3>
-                    <p className="mt-2 text-sm leading-7 text-slate-600">
-                      Ubah pencarian atau mulai tulis artikel baru dari panel composer.
-                    </p>
-                  </div>
-                )}
-
-                {announcements.data.map((announcement) => {
-                  const isSelected = announcement.id === selectedId;
-
-                  return (
-                    <div
-                      key={announcement.id}
-                      className={clsx(
-                        'overflow-hidden rounded-[1.75rem] border bg-white shadow-sm transition',
-                        isSelected
-                          ? 'border-emerald-300 shadow-[0_18px_45px_rgba(6,95,70,0.10)]'
-                          : 'border-slate-200 hover:border-emerald-200',
-                      )}
-                    >
-                      <div className="grid gap-5 p-5 xl:grid-cols-[9rem_minmax(0,1fr)_auto] xl:items-start">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedId(announcement.id)}
-                          className="overflow-hidden rounded-[1.25rem] bg-emerald-50 text-left"
-                        >
-                          {announcement.image_url ? (
-                            <img
-                              src={announcement.image_url}
-                              alt={announcement.title}
-                              className="aspect-[4/3] h-full w-full object-cover"
-                            />
-                          ) : (
-                            <div className="flex aspect-[4/3] h-full w-full items-end bg-[linear-gradient(145deg,#ecfdf5_0%,#eff6ff_100%)] p-4">
-                              <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700">
-                                /berita
-                              </span>
-                            </div>
-                          )}
-                        </button>
-
-                        <button
-                          type="button"
-                          onClick={() => setSelectedId(announcement.id)}
-                          className="space-y-3 text-left"
-                        >
-                          <div className="flex flex-wrap items-center gap-3">
-                            <StatusTag
-                              status={announcement.status}
-                              label={humanStatus(announcement.status)}
-                              variant={statusVariant(announcement.status)}
-                              size="sm"
-                            />
-                            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                              {announcement.category}
-                            </span>
-                            <span className="text-xs font-medium text-slate-500">
-                              {formatDateTime(announcement.published_at)}
-                            </span>
-                          </div>
-
-                          <div>
-                            <h3 className="text-xl font-semibold leading-tight text-emerald-950">
-                              {announcement.title}
-                            </h3>
-                            <p className="mt-2 text-sm leading-7 text-slate-600">
-                              {announcement.excerpt}
-                            </p>
-                          </div>
-
-                          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                            <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-600">
-                              /berita/{announcement.slug}
-                            </span>
-                            <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-600">
-                              {announcement.word_count} kata
-                            </span>
-                            <span className="rounded-full bg-slate-100 px-3 py-1 font-semibold text-slate-600">
-                              {announcement.reading_time} menit baca
-                            </span>
-                            {announcement.file_name && (
-                              <span className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 font-semibold text-emerald-700">
-                                <Paperclip size={14} />
-                                {announcement.file_name}
-                              </span>
-                            )}
-                            {(announcement.meta_title || announcement.meta_description) && (
-                              <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 font-semibold text-blue-700">
-                                <Sparkles size={14} />
-                                SEO siap
-                              </span>
-                            )}
-                          </div>
-                        </button>
-
-                        <div className="flex flex-col gap-2 xl:items-end">
-                          <a
-                            href={announcement.preview_url}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-200 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-emerald-700 transition hover:bg-emerald-50"
-                          >
-                            <Eye size={14} />
-                            Preview
-                          </a>
-                          {announcement.status === 'published' && (
-                            <a
-                              href={announcement.public_url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-emerald-950 transition hover:border-emerald-300 hover:bg-emerald-50"
-                            >
-                              <Eye size={14} />
-                              Live
-                            </a>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => destroy(announcement)}
-                            className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-200 px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-rose-700 transition hover:bg-rose-50"
-                          >
-                            <Trash2 size={14} />
-                            Hapus
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </ContentPanel>
-</motion.div>
+          </motion.div>
           </div>
         </div>
       </motion.div>

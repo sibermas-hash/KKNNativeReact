@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { router, Head, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Pagination } from '@/Components/UI';
@@ -140,7 +139,7 @@ return (
           />
           <StatCard label="IOPS Status" value="LOW_LATENCY" icon={Activity} variant="info" />
           <StatCard label="Sync Mode" value="GLOBAL_CDN" icon={Globe} variant="gray" />
-        </div>
+                </motion.div>
 
         {/* MAIN CONTENT */}
         <motion.div variants={itemVariants}>
@@ -227,7 +226,7 @@ return (
           </PremiumTable>
         </ContentPanel>
 </motion.div>
-      </div>
+              </motion.div>
 
       {/* ASSET MODAL */}
       <AnimatePresence>

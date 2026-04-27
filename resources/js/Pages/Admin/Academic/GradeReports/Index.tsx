@@ -1,23 +1,6 @@
 import { type FormEvent, useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { Head, router } from '@inertiajs/react';
-import {
-  Download,
-  FileSpreadsheet,
-  GraduationCap,
-  Lock,
-  Search,
-  ShieldCheck,
-  Users,
-  Activity,
-  RefreshCw,
-  Filter,
-  CheckCircle2,
-  FileText,
-} from 'lucide-react';
-import { clsx } from 'clsx';
-import { route } from 'ziggy-js';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Button } from '@/Components/UI';
 
@@ -267,9 +250,9 @@ return (
               icon={CheckCircle2}
               label="Rerata Nilai"
               value={Number(stats.average_value || 0).toFixed(2)}
-            />
-          </motion.div>
-        )}
+              />
+              </motion.div>
+              )}
 
         {/* --- DATA TABLE CARD (Gold Standard) --- */}
         <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden min-h-[500px]">

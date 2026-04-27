@@ -1,5 +1,4 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { motion } from 'framer-motion';
 import React, { useEffect, useState, useMemo } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Pagination } from '@/Components/UI';
@@ -467,7 +466,7 @@ return (
             </ContentPanel>
 </motion.div>
           </motion.div>
-        </div>
+                </motion.div>
       </motion.div>
     </AppLayout>
   );

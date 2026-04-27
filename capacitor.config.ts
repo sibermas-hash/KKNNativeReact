@@ -5,20 +5,13 @@ const config: CapacitorConfig = {
   appName: 'SIBERMAS',
   webDir: 'public',
   server: {
-    url: process.env.CAPACITOR_SERVER_URL || 'https://kkn.uinsaizu.ac.id',
-    cleartext: false,
-    androidScheme: 'https',
+    url: process.env.CAPACITOR_SERVER_URL || 'https://sibermas.uinsaizu.ac.id',
+    cleartext: true,
   },
   plugins: {
     SplashScreen: {
-      launchAutoHide: true,
       launchShowDuration: 2000,
-      androidScaleType: 'CENTER_CROP',
-      splashFullScreen: true,
-      backgroundColor: '#0f172a',
-    },
-    StatusBar: {
-      style: 'DARK',
+      launchAutoHide: true,
       backgroundColor: '#0f172a',
     },
     PushNotifications: {

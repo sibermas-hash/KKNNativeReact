@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Head, router, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Button, Pagination } from '@/Components/UI';
 import { clsx } from 'clsx';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
   Database,
   Activity,
@@ -179,7 +178,7 @@ return (
             variant="info"
             trend="Hari Ini"
           />
-        </div>
+                </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* LEFT COLUMN (Actions) */}

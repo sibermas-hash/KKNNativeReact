@@ -54,8 +54,8 @@ interface JenisKkn {
   periodes_count: number;
   requirements_config: any[] | null;
   attendance_config: {
-    geofence_enabled: true;
-    radius_meters: number;
+    radius_check: boolean;
+    radius_meter: number;
     location_source: string;
     require_photo: boolean;
   } | null;
@@ -107,8 +107,8 @@ export default function JenisKknIndex({
     sort_order: 0,
     requirements_config: [] as any[],
     attendance_config: {
-      geofence_enabled: true,
-      radius_meters: 500,
+      radius_check: true,
+      radius_meter: 500,
       location_source: 'posko',
       require_photo: true,
     },
@@ -225,8 +225,8 @@ export default function JenisKknIndex({
       sort_order: item.sort_order,
       requirements_config: item.requirements_config ?? [],
       attendance_config: item.attendance_config ?? {
-        geofence_enabled: true,
-        radius_meters: 500,
+        radius_check: true,
+        radius_meter: 500,
         location_source: 'posko',
         require_photo: true,
       },
@@ -603,8 +603,8 @@ export default function JenisKknIndex({
                     <label className="flex items-center gap-3 p-4 bg-white border border-slate-200 rounded-2xl cursor-pointer hover:border-cyan-200 transition-all shadow-sm">
                       <input
                         type="checkbox"
-                        checked={form.data.attendance_config?.geofence_enabled}
-                        onChange={(e) => form.setData('attendance_config', { ...form.data.attendance_config, geofence_enabled: e.target.checked })}
+                        checked={form.data.attendance_config?.radius_check}
+                        onChange={(e) => form.setData('attendance_config', { ...form.data.attendance_config, radius_check: e.target.checked })}
                         className="w-5 h-5 text-cyan-600 border-slate-300 rounded-lg focus:ring-cyan-500"
                       />
                       <div className="flex flex-col">
@@ -613,14 +613,14 @@ export default function JenisKknIndex({
                       </div>
                     </label>
 
-                    {form.data.attendance_config?.geofence_enabled && (
+                    {form.data.attendance_config?.radius_check && (
                       <div className="space-y-1.5 pl-2">
                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Radius Absensi (Meter)</label>
                         <div className="relative">
                           <input
                             type="number"
-                            value={form.data.attendance_config?.radius_meters}
-                            onChange={(e) => form.setData('attendance_config', { ...form.data.attendance_config, radius_meters: parseInt(e.target.value) })}
+                            value={form.data.attendance_config?.radius_meter}
+                            onChange={(e) => form.setData('attendance_config', { ...form.data.attendance_config, radius_meter: parseInt(e.target.value) })}
                             className="w-full h-11 px-4 rounded-xl border border-slate-200 text-sm font-bold text-cyan-950 focus:border-cyan-600 outline-none bg-white"
                           />
                           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">METER</span>
@@ -632,14 +632,17 @@ export default function JenisKknIndex({
                   <div className="space-y-4">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sumber Lokasi Rujukan</label>
-                      <select
-                        value={form.data.attendance_config?.location_source}
-                        onChange={(e) => form.setData('attendance_config', { ...form.data.attendance_config, location_source: e.target.value })}
-                        className="w-full h-11 px-4 rounded-xl border border-slate-200 text-xs font-bold text-cyan-950 focus:border-cyan-600 outline-none bg-white"
-                      >
-                        <option value="posko">POSKO KELOMPOK (REGULER)</option>
-                        <option value="domisili">LOKASI DOMISILI (MANDIRI)</option>
-                      </select>
+                      <div className="relative group">
+                        <select
+                          value={form.data.attendance_config?.location_source}
+                          onChange={(e) => form.setData('attendance_config', { ...form.data.attendance_config, location_source: e.target.value })}
+                          className="w-full h-11 pl-4 pr-10 rounded-xl border border-slate-200 text-xs font-bold text-cyan-950 focus:border-cyan-600 appearance-none outline-none bg-white shadow-sm"
+                        >
+                          <option value="posko">POSKO KELOMPOK (REGULER)</option>
+                          <option value="domisili">LOKASI DOMISILI (MANDIRI)</option>
+                        </select>
+                        <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-cyan-600 pointer-events-none group-focus-within:rotate-180 transition-transform" />
+                      </div>
                     </div>
 
                     <label className="flex items-center gap-3 p-4 bg-white border border-slate-200 rounded-2xl cursor-pointer hover:border-cyan-200 transition-all shadow-sm">

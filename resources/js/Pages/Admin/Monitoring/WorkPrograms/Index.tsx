@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { Head, router, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Pagination } from '@/Components/UI';
@@ -129,7 +128,7 @@ return (
             variant="gray"
           />
           <StatCard label="SDG Mapping" value="ACTIVE" icon={Globe} variant="gray" />
-        </div>
+                </motion.div>
 
         {/* SDG DISTRIBUTION PANEL */}
         <motion.div variants={itemVariants}>

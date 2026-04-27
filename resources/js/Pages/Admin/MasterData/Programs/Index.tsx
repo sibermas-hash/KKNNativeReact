@@ -133,7 +133,7 @@ export default function ProgramsIndex({ programs, faculties = [], filters = {}, 
               </div>
             </div>
           </div>
-        </motion.div>
+        </PageHeader></motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           {/* --- LEFT COLUMN: Sync Info & Filters --- */}

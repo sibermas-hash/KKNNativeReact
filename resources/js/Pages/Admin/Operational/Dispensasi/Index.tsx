@@ -1,5 +1,4 @@
 import { type FormEvent, useState } from 'react';
-import { motion } from 'framer-motion';
 import { Head, router, useForm } from '@inertiajs/react';
 import {
   ShieldCheck,
@@ -281,7 +280,7 @@ return (
           </div>
 
           {/* --- RIGHT COLUMN: DAFTAR TERDAFTAR (Standard Pattern) --- */}
-          <div className="lg:col-span-8">
+          <motion.div variants={itemVariants} className="lg:col-span-8">
             <div className="bg-white border border-emerald-50 rounded-xl overflow-hidden shadow-sm flex flex-col min-h-[800px]">
               <div className="p-6 border-b border-[#f3f4f6] bg-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="flex items-center gap-2 p-1 bg-white border border-emerald-50 rounded-xl w-fit">
@@ -489,9 +488,9 @@ return (
                 />
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
 
       <ConfirmDialog
         open={!!revokingId}

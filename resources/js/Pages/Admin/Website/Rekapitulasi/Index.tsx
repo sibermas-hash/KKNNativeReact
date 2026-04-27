@@ -139,7 +139,7 @@ return (
           />
           <StatCard label="Audit Status" value="VERIFIED" icon={ShieldCheck} variant="gray" />
           <StatCard label="Fiscal Kernel" value="vFIN 1.2" icon={Cpu} variant="gray" />
-        </div>
+                </motion.div>
 
         {/* DOCUMENT CANVAS */}
         <motion.div variants={itemVariants}>

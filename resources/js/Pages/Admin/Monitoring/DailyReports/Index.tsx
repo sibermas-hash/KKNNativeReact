@@ -97,7 +97,7 @@ return (
           <StatCard label="Audit State" value="REAL-TIME" icon={RefreshCw} variant="info" />
           <StatCard label="Verifikasi AI" value="ACTIVE" icon={ShieldCheck} variant="gray" />
           <StatCard label="Security" value="ENCRYPTED" icon={Zap} variant="gray" />
-        </motion.div>
+          </motion.div>
 
         {/* MAIN CONTENT */}
         <motion.div variants={itemVariants}>

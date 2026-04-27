@@ -1,0 +1,14 @@
+default_platform(:android)
+
+platform :android do
+  desc "Build and release Android app to Play Store"
+  lane :deploy do
+    gradle(task: "clean bundleRelease")
+    upload_to_play_store(track: "production")
+  end
+
+  desc "Build for testing"
+  lane :test do
+    gradle(task: "test")
+  end
+end

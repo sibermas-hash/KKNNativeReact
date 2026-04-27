@@ -122,7 +122,7 @@ return (
           />
           <StatCard label="Vault Status" value="ONLINE_SYNC" icon={Zap} variant="gray" />
           <StatCard label="Protocol" value="SIGNED_OFF" icon={ShieldCheck} variant="gray" />
-        </div>
+                </motion.div>
 
         {/* MAIN CONTENT */}
         <motion.div variants={itemVariants}>

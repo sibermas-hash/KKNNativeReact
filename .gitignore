@@ -1,85 +1,75 @@
-# local scripts
-scripts/tmp
-*.exp
-*.log
-
-# temporary tools
-run_*.sh
-check_*.py
-auto_commit.sh
-
-# system
-.DS_Store
-
-*.log
-.DS_Store
+# Laravel Core
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/vendor
 .env
 .env.backup
 .env.production
 .env.testing
-
-# Sensitive data files (Excel, CSV containing PII)
-*.xlsx
-*.xls
-!template.xlsx
-
-.phpactor.json
 .phpunit.result.cache
-/.fleet
-/.idea
-/.nova
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
 /.phpunit.cache
 /.vscode
-/.zed
-/auth.json
-/node_modules
-/public/hot
-/public/storage
+/.idea
+
+# Scripts & Automation Residue
+scripts/tmp
+scripts/dev/tmp
+*.exp
+*.log
+*.bak
+*.swp
+*.swo
+*~
+run_*.sh
+check_*.py
+auto_commit.sh
+setup_remote.sh
+check_tsc.mjs
+fix_imports.mjs
+run_git.php
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Sensitive Data (Excel, CSV, SQL)
+*.xlsx
+*.xls
+*.csv
+*.sql
+!template.xlsx
+/DataKKN*
+/data-*
+data/
+exports/
+imports/
+uploads/
+
+# Build & Test Artifacts
 /playwright-report
 /test-results
 /blob-report
-/vendor
-Homestead.json
-Homestead.yaml
-Thumbs.db
-cloudflared.exe
-connect_server.bat
+/coverage/
+lint_report.json
 
-# Debug/deployment scripts
-check_local_master_master.php
-deploy_seeder.exp
-list_master_api_tables.php
-list_master_tables.php
-remote_seeder_final.php
-seeder_b64.txt
-check_users.php
-create_test_accounts.php
-setup_sample_data.php
+# AI Agent Residue
+.claude/
+.cline/
+.qwen/
+.codex-psysh/
+.venv_pdf/
+.antigravity/
+.codeium/
+.windsurf/
 
-*.bak
-
-# Test files in public
-public/test_*.php
-
-# Capacitor Android build artifacts
-android/app/build/
-android/.gradle/
-android/local.properties
-
-# APK signing
-*.jks
-*.keystore
-
-# APK distribution
-public/downloads/*.apk
-
-# Additional sensitive files
-*.pem
-*.key
-*.cert
-docker-compose.override.yml
-
-# Laravel storage (logs, cache, sessions, uploads)
+# Laravel Storage (Reinforced)
 /storage/app/public/*
 !/storage/app/public/.gitignore
 /storage/framework/cache/*
@@ -94,71 +84,17 @@ docker-compose.override.yml
 !/storage/framework/views/.gitignore
 /storage/logs/*
 !/storage/logs/.gitignore
-
-# Laravel bootstrap
-/bootstrap/cache/*
-!/bootstrap/cache/.gitignore
-
-# Composer/vendor
-/vendor/
-
-# Node packages
-/node_modules/
-
-# Environment files (already listed but reinforced)
-.env
-.env.*
-!.env.example
-!.env.staging
-
-# IDE
-/.idea/
-/.vscode/
-*.swp
-*.swo
-*~
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Build outputs
-/public/hot
-
-# Coverage
-/coverage/
-.phpunit.cache/
-
-# Data files - CSV/Excel/PDF with student/lecturer data (PII)
-*.csv
-*.sql
-/DataKKN*
-/data-*
-data/
-exports/
-imports/
-uploads/
-
-# Documentation files (non-code) at root
-*.docx
-*.pdf
-!README.md
-!AGENTS.md
-
-# Storage: private uploads (user documents, certificates, etc.)
 /storage/app/private/*
 !/storage/app/private/.gitignore
 
-# AI agent residue folders
-.claude/
-.cline/
-.qwen/
-.codex-psysh/
-.venv_pdf/
-.antigravity/
-.codeium/
-.windsurf/
+# Bootstrap Cache
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
 
-# Test results & reports (regeneratable)
-/docs/
-lint_report.json
+# Android / Capacitor Build Artifacts
+android/app/build/
+android/.gradle/
+android/local.properties
+*.jks
+*.keystore
+public/downloads/*.apk

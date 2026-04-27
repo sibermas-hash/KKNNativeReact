@@ -341,6 +341,7 @@ class RegistrationController extends Controller
         try {
             DB::beginTransaction();
 
+            // 1. Handle Legacy Files (Compatibility)
             if ($request->hasFile('health_certificate')) {
                 $path = $request->file('health_certificate')->store('health-certificates', config('filesystems.default'));
                 $mahasiswa->update(['health_certificate_path' => $path]);
@@ -349,6 +350,32 @@ class RegistrationController extends Controller
             if ($request->hasFile('parent_permission')) {
                 $path = $request->file('parent_permission')->store('parent-permissions', config('filesystems.default'));
                 $mahasiswa->update(['parent_permission_path' => $path]);
+            }
+
+            // 2. Handle Dynamic Files (New Architecture)
+            if ($request->has('dynamic_files')) {
+                foreach ($request->file('dynamic_files', []) as $key => $file) {
+                    if ($file) {
+                        $path = $file->store("registration-docs/{$mahasiswa->nim}", config('filesystems.default'));
+                        
+                        // Simpan ke tabel dokumen_peserta_kkn
+                        DB::table('dokumen_peserta_kkn')->updateOrInsert(
+                            [
+                                'mahasiswa_id' => $mahasiswa->id,
+                                'document_key' => $key,
+                                'periode_id' => $periodId
+                            ],
+                            [
+                                'file_path' => $path,
+                                'file_name' => $file->getClientOriginalName(),
+                                'file_type' => $file->getClientMimeType(),
+                                'verified_at' => null,
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]
+                        );
+                    }
+                }
             }
 
             $registration = $registrationService->register(

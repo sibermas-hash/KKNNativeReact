@@ -23,7 +23,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Premium Components
 import PageHeader from '@/Components/Premium/PageHeader';
-import RequirementBuilder from '@/Components/Admin/RequirementBuilder';
 import ContentPanel from '@/Components/Premium/ContentPanel';
 import StatusTag from '@/Components/Premium/StatusTag';
 import SearchInput from '@/Components/Premium/SearchInput';
@@ -107,7 +106,6 @@ export default function JenisKknIndex({
     color: 'emerald',
     is_active: true,
     sort_order: 0,
-    requirements_config: [] as any[],
     attendance_config: {
       geofence_enabled: true,
       radius_meters: 500,
@@ -116,25 +114,7 @@ export default function JenisKknIndex({
     },
   });
 
-  const addDynamicRequirement = (type: 'upload' | 'db_check') => {
-    const newRequirement = type === 'upload' 
-      ? { name: '', type: 'upload', key: `upload_${Date.now()}` }
-      : { name: '', type: 'db_check', field: 'sks_completed', min_value: 100, key: `db_${Date.now()}` };
-    
-    form.setData('requirements_config', [...(form.data.requirements_config || []), newRequirement]);
-  };
 
-  const removeDynamicRequirement = (index: number) => {
-    const updated = [...(form.data.requirements_config || [])];
-    updated.splice(index, 1);
-    form.setData('requirements_config', updated);
-  };
-
-  const updateDynamicRequirement = (index: number, field: string, value: any) => {
-    const updated = [...(form.data.requirements_config || [])];
-    updated[index] = { ...updated[index], [field]: value };
-    form.setData('requirements_config', updated);
-  };
 
   const JAWA_TENGAH_REGENCIES = [
     'BANYUMAS',
@@ -225,7 +205,6 @@ export default function JenisKknIndex({
       color: item.color,
       is_active: item.is_active,
       sort_order: item.sort_order,
-      requirements_config: item.requirements_config ?? [],
       attendance_config: item.attendance_config ?? {
         geofence_enabled: true,
         radius_meters: 500,

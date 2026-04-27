@@ -103,12 +103,6 @@ class JenisKknController extends Controller
             'color' => ['nullable', 'string', 'max:20'],
             'is_active' => ['boolean'],
             'sort_order' => ['integer', 'min:0'],
-            'requirements_config' => ['nullable', 'array'],
-            'requirements_config.*.name' => ['required', 'string', 'max:100'],
-            'requirements_config.*.type' => ['required', 'string', Rule::in(['upload', 'db_check'])],
-            'requirements_config.*.field' => ['nullable', 'string'],
-            'requirements_config.*.min_value' => ['nullable'],
-            'requirements_config.*.expected_value' => ['nullable'],
             'attendance_config' => ['nullable', 'array'],
             'attendance_config.geofence_enabled' => ['boolean'],
             'attendance_config.radius_meters' => ['integer', 'min:1'],
@@ -118,11 +112,6 @@ class JenisKknController extends Controller
         ]);
 
         $validated['code'] = strtoupper($validated['code']);
-
-        // Validate requirements_config using RequirementBuilderService
-        if (!empty($validated['requirements_config'])) {
-            RequirementBuilderService::validateRequirementsConfig($validated['requirements_config']);
-        }
 
         JenisKkn::create($validated);
         RedisCacheService::invalidateMasterData();
@@ -158,12 +147,6 @@ class JenisKknController extends Controller
             'color' => ['nullable', 'string', 'max:20'],
             'is_active' => ['boolean'],
             'sort_order' => ['integer', 'min:0'],
-            'requirements_config' => ['nullable', 'array'],
-            'requirements_config.*.name' => ['required', 'string', 'max:100'],
-            'requirements_config.*.type' => ['required', 'string', Rule::in(['upload', 'db_check'])],
-            'requirements_config.*.field' => ['nullable', 'string'],
-            'requirements_config.*.min_value' => ['nullable'],
-            'requirements_config.*.expected_value' => ['nullable'],
             'attendance_config' => ['nullable', 'array'],
             'attendance_config.geofence_enabled' => ['boolean'],
             'attendance_config.radius_meters' => ['integer', 'min:1'],
@@ -173,11 +156,6 @@ class JenisKknController extends Controller
         ]);
 
         $validated['code'] = strtoupper($validated['code']);
-
-        // Validate requirements_config using RequirementBuilderService
-        if (!empty($validated['requirements_config'])) {
-            RequirementBuilderService::validateRequirementsConfig($validated['requirements_config']);
-        }
 
         $jenisKkn->update($validated);
         RedisCacheService::invalidateMasterData();

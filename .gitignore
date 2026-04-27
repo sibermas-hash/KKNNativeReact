@@ -97,4 +97,16 @@ android/.gradle/
 android/local.properties
 *.jks
 *.keystore
+
+# Development Scripts to Exclude
+scripts/ops/
+scripts/tmp/
+scripts/dev/tmp/
+check_git.cjs
+run_seed.php
+
+# Env Files (Additional)
+!.env.example
+!.env.production.example
 public/downloads/*.apk
+/public/build\n/storage/app/private/*\n/storage/app/public/*\n/storage/debugbar/*\n/storage/framework/cache/*\n/storage/framework/sessions/*\n/storage/framework/views/*\n/storage/logs/*\n/storage/DOC\ DB/*\nnode_modules/

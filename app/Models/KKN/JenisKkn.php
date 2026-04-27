@@ -33,6 +33,8 @@ class JenisKkn extends Model
         'color',
         'is_active',
         'sort_order',
+        'requirements_config',
+        'attendance_config',
     ];
 
     protected $casts = [
@@ -46,6 +48,8 @@ class JenisKkn extends Model
         'custom_requirements' => 'array',
         'required_documents' => 'array',
         'allowed_regencies' => 'array',
+        'requirements_config' => 'array',
+        'attendance_config' => 'array',
     ];
 
     // ─── Label helpers ─────────────────────────────────
@@ -67,6 +71,7 @@ class JenisKkn extends Model
             'manual_admin' => 'Manual oleh Admin/LPPM',
             'host_defined' => 'Ditentukan oleh Mitra/Host',
             'proposal_defined' => 'Mengikuti Desain Proposal',
+            'self_determined' => 'Mandiri (Mahasiswa Tentukan Lokasi)',
             default => $this->placement_mode,
         };
     }
@@ -104,7 +109,55 @@ class JenisKkn extends Model
                 'placement_mode' => $j->placement_mode,
                 'registration_mode_label' => $j->registrationModeLabel(),
                 'placement_mode_label' => $j->placementModeLabel(),
+                'attendance_config' => $j->getAttendanceConfig(),
             ])
             ->toArray();
+    }
+
+    // ─── Dynamic Attendance Config ──────────────────────────
+
+    public function getAttendanceConfig(): array
+    {
+        $default = [
+            'geofence_enabled' => true,
+            'radius_meters' => 500,
+            'location_source' => 'posko',
+            'require_photo' => true,
+            'allow_offline_sync' => true,
+        ];
+
+        return array_merge($default, $this->attendance_config ?? []);
+    }
+
+    public function isGeofenceEnabled(): bool
+    {
+        return $this->getAttendanceConfig()['geofence_enabled'] ?? true;
+    }
+
+    public function getAttendanceRadius(): int
+    {
+        return $this->getAttendanceConfig()['radius_meters'] ?? 500;
+    }
+
+    public function getLocationSource(): string
+    {
+        return $this->getAttendanceConfig()['location_source'] ?? 'posko';
+    }
+
+    public function isPhotoRequired(): bool
+    {
+        return $this->getAttendanceConfig()['require_photo'] ?? true;
+    }
+
+    // ─── Dynamic Requirements Config ──────────────────────────
+
+    public function getRequirementsConfig(): array
+    {
+        return $this->requirements_config ?? [];
+    }
+
+    public function hasDynamicRequirements(): bool
+    {
+        return ! empty($this->requirements_config);
     }
 }

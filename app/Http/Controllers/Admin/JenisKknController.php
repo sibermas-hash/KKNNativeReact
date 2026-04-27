@@ -52,6 +52,13 @@ class JenisKknController extends Controller
                 'is_active' => $j->is_active,
                 'sort_order' => $j->sort_order,
                 'periodes_count' => $j->periodes()->count(),
+                'requirements_config' => $j->requirements_config ?? [],
+                'attendance_config' => $j->attendance_config ?? [
+                    'radius_check' => true,
+                    'radius_meter' => 100,
+                    'location_source' => 'posko',
+                    'require_photo' => true
+                ],
             ]);
 
         return Inertia::render('Admin/MasterData/JenisKkn/Index', [
@@ -68,6 +75,7 @@ class JenisKknController extends Controller
                 ['value' => 'manual_admin', 'label' => 'Manual oleh Admin/LPPM'],
                 ['value' => 'host_defined', 'label' => 'Ditentukan oleh Mitra/Host'],
                 ['value' => 'proposal_defined', 'label' => 'Mengikuti Desain Proposal'],
+                ['value' => 'self_determined', 'label' => 'Mandiri (Mahasiswa Tentukan Lokasi)'],
             ],
         ]);
     }
@@ -81,7 +89,7 @@ class JenisKknController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:500'],
             'registration_mode' => ['required', Rule::in(['open', 'selective', 'proposal_based'])],
-            'placement_mode' => ['required', Rule::in(['automatic_after_approval', 'manual_admin', 'host_defined', 'proposal_defined'])],
+            'placement_mode' => ['required', Rule::in(['automatic_after_approval', 'manual_admin', 'host_defined', 'proposal_defined', 'self_determined'])],
             'min_sks' => ['required', 'integer', 'min:0', 'max:200'],
             'min_gpa' => ['required', 'numeric', 'min:0', 'max:4.00'],
             'require_not_married' => ['boolean'],
@@ -99,6 +107,17 @@ class JenisKknController extends Controller
             'color' => ['nullable', 'string', 'max:20'],
             'is_active' => ['boolean'],
             'sort_order' => ['integer', 'min:0'],
+            'requirements_config' => ['nullable', 'array'],
+            'requirements_config.*.name' => ['required', 'string', 'max:100'],
+            'requirements_config.*.type' => ['required', 'string', Rule::in(['upload', 'db_check'])],
+            'requirements_config.*.field' => ['nullable', 'string'],
+            'requirements_config.*.min_value' => ['nullable'],
+            'requirements_config.*.expected_value' => ['nullable'],
+            'attendance_config' => ['nullable', 'array'],
+            'attendance_config.radius_check' => ['boolean'],
+            'attendance_config.radius_meter' => ['integer', 'min:1'],
+            'attendance_config.location_source' => ['string', Rule::in(['posko', 'domisili'])],
+            'attendance_config.require_photo' => ['boolean'],
         ]);
 
         $validated['code'] = strtoupper($validated['code']);
@@ -119,7 +138,7 @@ class JenisKknController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:500'],
             'registration_mode' => ['required', Rule::in(['open', 'selective', 'proposal_based'])],
-            'placement_mode' => ['required', Rule::in(['automatic_after_approval', 'manual_admin', 'host_defined', 'proposal_defined'])],
+            'placement_mode' => ['required', Rule::in(['automatic_after_approval', 'manual_admin', 'host_defined', 'proposal_defined', 'self_determined'])],
             'min_sks' => ['required', 'integer', 'min:0', 'max:200'],
             'min_gpa' => ['required', 'numeric', 'min:0', 'max:4.00'],
             'require_not_married' => ['boolean'],
@@ -137,6 +156,17 @@ class JenisKknController extends Controller
             'color' => ['nullable', 'string', 'max:20'],
             'is_active' => ['boolean'],
             'sort_order' => ['integer', 'min:0'],
+            'requirements_config' => ['nullable', 'array'],
+            'requirements_config.*.name' => ['required', 'string', 'max:100'],
+            'requirements_config.*.type' => ['required', 'string', Rule::in(['upload', 'db_check'])],
+            'requirements_config.*.field' => ['nullable', 'string'],
+            'requirements_config.*.min_value' => ['nullable'],
+            'requirements_config.*.expected_value' => ['nullable'],
+            'attendance_config' => ['nullable', 'array'],
+            'attendance_config.radius_check' => ['boolean'],
+            'attendance_config.radius_meter' => ['integer', 'min:1'],
+            'attendance_config.location_source' => ['string', Rule::in(['posko', 'domisili'])],
+            'attendance_config.require_photo' => ['boolean'],
         ]);
 
         $validated['code'] = strtoupper($validated['code']);

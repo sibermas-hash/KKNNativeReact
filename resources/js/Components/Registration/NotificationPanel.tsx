@@ -8,7 +8,10 @@ interface NotificationPanelProps {
   domicile_profile?: DomicileSummary | null;
 }
 
-export const NotificationPanel = ({ biodata_profile, domicile_profile }: NotificationPanelProps) => {
+export const NotificationPanel = ({
+  biodata_profile,
+  domicile_profile,
+}: NotificationPanelProps) => {
   return (
     <AnimatePresence>
       {(biodata_profile && !biodata_profile.is_complete) ||

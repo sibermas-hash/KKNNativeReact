@@ -1,5 +1,13 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShieldCheck, UserCheck, MapPin, Activity, AlertCircle, RefreshCw, ArrowRight } from 'lucide-react';
+import {
+  ShieldCheck,
+  UserCheck,
+  MapPin,
+  Activity,
+  AlertCircle,
+  RefreshCw,
+  ArrowRight,
+} from 'lucide-react';
 import { BriefingItem } from '@/Pages/Student/Register/Components/BriefingItem';
 import { clsx } from 'clsx';
 
@@ -109,10 +117,7 @@ export const EnrollmentBriefing = ({
           ) : (
             <motion.div key="ready" className="flex items-center gap-4">
               {isRejectedRegistration ? 'Resubmit Enrollment' : 'Deploy Application'}
-              <ArrowRight
-                size={18}
-                className="group-hover:translate-x-3 transition-transform"
-              />
+              <ArrowRight size={18} className="group-hover:translate-x-3 transition-transform" />
             </motion.div>
           )}
         </AnimatePresence>

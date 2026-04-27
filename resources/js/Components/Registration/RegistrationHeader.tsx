@@ -37,8 +37,8 @@ export const RegistrationHeader: React.FC<RegistrationHeaderProps> = ({ readyToR
             </div>
           </div>
           <p className="text-base font-bold text-emerald-950 leading-relaxed uppercase tracking-wider opacity-80 max-w-xl">
-            Pilih skema KKN dan lengkapi prasyarat operasional. Database akan memproses
-            penempatan berdasarkan kualifikasi akademik dan domisili terverifikasi.
+            Pilih skema KKN dan lengkapi prasyarat operasional. Database akan memproses penempatan
+            berdasarkan kualifikasi akademik dan domisili terverifikasi.
           </p>
         </div>
 
@@ -64,8 +64,8 @@ export const RegistrationHeader: React.FC<RegistrationHeaderProps> = ({ readyToR
             </div>
             <div className="h-px bg-white/10" />
             <p className="text-xs font-bold text-emerald-950 uppercase tracking-wide leading-relaxed px-2">
-              Sistem hanya menerima aplikasi dari mahasiswa yang telah memenuhi syarat SKS,
-              BTA-PPI, dan kesehatan dokumen.
+              Sistem hanya menerima aplikasi dari mahasiswa yang telah memenuhi syarat SKS, BTA-PPI,
+              dan kesehatan dokumen.
             </p>
           </div>
         </div>

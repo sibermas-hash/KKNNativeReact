@@ -11,19 +11,21 @@ interface ContentPanelProps {
   className?: string;
 }
 
-const ContentPanel: React.FC<ContentPanelProps> = ({ 
-  title, 
-  description, 
-  icon: Icon, 
-  children, 
+const ContentPanel: React.FC<ContentPanelProps> = ({
+  title,
+  description,
+  icon: Icon,
+  children,
   padding = true,
-  className 
+  className,
 }) => {
   return (
-    <div className={clsx(
-      "bg-white rounded-2xl border-2 border-cyan-100 shadow-sm overflow-hidden flex flex-col font-sans",
-      className
-    )}>
+    <div
+      className={clsx(
+        'bg-white rounded-2xl border-2 border-cyan-100 shadow-sm overflow-hidden flex flex-col font-sans',
+        className,
+      )}
+    >
       <div className="bg-slate-50/50 px-6 py-4 border-b border-cyan-100 flex justify-between items-center">
         <div className="flex items-center gap-3">
           {Icon && <Icon size={16} className="text-cyan-600" strokeWidth={2.5} />}
@@ -39,13 +41,8 @@ const ContentPanel: React.FC<ContentPanelProps> = ({
           </div>
         </div>
       </div>
-      
-      <div className={clsx(
-        "flex-1",
-        padding && "p-6"
-      )}>
-        {children}
-      </div>
+
+      <div className={clsx('flex-1', padding && 'p-6')}>{children}</div>
     </div>
   );
 };

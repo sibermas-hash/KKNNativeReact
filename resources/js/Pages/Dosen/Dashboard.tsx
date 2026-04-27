@@ -1,7 +1,7 @@
 import { Head, usePage, useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
-import Modal from '@/Components/ui/Modal';
+import Modal from '@/Components/UI/Modal';
 import {
   GraduationCap,
   ClipboardCheck,
@@ -416,8 +416,8 @@ export default function DosenDashboard({
       </motion.div>
 
       {/* Registration Modal */}
-      <Modal 
-        show={!!selectedWorkshop} 
+      <Modal
+        show={!!selectedWorkshop}
         onClose={() => !isRegistering && setSelectedWorkshop(null)}
         title="Konfirmasi Pendaftaran"
         maxWidth="md"
@@ -425,7 +425,9 @@ export default function DosenDashboard({
         {selectedWorkshop && (
           <div className="space-y-6">
             <div className="bg-emerald-50 rounded-xl p-4 border border-emerald-100">
-              <h4 className="text-sm font-bold text-emerald-950 mb-3 leading-snug">{selectedWorkshop.title}</h4>
+              <h4 className="text-sm font-bold text-emerald-950 mb-3 leading-snug">
+                {selectedWorkshop.title}
+              </h4>
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-xs font-medium text-emerald-800">
                   <Calendar size={14} className="text-emerald-600" />
@@ -439,7 +441,11 @@ export default function DosenDashboard({
             </div>
 
             <div className="text-sm font-medium text-emerald-950 leading-relaxed">
-              Apakah Anda yakin ingin mendaftar ke workshop ini? Sisa kuota peserta saat ini adalah <span className="font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">{selectedWorkshop.slots_left} slot</span>.
+              Apakah Anda yakin ingin mendaftar ke workshop ini? Sisa kuota peserta saat ini adalah{' '}
+              <span className="font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
+                {selectedWorkshop.slots_left} slot
+              </span>
+              .
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
@@ -453,13 +459,17 @@ export default function DosenDashboard({
               <button
                 onClick={() => {
                   setIsRegistering(true);
-                  router.post(`/dosen/workshops/${selectedWorkshop.id}/register`, {}, {
-                    preserveScroll: true,
-                    onFinish: () => {
-                      setIsRegistering(false);
-                      setSelectedWorkshop(null);
-                    }
-                  });
+                  router.post(
+                    `/dosen/workshops/${selectedWorkshop.id}/register`,
+                    {},
+                    {
+                      preserveScroll: true,
+                      onFinish: () => {
+                        setIsRegistering(false);
+                        setSelectedWorkshop(null);
+                      },
+                    },
+                  );
                 }}
                 disabled={isRegistering}
                 className="px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-[#0d9488] hover:bg-[#135c37] transition-colors flex items-center gap-2 disabled:opacity-50 shadow-lg shadow-emerald-600/20 uppercase tracking-wider active:scale-95"
@@ -475,7 +485,11 @@ export default function DosenDashboard({
   );
 }
 
-function DplRegistrationForm({ availablePeriods }: { availablePeriods: Array<{ id: number; name: string }> }) {
+function DplRegistrationForm({
+  availablePeriods,
+}: {
+  availablePeriods: Array<{ id: number; name: string }>;
+}) {
   const form = useForm({ periode_id: availablePeriods[0]?.id?.toString() || '' });
 
   const submit = (e: React.FormEvent) => {
@@ -494,7 +508,8 @@ function DplRegistrationForm({ availablePeriods }: { availablePeriods: Array<{ i
           Selamat, Anda Lulus Workshop!
         </h3>
         <p className="text-xs font-bold text-emerald-800 max-w-md mx-auto leading-relaxed">
-          Anda dapat mendaftarkan diri sebagai Dosen Pembimbing Lapangan (DPL) untuk periode KKN yang tersedia.
+          Anda dapat mendaftarkan diri sebagai Dosen Pembimbing Lapangan (DPL) untuk periode KKN
+          yang tersedia.
         </p>
       </div>
       {availablePeriods.length > 0 ? (
@@ -505,7 +520,9 @@ function DplRegistrationForm({ availablePeriods }: { availablePeriods: Array<{ i
             className="w-full h-10 px-3 border border-emerald-200 rounded-lg text-sm font-bold text-emerald-950 focus:ring-2 focus:ring-emerald-500"
           >
             {availablePeriods.map((p) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
             ))}
           </select>
           <button
@@ -516,7 +533,9 @@ function DplRegistrationForm({ availablePeriods }: { availablePeriods: Array<{ i
             {form.processing ? 'Mengirim...' : 'Daftar Sebagai DPL'}
             <ArrowRight size={14} />
           </button>
-          {form.errors.periode_id && <p className="text-xs font-bold text-rose-600">{form.errors.periode_id}</p>}
+          {form.errors.periode_id && (
+            <p className="text-xs font-bold text-rose-600">{form.errors.periode_id}</p>
+          )}
         </form>
       ) : (
         <p className="text-xs font-bold text-amber-700 bg-amber-50 p-3 rounded-lg border border-amber-100 max-w-md mx-auto">

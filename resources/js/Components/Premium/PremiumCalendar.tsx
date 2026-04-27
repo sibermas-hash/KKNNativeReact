@@ -2,7 +2,17 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Info } from 'lucide-react';
 import { clsx } from 'clsx';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isToday, getDay, addMonths, subMonths } from 'date-fns';
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameMonth,
+  isToday,
+  getDay,
+  addMonths,
+  subMonths,
+} from 'date-fns';
 import { id } from 'date-fns/locale';
 
 interface CalendarProps {
@@ -15,7 +25,12 @@ interface CalendarProps {
   onSelectDate: (date: Date) => void;
 }
 
-export default function PremiumCalendar({ currentDate, onDateChange, reports, onSelectDate }: CalendarProps) {
+export default function PremiumCalendar({
+  currentDate,
+  onDateChange,
+  reports,
+  onSelectDate,
+}: CalendarProps) {
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(monthStart);
   const startDate = monthStart;
@@ -26,7 +41,7 @@ export default function PremiumCalendar({ currentDate, onDateChange, reports, on
   // Get report for a specific date
   const getReportForDate = (day: Date) => {
     const dateStr = format(day, 'yyyy-MM-dd');
-    return reports.find(r => r.date === dateStr);
+    return reports.find((r) => r.date === dateStr);
   };
 
   const nextMonth = () => onDateChange(addMonths(currentDate, 1));
@@ -38,42 +53,49 @@ export default function PremiumCalendar({ currentDate, onDateChange, reports, on
     <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-emerald-50">
       <div className="flex items-center justify-between mb-10">
         <div className="flex items-center gap-4">
-           <button 
+          <button
             onClick={prevMonth}
             className="p-2 hover:bg-emerald-50 rounded-xl text-emerald-600 transition-colors"
-           >
+          >
             <ChevronLeft size={20} />
-           </button>
-           <h2 className="text-xl font-black text-emerald-950 uppercase tracking-tight">
-             {format(currentDate, 'MMMM yyyy', { locale: id })}
-           </h2>
-           <button 
+          </button>
+          <h2 className="text-xl font-black text-emerald-950 uppercase tracking-tight">
+            {format(currentDate, 'MMMM yyyy', { locale: id })}
+          </h2>
+          <button
             onClick={nextMonth}
             className="p-2 hover:bg-emerald-50 rounded-xl text-emerald-600 transition-colors"
-           >
+          >
             <ChevronRight size={20} />
-           </button>
+          </button>
         </div>
-        
+
         <div className="flex items-center gap-3">
-           <div className="flex items-center gap-1.5">
-             <div className="w-2 h-2 rounded-full bg-emerald-500" />
-             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tervalidasi</span>
-           </div>
-           <div className="flex items-center gap-1.5">
-             <div className="w-2 h-2 rounded-full bg-amber-400" />
-             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pending</span>
-           </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              Tervalidasi
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-amber-400" />
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+              Pending
+            </span>
+          </div>
         </div>
       </div>
 
       <div className="grid grid-cols-7 gap-4">
-        {weekDays.map(wd => (
-          <div key={wd} className="text-center text-xs font-black text-slate-300 uppercase tracking-widest mb-4">
+        {weekDays.map((wd) => (
+          <div
+            key={wd}
+            className="text-center text-xs font-black text-slate-300 uppercase tracking-widest mb-4"
+          >
             {wd}
           </div>
         ))}
-        
+
         {/* Placeholder for empty days at start of month */}
         {[...Array(getDay(monthStart) === 0 ? 6 : getDay(monthStart) - 1)].map((_, i) => (
           <div key={`empty-${i}`} />
@@ -82,7 +104,7 @@ export default function PremiumCalendar({ currentDate, onDateChange, reports, on
         {days.map((day) => {
           const report = getReportForDate(day);
           const isTodayDate = isToday(day);
-          
+
           return (
             <motion.button
               key={day.toString()}
@@ -90,20 +112,24 @@ export default function PremiumCalendar({ currentDate, onDateChange, reports, on
               whileTap={{ scale: 0.95 }}
               onClick={() => onSelectDate(day)}
               className={clsx(
-                "relative group aspect-square rounded-2xl flex flex-col items-center justify-center transition-all border-2",
-                report?.status === 'approved' 
-                  ? "bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-200" 
+                'relative group aspect-square rounded-2xl flex flex-col items-center justify-center transition-all border-2',
+                report?.status === 'approved'
+                  ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-200'
                   : report?.status === 'pending'
-                    ? "bg-amber-50 border-amber-100 text-amber-700"
+                    ? 'bg-amber-50 border-amber-100 text-amber-700'
                     : report?.status === 'rejected'
-                      ? "bg-rose-50 border-rose-100 text-rose-700"
-                      : "bg-[#F8FAF9] border-transparent text-slate-400 hover:bg-white hover:border-emerald-100 hover:shadow-sm"
+                      ? 'bg-rose-50 border-rose-100 text-rose-700'
+                      : 'bg-[#F8FAF9] border-transparent text-slate-400 hover:bg-white hover:border-emerald-100 hover:shadow-sm',
               )}
             >
               <span className="text-sm font-black mb-1">{format(day, 'd')}</span>
               {report && (
                 <span className="text-[8px] font-black uppercase tracking-tighter opacity-80">
-                  {report.status === 'approved' ? 'Valid' : report.status === 'pending' ? 'Cek' : 'Revisi'}
+                  {report.status === 'approved'
+                    ? 'Valid'
+                    : report.status === 'pending'
+                      ? 'Cek'
+                      : 'Revisi'}
                 </span>
               )}
               {isTodayDate && !report && (
@@ -115,15 +141,18 @@ export default function PremiumCalendar({ currentDate, onDateChange, reports, on
       </div>
 
       <div className="mt-10 pt-8 border-t border-emerald-50 flex items-start gap-4">
-         <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600">
-           <Info size={20} />
-         </div>
-         <div>
-           <p className="text-xs font-bold text-emerald-950 uppercase tracking-tight mb-1">Panduan Pengisian</p>
-           <p className="text-[11px] font-medium text-slate-500 leading-relaxed">
-             Pastikan Anda mengisi logbook harian sebelum jam 23.59. Laporan yang sudah tervalidasi oleh DPL akan ditandai dengan kotak berwarna hijau pekat.
-           </p>
-         </div>
+        <div className="p-3 bg-emerald-50 rounded-2xl text-emerald-600">
+          <Info size={20} />
+        </div>
+        <div>
+          <p className="text-xs font-bold text-emerald-950 uppercase tracking-tight mb-1">
+            Panduan Pengisian
+          </p>
+          <p className="text-[11px] font-medium text-slate-500 leading-relaxed">
+            Pastikan Anda mengisi logbook harian sebelum jam 23.59. Laporan yang sudah tervalidasi
+            oleh DPL akan ditandai dengan kotak berwarna hijau pekat.
+          </p>
+        </div>
       </div>
     </div>
   );

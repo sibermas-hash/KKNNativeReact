@@ -85,10 +85,13 @@ export default function DplParticipantEvaluationIndex({
               <MessageSquareQuote size={22} />
             </div>
             <div>
-              <h1 className="text-2xl font-black font-display uppercase tracking-tighter text-emerald-950">Evaluasi DPL oleh Peserta</h1>
+              <h1 className="text-2xl font-black font-display uppercase tracking-tighter text-emerald-950">
+                Evaluasi DPL oleh Peserta
+              </h1>
               <p className="mt-2 max-w-3xl text-sm font-semibold leading-relaxed text-emerald-950">
                 Halaman ini merangkum umpan balik mahasiswa terhadap DPL pada akhir KKN. Data ini
-                dipakai untuk quality assurance pembimbingan dan tidak mengubah nilai akhir mahasiswa.
+                dipakai untuk quality assurance pembimbingan dan tidak mengubah nilai akhir
+                mahasiswa.
               </p>
             </div>
           </div>
@@ -106,11 +109,17 @@ export default function DplParticipantEvaluationIndex({
 
               <div className="space-y-4">
                 <div>
-                  <label htmlFor={fieldIds.search} className="text-[11px] font-black uppercase tracking-widest text-emerald-600">
+                  <label
+                    htmlFor={fieldIds.search}
+                    className="text-[11px] font-black uppercase tracking-widest text-emerald-600"
+                  >
                     Cari DPL atau Kelompok
                   </label>
                   <div className="relative mt-2">
-                    <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-emerald-300" size={16} />
+                    <Search
+                      className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-emerald-300"
+                      size={16}
+                    />
                     <input
                       id={fieldIds.search}
                       value={search}
@@ -123,7 +132,10 @@ export default function DplParticipantEvaluationIndex({
                 </div>
 
                 <div>
-                  <label htmlFor={fieldIds.period} className="text-[11px] font-black uppercase tracking-widest text-emerald-600">
+                  <label
+                    htmlFor={fieldIds.period}
+                    className="text-[11px] font-black uppercase tracking-widest text-emerald-600"
+                  >
                     Periode
                   </label>
                   <select
@@ -142,7 +154,10 @@ export default function DplParticipantEvaluationIndex({
                 </div>
 
                 <div>
-                  <label htmlFor={fieldIds.recommendation} className="text-[11px] font-black uppercase tracking-widest text-emerald-600">
+                  <label
+                    htmlFor={fieldIds.recommendation}
+                    className="text-[11px] font-black uppercase tracking-widest text-emerald-600"
+                  >
                     Rekomendasi
                   </label>
                   <select
@@ -185,10 +200,18 @@ export default function DplParticipantEvaluationIndex({
             </section>
 
             <section className="grid gap-4">
-              <StatCard icon={MessageSquareQuote} label="Total Respon" value={stats.total_responses} />
+              <StatCard
+                icon={MessageSquareQuote}
+                label="Total Respon"
+                value={stats.total_responses}
+              />
               <StatCard icon={Star} label="Rata-rata Skor" value={stats.average_score.toFixed(2)} />
               <StatCard icon={Users} label="DPL Dinilai" value={stats.dpl_count} />
-              <StatCard icon={BarChart3} label="Response Rate" value={`${stats.average_response_rate.toFixed(2)}%`} />
+              <StatCard
+                icon={BarChart3}
+                label="Response Rate"
+                value={`${stats.average_response_rate.toFixed(2)}%`}
+              />
             </section>
           </aside>
 
@@ -209,22 +232,32 @@ export default function DplParticipantEvaluationIndex({
                   {summaries.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="px-6 py-20 text-center">
-                        <p className="text-sm font-bold text-emerald-950">Belum ada evaluasi DPL peserta.</p>
+                        <p className="text-sm font-bold text-emerald-950">
+                          Belum ada evaluasi DPL peserta.
+                        </p>
                       </td>
                     </tr>
                   ) : (
                     summaries.map((summary) => (
-                      <tr key={summary.dosen_id} className="border-b border-emerald-50/80 align-top">
+                      <tr
+                        key={summary.dosen_id}
+                        className="border-b border-emerald-50/80 align-top"
+                      >
                         <td className="px-4 py-5">
                           <p className="text-sm font-black uppercase tracking-wide text-emerald-950">
                             {summary.dosen_name}
                           </p>
-                          <p className="mt-1 text-xs font-semibold text-emerald-950">NIP {summary.nip}</p>
+                          <p className="mt-1 text-xs font-semibold text-emerald-950">
+                            NIP {summary.nip}
+                          </p>
                           <p className="mt-2 text-[11px] font-black uppercase tracking-widest text-emerald-600">
-                            {summary.group_count} kelompok • update {summary.latest_submitted_at ?? '-'}
+                            {summary.group_count} kelompok • update{' '}
+                            {summary.latest_submitted_at ?? '-'}
                           </p>
                         </td>
-                        <td className="px-4 py-5 text-sm font-semibold text-emerald-950">{summary.faculty_name}</td>
+                        <td className="px-4 py-5 text-sm font-semibold text-emerald-950">
+                          {summary.faculty_name}
+                        </td>
                         <td className="px-4 py-5 text-center text-sm font-black text-emerald-950">
                           {summary.response_count}/{summary.eligible_count}
                         </td>
@@ -238,7 +271,8 @@ export default function DplParticipantEvaluationIndex({
                           <div className="mt-3 space-y-1 text-left text-[11px] font-semibold text-emerald-950">
                             {summary.criterion_averages.slice(0, 2).map((criterion) => (
                               <p key={criterion.key}>
-                                {criterion.label}: <span className="font-black">{criterion.average.toFixed(2)}</span>
+                                {criterion.label}:{' '}
+                                <span className="font-black">{criterion.average.toFixed(2)}</span>
                               </p>
                             ))}
                           </div>
@@ -267,7 +301,15 @@ export default function DplParticipantEvaluationIndex({
   );
 }
 
-function StatCard({ icon: Icon, label, value }: { icon: any; label: string; value: string | number }) {
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: any;
+  label: string;
+  value: string | number;
+}) {
   return (
     <div className="rounded-2xl border border-emerald-50 bg-white p-5 shadow-sm">
       <div className="flex items-center gap-3">
@@ -275,7 +317,9 @@ function StatCard({ icon: Icon, label, value }: { icon: any; label: string; valu
           <Icon size={18} />
         </div>
         <div>
-          <p className="text-[11px] font-black uppercase tracking-widest text-emerald-600">{label}</p>
+          <p className="text-[11px] font-black uppercase tracking-widest text-emerald-600">
+            {label}
+          </p>
           <p className="mt-1 text-xl font-black text-emerald-950">{value}</p>
         </div>
       </div>

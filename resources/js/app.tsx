@@ -12,8 +12,9 @@ import AppLayout from '@/Layouts/AppLayout';
 // Initialize theme on page load
 function initializeTheme() {
   const stored = localStorage.getItem('theme');
-  const theme = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  
+  const theme =
+    stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
   if (theme === 'dark') {
     document.documentElement.classList.add('dark');
   } else {
@@ -39,27 +40,30 @@ const appName = import.meta.env.VITE_APP_NAME || 'SIBERMAS';
 initializeTheme();
 
 createInertiaApp({
- title: (title) => `${title} - ${appName}`,
+  title: (title) => `${title} - ${appName}`,
   resolve: (name) => {
     const pages = import.meta.glob('./Pages/**/*.tsx');
     return resolvePageComponent(`./Pages/${name}.tsx`, pages).then((module: any) => {
       const page = module.default;
-      if (page.layout === undefined && (name.startsWith('Admin/') || name.startsWith('Dpl/') || name.startsWith('Student/'))) {
+      if (
+        page.layout === undefined &&
+        (name.startsWith('Admin/') || name.startsWith('Dpl/') || name.startsWith('Student/'))
+      ) {
         page.layout = AppLayout.layout;
       }
       return module;
     });
   },
- setup({ el, App, props }) {
+  setup({ el, App, props }) {
     initCapacitor();
     const root = createRoot(el);
     root.render(
       <ToastProvider>
         <App {...props} />
-      </ToastProvider>
+      </ToastProvider>,
     );
- },
- progress: {
- color: '#0B6B3A',
- },
+  },
+  progress: {
+    color: '#0B6B3A',
+  },
 });

@@ -11,7 +11,7 @@ import {
   Users,
   MapPin,
   GraduationCap,
-  Info
+  Info,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
@@ -73,8 +73,12 @@ export default function RegistrationStatus({ registration, student }: Props) {
             <ArrowLeft size={20} />
           </Link>
           <div>
-            <h1 className="text-xl font-bold text-emerald-950 tracking-tight">Status Pendaftaran</h1>
-            <p className="text-xs font-medium text-emerald-700 uppercase tracking-widest">Detail Riwayat Pengajuan</p>
+            <h1 className="text-xl font-bold text-emerald-950 tracking-tight">
+              Status Pendaftaran
+            </h1>
+            <p className="text-xs font-medium text-emerald-700 uppercase tracking-widest">
+              Detail Riwayat Pengajuan
+            </p>
           </div>
         </div>
 
@@ -84,19 +88,32 @@ export default function RegistrationStatus({ registration, student }: Props) {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-3xl border border-emerald-50 shadow-xl shadow-emerald-900/5 overflow-hidden"
         >
-          <div className={clsx("p-6 border-b flex items-center justify-between", statusColors[registration.status])}>
+          <div
+            className={clsx(
+              'p-6 border-b flex items-center justify-between',
+              statusColors[registration.status],
+            )}
+          >
             <div className="flex items-center gap-3">
               <div className="p-2 bg-white/50 rounded-lg">
                 <StatusIcon size={24} />
               </div>
               <div>
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Status Saat Ini</p>
-                <p className="text-lg font-black uppercase tracking-tight">{registration.status_label}</p>
+                <p className="text-[10px] font-black uppercase tracking-widest opacity-70">
+                  Status Saat Ini
+                </p>
+                <p className="text-lg font-black uppercase tracking-tight">
+                  {registration.status_label}
+                </p>
               </div>
             </div>
             <div className="text-right hidden sm:block">
-              <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Terakhir Diperbarui</p>
-              <p className="text-xs font-bold">{registration.approved_at || registration.registration_date}</p>
+              <p className="text-[10px] font-black uppercase tracking-widest opacity-70">
+                Terakhir Diperbarui
+              </p>
+              <p className="text-xs font-bold">
+                {registration.approved_at || registration.registration_date}
+              </p>
             </div>
           </div>
 
@@ -109,7 +126,9 @@ export default function RegistrationStatus({ registration, student }: Props) {
                     <Calendar size={18} />
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">Periode KKN</p>
+                    <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">
+                      Periode KKN
+                    </p>
                     <p className="text-sm font-bold text-emerald-950">{registration.period.name}</p>
                     <p className="text-xs text-emerald-700 mt-0.5">{registration.period.jenis}</p>
                   </div>
@@ -120,9 +139,15 @@ export default function RegistrationStatus({ registration, student }: Props) {
                     <FileText size={18} />
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">ID Pendaftaran</p>
-                    <p className="text-sm font-bold text-emerald-950">#REG-{registration.id.toString().padStart(6, '0')}</p>
-                    <p className="text-xs text-emerald-700 mt-0.5">Daftar pada {registration.registration_date}</p>
+                    <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">
+                      ID Pendaftaran
+                    </p>
+                    <p className="text-sm font-bold text-emerald-950">
+                      #REG-{registration.id.toString().padStart(6, '0')}
+                    </p>
+                    <p className="text-xs text-emerald-700 mt-0.5">
+                      Daftar pada {registration.registration_date}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -133,7 +158,9 @@ export default function RegistrationStatus({ registration, student }: Props) {
                     <GraduationCap size={18} />
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">Data Mahasiswa</p>
+                    <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">
+                      Data Mahasiswa
+                    </p>
                     <p className="text-sm font-bold text-emerald-950">{student.name}</p>
                     <p className="text-xs text-emerald-700 mt-0.5">NIM: {student.nim}</p>
                   </div>
@@ -145,8 +172,12 @@ export default function RegistrationStatus({ registration, student }: Props) {
                       <Users size={18} />
                     </div>
                     <div>
-                      <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">Informasi Kelompok</p>
-                      <p className="text-sm font-bold text-emerald-950">{registration.group.name}</p>
+                      <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">
+                        Informasi Kelompok
+                      </p>
+                      <p className="text-sm font-bold text-emerald-950">
+                        {registration.group.name}
+                      </p>
                       <p className="text-xs text-emerald-700 mt-0.5 flex items-center gap-1">
                         <MapPin size={10} /> {registration.group.location}
                       </p>
@@ -165,7 +196,8 @@ export default function RegistrationStatus({ registration, student }: Props) {
                 <div className="space-y-1">
                   <p className="text-sm font-black text-amber-900 uppercase">Menunggu Verifikasi</p>
                   <p className="text-xs text-amber-800 leading-relaxed font-medium">
-                    Berkas Anda sedang dalam antrian pemeriksaan oleh Admin LPPM. Harap memantau halaman ini atau Dashboard secara berkala.
+                    Berkas Anda sedang dalam antrian pemeriksaan oleh Admin LPPM. Harap memantau
+                    halaman ini atau Dashboard secara berkala.
                   </p>
                 </div>
               </div>
@@ -178,7 +210,10 @@ export default function RegistrationStatus({ registration, student }: Props) {
                   <p className="text-sm font-black uppercase">Pendaftaran Perlu Perbaikan</p>
                 </div>
                 <div className="p-4 bg-white/60 rounded-xl text-sm font-bold text-rose-950 italic border border-rose-100">
-                  "{registration.rejection_reason || 'Mohon hubungi LPPM untuk informasi lebih lanjut.'}"
+                  "
+                  {registration.rejection_reason ||
+                    'Mohon hubungi LPPM untuk informasi lebih lanjut.'}
+                  "
                 </div>
                 <div className="pt-2">
                   <Link
@@ -197,9 +232,12 @@ export default function RegistrationStatus({ registration, student }: Props) {
                   <CheckCircle2 size={20} />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-black text-emerald-900 uppercase">Pendaftaran Disetujui</p>
+                  <p className="text-sm font-black text-emerald-900 uppercase">
+                    Pendaftaran Disetujui
+                  </p>
                   <p className="text-xs text-emerald-800 leading-relaxed font-medium">
-                    Selamat! Pendaftaran Anda telah divalidasi. Anda kini resmi menjadi peserta KKN. Silakan melanjutkan ke pengisian Program Kerja.
+                    Selamat! Pendaftaran Anda telah divalidasi. Anda kini resmi menjadi peserta KKN.
+                    Silakan melanjutkan ke pengisian Program Kerja.
                   </p>
                 </div>
               </div>
@@ -207,20 +245,21 @@ export default function RegistrationStatus({ registration, student }: Props) {
           </div>
 
           <div className="p-6 bg-gray-50 border-t border-emerald-50 flex items-center justify-center">
-             <Link
-                href="/mahasiswa"
-                className="text-xs font-black text-emerald-800 uppercase tracking-widest hover:text-emerald-950 transition-colors"
-             >
-                Kembali ke Dashboard
-             </Link>
+            <Link
+              href="/mahasiswa"
+              className="text-xs font-black text-emerald-800 uppercase tracking-widest hover:text-emerald-950 transition-colors"
+            >
+              Kembali ke Dashboard
+            </Link>
           </div>
         </motion.div>
 
         {/* Footer Info */}
         <div className="text-center opacity-40">
-           <p className="text-[10px] font-black text-emerald-950 uppercase tracking-widest">
-             Sistem Informasi Manajemen <span className="text-sky-600">SIBER</span><span className="text-emerald-600">MAS</span>
-           </p>
+          <p className="text-[10px] font-black text-emerald-950 uppercase tracking-widest">
+            Sistem Informasi Manajemen <span className="text-sky-600">SIBER</span>
+            <span className="text-emerald-600">MAS</span>
+          </p>
         </div>
       </div>
     </AppLayout>

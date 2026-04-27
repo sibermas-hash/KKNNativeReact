@@ -20,10 +20,10 @@ import {
   Info,
   Layers,
   ChevronDown,
-  Flag
+  Flag,
 } from 'lucide-react';
-import { Pagination } from '@/Components/ui';
-import type { PaginationMeta } from '@/Components/ui/Pagination';
+import { Pagination } from '@/Components/UI';
+import type { PaginationMeta } from '@/Components/UI/Pagination';
 import { clsx } from 'clsx';
 
 // Premium Components
@@ -82,8 +82,7 @@ export default function ProgramsIndex({ programs, faculties = [], filters = {}, 
       <Head title="Direktori Program Studi" />
 
       <div className="space-y-8 pb-24 font-sans">
-        
-        <PageHeader 
+        <PageHeader
           title="Matriks Program."
           subtitle="Matriks pemetaan akademis dan basis distribusi peserta KKN institusional UIN SAIZU."
           icon={Binary}
@@ -91,21 +90,23 @@ export default function ProgramsIndex({ programs, faculties = [], filters = {}, 
           stats={{
             label: 'Total Program',
             value: `${(programs?.meta?.total ?? 0).toLocaleString()} Prodi`,
-            icon: Database
+            icon: Database,
           }}
         >
           <div className="flex items-center gap-3">
-             <div className="hidden sm:flex items-center bg-white border border-emerald-100 rounded-xl px-4 py-2">
-               <div className="flex flex-col">
-                  <span className="text-[8px] font-black text-emerald-800 uppercase tracking-widest leading-none mb-1">Status Sinkronisasi</span>
-                  <div className="flex items-center gap-2">
-                    <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-xs font-black text-emerald-950 uppercase tracking-tight flex items-center gap-1.5">
-                        <Globe size={10} className="text-emerald-600" />
-                        Pusat Data Terintegrasi
-                    </span>
-                  </div>
-               </div>
+            <div className="hidden sm:flex items-center bg-white border border-emerald-100 rounded-xl px-4 py-2">
+              <div className="flex flex-col">
+                <span className="text-[8px] font-black text-emerald-800 uppercase tracking-widest leading-none mb-1">
+                  Status Sinkronisasi
+                </span>
+                <div className="flex items-center gap-2">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-xs font-black text-emerald-950 uppercase tracking-tight flex items-center gap-1.5">
+                    <Globe size={10} className="text-emerald-600" />
+                    Pusat Data Terintegrasi
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         </PageHeader>
@@ -117,28 +118,40 @@ export default function ProgramsIndex({ programs, faculties = [], filters = {}, 
               <div className="space-y-6">
                 <div className="bg-emerald-50/50 rounded-2xl p-5 border border-emerald-100/50 space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">Mode Operasi</span>
-                    <span className="px-2 py-0.5 bg-emerald-600 text-white text-[9px] font-black rounded-full uppercase">Sync Only</span>
+                    <span className="text-[10px] font-black text-emerald-800 uppercase tracking-widest">
+                      Mode Operasi
+                    </span>
+                    <span className="px-2 py-0.5 bg-emerald-600 text-white text-[9px] font-black rounded-full uppercase">
+                      Sync Only
+                    </span>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-50">
                         <Database size={14} />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-[9px] font-bold text-emerald-800/60 uppercase">Sumber Data</span>
-                        <span className="text-xs font-black text-emerald-950 uppercase">{syncInfo.source}</span>
+                        <span className="text-[9px] font-bold text-emerald-800/60 uppercase">
+                          Sumber Data
+                        </span>
+                        <span className="text-xs font-black text-emerald-950 uppercase">
+                          {syncInfo.source}
+                        </span>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-3">
                       <div className="h-8 w-8 bg-white rounded-lg flex items-center justify-center text-emerald-600 shadow-sm border border-emerald-50">
                         <Clock size={14} />
                       </div>
                       <div className="flex flex-col">
-                        <span className="text-[9px] font-bold text-emerald-800/60 uppercase">Terakhir Update</span>
-                        <span className="text-xs font-black text-emerald-950 uppercase">{syncInfo.last_synced_at || 'Belum pernah'}</span>
+                        <span className="text-[9px] font-bold text-emerald-800/60 uppercase">
+                          Terakhir Update
+                        </span>
+                        <span className="text-xs font-black text-emerald-950 uppercase">
+                          {syncInfo.last_synced_at || 'Belum pernah'}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -147,7 +160,8 @@ export default function ProgramsIndex({ programs, faculties = [], filters = {}, 
                 <div className="p-4 bg-amber-50 rounded-xl border border-amber-100 flex gap-3">
                   <Info size={16} className="text-amber-600 shrink-0 mt-0.5" />
                   <p className="text-[10px] font-bold text-amber-800 leading-relaxed uppercase tracking-tight">
-                    Data program studi mengikuti sinkronisasi master mahasiswa. Perubahan manual dinonaktifkan untuk menjaga konsistensi pendaftaran.
+                    Data program studi mengikuti sinkronisasi master mahasiswa. Perubahan manual
+                    dinonaktifkan untuk menjaga konsistensi pendaftaran.
                   </p>
                 </div>
               </div>
@@ -156,23 +170,32 @@ export default function ProgramsIndex({ programs, faculties = [], filters = {}, 
             <ContentPanel title="Filter Unit" icon={Filter} padding={true}>
               <div className="space-y-4">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-emerald-950 uppercase tracking-widest pl-1">Basis Fakultas</label>
+                  <label className="text-xs font-bold text-emerald-950 uppercase tracking-widest pl-1">
+                    Basis Fakultas
+                  </label>
                   <div className="relative group">
-                    <select 
-                      value={facultyId} 
-                      onChange={e => setFacultyId(e.target.value)} 
+                    <select
+                      value={facultyId}
+                      onChange={(e) => setFacultyId(e.target.value)}
                       className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none"
                     >
                       <option value="">SELURUH FAKULTAS</option>
-                      {faculties.map(f => <option key={f.id} value={f.id}>{f.name.toUpperCase()}</option>)}
+                      {faculties.map((f) => (
+                        <option key={f.id} value={f.id}>
+                          {f.name.toUpperCase()}
+                        </option>
+                      ))}
                     </select>
-                    <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform"/>
+                    <ChevronDown
+                      size={14}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform"
+                    />
                   </div>
                 </div>
-                
+
                 {facultyId && (
-                   <button 
-                    onClick={() => setFacultyId('')} 
+                  <button
+                    onClick={() => setFacultyId('')}
                     className="text-[10px] font-black text-rose-600 uppercase tracking-widest hover:text-rose-700 transition-colors"
                   >
                     Reset Filter Fakultas
@@ -182,21 +205,27 @@ export default function ProgramsIndex({ programs, faculties = [], filters = {}, 
             </ContentPanel>
 
             <div className="space-y-3">
-              <StatCard label="Total Program" value={programs.meta.total} icon={Binary} variant="success" className="w-full" />
+              <StatCard
+                label="Total Program"
+                value={programs.meta.total}
+                icon={Binary}
+                variant="success"
+                className="w-full"
+              />
             </div>
           </div>
 
           {/* --- RIGHT COLUMN: Program List --- */}
           <div className="lg:col-span-2">
-            <ContentPanel 
-              title="Indeks Antrean Prodi" 
-              icon={Layers} 
+            <ContentPanel
+              title="Indeks Antrean Prodi"
+              icon={Layers}
               padding={false}
               headerAction={
-                <SearchInput 
+                <SearchInput
                   placeholder="CARI DATA PRODI / KODE..."
                   value={search}
-                  onChange={e => setSearch(e.target.value)}
+                  onChange={(e) => setSearch(e.target.value)}
                   className="w-64"
                 />
               }
@@ -242,10 +271,12 @@ export default function ProgramsIndex({ programs, faculties = [], filters = {}, 
                       </div>
                     </PremiumTableCell>
                     <PremiumTableCell>
-                       <div className="flex items-center gap-2">
-                          <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
-                          <span className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">Validated</span>
-                       </div>
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
+                        <span className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">
+                          Validated
+                        </span>
+                      </div>
                     </PremiumTableCell>
                   </PremiumTableRow>
                 ))}
@@ -256,7 +287,9 @@ export default function ProgramsIndex({ programs, faculties = [], filters = {}, 
 
         {/* --- STRATEGIC INFO --- */}
         <div className="bg-emerald-900 rounded-2xl p-8 text-white relative overflow-hidden shadow-2xl border-b-4 border-emerald-950">
-          <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12 -mr-16 -mt-16 pointer-events-none"><Database size={350} strokeWidth={0.5} /></div>
+          <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12 -mr-16 -mt-16 pointer-events-none">
+            <Database size={350} strokeWidth={0.5} />
+          </div>
           <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
             <div className="h-16 w-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-400 border border-white/10 shadow-inner shrink-0 backdrop-blur-sm">
               <Flag size={32} strokeWidth={2.5} />
@@ -264,12 +297,13 @@ export default function ProgramsIndex({ programs, faculties = [], filters = {}, 
             <div className="space-y-2 text-center md:text-left">
               <h2 className="text-xl font-black uppercase tracking-tight">Aturan Skema Program</h2>
               <p className="text-[11px] font-medium text-emerald-400/60 uppercase tracking-widest leading-relaxed max-w-3xl">
-                Parameter program menentukan validitas penugasan dan kriteria mahasiswa di lapangan. Pastikan konfigurasi skema sesuai dengan pedoman akademik LPPM untuk menjamin validitas pendaftaran KKN.
+                Parameter program menentukan validitas penugasan dan kriteria mahasiswa di lapangan.
+                Pastikan konfigurasi skema sesuai dengan pedoman akademik LPPM untuk menjamin
+                validitas pendaftaran KKN.
               </p>
             </div>
           </div>
         </div>
-
       </div>
     </AppLayout>
   );

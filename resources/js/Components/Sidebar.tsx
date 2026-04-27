@@ -29,7 +29,7 @@ import {
   Globe,
   Terminal,
   Newspaper,
-  Download
+  Download,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -66,14 +66,22 @@ const getOperationsNav = (): NavGroup[] => [
       { label: 'Tahun Akademik', href: safeRoute('admin.tahun-akademik.index'), icon: Calendar },
       { label: 'Jenis KKN', href: safeRoute('admin.jenis-kkn.index'), icon: Layers },
       { label: 'Periode Pelaksanaan', href: safeRoute('admin.periode.index'), icon: History },
-      { label: 'Workshop & Pembekalan', href: safeRoute('admin.workshops.index'), icon: GraduationCap },
+      {
+        label: 'Workshop & Pembekalan',
+        href: safeRoute('admin.workshops.index'),
+        icon: GraduationCap,
+      },
     ],
   },
   {
     title: 'MANAJEMEN PESERTA',
     items: [
       { label: 'Audit Kelayakan', href: safeRoute('admin.cek-kelayakan.index'), icon: ShieldCheck },
-      { label: 'Registrasi Mahasiswa', href: safeRoute('admin.pendaftaran.index'), icon: ClipboardList },
+      {
+        label: 'Registrasi Mahasiswa',
+        href: safeRoute('admin.pendaftaran.index'),
+        icon: ClipboardList,
+      },
       { label: 'Direktori Mahasiswa', href: safeRoute('admin.mahasiswa.index'), icon: Users },
       { label: 'Direktori Dosen', href: safeRoute('admin.dpl.index'), icon: UserCheck },
     ],
@@ -85,7 +93,11 @@ const getOperationsNav = (): NavGroup[] => [
       { label: 'Penugasan DPL', href: safeRoute('admin.dpl.penugasan'), icon: MapPin },
       { label: 'Wilayah Penugasan', href: safeRoute('admin.locations.index'), icon: MapPin },
       { label: 'Laporan Harian', href: safeRoute('admin.laporan.harian.index'), icon: Activity },
-      { label: 'Program Kerja', href: safeRoute('admin.laporan.program-kerja.index'), icon: BookOpen },
+      {
+        label: 'Program Kerja',
+        href: safeRoute('admin.laporan.program-kerja.index'),
+        icon: BookOpen,
+      },
     ],
   },
   {
@@ -93,7 +105,11 @@ const getOperationsNav = (): NavGroup[] => [
     items: [
       { label: 'Laporan Akhir', href: safeRoute('admin.laporan.akhir.index'), icon: FileCheck },
       { label: 'Input Nilai', href: safeRoute('admin.nilai.index'), icon: FileText },
-      { label: 'Rekapitulasi Nilai', href: safeRoute('admin.grade-reports.index'), icon: BarChart3 },
+      {
+        label: 'Rekapitulasi Nilai',
+        href: safeRoute('admin.grade-reports.index'),
+        icon: BarChart3,
+      },
       { label: 'Yudisium', href: safeRoute('admin.yudisium.index'), icon: GraduationCap },
     ],
   },
@@ -123,7 +139,11 @@ const getSystemNav = (): NavGroup[] => [
     title: 'INTELIJEN & SYNC',
     items: [
       { label: 'Intelijen Sistem', href: safeRoute('admin.audit-log.index'), icon: Terminal },
-      { label: 'Sinkronisasi Master', href: safeRoute('admin.database-sync.index'), icon: RefreshCw },
+      {
+        label: 'Sinkronisasi Master',
+        href: safeRoute('admin.database-sync.index'),
+        icon: RefreshCw,
+      },
     ],
   },
   {
@@ -131,8 +151,16 @@ const getSystemNav = (): NavGroup[] => [
     items: [
       { label: 'Manajemen Pengguna', href: safeRoute('admin.pengguna.index'), icon: UserCog },
       { label: 'Pengaturan Global', href: safeRoute('admin.pengaturan.sistem'), icon: Cpu },
-      { label: 'Skema Penilaian', href: safeRoute('admin.konfigurasi-penilaian.index'), icon: Settings },
-      { label: 'Template Sertifikat', href: safeRoute('admin.pengaturan.sertifikat.index'), icon: Award },
+      {
+        label: 'Skema Penilaian',
+        href: safeRoute('admin.konfigurasi-penilaian.index'),
+        icon: Settings,
+      },
+      {
+        label: 'Template Sertifikat',
+        href: safeRoute('admin.pengaturan.sertifikat.index'),
+        icon: Award,
+      },
     ],
   },
 ];
@@ -143,8 +171,16 @@ function getDosenNav(hasDplRole: boolean): NavGroup[] {
     title: 'PORTAL DOSEN',
     items: [
       { label: 'Beranda Dosen', href: safeRoute('dosen.dashboard'), icon: LayoutDashboard },
-      { label: 'Workshop & Pembekalan', href: safeRoute('dosen.workshops.index'), icon: GraduationCap },
-      { label: 'Sertifikat Workshop', href: safeRoute('dosen.workshops.my-certificates'), icon: Award },
+      {
+        label: 'Workshop & Pembekalan',
+        href: safeRoute('dosen.workshops.index'),
+        icon: GraduationCap,
+      },
+      {
+        label: 'Sertifikat Workshop',
+        href: safeRoute('dosen.workshops.my-certificates'),
+        icon: Award,
+      },
     ],
   };
   if (!hasDplRole) return [base];
@@ -154,9 +190,17 @@ function getDosenNav(hasDplRole: boolean): NavGroup[] {
       title: 'BIMBINGAN DPL',
       items: [
         { label: 'Data Kelompok', href: safeRoute('dosen.kelompok.index'), icon: Users },
-        { label: 'Monitoring Mahasiswa', href: safeRoute('dosen.monitoring.index'), icon: Activity },
+        {
+          label: 'Monitoring Mahasiswa',
+          href: safeRoute('dosen.monitoring.index'),
+          icon: Activity,
+        },
         { label: 'Penilaian Akhir', href: safeRoute('dosen.evaluations.index'), icon: Star },
-        { label: 'Umpan Balik Peserta', href: safeRoute('dosen.feedback-dpl.index'), icon: MessageSquareQuote },
+        {
+          label: 'Umpan Balik Peserta',
+          href: safeRoute('dosen.feedback-dpl.index'),
+          icon: MessageSquareQuote,
+        },
       ],
     },
   ];
@@ -172,16 +216,42 @@ function buildStudentNav(currentPhase: string, registrationStatus: string = 'non
       title: 'SENTRAL MAHASISWA',
       items: [
         { label: 'Beranda Mahasiswa', href: safeRoute('student.dashboard'), icon: LayoutDashboard },
-        ...(!isApproved ? [{ label: 'Daftar KKN', href: '/mahasiswa/daftar', icon: ClipboardList }] : []),
-        ...(isApproved || isExecutionOrLater ? [
-          { label: 'Logbook Masuk', href: safeRoute('student.laporan-harian.index'), icon: FileText },
-          { label: 'Target Proker', href: safeRoute('student.program-kerja.index'), icon: BookOpen },
-        ] : []),
-        ...(isGradingOrLater ? [
-          { label: 'Evaluasi DPL', href: safeRoute('student.evaluasi-dpl.index'), icon: MessageSquareQuote },
-          { label: 'Sertifikat KKN', href: safeRoute('student.certificate.index'), icon: Award },
-          { label: 'Sertifikat Workshop', href: safeRoute('student.workshops.my-certificates'), icon: GraduationCap },
-        ] : []),
+        ...(!isApproved
+          ? [{ label: 'Daftar KKN', href: '/mahasiswa/daftar', icon: ClipboardList }]
+          : []),
+        ...(isApproved || isExecutionOrLater
+          ? [
+              {
+                label: 'Logbook Masuk',
+                href: safeRoute('student.laporan-harian.index'),
+                icon: FileText,
+              },
+              {
+                label: 'Target Proker',
+                href: safeRoute('student.program-kerja.index'),
+                icon: BookOpen,
+              },
+            ]
+          : []),
+        ...(isGradingOrLater
+          ? [
+              {
+                label: 'Evaluasi DPL',
+                href: safeRoute('student.evaluasi-dpl.index'),
+                icon: MessageSquareQuote,
+              },
+              {
+                label: 'Sertifikat KKN',
+                href: safeRoute('student.certificate.index'),
+                icon: Award,
+              },
+              {
+                label: 'Sertifikat Workshop',
+                href: safeRoute('student.workshops.my-certificates'),
+                icon: GraduationCap,
+              },
+            ]
+          : []),
       ],
     },
   ];
@@ -198,14 +268,17 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const { props, url } = usePage<PageProps & { url: string }>();
   const { auth } = props;
 
-  const roles = (auth.user?.roles as any[])?.map((r) => (typeof r === 'string' ? r : (r as any).name)) || [];
+  const roles =
+    (auth.user?.roles as any[])?.map((r) => (typeof r === 'string' ? r : (r as any).name)) || [];
   const currentPhase = (auth as any)?.active_phase ?? 'upcoming';
   const registrationStatus = (auth as any)?.user?.student_registration_status ?? 'none';
   const currentPath = url;
 
   // CONTEXT DETECTION LOGIC
   const getNavContext = () => {
-    const isAdmin = roles.some(r => ['admin', 'superadmin', 'faculty_admin'].includes(r.toLowerCase()));
+    const isAdmin = roles.some((r) =>
+      ['admin', 'superadmin', 'faculty_admin'].includes(r.toLowerCase()),
+    );
     if (!isAdmin) {
       const norm = roles.map((r) => r.toLowerCase());
       if (norm.includes('dosen') || norm.includes('dpl')) return getDosenNav(norm.includes('dpl'));
@@ -213,17 +286,21 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     }
 
     // Admin Contextual Logic
-    if (currentPath.includes('/admin/warta') || 
-        currentPath.includes('/admin/unduhan') || 
-        currentPath.includes('/admin/konten-publik')) {
+    if (
+      currentPath.includes('/admin/warta') ||
+      currentPath.includes('/admin/unduhan') ||
+      currentPath.includes('/admin/konten-publik')
+    ) {
       return getBlogNav();
     }
 
-    if (currentPath.includes('/admin/audit-log') || 
-        currentPath.includes('/admin/database-sync') || 
-        currentPath.includes('/admin/pengaturan') || 
-        currentPath.includes('/admin/pengguna') ||
-        currentPath.includes('/admin/konfigurasi-penilaian')) {
+    if (
+      currentPath.includes('/admin/audit-log') ||
+      currentPath.includes('/admin/database-sync') ||
+      currentPath.includes('/admin/pengaturan') ||
+      currentPath.includes('/admin/pengguna') ||
+      currentPath.includes('/admin/konfigurasi-penilaian')
+    ) {
       return getSystemNav();
     }
 
@@ -237,8 +314,15 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
     sessionStorage.setItem('sidebar-scroll', e.currentTarget.scrollTop.toString());
   };
 
-  const isBlogContext = currentPath.includes('/admin/warta') || currentPath.includes('/admin/unduhan') || currentPath.includes('/admin/konten-publik');
-  const isSystemContext = currentPath.includes('/admin/audit-log') || currentPath.includes('/admin/database-sync') || currentPath.includes('/admin/pengaturan') || currentPath.includes('/admin/pengguna');
+  const isBlogContext =
+    currentPath.includes('/admin/warta') ||
+    currentPath.includes('/admin/unduhan') ||
+    currentPath.includes('/admin/konten-publik');
+  const isSystemContext =
+    currentPath.includes('/admin/audit-log') ||
+    currentPath.includes('/admin/database-sync') ||
+    currentPath.includes('/admin/pengaturan') ||
+    currentPath.includes('/admin/pengguna');
 
   return (
     <>
@@ -264,21 +348,49 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         <div className="h-28 px-6 flex flex-col justify-center sticky top-0 z-10 bg-[#F8FAF9]">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 flex items-center justify-center bg-white rounded-2xl border border-emerald-100 p-1.5 shadow-sm shrink-0">
-              <img src="/images/logo_uinsaizu.png" alt="Logo UIN" className="h-full w-full object-contain" />
+              <img
+                src="/images/logo_uinsaizu.png"
+                alt="Logo UIN"
+                className="h-full w-full object-contain"
+              />
             </div>
             <div className="h-12 w-12 flex items-center justify-center bg-white rounded-2xl border border-emerald-100 p-1 shadow-sm shrink-0">
-              <img src="/images/Logo_SIBERMAS.png" alt="Logo SIBERMAS" className="h-full w-full object-contain" />
+              <img
+                src="/images/Logo_SIBERMAS.png"
+                alt="Logo SIBERMAS"
+                className="h-full w-full object-contain"
+              />
             </div>
           </div>
           <div className="mt-4">
             <h1 className="text-base font-black leading-none tracking-tight flex items-center gap-2 font-display uppercase">
-              {isBlogContext ? 'CONTENT HUB' : isSystemContext ? 'SYSTEM REGISTRY' : (
-                <span><span className="text-sky-600">SIBER</span><span className="text-emerald-600">MAS</span></span>
+              {isBlogContext ? (
+                'CONTENT HUB'
+              ) : isSystemContext ? (
+                'SYSTEM REGISTRY'
+              ) : (
+                <span>
+                  <span className="text-sky-600">SIBER</span>
+                  <span className="text-emerald-600">MAS</span>
+                </span>
               )}
-              <span className={clsx("h-1.5 w-1.5 rounded-full animate-pulse", isBlogContext ? 'bg-lime-500 shadow-[0_0_8px_rgba(132,204,22,0.5)]' : isSystemContext ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)]')} />
+              <span
+                className={clsx(
+                  'h-1.5 w-1.5 rounded-full animate-pulse',
+                  isBlogContext
+                    ? 'bg-lime-500 shadow-[0_0_8px_rgba(132,204,22,0.5)]'
+                    : isSystemContext
+                      ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]'
+                      : 'bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.5)]',
+                )}
+              />
             </h1>
             <p className="text-[9px] font-bold text-slate-600 mt-2 font-sans tracking-wider leading-relaxed uppercase">
-               {isBlogContext ? 'Eksistensi Digital' : isSystemContext ? 'Infrastruktur Data' : 'Otomasi Operasional'}
+              {isBlogContext
+                ? 'Eksistensi Digital'
+                : isSystemContext
+                  ? 'Infrastruktur Data'
+                  : 'Otomasi Operasional'}
             </p>
           </div>
         </div>
@@ -290,19 +402,22 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           className="flex-1 overflow-y-auto px-4 py-4 scrollbar-hide scroll-smooth"
         >
           {navGroups.map((group, index) => (
-            <div key={group.title} className={clsx("space-y-2", index > 0 && "mt-4")}>
+            <div key={group.title} className={clsx('space-y-2', index > 0 && 'mt-4')}>
               {index > 0 && (
                 <div className="h-[2px] w-[80%] bg-cyan-300/80 shadow-[0_2px_4px_rgba(6,182,212,0.4)] mb-3 ml-2 rounded-full" />
               )}
               <h3 className="px-4 text-[10px] font-black text-slate-800 uppercase tracking-widest font-sans">
                 {group.title}
               </h3>
-              
+
               <div className="space-y-1">
                 {group.items.map((item) => {
                   const getPath = (href: string) => {
-                    try { return new URL(href, window.location.origin).pathname; } 
-                    catch { return href; }
+                    try {
+                      return new URL(href, window.location.origin).pathname;
+                    } catch {
+                      return href;
+                    }
                   };
                   const isActive = currentPath.split('?')[0] === getPath(item.href);
                   const isValidHref = item.href && item.href !== '#';
@@ -330,7 +445,9 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
                         )}
                         strokeWidth={isActive ? 2.5 : 2}
                       />
-                      <span className="truncate font-display font-black uppercase tracking-tight text-[11px]">{item.label}</span>
+                      <span className="truncate font-display font-black uppercase tracking-tight text-[11px]">
+                        {item.label}
+                      </span>
                     </Link>
                   );
                 })}
@@ -357,10 +474,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             className="flex items-center gap-3 p-3 rounded-2xl bg-white border border-emerald-100 shadow-sm hover:shadow-md transition-all group"
           >
             <div className="h-10 w-10 rounded-xl bg-amber-500 flex items-center justify-center text-white shrink-0 shadow-inner group-hover:rotate-6 transition-transform">
-               <span className="text-xs font-black uppercase">{auth.user.name.substring(0, 2)}</span>
+              <span className="text-xs font-black uppercase">{auth.user.name.substring(0, 2)}</span>
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-black text-cyan-950 truncate leading-none mb-1 font-display">{auth.user.name}</span>
+              <span className="text-xs font-black text-cyan-950 truncate leading-none mb-1 font-display">
+                {auth.user.name}
+              </span>
               <span className="text-[9px] font-bold text-cyan-700 uppercase tracking-wider flex items-center gap-1 font-sans">
                 <div className="w-1 h-1 rounded-full bg-emerald-500 animate-pulse" />
                 {roles[0] || 'User'}

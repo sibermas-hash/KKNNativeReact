@@ -1,8 +1,19 @@
 import { Link } from '@inertiajs/react';
-import { MapPin, UserCheck, Pencil, Trash2, Info, ChevronRight, CheckCircle2, History, SearchX, ArrowUpRight } from 'lucide-react';
+import {
+  MapPin,
+  UserCheck,
+  Pencil,
+  Trash2,
+  Info,
+  ChevronRight,
+  CheckCircle2,
+  History,
+  SearchX,
+  ArrowUpRight,
+} from 'lucide-react';
 import { clsx } from 'clsx';
-import { Pagination } from '@/Components/ui';
-import type { PaginationMeta } from '@/Components/ui/Pagination';
+import { Pagination } from '@/Components/UI';
+import type { PaginationMeta } from '@/Components/UI/Pagination';
 
 interface Group {
   id: number;
@@ -61,10 +72,12 @@ export const GroupTableList = ({
             {groups.data.length === 0 ? (
               <tr>
                 <td colSpan={6} className="py-32 text-center text-emerald-950/10">
-                    <div className="flex flex-col items-center gap-4">
-                        <SearchX size={64} strokeWidth={1} />
-                        <p className="text-xs font-bold uppercase tracking-widest">Unit belum terarsip</p>
-                    </div>
+                  <div className="flex flex-col items-center gap-4">
+                    <SearchX size={64} strokeWidth={1} />
+                    <p className="text-xs font-bold uppercase tracking-widest">
+                      Unit belum terarsip
+                    </p>
+                  </div>
                 </td>
               </tr>
             ) : (
@@ -79,7 +92,7 @@ export const GroupTableList = ({
                         {group.name}
                       </span>
                       <span className="text-xs font-bold text-emerald-950 uppercase tracking-widest tabular-nums">
-                         CODE_ID: {group.code}
+                        CODE_ID: {group.code}
                       </span>
                     </div>
                   </td>
@@ -105,18 +118,21 @@ export const GroupTableList = ({
                             group.status === 'active'
                               ? 'bg-[#f0fdfa] text-emerald-800 border-emerald-50'
                               : group.status === 'closed'
-                              ? 'bg-rose-50 text-rose-600 border-rose-100'
-                              : 'bg-amber-50 text-amber-700 border-amber-100',
+                                ? 'bg-rose-50 text-rose-600 border-rose-100'
+                                : 'bg-amber-50 text-amber-700 border-amber-100',
                           )}
                         >
                           {group.status === 'draft'
                             ? 'PERSIAPAN'
                             : group.status === 'active'
-                            ? 'LAPANGAN'
-                            : 'ARSIP'}
+                              ? 'LAPANGAN'
+                              : 'ARSIP'}
                         </span>
                         {group.ready_for_placement && (
-                           <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" title="SIAP PENEMPATAN" />
+                          <div
+                            className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"
+                            title="SIAP PENEMPATAN"
+                          />
                         )}
                       </div>
                       <div className="flex items-center gap-2">
@@ -130,8 +146,12 @@ export const GroupTableList = ({
                   <td className="px-8 py-6">
                     <div className="space-y-2.5 w-32 mx-auto">
                       <div className="flex justify-between items-end">
-                        <span className="text-sm font-bold text-emerald-950 tabular-nums">{group.approved_participants_count}</span>
-                        <span className="text-xs font-bold text-emerald-950 uppercase tracking-widest">{group.capacity} PK</span>
+                        <span className="text-sm font-bold text-emerald-950 tabular-nums">
+                          {group.approved_participants_count}
+                        </span>
+                        <span className="text-xs font-bold text-emerald-950 uppercase tracking-widest">
+                          {group.capacity} PK
+                        </span>
                       </div>
                       <div className="h-1.5 bg-[#f0fdfa] rounded-full overflow-hidden border border-emerald-50/50">
                         <div
@@ -197,4 +217,3 @@ export const GroupTableList = ({
     </div>
   );
 };
-

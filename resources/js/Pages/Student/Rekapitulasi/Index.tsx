@@ -413,7 +413,9 @@ function BentoCard({
       <div
         className={clsx(
           'h-14 w-14 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform',
-          color === 'emerald' ? 'bg-emerald-50 text-emerald-600' : 'bg-emerald-50/30 text-emerald-950',
+          color === 'emerald'
+            ? 'bg-emerald-50 text-emerald-600'
+            : 'bg-emerald-50/30 text-emerald-950',
         )}
       >
         <Icon size={26} strokeWidth={2.5} />

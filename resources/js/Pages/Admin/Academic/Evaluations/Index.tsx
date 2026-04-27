@@ -1,19 +1,19 @@
 import AppLayout from '@/Layouts/AppLayout';
 import type { PageProps } from '@/types';
-import { 
-  ShieldCheck, 
-  Activity, 
-  RefreshCw, 
-  Zap, 
-  Search, 
-  ChevronRight, 
+import {
+  ShieldCheck,
+  Activity,
+  RefreshCw,
+  Zap,
+  Search,
+  ChevronRight,
   FileText,
   Filter,
-  Users
+  Users,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { Head, router } from '@inertiajs/react';
-import { Pagination } from '@/Components/ui';
+import { Pagination } from '@/Components/UI';
 import { useState } from 'react';
 import PageHeader from '@/Components/Premium/PageHeader';
 import StatCard from '@/Components/Premium/StatCard';
@@ -21,17 +21,35 @@ import ContentPanel from '@/Components/Premium/ContentPanel';
 import PremiumTable, { PremiumTableRow, PremiumTableCell } from '@/Components/Premium/PremiumTable';
 import SearchInput from '@/Components/Premium/SearchInput';
 
-interface EvaluationItem { criterion: string; score: number; weight: number; }
+interface EvaluationItem {
+  criterion: string;
+  score: number;
+  weight: number;
+}
 interface EvaluationData {
-  id: number; student_name: string; group_name: string; evaluator_name: string;
-  evaluator_type: string; total_score: number | null; grade: string | null;
-  evaluated_at: string; notes: string | null; items: EvaluationItem[];
+  id: number;
+  student_name: string;
+  group_name: string;
+  evaluator_name: string;
+  evaluator_type: string;
+  total_score: number | null;
+  grade: string | null;
+  evaluated_at: string;
+  notes: string | null;
+  items: EvaluationItem[];
 }
 interface PaginatedData {
   data: EvaluationData[];
-  meta?: { current_page: number; last_page: number; total: number; links: { url: string | null; label: string; active: boolean }[]; };
+  meta?: {
+    current_page: number;
+    last_page: number;
+    total: number;
+    links: { url: string | null; label: string; active: boolean }[];
+  };
 }
-interface Props extends PageProps { evaluations: PaginatedData; }
+interface Props extends PageProps {
+  evaluations: PaginatedData;
+}
 
 export default function EvaluationsIndex({ evaluations }: Props) {
   const [search, setSearch] = useState('');
@@ -42,9 +60,8 @@ export default function EvaluationsIndex({ evaluations }: Props) {
 
   return (
     <AppLayout title="Monitoring Evaluasi">
-
       <div className="py-8 font-sans transition-all">
-        <PageHeader 
+        <PageHeader
           title="Monitoring Evaluasi."
           subtitle="Pusat pemeriksaan hasil penilaian lapangan DPL & Mitra secara terpusat dan terverifikasi."
           icon={Activity}
@@ -52,7 +69,7 @@ export default function EvaluationsIndex({ evaluations }: Props) {
           stats={{
             label: 'Total Laporan',
             value: `${(evaluations.meta?.total || 0).toLocaleString()} Data`,
-            icon: FileText
+            icon: FileText,
           }}
         />
 
@@ -70,7 +87,7 @@ export default function EvaluationsIndex({ evaluations }: Props) {
           padding={false}
           headerAction={
             <div className="flex items-center gap-3">
-              <SearchInput 
+              <SearchInput
                 placeholder="CARI NIM ATAU NAMA..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -89,7 +106,14 @@ export default function EvaluationsIndex({ evaluations }: Props) {
           }
         >
           <PremiumTable
-            headers={['Identitas Mahasiswa', 'Unit Penempatan', 'Petugas Penilai', 'Skor Akhir', 'Huruf', 'Opsi']}
+            headers={[
+              'Identitas Mahasiswa',
+              'Unit Penempatan',
+              'Petugas Penilai',
+              'Skor Akhir',
+              'Huruf',
+              'Opsi',
+            ]}
             isEmpty={evaluations.data.length === 0}
             emptyText="Belum ada data penilaian masuk."
           >
@@ -97,23 +121,35 @@ export default function EvaluationsIndex({ evaluations }: Props) {
               <PremiumTableRow key={ev.id}>
                 <PremiumTableCell>
                   <div className="flex flex-col py-1">
-                    <span className="text-[13px] font-black text-emerald-950 uppercase leading-none mb-2 font-display">{ev.student_name}</span>
-                    <span className="text-[10px] text-emerald-600 font-bold tabular-nums tracking-wider uppercase leading-none">ID LOG: #{ev.id.toString().padStart(5, '0')}</span>
+                    <span className="text-[13px] font-black text-emerald-950 uppercase leading-none mb-2 font-display">
+                      {ev.student_name}
+                    </span>
+                    <span className="text-[10px] text-emerald-600 font-bold tabular-nums tracking-wider uppercase leading-none">
+                      ID LOG: #{ev.id.toString().padStart(5, '0')}
+                    </span>
                   </div>
                 </PremiumTableCell>
                 <PremiumTableCell>
                   <div className="flex flex-col gap-1.5">
                     <div className="flex items-center gap-2">
                       <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                      <span className="text-[11px] font-black text-emerald-950 uppercase leading-none tracking-tight font-display">{ev.group_name}</span>
+                      <span className="text-[11px] font-black text-emerald-950 uppercase leading-none tracking-tight font-display">
+                        {ev.group_name}
+                      </span>
                     </div>
-                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest ml-3">Wilayah Penugasan</span>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest ml-3">
+                      Wilayah Penugasan
+                    </span>
                   </div>
                 </PremiumTableCell>
                 <PremiumTableCell>
                   <div className="flex flex-col items-center">
-                    <span className="text-[11px] font-black text-emerald-950 leading-none mb-2 uppercase font-display">{ev.evaluator_name}</span>
-                    <span className="text-[9px] font-black text-emerald-700 uppercase bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 tracking-widest">{ev.evaluator_type}</span>
+                    <span className="text-[11px] font-black text-emerald-950 leading-none mb-2 uppercase font-display">
+                      {ev.evaluator_name}
+                    </span>
+                    <span className="text-[9px] font-black text-emerald-700 uppercase bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 tracking-widest">
+                      {ev.evaluator_type}
+                    </span>
                   </div>
                 </PremiumTableCell>
                 <PremiumTableCell align="center">
@@ -122,10 +158,14 @@ export default function EvaluationsIndex({ evaluations }: Props) {
                   </span>
                 </PremiumTableCell>
                 <PremiumTableCell align="center">
-                  <span className={clsx(
-                    "inline-flex h-9 px-4 items-center justify-center rounded-xl text-xs font-black border transition-all shadow-sm font-display",
-                    ev.grade?.startsWith('A') ? 'bg-emerald-600 text-white border-emerald-500 shadow-emerald-200' : 'bg-slate-50 text-slate-400 border-slate-100'
-                  )}>
+                  <span
+                    className={clsx(
+                      'inline-flex h-9 px-4 items-center justify-center rounded-xl text-xs font-black border transition-all shadow-sm font-display',
+                      ev.grade?.startsWith('A')
+                        ? 'bg-emerald-600 text-white border-emerald-500 shadow-emerald-200'
+                        : 'bg-slate-50 text-slate-400 border-slate-100',
+                    )}
+                  >
                     {ev.grade ?? '-'}
                   </span>
                 </PremiumTableCell>
@@ -142,5 +182,3 @@ export default function EvaluationsIndex({ evaluations }: Props) {
     </AppLayout>
   );
 }
-
-

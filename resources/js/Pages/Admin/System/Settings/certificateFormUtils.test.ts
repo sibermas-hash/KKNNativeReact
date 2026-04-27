@@ -13,10 +13,12 @@ describe('certificateFormUtils', () => {
     });
 
     expect(periods).toHaveLength(2);
-    expect(periods).toEqual(expect.arrayContaining([
-      { id: 10, name: 'KKN 56 Reguler' },
-      { id: 9, name: 'KKN 55 Tematik' },
-    ]));
+    expect(periods).toEqual(
+      expect.arrayContaining([
+        { id: 10, name: 'KKN 56 Reguler' },
+        { id: 9, name: 'KKN 55 Tematik' },
+      ]),
+    );
   });
 
   it('menormalkan configs object menjadi array config yang bisa difilter aman', () => {

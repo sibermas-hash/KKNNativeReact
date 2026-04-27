@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { StatusBadge } from '@/Components/ui';
+import { StatusBadge } from '@/Components/UI';
 import { route } from 'ziggy-js';
 import { motion } from 'framer-motion';
 import {

@@ -1,6 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import Badge from '@/Components/ui/Badge';
+import Badge from '@/Components/UI/Badge';
 import { route } from 'ziggy-js';
 import {
   Plus,
@@ -47,7 +47,9 @@ interface Props {
 
 export default function StudentIzinIndex({ izins, akumulasiTanpaKeterangan }: Props) {
   const pageProps = (usePage() as unknown as { props: PageProps }).props;
-  const flash = (pageProps as Record<string, unknown>).flash as { success?: string; error?: string } | undefined;
+  const flash = (pageProps as Record<string, unknown>).flash as
+    | { success?: string; error?: string }
+    | undefined;
 
   const statusColors: Record<string, { bg: string; text: string; ring: string; dot: string }> = {
     menunggu: {

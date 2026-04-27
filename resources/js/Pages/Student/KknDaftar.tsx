@@ -1,11 +1,19 @@
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import {
-  Calendar, Clock, ArrowRight, AlertTriangle, Info,
-  GraduationCap, BookOpen, FileCheck, CheckCircle2, XCircle
+  Calendar,
+  Clock,
+  ArrowRight,
+  AlertTriangle,
+  Info,
+  GraduationCap,
+  BookOpen,
+  FileCheck,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
-import ConfirmDialog from '@/Components/ui/ConfirmDialog';
+import ConfirmDialog from '@/Components/UI/ConfirmDialog';
 import { PageHeader } from '@/Components/Premium';
 import type { PageProps } from '@/types';
 import { clsx } from 'clsx';
@@ -60,12 +68,18 @@ interface Props extends PageProps {
 
 // --- Main Component ---
 
-export default function KknDaftar({ periods = [], user_eligibility = {} as UserEligibility, registration_status }: Props) {
+export default function KknDaftar({
+  periods = [],
+  user_eligibility = {} as UserEligibility,
+  registration_status,
+}: Props) {
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodSummary | null>(null);
   const hasRegistered = registration_status?.has_registered ?? false;
 
-  const activePeriods = periods.filter(p => p.current_phase === 'registration');
-  const upcomingPeriods = periods.filter(p => ['placement', 'execution'].includes(p.current_phase));
+  const activePeriods = periods.filter((p) => p.current_phase === 'registration');
+  const upcomingPeriods = periods.filter((p) =>
+    ['placement', 'execution'].includes(p.current_phase),
+  );
 
   return (
     <AppLayout title="Pendaftaran KKN">
@@ -92,12 +106,19 @@ export default function KknDaftar({ periods = [], user_eligibility = {} as UserE
             <div className="space-y-1.5">
               <p className="text-sm font-bold text-amber-950">Anda sudah terdaftar pada KKN</p>
               <p className="text-xs text-amber-800 leading-relaxed max-w-3xl">
-                Anda telah mendaftar pada periode <strong className="text-amber-950">{registration_status.period_name}</strong> ({registration_status.jenis_name})
-                {registration_status.registered_at && <> sejak {registration_status.registered_at}</>}.
-                Setiap mahasiswa hanya diperbolehkan mendaftar KKN <strong>1 kali</strong> pada periode yang aktif.
+                Anda telah mendaftar pada periode{' '}
+                <strong className="text-amber-950">{registration_status.period_name}</strong> (
+                {registration_status.jenis_name})
+                {registration_status.registered_at && (
+                  <> sejak {registration_status.registered_at}</>
+                )}
+                . Setiap mahasiswa hanya diperbolehkan mendaftar KKN <strong>1 kali</strong> pada
+                periode yang aktif.
               </p>
               <div className="flex items-center gap-2 mt-2 pt-1">
-                <span className="text-[11px] font-semibold text-amber-700 uppercase tracking-widest">Status Anda:</span>
+                <span className="text-[11px] font-semibold text-amber-700 uppercase tracking-widest">
+                  Status Anda:
+                </span>
                 <span className="px-2.5 py-1 bg-amber-200/50 text-amber-900 text-[10px] font-bold rounded-lg uppercase tracking-widest">
                   {registration_status.status?.replace(/_/g, ' ')}
                 </span>
@@ -112,9 +133,12 @@ export default function KknDaftar({ periods = [], user_eligibility = {} as UserE
             <div className="w-24 h-24 rounded-full bg-emerald-50 flex items-center justify-center mb-6">
               <Info size={36} className="text-emerald-500" />
             </div>
-            <h3 className="text-xl font-bold text-emerald-950 tracking-tight">Belum Ada Periode KKN</h3>
+            <h3 className="text-xl font-bold text-emerald-950 tracking-tight">
+              Belum Ada Periode KKN
+            </h3>
             <p className="text-sm text-emerald-700/80 mt-2 max-w-md mx-auto leading-relaxed">
-              Saat ini belum ada periode Kuliah Kerja Nyata yang dibuka untuk pendaftaran. Silakan pantau terus pengumuman resmi dari LPPM.
+              Saat ini belum ada periode Kuliah Kerja Nyata yang dibuka untuk pendaftaran. Silakan
+              pantau terus pengumuman resmi dari LPPM.
             </p>
           </div>
         )}
@@ -184,15 +208,29 @@ export default function KknDaftar({ periods = [], user_eligibility = {} as UserE
 
 // --- Sub-components ---
 
-function StatusBadge({ label, value, passed }: { label: string, value: string | number, passed: boolean }) {
+function StatusBadge({
+  label,
+  value,
+  passed,
+}: {
+  label: string;
+  value: string | number;
+  passed: boolean;
+}) {
   return (
-    <div className={clsx(
-      "px-3 py-1.5 rounded-xl flex items-center gap-2 transition-all",
-      passed
-        ? "bg-emerald-50/80 text-emerald-800 border border-emerald-200/50"
-        : "bg-rose-50 text-rose-700 border border-rose-200/50"
-    )}>
-      {passed ? <CheckCircle2 size={14} className="text-emerald-600" /> : <XCircle size={14} className="text-rose-500" />}
+    <div
+      className={clsx(
+        'px-3 py-1.5 rounded-xl flex items-center gap-2 transition-all',
+        passed
+          ? 'bg-emerald-50/80 text-emerald-800 border border-emerald-200/50'
+          : 'bg-rose-50 text-rose-700 border border-rose-200/50',
+      )}
+    >
+      {passed ? (
+        <CheckCircle2 size={14} className="text-emerald-600" />
+      ) : (
+        <XCircle size={14} className="text-rose-500" />
+      )}
       <span className="text-xs font-bold uppercase tracking-wide whitespace-nowrap">
         {label}: {value}
       </span>
@@ -200,14 +238,26 @@ function StatusBadge({ label, value, passed }: { label: string, value: string | 
   );
 }
 
-function InfoRow({ icon: Icon, label, value, className }: { icon: any, label: string, value: string, className?: string }) {
+function InfoRow({
+  icon: Icon,
+  label,
+  value,
+  className,
+}: {
+  icon: any;
+  label: string;
+  value: string;
+  className?: string;
+}) {
   return (
-    <div className={clsx("flex items-center gap-2", className)}>
+    <div className={clsx('flex items-center gap-2', className)}>
       <div className="w-6 h-6 rounded-md bg-emerald-50 flex items-center justify-center shrink-0">
         <Icon size={12} className="text-emerald-600" />
       </div>
       <div className="flex flex-col">
-        <span className="text-[10px] font-bold text-emerald-950/50 uppercase tracking-widest">{label}</span>
+        <span className="text-[10px] font-bold text-emerald-950/50 uppercase tracking-widest">
+          {label}
+        </span>
         <strong className="text-xs text-emerald-950 font-medium">{value}</strong>
       </div>
     </div>
@@ -229,11 +279,13 @@ function PeriodCard({
 }) {
   const isMissingConfig = !period.jenis;
   const canRegister = !upcoming && !isMissingConfig && (period.can_register ?? false);
-  
+
   // Custom reasons handling for missing config
   const rawReasons = period.ineligible_reasons ?? [];
-  const displayReasons = isMissingConfig 
-    ? ["Pendaftaran belum dapat dilakukan karena konfigurasi jenis KKN belum lengkap. Silakan hubungi admin LPPM."]
+  const displayReasons = isMissingConfig
+    ? [
+        'Pendaftaran belum dapat dilakukan karena konfigurasi jenis KKN belum lengkap. Silakan hubungi admin LPPM.',
+      ]
     : rawReasons;
 
   const hasReasons = !canRegister && !upcoming && displayReasons.length > 0;
@@ -241,14 +293,16 @@ function PeriodCard({
   const { sks_completed = 0, gpa = 0, bta_ppi_passed = false } = userEligibility ?? {};
 
   return (
-    <div className={clsx(
-      "bg-white border rounded-3xl overflow-hidden transition-all duration-300 relative",
-      upcoming
-        ? "border-emerald-100 opacity-80"
-        : canRegister
-          ? "border-emerald-200/80 shadow-sm hover:shadow-xl hover:shadow-emerald-900/5 hover:border-emerald-300 group"
-          : "border-emerald-100/80 bg-emerald-50/10"
-    )}>
+    <div
+      className={clsx(
+        'bg-white border rounded-3xl overflow-hidden transition-all duration-300 relative',
+        upcoming
+          ? 'border-emerald-100 opacity-80'
+          : canRegister
+            ? 'border-emerald-200/80 shadow-sm hover:shadow-xl hover:shadow-emerald-900/5 hover:border-emerald-300 group'
+            : 'border-emerald-100/80 bg-emerald-50/10',
+      )}
+    >
       {/* Decorative gradient border top */}
       {canRegister && (
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-emerald-400 to-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -256,7 +310,6 @@ function PeriodCard({
 
       <div className="p-6 sm:p-8">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
-          
           <div className="space-y-6 flex-1 min-w-0">
             {/* Title & Badge */}
             <div className="flex items-start gap-4">
@@ -288,15 +341,25 @@ function PeriodCard({
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-emerald-50/30 rounded-2xl p-4 border border-emerald-50">
-              <InfoRow icon={Calendar} label="Jadwal Pendaftaran" value={`${period.registration_start} — ${period.registration_end}`} />
-              <InfoRow icon={Clock} label="Jadwal Pelaksanaan" value={`${period.start_date} — ${period.end_date}`} />
+              <InfoRow
+                icon={Calendar}
+                label="Jadwal Pendaftaran"
+                value={`${period.registration_start} — ${period.registration_end}`}
+              />
+              <InfoRow
+                icon={Clock}
+                label="Jadwal Pelaksanaan"
+                value={`${period.start_date} — ${period.end_date}`}
+              />
             </div>
 
             {/* Requirements & Personal Eligibility Summary */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-5 pt-2">
               {/* Target Requirements */}
               <div className="flex flex-col gap-2 border-l-2 border-emerald-200 pl-4">
-                <span className="text-[10px] font-bold text-emerald-950/40 uppercase tracking-widest">Persyaratan Akademik Minimum</span>
+                <span className="text-[10px] font-bold text-emerald-950/40 uppercase tracking-widest">
+                  Persyaratan Akademik Minimum
+                </span>
                 <div className="flex items-center gap-4 text-xs font-semibold text-emerald-800">
                   <span className="flex items-center gap-1.5">
                     <FileCheck size={14} className="text-emerald-500" />
@@ -312,20 +375,20 @@ function PeriodCard({
               {/* Your Progress */}
               {!isMissingConfig && !upcoming && (
                 <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
-                  <StatusBadge 
-                    label="SKS" 
-                    value={sks_completed} 
-                    passed={sks_completed >= (period.requirements?.min_sks ?? 100)} 
+                  <StatusBadge
+                    label="SKS"
+                    value={sks_completed}
+                    passed={sks_completed >= (period.requirements?.min_sks ?? 100)}
                   />
-                  <StatusBadge 
-                    label="IPK" 
-                    value={gpa.toFixed(2)} 
-                    passed={gpa >= (period.requirements?.min_gpa ?? 2.0)} 
+                  <StatusBadge
+                    label="IPK"
+                    value={gpa.toFixed(2)}
+                    passed={gpa >= (period.requirements?.min_gpa ?? 2.0)}
                   />
-                  <StatusBadge 
-                    label="BTA/PPI" 
-                    value={bta_ppi_passed ? "Lulus" : "Belum"} 
-                    passed={bta_ppi_passed} 
+                  <StatusBadge
+                    label="BTA/PPI"
+                    value={bta_ppi_passed ? 'Lulus' : 'Belum'}
+                    passed={bta_ppi_passed}
                   />
                 </div>
               )}
@@ -336,11 +399,13 @@ function PeriodCard({
           <div className="flex flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-center gap-4 shrink-0 lg:w-48 lg:border-l lg:border-emerald-100 lg:pl-8">
             {period.kuota && (
               <div className="text-center w-full bg-emerald-50/50 py-2 rounded-xl border border-emerald-100/50 hidden lg:block">
-                <span className="block text-[10px] font-bold text-emerald-950/40 uppercase tracking-widest mb-0.5">Sisa Kuota</span>
+                <span className="block text-[10px] font-bold text-emerald-950/40 uppercase tracking-widest mb-0.5">
+                  Sisa Kuota
+                </span>
                 <span className="text-sm font-bold text-emerald-700">{period.kuota} Peserta</span>
               </div>
             )}
-            
+
             {upcoming ? (
               <div className="w-full text-center py-3 bg-emerald-50 text-emerald-600 rounded-2xl text-xs font-bold uppercase tracking-widest border border-emerald-100">
                 Sedang Berjalan
@@ -350,14 +415,17 @@ function PeriodCard({
                 onClick={canRegister ? onDaftar : undefined}
                 disabled={!canRegister}
                 className={clsx(
-                  "w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-bold transition-all duration-300",
+                  'w-full flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-sm font-bold transition-all duration-300',
                   canRegister
-                    ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-xl shadow-emerald-600/20 hover:shadow-emerald-600/30 hover:-translate-y-0.5 active:translate-y-0"
-                    : "bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200"
+                    ? 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-xl shadow-emerald-600/20 hover:shadow-emerald-600/30 hover:-translate-y-0.5 active:translate-y-0'
+                    : 'bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200',
                 )}
               >
-                {isRegistered ? "Sudah Terdaftar" : "Daftar KKN"}
-                <ArrowRight size={18} className={clsx(canRegister && "group-hover:translate-x-1 transition-transform")} />
+                {isRegistered ? 'Sudah Terdaftar' : 'Daftar KKN'}
+                <ArrowRight
+                  size={18}
+                  className={clsx(canRegister && 'group-hover:translate-x-1 transition-transform')}
+                />
               </button>
             )}
           </div>
@@ -366,17 +434,35 @@ function PeriodCard({
 
       {/* Warning/Reason Footer */}
       {hasReasons && (
-        <footer className={clsx(
-          "border-t px-6 sm:px-8 py-4 bg-gray-50/50",
-          isMissingConfig ? "border-amber-100" : "border-gray-100"
-        )}>
+        <footer
+          className={clsx(
+            'border-t px-6 sm:px-8 py-4 bg-gray-50/50',
+            isMissingConfig ? 'border-amber-100' : 'border-gray-100',
+          )}
+        >
           <div className="flex items-start gap-3">
-            <AlertTriangle size={18} className={clsx(isMissingConfig ? "text-amber-500" : "text-rose-500", "mt-0.5 shrink-0")} />
+            <AlertTriangle
+              size={18}
+              className={clsx(
+                isMissingConfig ? 'text-amber-500' : 'text-rose-500',
+                'mt-0.5 shrink-0',
+              )}
+            />
             <div className="space-y-1.5">
-              <p className={clsx("text-xs font-bold uppercase tracking-widest", isMissingConfig ? "text-amber-800" : "text-rose-800")}>
-                {isMissingConfig ? "Peringatan Sistem" : "Syarat Belum Terpenuhi:"}
+              <p
+                className={clsx(
+                  'text-xs font-bold uppercase tracking-widest',
+                  isMissingConfig ? 'text-amber-800' : 'text-rose-800',
+                )}
+              >
+                {isMissingConfig ? 'Peringatan Sistem' : 'Syarat Belum Terpenuhi:'}
               </p>
-              <ul className={clsx("text-xs space-y-1.5 font-medium", isMissingConfig ? "text-amber-700" : "text-gray-600")}>
+              <ul
+                className={clsx(
+                  'text-xs space-y-1.5 font-medium',
+                  isMissingConfig ? 'text-amber-700' : 'text-gray-600',
+                )}
+              >
                 {displayReasons.map((reason, i) => (
                   <li key={i} className="flex items-start gap-2">
                     <span className="w-1.5 h-1.5 rounded-full bg-current mt-1.5 opacity-50 shrink-0" />

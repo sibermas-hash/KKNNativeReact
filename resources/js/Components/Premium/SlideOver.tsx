@@ -12,13 +12,13 @@ interface SlideOverProps {
   width?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
-const SlideOver: React.FC<SlideOverProps> = ({ 
-  isOpen, 
-  onClose, 
-  title, 
-  description, 
+const SlideOver: React.FC<SlideOverProps> = ({
+  isOpen,
+  onClose,
+  title,
+  description,
   children,
-  width = 'md'
+  width = 'md',
 }) => {
   // Prevent scrolling when drawer is open
   useEffect(() => {
@@ -27,7 +27,9 @@ const SlideOver: React.FC<SlideOverProps> = ({
     } else {
       document.body.style.overflow = 'unset';
     }
-    return () => { document.body.style.overflow = 'unset'; };
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
   }, [isOpen]);
 
   const widthClasses = {
@@ -57,8 +59,8 @@ const SlideOver: React.FC<SlideOverProps> = ({
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className={clsx(
-              "fixed inset-y-0 right-0 w-full z-[101] bg-white shadow-2xl flex flex-col font-sans",
-              widthClasses[width]
+              'fixed inset-y-0 right-0 w-full z-[101] bg-white shadow-2xl flex flex-col font-sans',
+              widthClasses[width],
             )}
           >
             {/* Header */}
@@ -73,7 +75,7 @@ const SlideOver: React.FC<SlideOverProps> = ({
                   </p>
                 )}
               </div>
-              <button 
+              <button
                 onClick={onClose}
                 className="h-10 w-10 flex items-center justify-center rounded-xl bg-white border-2 border-slate-100 text-slate-400 hover:text-cyan-600 hover:border-cyan-100 transition-all active:scale-90"
               >
@@ -82,9 +84,7 @@ const SlideOver: React.FC<SlideOverProps> = ({
             </div>
 
             {/* Content */}
-            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-              {children}
-            </div>
+            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">{children}</div>
           </motion.div>
         </>
       )}

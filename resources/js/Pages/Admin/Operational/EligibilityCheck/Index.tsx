@@ -2,12 +2,22 @@ import { useState, useEffect } from 'react';
 import { router, Head, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import {
-  CheckCircle2, XCircle, Download, RefreshCw,
-  ChevronDown, ShieldCheck, Activity, FileSearch, ArrowRight,
-  Info, Filter, Database, Search
+  CheckCircle2,
+  XCircle,
+  Download,
+  RefreshCw,
+  ChevronDown,
+  ShieldCheck,
+  Activity,
+  FileSearch,
+  ArrowRight,
+  Info,
+  Filter,
+  Database,
+  Search,
 } from 'lucide-react';
 import { clsx } from 'clsx';
-import { Pagination } from '@/Components/ui';
+import { Pagination } from '@/Components/UI';
 import PageHeader from '@/Components/Premium/PageHeader';
 import StatCard from '@/Components/Premium/StatCard';
 import ContentPanel from '@/Components/Premium/ContentPanel';
@@ -15,46 +25,46 @@ import SearchInput from '@/Components/Premium/SearchInput';
 import StatusTag from '@/Components/Premium/StatusTag';
 import PremiumTable, { PremiumTableRow, PremiumTableCell } from '@/Components/Premium/PremiumTable';
 
-interface EligibilityCheck { 
-  passed: boolean; 
-  key: string; 
-  message: string; 
+interface EligibilityCheck {
+  passed: boolean;
+  key: string;
+  message: string;
 }
 
 interface Student {
-  mahasiswa_id: number; 
-  nim: string; 
-  nama: string; 
+  mahasiswa_id: number;
+  nim: string;
+  nama: string;
   prodi_nama: string | null;
   fakultas_nama: string | null;
-  sks_completed: number; 
+  sks_completed: number;
   gpa: number | null;
-  is_bta_ppi_passed: boolean; 
-  has_health_certificate: boolean; 
+  is_bta_ppi_passed: boolean;
+  has_health_certificate: boolean;
   has_parent_permission: boolean;
-  checks: EligibilityCheck[]; 
-  is_eligible: boolean; 
-  issues: EligibilityCheck[]; 
+  checks: EligibilityCheck[];
+  is_eligible: boolean;
+  issues: EligibilityCheck[];
   issue_count: number;
 }
 
 interface Props {
   students: Student[];
-  pagination: { 
-    current_page: number; 
-    per_page: number; 
-    total: number; 
-    last_page: number 
+  pagination: {
+    current_page: number;
+    per_page: number;
+    total: number;
+    last_page: number;
   };
-  stats: { 
-    total: number; 
-    eligible_count: number; 
-    not_eligible_count: number; 
-    eligibility_rate: number; 
+  stats: {
+    total: number;
+    eligible_count: number;
+    not_eligible_count: number;
+    eligibility_rate: number;
   };
-  filters: { 
-    period_id?: number; 
-    faculty_id?: number; 
+  filters: {
+    period_id?: number;
+    faculty_id?: number;
     show_eligible: boolean;
     search?: string;
   };
@@ -62,7 +72,14 @@ interface Props {
   faculties: Array<{ id: number; name: string }>;
 }
 
-export default function EligibilityIndex({ students, pagination, stats, filters, periods, faculties }: Props) {
+export default function EligibilityIndex({
+  students,
+  pagination,
+  stats,
+  filters,
+  periods,
+  faculties,
+}: Props) {
   const [search, setSearch] = useState(filters.search || '');
   const [periodId, setPeriodId] = useState(filters.period_id?.toString() || '');
   const [facultyId, setFacultyId] = useState(filters.faculty_id?.toString() || '');
@@ -70,16 +87,23 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
   const [showFilters, setShowFilters] = useState(false);
 
   const applyFilters = (overrides: Record<string, unknown> = {}) => {
-    router.get('/admin/audit-kualifikasi', { 
-      period_id: periodId || undefined, 
-      faculty_id: facultyId || undefined, 
-      show_eligible: 'show_eligible' in overrides ? (overrides.show_eligible as string | boolean | undefined) : showEligible, 
-      search: search || undefined,
-      ...overrides,
-    }, { 
-      preserveState: true,
-      replace: true 
-    });
+    router.get(
+      '/admin/audit-kualifikasi',
+      {
+        period_id: periodId || undefined,
+        faculty_id: facultyId || undefined,
+        show_eligible:
+          'show_eligible' in overrides
+            ? (overrides.show_eligible as string | boolean | undefined)
+            : showEligible,
+        search: search || undefined,
+        ...overrides,
+      },
+      {
+        preserveState: true,
+        replace: true,
+      },
+    );
   };
 
   const resetFilters = () => {
@@ -95,8 +119,8 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
     applyFilters({ show_eligible: val });
   };
 
-  const handleExport = () => { 
-    window.location.href = `/admin/audit-kualifikasi/ekspor?period_id=${periodId}&faculty_id=${facultyId}`; 
+  const handleExport = () => {
+    window.location.href = `/admin/audit-kualifikasi/ekspor?period_id=${periodId}&faculty_id=${facultyId}`;
   };
 
   return (
@@ -104,8 +128,7 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
       <Head title="Audit Kualifikasi KKN" />
 
       <div className="space-y-8 pb-24 text-emerald-950">
-        
-        <PageHeader 
+        <PageHeader
           title="Audit Kualifikasi."
           subtitle="Pemantauan kelaikan mahasiswa berdasarkan SKS, IPK, dan sertifikasi BTA-PPI secara real-time dari database akademik."
           icon={ShieldCheck}
@@ -113,7 +136,7 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
           stats={{
             label: 'Total Mahasiswa',
             value: `${stats.total.toLocaleString()} Jiwa`,
-            icon: Database
+            icon: Database,
           }}
         >
           <button
@@ -130,9 +153,14 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
             <Info size={20} strokeWidth={2.5} />
           </div>
           <div className="space-y-1">
-            <p className="text-xs font-black text-emerald-950 leading-relaxed uppercase tracking-wide">Kebijakan Kelayakan</p>
+            <p className="text-xs font-black text-emerald-950 leading-relaxed uppercase tracking-wide">
+              Kebijakan Kelayakan
+            </p>
             <p className="text-[11px] font-bold text-emerald-800 leading-relaxed uppercase tracking-tight">
-              Status <span className="font-black text-emerald-950">"LAYAK"</span> diberikan jika mahasiswa memenuhi persyaratan akademik (SKS, IPK) dan sertifikasi BTA-PPI sesuai ketentuan masing-masing jenis KKN. Audit ini hanya mencakup syarat <strong>non-berkas</strong> — kelengkapan dokumen diperiksa saat pendaftaran.
+              Status <span className="font-black text-emerald-950">"LAYAK"</span> diberikan jika
+              mahasiswa memenuhi persyaratan akademik (SKS, IPK) dan sertifikasi BTA-PPI sesuai
+              ketentuan masing-masing jenis KKN. Audit ini hanya mencakup syarat{' '}
+              <strong>non-berkas</strong> — kelengkapan dokumen diperiksa saat pendaftaran.
             </p>
           </div>
         </div>
@@ -140,9 +168,24 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
         {/* --- STATS GRID --- */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="Total Audit" value={stats.total} icon={FileSearch} />
-          <StatCard label="Lolos Kualifikasi" value={stats.eligible_count} icon={CheckCircle2} variant="success" />
-          <StatCard label="Gagal Kualifikasi" value={stats.not_eligible_count} icon={XCircle} variant="danger" />
-          <StatCard label="Efisiensi Kelayakan" value={`${stats.eligibility_rate}%`} icon={Activity} variant="info" />
+          <StatCard
+            label="Lolos Kualifikasi"
+            value={stats.eligible_count}
+            icon={CheckCircle2}
+            variant="success"
+          />
+          <StatCard
+            label="Gagal Kualifikasi"
+            value={stats.not_eligible_count}
+            icon={XCircle}
+            variant="danger"
+          />
+          <StatCard
+            label="Efisiensi Kelayakan"
+            value={`${stats.eligibility_rate}%`}
+            icon={Activity}
+            variant="info"
+          />
         </div>
 
         {/* --- CONTENT PANEL --- */}
@@ -153,24 +196,26 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
           padding={false}
           headerAction={
             <div className="flex items-center gap-3">
-              <SearchInput 
+              <SearchInput
                 placeholder="Cari NIM atau Nama..."
                 value={search}
-                onChange={e => setSearch(e.target.value)}
+                onChange={(e) => setSearch(e.target.value)}
                 onSearch={() => applyFilters()}
                 className="w-64"
               />
-              <button 
+              <button
                 onClick={() => setShowFilters(!showFilters)}
                 className={clsx(
-                  "h-11 px-5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all border-2",
-                  showFilters ? "bg-[#0d9488] border-emerald-600 text-white" : "bg-white border-emerald-50 text-emerald-950 hover:border-emerald-600"
+                  'h-11 px-5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all border-2',
+                  showFilters
+                    ? 'bg-[#0d9488] border-emerald-600 text-white'
+                    : 'bg-white border-emerald-50 text-emerald-950 hover:border-emerald-600',
                 )}
               >
                 <Filter size={14} strokeWidth={2.5} />
                 {showFilters ? 'TUTUP' : 'FILTER'}
               </button>
-              <button 
+              <button
                 onClick={() => applyFilters()}
                 className="h-11 px-8 bg-emerald-900 hover:bg-black text-white rounded-xl text-xs font-bold transition-all shadow-sm active:scale-95 uppercase tracking-widest"
               >
@@ -181,70 +226,100 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
           footer={
             <div className="flex items-center justify-between">
               <span className="text-xs font-extrabold text-emerald-950/40 uppercase tracking-widest">
-                Halaman <strong className="text-emerald-950 tabular-nums">{pagination.current_page}</strong> dari {pagination.last_page}
+                Halaman{' '}
+                <strong className="text-emerald-950 tabular-nums">{pagination.current_page}</strong>{' '}
+                dari {pagination.last_page}
               </span>
-              <Pagination meta={{ 
-                current_page: pagination.current_page, 
-                last_page: pagination.last_page, 
-                per_page: pagination.per_page, 
-                total: pagination.total, 
-                links: [], 
-                from: (pagination.current_page - 1) * pagination.per_page + 1, 
-                to: Math.min(pagination.current_page * pagination.per_page, pagination.total), 
-                path: '/admin/audit-kualifikasi' 
-              }} />
+              <Pagination
+                meta={{
+                  current_page: pagination.current_page,
+                  last_page: pagination.last_page,
+                  per_page: pagination.per_page,
+                  total: pagination.total,
+                  links: [],
+                  from: (pagination.current_page - 1) * pagination.per_page + 1,
+                  to: Math.min(pagination.current_page * pagination.per_page, pagination.total),
+                  path: '/admin/audit-kualifikasi',
+                }}
+              />
             </div>
           }
         >
           {showFilters && (
             <div className="p-6 bg-emerald-50/20 border-b-2 border-[#f3f4f6] grid grid-cols-1 md:grid-cols-3 gap-6 animate-in slide-in-from-top-2 duration-300">
               <div className="space-y-2">
-                <label className="text-xs font-extrabold text-emerald-950 uppercase tracking-widest pl-1">Periode Program</label>
+                <label className="text-xs font-extrabold text-emerald-950 uppercase tracking-widest pl-1">
+                  Periode Program
+                </label>
                 <div className="relative group">
-                  <select 
-                    value={periodId} 
-                    onChange={e => setPeriodId(e.target.value)} 
+                  <select
+                    value={periodId}
+                    onChange={(e) => setPeriodId(e.target.value)}
                     className="w-full h-11 pl-4 pr-10 rounded-xl border-2 border-[#f3f4f6] bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 appearance-none transition-all"
                   >
                     <option value="">SEMUA PERIODE</option>
-                    {periods.map(p => <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>)}
+                    {periods.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name.toUpperCase()}
+                      </option>
+                    ))}
                   </select>
-                  <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform" strokeWidth={3} />
+                  <ChevronDown
+                    size={14}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform"
+                    strokeWidth={3}
+                  />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-extrabold text-emerald-950 uppercase tracking-widest pl-1">Fakultas / Satker</label>
+                <label className="text-xs font-extrabold text-emerald-950 uppercase tracking-widest pl-1">
+                  Fakultas / Satker
+                </label>
                 <div className="relative group">
-                  <select 
-                    value={facultyId} 
-                    onChange={e => setFacultyId(e.target.value)} 
+                  <select
+                    value={facultyId}
+                    onChange={(e) => setFacultyId(e.target.value)}
                     className="w-full h-11 pl-4 pr-10 rounded-xl border-2 border-[#f3f4f6] bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 appearance-none transition-all"
                   >
                     <option value="">SEMUA FAKULTAS</option>
-                    {faculties.map(f => <option key={f.id} value={f.id}>{f.name.toUpperCase()}</option>)}
+                    {faculties.map((f) => (
+                      <option key={f.id} value={f.id}>
+                        {f.name.toUpperCase()}
+                      </option>
+                    ))}
                   </select>
-                  <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform" strokeWidth={3} />
+                  <ChevronDown
+                    size={14}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform"
+                    strokeWidth={3}
+                  />
                 </div>
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-extrabold text-emerald-950 uppercase tracking-widest pl-1">Status Kelayakan</label>
+                <label className="text-xs font-extrabold text-emerald-950 uppercase tracking-widest pl-1">
+                  Status Kelayakan
+                </label>
                 <div className="flex h-11 bg-gray-100 p-1 rounded-xl">
-                  <button 
-                    onClick={() => handleToggleEligible(true)} 
+                  <button
+                    onClick={() => handleToggleEligible(true)}
                     className={clsx(
-                      "flex-1 rounded-lg text-xs font-extrabold transition-all tracking-wider",
-                      showEligible ? "bg-white text-[#0d9488] shadow-sm" : "text-emerald-800 hover:text-emerald-950"
+                      'flex-1 rounded-lg text-xs font-extrabold transition-all tracking-wider',
+                      showEligible
+                        ? 'bg-white text-[#0d9488] shadow-sm'
+                        : 'text-emerald-800 hover:text-emerald-950',
                     )}
                   >
                     LAYAK
                   </button>
-                  <button 
-                    onClick={() => handleToggleEligible(false)} 
+                  <button
+                    onClick={() => handleToggleEligible(false)}
                     className={clsx(
-                      "flex-1 rounded-lg text-xs font-extrabold transition-all tracking-wider",
-                      !showEligible ? "bg-white text-rose-600 shadow-sm" : "text-emerald-800 hover:text-emerald-950"
+                      'flex-1 rounded-lg text-xs font-extrabold transition-all tracking-wider',
+                      !showEligible
+                        ? 'bg-white text-rose-600 shadow-sm'
+                        : 'text-emerald-800 hover:text-emerald-950',
                     )}
                   >
                     GAGAL
@@ -253,7 +328,12 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
               </div>
 
               <div className="md:col-span-3 flex justify-end">
-                <button onClick={resetFilters} className="text-xs font-extrabold text-emerald-950/30 hover:text-rose-600 uppercase tracking-widest transition-colors">Reset Filter</button>
+                <button
+                  onClick={resetFilters}
+                  className="text-xs font-extrabold text-emerald-950/30 hover:text-rose-600 uppercase tracking-widest transition-colors"
+                >
+                  Reset Filter
+                </button>
               </div>
             </div>
           )}
@@ -263,7 +343,7 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
             isEmpty={students.length === 0}
             emptyText="Tidak ditemukan data audit yang sesuai dengan filter."
           >
-            {students.map(s => (
+            {students.map((s) => (
               <PremiumTableRow key={s.mahasiswa_id}>
                 <PremiumTableCell>
                   <div className="flex items-center gap-4">
@@ -271,37 +351,59 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
                       {s.nama.charAt(0)}
                     </div>
                     <div className="flex flex-col gap-1">
-                      <span className="text-xs font-bold text-emerald-950 leading-tight uppercase tracking-tight">{s.nama}</span>
+                      <span className="text-xs font-bold text-emerald-950 leading-tight uppercase tracking-tight">
+                        {s.nama}
+                      </span>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-[#0d9488] font-mono tracking-wider">{s.nim}</span>
-                        <span className="text-xs font-extrabold text-emerald-950/30 uppercase tracking-wide truncate max-w-[180px]">{s.prodi_nama || '-'}</span>
+                        <span className="text-xs font-bold text-[#0d9488] font-mono tracking-wider">
+                          {s.nim}
+                        </span>
+                        <span className="text-xs font-extrabold text-emerald-950/30 uppercase tracking-wide truncate max-w-[180px]">
+                          {s.prodi_nama || '-'}
+                        </span>
                       </div>
                       {s.fakultas_nama && (
-                        <span className="text-[10px] font-bold text-emerald-950/20 uppercase tracking-widest">{s.fakultas_nama}</span>
+                        <span className="text-[10px] font-bold text-emerald-950/20 uppercase tracking-widest">
+                          {s.fakultas_nama}
+                        </span>
                       )}
                     </div>
                   </div>
                 </PremiumTableCell>
                 <PremiumTableCell align="center">
                   <div className="flex flex-col items-center gap-1.5">
-                    <span className={clsx(
-                      "text-xs font-extrabold px-3 py-1 rounded-lg border tabular-nums tracking-wider leading-none", 
-                      s.sks_completed >= 100 ? 'bg-[#f0fdfa] border-emerald-50 text-[#0d9488]' : 'bg-rose-50 border-rose-100 text-rose-600'
-                    )}>
+                    <span
+                      className={clsx(
+                        'text-xs font-extrabold px-3 py-1 rounded-lg border tabular-nums tracking-wider leading-none',
+                        s.sks_completed >= 100
+                          ? 'bg-[#f0fdfa] border-emerald-50 text-[#0d9488]'
+                          : 'bg-rose-50 border-rose-100 text-rose-600',
+                      )}
+                    >
                       {s.sks_completed} SKS
                     </span>
-                    <span className="text-xs font-bold text-emerald-950/30 font-mono leading-none">IPK: {s.gpa ? Number(s.gpa).toFixed(2) : '-'}</span>
+                    <span className="text-xs font-bold text-emerald-950/30 font-mono leading-none">
+                      IPK: {s.gpa ? Number(s.gpa).toFixed(2) : '-'}
+                    </span>
                   </div>
                 </PremiumTableCell>
                 <PremiumTableCell align="center">
-                  <StatusTag status={s.is_bta_ppi_passed ? 'success' : 'danger'} label={s.is_bta_ppi_passed ? 'LULUS' : 'BELUM'} size="sm" />
+                  <StatusTag
+                    status={s.is_bta_ppi_passed ? 'success' : 'danger'}
+                    label={s.is_bta_ppi_passed ? 'LULUS' : 'BELUM'}
+                    size="sm"
+                  />
                 </PremiumTableCell>
                 <PremiumTableCell align="center">
-                  <StatusTag status={s.is_eligible ? 'success' : 'danger'} label={s.is_eligible ? 'LAYAK' : `GAGAL (${s.issue_count})`} size="md" />
+                  <StatusTag
+                    status={s.is_eligible ? 'success' : 'danger'}
+                    label={s.is_eligible ? 'LAYAK' : `GAGAL (${s.issue_count})`}
+                    size="md"
+                  />
                 </PremiumTableCell>
                 <PremiumTableCell align="right">
-                  <Link 
-                    href={`/admin/mahasiswa/${s.mahasiswa_id}`} 
+                  <Link
+                    href={`/admin/mahasiswa/${s.mahasiswa_id}`}
                     className="h-9 px-4 inline-flex items-center justify-center bg-white text-emerald-950 hover:bg-emerald-900 hover:text-white border-2 border-[#f3f4f6] rounded-xl text-xs font-extrabold transition-all active:scale-95 uppercase tracking-widest shadow-sm shadow-emerald-900/5"
                   >
                     Profil <ArrowRight size={14} className="ml-2" strokeWidth={3} />
@@ -314,13 +416,17 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
 
         {/* --- FOOTER INFO --- */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8">
-           <div className="flex gap-4 p-6 bg-white border-2 border-[#f3f4f6] rounded-xl shadow-sm">
+          <div className="flex gap-4 p-6 bg-white border-2 border-[#f3f4f6] rounded-xl shadow-sm">
             <div className="h-10 w-10 bg-[#f0fdfa] rounded-xl flex items-center justify-center shrink-0 text-[#0d9488]">
               <RefreshCw size={20} strokeWidth={2.5} />
             </div>
             <div className="space-y-1">
-              <h4 className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider leading-none mb-1">Update Real-time</h4>
-              <p className="text-xs font-bold text-emerald-800 leading-relaxed">Data disinkronkan langsung dari Master Data Akademik.</p>
+              <h4 className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider leading-none mb-1">
+                Update Real-time
+              </h4>
+              <p className="text-xs font-bold text-emerald-800 leading-relaxed">
+                Data disinkronkan langsung dari Master Data Akademik.
+              </p>
             </div>
           </div>
           <div className="flex gap-4 p-6 bg-white border-2 border-[#f3f4f6] rounded-xl shadow-sm">
@@ -328,8 +434,12 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
               <RefreshCw size={20} strokeWidth={2.5} />
             </div>
             <div className="space-y-1">
-              <h4 className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider leading-none mb-1">Integrasi SIAKAD</h4>
-              <p className="text-xs font-bold text-emerald-800 leading-relaxed">Validasi SKS dan IPK menggunakan data resmi universitas.</p>
+              <h4 className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider leading-none mb-1">
+                Integrasi SIAKAD
+              </h4>
+              <p className="text-xs font-bold text-emerald-800 leading-relaxed">
+                Validasi SKS dan IPK menggunakan data resmi universitas.
+              </p>
             </div>
           </div>
           <div className="flex gap-4 p-6 bg-white border-2 border-[#f3f4f6] rounded-xl shadow-sm">
@@ -337,8 +447,12 @@ export default function EligibilityIndex({ students, pagination, stats, filters,
               <RefreshCw size={20} strokeWidth={2.5} />
             </div>
             <div className="space-y-1">
-              <h4 className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider leading-none mb-1">SOP Kelayakan</h4>
-              <p className="text-xs font-bold text-emerald-800 leading-relaxed">Parameter kelaikan sesuai Pedoman KKN 2026/2027.</p>
+              <h4 className="text-xs font-extrabold text-emerald-950 uppercase tracking-wider leading-none mb-1">
+                SOP Kelayakan
+              </h4>
+              <p className="text-xs font-bold text-emerald-800 leading-relaxed">
+                Parameter kelaikan sesuai Pedoman KKN 2026/2027.
+              </p>
             </div>
           </div>
         </div>

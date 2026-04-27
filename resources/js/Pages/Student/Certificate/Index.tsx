@@ -232,7 +232,9 @@ export default function CertificateIndex({
                       Final Grade
                     </span>
                     <div className="px-5 py-2 bg-emerald-500 rounded-[1rem] shadow-lg shadow-emerald-500/20">
-                      <span className="text-sm font-bold text-emerald-950">{score.letter_grade}</span>
+                      <span className="text-sm font-bold text-emerald-950">
+                        {score.letter_grade}
+                      </span>
                     </div>
                   </div>
                 </div>

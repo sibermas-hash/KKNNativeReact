@@ -38,7 +38,10 @@ const iconMap: Record<HubAreaKey, ComponentType<any>> = {
   system: Settings2,
 };
 
-const cardStyles: Record<HubAreaKey, { icon: string; badge: string; button: string; borderHover: string }> = {
+const cardStyles: Record<
+  HubAreaKey,
+  { icon: string; badge: string; button: string; borderHover: string }
+> = {
   operational: {
     icon: 'bg-cyan-50 text-cyan-600 border border-cyan-100',
     badge: 'bg-cyan-50 text-cyan-600 border border-cyan-100',
@@ -70,24 +73,33 @@ export default function AdminHub() {
       <div className="absolute inset-x-0 top-0 h-[300px] bg-cyan-50/50 border-b border-cyan-50" />
 
       <div className="relative mx-auto flex min-h-screen max-w-[1400px] flex-col px-6 py-8 sm:px-10 lg:px-12 lg:py-10">
-        
         {/* Header - Pure solid white with high contrast */}
         <header className="flex flex-col gap-6 rounded-xl border border-cyan-100 bg-white px-8 py-6 shadow-sm xl:flex-row xl:items-center xl:justify-between mb-12 relative overflow-hidden">
           {/* Subtle accent line on top of header */}
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 via-lime-500 to-amber-500" />
-          
+
           <div className="flex items-center gap-5">
             <div className="flex items-center gap-3">
-              <img src="/images/logo_uinsaizu.png" alt="Logo UIN SAIZU" className="h-12 w-12 object-contain" />
+              <img
+                src="/images/logo_uinsaizu.png"
+                alt="Logo UIN SAIZU"
+                className="h-12 w-12 object-contain"
+              />
               <div className="h-8 w-px bg-cyan-100" />
-              <img src="/images/Logo_SIBERMAS.png" alt="Logo SIBERMAS" className="h-10 w-auto object-contain" />
+              <img
+                src="/images/Logo_SIBERMAS.png"
+                alt="Logo SIBERMAS"
+                className="h-10 w-auto object-contain"
+              />
             </div>
             <div className="min-w-0 border-l border-cyan-50 pl-5">
               <p className="text-[10px] font-black uppercase tracking-[0.25em] text-cyan-600">
                 Pusat Kendali Sistem.
               </p>
               <h1 className="text-[1.2rem] font-black tracking-tighter uppercase mt-0.5 font-display">
-                <span className="text-sky-500">SIBER</span><span className="text-emerald-500">MAS</span> <span className="text-cyan-950">KKN UIN SAIZU</span>
+                <span className="text-sky-500">SIBER</span>
+                <span className="text-emerald-500">MAS</span>{' '}
+                <span className="text-cyan-950">KKN UIN SAIZU</span>
               </h1>
             </div>
           </div>
@@ -95,14 +107,22 @@ export default function AdminHub() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center border-t border-cyan-50 pt-4 xl:border-t-0 xl:pt-0">
             <div className="rounded-xl border border-cyan-100 bg-cyan-50/30 px-5 py-3">
               <div className="flex justify-between items-center gap-6">
-                  <div>
-                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-cyan-600 mb-0.5 font-sans">Sesi Aktif</p>
-                      <p className="text-xs font-black uppercase text-cyan-950 tracking-tight font-display">{identity.name}</p>
-                  </div>
-                  <div className="text-right border-l border-cyan-100 pl-6">
-                      <p className="text-[9px] font-black uppercase tracking-[0.2em] text-cyan-600 mb-0.5 font-sans">Hak Akses</p>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-cyan-900 font-display">{identity.primary_role.replace(/_/g, ' ')}</p>
-                  </div>
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-cyan-600 mb-0.5 font-sans">
+                    Sesi Aktif
+                  </p>
+                  <p className="text-xs font-black uppercase text-cyan-950 tracking-tight font-display">
+                    {identity.name}
+                  </p>
+                </div>
+                <div className="text-right border-l border-cyan-100 pl-6">
+                  <p className="text-[9px] font-black uppercase tracking-[0.2em] text-cyan-600 mb-0.5 font-sans">
+                    Hak Akses
+                  </p>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-cyan-900 font-display">
+                    {identity.primary_role.replace(/_/g, ' ')}
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -149,10 +169,14 @@ export default function AdminHub() {
                 className={`flex flex-col rounded-xl border border-slate-100 bg-white p-8 shadow-sm transition-all ${area.available ? style.borderHover + ' hover:-translate-y-1 hover:shadow-md' : 'opacity-70 grayscale-[0.2]'}`}
               >
                 <div className="flex items-start justify-between gap-4 mb-8">
-                  <div className={`flex h-16 w-16 items-center justify-center rounded-2xl ${style.icon}`}>
+                  <div
+                    className={`flex h-16 w-16 items-center justify-center rounded-2xl ${style.icon}`}
+                  >
                     <Icon size={28} strokeWidth={2.5} />
                   </div>
-                  <span className={`rounded-lg px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] ${style.badge}`}>
+                  <span
+                    className={`rounded-lg px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.2em] ${style.badge}`}
+                  >
                     {area.badge}
                   </span>
                 </div>
@@ -183,7 +207,7 @@ export default function AdminHub() {
                       </div>
                       {area.locked_message && (
                         <p className="mt-2 text-[10px] font-bold text-amber-700 uppercase tracking-widest font-sans">
-                            {area.locked_message}
+                          {area.locked_message}
                         </p>
                       )}
                     </div>

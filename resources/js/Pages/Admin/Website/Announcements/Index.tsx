@@ -4,7 +4,7 @@ import { route } from 'ziggy-js';
 import dayjs from 'dayjs';
 import AppLayout from '@/Layouts/AppLayout';
 import type { PageProps } from '@/types';
-import Pagination, { PageInfo, type PaginationMeta } from '@/Components/ui/Pagination';
+import Pagination, { PageInfo, type PaginationMeta } from '@/Components/UI/Pagination';
 import PageHeader from '@/Components/Premium/PageHeader';
 import ContentPanel from '@/Components/Premium/ContentPanel';
 import SearchInput from '@/Components/Premium/SearchInput';
@@ -120,7 +120,10 @@ function slugify(value: string) {
 }
 
 function plainText(html: string) {
-  return html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+  return html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function excerptFromContent(html: string, maxLength = 220) {
@@ -352,8 +355,18 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Total Artikel" value={summary.total} icon={FileSearch} variant="gray" />
-          <StatCard label="Sudah Terbit" value={summary.published} icon={ShieldCheck} variant="success" />
-          <StatCard label="Terjadwal" value={summary.scheduled} icon={CalendarClock} variant="warning" />
+          <StatCard
+            label="Sudah Terbit"
+            value={summary.published}
+            icon={ShieldCheck}
+            variant="success"
+          />
+          <StatCard
+            label="Terjadwal"
+            value={summary.scheduled}
+            icon={CalendarClock}
+            variant="warning"
+          />
           <StatCard label="Draft" value={summary.draft} icon={PenSquare} variant="info" />
         </div>
 
@@ -366,7 +379,10 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
             >
               <form onSubmit={submit} className="space-y-6">
                 <div className="space-y-2">
-                  <label htmlFor="news-title" className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950">
+                  <label
+                    htmlFor="news-title"
+                    className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950"
+                  >
                     Judul Artikel
                   </label>
                   <input
@@ -383,11 +399,16 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
 
                 <div className="grid gap-4 sm:grid-cols-[minmax(0,1.3fr)_12rem]">
                   <div className="space-y-2">
-                    <label htmlFor="news-slug" className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950">
+                    <label
+                      htmlFor="news-slug"
+                      className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950"
+                    >
                       Slug Publik
                     </label>
                     <div className="rounded-2xl border-2 border-slate-100 bg-[#f8fbf9] px-4 py-3">
-                      <div className="mb-2 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-600">/berita/</div>
+                      <div className="mb-2 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-600">
+                        /berita/
+                      </div>
                       <input
                         id="news-slug"
                         value={form.data.slug}
@@ -396,18 +417,25 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                         className="w-full border-none bg-transparent px-0 py-0 text-sm font-semibold text-emerald-950 shadow-none focus:ring-0"
                       />
                     </div>
-                    {form.errors.slug && <p className="pl-1 text-xs font-semibold text-rose-600">{form.errors.slug}</p>}
+                    {form.errors.slug && (
+                      <p className="pl-1 text-xs font-semibold text-rose-600">{form.errors.slug}</p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
-                    <label htmlFor="news-category" className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950">
+                    <label
+                      htmlFor="news-category"
+                      className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950"
+                    >
                       Kategori
                     </label>
                     <input
                       id="news-category"
                       list="news-category-options"
                       value={form.data.category}
-                      onChange={(event) => form.setData('category', event.target.value.toUpperCase())}
+                      onChange={(event) =>
+                        form.setData('category', event.target.value.toUpperCase())
+                      }
                       placeholder="BERITA"
                       className="w-full rounded-2xl border-2 border-slate-100 bg-[#f8fbf9] px-4 py-3 text-sm font-semibold text-emerald-950"
                     />
@@ -417,16 +445,22 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                       ))}
                     </datalist>
                     <p className="pl-1 text-xs text-slate-500">
-                      Gunakan kategori yang paling relevan. Anda tetap bisa membuat kategori baru jika diperlukan.
+                      Gunakan kategori yang paling relevan. Anda tetap bisa membuat kategori baru
+                      jika diperlukan.
                     </p>
                     {form.errors.category && (
-                      <p className="pl-1 text-xs font-semibold text-rose-600">{form.errors.category}</p>
+                      <p className="pl-1 text-xs font-semibold text-rose-600">
+                        {form.errors.category}
+                      </p>
                     )}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="news-excerpt" className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950">
+                  <label
+                    htmlFor="news-excerpt"
+                    className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950"
+                  >
                     Ringkasan / Excerpt
                   </label>
                   <textarea
@@ -438,16 +472,23 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                     className="w-full rounded-2xl border-2 border-slate-100 bg-[#f8fbf9] px-5 py-4 text-sm leading-7 text-emerald-950"
                   />
                   <div className="flex items-center justify-between px-1 text-xs text-slate-500">
-                    <span>Jika kosong, sistem akan mengambil ringkasan otomatis dari isi artikel.</span>
+                    <span>
+                      Jika kosong, sistem akan mengambil ringkasan otomatis dari isi artikel.
+                    </span>
                     <span>{previewExcerpt.length}/220</span>
                   </div>
                   {form.errors.excerpt && (
-                    <p className="pl-1 text-xs font-semibold text-rose-600">{form.errors.excerpt}</p>
+                    <p className="pl-1 text-xs font-semibold text-rose-600">
+                      {form.errors.excerpt}
+                    </p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <label htmlFor="news-content" className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950">
+                  <label
+                    htmlFor="news-content"
+                    className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950"
+                  >
                     Isi Artikel
                   </label>
                   <AnnouncementEditor
@@ -457,7 +498,9 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                     placeholder="Tulis isi berita lengkap di sini..."
                   />
                   {form.errors.content && (
-                    <p className="pl-1 text-xs font-semibold text-rose-600">{form.errors.content}</p>
+                    <p className="pl-1 text-xs font-semibold text-rose-600">
+                      {form.errors.content}
+                    </p>
                   )}
                 </div>
 
@@ -469,7 +512,10 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                   >
                     <div className="space-y-5">
                       <div className="space-y-2">
-                        <label htmlFor="published-at" className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950">
+                        <label
+                          htmlFor="published-at"
+                          className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950"
+                        >
                           Jadwal Tayang
                         </label>
                         <input
@@ -480,7 +526,9 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                           className="w-full rounded-2xl border-2 border-slate-100 bg-[#f8fbf9] px-4 py-3 text-sm font-semibold text-emerald-950"
                         />
                         {form.errors.published_at && (
-                          <p className="pl-1 text-xs font-semibold text-rose-600">{form.errors.published_at}</p>
+                          <p className="pl-1 text-xs font-semibold text-rose-600">
+                            {form.errors.published_at}
+                          </p>
                         )}
                       </div>
 
@@ -503,14 +551,19 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                       </div>
 
                       <div className="space-y-2">
-                        <label htmlFor="news-image" className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950">
+                        <label
+                          htmlFor="news-image"
+                          className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950"
+                        >
                           Featured Image
                         </label>
                         <input
                           id="news-image"
                           type="file"
                           accept="image/*"
-                          onChange={(event) => form.setData('image', event.target.files?.[0] || null)}
+                          onChange={(event) =>
+                            form.setData('image', event.target.files?.[0] || null)
+                          }
                           className="w-full rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50/50 px-4 py-3 text-sm"
                         />
                         {(selectedAnnouncement?.image_url || form.data.image) && (
@@ -519,9 +572,13 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                               <FileImage size={18} className="text-emerald-600" />
                               <div className="min-w-0">
                                 <p className="truncate text-sm font-semibold text-emerald-950">
-                                  {form.data.image?.name || selectedAnnouncement?.image?.split('/').pop() || 'featured-image'}
+                                  {form.data.image?.name ||
+                                    selectedAnnouncement?.image?.split('/').pop() ||
+                                    'featured-image'}
                                 </p>
-                                <p className="text-xs text-slate-500">Gambar utama untuk listing berita dan artikel detail.</p>
+                                <p className="text-xs text-slate-500">
+                                  Gambar utama untuk listing berita dan artikel detail.
+                                </p>
                               </div>
                             </div>
                             {selectedAnnouncement?.image_url && (
@@ -529,7 +586,9 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                                 <input
                                   type="checkbox"
                                   checked={form.data.remove_image}
-                                  onChange={(event) => form.setData('remove_image', event.target.checked)}
+                                  onChange={(event) =>
+                                    form.setData('remove_image', event.target.checked)
+                                  }
                                   className="h-4 w-4 rounded border-slate-300 text-rose-600"
                                 />
                                 Hapus gambar lama saat menyimpan
@@ -537,17 +596,26 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                             )}
                           </div>
                         )}
-                        {form.errors.image && <p className="pl-1 text-xs font-semibold text-rose-600">{form.errors.image}</p>}
+                        {form.errors.image && (
+                          <p className="pl-1 text-xs font-semibold text-rose-600">
+                            {form.errors.image}
+                          </p>
+                        )}
                       </div>
 
                       <div className="space-y-2">
-                        <label htmlFor="news-attachment" className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950">
+                        <label
+                          htmlFor="news-attachment"
+                          className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950"
+                        >
                           Lampiran Artikel
                         </label>
                         <input
                           id="news-attachment"
                           type="file"
-                          onChange={(event) => form.setData('attachment', event.target.files?.[0] || null)}
+                          onChange={(event) =>
+                            form.setData('attachment', event.target.files?.[0] || null)
+                          }
                           className="w-full rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50/50 px-4 py-3 text-sm"
                         />
                         {(selectedAnnouncement?.file_name || form.data.attachment) && (
@@ -558,7 +626,9 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                                 <p className="truncate text-sm font-semibold text-emerald-950">
                                   {form.data.attachment?.name || selectedAnnouncement?.file_name}
                                 </p>
-                                <p className="text-xs text-slate-500">Lampiran bisa ditampilkan di artikel detail untuk diunduh publik.</p>
+                                <p className="text-xs text-slate-500">
+                                  Lampiran bisa ditampilkan di artikel detail untuk diunduh publik.
+                                </p>
                               </div>
                             </div>
                             {selectedAnnouncement?.file_name && (
@@ -566,7 +636,9 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                                 <input
                                   type="checkbox"
                                   checked={form.data.remove_attachment}
-                                  onChange={(event) => form.setData('remove_attachment', event.target.checked)}
+                                  onChange={(event) =>
+                                    form.setData('remove_attachment', event.target.checked)
+                                  }
                                   className="h-4 w-4 rounded border-slate-300 text-rose-600"
                                 />
                                 Hapus lampiran lama saat menyimpan
@@ -575,7 +647,9 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                           </div>
                         )}
                         {form.errors.attachment && (
-                          <p className="pl-1 text-xs font-semibold text-rose-600">{form.errors.attachment}</p>
+                          <p className="pl-1 text-xs font-semibold text-rose-600">
+                            {form.errors.attachment}
+                          </p>
                         )}
                       </div>
                     </div>
@@ -590,34 +664,53 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                       <div className="rounded-[1.5rem] border border-emerald-200 bg-emerald-50 p-4">
                         <div className="flex items-center justify-between gap-4">
                           <div>
-                            <p className="text-sm font-semibold text-emerald-950">Skor kesiapan SEO</p>
+                            <p className="text-sm font-semibold text-emerald-950">
+                              Skor kesiapan SEO
+                            </p>
                             <p className="mt-1 text-xs leading-6 text-emerald-700">
                               Ukuran sederhana berdasarkan judul, ringkasan, dan metadata.
                             </p>
                           </div>
                           <div className="rounded-2xl bg-white px-4 py-3 text-center shadow-sm">
-                            <p className="text-2xl font-black font-display uppercase tracking-tighter text-emerald-950">{currentSeoScore}/4</p>
+                            <p className="text-2xl font-black font-display uppercase tracking-tighter text-emerald-950">
+                              {currentSeoScore}/4
+                            </p>
                           </div>
                         </div>
                       </div>
 
                       <div className="grid gap-3 sm:grid-cols-3">
                         <div className="rounded-[1.25rem] border border-slate-200 bg-slate-50/80 p-4">
-                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-600">Kata</p>
-                          <p className="mt-3 text-2xl font-black font-display uppercase tracking-tighter text-emerald-950">{previewWordCount}</p>
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-600">
+                            Kata
+                          </p>
+                          <p className="mt-3 text-2xl font-black font-display uppercase tracking-tighter text-emerald-950">
+                            {previewWordCount}
+                          </p>
                         </div>
                         <div className="rounded-[1.25rem] border border-slate-200 bg-slate-50/80 p-4">
-                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-600">Estimasi Baca</p>
-                          <p className="mt-3 text-2xl font-black font-display uppercase tracking-tighter text-emerald-950">{previewReadingTime} menit</p>
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-600">
+                            Estimasi Baca
+                          </p>
+                          <p className="mt-3 text-2xl font-black font-display uppercase tracking-tighter text-emerald-950">
+                            {previewReadingTime} menit
+                          </p>
                         </div>
                         <div className="rounded-[1.25rem] border border-slate-200 bg-slate-50/80 p-4">
-                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-600">Status</p>
-                          <p className="mt-3 text-base font-semibold text-emerald-950">{humanStatus(previewStatus)}</p>
+                          <p className="text-[11px] font-black uppercase tracking-[0.18em] text-emerald-600">
+                            Status
+                          </p>
+                          <p className="mt-3 text-base font-semibold text-emerald-950">
+                            {humanStatus(previewStatus)}
+                          </p>
                         </div>
                       </div>
 
                       <div className="space-y-2">
-                        <label htmlFor="meta-title" className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950">
+                        <label
+                          htmlFor="meta-title"
+                          className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950"
+                        >
                           Meta Title
                         </label>
                         <input
@@ -630,7 +723,10 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                       </div>
 
                       <div className="space-y-2">
-                        <label htmlFor="meta-description" className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950">
+                        <label
+                          htmlFor="meta-description"
+                          className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950"
+                        >
                           Meta Description
                         </label>
                         <textarea
@@ -644,7 +740,10 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                       </div>
 
                       <div className="space-y-2">
-                        <label htmlFor="meta-keywords" className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950">
+                        <label
+                          htmlFor="meta-keywords"
+                          className="pl-1 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-950"
+                        >
                           Meta Keywords
                         </label>
                         <input
@@ -660,12 +759,18 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                         <div className="mb-2 text-[11px] font-black uppercase tracking-[0.18em] text-emerald-600">
                           Preview publik
                         </div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">{previewPublicPath}</p>
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                          {previewPublicPath}
+                        </p>
                         <h3 className="mt-3 text-lg font-semibold leading-tight text-emerald-950">
-                          {form.data.meta_title || form.data.title || 'Judul berita akan tampil di sini'}
+                          {form.data.meta_title ||
+                            form.data.title ||
+                            'Judul berita akan tampil di sini'}
                         </h3>
                         <p className="mt-2 text-sm leading-7 text-slate-600">
-                          {form.data.meta_description || previewExcerpt || 'Ringkasan artikel akan muncul pada preview publik.'}
+                          {form.data.meta_description ||
+                            previewExcerpt ||
+                            'Ringkasan artikel akan muncul pada preview publik.'}
                         </p>
                         <div className="mt-4 flex items-center gap-3">
                           <StatusTag
@@ -675,7 +780,9 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                             size="sm"
                           />
                           <span className="text-xs font-medium text-slate-500">
-                            {form.data.published_at ? formatDateTime(form.data.published_at) : 'Jadwal belum diisi'}
+                            {form.data.published_at
+                              ? formatDateTime(form.data.published_at)
+                              : 'Jadwal belum diisi'}
                           </span>
                         </div>
                       </div>
@@ -774,7 +881,9 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
               <div className="space-y-4">
                 {announcements.data.length === 0 && (
                   <div className="rounded-[1.5rem] border border-dashed border-emerald-200 bg-[#fbfdfc] px-6 py-12 text-center">
-                    <h3 className="text-lg font-semibold text-emerald-950">Belum ada artikel pada hasil filter ini.</h3>
+                    <h3 className="text-lg font-semibold text-emerald-950">
+                      Belum ada artikel pada hasil filter ini.
+                    </h3>
                     <p className="mt-2 text-sm leading-7 text-slate-600">
                       Ubah pencarian atau mulai tulis artikel baru dari panel composer.
                     </p>
@@ -801,7 +910,11 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                           className="overflow-hidden rounded-[1.25rem] bg-emerald-50 text-left"
                         >
                           {announcement.image_url ? (
-                            <img src={announcement.image_url} alt={announcement.title} className="aspect-[4/3] h-full w-full object-cover" />
+                            <img
+                              src={announcement.image_url}
+                              alt={announcement.title}
+                              className="aspect-[4/3] h-full w-full object-cover"
+                            />
                           ) : (
                             <div className="flex aspect-[4/3] h-full w-full items-end bg-[linear-gradient(145deg,#ecfdf5_0%,#eff6ff_100%)] p-4">
                               <span className="text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700">
@@ -811,7 +924,11 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                           )}
                         </button>
 
-                        <button type="button" onClick={() => setSelectedId(announcement.id)} className="space-y-3 text-left">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedId(announcement.id)}
+                          className="space-y-3 text-left"
+                        >
                           <div className="flex flex-wrap items-center gap-3">
                             <StatusTag
                               status={announcement.status}
@@ -822,12 +939,18 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                             <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
                               {announcement.category}
                             </span>
-                            <span className="text-xs font-medium text-slate-500">{formatDateTime(announcement.published_at)}</span>
+                            <span className="text-xs font-medium text-slate-500">
+                              {formatDateTime(announcement.published_at)}
+                            </span>
                           </div>
 
                           <div>
-                            <h3 className="text-xl font-semibold leading-tight text-emerald-950">{announcement.title}</h3>
-                            <p className="mt-2 text-sm leading-7 text-slate-600">{announcement.excerpt}</p>
+                            <h3 className="text-xl font-semibold leading-tight text-emerald-950">
+                              {announcement.title}
+                            </h3>
+                            <p className="mt-2 text-sm leading-7 text-slate-600">
+                              {announcement.excerpt}
+                            </p>
                           </div>
 
                           <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">

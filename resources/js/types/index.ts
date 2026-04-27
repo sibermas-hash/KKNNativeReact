@@ -14,8 +14,6 @@ export interface User {
   dosen?: Lecturer | null;
 }
 
-
-
 export interface Role {
   id: number;
   name: string;
@@ -208,14 +206,14 @@ export interface Announcement {
 }
 
 export interface Download {
-    id: number;
-    title: string;
-    file_name: string | null;
-    file_path: string | null;
-    external_url: string | null;
-    file_type: string | null;
-    is_active: boolean;
-    created_at: string;
+  id: number;
+  title: string;
+  file_name: string | null;
+  file_path: string | null;
+  external_url: string | null;
+  file_type: string | null;
+  is_active: boolean;
+  created_at: string;
 }
 
 export interface KKNScore {
@@ -259,7 +257,11 @@ export interface BreadcrumbLink {
 }
 
 // Lucide React Icon Component Type
-export type LucideIcon = React.ComponentType<{ size?: number; className?: string; strokeWidth?: number }>;
+export type LucideIcon = React.ComponentType<{
+  size?: number;
+  className?: string;
+  strokeWidth?: number;
+}>;
 
 // Color Palette Type for Dashboard Components
 export type ColorPalette = {
@@ -328,7 +330,9 @@ export function hasErrors<T extends Record<string, unknown>>(errors: FormErrors<
 }
 
 // Utility: returns array of error messages
-export function getErrorMessages<T extends Record<string, unknown>>(errors: FormErrors<T>): string[] {
+export function getErrorMessages<T extends Record<string, unknown>>(
+  errors: FormErrors<T>,
+): string[] {
   return Object.values(errors).filter((err): err is string => typeof err === 'string');
 }
 

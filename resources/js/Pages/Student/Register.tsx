@@ -96,8 +96,10 @@ export default function StudentRegister({
   const currentSks = student_academic?.sks_completed ?? 0;
   const qualifiedBySks = currentSks >= minimumSks;
   const qualifiedByBta = student_academic?.is_bta_ppi_passed ?? false;
-  const hasHealthCertificate = (student_academic?.has_health_certificate ?? false) || form.data.health_certificate !== null;
-  const hasParentPermission = (student_academic?.has_parent_permission ?? false) || form.data.parent_permission !== null;
+  const hasHealthCertificate =
+    (student_academic?.has_health_certificate ?? false) || form.data.health_certificate !== null;
+  const hasParentPermission =
+    (student_academic?.has_parent_permission ?? false) || form.data.parent_permission !== null;
   const readyToRegister =
     isBiodataComplete &&
     isDomicileReady &&
@@ -107,7 +109,8 @@ export default function StudentRegister({
     hasParentPermission &&
     (eligibility?.is_eligible ?? true);
   const supportsSelfService = selectedPeriod?.self_service_enabled ?? false;
-  const canSubmit = Boolean(selectedPeriodId) && supportsSelfService && readyToRegister && !hasActiveRegistration;
+  const canSubmit =
+    Boolean(selectedPeriodId) && supportsSelfService && readyToRegister && !hasActiveRegistration;
 
   const handlePeriodChange = (periodId: string) => {
     const nextPeriod = periods.find((period) => String(period.id) === periodId);
@@ -182,10 +185,7 @@ export default function StudentRegister({
           </div>
         </section>
 
-        <NotificationPanel
-          biodata_profile={biodata_profile}
-          domicile_profile={domicile_profile}
-        />
+        <NotificationPanel biodata_profile={biodata_profile} domicile_profile={domicile_profile} />
 
         {selectedPeriod && currentRegistration && (
           <StatusBanner
@@ -208,10 +208,7 @@ export default function StudentRegister({
 
             {selectedPeriod && (
               <>
-                <PlacementPreview
-                  groups={selectedPeriod.kelompok}
-                  studentGender={student_gender}
-                />
+                <PlacementPreview groups={selectedPeriod.kelompok} studentGender={student_gender} />
 
                 <div className="grid gap-8 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
                   <section className="space-y-8 rounded-[2rem] border border-emerald-100 bg-emerald-50/30 p-6 shadow-sm lg:p-8">
@@ -233,7 +230,8 @@ export default function StudentRegister({
                     <DocumentUpload
                       form={{
                         data: form.data,
-                        setData: (key, value) => form.setData(key as keyof RegistrationFormData, value),
+                        setData: (key, value) =>
+                          form.setData(key as keyof RegistrationFormData, value),
                         errors: form.errors,
                       }}
                       student_academic={student_academic}
@@ -280,9 +278,7 @@ function StatusMetric({ label, value, ok }: { label: string; value: string; ok: 
         ok ? 'border-emerald-200 bg-emerald-50/60' : 'border-amber-200 bg-amber-50/70',
       )}
     >
-      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-700">
-        {label}
-      </p>
+      <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-700">{label}</p>
       <p className="mt-2 text-sm font-semibold text-emerald-950">{value}</p>
     </div>
   );
@@ -307,7 +303,9 @@ function StatusBanner({
   return (
     <section className={clsx('rounded-[2rem] border px-6 py-5 shadow-sm', tone)}>
       <div className="flex items-start gap-3">
-        <AlertTriangle className={clsx('mt-0.5 h-5 w-5', isRejected ? 'text-rose-600' : 'text-emerald-600')} />
+        <AlertTriangle
+          className={clsx('mt-0.5 h-5 w-5', isRejected ? 'text-rose-600' : 'text-emerald-600')}
+        />
         <div className="space-y-2">
           <p className="text-sm font-bold uppercase tracking-[0.24em]">{title}</p>
           <p className="text-sm leading-6">

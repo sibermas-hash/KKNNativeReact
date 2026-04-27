@@ -68,12 +68,12 @@ export const IdentityForm: React.FC<IdentityFormProps> = ({
       </div>
 
       <div className="flex justify-center">
-         <RequirementNode
-            label="DOMISILI"
-            ok={hasVerifiedDomicile}
-            value={hasVerifiedDomicile ? "TERVERIFIKASI" : "BELUM LENGKAP"}
-            icon={MapPin}
-          />
+        <RequirementNode
+          label="DOMISILI"
+          ok={hasVerifiedDomicile}
+          value={hasVerifiedDomicile ? 'TERVERIFIKASI' : 'BELUM LENGKAP'}
+          icon={MapPin}
+        />
       </div>
     </div>
   );

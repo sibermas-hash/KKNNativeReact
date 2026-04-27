@@ -173,7 +173,11 @@ export default function AnnouncementEditor({
         >
           <Heading2 size={16} />
         </ToolbarButton>
-        <ToolbarButton label="Bold" isActive={editor.isActive('bold')} onClick={() => editor.chain().focus().toggleBold().run()}>
+        <ToolbarButton
+          label="Bold"
+          isActive={editor.isActive('bold')}
+          onClick={() => editor.chain().focus().toggleBold().run()}
+        >
           <Bold size={16} />
         </ToolbarButton>
         <ToolbarButton
@@ -238,7 +242,10 @@ export default function AnnouncementEditor({
         <ToolbarButton label="Image URL" onClick={setImage}>
           <ImageIcon size={16} />
         </ToolbarButton>
-        <ToolbarButton label="Horizontal Rule" onClick={() => editor.chain().focus().setHorizontalRule().run()}>
+        <ToolbarButton
+          label="Horizontal Rule"
+          onClick={() => editor.chain().focus().setHorizontalRule().run()}
+        >
           <Minus size={16} />
         </ToolbarButton>
         <ToolbarButton label="Undo" onClick={() => editor.chain().focus().undo().run()}>

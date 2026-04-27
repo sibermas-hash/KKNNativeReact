@@ -40,10 +40,7 @@ export const GroupSearchFilter = ({
     <div className="bg-white border border-emerald-50/50 rounded-xl overflow-hidden shadow-sm">
       <div className="p-4 flex flex-col lg:flex-row items-center gap-4">
         <div className="flex-1 w-full relative">
-          <Search
-            size={20}
-            className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-800"
-          />
+          <Search size={20} className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-800" />
           <input
             type="text"
             value={search}
@@ -60,10 +57,10 @@ export const GroupSearchFilter = ({
               'h-12 px-6 rounded-xl text-xs font-bold uppercase tracking-widest flex items-center gap-2 transition-all border',
               showFilters
                 ? 'bg-[#0d9488] text-white border-emerald-600'
-                : 'bg-white text-emerald-800 hover:text-emerald-600 hover:border-emerald-200'
+                : 'bg-white text-emerald-800 hover:text-emerald-600 hover:border-emerald-200',
             )}
           >
-            <Filter size={18} /> 
+            <Filter size={18} />
             {activeFilterCount > 0 ? `Katalog (${activeFilterCount})` : 'Katalog'}
           </button>
           <button
@@ -84,60 +81,60 @@ export const GroupSearchFilter = ({
             className="bg-gray-50 border-t border-emerald-50/50 overflow-hidden"
           >
             <div className="p-8 space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-emerald-950 uppercase tracking-widest ml-1 flex items-center gap-2">
-                       <Layers size={14} className="text-[#0d9488]" /> Sesi Akademik
-                    </label>
-                    <div className="relative group/select">
-                      <select
-                        value={periodId}
-                        onChange={(e) => setPeriodId(e.target.value)}
-                        className="w-full h-11 px-4 rounded-xl border border-emerald-50 bg-white text-xs font-bold text-emerald-950 outline-none transition-all focus:border-[#f3f4f6]0 appearance-none pr-10 cursor-pointer uppercase tracking-tight"
-                      >
-                        <option value="">Semua Periode</option>
-                        {(periods || []).map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name?.toUpperCase()}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown
-                        size={14}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold text-emerald-950 uppercase tracking-widest ml-1 flex items-center gap-2">
-                       <RefreshCw size={14} className="text-[#0d9488]" /> Status Operasional
-                    </label>
-                    <div className="relative group/select">
-                      <select
-                        value={status}
-                        onChange={(e) => setStatus(e.target.value)}
-                        className="w-full h-11 px-4 rounded-xl border border-emerald-50 bg-white text-xs font-bold text-emerald-950 outline-none transition-all focus:border-[#f3f4f6]0 appearance-none pr-10 cursor-pointer uppercase tracking-tight"
-                      >
-                        <option value="">Semua Status</option>
-                        <option value="draft">Draft / Persiapan</option>
-                        <option value="active">Aktif / Lapangan</option>
-                        <option value="closed">Ditutup / Arsip</option>
-                      </select>
-                      <ChevronDown
-                        size={14}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none"
-                      />
-                    </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-emerald-950 uppercase tracking-widest ml-1 flex items-center gap-2">
+                    <Layers size={14} className="text-[#0d9488]" /> Sesi Akademik
+                  </label>
+                  <div className="relative group/select">
+                    <select
+                      value={periodId}
+                      onChange={(e) => setPeriodId(e.target.value)}
+                      className="w-full h-11 px-4 rounded-xl border border-emerald-50 bg-white text-xs font-bold text-emerald-950 outline-none transition-all focus:border-[#f3f4f6]0 appearance-none pr-10 cursor-pointer uppercase tracking-tight"
+                    >
+                      <option value="">Semua Periode</option>
+                      {(periods || []).map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name?.toUpperCase()}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown
+                      size={14}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none"
+                    />
                   </div>
                 </div>
-                <div className="flex justify-end gap-6 pt-6 border-t border-emerald-50/50">
-                  <button
-                    onClick={handleReset}
-                    className="text-xs font-bold text-emerald-950 hover:text-rose-600 transition-colors uppercase tracking-widest flex items-center gap-2"
-                  >
-                    Atur Ulang
-                  </button>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-emerald-950 uppercase tracking-widest ml-1 flex items-center gap-2">
+                    <RefreshCw size={14} className="text-[#0d9488]" /> Status Operasional
+                  </label>
+                  <div className="relative group/select">
+                    <select
+                      value={status}
+                      onChange={(e) => setStatus(e.target.value)}
+                      className="w-full h-11 px-4 rounded-xl border border-emerald-50 bg-white text-xs font-bold text-emerald-950 outline-none transition-all focus:border-[#f3f4f6]0 appearance-none pr-10 cursor-pointer uppercase tracking-tight"
+                    >
+                      <option value="">Semua Status</option>
+                      <option value="draft">Draft / Persiapan</option>
+                      <option value="active">Aktif / Lapangan</option>
+                      <option value="closed">Ditutup / Arsip</option>
+                    </select>
+                    <ChevronDown
+                      size={14}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none"
+                    />
+                  </div>
                 </div>
+              </div>
+              <div className="flex justify-end gap-6 pt-6 border-t border-emerald-50/50">
+                <button
+                  onClick={handleReset}
+                  className="text-xs font-bold text-emerald-950 hover:text-rose-600 transition-colors uppercase tracking-widest flex items-center gap-2"
+                >
+                  Atur Ulang
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
@@ -145,4 +142,3 @@ export const GroupSearchFilter = ({
     </div>
   );
 };
-

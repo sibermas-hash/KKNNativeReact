@@ -14,12 +14,7 @@ interface RequirementNodeProps {
   icon: LucideIcon;
 }
 
-export const RequirementNode = ({
-  label,
-  ok,
-  value,
-  icon: Icon,
-}: RequirementNodeProps) => (
+export const RequirementNode = ({ label, ok, value, icon: Icon }: RequirementNodeProps) => (
   <motion.div
     variants={itemVariants}
     whileHover={{ y: -4 }}

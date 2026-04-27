@@ -69,7 +69,8 @@ export const normalizeAvailablePeriods = (value: unknown): CertificatePeriodOpti
 
     return {
       id,
-      name: typeof entry.name === 'string' && entry.name.trim() !== '' ? entry.name : `Periode ${id}`,
+      name:
+        typeof entry.name === 'string' && entry.name.trim() !== '' ? entry.name : `Periode ${id}`,
     };
   });
 
@@ -102,7 +103,8 @@ export const normalizeCertificateConfigs = (value: unknown): CertificateConfigIt
 
 export const buildCertificateFormConfigs = (
   configs: CertificateConfigItem[],
-): CertificateConfigFormItem[] => configs.map((config) => ({ id: config.id, value: config.value ?? '' }));
+): CertificateConfigFormItem[] =>
+  configs.map((config) => ({ id: config.id, value: config.value ?? '' }));
 
 export const normalizeCertificateFormConfigs = (value: unknown): CertificateConfigFormItem[] =>
   collectFromUnknown(value, (entry) => {

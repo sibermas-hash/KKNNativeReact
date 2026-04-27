@@ -2,18 +2,18 @@ import { Head, useForm, Link } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { clsx } from 'clsx';
 import AppLayout from '@/Layouts/AppLayout';
-import { 
+import {
   Activity,
-  ShieldCheck, 
-  ChevronLeft, 
-  ExternalLink, 
-  FileText, 
-  Video, 
-  Newspaper, 
-  Image, 
-  User, 
-  Users, 
-  CheckCircle, 
+  ShieldCheck,
+  ChevronLeft,
+  ExternalLink,
+  FileText,
+  Video,
+  Newspaper,
+  Image,
+  User,
+  Users,
+  CheckCircle,
   XCircle,
   Info,
   ArrowRight,
@@ -26,7 +26,7 @@ import {
   FileCheck,
   Archive,
   Zap,
-  Globe
+  Globe,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -61,8 +61,8 @@ interface Report {
     dpl?: {
       user?: {
         name: string;
-      }
-    }
+      };
+    };
   };
   reviewer?: {
     name: string;
@@ -91,7 +91,6 @@ export default function AdminFinalReportShow({ report }: Props) {
       <Head title={`Audit Laporan: ${report.mahasiswa?.nama} | SIBERMAS`} />
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
-        
         {/* PAGE HEADER */}
         <PageHeader
           title="Audit Laporan."
@@ -101,14 +100,18 @@ export default function AdminFinalReportShow({ report }: Props) {
           backUrl={route('admin.laporan.akhir.index')}
         >
           <div className="flex items-center gap-4">
-            <StatusTag 
+            <StatusTag
               status={
-                report.status === 'disetujui' ? 'active' : 
-                report.status === 'revisi' ? 'error' : 
-                report.status === 'reviewed' ? 'info' : 'pending'
-              } 
-              label={report.status.toUpperCase()} 
-              size="lg" 
+                report.status === 'disetujui'
+                  ? 'active'
+                  : report.status === 'revisi'
+                    ? 'error'
+                    : report.status === 'reviewed'
+                      ? 'info'
+                      : 'pending'
+              }
+              label={report.status.toUpperCase()}
+              size="lg"
             />
           </div>
         </PageHeader>
@@ -116,7 +119,6 @@ export default function AdminFinalReportShow({ report }: Props) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* LEFT COLUMN: CORE CONTENT */}
           <div className="lg:col-span-8 space-y-8">
-            
             {/* TITLE & ABSTRACT */}
             <ContentPanel
               title="Official Publication Narrative"
@@ -125,14 +127,18 @@ export default function AdminFinalReportShow({ report }: Props) {
             >
               <div className="space-y-6 py-4">
                 <div className="space-y-2">
-                  <span className="text-[10px] font-black text-emerald-950/20 uppercase tracking-[0.2em]">Judul Publikasi</span>
+                  <span className="text-[10px] font-black text-emerald-950/20 uppercase tracking-[0.2em]">
+                    Judul Publikasi
+                  </span>
                   <h2 className="text-2xl font-black leading-tight text-emerald-950 uppercase tracking-tight">
                     {report.title}
                   </h2>
                 </div>
                 {report.abstract && (
                   <div className="space-y-2 pt-6 border-t border-emerald-50">
-                    <span className="text-[10px] font-black text-emerald-950/20 uppercase tracking-[0.2em]">Abstrak Operasional</span>
+                    <span className="text-[10px] font-black text-emerald-950/20 uppercase tracking-[0.2em]">
+                      Abstrak Operasional
+                    </span>
                     <p className="text-[13px] font-bold text-emerald-950/70 leading-relaxed text-justify">
                       {report.abstract}
                     </p>
@@ -150,19 +156,26 @@ export default function AdminFinalReportShow({ report }: Props) {
               >
                 <div className="py-2">
                   {report.video_link ? (
-                    <a 
-                      href={report.video_link} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
+                    <a
+                      href={report.video_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="flex items-center justify-between p-4 bg-[#F8FAF9] hover:bg-emerald-50 transition-colors border-2 border-slate-50 rounded-2xl group/link"
                     >
-                      <span className="text-[11px] font-black text-emerald-950 truncate max-w-[200px] uppercase tracking-tight">{report.video_link}</span>
-                      <ExternalLink size={16} className="text-emerald-300 group-hover/link:text-emerald-600 transition-colors" />
+                      <span className="text-[11px] font-black text-emerald-950 truncate max-w-[200px] uppercase tracking-tight">
+                        {report.video_link}
+                      </span>
+                      <ExternalLink
+                        size={16}
+                        className="text-emerald-300 group-hover/link:text-emerald-600 transition-colors"
+                      />
                     </a>
                   ) : (
                     <div className="p-4 bg-rose-50 border-2 border-rose-100 rounded-2xl flex items-center gap-3">
                       <AlertTriangle size={18} className="text-rose-500" />
-                      <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest">Video Link Missing</span>
+                      <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest">
+                        Video Link Missing
+                      </span>
                     </div>
                   )}
                 </div>
@@ -175,19 +188,26 @@ export default function AdminFinalReportShow({ report }: Props) {
               >
                 <div className="py-2">
                   {report.news_link ? (
-                    <a 
-                      href={report.news_link} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
+                    <a
+                      href={report.news_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="flex items-center justify-between p-4 bg-[#F8FAF9] hover:bg-emerald-50 transition-colors border-2 border-slate-50 rounded-2xl group/link"
                     >
-                      <span className="text-[11px] font-black text-emerald-950 truncate max-w-[200px] uppercase tracking-tight">{report.news_link}</span>
-                      <ExternalLink size={16} className="text-emerald-300 group-hover/link:text-emerald-600 transition-colors" />
+                      <span className="text-[11px] font-black text-emerald-950 truncate max-w-[200px] uppercase tracking-tight">
+                        {report.news_link}
+                      </span>
+                      <ExternalLink
+                        size={16}
+                        className="text-emerald-300 group-hover/link:text-emerald-600 transition-colors"
+                      />
                     </a>
                   ) : (
                     <div className="p-4 bg-rose-50 border-2 border-rose-100 rounded-2xl flex items-center gap-3">
                       <AlertTriangle size={18} className="text-rose-500" />
-                      <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest">News Link Missing</span>
+                      <span className="text-[10px] font-black text-rose-600 uppercase tracking-widest">
+                        News Link Missing
+                      </span>
                     </div>
                   )}
                 </div>
@@ -202,29 +222,70 @@ export default function AdminFinalReportShow({ report }: Props) {
             >
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-4">
                 {[
-                  { label: 'Laporan Utama', path: report.file_path, key: 'file_path', icon: FileText },
-                  { label: 'Artikel Ilmiah 1', path: report.article_1_path, key: 'article_1_path', icon: FileText },
-                  { label: 'Artikel Ilmiah 2', path: report.article_2_path, key: 'article_2_path', icon: FileText },
-                  { label: 'Poster Peta 1', path: report.poster_1_path, key: 'poster_1_path', icon: Image },
-                  { label: 'Poster Peta 2', path: report.poster_2_path, key: 'poster_2_path', icon: Image },
-                  { label: 'Poster Peta 3', path: report.poster_3_path, key: 'poster_3_path', icon: Image },
+                  {
+                    label: 'Laporan Utama',
+                    path: report.file_path,
+                    key: 'file_path',
+                    icon: FileText,
+                  },
+                  {
+                    label: 'Artikel Ilmiah 1',
+                    path: report.article_1_path,
+                    key: 'article_1_path',
+                    icon: FileText,
+                  },
+                  {
+                    label: 'Artikel Ilmiah 2',
+                    path: report.article_2_path,
+                    key: 'article_2_path',
+                    icon: FileText,
+                  },
+                  {
+                    label: 'Poster Peta 1',
+                    path: report.poster_1_path,
+                    key: 'poster_1_path',
+                    icon: Image,
+                  },
+                  {
+                    label: 'Poster Peta 2',
+                    path: report.poster_2_path,
+                    key: 'poster_2_path',
+                    icon: Image,
+                  },
+                  {
+                    label: 'Poster Peta 3',
+                    path: report.poster_3_path,
+                    key: 'poster_3_path',
+                    icon: Image,
+                  },
                 ].map((item, i) => (
-                  <div key={i} className={clsx(
-                    "p-6 border-2 rounded-2xl flex flex-col gap-4 group/asset transition-all",
-                    item.path ? "bg-white border-slate-50 hover:border-emerald-600 shadow-sm" : "bg-gray-50 border-dashed border-gray-100 opacity-50"
-                  )}>
+                  <div
+                    key={i}
+                    className={clsx(
+                      'p-6 border-2 rounded-2xl flex flex-col gap-4 group/asset transition-all',
+                      item.path
+                        ? 'bg-white border-slate-50 hover:border-emerald-600 shadow-sm'
+                        : 'bg-gray-50 border-dashed border-gray-100 opacity-50',
+                    )}
+                  >
                     <div className="flex items-center gap-3">
-                      <div className={clsx(
-                        "h-8 w-8 rounded-lg flex items-center justify-center transition-colors",
-                        item.path ? "bg-emerald-50 text-emerald-600 group-hover/asset:bg-emerald-600 group-hover/asset:text-white" : "bg-gray-100 text-gray-400"
-                      )}>
+                      <div
+                        className={clsx(
+                          'h-8 w-8 rounded-lg flex items-center justify-center transition-colors',
+                          item.path
+                            ? 'bg-emerald-50 text-emerald-600 group-hover/asset:bg-emerald-600 group-hover/asset:text-white'
+                            : 'bg-gray-100 text-gray-400',
+                        )}
+                      >
                         <item.icon size={16} />
                       </div>
-                      <span className="text-[10px] font-black text-emerald-950 uppercase tracking-widest">{item.label}</span>
+                      <span className="text-[10px] font-black text-emerald-950 uppercase tracking-widest">
+                        {item.label}
+                      </span>
                     </div>
                     {item.path ? (
-                      <a 
-                        href={`/admin/laporan/akhir/${report.id}/unduh?asset=${item.key}`} 
+                      <a
+                        href={`/admin/laporan/akhir/${report.id}/unduh?asset=${item.key}`}
                         target="_blank"
                         className="h-10 w-full bg-emerald-950 text-white flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-black transition-all shadow-xl shadow-emerald-900/10 active:scale-95"
                         rel="noreferrer"
@@ -244,7 +305,6 @@ export default function AdminFinalReportShow({ report }: Props) {
 
           {/* RIGHT COLUMN: AUDIT LOGS & ACTION */}
           <div className="lg:col-span-4 space-y-8">
-            
             {/* AUDIT DECISION PANEL */}
             <ContentPanel
               title="Audit Decision"
@@ -271,14 +331,18 @@ export default function AdminFinalReportShow({ report }: Props) {
                 ) : (
                   <div className="w-full h-12 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center justify-center gap-2">
                     <ShieldCheck size={18} className="text-emerald-600" />
-                    <span className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">Audit Finalized</span>
+                    <span className="text-[10px] font-black text-emerald-900 uppercase tracking-widest">
+                      Audit Finalized
+                    </span>
                   </div>
                 )
               }
             >
               <div className="space-y-4 py-2">
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">Reviewer Notes</label>
+                  <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
+                    Reviewer Notes
+                  </label>
                   <textarea
                     value={data.review_notes}
                     onChange={(e) => setData('review_notes', e.target.value)}
@@ -301,23 +365,37 @@ export default function AdminFinalReportShow({ report }: Props) {
                   { label: 'Ketua Unit', value: report.mahasiswa?.nama, icon: User },
                   { label: 'ID_NIM', value: report.mahasiswa?.nim, icon: Fingerprint },
                   { label: 'Kelompok', value: report.kelompok?.nama_kelompok, icon: Users },
-                  { label: 'Supervisor', value: report.kelompok?.dpl?.user?.name, icon: ShieldCheck },
+                  {
+                    label: 'Supervisor',
+                    value: report.kelompok?.dpl?.user?.name,
+                    icon: ShieldCheck,
+                  },
                   { label: 'Timestamp', value: report.submitted_at, icon: Calendar },
-                  { label: 'Reviewer', value: report.reviewer?.name || 'PENDING_AUDIT', icon: SearchCheck },
+                  {
+                    label: 'Reviewer',
+                    value: report.reviewer?.name || 'PENDING_AUDIT',
+                    icon: SearchCheck,
+                  },
                 ].map((item, i) => (
                   <div key={i} className="flex items-center justify-between group py-1">
                     <div className="flex items-center gap-3">
-                      <item.icon size={12} className="text-emerald-700/40 group-hover:text-emerald-600 transition-colors" />
-                      <span className="text-[10px] font-black text-emerald-950/40 uppercase tracking-widest group-hover:text-emerald-950 transition-colors">{item.label}</span>
+                      <item.icon
+                        size={12}
+                        className="text-emerald-700/40 group-hover:text-emerald-600 transition-colors"
+                      />
+                      <span className="text-[10px] font-black text-emerald-950/40 uppercase tracking-widest group-hover:text-emerald-950 transition-colors">
+                        {item.label}
+                      </span>
                     </div>
-                    <span className="text-[11px] font-black text-emerald-950 tabular-nums uppercase truncate max-w-[180px]">{item.value || '-'}</span>
+                    <span className="text-[11px] font-black text-emerald-950 tabular-nums uppercase truncate max-w-[180px]">
+                      {item.value || '-'}
+                    </span>
                   </div>
                 ))}
               </div>
             </ContentPanel>
           </div>
         </div>
-
       </div>
     </AppLayout>
   );

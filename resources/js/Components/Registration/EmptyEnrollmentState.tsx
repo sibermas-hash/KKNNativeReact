@@ -19,8 +19,7 @@ export const EmptyEnrollmentState = () => {
         No Active Enrollment Cycle
       </h3>
       <p className="text-xs font-bold text-emerald-950 uppercase tracking-widest leading-loose max-w-md mx-auto">
-        Pantau terus portal informasi LPPM untuk jadwal pendaftaran KKN Reguler Cycle
-        2026/2027.
+        Pantau terus portal informasi LPPM untuk jadwal pendaftaran KKN Reguler Cycle 2026/2027.
       </p>
     </motion.div>
   );

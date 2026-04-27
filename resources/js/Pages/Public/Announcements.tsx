@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import PublicLayout from '@/Layouts/PublicLayout';
-import Pagination, { PageInfo, type PaginationMeta } from '@/Components/ui/Pagination';
+import Pagination, { PageInfo, type PaginationMeta } from '@/Components/UI/Pagination';
 import { ArrowRight, BookOpenText, Clock3, FileDown, Newspaper } from 'lucide-react';
 
 type AnnouncementRecord = {

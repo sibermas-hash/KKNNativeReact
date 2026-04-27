@@ -117,14 +117,23 @@ export default function Login() {
           <div className="flex flex-col items-center gap-5">
             {/* Logos simply displayed on the bright glass */}
             <div className="flex items-center gap-4">
-              <img src="/images/logo_uinsaizu.png" alt="Logo UIN SAIZU" className="h-12 w-auto object-contain drop-shadow-sm" />
+              <img
+                src="/images/logo_uinsaizu.png"
+                alt="Logo UIN SAIZU"
+                className="h-12 w-auto object-contain drop-shadow-sm"
+              />
               <div className="w-px h-8 bg-emerald-200" />
-              <img src="/images/Logo_SIBERMAS.png" alt="Logo SIBERMAS" className="h-10 w-auto object-contain drop-shadow-sm" />
+              <img
+                src="/images/Logo_SIBERMAS.png"
+                alt="Logo SIBERMAS"
+                className="h-10 w-auto object-contain drop-shadow-sm"
+              />
             </div>
-            
+
             <div className="text-center space-y-2">
               <h1 className="text-[2.5rem] font-black text-emerald-950 tracking-tight font-display leading-none uppercase">
-                Portal <span className="text-sky-500">SIBER</span><span className="text-emerald-500">MAS.</span>
+                Portal <span className="text-sky-500">SIBER</span>
+                <span className="text-emerald-500">MAS.</span>
               </h1>
               <p className="text-[10px] font-black text-slate-400/80 font-display uppercase tracking-[0.2em]">
                 LPPM UIN Profesor Kiai Haji Saifuddin Zuhri Purwokerto
@@ -144,7 +153,9 @@ export default function Login() {
             >
               <AlertCircle className="text-rose-500 shrink-0 mt-0.5" size={16} />
               <div className="space-y-1">
-                <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">Otentikasi Gagal</p>
+                <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">
+                  Otentikasi Gagal
+                </p>
                 <div className="text-xs font-medium text-rose-900 space-y-0.5 leading-relaxed">
                   {getErrorMessages(errors).map((err, i) => (
                     <p key={i}>{err}</p>
@@ -219,7 +230,9 @@ export default function Login() {
                 <div className="flex-1 h-12 bg-white/60 border border-white rounded-xl px-4 flex items-center justify-between group shadow-sm">
                   <span className="text-sm font-black text-emerald-950 tabular-nums tracking-wider">
                     <span data-testid="login-captcha-question">{activeCaptchaQuestion}</span>{' '}
-                    <span className="text-emerald-500 font-black ml-1 group-hover:text-teal-500 transition-colors">=</span>
+                    <span className="text-emerald-500 font-black ml-1 group-hover:text-teal-500 transition-colors">
+                      =
+                    </span>
                   </span>
                   <button
                     type="button"
@@ -247,7 +260,7 @@ export default function Login() {
 
           {/* Controls */}
           <motion.div variants={itemVariants} className="flex items-center justify-between px-1">
-             <label className="flex items-center gap-2.5 cursor-pointer group">
+            <label className="flex items-center gap-2.5 cursor-pointer group">
               <div className="relative flex items-center justify-center">
                 <input
                   type="checkbox"
@@ -255,13 +268,29 @@ export default function Login() {
                   onChange={(e) => setData('remember', e.target.checked)}
                   className="peer appearance-none w-4 h-4 rounded-md border-2 border-emerald-200 bg-white checked:bg-emerald-500 checked:border-emerald-500 transition-all cursor-pointer"
                 />
-                <svg className="absolute w-2.5 h-2.5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                <svg
+                  className="absolute w-2.5 h-2.5 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity"
+                  viewBox="0 0 14 10"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M1 5L4.5 8.5L13 1"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
                 </svg>
               </div>
-              <span className="text-[10px] font-black text-cyan-600 uppercase tracking-widest group-hover:text-cyan-500 transition-colors">Ingat Sesi Saya</span>
+              <span className="text-[10px] font-black text-cyan-600 uppercase tracking-widest group-hover:text-cyan-500 transition-colors">
+                Ingat Sesi Saya
+              </span>
             </label>
-            <Link href="/lupa-kata-sandi" className="text-[10px] font-black text-emerald-600 hover:text-emerald-800 hover:underline underline-offset-4 uppercase tracking-widest transition-colors">
+            <Link
+              href="/lupa-kata-sandi"
+              className="text-[10px] font-black text-emerald-600 hover:text-emerald-800 hover:underline underline-offset-4 uppercase tracking-widest transition-colors"
+            >
               Lupa Sandi?
             </Link>
           </motion.div>
@@ -278,8 +307,13 @@ export default function Login() {
                 <RefreshCw size={18} className="animate-spin text-white" />
               ) : (
                 <>
-                  <span className="text-[11px] font-bold uppercase tracking-widest">Otentikasi Masuk</span>
-                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                  <span className="text-[11px] font-bold uppercase tracking-widest">
+                    Otentikasi Masuk
+                  </span>
+                  <ArrowRight
+                    size={16}
+                    className="group-hover:translate-x-1 transition-transform"
+                  />
                 </>
               )}
             </button>

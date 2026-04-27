@@ -77,14 +77,19 @@ export default function DplParticipantEvaluationShow({
               <ArrowLeft size={16} />
               Kembali ke Rekap
             </Link>
-            <h1 className="mt-3 text-2xl font-black font-display uppercase tracking-tighter text-emerald-950">{summary.dosen_name}</h1>
+            <h1 className="mt-3 text-2xl font-black font-display uppercase tracking-tighter text-emerald-950">
+              {summary.dosen_name}
+            </h1>
             <p className="mt-1 text-sm font-semibold text-emerald-950">
               NIP {summary.nip} • {summary.faculty_name}
             </p>
           </div>
 
           <div className="w-full max-w-xs">
-            <label htmlFor={periodFieldId} className="text-[11px] font-black uppercase tracking-widest text-emerald-600">
+            <label
+              htmlFor={periodFieldId}
+              className="text-[11px] font-black uppercase tracking-widest text-emerald-600"
+            >
               Filter Periode
             </label>
             <select
@@ -104,8 +109,16 @@ export default function DplParticipantEvaluationShow({
         </div>
 
         <div className="grid gap-4 md:grid-cols-4">
-          <StatCard icon={MessageSquareQuote} label="Respon" value={`${summary.response_count}/${summary.eligible_count}`} />
-          <StatCard icon={BarChart3} label="Response Rate" value={`${summary.response_rate.toFixed(2)}%`} />
+          <StatCard
+            icon={MessageSquareQuote}
+            label="Respon"
+            value={`${summary.response_count}/${summary.eligible_count}`}
+          />
+          <StatCard
+            icon={BarChart3}
+            label="Response Rate"
+            value={`${summary.response_rate.toFixed(2)}%`}
+          />
           <StatCard icon={Star} label="Rata-rata Skor" value={summary.average_score.toFixed(2)} />
           <StatCard icon={Users} label="Kelompok Dinilai" value={summary.group_count} />
         </div>
@@ -121,9 +134,14 @@ export default function DplParticipantEvaluationShow({
               </div>
               <div className="space-y-3">
                 {summary.criterion_averages.map((criterion) => (
-                  <div key={criterion.key} className="rounded-xl border border-emerald-50 bg-emerald-50/30 p-4">
+                  <div
+                    key={criterion.key}
+                    className="rounded-xl border border-emerald-50 bg-emerald-50/30 p-4"
+                  >
                     <p className="text-sm font-bold text-emerald-950">{criterion.label}</p>
-                    <p className="mt-2 text-xl font-black text-emerald-600">{criterion.average.toFixed(2)}</p>
+                    <p className="mt-2 text-xl font-black text-emerald-600">
+                      {criterion.average.toFixed(2)}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -135,7 +153,10 @@ export default function DplParticipantEvaluationShow({
               </h2>
               <div className="mt-4 space-y-2 text-sm font-semibold text-emerald-950">
                 {Object.entries(summary.recommendations).map(([key, value]) => (
-                  <div key={key} className="flex items-center justify-between rounded-xl bg-emerald-50/30 px-4 py-3">
+                  <div
+                    key={key}
+                    className="flex items-center justify-between rounded-xl bg-emerald-50/30 px-4 py-3"
+                  >
                     <span className="capitalize">{key.replaceAll('_', ' ')}</span>
                     <span className="font-black">{value}</span>
                   </div>
@@ -146,7 +167,10 @@ export default function DplParticipantEvaluationShow({
 
           <section className="space-y-4 lg:col-span-2">
             {responses.map((response) => (
-              <article key={response.id} className="rounded-2xl border border-emerald-50 bg-white p-5 shadow-sm">
+              <article
+                key={response.id}
+                className="rounded-2xl border border-emerald-50 bg-white p-5 shadow-sm"
+              >
                 <div className="flex flex-wrap items-start justify-between gap-4 border-b border-emerald-50 pb-4">
                   <div>
                     <h2 className="text-base font-black uppercase tracking-wide text-emerald-950">
@@ -163,13 +187,18 @@ export default function DplParticipantEvaluationShow({
                     <p className="mt-1 text-2xl font-black text-emerald-950">
                       {response.total_score.toFixed(2)}
                     </p>
-                    <p className="text-xs font-semibold text-emerald-950">{response.submitted_at ?? '-'}</p>
+                    <p className="text-xs font-semibold text-emerald-950">
+                      {response.submitted_at ?? '-'}
+                    </p>
                   </div>
                 </div>
 
                 <div className="mt-4 grid gap-3 md:grid-cols-2">
                   {response.items.map((item) => (
-                    <div key={item.criterion_key} className="rounded-xl border border-emerald-50 bg-emerald-50/20 p-4">
+                    <div
+                      key={item.criterion_key}
+                      className="rounded-xl border border-emerald-50 bg-emerald-50/20 p-4"
+                    >
                       <p className="text-sm font-bold text-emerald-950">{item.criterion_label}</p>
                       <p className="mt-2 text-sm font-semibold text-emerald-600">
                         Skor {item.score}/5 • Bobot {item.weight}%
@@ -195,7 +224,15 @@ export default function DplParticipantEvaluationShow({
   );
 }
 
-function StatCard({ icon: Icon, label, value }: { icon: any; label: string; value: string | number }) {
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: any;
+  label: string;
+  value: string | number;
+}) {
   return (
     <div className="rounded-2xl border border-emerald-50 bg-white p-5 shadow-sm">
       <div className="flex items-center gap-3">
@@ -203,7 +240,9 @@ function StatCard({ icon: Icon, label, value }: { icon: any; label: string; valu
           <Icon size={18} />
         </div>
         <div>
-          <p className="text-[11px] font-black uppercase tracking-widest text-emerald-600">{label}</p>
+          <p className="text-[11px] font-black uppercase tracking-widest text-emerald-600">
+            {label}
+          </p>
           <p className="mt-1 text-xl font-black text-emerald-950">{value}</p>
         </div>
       </div>

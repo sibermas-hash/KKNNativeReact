@@ -40,12 +40,15 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
     if (parentLayout.insideLayout) return; // Hanya jalankan di layout terluar
 
     // Buat unique key untuk tracking messages yang sudah ditampilkan
-    const showFlashMessage = (type: 'success' | 'error' | 'warning' | 'info', message: string | undefined) => {
+    const showFlashMessage = (
+      type: 'success' | 'error' | 'warning' | 'info',
+      message: string | undefined,
+    ) => {
       if (!message) return;
-      
+
       // Gunakan message + timestamp untuk membuat unique key
       const messageKey = `${type}:${message}`;
-      
+
       // Hanya tampilkan jika belum pernah ditampilkan sebelumnya
       if (!shownMessagesRef.current.has(messageKey)) {
         shownMessagesRef.current.add(messageKey);
@@ -102,7 +105,6 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
         <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
         <div className="lg:pl-64 flex flex-col min-h-screen transition-all duration-300 w-full overflow-x-hidden">
-
           {/* Header */}
           <header className="sticky top-0 z-40 h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -112,11 +114,15 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
               >
                 <Menu className="h-5 w-5" />
               </button>
-              <h2 className="text-[1.1rem] font-black text-emerald-950 uppercase tracking-tighter font-display leading-none">{displayTitle}</h2>
+              <h2 className="text-[1.1rem] font-black text-emerald-950 uppercase tracking-tighter font-display leading-none">
+                {displayTitle}
+              </h2>
             </div>
 
             <div className="flex items-center gap-3">
-              {auth?.user?.roles?.some((r: any) => ['admin', 'superadmin', 'faculty_admin'].includes(r.name)) && (
+              {auth?.user?.roles?.some((r: any) =>
+                ['admin', 'superadmin', 'faculty_admin'].includes(r.name),
+              ) && (
                 <span className="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-md text-xs font-medium text-emerald-700">
                   <ShieldCheck size={12} />
                   Admin
@@ -142,10 +148,7 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
 
           {/* Main content */}
           <main className="flex-1 p-6 lg:p-8">
-
-            <ErrorBoundary>
-              {children}
-            </ErrorBoundary>
+            <ErrorBoundary>{children}</ErrorBoundary>
           </main>
         </div>
 

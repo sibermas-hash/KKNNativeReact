@@ -14,7 +14,9 @@ export const GroupActionButtons = ({ canManage, onOpenCreateForm }: GroupActionB
           Unit <span className="text-emerald-600">Pelaksana.</span>
         </h1>
         <p className="text-sm font-medium text-emerald-950 max-w-2xl">
-          Otoritas penempatan mahasiswa dan strategi distribusi wilayah kerja terpadu <span className="text-sky-600">SIBER</span><span className="text-emerald-600">MAS</span>.
+          Otoritas penempatan mahasiswa dan strategi distribusi wilayah kerja terpadu{' '}
+          <span className="text-sky-600">SIBER</span>
+          <span className="text-emerald-600">MAS</span>.
         </p>
       </div>
 

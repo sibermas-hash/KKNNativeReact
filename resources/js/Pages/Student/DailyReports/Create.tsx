@@ -2,7 +2,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
-import { FormInput, FormTextarea, FormSelect } from '@/Components/ui';
+import { FormInput, FormTextarea, FormSelect } from '@/Components/UI';
 import { getCurrentCoordinates } from '@/lib/geolocation';
 import {
   listPendingDailyReports,

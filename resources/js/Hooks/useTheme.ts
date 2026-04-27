@@ -9,11 +9,11 @@ type Theme = 'light' | 'dark' | 'system';
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window === 'undefined') return 'system';
-    
+
     // Check localStorage first
     const stored = localStorage.getItem('theme') as Theme | null;
     if (stored) return stored;
-    
+
     // Detect system preference
     return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
@@ -40,7 +40,7 @@ export function useTheme() {
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prev => {
+    setTheme((prev) => {
       if (prev === 'light') return 'dark';
       if (prev === 'dark') return 'light';
       return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'light' : 'dark';

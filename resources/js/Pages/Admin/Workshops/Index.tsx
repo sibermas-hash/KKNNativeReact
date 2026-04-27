@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import type { PageProps } from '@/types';
-import { 
-  GraduationCap, 
-  Plus, 
-  Calendar, 
-  MapPin, 
-  Users, 
+import {
+  GraduationCap,
+  Plus,
+  Calendar,
+  MapPin,
+  Users,
   Pencil,
   Trash2,
   CheckCircle2,
@@ -16,9 +16,9 @@ import {
   Activity,
   Filter,
   ChevronDown,
-  X
+  X,
 } from 'lucide-react';
-import { Modal, ConfirmDialog } from '@/Components/ui';
+import { Modal, ConfirmDialog } from '@/Components/UI';
 
 // Premium Components
 import PageHeader from '@/Components/Premium/PageHeader';
@@ -63,10 +63,10 @@ interface Props {
 
 export default function WorkshopIndex({ workshops = [], periods = [], filters }: Props) {
   const { auth } = usePage<PageProps>().props;
-  const userRoles = Array.isArray(auth.user?.roles) 
-    ? auth.user.roles.map(r => typeof r === 'string' ? r : (r as any).name)
+  const userRoles = Array.isArray(auth.user?.roles)
+    ? auth.user.roles.map((r) => (typeof r === 'string' ? r : (r as any).name))
     : [];
-  
+
   const isAdmin = userRoles.includes('superadmin') || userRoles.includes('admin');
   const isParticipant = userRoles.includes('dpl');
 
@@ -90,12 +90,17 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
   });
 
   const applyFilters = (pid: string) => {
-    router.get(route('admin.workshops.index'), { period_id: pid || undefined }, { preserveState: true, replace: true });
+    router.get(
+      route('admin.workshops.index'),
+      { period_id: pid || undefined },
+      { preserveState: true, replace: true },
+    );
   };
 
-  const filteredWorkshops = workshops.filter(w => 
-    w.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    w.location?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredWorkshops = workshops.filter(
+    (w) =>
+      w.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      w.location?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleEdit = (workshop: Workshop) => {
@@ -120,14 +125,14 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
         onSuccess: () => {
           setShowForm(false);
           reset();
-        }
+        },
       });
     } else {
       post(route('admin.workshops.store'), {
         onSuccess: () => {
           setShowForm(false);
           reset();
-        }
+        },
       });
     }
   };
@@ -135,52 +140,56 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
   const handleCancel = () => {
     if (confirmCancel) {
       patch(route('admin.workshops.cancel', confirmCancel), {
-        onSuccess: () => setConfirmCancel(null)
+        onSuccess: () => setConfirmCancel(null),
       });
     }
   };
 
   const handleRegister = (workshopId: number) => {
-    router.post(route('dosen.workshops.register', workshopId), {}, {
-      onFinish: () => reset(),
-    });
+    router.post(
+      route('dosen.workshops.register', workshopId),
+      {},
+      {
+        onFinish: () => reset(),
+      },
+    );
   };
 
   const handleOpenParticipants = (workshop: Workshop) => {
     setSelectedWorkshop(workshop);
     const initialAttended = (workshop.participants || [])
-      .filter(p => p.attendance_status === 'attended')
-      .map(p => p.user_id);
+      .filter((p) => p.attendance_status === 'attended')
+      .map((p) => p.user_id);
     setAttendedIds(initialAttended);
     setShowParticipants(true);
   };
 
   const toggleAttendance = (userId: number) => {
-    setAttendedIds(prev => 
-      prev.includes(userId) 
-        ? prev.filter(id => id !== userId) 
-        : [...prev, userId]
+    setAttendedIds((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId],
     );
   };
 
   const saveAttendance = () => {
     if (!selectedWorkshop) return;
-    router.post(route('admin.workshops.mark-attendance', selectedWorkshop.id), {
-      user_ids: attendedIds
-    }, {
-      onSuccess: () => {
-        setShowParticipants(false);
-      }
-    });
+    router.post(
+      route('admin.workshops.mark-attendance', selectedWorkshop.id),
+      {
+        user_ids: attendedIds,
+      },
+      {
+        onSuccess: () => {
+          setShowParticipants(false);
+        },
+      },
+    );
   };
 
   return (
     <AppLayout title="Workshop & Pembekalan">
       <Head title="Workshop & Pembekalan" />
-      
-    <div className="space-y-8 pb-24 font-sans text-emerald-950">
-        
-        <PageHeader 
+      <div className="space-y-8 pb-24 font-sans text-emerald-950">
+        <PageHeader
           title="Workshop & Pembekalan."
           subtitle="Manajemen agenda pelatihan terpusat untuk membekali mahasiswa dan Dosen Pembimbing Lapangan sebelum terjun ke lokasi pengabdian."
           icon={GraduationCap}
@@ -188,12 +197,16 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
           stats={{
             label: 'Total Peserta',
             value: `${workshops.reduce((acc, w) => acc + (w.registered || 0), 0).toLocaleString()} Peserta`,
-            icon: Users
+            icon: Users,
           }}
         >
           {isAdmin && (
-            <button 
-              onClick={() => { setSelectedWorkshop(null); reset(); setShowForm(true); }} 
+            <button
+              onClick={() => {
+                setSelectedWorkshop(null);
+                reset();
+                setShowForm(true);
+              }}
               className="h-12 px-8 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-[10px] shadow-lg shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-3 uppercase tracking-widest font-display"
             >
               <Plus size={18} strokeWidth={3} /> Tambah Agenda
@@ -203,35 +216,60 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
 
         {/* --- DYNAMIC STATS --- */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Agenda Aktif" value={workshops.length} icon={GraduationCap} variant="success" />
+          <StatCard
+            label="Agenda Aktif"
+            value={workshops.length}
+            icon={GraduationCap}
+            variant="success"
+          />
           <StatCard label="Kuota Global" value="Unlimited" icon={Layers} variant="info" />
-          <StatCard label="Total Record" value={workshops.reduce((acc, w) => acc + (w.registered || 0), 0)} icon={FileDigit} variant="gray" />
+          <StatCard
+            label="Total Record"
+            value={workshops.reduce((acc, w) => acc + (w.registered || 0), 0)}
+            icon={FileDigit}
+            variant="gray"
+          />
           <StatCard label="Status Sistem" value="Online" icon={Activity} variant="success" />
         </div>
 
         {/* PERIOD FILTER */}
         <ContentPanel title="Konfigurasi Konteks Periode" icon={Filter} padding={true}>
           <div className="flex flex-col md:flex-row md:items-end gap-6">
-             <div className="flex-1 max-w-sm space-y-3">
-                <label className="text-[10px] font-black text-emerald-950/40 uppercase tracking-[0.2em] pl-1 font-display">Target Periode KKN</label>
-                <div className="relative group">
-                  <select 
-                    value={selectedPeriodId} 
-                    onChange={e => { setSelectedPeriodId(e.target.value); applyFilters(e.target.value); }}
-                    className="w-full h-12 pl-6 pr-12 rounded-2xl border-2 border-emerald-50 bg-white text-[11px] font-black text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none uppercase tracking-widest font-display"
-                  >
-                    <option value="">SEMUA PERIODE</option>
-                    {periods.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
-                  <ChevronDown size={16} className="absolute right-5 top-1/2 -translate-y-1/2 text-emerald-300 pointer-events-none group-focus-within:rotate-180 transition-transform" />
-                </div>
-             </div>
-             <button 
-              onClick={() => { setSelectedPeriodId(''); applyFilters(''); }} 
+            <div className="flex-1 max-w-sm space-y-3">
+              <label className="text-[10px] font-black text-emerald-950/40 uppercase tracking-[0.2em] pl-1 font-display">
+                Target Periode KKN
+              </label>
+              <div className="relative group">
+                <select
+                  value={selectedPeriodId}
+                  onChange={(e) => {
+                    setSelectedPeriodId(e.target.value);
+                    applyFilters(e.target.value);
+                  }}
+                  className="w-full h-12 pl-6 pr-12 rounded-2xl border-2 border-emerald-50 bg-white text-[11px] font-black text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none uppercase tracking-widest font-display"
+                >
+                  <option value="">SEMUA PERIODE</option>
+                  {periods.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  size={16}
+                  className="absolute right-5 top-1/2 -translate-y-1/2 text-emerald-300 pointer-events-none group-focus-within:rotate-180 transition-transform"
+                />
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setSelectedPeriodId('');
+                applyFilters('');
+              }}
               className="h-12 px-6 text-[10px] font-black text-emerald-600 hover:text-rose-600 uppercase tracking-widest transition-all border-2 border-emerald-50 hover:border-rose-100 rounded-2xl bg-white font-display"
-             >
-               Reset Filter
-             </button>
+            >
+              Reset Filter
+            </button>
           </div>
         </ContentPanel>
 
@@ -243,10 +281,10 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
           padding={false}
           headerAction={
             <div className="flex items-center gap-3">
-              <SearchInput 
+              <SearchInput
                 placeholder="Cari judul atau lokasi..."
                 value={searchTerm}
-                onChange={e => setSearchTerm(e.target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-64"
               />
             </div>
@@ -256,22 +294,35 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
             {filteredWorkshops.length === 0 ? (
               <div className="md:col-span-2 xl:col-span-3 py-24 flex flex-col items-center justify-center bg-gray-50 border border-dashed border-emerald-50 rounded-xl">
                 <Layers size={48} className="text-emerald-700 mb-4" strokeWidth={1} />
-                <p className="text-sm font-semibold text-emerald-800">Tidak ada agenda ditemukan untuk periode ini.</p>
+                <p className="text-sm font-semibold text-emerald-800">
+                  Tidak ada agenda ditemukan untuk periode ini.
+                </p>
               </div>
             ) : (
               filteredWorkshops.map((w) => (
-                <div key={w.id} className="bg-white rounded-xl border border-emerald-50 overflow-hidden shadow-sm flex flex-col hover:border-emerald-300 transition-colors">
+                <div
+                  key={w.id}
+                  className="bg-white rounded-xl border border-emerald-50 overflow-hidden shadow-sm flex flex-col hover:border-emerald-300 transition-colors"
+                >
                   <div className="p-6 flex-1 space-y-4">
                     <div className="flex justify-between items-start">
                       <div className="flex flex-col gap-1">
-                        {new Date(w.workshop_date_value) < new Date(new Date().setHours(0,0,0,0)) ? (
+                        {new Date(w.workshop_date_value) <
+                        new Date(new Date().setHours(0, 0, 0, 0)) ? (
                           <StatusTag status="gray" label="SELESAI" />
                         ) : (
-                          <StatusTag status={w.status === 'scheduled' ? 'active' : 'inactive'} label={w.status === 'scheduled' ? 'AKTIF' : 'DRAFT'} />
+                          <StatusTag
+                            status={w.status === 'scheduled' ? 'active' : 'inactive'}
+                            label={w.status === 'scheduled' ? 'AKTIF' : 'DRAFT'}
+                          />
                         )}
-                        <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">{w.period?.name || 'UMUM'}</span>
+                        <span className="text-[9px] font-black text-emerald-600 uppercase tracking-widest">
+                          {w.period?.name || 'UMUM'}
+                        </span>
                       </div>
-                      <div className="text-xs font-bold text-emerald-800 uppercase tabular-nums">ID: {w.id}</div>
+                      <div className="text-xs font-bold text-emerald-800 uppercase tabular-nums">
+                        ID: {w.id}
+                      </div>
                     </div>
 
                     <div className="space-y-2">
@@ -292,19 +343,29 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
 
                     <div className="pt-5 border-t border-emerald-50/50 flex flex-col gap-3">
                       <div className="flex items-center justify-between">
-                        <span className="text-[9px] font-black text-emerald-950/30 uppercase tracking-[0.2em] font-display">Okupansi Peserta</span>
+                        <span className="text-[9px] font-black text-emerald-950/30 uppercase tracking-[0.2em] font-display">
+                          Okupansi Peserta
+                        </span>
                         <div className="flex items-baseline gap-1">
-                          <span className="text-sm font-black text-emerald-950 tabular-nums font-display">{w.registered}</span>
-                          <span className="text-[10px] font-black text-slate-300 font-display">/ {w.max_participants || '∞'}</span>
+                          <span className="text-sm font-black text-emerald-950 tabular-nums font-display">
+                            {w.registered}
+                          </span>
+                          <span className="text-[10px] font-black text-slate-300 font-display">
+                            / {w.max_participants || '∞'}
+                          </span>
                         </div>
                       </div>
                       <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                        <div 
+                        <div
                           className={clsx(
-                            "h-full transition-all duration-1000 shadow-sm",
-                            (w.registered / (w.max_participants || 100)) > 0.8 ? "bg-rose-500" : "bg-emerald-500"
-                          )} 
-                          style={{ width: `${Math.min((w.registered / (w.max_participants || 100)) * 100, 100)}%` }} 
+                            'h-full transition-all duration-1000 shadow-sm',
+                            w.registered / (w.max_participants || 100) > 0.8
+                              ? 'bg-rose-500'
+                              : 'bg-emerald-500',
+                          )}
+                          style={{
+                            width: `${Math.min((w.registered / (w.max_participants || 100)) * 100, 100)}%`,
+                          }}
                         />
                       </div>
                     </div>
@@ -313,39 +374,41 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
                   <div className="p-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-2">
                     {isAdmin ? (
                       <>
-                        <button 
-                          onClick={() => handleEdit(w)} 
+                        <button
+                          onClick={() => handleEdit(w)}
                           className="h-8 w-8 rounded-lg border border-emerald-50 bg-white flex items-center justify-center text-emerald-800 hover:text-[#0d9488] transition-colors"
                         >
                           <Pencil size={14} />
                         </button>
-                        <button 
-                          onClick={() => setConfirmCancel(w.id)} 
+                        <button
+                          onClick={() => setConfirmCancel(w.id)}
                           className="h-8 w-8 rounded-lg border border-emerald-50 bg-white flex items-center justify-center text-emerald-800 hover:text-rose-600 transition-colors"
                         >
                           <Trash2 size={14} />
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleOpenParticipants(w)}
                           className="h-8 px-4 bg-white border border-emerald-50 text-[#0d9488] rounded-lg text-xs font-bold hover:bg-gray-50"
                         >
                           Daftar Peserta
                         </button>
                       </>
-                    ) : isParticipant && (
-                      w.is_registered ? (
+                    ) : (
+                      isParticipant &&
+                      (w.is_registered ? (
                         <div className="h-8 px-4 rounded-lg bg-[#f0fdfa] border border-emerald-50 flex items-center gap-2 text-[#0d9488] font-bold text-xs uppercase">
-                          <CheckCircle2 size={12} /> {w.attendance_status === 'attended' ? 'HADIR' : 'TERDAFTAR'}
+                          <CheckCircle2 size={12} />{' '}
+                          {w.attendance_status === 'attended' ? 'HADIR' : 'TERDAFTAR'}
                         </div>
                       ) : (
-                        <button 
+                        <button
                           onClick={() => handleRegister(w.id)}
                           disabled={w.is_full}
                           className="h-8 px-4 rounded-lg bg-[#0d9488] text-white font-bold text-xs uppercase disabled:opacity-50"
                         >
                           {w.is_full ? 'PENUH' : 'DAFTAR'}
                         </button>
-                      )
+                      ))
                     )}
                   </div>
                 </div>
@@ -354,53 +417,79 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
           </div>
         </ContentPanel>
       </div>
-
       {/* FORM MODAL */}
-      <Modal show={showForm} onClose={() => setShowForm(false)} title={selectedWorkshop ?"Edit Agenda":"Tambah Agenda Baru"} maxWidth="xl">
+      <Modal
+        show={showForm}
+        onClose={() => setShowForm(false)}
+        title={selectedWorkshop ? 'Edit Agenda' : 'Tambah Agenda Baru'}
+        maxWidth="xl"
+      >
         <div className="bg-white rounded-xl shadow-sm border border-emerald-50 font-sans text-emerald-950">
           <div className="px-6 py-4 border-b border-emerald-50 flex items-center justify-between bg-gray-50">
             <div className="flex items-center gap-3">
               <div className="h-8 w-8 bg-[#0d9488] text-white rounded-lg flex items-center justify-center">
                 <GraduationCap size={18} />
               </div>
-              <h3 className="text-sm font-bold uppercase tracking-tight">Data Konfigurasi Agenda</h3>
+              <h3 className="text-sm font-bold uppercase tracking-tight">
+                Data Konfigurasi Agenda
+              </h3>
             </div>
-            <button onClick={() => setShowForm(false)} className="text-emerald-800 hover:text-emerald-800"><X size={20} /></button>
+            <button
+              onClick={() => setShowForm(false)}
+              className="text-emerald-800 hover:text-emerald-800"
+            >
+              <X size={20} />
+            </button>
           </div>
 
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              
               <div className="space-y-1 col-span-full">
-                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">Target Periode KKN</label>
-                <select 
-                    value={data.periode_id} 
-                    onChange={e => setData('periode_id', e.target.value)}
-                    className="w-full h-11 px-4 rounded-xl border border-gray-300 bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all"
-                    required
-                  >
-                    <option value="">PILIH PERIODE...</option>
-                    {periods.map(p => <option key={p.id} value={p.id}>{p.name.toUpperCase()}</option>)}
+                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">
+                  Target Periode KKN
+                </label>
+                <select
+                  value={data.periode_id}
+                  onChange={(e) => setData('periode_id', e.target.value)}
+                  className="w-full h-11 px-4 rounded-xl border border-gray-300 bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all"
+                  required
+                >
+                  <option value="">PILIH PERIODE...</option>
+                  {periods.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name.toUpperCase()}
+                    </option>
+                  ))}
                 </select>
-                {errors.periode_id && <span className="text-rose-600 text-xs font-bold uppercase">{errors.periode_id}</span>}
+                {errors.periode_id && (
+                  <span className="text-rose-600 text-xs font-bold uppercase">
+                    {errors.periode_id}
+                  </span>
+                )}
               </div>
 
               <div className="space-y-1 col-span-full">
-                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">Judul Agenda</label>
-                <input 
+                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">
+                  Judul Agenda
+                </label>
+                <input
                   type="text"
-                  placeholder="Contoh: Workshop Pembekalan Angkatan 57..." 
+                  placeholder="Contoh: Workshop Pembekalan Angkatan 57..."
                   value={data.title}
                   onChange={(e) => setData('title', e.target.value)}
                   className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm font-medium text-emerald-950 focus:border-emerald-600 outline-none transition-all"
                   required
                 />
-                {errors.title && <span className="text-rose-600 text-xs font-bold uppercase">{errors.title}</span>}
+                {errors.title && (
+                  <span className="text-rose-600 text-xs font-bold uppercase">{errors.title}</span>
+                )}
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">Tanggal</label>
-                <input 
+                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">
+                  Tanggal
+                </label>
+                <input
                   type="date"
                   value={data.workshop_date}
                   onChange={(e) => setData('workshop_date', e.target.value)}
@@ -410,19 +499,24 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">Kuota Maksimal</label>
-                <input 
+                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">
+                  Kuota Maksimal
+                </label>
+                <input
                   type="number"
                   value={data.max_participants}
                   onChange={(e) => setData('max_participants', e.target.value)}
                   className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm font-medium text-emerald-950 focus:border-emerald-600 outline-none transition-all"
-                  placeholder="0" required
+                  placeholder="0"
+                  required
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">Waktu Mulai</label>
-                <input 
+                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">
+                  Waktu Mulai
+                </label>
+                <input
                   type="time"
                   value={data.start_time}
                   onChange={(e) => setData('start_time', e.target.value)}
@@ -432,8 +526,10 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">Waktu Selesai</label>
-                <input 
+                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">
+                  Waktu Selesai
+                </label>
+                <input
                   type="time"
                   value={data.end_time}
                   onChange={(e) => setData('end_time', e.target.value)}
@@ -443,28 +539,31 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
               </div>
 
               <div className="space-y-1 col-span-full">
-                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">Lokasi</label>
-                <input 
+                <label className="text-xs font-bold text-emerald-800 uppercase tracking-widest pl-1">
+                  Lokasi
+                </label>
+                <input
                   type="text"
                   value={data.location}
                   onChange={(e) => setData('location', e.target.value)}
                   className="w-full h-11 px-4 rounded-xl border border-gray-300 text-sm font-medium text-emerald-950 focus:border-emerald-600 outline-none transition-all"
-                  placeholder="Contoh: Auditorium Lt. 3..." required
+                  placeholder="Contoh: Auditorium Lt. 3..."
+                  required
                 />
               </div>
             </div>
 
             <div className="pt-4 border-t border-emerald-50 flex items-center justify-end gap-3">
-              <button 
+              <button
                 type="button"
-                onClick={() => setShowForm(false)} 
+                onClick={() => setShowForm(false)}
                 className="text-xs font-bold text-emerald-800 hover:text-rose-600 transition-colors"
               >
                 Batal
               </button>
-              <button 
+              <button
                 type="submit"
-                disabled={processing} 
+                disabled={processing}
                 className="h-11 px-8 bg-[#0d9488] hover:bg-[#0f766e] text-white font-bold text-sm rounded-xl shadow-sm active:scale-95 transition-all disabled:opacity-50"
               >
                 {selectedWorkshop ? 'Simpan Perbarui' : 'Tambah Agenda'}
@@ -472,15 +571,28 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
             </div>
           </form>
         </div>
-      </Modal>      {/* PARTICIPANTS MODAL */}
-      <Modal show={showParticipants} onClose={() => setShowParticipants(false)} title="Daftar Kehadiran Peserta" maxWidth="5xl">
+      </Modal>{' '}
+      {/* PARTICIPANTS MODAL */}
+      <Modal
+        show={showParticipants}
+        onClose={() => setShowParticipants(false)}
+        title="Daftar Kehadiran Peserta"
+        maxWidth="5xl"
+      >
         <div className="max-h-[85vh] flex flex-col font-sans bg-white text-emerald-950">
           <div className="p-8 border-b-2 border-[#f3f4f6] bg-gray-50 flex items-center justify-between">
             <div className="space-y-1">
-              <h3 className="text-xl font-black uppercase tracking-tight">Peserta <span className="text-[#0d9488]">Terdata.</span></h3>
-              <p className="text-xs font-extrabold text-[#0d9488] uppercase tracking-widest">{selectedWorkshop?.title}</p>
+              <h3 className="text-xl font-black uppercase tracking-tight">
+                Peserta <span className="text-[#0d9488]">Terdata.</span>
+              </h3>
+              <p className="text-xs font-extrabold text-[#0d9488] uppercase tracking-widest">
+                {selectedWorkshop?.title}
+              </p>
             </div>
-            <button onClick={() => setShowParticipants(false)} className="h-10 w-10 bg-white border-2 border-[#f3f4f6] text-emerald-950 hover:bg-rose-500 hover:text-white rounded-xl flex items-center justify-center transition-all active:scale-95">
+            <button
+              onClick={() => setShowParticipants(false)}
+              className="h-10 w-10 bg-white border-2 border-[#f3f4f6] text-emerald-950 hover:bg-rose-500 hover:text-white rounded-xl flex items-center justify-center transition-all active:scale-95"
+            >
               <X size={24} />
             </button>
           </div>
@@ -500,15 +612,21 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
                       </div>
                       <div className="flex flex-col">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-emerald-950 group-hover:text-[#0d9488] transition-colors uppercase tracking-tight">{p.name}</span>
-                          <span className="text-[10px] font-black bg-emerald-50 text-[#0d9488] px-1.5 py-0.5 rounded border border-emerald-100 tabular-nums">{p.identity_number}</span>
+                          <span className="text-sm font-bold text-emerald-950 group-hover:text-[#0d9488] transition-colors uppercase tracking-tight">
+                            {p.name}
+                          </span>
+                          <span className="text-[10px] font-black bg-emerald-50 text-[#0d9488] px-1.5 py-0.5 rounded border border-emerald-100 tabular-nums">
+                            {p.identity_number}
+                          </span>
                         </div>
-                        <span className="text-xs font-bold text-[#0d9488]/40 tabular-nums lowercase">{p.email || 'system@uinsaizu.ac.id'}</span>
+                        <span className="text-xs font-bold text-[#0d9488]/40 tabular-nums lowercase">
+                          {p.email || 'system@uinsaizu.ac.id'}
+                        </span>
                       </div>
                     </div>
                   </PremiumTableCell>
                   <PremiumTableCell align="center">
-                    <input 
+                    <input
                       type="checkbox"
                       checked={attendedIds.includes(p.user_id)}
                       onChange={() => toggleAttendance(p.user_id)}
@@ -521,7 +639,9 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
                         <CheckCircle2 size={10} strokeWidth={3} /> TERBIT
                       </span>
                     ) : (
-                      <span className="text-[10px] font-black text-emerald-950/20 uppercase tracking-widest">BELUM</span>
+                      <span className="text-[10px] font-black text-emerald-950/20 uppercase tracking-widest">
+                        BELUM
+                      </span>
                     )}
                   </PremiumTableCell>
                 </PremiumTableRow>
@@ -530,10 +650,17 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
           </div>
 
           <div className="p-6 bg-emerald-50/10 border-t-2 border-[#f3f4f6] flex items-center justify-between">
-            <span className="text-xs font-black text-emerald-950/20 uppercase tracking-widest">{selectedWorkshop?.participants?.length || 0} DATA TEREKAM</span>
+            <span className="text-xs font-black text-emerald-950/20 uppercase tracking-widest">
+              {selectedWorkshop?.participants?.length || 0} DATA TEREKAM
+            </span>
             <div className="flex gap-3">
-              <button onClick={() => setShowParticipants(false)} className="h-11 px-6 bg-white border-2 border-[#f3f4f6] text-emerald-950 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-gray-50 transition-all active:scale-95 shadow-sm">Tutup</button>
-              <button 
+              <button
+                onClick={() => setShowParticipants(false)}
+                className="h-11 px-6 bg-white border-2 border-[#f3f4f6] text-emerald-950 text-xs font-black uppercase tracking-widest rounded-xl hover:bg-gray-50 transition-all active:scale-95 shadow-sm"
+              >
+                Tutup
+              </button>
+              <button
                 onClick={saveAttendance}
                 disabled={processing}
                 className="h-11 px-8 bg-[#0d9488] text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-[#0f766e] transition-all active:scale-95 shadow-md shadow-emerald-600/20 disabled:opacity-50"
@@ -544,9 +671,8 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
           </div>
         </div>
       </Modal>
-
-      <ConfirmDialog 
-        open={confirmCancel !== null} 
+      <ConfirmDialog
+        open={confirmCancel !== null}
         onClose={() => setConfirmCancel(null)}
         onConfirm={handleCancel}
         title="Batalkan Agenda Workshop"

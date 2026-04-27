@@ -8,7 +8,7 @@ interface OperationalNotesProps {
 export const OperationalNotes: React.FC<OperationalNotesProps> = ({ notes, setNotes }) => {
   return (
     <div className="pt-6">
-      <label 
+      <label
         htmlFor="registration-notes"
         className="text-xs font-bold text-emerald-950 uppercase tracking-[0.3em] mb-4 block opacity-70 cursor-pointer"
       >

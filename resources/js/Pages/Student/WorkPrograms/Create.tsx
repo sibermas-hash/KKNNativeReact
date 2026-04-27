@@ -1,6 +1,6 @@
 import { Head, Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { FormInput, FormTextarea, FormSelect } from '@/Components/ui';
+import { FormInput, FormTextarea, FormSelect } from '@/Components/UI';
 import { route } from 'ziggy-js';
 import { ChevronLeft, FolderPlus, Target, Users, Wallet, Info, CheckCircle2 } from 'lucide-react';
 
@@ -154,9 +154,7 @@ export default function StudentWorkProgramCreate() {
                   className="w-full rounded-2xl bg-emerald-50/30/50 border-emerald-50/60 px-5 py-4 text-sm font-bold text-emerald-950 focus:ring-[#0d9488] focus:border-[#f3f4f6]0"
                 />
                 {errors.budget && (
-                  <p className="text-sm font-bold text-rose-500 uppercase px-1">
-                    {errors.budget}
-                  </p>
+                  <p className="text-sm font-bold text-rose-500 uppercase px-1">{errors.budget}</p>
                 )}
               </div>
             </div>

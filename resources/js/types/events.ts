@@ -6,7 +6,9 @@
 import type { FormEventHandler, ChangeEvent } from 'react';
 
 export type FormEventHandlerType = FormEventHandler;
-export type ChangeEventType = ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>;
+export type ChangeEventType = ChangeEvent<
+  HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+>;
 
 /**
  * Form submission handler type

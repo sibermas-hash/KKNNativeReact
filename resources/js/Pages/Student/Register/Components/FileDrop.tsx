@@ -9,13 +9,7 @@ interface FileDropProps {
   templateUrl?: string | null;
 }
 
-export const FileDrop = ({
-  file,
-  onChange,
-  label,
-  error,
-  templateUrl,
-}: FileDropProps) => {
+export const FileDrop = ({ file, onChange, label, error, templateUrl }: FileDropProps) => {
   return (
     <div className="relative group/file">
       <input
@@ -57,9 +51,7 @@ export const FileDrop = ({
           >
             {file ? file.name : error || label}
           </p>
-          <p className="text-xs text-emerald-700/60 font-medium">
-            Format: PDF / JPG — Maks. 2 MB
-          </p>
+          <p className="text-xs text-emerald-700/60 font-medium">Format: PDF / JPG — Maks. 2 MB</p>
         </div>
         {templateUrl && (
           <a
@@ -72,11 +64,7 @@ export const FileDrop = ({
           </a>
         )}
       </div>
-      {error && (
-        <p className="mt-2 text-xs font-medium text-rose-600 text-center">
-          {error}
-        </p>
-      )}
+      {error && <p className="mt-2 text-xs font-medium text-rose-600 text-center">{error}</p>}
     </div>
   );
 };

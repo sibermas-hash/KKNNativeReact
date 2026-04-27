@@ -1,14 +1,17 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
-import { FormInput } from '@/Components/ui';
+import { FormInput } from '@/Components/UI';
 import type { PageProps } from '@/types';
 import type { FormEventHandlerType } from '@/types/events';
 import { route } from 'ziggy-js';
 import { KeyRound, Lock, ChevronRight, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react';
 
 interface UserData {
-  id: number; name: string; email: string; username: string;
+  id: number;
+  name: string;
+  email: string;
+  username: string;
   must_change_password: boolean;
 }
 
@@ -36,9 +39,12 @@ export default function PasswordChange() {
 
   const handleSubmit: FormEventHandlerType = (e) => {
     e.preventDefault();
-    
+
     if (passwordForm.data.password.length < 8) {
-      passwordForm.setError('password', 'Kata sandi minimal 8 karakter dengan kombinasi huruf besar, kecil, angka, dan simbol');
+      passwordForm.setError(
+        'password',
+        'Kata sandi minimal 8 karakter dengan kombinasi huruf besar, kecil, angka, dan simbol',
+      );
       return;
     }
 
@@ -91,7 +97,9 @@ export default function PasswordChange() {
                   <div className="space-y-1">
                     <p className="text-sm font-semibold text-rose-900">Akses Diblokir</p>
                     <p className="text-sm text-rose-700">
-                      Anda wajib mengganti kata sandi default sebelum dapat mengakses portal <span className="text-sky-600">SIBER</span><span className="text-emerald-600">MAS</span>.
+                      Anda wajib mengganti kata sandi default sebelum dapat mengakses portal{' '}
+                      <span className="text-sky-600">SIBER</span>
+                      <span className="text-emerald-600">MAS</span>.
                     </p>
                   </div>
                 </div>
@@ -103,13 +111,16 @@ export default function PasswordChange() {
                   <FormInput
                     type={showPassword ? 'text' : 'password'}
                     value={passwordForm.data.password}
-                    onChange={e => passwordForm.setData('password', e.target.value)}
+                    onChange={(e) => passwordForm.setData('password', e.target.value)}
                     error={passwordForm.errors.password}
                     placeholder="Min. 8 karakter, huruf besar & kecil, angka, simbol"
                     className="h-11 pl-10 pr-10"
                     autoFocus
                   />
-                  <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400" />
+                  <Lock
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400"
+                  />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
@@ -121,17 +132,22 @@ export default function PasswordChange() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-sm font-medium text-emerald-800">Konfirmasi Kata Sandi Baru</label>
+                <label className="text-sm font-medium text-emerald-800">
+                  Konfirmasi Kata Sandi Baru
+                </label>
                 <div className="relative">
                   <FormInput
                     type={showConfirm ? 'text' : 'password'}
                     value={passwordForm.data.password_confirmation}
-                    onChange={e => passwordForm.setData('password_confirmation', e.target.value)}
+                    onChange={(e) => passwordForm.setData('password_confirmation', e.target.value)}
                     error={passwordForm.errors.password_confirmation}
                     placeholder="Ulangi kata sandi baru"
                     className="h-11 pl-10 pr-10"
                   />
-                  <Lock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400" />
+                  <Lock
+                    size={16}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400"
+                  />
                   <button
                     type="button"
                     onClick={() => setShowConfirm(!showConfirm)}
@@ -156,7 +172,8 @@ export default function PasswordChange() {
           </div>
 
           <p className="text-center text-xs text-emerald-600 mt-4">
-            Setelah mengganti kata sandi, Anda akan diarahkan ke halaman profil untuk melengkapi data.
+            Setelah mengganti kata sandi, Anda akan diarahkan ke halaman profil untuk melengkapi
+            data.
           </p>
         </div>
       </div>

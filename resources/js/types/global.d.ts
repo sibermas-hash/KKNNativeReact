@@ -15,10 +15,25 @@ interface ImportMeta {
 }
 
 // Global route() function (injected by Ziggy via Inertia shared data)
-declare function route(name?: string, params?: RouteParams, absolute?: boolean, config?: RouteConfig): string;
+declare function route(
+  name?: string,
+  params?: RouteParams,
+  absolute?: boolean,
+  config?: RouteConfig,
+): string;
 
 // Module declaration for ziggy-js so TypeScript recognizes `import { route } from 'ziggy-js'`
 declare module 'ziggy-js' {
-  export function route(name?: string, params?: RouteParams, absolute?: boolean, config?: RouteConfig): string;
-  export default function route(name?: string, params?: RouteParams, absolute?: boolean, config?: RouteConfig): string;
+  export function route(
+    name?: string,
+    params?: RouteParams,
+    absolute?: boolean,
+    config?: RouteConfig,
+  ): string;
+  export default function route(
+    name?: string,
+    params?: RouteParams,
+    absolute?: boolean,
+    config?: RouteConfig,
+  ): string;
 }

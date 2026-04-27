@@ -1,7 +1,7 @@
 import { Head, useForm, router } from '@inertiajs/react';
 import { useState, useMemo } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
-import { Button, FormSelect } from '@/Components/ui';
+import { Button, FormSelect } from '@/Components/UI';
 import {
   Star,
   Users,

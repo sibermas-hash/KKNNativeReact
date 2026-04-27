@@ -2,8 +2,18 @@ import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import {
-  Users, LayoutGrid, FileText, ClipboardList, AlertTriangle, 
-  MapPin, Clock, ArrowRight, ShieldCheck, CheckCircle2, ChevronRight, Loader2
+  Users,
+  LayoutGrid,
+  FileText,
+  ClipboardList,
+  AlertTriangle,
+  MapPin,
+  Clock,
+  ArrowRight,
+  ShieldCheck,
+  CheckCircle2,
+  ChevronRight,
+  Loader2,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import type { PageProps } from '@/types';
@@ -27,21 +37,27 @@ interface DashboardProps extends PageProps {
 
 const PHASES = [
   { id: 'registration', label: 'Pendaftaran' },
-  { id: 'placement',    label: 'Penempatan' },
-  { id: 'execution',    label: 'Pelaksanaan' },
-  { id: 'grading',      label: 'Penilaian' },
+  { id: 'placement', label: 'Penempatan' },
+  { id: 'execution', label: 'Pelaksanaan' },
+  { id: 'grading', label: 'Penilaian' },
 ];
 
 const PHASE_LABELS: Record<string, string> = {
-  registration: 'Pendaftaran', placement: 'Penempatan',
-  execution: 'Pelaksanaan', grading: 'Penilaian',
-  upcoming: 'Belum Dimulai', finished: 'Selesai',
+  registration: 'Pendaftaran',
+  placement: 'Penempatan',
+  execution: 'Pelaksanaan',
+  grading: 'Penilaian',
+  upcoming: 'Belum Dimulai',
+  finished: 'Selesai',
 };
 
 // ── Main ─────────────────────────────────────────────
 export default function Dashboard({
-  active_periode_id, active_periods = [],
-  stats = {}, current_phase = {}, recentRegistrations = [],
+  active_periode_id,
+  active_periods = [],
+  stats = {},
+  current_phase = {},
+  recentRegistrations = [],
 }: DashboardProps) {
   const [switching, setSwitching] = useState(false);
   const [confirmPhase, setConfirmPhase] = useState<string | null>(null);
@@ -50,17 +66,17 @@ export default function Dashboard({
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: { staggerChildren: 0.1 }
-    }
+      transition: { staggerChildren: 0.1 },
+    },
   };
 
   const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
+    show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 15 } },
   };
 
-  const phaseKey = typeof current_phase === 'string'
-    ? current_phase : (current_phase?.key || 'upcoming');
+  const phaseKey =
+    typeof current_phase === 'string' ? current_phase : current_phase?.key || 'upcoming';
 
   function handlePeriodChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const val = e.target.value;
@@ -72,16 +88,23 @@ export default function Dashboard({
     if (val && val !== phaseKey && active_periode_id) {
       setConfirmPhase(val);
       // Reset select back to current phase until confirmed
-      e.target.value = phaseKey; 
+      e.target.value = phaseKey;
     }
   }
 
   function submitPhaseChange() {
     if (!active_periode_id || !confirmPhase || switching) return;
     setSwitching(true);
-    router.post('/admin/dashboard/switch-phase',
+    router.post(
+      '/admin/dashboard/switch-phase',
       { target: confirmPhase, periode_id: active_periode_id },
-      { preserveScroll: true, onFinish: () => { setSwitching(false); setConfirmPhase(null); } }
+      {
+        preserveScroll: true,
+        onFinish: () => {
+          setSwitching(false);
+          setConfirmPhase(null);
+        },
+      },
     );
   }
 
@@ -94,24 +117,28 @@ export default function Dashboard({
 
       {/* ── Background Kontras (Slate-50) ── */}
       <div className="min-h-screen bg-slate-50 -m-6 lg:-m-8 p-4 sm:p-6 lg:p-8">
-        <motion.div 
+        <motion.div
           variants={containerVariants}
           initial="hidden"
           animate="show"
           className="max-w-7xl mx-auto space-y-4"
         >
-          
           {/* ── HEADER PANEL (Minimalist & Padat) ── */}
-          <motion.div variants={itemVariants} className="bg-white rounded-2xl border-2 border-cyan-100 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative overflow-hidden">
+          <motion.div
+            variants={itemVariants}
+            className="bg-white rounded-2xl border-2 border-cyan-100 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 relative overflow-hidden"
+          >
             {/* Subtle accent line on top of header */}
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-cyan-500 via-lime-500 to-amber-500" />
             <div>
               <h1 className="text-4xl font-extrabold text-cyan-950 leading-none tracking-tight font-sans">
                 Dashboard <span className="text-amber-500">Admin.</span>
               </h1>
-              <p className="text-[11px] font-medium text-slate-500 mt-2 tracking-wide font-sans">Ringkasan operasional & status pendaftaran real-time</p>
+              <p className="text-[11px] font-medium text-slate-500 mt-2 tracking-wide font-sans">
+                Ringkasan operasional & status pendaftaran real-time
+              </p>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto z-10">
               {/* Form Select Periode */}
               <div className="w-full sm:w-56">
@@ -123,9 +150,13 @@ export default function Dashboard({
                   onChange={handlePeriodChange}
                   className="w-full h-11 bg-slate-50 border-2 border-cyan-100 text-cyan-950 text-xs font-semibold rounded-xl focus:ring-cyan-600 focus:border-cyan-600 py-2 px-4 shadow-sm font-sans"
                 >
-                  <option value="" disabled>Pilih Periode...</option>
+                  <option value="" disabled>
+                    Pilih Periode...
+                  </option>
                   {active_periods.map((p: any) => (
-                    <option key={p.id} value={p.id}>{p.nama}</option>
+                    <option key={p.id} value={p.id}>
+                      {p.nama}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -139,71 +170,98 @@ export default function Dashboard({
                   value={phaseKey}
                   onChange={handlePhaseChange}
                   className={clsx(
-                    "w-full h-11 text-xs font-semibold rounded-xl border-2 focus:ring-2 focus:outline-none py-2 px-4 shadow-sm font-sans transition-colors",
-                    "bg-cyan-600 border-cyan-500 text-white focus:ring-cyan-400 focus:border-cyan-400"
+                    'w-full h-11 text-xs font-semibold rounded-xl border-2 focus:ring-2 focus:outline-none py-2 px-4 shadow-sm font-sans transition-colors',
+                    'bg-cyan-600 border-cyan-500 text-white focus:ring-cyan-400 focus:border-cyan-400',
                   )}
                 >
-                  <option value="upcoming" disabled>Belum Dimulai</option>
+                  <option value="upcoming" disabled>
+                    Belum Dimulai
+                  </option>
                   {PHASES.map((p) => (
-                    <option key={p.id} value={p.id}>{p.label}</option>
+                    <option key={p.id} value={p.id}>
+                      {p.label}
+                    </option>
                   ))}
-                  <option value="finished" disabled>Selesai</option>
+                  <option value="finished" disabled>
+                    Selesai
+                  </option>
                 </select>
               </div>
             </div>
           </motion.div>
 
           {/* ── METRICS ROW (Kecil, Kompak, Terbaca Jelas) ── */}
-          <motion.div variants={containerVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <motion.div variants={itemVariants}><MetricCard title="Total Pendaftar" value={stats?.total_students ?? 0} icon={Users} /></motion.div>
+          <motion.div
+            variants={containerVariants}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+          >
             <motion.div variants={itemVariants}>
-              <MetricCard 
-                title="Menunggu Review" 
-                value={pendingCount} 
-                icon={Clock} 
-                alert={pendingCount > 0} 
-                color="amber" 
-                href={route('admin.pendaftaran.index')} 
+              <MetricCard title="Total Pendaftar" value={stats?.total_students ?? 0} icon={Users} />
+            </motion.div>
+            <motion.div variants={itemVariants}>
+              <MetricCard
+                title="Menunggu Review"
+                value={pendingCount}
+                icon={Clock}
+                alert={pendingCount > 0}
+                color="amber"
+                href={route('admin.pendaftaran.index')}
               />
             </motion.div>
             <motion.div variants={itemVariants}>
-              <MetricCard 
-                title="Belum Ditempatkan" 
-                value={unassignedCount} 
-                icon={AlertTriangle} 
-                alert={unassignedCount > 0} 
-                color="rose" 
+              <MetricCard
+                title="Belum Ditempatkan"
+                value={unassignedCount}
+                icon={AlertTriangle}
+                alert={unassignedCount > 0}
+                color="rose"
               />
             </motion.div>
-            <motion.div variants={itemVariants}><MetricCard title="Total Kelompok" value={stats?.total_groups ?? 0} icon={LayoutGrid} /></motion.div>
+            <motion.div variants={itemVariants}>
+              <MetricCard
+                title="Total Kelompok"
+                value={stats?.total_groups ?? 0}
+                icon={LayoutGrid}
+              />
+            </motion.div>
           </motion.div>
 
           {/* ── MAIN CONTENT (List Padat & Ringkas) ── */}
           <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            
             {/* KOLOM KIRI: Pendaftaran Terbaru (Lebar 2/3) */}
             <div className="lg:col-span-2 bg-white rounded-2xl border-2 border-cyan-100 shadow-sm overflow-hidden flex flex-col">
               <div className="bg-slate-50/50 px-6 py-4 border-b border-cyan-100 flex justify-between items-center">
                 <h2 className="text-[11px] font-semibold text-cyan-950 uppercase tracking-wider flex items-center gap-3 font-sans">
-                  <ClipboardList size={16} className="text-cyan-600" strokeWidth={2.5} /> Antrian Pendaftaran
+                  <ClipboardList size={16} className="text-cyan-600" strokeWidth={2.5} /> Antrian
+                  Pendaftaran
                 </h2>
-                <Link href={route('admin.pendaftaran.index')} className="text-[11px] font-semibold tracking-wide text-cyan-600 hover:text-cyan-800 transition-colors font-sans">
+                <Link
+                  href={route('admin.pendaftaran.index')}
+                  className="text-[11px] font-semibold tracking-wide text-cyan-600 hover:text-cyan-800 transition-colors font-sans"
+                >
                   Lihat Semua &rarr;
                 </Link>
               </div>
-              
+
               <div className="flex-1">
                 {recentRegistrations.length > 0 ? (
                   <div className="divide-y divide-slate-100">
                     {recentRegistrations.slice(0, 6).map((reg: any) => (
-                      <div key={reg.id} className="flex items-center justify-between px-6 py-4 hover:bg-cyan-50/50 transition-all group">
+                      <div
+                        key={reg.id}
+                        className="flex items-center justify-between px-6 py-4 hover:bg-cyan-50/50 transition-all group"
+                      >
                         <div className="flex items-center gap-4 overflow-hidden">
                           <div className="h-10 w-10 rounded-xl bg-white border-2 border-cyan-100 text-cyan-700 flex items-center justify-center text-xs font-black shrink-0 shadow-sm group-hover:scale-110 transition-transform">
                             {reg.mahasiswa?.user?.name?.[0]?.toUpperCase() || '?'}
                           </div>
                           <div className="truncate">
-                            <p className="text-sm font-bold text-cyan-950 truncate tracking-tight group-hover:text-cyan-600 transition-colors font-sans capitalize">{(reg.mahasiswa?.user?.name || '—').toLowerCase()}</p>
-                            <p className="text-[12px] font-medium text-slate-500 truncate tracking-normal mt-0.5 font-sans">NIM : {reg.mahasiswa?.nim || '—'}</p>
+                            <p className="text-sm font-bold text-cyan-950 truncate tracking-tight group-hover:text-cyan-600 transition-colors font-sans capitalize">
+                              {(reg.mahasiswa?.user?.name || '—').toLowerCase()}
+                            </p>
+                            <p className="text-[12px] font-medium text-slate-500 truncate tracking-normal mt-0.5 font-sans">
+                              NIM : {reg.mahasiswa?.nim || '—'}
+                            </p>
                           </div>
                         </div>
                         <span className="shrink-0 ml-4 inline-flex items-center px-3 py-1 rounded-lg text-[9px] font-black bg-lime-500 text-white border border-lime-600 uppercase tracking-widest font-display shadow-[0_2px_10px_rgba(132,204,22,0.2)]">
@@ -224,15 +282,23 @@ export default function Dashboard({
 
             {/* KOLOM KANAN: Progres & Pintasan (Lebar 1/3) */}
             <div className="space-y-4">
-              
               {/* Progres Penempatan */}
               <div className="bg-white rounded-2xl border-2 border-cyan-100 shadow-sm p-6">
                 <h2 className="text-[11px] font-semibold text-cyan-950 uppercase tracking-wider mb-6 flex items-center gap-3 font-sans">
-                  <MapPin size={16} className="text-cyan-600" strokeWidth={2.5} /> Progres Penempatan
+                  <MapPin size={16} className="text-cyan-600" strokeWidth={2.5} /> Progres
+                  Penempatan
                 </h2>
                 <div className="space-y-4">
-                  <CompactProgress label="Verifikasi Posko" current={stats?.reported_posko ?? 0} total={stats?.total_groups ?? 1} />
-                  <CompactProgress label="Alokasi Mahasiswa" current={stats?.assigned_students ?? 0} total={stats?.total_students ?? 1} />
+                  <CompactProgress
+                    label="Verifikasi Posko"
+                    current={stats?.reported_posko ?? 0}
+                    total={stats?.total_groups ?? 1}
+                  />
+                  <CompactProgress
+                    label="Alokasi Mahasiswa"
+                    current={stats?.assigned_students ?? 0}
+                    total={stats?.total_students ?? 1}
+                  />
                 </div>
               </div>
 
@@ -243,7 +309,8 @@ export default function Dashboard({
                   <div>
                     <p className="text-xs font-bold text-rose-900 mb-0.5">Tindakan Diperlukan</p>
                     <p className="text-[11px] text-rose-700 leading-tight">
-                      <strong className="font-bold">{unassignedCount} mahasiswa</strong> belum dialokasikan ke kelompok KKN.
+                      <strong className="font-bold">{unassignedCount} mahasiswa</strong> belum
+                      dialokasikan ke kelompok KKN.
                     </p>
                   </div>
                 </div>
@@ -252,16 +319,33 @@ export default function Dashboard({
               {/* Menu Pintasan */}
               <div className="bg-white rounded-lg ring-1 ring-slate-200 shadow-sm overflow-hidden">
                 <div className="bg-slate-50/80 px-4 py-2 border-b border-slate-200">
-                  <h2 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Akses Cepat</h2>
+                  <h2 className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    Akses Cepat
+                  </h2>
                 </div>
                 <div className="divide-y divide-slate-100">
-                  <QuickMenu href={route('admin.lokasi.index')} icon={MapPin} label="Kelola Wilayah & Lokasi" />
-                  <QuickMenu href={route('admin.mahasiswa.index')} icon={Users} label="Direktori Mahasiswa" />
-                  <QuickMenu href={route('admin.kelompok.index')} icon={LayoutGrid} label="Manajemen Kelompok" />
-                  <QuickMenu href={route('admin.laporan.harian.index')} icon={FileText} label="Laporan Harian" />
+                  <QuickMenu
+                    href={route('admin.lokasi.index')}
+                    icon={MapPin}
+                    label="Kelola Wilayah & Lokasi"
+                  />
+                  <QuickMenu
+                    href={route('admin.mahasiswa.index')}
+                    icon={Users}
+                    label="Direktori Mahasiswa"
+                  />
+                  <QuickMenu
+                    href={route('admin.kelompok.index')}
+                    icon={LayoutGrid}
+                    label="Manajemen Kelompok"
+                  />
+                  <QuickMenu
+                    href={route('admin.laporan.harian.index')}
+                    icon={FileText}
+                    label="Laporan Harian"
+                  />
                 </div>
               </div>
-
             </div>
           </motion.div>
         </motion.div>
@@ -285,10 +369,15 @@ export default function Dashboard({
               </div>
               <div className="p-5 bg-slate-50">
                 <p className="text-sm text-slate-700 mb-3">
-                  Anda akan mengubah status sistem ke fase <strong className="font-bold text-cyan-950">"{PHASE_LABELS[confirmPhase]}"</strong>.
+                  Anda akan mengubah status sistem ke fase{' '}
+                  <strong className="font-bold text-cyan-950">
+                    "{PHASE_LABELS[confirmPhase]}"
+                  </strong>
+                  .
                 </p>
                 <p className="text-xs text-rose-600 font-medium">
-                  Perhatian: Tindakan ini akan seketika mengubah menu dan hak akses bagi mahasiswa serta DPL di seluruh portal.
+                  Perhatian: Tindakan ini akan seketika mengubah menu dan hak akses bagi mahasiswa
+                  serta DPL di seluruh portal.
                 </p>
               </div>
               <div className="p-4 bg-white flex justify-end gap-2 border-t border-slate-100">
@@ -317,7 +406,15 @@ export default function Dashboard({
 
 Dashboard.layout = AppLayout.layout;
 
-function CompactProgress({ label, current, total }: { label: string; current: number; total: number }) {
+function CompactProgress({
+  label,
+  current,
+  total,
+}: {
+  label: string;
+  current: number;
+  total: number;
+}) {
   const safe = total > 0 ? total : 1;
   const pct = Math.min(100, Math.round((current / safe) * 100));
 
@@ -330,7 +427,10 @@ function CompactProgress({ label, current, total }: { label: string; current: nu
         </span>
       </div>
       <div className="h-2 bg-slate-100 rounded-full border border-slate-200 overflow-hidden">
-        <div className="h-full bg-lime-500 transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(132,204,22,0.5)]" style={{ width: `${pct}%` }} />
+        <div
+          className="h-full bg-lime-500 transition-all duration-1000 ease-out shadow-[0_0_8px_rgba(132,204,22,0.5)]"
+          style={{ width: `${pct}%` }}
+        />
       </div>
     </div>
   );
@@ -338,12 +438,18 @@ function CompactProgress({ label, current, total }: { label: string; current: nu
 
 function QuickMenu({ href, icon: Icon, label }: any) {
   return (
-    <Link href={href} className="flex items-center justify-between px-4 py-3 hover:bg-cyan-50 group transition-colors font-sans">
+    <Link
+      href={href}
+      className="flex items-center justify-between px-4 py-3 hover:bg-cyan-50 group transition-colors font-sans"
+    >
       <div className="flex items-center gap-3 text-cyan-950 group-hover:text-cyan-700 transition-colors">
         <Icon size={16} strokeWidth={2.5} className="text-cyan-600/70 group-hover:text-cyan-600" />
         <span className="text-sm font-medium tracking-tight">{label}</span>
       </div>
-      <ChevronRight size={16} className="text-cyan-300 group-hover:text-cyan-500 transition-transform group-hover:translate-x-1" />
+      <ChevronRight
+        size={16}
+        className="text-cyan-300 group-hover:text-cyan-500 transition-transform group-hover:translate-x-1"
+      />
     </Link>
   );
 }

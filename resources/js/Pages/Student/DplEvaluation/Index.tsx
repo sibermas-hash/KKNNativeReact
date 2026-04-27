@@ -54,7 +54,8 @@ export default function StudentDplEvaluationIndex({
   existingEvaluation,
 }: Props) {
   const initialScores = criteria.reduce<Record<string, number>>((carry, criterion) => {
-    carry[criterion.key] = existingEvaluation?.items.find((item) => item.criterion_key === criterion.key)?.score ?? 0;
+    carry[criterion.key] =
+      existingEvaluation?.items.find((item) => item.criterion_key === criterion.key)?.score ?? 0;
 
     return carry;
   }, {});
@@ -109,7 +110,9 @@ export default function StudentDplEvaluationIndex({
                   <dt className="text-[11px] font-black uppercase tracking-widest text-emerald-600">
                     Periode
                   </dt>
-                  <dd className="mt-1 font-bold text-emerald-950">{registration?.period_name ?? '-'}</dd>
+                  <dd className="mt-1 font-bold text-emerald-950">
+                    {registration?.period_name ?? '-'}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-[11px] font-black uppercase tracking-widest text-emerald-600">
@@ -118,7 +121,9 @@ export default function StudentDplEvaluationIndex({
                   <dd className="mt-1 font-bold text-emerald-950">
                     {group ? `${group.name} (${group.code})` : '-'}
                   </dd>
-                  <dd className="text-xs font-semibold text-emerald-950">{group?.location_name ?? '-'}</dd>
+                  <dd className="text-xs font-semibold text-emerald-950">
+                    {group?.location_name ?? '-'}
+                  </dd>
                 </div>
                 <div>
                   <dt className="text-[11px] font-black uppercase tracking-widest text-emerald-600">
@@ -138,7 +143,9 @@ export default function StudentDplEvaluationIndex({
                 </h2>
               </div>
               <div className="space-y-2 text-sm font-semibold leading-relaxed text-emerald-950">
-                <p>Satu peserta hanya dapat mengirim satu evaluasi untuk satu DPL pada satu periode.</p>
+                <p>
+                  Satu peserta hanya dapat mengirim satu evaluasi untuk satu DPL pada satu periode.
+                </p>
                 <p>Isi penilaian dengan jujur dan fokus pada pengalaman pembimbingan selama KKN.</p>
                 <p>Komentar akan ditampilkan secara anonim pada ringkasan DPL.</p>
               </div>
@@ -173,13 +180,18 @@ export default function StudentDplEvaluationIndex({
                     <p className="text-[11px] font-black uppercase tracking-widest text-emerald-100">
                       Skor Total
                     </p>
-                    <p className="text-2xl font-black">{existingEvaluation.total_score.toFixed(2)}</p>
+                    <p className="text-2xl font-black">
+                      {existingEvaluation.total_score.toFixed(2)}
+                    </p>
                   </div>
                 </div>
 
                 <div className="mt-6 grid gap-4 md:grid-cols-2">
                   {existingEvaluation.items.map((item) => (
-                    <div key={item.criterion_key} className="rounded-2xl border border-emerald-50 bg-emerald-50/30 p-4">
+                    <div
+                      key={item.criterion_key}
+                      className="rounded-2xl border border-emerald-50 bg-emerald-50/30 p-4"
+                    >
                       <p className="text-sm font-black uppercase tracking-wide text-emerald-950">
                         {item.criterion_label}
                       </p>
@@ -197,7 +209,9 @@ export default function StudentDplEvaluationIndex({
                   <p className="text-[11px] font-black uppercase tracking-widest text-emerald-600">
                     Rekomendasi
                   </p>
-                  <p className="mt-1 text-sm font-bold text-emerald-950">{recommendationLabel ?? '-'}</p>
+                  <p className="mt-1 text-sm font-bold text-emerald-950">
+                    {recommendationLabel ?? '-'}
+                  </p>
                   <p className="mt-4 text-[11px] font-black uppercase tracking-widest text-emerald-600">
                     Catatan
                   </p>
@@ -219,7 +233,10 @@ export default function StudentDplEvaluationIndex({
 
                 <div className="mt-6 space-y-4">
                   {criteria.map((criterion) => (
-                    <div key={criterion.key} className="rounded-2xl border border-emerald-50 bg-emerald-50/20 p-5">
+                    <div
+                      key={criterion.key}
+                      className="rounded-2xl border border-emerald-50 bg-emerald-50/20 p-5"
+                    >
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <h3 className="text-sm font-black uppercase tracking-wide text-emerald-950">
@@ -255,7 +272,9 @@ export default function StudentDplEvaluationIndex({
                           })}
                         </div>
                       </div>
-                      {Boolean((form.errors as Record<string, string>)[`scores.${criterion.key}`]) && (
+                      {Boolean(
+                        (form.errors as Record<string, string>)[`scores.${criterion.key}`],
+                      ) && (
                         <p className="mt-2 text-xs font-bold text-rose-600">
                           {(form.errors as Record<string, string>)[`scores.${criterion.key}`]}
                         </p>
@@ -266,7 +285,10 @@ export default function StudentDplEvaluationIndex({
 
                 <div className="mt-6 grid gap-4 md:grid-cols-2">
                   <div>
-                    <label htmlFor={fieldIds.recommendation} className="text-[11px] font-black uppercase tracking-widest text-emerald-600">
+                    <label
+                      htmlFor={fieldIds.recommendation}
+                      className="text-[11px] font-black uppercase tracking-widest text-emerald-600"
+                    >
                       Rekomendasi
                     </label>
                     <select
@@ -283,12 +305,17 @@ export default function StudentDplEvaluationIndex({
                       ))}
                     </select>
                     {form.errors.recommendation && (
-                      <p className="mt-2 text-xs font-bold text-rose-600">{form.errors.recommendation}</p>
+                      <p className="mt-2 text-xs font-bold text-rose-600">
+                        {form.errors.recommendation}
+                      </p>
                     )}
                   </div>
 
                   <div>
-                    <label htmlFor={fieldIds.notes} className="text-[11px] font-black uppercase tracking-widest text-emerald-600">
+                    <label
+                      htmlFor={fieldIds.notes}
+                      className="text-[11px] font-black uppercase tracking-widest text-emerald-600"
+                    >
                       Catatan Tambahan
                     </label>
                     <textarea
@@ -313,7 +340,8 @@ export default function StudentDplEvaluationIndex({
                     className="mt-1 h-4 w-4 rounded border-emerald-300 text-emerald-600"
                   />
                   <span className="text-sm font-semibold leading-relaxed text-emerald-950">
-                    Saya mengonfirmasi bahwa penilaian ini diisi secara jujur berdasarkan pengalaman pembimbingan selama KKN.
+                    Saya mengonfirmasi bahwa penilaian ini diisi secara jujur berdasarkan pengalaman
+                    pembimbingan selama KKN.
                   </span>
                 </label>
                 {form.errors.confirmation && (

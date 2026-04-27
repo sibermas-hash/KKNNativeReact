@@ -18,13 +18,13 @@ interface PageHeaderProps {
 
 import AnimatedCounter from './AnimatedCounter';
 
-const PageHeader: React.FC<PageHeaderProps> = ({ 
-  title, 
-  subtitle, 
-  icon: Icon, 
-  groupLabel, 
+const PageHeader: React.FC<PageHeaderProps> = ({
+  title,
+  subtitle,
+  icon: Icon,
+  groupLabel,
   stats,
-  children 
+  children,
 }) => {
   return (
     <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-cyan-100 pt-2 font-sans">
@@ -32,9 +32,13 @@ const PageHeader: React.FC<PageHeaderProps> = ({
         {(groupLabel || Icon) && (
           <div className="flex items-center gap-2">
             <div className="h-5 w-5 bg-cyan-50 rounded-md flex items-center justify-center text-cyan-800">
-                {Icon && <Icon size={12} strokeWidth={3} />}
+              {Icon && <Icon size={12} strokeWidth={3} />}
             </div>
-            {groupLabel && <span className="text-[11px] font-semibold text-cyan-800 uppercase tracking-wider">{groupLabel}</span>}
+            {groupLabel && (
+              <span className="text-[11px] font-semibold text-cyan-800 uppercase tracking-wider">
+                {groupLabel}
+              </span>
+            )}
           </div>
         )}
         <div className="space-y-1">
@@ -58,9 +62,15 @@ const PageHeader: React.FC<PageHeaderProps> = ({
               </div>
             )}
             <div className="flex flex-col">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider leading-none mb-1.5">{stats.label}</span>
-              <AnimatedCounter 
-                value={typeof stats.value === 'number' ? stats.value : parseInt(stats.value as string) || 0} 
+              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider leading-none mb-1.5">
+                {stats.label}
+              </span>
+              <AnimatedCounter
+                value={
+                  typeof stats.value === 'number'
+                    ? stats.value
+                    : parseInt(stats.value as string) || 0
+                }
                 className="text-xl font-bold text-cyan-950 leading-none tabular-nums tracking-tight"
               />
             </div>

@@ -72,7 +72,10 @@ export default function ParticipantFeedbackIndex({
 
         <div className="flex justify-end">
           <div className="w-full max-w-xs">
-            <label htmlFor={periodFieldId} className="text-[11px] font-black uppercase tracking-widest text-emerald-600">
+            <label
+              htmlFor={periodFieldId}
+              className="text-[11px] font-black uppercase tracking-widest text-emerald-600"
+            >
               Periode
             </label>
             <select
@@ -103,9 +106,21 @@ export default function ParticipantFeedbackIndex({
         ) : (
           <>
             <div className="grid gap-4 md:grid-cols-4">
-              <StatCard icon={Users} label="Respon Masuk" value={`${summary.response_count}/${summary.eligible_count}`} />
-              <StatCard icon={BarChart3} label="Response Rate" value={`${summary.response_rate.toFixed(2)}%`} />
-              <StatCard icon={Star} label="Rata-rata Skor" value={summary.average_score.toFixed(2)} />
+              <StatCard
+                icon={Users}
+                label="Respon Masuk"
+                value={`${summary.response_count}/${summary.eligible_count}`}
+              />
+              <StatCard
+                icon={BarChart3}
+                label="Response Rate"
+                value={`${summary.response_rate.toFixed(2)}%`}
+              />
+              <StatCard
+                icon={Star}
+                label="Rata-rata Skor"
+                value={summary.average_score.toFixed(2)}
+              />
               <StatCard icon={ShieldCheck} label="Ringkasan" value="Anonim" />
             </div>
 
@@ -117,9 +132,14 @@ export default function ParticipantFeedbackIndex({
                   </h2>
                   <div className="mt-4 space-y-3">
                     {summary.criterion_averages.map((criterion) => (
-                      <div key={criterion.key} className="rounded-xl border border-emerald-50 bg-emerald-50/20 p-4">
+                      <div
+                        key={criterion.key}
+                        className="rounded-xl border border-emerald-50 bg-emerald-50/20 p-4"
+                      >
                         <p className="text-sm font-bold text-emerald-950">{criterion.label}</p>
-                        <p className="mt-2 text-xl font-black text-emerald-600">{criterion.average.toFixed(2)}</p>
+                        <p className="mt-2 text-xl font-black text-emerald-600">
+                          {criterion.average.toFixed(2)}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -131,7 +151,10 @@ export default function ParticipantFeedbackIndex({
                   </h2>
                   <div className="mt-4 space-y-2 text-sm font-semibold text-emerald-950">
                     {Object.entries(summary.recommendations).map(([key, value]) => (
-                      <div key={key} className="flex items-center justify-between rounded-xl bg-emerald-50/30 px-4 py-3">
+                      <div
+                        key={key}
+                        className="flex items-center justify-between rounded-xl bg-emerald-50/30 px-4 py-3"
+                      >
                         <span className="capitalize">{key.replaceAll('_', ' ')}</span>
                         <span className="font-black">{value}</span>
                       </div>
@@ -149,19 +172,26 @@ export default function ParticipantFeedbackIndex({
                   </section>
                 ) : (
                   comments.map((comment) => (
-                    <article key={comment.id} className="rounded-2xl border border-emerald-50 bg-white p-5 shadow-sm">
+                    <article
+                      key={comment.id}
+                      className="rounded-2xl border border-emerald-50 bg-white p-5 shadow-sm"
+                    >
                       <div className="flex flex-wrap items-start justify-between gap-4 border-b border-emerald-50 pb-4">
                         <div>
                           <p className="text-sm font-black uppercase tracking-wide text-emerald-950">
                             {comment.group_name}
                           </p>
-                          <p className="mt-1 text-sm font-semibold text-emerald-950">{comment.period_name}</p>
+                          <p className="mt-1 text-sm font-semibold text-emerald-950">
+                            {comment.period_name}
+                          </p>
                         </div>
                         <div className="text-right">
                           <p className="text-[11px] font-black uppercase tracking-widest text-emerald-600">
                             {comment.recommendation}
                           </p>
-                          <p className="mt-1 text-xs font-semibold text-emerald-950">{comment.submitted_at}</p>
+                          <p className="mt-1 text-xs font-semibold text-emerald-950">
+                            {comment.submitted_at}
+                          </p>
                         </div>
                       </div>
 
@@ -180,7 +210,15 @@ export default function ParticipantFeedbackIndex({
   );
 }
 
-function StatCard({ icon: Icon, label, value }: { icon: any; label: string; value: string | number }) {
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: any;
+  label: string;
+  value: string | number;
+}) {
   return (
     <div className="rounded-2xl border border-emerald-50 bg-white p-5 shadow-sm">
       <div className="flex items-center gap-3">
@@ -188,7 +226,9 @@ function StatCard({ icon: Icon, label, value }: { icon: any; label: string; valu
           <Icon size={18} />
         </div>
         <div>
-          <p className="text-[11px] font-black uppercase tracking-widest text-emerald-600">{label}</p>
+          <p className="text-[11px] font-black uppercase tracking-widest text-emerald-600">
+            {label}
+          </p>
           <p className="mt-1 text-xl font-black text-emerald-950">{value}</p>
         </div>
       </div>

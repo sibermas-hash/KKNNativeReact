@@ -1,5 +1,5 @@
 import React from 'react';
-import type { LucideIcon} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -12,13 +12,13 @@ interface MetricCardProps {
   className?: string;
 }
 
-export function MetricCard({ 
-  label, 
-  value, 
-  icon: Icon, 
-  color = 'emerald', 
+export function MetricCard({
+  label,
+  value,
+  icon: Icon,
+  color = 'emerald',
   desc,
-  className 
+  className,
 }: MetricCardProps) {
   const colorMap: Record<string, string> = {
     emerald: 'bg-[#f0fdfa] text-emerald-600 border-emerald-50 shadow-emerald-50',
@@ -32,23 +32,31 @@ export function MetricCard({
   const colorClasses = colorMap[color] || colorMap.emerald;
 
   return (
-    <div className={clsx(
-      "bg-white border border-emerald-50/50 rounded-xl p-6 space-y-6 hover:shadow-xl hover:shadow-emerald-900/5 transition-all group relative overflow-hidden active:scale-[0.98]",
-      className
-    )}>
+    <div
+      className={clsx(
+        'bg-white border border-emerald-50/50 rounded-xl p-6 space-y-6 hover:shadow-xl hover:shadow-emerald-900/5 transition-all group relative overflow-hidden active:scale-[0.98]',
+        className,
+      )}
+    >
       <div className="flex items-center justify-between relative z-10">
-        <div className={clsx(
-          "h-12 w-12 rounded-xl flex items-center justify-center border transition-all duration-500 group-hover:rotate-6 shadow-sm", 
-          colorClasses
-        )}>
+        <div
+          className={clsx(
+            'h-12 w-12 rounded-xl flex items-center justify-center border transition-all duration-500 group-hover:rotate-6 shadow-sm',
+            colorClasses,
+          )}
+        >
           <Icon size={20} />
         </div>
         {desc && (
-          <span className="text-xs font-bold text-emerald-700 uppercase tracking-widest">{desc}</span>
+          <span className="text-xs font-bold text-emerald-700 uppercase tracking-widest">
+            {desc}
+          </span>
         )}
       </div>
       <div className="space-y-1 relative z-10">
-        <p className="text-xs font-bold text-emerald-800/40 uppercase tracking-widest leading-none mb-1">{label}</p>
+        <p className="text-xs font-bold text-emerald-800/40 uppercase tracking-widest leading-none mb-1">
+          {label}
+        </p>
         {isLoading ? (
           <Loader2 className="w-6 h-6 animate-spin text-emerald-800" />
         ) : (

@@ -1,8 +1,15 @@
 import { Head, useForm, router } from '@inertiajs/react';
 import type { FormEventHandlerType } from '@/types/events';
 import {
-  Upload, ShieldCheck, FileText, ArrowLeft, Send,
-  CheckCircle2, IdCard, Info, ChevronRight,
+  Upload,
+  ShieldCheck,
+  FileText,
+  ArrowLeft,
+  Send,
+  CheckCircle2,
+  IdCard,
+  Info,
+  ChevronRight,
 } from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
 import { FileDrop } from '@/Pages/Student/Register/Components/FileDrop';
@@ -67,7 +74,8 @@ export default function UploadDokumen({
     return false;
   };
 
-  const isAlreadySubmitted = registration?.status === 'document_submitted' || registration?.status === 'approved';
+  const isAlreadySubmitted =
+    registration?.status === 'document_submitted' || registration?.status === 'approved';
 
   return (
     <AppLayout title="Unggah Dokumen">
@@ -106,7 +114,9 @@ export default function UploadDokumen({
         <div className="flex items-start gap-3 p-4 rounded-xl bg-emerald-50 border border-emerald-100">
           <Info size={16} className="text-emerald-600 mt-0.5 shrink-0" />
           <p className="text-xs text-emerald-700 leading-relaxed">
-            Pastikan dokumen yang diunggah jelas dan mudah dibaca. Format yang diterima: <strong>PDF, JPG, JPEG, PNG</strong> dengan ukuran maksimal <strong>2 MB</strong> per berkas.
+            Pastikan dokumen yang diunggah jelas dan mudah dibaca. Format yang diterima:{' '}
+            <strong>PDF, JPG, JPEG, PNG</strong> dengan ukuran maksimal <strong>2 MB</strong> per
+            berkas.
           </p>
         </div>
 
@@ -116,7 +126,9 @@ export default function UploadDokumen({
             <CheckCircle2 size={16} className="text-emerald-600 mt-0.5 shrink-0" />
             <div>
               <p className="text-sm font-semibold text-emerald-900">Dokumen sudah diunggah</p>
-              <p className="text-xs text-emerald-700">Anda dapat mengunggah ulang dokumen jika perlu memperbarui berkas.</p>
+              <p className="text-xs text-emerald-700">
+                Anda dapat mengunggah ulang dokumen jika perlu memperbarui berkas.
+              </p>
             </div>
           </div>
         )}
@@ -176,7 +188,9 @@ export default function UploadDokumen({
 
           {/* Notes */}
           <div className="bg-white border border-emerald-50 rounded-2xl shadow-sm p-5">
-            <label className="text-sm font-semibold text-emerald-950 block mb-2">Catatan Tambahan</label>
+            <label className="text-sm font-semibold text-emerald-950 block mb-2">
+              Catatan Tambahan
+            </label>
             <textarea
               value={(form.data.notes as string) ?? ''}
               onChange={(e) => form.setData('notes', e.target.value)}

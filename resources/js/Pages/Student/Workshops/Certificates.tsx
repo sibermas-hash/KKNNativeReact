@@ -1,15 +1,7 @@
 import { Head } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Award,
-  Download,
-  Calendar,
-  FileCheck,
-  Clock,
-  CheckCircle2,
-  XCircle,
-} from 'lucide-react';
+import { Award, Download, Calendar, FileCheck, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import { clsx } from 'clsx';
 
 interface WorkshopCertificate {
@@ -55,14 +47,18 @@ export default function WorkshopCertificates({ certificates }: Props) {
             <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
               <Award size={32} className="text-emerald-400" />
             </div>
-            <h3 className="text-lg font-semibold text-emerald-900 mb-2">
-              Belum Ada Sertifikat
-            </h3>
+            <h3 className="text-lg font-semibold text-emerald-900 mb-2">Belum Ada Sertifikat</h3>
             <p className="text-sm text-emerald-600">
               Anda belum memiliki sertifikat Workshop. Ikuti Workshop untuk mendapatkan sertifikat.
             </p>
             <a
-              href={certificates.length > 0 ? '#' : (window.location.pathname.startsWith('/dosen') ? '/dosen/workshops' : '/mahasiswa/workshops')}
+              href={
+                certificates.length > 0
+                  ? '#'
+                  : window.location.pathname.startsWith('/dosen')
+                    ? '/dosen/workshops'
+                    : '/mahasiswa/workshops'
+              }
               className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors"
             >
               Lihat Workshop
@@ -87,9 +83,7 @@ export default function WorkshopCertificates({ certificates }: Props) {
                       <Award size={24} className="text-emerald-600" />
                     </div>
                     <div>
-                      <h3 className="font-semibold text-emerald-900">
-                        {cert.workshop_name}
-                      </h3>
+                      <h3 className="font-semibold text-emerald-900">{cert.workshop_name}</h3>
                       <div className="flex items-center gap-4 mt-1 text-sm text-emerald-600">
                         <span className="flex items-center gap-1">
                           <Calendar size={14} />

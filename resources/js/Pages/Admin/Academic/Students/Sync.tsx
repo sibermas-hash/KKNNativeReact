@@ -18,13 +18,9 @@ import {
   Target,
   Zap,
   Info,
-  ShieldCheck
+  ShieldCheck,
 } from 'lucide-react';
-import { 
-  PageHeader, 
-  StatCard, 
-  ContentPanel 
-} from '@/Components/Premium';
+import { PageHeader, StatCard, ContentPanel } from '@/Components/Premium';
 import { clsx } from 'clsx';
 
 interface Props extends PageProps {
@@ -64,7 +60,7 @@ export default function StudentSync({ summary }: Props) {
       <Head title="Sinkronisasi Mahasiswa KKN" />
 
       <div className="max-w-[1600px] mx-auto space-y-12 pb-24 font-sans px-4 sm:px-6 lg:px-8 text-emerald-950">
-        <PageHeader 
+        <PageHeader
           title="Transmisi Mahasiswa."
           subtitle="Pusat integrasi data untuk menyelaraskan identitas dan riwayat studi mahasiswa antara sistem KKN dan database induk universitas secara real-time."
           icon={RefreshCw}
@@ -72,13 +68,23 @@ export default function StudentSync({ summary }: Props) {
           stats={{
             label: 'Sinkronisasi Terakhir',
             value: formatSyncTime(summary.last_synced_at),
-            icon: Activity
+            icon: Activity,
           }}
         />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <StatCard label="Data KKN Lokal" value={summary.local_students} icon={Users} variant="info" />
-          <StatCard label="Terhubung Master" value={summary.with_master_link} icon={Link2} variant="success" />
+          <StatCard
+            label="Data KKN Lokal"
+            value={summary.local_students}
+            icon={Users}
+            variant="info"
+          />
+          <StatCard
+            label="Terhubung Master"
+            value={summary.with_master_link}
+            icon={Link2}
+            variant="success"
+          />
           <StatCard label="Koneksi Sistem" value="AKTIF" icon={Zap} variant="success" />
         </div>
 
@@ -96,18 +102,21 @@ export default function StudentSync({ summary }: Props) {
                   <RefreshCw size={150} />
                 </div>
                 <p className="text-sm font-black text-emerald-950 leading-relaxed relative z-10 font-display">
-                  Proses ini akan menarik seluruh data mahasiswa aktif dari server pusat universitas untuk menyelaraskan database operasional KKN secara masif.
+                  Proses ini akan menarik seluruh data mahasiswa aktif dari server pusat universitas
+                  untuk menyelaraskan database operasional KKN secara masif.
                 </p>
                 <div className="mt-8 space-y-4 relative z-10">
                   {[
                     'Pembaruan Identitas & Biodata',
                     'Validasi Program Studi & Fakultas',
                     'Sinkronisasi Status Akademik',
-                    'Kalibrasi Riwayat Kelompok'
+                    'Kalibrasi Riwayat Kelompok',
                   ].map((item, idx) => (
                     <div key={idx} className="flex items-center gap-4">
                       <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-sm" />
-                      <span className="text-[11px] font-black text-emerald-800 uppercase tracking-widest font-display">{item}</span>
+                      <span className="text-[11px] font-black text-emerald-800 uppercase tracking-widest font-display">
+                        {item}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -121,7 +130,11 @@ export default function StudentSync({ summary }: Props) {
                 {bulkForm.processing ? (
                   <Loader2 size={24} className="animate-spin" />
                 ) : (
-                  <RefreshCw size={24} strokeWidth={3} className="group-hover:rotate-180 transition-transform duration-700" />
+                  <RefreshCw
+                    size={24}
+                    strokeWidth={3}
+                    className="group-hover:rotate-180 transition-transform duration-700"
+                  />
                 )}
                 {bulkForm.processing ? 'SEDANG MENTRANSMISI...' : 'EKSEKUSI SINKRONISASI TOTAL'}
               </button>
@@ -138,7 +151,8 @@ export default function StudentSync({ summary }: Props) {
             <form onSubmit={submitTargeted} className="space-y-8">
               <div className="space-y-3">
                 <label className="text-[10px] font-black text-emerald-950 pl-1 leading-none flex items-center gap-3 uppercase tracking-widest font-display">
-                  <ListFilter size={14} strokeWidth={3} className="text-emerald-600" /> Daftar NIM Target
+                  <ListFilter size={14} strokeWidth={3} className="text-emerald-600" /> Daftar NIM
+                  Target
                 </label>
                 <textarea
                   value={targetedForm.data.nim_list}
@@ -152,13 +166,18 @@ export default function StudentSync({ summary }: Props) {
               <div className="bg-emerald-50/50 rounded-2xl p-6 flex items-start gap-5 border border-emerald-100">
                 <Info size={20} className="text-emerald-600 shrink-0 mt-1" strokeWidth={3} />
                 <p className="text-[11px] font-black text-emerald-800 leading-relaxed font-display">
-                  Gunakan mode ini untuk perbaikan data individu secara presisi tanpa membebani server pusat universitas atau melakukan transmisi masif.
+                  Gunakan mode ini untuk perbaikan data individu secara presisi tanpa membebani
+                  server pusat universitas atau melakukan transmisi masif.
                 </p>
               </div>
 
               <button
                 type="submit"
-                disabled={targetedForm.processing || bulkForm.processing || targetedForm.data.nim_list.trim() === ''}
+                disabled={
+                  targetedForm.processing ||
+                  bulkForm.processing ||
+                  targetedForm.data.nim_list.trim() === ''
+                }
                 className="h-16 w-full bg-emerald-950 hover:bg-black text-white font-black rounded-2xl shadow-lg transition-all flex items-center justify-center gap-4 text-xs tracking-[0.2em] disabled:opacity-50 active:scale-95 font-display"
               >
                 {targetedForm.processing ? (
@@ -181,12 +200,18 @@ export default function StudentSync({ summary }: Props) {
                   <ShieldCheck size={32} strokeWidth={2.5} />
                 </div>
                 <div className="flex flex-col">
-                  <h3 className="text-2xl font-black text-emerald-950 leading-none mb-2 font-display uppercase tracking-tight">Kedaulatan Data Mahasiswa.</h3>
-                  <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest font-display">Protokol Keamanan & Integrasi</span>
+                  <h3 className="text-2xl font-black text-emerald-950 leading-none mb-2 font-display uppercase tracking-tight">
+                    Kedaulatan Data Mahasiswa.
+                  </h3>
+                  <span className="text-[10px] font-black text-emerald-600 uppercase tracking-widest font-display">
+                    Protokol Keamanan & Integrasi
+                  </span>
                 </div>
               </div>
               <p className="text-sm font-bold text-emerald-800 leading-relaxed max-w-4xl font-display opacity-80">
-                Data mahasiswa yang tersinkronisasi merupakan fondasi akurasi penempatan kelompok dan penilaian akhir. Pastikan integritas NIM yang dimasukkan pada mode spesifik untuk menghindari duplikasi atau kesalahan identitas pada basis data operasional.
+                Data mahasiswa yang tersinkronisasi merupakan fondasi akurasi penempatan kelompok
+                dan penilaian akhir. Pastikan integritas NIM yang dimasukkan pada mode spesifik
+                untuk menghindari duplikasi atau kesalahan identitas pada basis data operasional.
               </p>
             </div>
           </div>
@@ -195,5 +220,3 @@ export default function StudentSync({ summary }: Props) {
     </AppLayout>
   );
 }
-
-

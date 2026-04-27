@@ -8,11 +8,8 @@ interface SearchInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 const SearchInput: React.FC<SearchInputProps> = ({ className, onSearch, ...props }) => {
   return (
-    <div className={clsx("relative", className)}>
-      <Search 
-        size={16} 
-        className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-800" 
-      />
+    <div className={clsx('relative', className)}>
+      <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-emerald-800" />
       <input
         {...props}
         onKeyDown={(e) => e.key === 'Enter' && onSearch?.()}

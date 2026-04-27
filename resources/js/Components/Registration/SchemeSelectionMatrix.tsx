@@ -92,10 +92,7 @@ export const SchemeSelectionMatrix = ({
               )}
             >
               Select Program{' '}
-              <ArrowRight
-                size={14}
-                className="group-hover:translate-x-2 transition-transform"
-              />
+              <ArrowRight size={14} className="group-hover:translate-x-2 transition-transform" />
             </div>
           </button>
         ))}

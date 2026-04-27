@@ -40,8 +40,8 @@ class SystemSetting extends Model
      */
     public static function get(string $key, $default = null)
     {
-        return Cache::remember("system_setting_{$key}", now()->addHours(24), function () use ($key, $default) {
-            try {
+        try {
+            return Cache::remember("system_setting_{$key}", now()->addHours(24), function () use ($key, $default) {
                 if (! Schema::hasTable('system_settings')) {
                     return $default;
                 }
@@ -60,10 +60,10 @@ class SystemSetting extends Model
                 }
 
                 return $value;
-            } catch (\Exception $e) {
-                return $default;
-            }
-        });
+            });
+        } catch (\Throwable $e) {
+            return $default;
+        }
     }
 
     /**

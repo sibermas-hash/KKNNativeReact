@@ -85,8 +85,4 @@ Route::middleware(['auth', 'verified', 'disable.debugbar'])->group(function () {
         ->middleware('role:superadmin|dpl|student');
 });
 
-Route::get('/auto-login', function () {
-    auth()->loginUsingId(1);
 
-    return redirect('/admin/laporan/program-kerja');
-});

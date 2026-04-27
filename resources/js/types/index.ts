@@ -220,7 +220,7 @@ export interface Download {
 
 export interface KKNScore {
   id: number;
-  mahasiswa_id: number;
+  user_id: number;
   periode_id: number;
   nilai_dpl?: number;
   nilai_lppm?: number;
@@ -318,7 +318,8 @@ export type FormErrors<T extends Record<string, unknown>> = {
 
 // Utility: checks if user has a specific role
 export function hasRole(user: User | null | undefined, role: string): boolean {
-  return user?.roles?.includes(role) ?? false;
+  if (!user?.roles) return false;
+  return user.roles.some((r) => (typeof r === 'string' ? r : r.name) === role);
 }
 
 // Utility: checks if errors object has any errors

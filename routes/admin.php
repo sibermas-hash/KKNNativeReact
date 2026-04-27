@@ -320,36 +320,7 @@ Route::middleware(['role:superadmin'])->prefix('admin')->name('admin.')->group(f
         Route::redirect('dpl/assignment', 'admin/dosen/penugasan', 301)->name('dpl.assignment');
 
         // Participant Operations
-        Route::prefix('peserta')->name('peserta.')->group(function () {
-            Route::get('pindah', [Admin\StudentTransferController::class, 'index'])->name('pindah.index');
-            Route::post('pindah', [Admin\StudentTransferController::class, 'transfer'])->name('pindah');
-        });
 
-        Route::prefix('pendaftaran')->name('pendaftaran.')->group(function () {
-            // Bulk Actions
-            Route::post('setuju-massal', [Admin\PesertaKknController::class, 'bulkApprove'])->name('setuju-massal');
-            Route::post('tolak-massal', [Admin\PesertaKknController::class, 'bulkReject'])->name('tolak-massal');
-            
-            // Individual Actions
-            Route::prefix('{pesertaKkn}')->group(function () {
-                Route::patch('setujui', [Admin\PesertaKknController::class, 'approve'])->name('setujui');
-                Route::patch('tolak', [Admin\PesertaKknController::class, 'reject'])->name('tolak');
-                Route::patch('tugaskan-kelompok', [Admin\PesertaKknController::class, 'assignGroup'])->name('tugaskan-kelompok');
-            });
-
-            // Role Assignments
-            Route::prefix('{registration}')->group(function () {
-                Route::post('jadikan-ketua', [Admin\PesertaKknController::class, 'makeLeader'])->name('jadikan-ketua');
-                Route::post('jadikan-korcam', [Admin\PesertaKknController::class, 'makeKorcam'])->name('jadikan-korcam');
-            });
-        });
-
-        // Groups CRUD
-        Route::prefix('kelompok')->name('kelompok.')->group(function () {
-            Route::post('impor', [Admin\KelompokKknController::class, 'import'])->name('import');
-        });
-        Route::resource('kelompok', Admin\KelompokKknController::class)
-            ->only(['store', 'update', 'destroy']);
     });
 
     Route::get('rekapitulasi', [Admin\RekapitulasiController::class, 'index'])->name('rekapitulasi.index');

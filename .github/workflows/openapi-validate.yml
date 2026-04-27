@@ -1,0 +1,29 @@
+name: OpenAPI Validation
+
+on:
+  push:
+    paths:
+      - 'openapi.yaml'
+      - '.github/workflows/openapi-validate.yml'
+  pull_request:
+    paths:
+      - 'openapi.yaml'
+      - '.github/workflows/openapi-validate.yml'
+
+jobs:
+  validate:
+    name: Validate OpenAPI contract
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Validate OpenAPI (swagger-cli)
+        run: |
+          echo "Validating openapi.yaml"
+          npx --yes @apidevtools/swagger-cli validate openapi.yaml

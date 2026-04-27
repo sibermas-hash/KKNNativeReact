@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\KKN\JenisKkn;
 use App\Models\KKN\PesertaKkn;
+use App\Services\RequirementBuilderService;
 use App\Services\RedisCacheService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -122,6 +123,11 @@ class JenisKknController extends Controller
 
         $validated['code'] = strtoupper($validated['code']);
 
+        // Validate requirements_config using RequirementBuilderService
+        if (!empty($validated['requirements_config'])) {
+            RequirementBuilderService::validateRequirementsConfig($validated['requirements_config']);
+        }
+
         JenisKkn::create($validated);
         RedisCacheService::invalidateMasterData();
 
@@ -170,6 +176,11 @@ class JenisKknController extends Controller
         ]);
 
         $validated['code'] = strtoupper($validated['code']);
+
+        // Validate requirements_config using RequirementBuilderService
+        if (!empty($validated['requirements_config'])) {
+            RequirementBuilderService::validateRequirementsConfig($validated['requirements_config']);
+        }
 
         $jenisKkn->update($validated);
         RedisCacheService::invalidateMasterData();

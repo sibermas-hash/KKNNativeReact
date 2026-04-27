@@ -40,6 +40,7 @@ interface PeriodSummary {
   requirements: {
     min_sks: number;
     min_gpa: number;
+    documents?: string[];
   };
   program_type: string | null;
   registration_start: string;
@@ -371,6 +372,25 @@ function PeriodCard({
                   </span>
                 </div>
               </div>
+
+              {(period.requirements?.documents?.length ?? 0) > 0 && (
+                <div className="flex flex-col gap-2 border-l-2 border-emerald-200 pl-4">
+                  <span className="text-[10px] font-bold text-emerald-950/40 uppercase tracking-widest">
+                    Dokumen Wajib
+                  </span>
+                  <div className="flex flex-wrap gap-2">
+                    {period.requirements.documents?.map((document) => (
+                      <span
+                        key={document}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-emerald-100 bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-700"
+                      >
+                        <FileCheck size={12} className="text-emerald-500" />
+                        {document}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Your Progress */}
               {!isMissingConfig && !upcoming && (

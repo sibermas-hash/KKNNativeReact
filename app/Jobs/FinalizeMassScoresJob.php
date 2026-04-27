@@ -78,7 +78,7 @@ class FinalizeMassScoresJob implements ShouldQueue
                             $lookupKey = $score->mahasiswa->id.'|'.$score->kelompok_id;
                             $report = $reports->get($lookupKey)?->first();
 
-                            if (! $report || $report->status !== 'approved') {
+                            if (! $report || ! $report->isApproved()) {
                                 $failed++;
                             } else {
                                 // FIX C6 & C15: Use row-level locking and update within transaction

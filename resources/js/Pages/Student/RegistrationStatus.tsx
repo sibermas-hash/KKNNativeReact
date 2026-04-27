@@ -1,17 +1,18 @@
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import {
-  FileText,
-  Clock,
-  CheckCircle2,
+    FileText,
+    Clock,
+    CheckCircle2,
   AlertCircle,
   XCircle,
   ArrowLeft,
   Calendar,
   Users,
   MapPin,
-  GraduationCap,
-  Info,
+    GraduationCap,
+    Info,
+    type LucideIcon,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
@@ -24,6 +25,7 @@ interface Props {
     registration_date: string;
     approved_at: string | null;
     period: {
+      id: number;
       name: string;
       jenis: string;
     };
@@ -50,7 +52,7 @@ export default function RegistrationStatus({ registration, student }: Props) {
     cancelled: 'bg-slate-50 text-slate-600 border-slate-200',
   };
 
-  const statusIcons: Record<string, any> = {
+  const statusIcons: Record<string, LucideIcon> = {
     pending: Clock,
     approved: CheckCircle2,
     rejected: AlertCircle,
@@ -217,7 +219,7 @@ export default function RegistrationStatus({ registration, student }: Props) {
                 </div>
                 <div className="pt-2">
                   <Link
-                    href={`/mahasiswa/pendaftaran/${registration.id}/dokumen`}
+                    href={`/mahasiswa/pendaftaran/${registration.period.id}/dokumen`}
                     className="inline-flex items-center gap-2 px-6 py-2.5 bg-rose-600 text-white text-xs font-black uppercase tracking-widest rounded-xl hover:bg-rose-700 transition-colors shadow-lg shadow-rose-200"
                   >
                     Upload Ulang Berkas

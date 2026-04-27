@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import axios from 'axios';
 import { Head, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
@@ -208,11 +209,28 @@ export default function AdminGradesIndex({ groups }: Props) {
     form.post(window.route('admin.nilai.store'));
   };
 
-  return (
+    const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
+return (
     <AppLayout title="Pusat Penilaian Akademik">
       <Head title="Koreksi Nilai - SIBERMAS" />
 
-      <div className="max-w-full mx-auto space-y-6 pb-24 font-sans px-6 lg:px-12 bg-white">
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="max-w-full mx-auto space-y-6 pb-24 font-sans px-6 lg:px-12 bg-white">
         {/* --- DYNAMIC ANALYTICS HEADER --- */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 pt-10 border-b-2 border-emerald-50 pb-10 sticky top-0 z-40 bg-white/95 backdrop-blur-xl -mx-6 px-12">
           <div className="flex items-center gap-8">
@@ -413,7 +431,7 @@ export default function AdminGradesIndex({ groups }: Props) {
             <span className="text-emerald-600">MAS</span>
           </p>
         </div>
-      </div>
+      </motion.div>
     </AppLayout>
   );
 }

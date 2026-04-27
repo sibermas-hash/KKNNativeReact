@@ -40,14 +40,8 @@ class EvaluationController extends Controller
     private function checkGradingPeriod(KelompokKkn $group)
     {
         $period = $group->periode;
-        if ($period && $period->grading_start && $period->grading_end) {
-            $now = now()->startOfDay();
-            if ($now->lt($period->grading_start) || $now->gt($period->grading_end)) {
-                return false;
-            }
-        }
 
-        return true;
+        return $period?->isGradingOpen() ?? true;
     }
 
     private function calculateWeightedDplScore(float $reportScore, float $executionScore, float $articleScore, KelompokKkn $group): float

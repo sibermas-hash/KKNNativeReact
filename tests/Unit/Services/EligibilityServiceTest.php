@@ -2,6 +2,8 @@
 
 namespace Tests\Unit\Services;
 
+use App\Models\KKN\DokumenPesertaKkn;
+use App\Models\KKN\JenisKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
@@ -127,6 +129,18 @@ class EligibilityServiceTest extends TestCase
 
     public function test_student_fails_when_documents_are_missing(): void
     {
+        $jenisKkn = JenisKkn::factory()->create([
+            'require_health_certificate' => true,
+            'require_parent_permission' => true,
+        ]);
+
+        $periode = Periode::factory()->create([
+            'jenis_kkn_id' => $jenisKkn->id,
+            'is_active' => true,
+            'registration_start' => now()->subDay(),
+            'registration_end' => now()->addDay(),
+        ]);
+
         $mahasiswa = Mahasiswa::factory()->make([
             'id' => 1,
             'nim' => '1234567890',
@@ -136,17 +150,86 @@ class EligibilityServiceTest extends TestCase
             'status_bta_ppi' => 'LULUS',
             'health_certificate_path' => null,
             'parent_permission_path' => null,
+            'is_paid_ukt' => true,
         ]);
 
         SystemSetting::set('min_sks_registration', 100);
         SystemSetting::set('enable_gpa_requirement', false);
 
-        $result = $this->service->checkEligibility($mahasiswa, 1);
+        $result = $this->service->checkEligibility($mahasiswa, $periode->id);
 
         $this->assertFalse($result['checks']['documents']['passed']);
         $this->assertFalse($result['is_eligible']);
         $this->assertFalse($result['has_health_certificate']);
         $this->assertFalse($result['has_parent_permission']);
+    }
+
+    public function test_student_fails_when_dynamic_required_document_is_missing(): void
+    {
+        $jenisKkn = JenisKkn::factory()->create([
+            'required_documents' => ['Scan KRS'],
+        ]);
+
+        $periode = Periode::factory()->create([
+            'jenis_kkn_id' => $jenisKkn->id,
+            'is_active' => true,
+            'registration_start' => now()->subDay(),
+            'registration_end' => now()->addDay(),
+        ]);
+
+        $mahasiswa = Mahasiswa::factory()->create([
+            'sks_completed' => 120,
+            'gpa' => 3.50,
+            'status_bta_ppi' => 'LULUS',
+            'is_paid_ukt' => true,
+        ]);
+
+        $result = $this->service->checkEligibility($mahasiswa, $periode->id);
+
+        $this->assertFalse($result['checks']['documents']['passed']);
+        $this->assertContains('Scan KRS', $result['checks']['documents']['missing_documents']);
+    }
+
+    public function test_student_passes_dynamic_document_check_after_upload(): void
+    {
+        $jenisKkn = JenisKkn::factory()->create([
+            'required_documents' => ['Scan KRS'],
+        ]);
+
+        $periode = Periode::factory()->create([
+            'jenis_kkn_id' => $jenisKkn->id,
+            'is_active' => true,
+            'registration_start' => now()->subDay(),
+            'registration_end' => now()->addDay(),
+        ]);
+
+        $mahasiswa = Mahasiswa::factory()->create([
+            'sks_completed' => 120,
+            'gpa' => 3.50,
+            'status_bta_ppi' => 'LULUS',
+            'is_paid_ukt' => true,
+        ]);
+
+        $registration = PesertaKkn::factory()->create([
+            'mahasiswa_id' => $mahasiswa->id,
+            'periode_id' => $periode->id,
+            'status' => 'document_submitted',
+        ]);
+
+        DokumenPesertaKkn::create([
+            'peserta_kkn_id' => $registration->id,
+            'document_type' => 'krs',
+            'file_path' => 'registration-documents/krs/krs.pdf',
+            'file_name' => 'krs.pdf',
+            'file_size' => 123456,
+            'uploaded_at' => now(),
+            'status' => 'pending',
+        ]);
+
+        $result = $this->service->checkEligibility($mahasiswa, $periode->id);
+
+        $this->assertTrue($result['checks']['documents']['passed']);
+        $this->assertSame([], $result['checks']['documents']['missing_documents']);
     }
 
     public function test_student_fails_when_no_active_registration_period(): void
@@ -252,6 +335,14 @@ class EligibilityServiceTest extends TestCase
 
     public function test_fails_when_student_has_active_registration(): void
     {
+        $currentPeriod = Periode::factory()->create([
+            'is_active' => true,
+            'registration_start' => now()->subDay(),
+            'registration_end' => now()->addDay(),
+        ]);
+
+        $otherPeriod = Periode::factory()->create();
+
         $mahasiswa = Mahasiswa::factory()->create([
             'sks_completed' => 120,
             'gpa' => 3.50,
@@ -262,13 +353,14 @@ class EligibilityServiceTest extends TestCase
 
         PesertaKkn::factory()->create([
             'mahasiswa_id' => $mahasiswa->id,
+            'periode_id' => $otherPeriod->id,
             'status' => 'pending',
         ]);
 
         SystemSetting::set('min_sks_registration', 100);
         SystemSetting::set('enable_gpa_requirement', false);
 
-        $result = $this->service->checkEligibility($mahasiswa, 1);
+        $result = $this->service->checkEligibility($mahasiswa, $currentPeriod->id);
 
         $this->assertFalse($result['checks']['no_active_registration']['passed']);
         $this->assertFalse($result['is_eligible']);

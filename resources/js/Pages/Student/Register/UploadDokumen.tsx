@@ -1,5 +1,6 @@
 import { Head, useForm, router } from '@inertiajs/react';
 import type { FormEventHandlerType } from '@/types/events';
+import { useMemo } from 'react';
 import {
   Upload,
   ShieldCheck,
@@ -9,12 +10,10 @@ import {
   CheckCircle2,
   IdCard,
   Info,
-  ChevronRight,
 } from 'lucide-react';
 import AppLayout from '@/Layouts/AppLayout';
 import { FileDrop } from '@/Pages/Student/Register/Components/FileDrop';
 import type { PageProps } from '@/types';
-import { clsx } from 'clsx';
 
 interface DocumentRequirement {
   field: string;
@@ -22,7 +21,7 @@ interface DocumentRequirement {
   description: string;
   required: boolean;
   icon: string;
-  has_template?: boolean;
+  template_url?: string | null;
 }
 
 interface Props extends PageProps {
@@ -34,11 +33,7 @@ interface Props extends PageProps {
   };
   registration: { id: number; status: string } | null;
   document_requirements: DocumentRequirement[];
-  existing_documents: {
-    has_health_certificate: boolean;
-    has_parent_permission: boolean;
-  };
-  parent_permission_template: string;
+  existing_documents: Record<string, boolean>;
 }
 
 const ICON_MAP: Record<string, typeof ShieldCheck> = {
@@ -52,14 +47,20 @@ export default function UploadDokumen({
   registration,
   document_requirements,
   existing_documents,
-  parent_permission_template,
 }: Props) {
-  const form = useForm<Record<string, File | string | null>>({
-    health_certificate: null,
-    parent_permission: null,
-    passport_scan: null,
-    notes: '',
-  });
+  const initialData = useMemo(
+    () =>
+      document_requirements.reduce<Record<string, File | string | null>>(
+        (carry, requirement) => {
+          carry[requirement.field] = null;
+          return carry;
+        },
+        { notes: '' },
+      ),
+    [document_requirements],
+  );
+
+  const form = useForm<Record<string, File | string | null>>(initialData);
 
   const handleSubmit: FormEventHandlerType = (e) => {
     e.preventDefault();
@@ -69,9 +70,7 @@ export default function UploadDokumen({
   };
 
   const getExisting = (field: string): boolean => {
-    if (field === 'health_certificate') return existing_documents.has_health_certificate;
-    if (field === 'parent_permission') return existing_documents.has_parent_permission;
-    return false;
+    return Boolean(existing_documents[field]);
   };
 
   const isAlreadySubmitted =
@@ -139,7 +138,6 @@ export default function UploadDokumen({
             {document_requirements.map((doc) => {
               const IconComponent = ICON_MAP[doc.icon] || FileText;
               const hasExisting = getExisting(doc.field);
-              const fileSelected = form.data[doc.field] instanceof File;
 
               return (
                 <div
@@ -175,10 +173,10 @@ export default function UploadDokumen({
                   <div className="p-5">
                     <FileDrop
                       file={form.data[doc.field] as File | null}
-                      onChange={(f) => form.setData(doc.field as any, f)}
+                      onChange={(f) => form.setData(doc.field, f)}
                       label={hasExisting ? `Ganti ${doc.label}` : `Unggah ${doc.label}`}
                       error={form.errors[doc.field]}
-                      templateUrl={doc.has_template ? parent_permission_template : undefined}
+                      templateUrl={doc.template_url ?? undefined}
                     />
                   </div>
                 </div>

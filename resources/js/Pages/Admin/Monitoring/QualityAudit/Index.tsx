@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import AppLayout from '@/Layouts/AppLayout';
 import {
   ShieldAlert,
@@ -45,11 +46,28 @@ interface Props {
 }
 
 export default function QualityAuditIndex({ reports, stats }: Props) {
-  return (
+    const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
+return (
     <AppLayout title="Audit Integritas Aktivitas">
       <Head title="Audit Integritas | SIBERMAS" />
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
         {/* PAGE HEADER */}
         <PageHeader
           title="Audit Integritas."
@@ -59,7 +77,7 @@ export default function QualityAuditIndex({ reports, stats }: Props) {
         />
 
         {/* STATS GRID */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             label="Laporan Berisiko"
             value={stats.high_risk_count}
@@ -69,10 +87,11 @@ export default function QualityAuditIndex({ reports, stats }: Props) {
           <StatCard label="Audit Pipeline" value="STABIL" icon={ShieldCheck} variant="success" />
           <StatCard label="Update Sinyal" value="REAL-TIME" icon={RefreshCw} variant="info" />
           <StatCard label="Sistem Sentinel" value="ACTIVE" icon={ScanLine} variant="gray" />
-        </div>
+        </motion.div>
 
         {/* MAIN CONTENT */}
-        <ContentPanel
+        <motion.div variants={itemVariants}>
+<ContentPanel
           title="Integrity Scanner Ledger"
           description="Daftar laporan yang terdeteksi memiliki potensi anomali berdasarkan algoritma pemindaian sistem."
           icon={LayoutGrid}
@@ -197,7 +216,8 @@ export default function QualityAuditIndex({ reports, stats }: Props) {
             ))}
           </PremiumTable>
         </ContentPanel>
-      </div>
+</motion.div>
+      </motion.div>
     </AppLayout>
   );
 }

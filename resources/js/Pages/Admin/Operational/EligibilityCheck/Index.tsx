@@ -17,6 +17,7 @@ import {
   Search,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { motion } from 'framer-motion';
 import { Pagination } from '@/Components/UI';
 import PageHeader from '@/Components/Premium/PageHeader';
 import StatCard from '@/Components/Premium/StatCard';
@@ -123,12 +124,35 @@ export default function EligibilityIndex({
     window.location.href = `/admin/audit-kualifikasi/ekspor?period_id=${periodId}&faculty_id=${facultyId}`;
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
   return (
     <AppLayout title="Audit Kualifikasi Akademik">
       <Head title="Audit Kualifikasi KKN" />
 
-      <div className="space-y-8 pb-24 text-emerald-950">
-        <PageHeader
+      <motion.div 
+        variants={containerVariants} 
+        initial="hidden" 
+        animate="show" 
+        className="space-y-8 pb-24 text-emerald-950"
+      >
+        <motion.div variants={itemVariants}>
+          <PageHeader
           title="Audit Kualifikasi."
           subtitle="Pemantauan kelaikan mahasiswa berdasarkan SKS, IPK, dan sertifikasi BTA-PPI secara real-time dari database akademik."
           icon={ShieldCheck}
@@ -146,9 +170,10 @@ export default function EligibilityIndex({
             <Download size={16} strokeWidth={2.5} /> Ekspor Hasil Audit
           </button>
         </PageHeader>
+        </motion.div>
 
         {/* --- INFO BANNER --- */}
-        <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-5 flex gap-4 items-start shadow-sm mb-6">
+        <motion.div variants={itemVariants} className="bg-emerald-50 border border-emerald-100 rounded-xl p-5 flex gap-4 items-start shadow-sm mb-6">
           <div className="h-10 w-10 bg-white rounded-xl border border-emerald-100 flex items-center justify-center shrink-0 text-emerald-600 shadow-sm">
             <Info size={20} strokeWidth={2.5} />
           </div>
@@ -163,10 +188,10 @@ export default function EligibilityIndex({
               <strong>non-berkas</strong> — kelengkapan dokumen diperiksa saat pendaftaran.
             </p>
           </div>
-        </div>
+        </motion.div>
 
         {/* --- STATS GRID --- */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="Total Audit" value={stats.total} icon={FileSearch} />
           <StatCard
             label="Lolos Kualifikasi"
@@ -186,9 +211,10 @@ export default function EligibilityIndex({
             icon={Activity}
             variant="info"
           />
-        </div>
+        </motion.div>
 
         {/* --- CONTENT PANEL --- */}
+        <motion.div variants={itemVariants}>
         <ContentPanel
           title="Daftar Audit Kualifikasi"
           description="Penyaringan Data Berdasarkan Atribut Akademik"
@@ -413,9 +439,10 @@ export default function EligibilityIndex({
             ))}
           </PremiumTable>
         </ContentPanel>
+        </motion.div>
 
         {/* --- FOOTER INFO --- */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-8">
           <div className="flex gap-4 p-6 bg-white border-2 border-[#f3f4f6] rounded-xl shadow-sm">
             <div className="h-10 w-10 bg-[#f0fdfa] rounded-xl flex items-center justify-center shrink-0 text-[#0d9488]">
               <RefreshCw size={20} strokeWidth={2.5} />
@@ -455,8 +482,8 @@ export default function EligibilityIndex({
               </p>
             </div>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </AppLayout>
   );
 }

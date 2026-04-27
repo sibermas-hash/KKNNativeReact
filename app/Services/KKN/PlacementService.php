@@ -12,15 +12,20 @@ use Illuminate\Support\Facades\DB;
 class PlacementService
 {
     /**
-     * Simple automatic placement example.
-     * - Finds approved, unplaced participants and assigns them into KelompokKkn respecting kuota.
-     * - This is a sample; adapt to real business rules and concurrency controls.
+     * Automatic placement for regular KKN.
+     * Finds approved, unplaced participants and assigns them into KelompokKkn respecting kuota.
+     * Skips self_determined periods (those are handled by placeParticipantSelfDetermined).
      */
     public static function placeParticipantsAutomatically(Periode $periode): void
     {
-        // Wrap in transaction to avoid partial assignments
+        // Skip if this is a self-determined placement period
+        $periode->loadMissing('jenisKkn');
+        if ($periode->placement_mode === Periode::PLACEMENT_MODE_SELF_DETERMINED
+            || $periode->jenisKkn?->placement_mode === 'self_determined') {
+            return;
+        }
+
         DB::transaction(function () use ($periode) {
-            // Example: participants with status 'approved' and no kelompok_id
             $participants = PesertaKkn::query()
                 ->where('periode_id', $periode->id)
                 ->where('status', 'approved')
@@ -33,13 +38,11 @@ class PlacementService
                 return;
             }
 
-            // Fetch existing groups with available capacity
             $groups = KelompokKkn::query()
                 ->where('periode_id', $periode->id)
                 ->get()
                 ->keyBy('id');
 
-            // Helper to find group with free slot
             $findGroupWithSlot = function () use (&$groups) {
                 foreach ($groups as $group) {
                     $capacity = $group->kuota ?? 0;
@@ -54,7 +57,6 @@ class PlacementService
             foreach ($participants as $participant) {
                 $group = $findGroupWithSlot();
                 if (! $group) {
-                    // Create new group (basic naming). Adjust as needed.
                     $group = KelompokKkn::create([
                         'periode_id' => $periode->id,
                         'nama_kelompok' => 'Kelompok ' . (KelompokKkn::where('periode_id', $periode->id)->count() + 1),
@@ -63,11 +65,41 @@ class PlacementService
                     $groups->put($group->id, $group);
                 }
 
-                // Assign participant
                 $participant->kelompok_id = $group->id;
                 $participant->status = 'placed';
                 $participant->save();
             }
+        });
+    }
+
+    /**
+     * Self-determined placement for KKN Mandiri.
+     * Creates a solo-group (capacity=1) for a single participant, using their
+     * registered domisili as the reference location.
+     */
+    public static function placeParticipantSelfDetermined(PesertaKkn $peserta): KelompokKkn
+    {
+        return DB::transaction(function () use ($peserta) {
+            $peserta->loadMissing(['mahasiswa', 'periode']);
+
+            $mahasiswa = $peserta->mahasiswa;
+            $periode = $peserta->periode;
+
+            // Create a solo group with capacity 1
+            $groupNumber = KelompokKkn::where('periode_id', $periode->id)->count() + 1;
+
+            $group = KelompokKkn::create([
+                'periode_id' => $periode->id,
+                'nama_kelompok' => 'Mandiri-' . ($mahasiswa->nim ?? $groupNumber),
+                'kuota' => 1,
+            ]);
+
+            // Assign participant
+            $peserta->kelompok_id = $group->id;
+            $peserta->status = 'placed';
+            $peserta->save();
+
+            return $group;
         });
     }
 }

@@ -9,6 +9,7 @@ use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\SystemSetting;
+use App\Services\KKN\RegistrationDocumentService;
 
 class EligibilityService
 {
@@ -18,6 +19,58 @@ class EligibilityService
     protected ?Periode $activePeriod = null;
 
     protected ?array $cachedSettings = null;
+
+    /**
+     * Process dynamic requirements based on JSON configuration
+     */
+    private function processDynamicChecks(Mahasiswa $mahasiswa, ?Periode $periode, array &$checks): void
+    {
+        $config = $periode?->jenisKkn?->requirements_config ?? [];
+        
+        if (empty($config)) {
+            return;
+        }
+
+        foreach ($config as $rule) {
+            $key = $rule['key'] ?? str_replace(' ', '_', strtolower($rule['name']));
+            $type = $rule['type'] ?? 'upload';
+
+            if ($type === 'db_check') {
+                $field = $rule['field'] ?? null;
+                $minValue = $rule['min_value'] ?? null;
+                $expectedValue = $rule['expected_value'] ?? null;
+
+                if ($field) {
+                    $actualValue = $mahasiswa->{$field};
+                    $passed = true;
+                    $message = $rule['name'];
+
+                    if ($minValue !== null) {
+                        $passed = (float)$actualValue >= (float)$minValue;
+                        $message .= $passed 
+                            ? " mencukupi ({$actualValue}/{$minValue})"
+                            : " tidak mencukupi ({$actualValue}/{$minValue})";
+                    } elseif ($expectedValue !== null) {
+                        // Normalized string comparison
+                        $passed = strtoupper(trim((string)$actualValue)) === strtoupper(trim((string)$expectedValue));
+                        $message .= $passed ? " Terverifikasi" : " Belum terpenuhi";
+                    } else {
+                        // Boolean check by default if no min/expected value
+                        $passed = (bool)$actualValue;
+                        $message .= $passed ? " Terverifikasi" : " Belum terpenuhi";
+                    }
+
+                    $checks[$key] = [
+                        'passed' => $passed,
+                        'key' => $key,
+                        'message' => $message,
+                        'type' => 'db_check'
+                    ];
+                }
+            }
+            // For 'upload' type, the validation is handled by checkDocuments() or manually by admin later
+        }
+    }
 
     /**
      * Check if a student is eligible to register for KKN
@@ -55,10 +108,16 @@ class EligibilityService
         }
 
         $checks['no_prior_completion'] = $this->checkNoPriorCompletion($mahasiswa, $preloadedData['completed_ids'] ?? null);
-        $checks['min_sks'] = $this->checkMinimumSKS($mahasiswa, $periode, $settings);
-        $checks['min_gpa'] = $this->checkMinimumGPA($mahasiswa, $periode, $settings);
-        $checks['ukt_payment'] = $this->checkUkt($mahasiswa);
-        $checks['bta_ppi'] = $this->checkBtaPpi($mahasiswa, $periode);
+        
+        // 3a. Process Dynamic JSON Requirements (New Approach)
+        $this->processDynamicChecks($mahasiswa, $periode, $checks);
+
+        // 3b. Legacy Checks (Hanya berjalan jika belum ada di dynamic checks untuk kompatibilitas)
+        if (!isset($checks['min_sks'])) $checks['min_sks'] = $this->checkMinimumSKS($mahasiswa, $periode, $settings);
+        if (!isset($checks['min_gpa'])) $checks['min_gpa'] = $this->checkMinimumGPA($mahasiswa, $periode, $settings);
+        if (!isset($checks['ukt_payment'])) $checks['ukt_payment'] = $this->checkUkt($mahasiswa);
+        if (!isset($checks['bta_ppi'])) $checks['bta_ppi'] = $this->checkBtaPpi($mahasiswa, $periode);
+        
         $checks['program_prodi'] = $this->checkProgramProdiRestriction($mahasiswa, $periode);
         $checks['personal_status'] = $this->checkPersonalStatusMandate($mahasiswa, $periode);
 
@@ -311,34 +370,49 @@ class EligibilityService
      */
     private function checkDocuments(Mahasiswa $mahasiswa, ?Periode $periode): array
     {
-        $jkkn = $periode?->jenisKkn;
-        
-        $hasHealthCert = ! empty($mahasiswa->health_certificate_path);
-        $hasParentPerm = ! empty($mahasiswa->parent_permission_path);
-        
-        $healthRequired = $jkkn ? (bool) $jkkn->require_health_certificate : false;
-        $parentRequired = $jkkn ? (bool) $jkkn->require_parent_permission : false;
-
-        $passed = true;
-        $details = [];
-
-        if ($healthRequired && ! $hasHealthCert) {
-            $passed = false;
+        if (! $periode) {
+            return [
+                'passed' => true,
+                'key' => 'documents',
+                'message' => 'Tidak ada dokumen yang perlu diverifikasi.',
+                'details' => [],
+                'missing_documents' => [],
+            ];
         }
-        if ($parentRequired && ! $hasParentPerm) {
-            $passed = false;
-        }
+
+        $documentService = app(RegistrationDocumentService::class);
+        $requirements = $documentService->requirementsForPeriod($periode);
+        $existing = $documentService->existingDocuments($mahasiswa, $periode);
+
+        $missingDocuments = collect($requirements)
+            ->filter(function (array $requirement) use ($existing) {
+                $field = (string) $requirement['field'];
+
+                return ($requirement['required'] ?? false) === true
+                    && ! (bool) ($existing[$field]['exists'] ?? false);
+            })
+            ->pluck('label')
+            ->values()
+            ->all();
+
+        $passed = $missingDocuments === [];
 
         return [
             'passed' => $passed,
             'key' => 'documents',
             'message' => $passed ? 'Dokumen persyaratan lengkap' : 'Dokumen persyaratan belum lengkap.',
-            'details' => [
-                'health_certificate' => $hasHealthCert,
-                'health_required' => $healthRequired,
-                'parent_permission' => $hasParentPerm,
-                'parent_required' => $parentRequired,
-            ],
+            'details' => collect($requirements)->mapWithKeys(function (array $requirement) use ($existing) {
+                $field = (string) $requirement['field'];
+
+                return [
+                    $field => [
+                        'required' => (bool) ($requirement['required'] ?? false),
+                        'exists' => (bool) ($existing[$field]['exists'] ?? false),
+                        'label' => $requirement['label'],
+                    ],
+                ];
+            })->all(),
+            'missing_documents' => $missingDocuments,
         ];
     }
 

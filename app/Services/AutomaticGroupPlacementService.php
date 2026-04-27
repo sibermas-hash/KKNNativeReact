@@ -12,6 +12,8 @@ use Illuminate\Validation\ValidationException;
 
 class AutomaticGroupPlacementService
 {
+    public const NO_ELIGIBLE_GROUP_MESSAGE = 'Sistem belum menemukan kelompok yang tersedia di luar kabupaten asal Anda. Hubungi admin LPPM untuk penempatan manual.';
+
     public function __construct(
         private readonly GroupSelectionService $groupSelectionService,
     ) {}
@@ -42,9 +44,8 @@ class AutomaticGroupPlacementService
             ->where('status', 'active')
             ->whereHas('lokasi', function ($query) use ($domicileRegency) {
                 $query->whereNotNull('regency_name')
-                    // PRE-FILTER: Avoid home regency at database level for significantly better performance
-                    // Use ILIKE with wildcards to handle "Kabupaten X" vs "X" at least partially
-                    ->where('regency_name', 'not ilike', "%{$domicileRegency}%");
+                    // Portable case-insensitive exclusion across PostgreSQL, SQLite, and MySQL.
+                    ->whereRaw('LOWER(regency_name) NOT LIKE ?', ['%'.$domicileRegency.'%']);
             })
             ->where(function ($query) {
                 $query->selectRaw('count(*)')
@@ -56,19 +57,26 @@ class AutomaticGroupPlacementService
             ->orderByDesc('capacity')
             ->orderBy('id');
 
+        $lastValidationException = null;
+
         // Use cursor for memory stability across thousands of iterations
         foreach ($candidates->cursor() as $group) {
             try {
                 $this->groupSelectionService->validateGroupAcceptance($group, $mahasiswa);
 
                 return $group;
-            } catch (ValidationException) {
+            } catch (ValidationException $exception) {
+                $lastValidationException = $exception;
                 continue;
             }
         }
 
+        if ($lastValidationException) {
+            throw $lastValidationException;
+        }
+
         throw ValidationException::withMessages([
-            'periode_id' => 'Sistem belum menemukan kelompok yang tersedia di luar kabupaten asal Anda. Hubungi admin LPPM untuk penempatan manual.',
+            'periode_id' => self::NO_ELIGIBLE_GROUP_MESSAGE,
         ]);
     }
 

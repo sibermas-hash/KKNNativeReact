@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { router, Head, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { route } from 'ziggy-js';
@@ -54,11 +55,28 @@ export default function AuditLogIndex({ logs, filters, stats }: Props) {
     router.get(route('admin.audit-log.index'), { search }, { preserveState: true });
   };
 
-  return (
+    const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
+return (
     <AppLayout title="Audit Log Sistem">
       <Head title="Audit Log Intelijen | SIBERMAS" />
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
         {/* PAGE HEADER */}
         <PageHeader
           title="Intelijen Sistem."
@@ -68,7 +86,7 @@ export default function AuditLogIndex({ logs, filters, stats }: Props) {
         />
 
         {/* STATS GRID */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="Populasi Log" value={stats.total} icon={Terminal} variant="success" />
           <StatCard
             label="Risiko Tinggi"
@@ -78,10 +96,11 @@ export default function AuditLogIndex({ logs, filters, stats }: Props) {
           />
           <StatCard label="Aktor Aktif" value={stats.unique_users} icon={User} variant="gray" />
           <StatCard label="Kernel State" value="STABIL" icon={Cpu} variant="gray" />
-        </div>
+        </motion.div>
 
         {/* MAIN CONTENT */}
-        <ContentPanel
+        <motion.div variants={itemVariants}>
+<ContentPanel
           title="Chronological Audit Stream"
           description="Aliran aktivitas real-time yang mencatat setiap perubahan dan interaksi dalam infrastruktur sistem."
           icon={LayoutGrid}
@@ -213,7 +232,8 @@ export default function AuditLogIndex({ logs, filters, stats }: Props) {
             ))}
           </PremiumTable>
         </ContentPanel>
-      </div>
+</motion.div>
+      </motion.div>
     </AppLayout>
   );
 }

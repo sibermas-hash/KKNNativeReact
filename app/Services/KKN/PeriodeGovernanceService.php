@@ -14,6 +14,43 @@ use App\Models\KKN\Periode;
  */
 class PeriodeGovernanceService
 {
+    public static function blueprintForPeriod(Periode $period): array
+    {
+        $period->loadMissing('jenisKkn');
+
+        $hasExplicitGovernance = filled($period->program_type)
+            || filled($period->program_subtype)
+            || filled($period->registration_mode)
+            || filled($period->placement_mode)
+            || filled($period->jenis);
+
+        if (! $hasExplicitGovernance && $period->jenisKkn) {
+            return self::blueprintFromJenisKkn($period->jenisKkn);
+        }
+
+        $blueprint = self::blueprint(
+            $period->program_type,
+            $period->program_subtype,
+            $period->jenis,
+            null
+        );
+
+        if (filled($period->registration_mode)) {
+            $blueprint['registration_mode'] = $period->registration_mode;
+            $blueprint['registration_mode_label'] = Periode::registrationModeLabels()[$period->registration_mode] ?? $period->registration_mode;
+        }
+
+        if (filled($period->placement_mode)) {
+            $blueprint['placement_mode'] = $period->placement_mode;
+            $blueprint['placement_mode_label'] = Periode::placementModeLabels()[$period->placement_mode] ?? $period->placement_mode;
+        }
+
+        $blueprint['self_service_enabled'] = ($blueprint['registration_mode'] ?? null) === Periode::REGISTRATION_MODE_OPEN
+            && ($blueprint['placement_mode'] ?? null) === Periode::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL;
+
+        return $blueprint;
+    }
+
     public static function blueprintFromJenisKkn(JenisKkn $jenisKkn): array
     {
         $jenisEnum = self::resolveJenisEnumFromCode($jenisKkn->code);
@@ -217,12 +254,28 @@ class PeriodeGovernanceService
 
         $blueprint = self::blueprintFromJenisKkn($jenisKkn);
 
-        // Sync attributes that might exist in the periode table
-        $period->jenis = $blueprint['jenis_enum'];
-        $period->program_type = $blueprint['program_type'];
-        $period->program_subtype = $blueprint['program_subtype'];
-        $period->registration_mode = $blueprint['registration_mode'];
-        $period->placement_mode = $blueprint['placement_mode'];
+        // Sync defaults from master data, while still respecting explicit values
+        // that were intentionally supplied on the period itself.
+        if (! self::shouldPreserveExplicitValue($period, 'jenis')) {
+            $period->jenis = $blueprint['jenis_enum'];
+        }
+        if (! self::shouldPreserveExplicitValue($period, 'program_type')) {
+            $period->program_type = $blueprint['program_type'];
+        }
+        if (! self::shouldPreserveExplicitValue($period, 'program_subtype')) {
+            $period->program_subtype = $blueprint['program_subtype'];
+        }
+        if (! self::shouldPreserveExplicitValue($period, 'registration_mode')) {
+            $period->registration_mode = $blueprint['registration_mode'];
+        }
+        if (! self::shouldPreserveExplicitValue($period, 'placement_mode')) {
+            $period->placement_mode = $blueprint['placement_mode'];
+        }
+    }
+
+    private static function shouldPreserveExplicitValue(Periode $period, string $field): bool
+    {
+        return $period->isDirty($field) && filled($period->getAttribute($field));
     }
 
     /**

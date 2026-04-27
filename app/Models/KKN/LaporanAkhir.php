@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models\KKN;
 
 use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,6 +16,11 @@ use Illuminate\Support\Facades\Storage;
 class LaporanAkhir extends Model
 {
     use HasFactory, SoftDeletes;
+
+    public const STATUS_DRAFT = 'draft';
+    public const STATUS_SUBMITTED = 'submitted';
+    public const STATUS_APPROVED = 'approved';
+    public const STATUS_REVISION = 'revision';
 
     protected $table = 'laporan_akhir';
 
@@ -46,24 +52,61 @@ class LaporanAkhir extends Model
         'score' => 'decimal:2',
     ];
 
+    public static function normalizeWorkflowStatus(?string $status): string
+    {
+        $normalized = strtolower(trim((string) $status));
+
+        return match ($normalized) {
+            'submitted', 'pending', 'menunggu' => self::STATUS_SUBMITTED,
+            'approved', 'reviewed', 'disetujui' => self::STATUS_APPROVED,
+            'revision', 'revised', 'revisi', 'rejected' => self::STATUS_REVISION,
+            default => self::STATUS_DRAFT,
+        };
+    }
+
+    public function canonicalStatus(): string
+    {
+        return self::normalizeWorkflowStatus($this->status);
+    }
+
+    public function canBeReviewed(): bool
+    {
+        return in_array($this->canonicalStatus(), [self::STATUS_SUBMITTED, self::STATUS_REVISION], true);
+    }
+
+    public function isApproved(): bool
+    {
+        return $this->canonicalStatus() === self::STATUS_APPROVED;
+    }
+
+    public function canBeResubmitted(): bool
+    {
+        return $this->canonicalStatus() === self::STATUS_REVISION;
+    }
+
+    public function scopeWorkflowApproved(Builder $query): Builder
+    {
+        return $query->whereIn('status', ['approved', 'reviewed', 'disetujui']);
+    }
+
     /**
      * PHP 8.4 Property Hooks (Demonstration)
      * Replacing old-style getAttribute methods with direct property hooks.
      */
     public string $status_label {
-        get => match($this->status) {
-            'submitted' => 'Menunggu Review',
-            'reviewed' => 'Sudah Direview',
-            'rejected' => 'Perlu Revisi',
+        get => match($this->canonicalStatus()) {
+            self::STATUS_SUBMITTED => 'Menunggu Review',
+            self::STATUS_APPROVED => 'Disetujui',
+            self::STATUS_REVISION => 'Perlu Revisi',
             default => 'Draft',
         };
     }
 
     public string $status_color {
-        get => match($this->status) {
-            'submitted' => 'yellow',
-            'reviewed' => 'green',
-            'rejected' => 'red',
+        get => match($this->canonicalStatus()) {
+            self::STATUS_SUBMITTED => 'yellow',
+            self::STATUS_APPROVED => 'green',
+            self::STATUS_REVISION => 'red',
             default => 'gray',
         };
     }

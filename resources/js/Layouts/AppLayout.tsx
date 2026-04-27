@@ -4,6 +4,8 @@ import { Menu, Power, BadgeCheck, ShieldCheck } from 'lucide-react';
 import Sidebar from '@/Components/Sidebar';
 import AiAssistant from '@/Components/AiAssistant';
 import { ErrorBoundary } from '@/Components/ErrorBoundary';
+import { registerPushNotifications } from '@/lib/push-notifications';
+import type { PageProps } from '@/types';
 import axios from 'axios';
 
 import { useToast } from '@/Hooks/useToast';
@@ -25,7 +27,7 @@ interface AppLayoutProps {
 }
 
 export default function AppLayout({ children, title }: AppLayoutProps) {
-  const { props } = usePage<any>();
+  const { props } = usePage<PageProps>();
   const { auth, flash } = props;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [dynamicTitle, setDynamicTitle] = useState(title || '');
@@ -69,6 +71,14 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
     }
   }, [flash?.success, flash?.error, flash?.warning, flash?.info]);
 
+  useEffect(() => {
+    if (!auth?.user?.id || parentLayout.insideLayout) return;
+
+    registerPushNotifications().catch(() => {
+      // Push registration is best-effort on native clients.
+    });
+  }, [auth?.user?.id, parentLayout.insideLayout]);
+
   // Sinkronisasi judul jika title prop berubah
   useEffect(() => {
     if (title) {
@@ -95,6 +105,11 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
     });
   };
 
+  const hasNamedRole = (roleNames: string[]): boolean =>
+    roleNames.some((roleName) =>
+      auth?.user?.roles?.some((role) => (typeof role === 'string' ? role : role.name) === roleName),
+    ) ?? false;
+
   return (
     <LayoutContext.Provider value={layoutContextValue}>
       <div className="min-h-screen bg-slate-50 font-sans">
@@ -120,16 +135,14 @@ export default function AppLayout({ children, title }: AppLayoutProps) {
             </div>
 
             <div className="flex items-center gap-3">
-              {auth?.user?.roles?.some((r: any) =>
-                ['admin', 'superadmin', 'faculty_admin'].includes(r.name),
-              ) && (
+              {hasNamedRole(['admin', 'superadmin', 'faculty_admin']) && (
                 <span className="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-md text-xs font-medium text-emerald-700">
                   <ShieldCheck size={12} />
                   Admin
                 </span>
               )}
 
-              {auth?.user?.roles?.some((r: any) => r.name === 'student') && (
+              {hasNamedRole(['student']) && (
                 <span className="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-100 rounded-md text-xs font-medium text-emerald-700">
                   <BadgeCheck size={12} />
                   Mahasiswa

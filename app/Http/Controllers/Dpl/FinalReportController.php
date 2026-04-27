@@ -26,7 +26,7 @@ class FinalReportController extends Controller
 
     private function canReview(LaporanAkhir $report): bool
     {
-        return in_array($report->status, ['submitted', 'revision'], true);
+        return $report->canBeReviewed();
     }
 
     public function index(Request $request): Response
@@ -35,13 +35,16 @@ class FinalReportController extends Controller
 
         $reports = LaporanAkhir::whereIn('kelompok_id', $groupIds)
             ->with(['mahasiswa', 'kelompok'])
-            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
+            ->when(
+                $request->filled('status'),
+                fn ($q) => $q->where('status', LaporanAkhir::normalizeWorkflowStatus($request->string('status')->toString()))
+            )
             ->orderByDesc('submitted_at')
             ->paginate(15)
             ->through(fn (LaporanAkhir $report) => [
                 'id' => $report->id,
                 'title' => $report->title,
-                'status' => $report->status,
+                'status' => $report->canonicalStatus(),
                 'submitted_at' => optional($report->submitted_at)->format('d M Y H:i'),
                 'review_notes' => $report->review_notes,
                 'mahasiswa' => [
@@ -73,7 +76,7 @@ class FinalReportController extends Controller
                 'title' => $report->title,
                 'abstract' => $report->abstract,
                 'file_name' => $report->file_name,
-                'status' => $report->status,
+                'status' => $report->canonicalStatus(),
                 'can_review' => $this->canReview($report),
                 'submitted_at' => optional($report->submitted_at)->format('d M Y H:i'),
                 'review_notes' => $report->review_notes,

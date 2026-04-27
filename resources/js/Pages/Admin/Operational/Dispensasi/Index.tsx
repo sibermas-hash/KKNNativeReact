@@ -1,4 +1,5 @@
 import { type FormEvent, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Head, router, useForm } from '@inertiajs/react';
 import {
   ShieldCheck,
@@ -108,11 +109,28 @@ export default function DispensasiIndex({ dispensasi, izins, periods, filters }:
     );
   };
 
-  return (
+    const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
+return (
     <AppLayout title="Otoritas Dispensasi Khusus">
       <Head title="Manajemen Dispensasi" />
 
-      <div className="max-w-[1600px] mx-auto space-y-8 pb-24 font-sans px-4 sm:px-6 lg:px-8">
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="max-w-[1600px] mx-auto space-y-8 pb-24 font-sans px-4 sm:px-6 lg:px-8">
         {/* --- STANDARD HEADER STYLE --- */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pt-10">
           <div className="space-y-4">

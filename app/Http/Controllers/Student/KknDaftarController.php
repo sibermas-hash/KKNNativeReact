@@ -9,13 +9,14 @@ use App\Models\KKN\JenisKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
+use App\Services\KKN\RegistrationDocumentService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class KknDaftarController extends Controller
 {
-    public function index(Request $request): Response
+    public function index(Request $request, RegistrationDocumentService $documentService): Response
     {
         $user = $request->user();
         $mahasiswa = $user?->mahasiswa;
@@ -36,11 +37,12 @@ class KknDaftarController extends Controller
             ->with(['jenisKkn', 'tahunAkademik'])
             ->orderByDesc('registration_start')
             ->get()
-            ->map(function ($p) use ($mahasiswa, $hasRegistered) {
+            ->map(function ($p) use ($documentService, $mahasiswa, $hasRegistered) {
                 $jenis = $p->jenisKkn;
                 $canRegister = in_array($p->current_phase, ['registration', 'placement']);
 
                 $eligibility = $this->checkEligibility($mahasiswa, $jenis);
+                $documentRequirements = $documentService->requirementsForPeriod($p);
 
                 // Jika sudah pernah daftar KKN apapun, tidak boleh daftar lagi
                 if ($hasRegistered) {
@@ -59,6 +61,10 @@ class KknDaftarController extends Controller
                     'requirements' => [
                         'min_sks' => $jenis?->min_sks ?? 100,
                         'min_gpa' => $jenis?->min_gpa ?? 2.0,
+                        'documents' => collect($documentRequirements)
+                            ->pluck('label')
+                            ->values()
+                            ->all(),
                     ],
                     'program_type' => $p->program_type,
                     'registration_start' => $p->registration_start?->format('d/m/Y'),

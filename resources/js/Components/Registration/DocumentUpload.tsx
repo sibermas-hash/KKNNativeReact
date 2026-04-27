@@ -1,110 +1,87 @@
 import React from 'react';
-import { FileText, ShieldCheck, FileCheck } from 'lucide-react';
+import { FileText, ShieldCheck, FileCheck, UploadCloud, AlertCircle } from 'lucide-react';
 import { FileDrop } from '@/Pages/Student/Register/Components/FileDrop';
 import { RequirementNode } from '@/Pages/Student/Register/Components/RequirementNode';
 
+interface DynamicDocument {
+  name: string;
+  key: string;
+  type: 'upload' | 'db_check';
+}
+
 interface DocumentUploadProps {
   form: {
-    data: {
-      health_certificate: File | null;
-      parent_permission: File | null;
-    };
-    setData: (key: string, value: File | string | boolean | null) => void;
+    data: any;
+    setData: (key: string, value: any) => void;
     errors: Partial<Record<string, string>>;
   };
-  student_academic?: {
-    has_health_certificate: boolean;
-    has_parent_permission?: boolean;
-    parent_permission_template?: string | null;
-    [key: string]: unknown;
-  } | null;
-  hasHealthCertificate: boolean;
-  hasParentPermission: boolean;
+  student_academic?: any;
+  dynamic_documents?: DynamicDocument[]; // Diambil dari requirement_info.requirements yang filternya 'upload'
 }
 
 export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   form,
   student_academic,
-  hasHealthCertificate,
-  hasParentPermission,
+  dynamic_documents = [],
 }) => {
+  // Filter hanya yang tipe 'upload'
+  const uploadRequirements = dynamic_documents.filter(d => d.type === 'upload');
+
   return (
-    <div className="space-y-10">
-      {/* Section Heading — konsisten dengan IdentityForm & AcademicForm */}
+    <div className="space-y-8">
       <div className="flex items-center gap-6">
-        <div className="h-1 w-24 bg-[#0d9488] rounded-full" />
-        <h3 className="text-xs font-bold text-emerald-950 uppercase tracking-[0.4em]">
-          Unggah Dokumen Persyaratan
+        <div className="h-1 w-24 bg-emerald-600 rounded-full" />
+        <h3 className="text-xs font-black text-emerald-950 uppercase tracking-[0.4em]">
+          Unggah Berkas Pendukung
         </h3>
       </div>
 
-      {/* Upload Area */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Surat Keterangan Sehat */}
-        <div className="p-10 rounded-[3rem] bg-white border border-emerald-50/60 shadow-sm space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 text-emerald-600">
-              <ShieldCheck size={24} />
-              <span className="text-xs font-bold uppercase tracking-widest">
-                Surat Keterangan Sehat
-              </span>
-            </div>
-            {student_academic?.has_health_certificate && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">
-                <ShieldCheck size={12} />
-                Sudah Ada
-              </span>
-            )}
-          </div>
-          <FileDrop
-            file={form.data.health_certificate}
-            onChange={(f) => form.setData('health_certificate', f)}
-            label="Surat Keterangan Sehat"
-            error={form.errors.health_certificate}
-          />
-        </div>
+      {uploadRequirements.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {uploadRequirements.map((doc, index) => {
+            const fieldKey = `dynamic_files.${doc.key}`;
+            const isExisting = student_academic?.[`has_${doc.key}`] || false;
 
-        {/* Surat Izin Orang Tua */}
-        <div className="p-10 rounded-[3rem] bg-white border border-emerald-50/60 shadow-sm space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4 text-emerald-600">
-              <FileText size={24} />
-              <span className="text-xs font-bold uppercase tracking-widest">
-                Surat Izin Orang Tua
-              </span>
-            </div>
-            {student_academic?.has_parent_permission && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">
-                <ShieldCheck size={12} />
-                Sudah Ada
-              </span>
-            )}
-          </div>
-          <FileDrop
-            file={form.data.parent_permission}
-            onChange={(f) => form.setData('parent_permission', f)}
-            label="Surat Izin Orang Tua"
-            error={form.errors.parent_permission}
-            templateUrl={student_academic?.parent_permission_template}
-          />
+            return (
+              <div 
+                key={doc.key || index} 
+                className="p-8 rounded-[2.5rem] bg-white border border-emerald-100 shadow-sm space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 text-emerald-600">
+                    <UploadCloud size={20} />
+                    <span className="text-[10px] font-black uppercase tracking-widest">
+                      {doc.name}
+                    </span>
+                  </div>
+                  {isExisting && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-[9px] font-black uppercase tracking-tight">
+                      <ShieldCheck size={12} /> Terverifikasi
+                    </span>
+                  )}
+                </div>
+                
+                <FileDrop
+                  file={form.data.dynamic_files?.[doc.key] || null}
+                  onChange={(f) => {
+                    const currentFiles = { ...(form.data.dynamic_files || {}) };
+                    currentFiles[doc.key] = f;
+                    form.setData('dynamic_files', currentFiles);
+                  }}
+                  label={doc.name}
+                  error={form.errors[fieldKey]}
+                />
+              </div>
+            );
+          })}
         </div>
-      </div>
-
-      {/* Status Kelengkapan */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <RequirementNode
-          label="KESEHATAN"
-          ok={hasHealthCertificate}
-          value="SURAT KETERANGAN SEHAT"
-          icon={ShieldCheck}
-        />
-        <RequirementNode
-          label="PERIZINAN"
-          ok={hasParentPermission}
-          value="SURAT IZIN ORANG TUA"
-          icon={FileCheck}
-        />
-      </div>
+      ) : (
+        <div className="p-12 text-center border-2 border-dashed border-slate-100 rounded-[2.5rem] bg-slate-50/50">
+          <FileCheck size={40} className="mx-auto text-slate-300 mb-3" />
+          <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Tidak ada dokumen yang perlu diunggah.</p>
+        </div>
+      )}
     </div>
   );
 };
+

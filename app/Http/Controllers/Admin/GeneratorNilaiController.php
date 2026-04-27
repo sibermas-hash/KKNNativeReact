@@ -163,11 +163,8 @@ class GeneratorNilaiController extends Controller
         $group = KelompokKkn::with('periode')->find($data['kelompok_id']);
         $period = $group?->periode;
 
-        if ($period && $period->grading_start && $period->grading_end) {
-            $now = now()->startOfDay();
-            if ($now->lt($period->grading_start) || $now->gt($period->grading_end)) {
-                return back()->with('error', 'Masa penilaian KKN untuk periode ini belum dibuka atau sudah berakhir.');
-            }
+        if ($period && ! $period->isGradingOpen()) {
+            return back()->with('error', 'Masa penilaian KKN untuk periode ini belum dibuka atau sudah berakhir.');
         }
 
         // Handle File Upload - PROTECTED STORAGE

@@ -162,7 +162,7 @@ export interface FinalReport {
   abstract?: string;
   file_path?: string;
   file_name?: string;
-  status: 'draft' | 'submitted' | 'reviewed' | 'approved' | 'revision';
+  status: 'draft' | 'submitted' | 'approved' | 'revision';
   score?: number;
 }
 

@@ -35,7 +35,7 @@ class CertificateController extends Controller
         $checks = [
             'has_score' => $score !== null,
             'is_finalized' => $score?->is_finalized ?? false,
-            'report_approved' => ($laporanAkhir?->status === 'approved'),
+            'report_approved' => ($laporanAkhir?->isApproved() ?? false),
             'min_grade' => ($score?->total_score >= 70),
         ];
 
@@ -45,7 +45,7 @@ class CertificateController extends Controller
             'eligible' => $eligible,
             'checks' => $checks,
             'score' => $score,
-            'laporan_akhir_status' => $laporanAkhir?->status ?? 'pending',
+            'laporan_akhir_status' => $laporanAkhir?->canonicalStatus() ?? 'pending',
             'certificate_url' => $eligible ? route('student.certificate.download', $score->id) : null,
         ]);
     }

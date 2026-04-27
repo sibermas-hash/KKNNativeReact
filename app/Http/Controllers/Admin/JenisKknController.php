@@ -7,7 +7,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\KKN\JenisKkn;
 use App\Models\KKN\PesertaKkn;
-use App\Services\RequirementBuilderService;
+use App\Services\KKN\RequirementBuilderService;
 use App\Services\RedisCacheService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -54,12 +54,7 @@ class JenisKknController extends Controller
                 'sort_order' => $j->sort_order,
                 'periodes_count' => $j->periodes()->count(),
                 'requirements_config' => $j->requirements_config ?? [],
-                'attendance_config' => $j->attendance_config ?? [
-                    'radius_check' => true,
-                    'radius_meter' => 100,
-                    'location_source' => 'posko',
-                    'require_photo' => true
-                ],
+                'attendance_config' => $j->getAttendanceConfig(),
             ]);
 
         return Inertia::render('Admin/MasterData/JenisKkn/Index', [
@@ -115,10 +110,11 @@ class JenisKknController extends Controller
             'requirements_config.*.min_value' => ['nullable'],
             'requirements_config.*.expected_value' => ['nullable'],
             'attendance_config' => ['nullable', 'array'],
-            'attendance_config.radius_check' => ['boolean'],
-            'attendance_config.radius_meter' => ['integer', 'min:1'],
+            'attendance_config.geofence_enabled' => ['boolean'],
+            'attendance_config.radius_meters' => ['integer', 'min:1'],
             'attendance_config.location_source' => ['string', Rule::in(['posko', 'domisili'])],
             'attendance_config.require_photo' => ['boolean'],
+            'attendance_config.allow_offline_sync' => ['boolean'],
         ]);
 
         $validated['code'] = strtoupper($validated['code']);
@@ -169,10 +165,11 @@ class JenisKknController extends Controller
             'requirements_config.*.min_value' => ['nullable'],
             'requirements_config.*.expected_value' => ['nullable'],
             'attendance_config' => ['nullable', 'array'],
-            'attendance_config.radius_check' => ['boolean'],
-            'attendance_config.radius_meter' => ['integer', 'min:1'],
+            'attendance_config.geofence_enabled' => ['boolean'],
+            'attendance_config.radius_meters' => ['integer', 'min:1'],
             'attendance_config.location_source' => ['string', Rule::in(['posko', 'domisili'])],
             'attendance_config.require_photo' => ['boolean'],
+            'attendance_config.allow_offline_sync' => ['boolean'],
         ]);
 
         $validated['code'] = strtoupper($validated['code']);

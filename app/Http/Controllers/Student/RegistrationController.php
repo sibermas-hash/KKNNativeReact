@@ -426,6 +426,7 @@ class RegistrationController extends Controller
                 'registration_date' => $registration->registration_date?->format('d/m/Y H:i'),
                 'approved_at' => $registration->approved_at?->format('d/m/Y H:i'),
                 'period' => [
+                    'id' => $registration->periode?->id,
                     'name' => $registration->periode?->name,
                     'jenis' => $registration->periode?->jenisKkn?->name,
                 ],

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Head, router, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Button, Pagination } from '@/Components/UI';
@@ -106,11 +107,28 @@ export default function DatabaseSyncIndex({
     return map[type.toLowerCase()] || type;
   };
 
-  return (
+    const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
+return (
     <AppLayout title="Monitoring Database">
       <Head title="Monitoring Database" />
 
-      <div className="py-8 font-sans transition-all text-emerald-950">
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="py-8 font-sans transition-all text-emerald-950">
         {/* HEADER SECTION */}
         <PageHeader
           title="Monitoring Database"
@@ -125,7 +143,7 @@ export default function DatabaseSyncIndex({
         />
 
         {/* CONNECTION STATUS GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 mb-8">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-8 mb-8">
           <StatCard
             icon={Database}
             label="Database Aplikasi"
@@ -166,7 +184,8 @@ export default function DatabaseSyncIndex({
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* LEFT COLUMN (Actions) */}
           <div className="space-y-6 lg:col-span-1">
-            <ContentPanel
+            <motion.div variants={itemVariants}>
+<ContentPanel
               title="Perbarui Data Mandiri"
               description="Sinkronisasi manual dari sistem pusat."
               icon={Terminal}
@@ -222,6 +241,7 @@ export default function DatabaseSyncIndex({
                 </div>
               </div>
             </ContentPanel>
+</motion.div>
 
             <div className="bg-white rounded-2xl p-6 relative overflow-hidden shadow-sm border border-emerald-100">
               <div className="absolute -top-4 -right-4 p-6 opacity-[0.03] rotate-12 pointer-events-none text-[#0d9488]">
@@ -274,7 +294,8 @@ export default function DatabaseSyncIndex({
 
           {/* RIGHT COLUMN (Logs) */}
           <div className="lg:col-span-2">
-            <ContentPanel
+            <motion.div variants={itemVariants}>
+<ContentPanel
               title="Riwayat Pembaruan Data"
               description="Catatan terperinci aktivitas sinkronisasi hari ini."
               icon={History}
@@ -373,9 +394,10 @@ export default function DatabaseSyncIndex({
                 ))}
               </PremiumTable>
             </ContentPanel>
+</motion.div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </AppLayout>
   );
 }

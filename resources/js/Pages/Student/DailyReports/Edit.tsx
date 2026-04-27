@@ -4,17 +4,15 @@ import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
 import { FormInput, FormTextarea, FormSelect } from '@/Components/UI';
 import { getCurrentCoordinates } from '@/lib/geolocation';
+import { capturePhotoFile, isNativeCameraAvailable } from '@/lib/native-camera';
 import {
   ChevronLeft,
   Navigation,
   FileText,
+  Camera,
   Save,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
   Info,
   Calendar,
-  MapPin,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -71,13 +69,19 @@ function formatDateTime(value: string | null | undefined): string {
   });
 }
 
-export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
+export default function StudentDailyReportEdit({ report }: Props) {
   const files = report.file_kegiatan ?? report.fileKegiatan ?? [];
   const [isFetchingLocation, setIsFetchingLocation] = useState(false);
   const [locationFeedback, setLocationFeedback] = useState<{
     msg: string;
     type: 'success' | 'error' | 'info';
   } | null>(null);
+  const [mediaFeedback, setMediaFeedback] = useState<{
+    msg: string;
+    type: 'success' | 'error';
+  } | null>(null);
+  const [isCapturingPhoto, setIsCapturingPhoto] = useState(false);
+  const hasNativeCamera = isNativeCameraAvailable();
 
   const form = useForm({
     date: report.date ?? '',
@@ -147,6 +151,47 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
       setIsFetchingLocation(false);
     }
   }, [form]);
+
+  const updateSelectedFiles = useCallback(
+    (selectedFiles: File[]) => {
+      form.setData('files', selectedFiles);
+      form.clearErrors('files');
+      setMediaFeedback(
+        selectedFiles.length > 0
+          ? {
+              msg: `${selectedFiles.length} foto baru siap disimpan.`,
+              type: 'success',
+            }
+          : null,
+      );
+    },
+    [form],
+  );
+
+  const handleNativePhotoCapture = useCallback(async () => {
+    setIsCapturingPhoto(true);
+    setMediaFeedback(null);
+
+    try {
+      const file = await capturePhotoFile({
+        direction: 'rear',
+        fileNamePrefix: 'daily-report-revision',
+      });
+
+      if (!file) {
+        return;
+      }
+
+      updateSelectedFiles([...form.data.files, file]);
+    } catch (error) {
+      setMediaFeedback({
+        msg: error instanceof Error ? error.message : 'Gagal membuka kamera perangkat.',
+        type: 'error',
+      });
+    } finally {
+      setIsCapturingPhoto(false);
+    }
+  }, [form.data.files, updateSelectedFiles]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -282,13 +327,42 @@ export default function StudentDailyReportEdit({ report, geoPolicy }: Props) {
                 <label className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs ml-1">
                   Tambah Foto Baru (Opsional)
                 </label>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={(e) => form.setData('files', Array.from(e.target.files ?? []))}
-                  className="block w-full rounded-2xl border border-emerald-50/60 bg-emerald-50/30/50 px-5 py-4 text-xs font-bold text-emerald-950 file:mr-4 file:rounded-xl file:border-0 file:bg-emerald-600 file:px-4 file:py-2 file:text-sm file:font-bold file:text-white file:uppercase file:tracking-widest"
-                />
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-xs font-bold uppercase tracking-widest text-emerald-900 transition hover:bg-emerald-100">
+                    <FileText size={16} />
+                    Pilih Foto
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={(e) => updateSelectedFiles(Array.from(e.target.files ?? []))}
+                      className="hidden"
+                    />
+                  </label>
+                  {hasNativeCamera && (
+                    <button
+                      type="button"
+                      onClick={() => void handleNativePhotoCapture()}
+                      disabled={isCapturingPhoto}
+                      className="inline-flex items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-4 text-xs font-bold uppercase tracking-widest text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      <Camera size={16} />
+                      {isCapturingPhoto ? 'Membuka Kamera...' : 'Ambil Foto'}
+                    </button>
+                  )}
+                </div>
+                {mediaFeedback && (
+                  <p
+                    className={clsx(
+                      'rounded-xl px-4 py-3 text-sm font-medium',
+                      mediaFeedback.type === 'success'
+                        ? 'bg-emerald-50 text-emerald-800'
+                        : 'bg-rose-50 text-rose-700',
+                    )}
+                  >
+                    {mediaFeedback.msg}
+                  </p>
+                )}
                 <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs px-2">
                   Unggahan baru akan ditambahkan ke dokumentasi sebelumnya.
                 </p>

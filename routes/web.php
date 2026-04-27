@@ -85,4 +85,3 @@ Route::middleware(['auth', 'verified', 'disable.debugbar'])->group(function () {
         ->middleware('role:superadmin|dpl|student');
 });
 
-

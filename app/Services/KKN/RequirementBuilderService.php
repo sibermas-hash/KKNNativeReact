@@ -7,25 +7,65 @@ namespace App\Services\KKN;
 class RequirementBuilderService
 {
     /**
-     * Basic validation for requirements_config structure.
-     * Expected format (example):
+     * Allowed db_check fields that can be auto-validated.
+     */
+    public const ALLOWED_DB_FIELDS = [
+        'sks_completed',
+        'gpa',
+        'status_bta_ppi',
+        'is_paid_ukt',
+        'semester',
+        'health_certificate_path',
+        'parent_permission_path',
+    ];
+
+    /**
+     * Validate requirements_config structure from Admin Builder.
+     * Expected format:
      * [
-     *   {"key":"min_sks","type":"db_check","value":6},
-     *   {"key":"bta_ppi","type":"db_check","value":true},
-     *   {"key":"passport","type":"upload","label":"Paspor"}
+     *   {"name": "Minimal SKS", "type": "db_check", "field": "sks_completed", "min_value": 100},
+     *   {"name": "Lulus BTA-PPI", "type": "db_check", "field": "status_bta_ppi", "expected_value": "LULUS"},
+     *   {"name": "Surat Keterangan Sehat", "type": "upload"}
      * ]
+     *
+     * @throws \InvalidArgumentException
+     */
+    public static function validateRequirementsConfig(array $config): void
+    {
+        foreach ($config as $index => $rule) {
+            if (! is_array($rule)) {
+                throw new \InvalidArgumentException("Rule #{$index} harus berupa array.");
+            }
+
+            if (empty($rule['name'])) {
+                throw new \InvalidArgumentException("Rule #{$index} harus memiliki nama.");
+            }
+
+            $type = $rule['type'] ?? 'upload';
+            if (! in_array($type, ['db_check', 'upload'], true)) {
+                throw new \InvalidArgumentException("Rule #{$index}: tipe '{$type}' tidak valid. Gunakan 'db_check' atau 'upload'.");
+            }
+
+            if ($type === 'db_check' && ! empty($rule['field'])) {
+                if (! in_array($rule['field'], self::ALLOWED_DB_FIELDS, true)) {
+                    throw new \InvalidArgumentException(
+                        "Rule #{$index}: field '{$rule['field']}' tidak diizinkan untuk db_check."
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * Legacy alias for backward compatibility.
      */
     public static function validateConfig(array $config): bool
     {
-        foreach ($config as $rule) {
-            if (! is_array($rule)) return false;
-            if (! array_key_exists('key', $rule) || ! array_key_exists('type', $rule)) {
-                return false;
-            }
-            if (! in_array($rule['type'], ['db_check', 'upload', 'flag'])) {
-                return false;
-            }
+        try {
+            self::validateRequirementsConfig($config);
+            return true;
+        } catch (\InvalidArgumentException) {
+            return false;
         }
-        return true;
     }
 }

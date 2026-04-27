@@ -30,6 +30,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { motion } from 'framer-motion';
 import AppLayout from '@/Layouts/AppLayout';
 import { Pagination } from '@/Components/UI';
 import type { PaginationMeta } from '@/Components/UI/Pagination';
@@ -66,6 +67,9 @@ interface Registration {
     krs: boolean;
     pembayaran: boolean;
     asuransi: boolean;
+    required_count?: number;
+    uploaded_count?: number;
+    missing_labels?: string[];
   };
 }
 
@@ -172,12 +176,35 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
   const toggleSelectAll = () =>
     setSelectedIds((cur) => (cur.length === allIds.length ? [] : allIds));
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
   return (
     <AppLayout title="Validasi Pendaftaran KKN">
       <Head title="Manajemen Pendaftaran" />
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pb-24 font-sans">
-        <PageHeader
+      <motion.div 
+        variants={containerVariants} 
+        initial="hidden" 
+        animate="show" 
+        className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pb-24 font-sans"
+      >
+        <motion.div variants={itemVariants}>
+          <PageHeader
           title="Validasi Pendaftaran."
           subtitle="Verifikasi berkas, validasi persyaratan, dan manajemen entri peserta KKN secara terpusat."
           icon={ClipboardList}
@@ -221,8 +248,9 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
             </button>
           </div>
         </PageHeader>
+        </motion.div>
         {/* --- STATS GRID --- */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="Total Masuk" value={stats?.total ?? 0} icon={Database} variant="gray" />
           <StatCard
             label="Menunggu"
@@ -237,8 +265,9 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
             variant="success"
           />
           <StatCard label="Ditolak" value={stats?.rejected ?? 0} icon={XCircle} variant="danger" />
-        </div>
+        </motion.div>
         {/* --- FILTER SECTION (NOW HORIZONTAL AT TOP) --- */}
+        <motion.div variants={itemVariants}>
         <ContentPanel title="Filter Validasi" icon={Filter} padding={true}>
           <div className="flex flex-col lg:flex-row items-end gap-6">
             <div className="flex-1 w-full space-y-1.5">
@@ -311,8 +340,9 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
             </div>
           </div>
         </ContentPanel>
+        </motion.div>
         {/* --- MAIN CONTENT: Data List --- */}
-        <div className="space-y-6">
+        <motion.div variants={itemVariants} className="space-y-6">
           {/* Bulk Action Bar */}
           {selectedIds.length > 0 && (
             <div className="bg-emerald-950 rounded-2xl p-4 flex items-center justify-between gap-6 border border-emerald-800 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
@@ -463,13 +493,30 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
                     </div>
                   </PremiumTableCell>
                   <PremiumTableCell>
-                    <div className="flex items-center gap-1 bg-white p-1.5 rounded-xl border border-gray-100 w-fit shadow-sm">
-                      <DocIcon active={r.documents?.health_cert} label="Sehat" icon={Stethoscope} />
-                      <DocIcon active={r.documents?.parent_permit} label="Izin" icon={UserPlus} />
-                      <DocIcon active={r.documents?.krs} label="KRS" icon={FileCheck} />
-                      <DocIcon active={r.documents?.pembayaran} label="UKT" icon={CreditCard} />
-                      <div className="w-px h-3 bg-gray-200 mx-1" />
-                      <DocIcon active={r.documents?.asuransi} label="Asuransi" icon={ShieldPlus} />
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1 bg-white p-1.5 rounded-xl border border-gray-100 w-fit shadow-sm">
+                        <DocIcon active={r.documents?.health_cert} label="Sehat" icon={Stethoscope} />
+                        <DocIcon active={r.documents?.parent_permit} label="Izin" icon={UserPlus} />
+                        <DocIcon active={r.documents?.krs} label="KRS" icon={FileCheck} />
+                        <DocIcon active={r.documents?.pembayaran} label="UKT" icon={CreditCard} />
+                        <div className="w-px h-3 bg-gray-200 mx-1" />
+                        <DocIcon active={r.documents?.asuransi} label="Asuransi" icon={ShieldPlus} />
+                      </div>
+                      {typeof r.documents?.required_count === 'number' &&
+                        (r.documents?.required_count ?? 0) > 0 && (
+                        <div
+                          className={clsx(
+                            'inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-[9px] font-black uppercase tracking-widest',
+                            (r.documents?.missing_labels?.length ?? 0) === 0
+                              ? 'border-emerald-100 bg-emerald-50 text-emerald-700'
+                              : 'border-amber-100 bg-amber-50 text-amber-700',
+                          )}
+                          title={r.documents?.missing_labels?.join(', ') || 'Semua dokumen wajib sudah tersedia.'}
+                        >
+                          <FileCheck size={11} />
+                          {r.documents?.uploaded_count ?? 0}/{r.documents.required_count} lengkap
+                        </div>
+                      )}
                     </div>
                   </PremiumTableCell>
                   <PremiumTableCell>
@@ -538,8 +585,8 @@ export default function RegistrationsIndex({ registrations, filters, stats, peri
               ))}
             </PremiumTable>
           </ContentPanel>
-        </div>{' '}
-      </div>
+        </motion.div>{' '}
+      </motion.div>
     </AppLayout>
   );
 }

@@ -55,7 +55,13 @@ class RegistrationApprovalService
         if ($registration->periode?->usesAutomaticPlacementAfterApproval()) {
             try {
                 return $this->autoPlaceGroup($registration);
-            } catch (ValidationException) {
+            } catch (ValidationException $exception) {
+                $message = collect($exception->errors())->flatten()->first();
+
+                if ($message !== AutomaticGroupPlacementService::NO_ELIGIBLE_GROUP_MESSAGE) {
+                    throw $exception;
+                }
+
                 // No groups available yet — that's OK, plotting happens later
                 Log::info("Auto-placement skipped for registration #{$registration->id}: kelompok belum tersedia. Akan di-plot manual nanti.");
             }

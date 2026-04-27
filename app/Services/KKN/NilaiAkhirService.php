@@ -34,7 +34,7 @@ class NilaiAkhirService
             if ($mahasiswaId) {
                 $reportApproved = LaporanAkhir::where('mahasiswa_id', $mahasiswaId)
                     ->where('kelompok_id', $nilai->kelompok_id)
-                    ->where('status', 'approved')
+                    ->workflowApproved()
                     ->exists();
 
                 if (! $reportApproved) {

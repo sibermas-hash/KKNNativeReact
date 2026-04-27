@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Dosen extends Model
 {
@@ -86,6 +87,11 @@ class Dosen extends Model
     public function feedbackPeserta(): HasMany
     {
         return $this->hasMany(EvaluasiDplPeserta::class, 'dosen_id');
+    }
+
+    public function profileSnapshot(): MorphOne
+    {
+        return $this->morphOne(ProfilUser::class, 'profileable');
     }
 
     /**

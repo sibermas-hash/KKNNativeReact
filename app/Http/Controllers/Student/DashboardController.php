@@ -48,7 +48,7 @@ class DashboardController extends Controller
         if ($mahasiswa) {
             $registrationQuery = PesertaKkn::query()
                 ->where('mahasiswa_id', $mahasiswa->id)
-                ->with(['periode', 'kelompok.lokasi', 'kelompok.dosen' => function ($q) {
+                ->with(['periode.jenisKkn', 'kelompok.lokasi', 'kelompok.dosen' => function ($q) {
                     $q->wherePivot('role', 'Ketua');
                 }]);
 
@@ -76,19 +76,15 @@ class DashboardController extends Controller
                 'avatar' => $user->avatar,
                 'batch_year' => $mahasiswa->batch_year,
             ] : null,
-            'registration' => $registrationModel ? [
-                'id' => $registrationModel->id,
-                'status' => $this->normalizeRegistrationStatus($registrationModel->status),
-                'notes' => $registrationModel->notes,
-                'rejection_reason' => $registrationModel->rejection_reason,
-                'role' => $registrationModel->role,
-                'notification_shown' => (bool) $registrationModel->notification_shown,
-                'periode' => $registrationModel->periode ? [
+            'registration' => $registrationModel ? (function () use ($registrationModel): array {
+                $period = $registrationModel->periode ? [
                     'id' => $registrationModel->periode->id,
                     'name' => $registrationModel->periode->name,
+                    'jenis' => $registrationModel->periode->jenisKkn?->name,
                     'min_logbook' => $registrationModel->periode->min_logbook ?? 30,
-                ] : null,
-                'group' => $registrationModel->kelompok ? [
+                ] : null;
+
+                $group = $registrationModel->kelompok ? [
                     'id' => $registrationModel->kelompok->id,
                     'code' => $registrationModel->kelompok->code,
                     'name' => $registrationModel->kelompok->nama_kelompok,
@@ -100,8 +96,20 @@ class DashboardController extends Controller
                         'id' => $registrationModel->kelompok->dosen->first()->id,
                         'name' => $registrationModel->kelompok->dosen->first()->nama,
                     ] : null,
-                ] : null,
-            ] : null,
+                ] : null;
+
+                return [
+                    'id' => $registrationModel->id,
+                    'status' => $this->normalizeRegistrationStatus($registrationModel->status),
+                    'notes' => $registrationModel->notes,
+                    'rejection_reason' => $registrationModel->rejection_reason,
+                    'role' => $registrationModel->role,
+                    'notification_shown' => (bool) $registrationModel->notification_shown,
+                    'period' => $period,
+                    'periode' => $period,
+                    'group' => $group,
+                ];
+            })() : null,
             'dailyReportCount' => ($mahasiswaId && $activeGroupId)
                 ? KegiatanKkn::query()
                     ->where('mahasiswa_id', $mahasiswaId)

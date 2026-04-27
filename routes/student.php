@@ -47,6 +47,10 @@ Route::middleware([
     Route::get('posko/foto/{posko}', [Student\PoskoController::class, 'photo'])->name('posko.photo');
     Route::get('posko/{kelompok}', [Student\PoskoController::class, 'edit'])->name('posko.show');
 
+    // Domisili (for KKN Mandiri)
+    Route::get('domisili', [Student\DomisiliController::class, 'edit'])->name('domisili.index');
+    Route::post('domisili', [Student\DomisiliController::class, 'store'])->name('domisili.store');
+
     Route::get('rekapitulasi', [Student\RekapitulasiController::class, 'index'])->name('rekapitulasi.index');
     Route::post('rekapitulasi', [Student\RekapitulasiController::class, 'store'])->name('rekapitulasi.store');
     Route::get('reports', [ReportController::class, 'index'])->name('reports.index');
@@ -63,8 +67,8 @@ Route::middleware([
     // ─── FASE: PENDAFTARAN ────────────────────────────────────────────
     // Hanya terbuka saat admin klik "Buka Pendaftaran"
     Route::middleware(['phase:registration'])->group(function () {
-        // Redirect lama: /mahasiswa/pendaftaran → /mahasiswa/daftar
-        Route::get('pendaftaran', fn () => redirect('/mahasiswa/daftar'))->name('registration.create');
+        // Portal pendaftaran mandiri berbasis snapshot + preview penempatan
+        Route::get('pendaftaran', [Student\RegistrationController::class, 'create'])->name('registration.create');
 
         // Upload dokumen persyaratan per periode
         Route::get('pendaftaran/{periode}/dokumen', [Student\RegistrationDocumentController::class, 'show'])->name('registration.documents');
@@ -97,6 +101,11 @@ Route::middleware([
             Route::get('/', [Student\WorkProgramController::class, 'index'])->name('index');
             Route::get('buat', [Student\WorkProgramController::class, 'create'])->name('create');
             Route::post('/', [Student\WorkProgramController::class, 'store'])->name('store');
+            Route::get('{programKerja}', [Student\WorkProgramController::class, 'show'])->name('show');
+            Route::post('{programKerja}/proposal', [Student\WorkProgramController::class, 'uploadProposal'])
+                ->name('proposals.upload');
+            Route::get('{programKerja}/proposal/{proposal}/download', [Student\WorkProgramController::class, 'downloadProposal'])
+                ->name('proposals.download');
         });
 
         // Poster Potensi Desa

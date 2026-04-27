@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 class Mahasiswa extends Model
 {
@@ -39,6 +40,15 @@ class Mahasiswa extends Model
         'birth_date',
         'master_id',
         'master_synced_at',
+        'domisili_lat',
+        'domisili_lng',
+        'domisili_address',
+        'domisili_village',
+        'domisili_district',
+        'domisili_regency',
+        'domisili_province',
+        'domisili_postal_code',
+        'domisili_registered_at',
     ];
 
     protected $guarded = [];
@@ -53,6 +63,9 @@ class Mahasiswa extends Model
             'gpa' => 'float',
             'is_paid_ukt' => 'boolean',
             'master_synced_at' => 'datetime',
+            'domisili_lat' => 'float',
+            'domisili_lng' => 'float',
+            'domisili_registered_at' => 'datetime',
         ];
     }
 
@@ -99,6 +112,11 @@ class Mahasiswa extends Model
     public function nilai(): HasMany
     {
         return $this->hasMany(NilaiKkn::class, 'user_id', 'user_id');
+    }
+
+    public function profileSnapshot(): MorphOne
+    {
+        return $this->morphOne(ProfilUser::class, 'profileable');
     }
 
     /**

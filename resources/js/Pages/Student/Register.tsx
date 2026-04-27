@@ -39,9 +39,8 @@ interface EligibilitySummary {
 
 interface RegistrationFormData {
   periode_id: string;
-  health_certificate: File | null;
-  parent_permission: File | null;
   notes: string;
+  dynamic_files: Record<string, File | null>;
 }
 
 type StudentRegisterProps = PageProps<{
@@ -68,9 +67,8 @@ export default function StudentRegister({
   const [selectedPeriodId, setSelectedPeriodId] = useState(firstPeriodId);
   const form = useForm<RegistrationFormData>({
     periode_id: firstPeriodId,
-    health_certificate: null,
-    parent_permission: null,
     notes: periods[0]?.registration?.notes ?? '',
+    dynamic_files: {},
   });
 
   useEffect(() => {
@@ -94,20 +92,22 @@ export default function StudentRegister({
   const isDomicileReady = domicile_profile?.is_complete ?? false;
   const minimumSks = student_academic?.min_sks ?? 100;
   const currentSks = student_academic?.sks_completed ?? 0;
-  const qualifiedBySks = currentSks >= minimumSks;
-  const qualifiedByBta = student_academic?.is_bta_ppi_passed ?? false;
+  
+  // ── Dynamic Eligibility Logic ──────────────────────────────
+  const dynamicRequirements = selectedPeriod?.requirement_info?.requirements || [];
+  
+  // Untuk sementara, kita anggap lolos jika eligibility.is_eligible true dari backend
+  const isEligibleBySystem = eligibility?.is_eligible ?? true;
+
   const hasHealthCertificate =
     (student_academic?.has_health_certificate ?? false) || form.data.health_certificate !== null;
   const hasParentPermission =
     (student_academic?.has_parent_permission ?? false) || form.data.parent_permission !== null;
+
   const readyToRegister =
     isBiodataComplete &&
     isDomicileReady &&
-    qualifiedBySks &&
-    qualifiedByBta &&
-    hasHealthCertificate &&
-    hasParentPermission &&
-    (eligibility?.is_eligible ?? true);
+    isEligibleBySystem;
   const supportsSelfService = selectedPeriod?.self_service_enabled ?? false;
   const canSubmit =
     Boolean(selectedPeriodId) && supportsSelfService && readyToRegister && !hasActiveRegistration;
@@ -219,24 +219,19 @@ export default function StudentRegister({
                     />
 
                     <AcademicForm
-                      student_academic={{
-                        ...student_academic,
-                        min_sks: minimumSks,
-                      }}
-                      qualifiedBySks={qualifiedBySks}
-                      qualifiedByBta={qualifiedByBta}
+                      student_academic={student_academic}
+                      requirements={selectedPeriod?.requirement_info?.requirements || []}
+                      eligibility_checks={eligibility?.checks || {}}
                     />
 
                     <DocumentUpload
-                      form={{
-                        data: form.data,
-                        setData: (key, value) =>
-                          form.setData(key as keyof RegistrationFormData, value),
-                        errors: form.errors,
-                      }}
+                      form={form}
                       student_academic={student_academic}
-                      hasHealthCertificate={hasHealthCertificate}
-                      hasParentPermission={hasParentPermission}
+                      dynamic_documents={selectedPeriod?.requirement_info?.requirements?.map(r => ({
+                        name: r,
+                        key: r.toLowerCase().replace(/ /g, '_'),
+                        type: r.toLowerCase().includes('unggah') || r.toLowerCase().includes('upload') ? 'upload' : 'db_check'
+                      })) || []}
                     />
 
                     <section className="rounded-[2rem] border border-emerald-100 bg-white p-6 shadow-sm">

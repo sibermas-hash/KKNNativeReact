@@ -25,6 +25,8 @@ import {
   Activity,
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { Dialog, DialogPanel, DialogTitle } from '@headlessui/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import AppLayout from '@/Layouts/AppLayout';
 import { ConfirmDialog, Pagination } from '@/Components/UI';
 import type { PageProps } from '@/types';
@@ -149,6 +151,7 @@ export default function PeriodsIndex({
   const [duplicating, setDuplicating] = useState<PeriodData | null>(null);
   const [search, setSearch] = useState(filters.search || '');
   const [filterJenisId, setFilterJenisId] = useState(filters?.jenis_kkn_id || '');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const form = useForm(initialFormData);
 
@@ -203,6 +206,7 @@ export default function PeriodsIndex({
     setEditing(null);
     form.reset();
     form.clearErrors();
+    setIsModalOpen(false);
   };
 
   const startEdit = (period: PeriodData) => {
@@ -227,7 +231,7 @@ export default function PeriodsIndex({
       current_phase:
         period.current_phase === 'selection' ? 'placement' : (period.current_phase ?? 'upcoming'),
     });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setIsModalOpen(true);
   };
 
   const handleSubmit = (event: React.FormEvent) => {
@@ -245,37 +249,73 @@ export default function PeriodsIndex({
     form.post('/admin/periode', { onSuccess: () => cancelForm() });
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
   return (
     <AppLayout title="Manajemen Periode">
       <Head title="Manajemen Periode" />
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pb-24 font-sans">
-        <PageHeader
-          title="Siklus KKN."
-          subtitle="Manajemen linimasa pendaftaran, jadwal pelaksanaan, dan orkestrasi fase transisi KKN."
-          icon={Clock}
-          groupLabel="Operasional Sistem"
-        >
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center bg-white border border-emerald-100 rounded-xl px-4 py-2 mr-2">
-              <div className="flex flex-col">
-                <span className="text-[8px] font-black text-emerald-800 uppercase tracking-widest leading-none mb-1">
-                  Status Periode
-                </span>
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-xs font-black text-emerald-950 uppercase tracking-tight flex items-center gap-1.5">
-                    <ShieldCheck size={10} className="text-emerald-600" />
-                    {periods.data.filter((p) => p.is_active).length} Aktif
+      <motion.div 
+        variants={containerVariants} 
+        initial="hidden" 
+        animate="show" 
+        className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pb-24 font-sans"
+      >
+        <motion.div variants={itemVariants} className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
+          <PageHeader
+            title="Siklus KKN."
+            subtitle="Manajemen linimasa pendaftaran, jadwal pelaksanaan, dan orkestrasi fase transisi KKN."
+            icon={Clock}
+            groupLabel="Operasional Sistem"
+          >
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center bg-white border border-emerald-100 rounded-xl px-4 py-2 mr-2">
+                <div className="flex flex-col">
+                  <span className="text-[8px] font-black text-emerald-800 uppercase tracking-widest leading-none mb-1">
+                    Status Periode
                   </span>
+                  <div className="flex items-center gap-2">
+                    <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-xs font-black text-emerald-950 uppercase tracking-tight flex items-center gap-1.5">
+                      <ShieldCheck size={10} className="text-emerald-600" />
+                      {periods.data.filter((p) => p.is_active).length} Aktif
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </PageHeader>
+          </PageHeader>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => {
+              cancelForm();
+              setIsModalOpen(true);
+            }}
+            className="mb-8 h-12 px-6 bg-emerald-800 text-white text-sm font-black uppercase tracking-widest rounded-xl hover:bg-emerald-900 transition-all flex items-center gap-3 shadow-lg shadow-emerald-900/20 active:scale-[0.98] shrink-0"
+          >
+            <Plus size={18} strokeWidth={3} />
+            Tambah Siklus Baru
+          </motion.button>
+        </motion.div>
 
         {/* --- STATS GRID --- */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             label="Total Periode"
             value={periods.meta?.total || 0}
@@ -295,20 +335,56 @@ export default function PeriodsIndex({
             variant="info"
           />
           <StatCard label="Status Sistem" value="Stabil" icon={Activity} variant="success" />
-        </div>
+        </motion.div>
 
-        {/* --- REGISTRATION FORM (HORIZONTAL AT TOP) --- */}
-        <ContentPanel
-          title={editing ? 'Koreksi Siklus' : 'Registrasi Siklus'}
-          description={
-            editing
-              ? `Memperbarui parameter periode ${editing.name}`
-              : 'Daftarkan siklus pelaksanaan KKN baru.'
-          }
-          icon={editing ? Edit2 : Plus}
-          padding={true}
-        >
-          <form onSubmit={handleSubmit}>
+        {/* --- REGISTRATION FORM MODAL --- */}
+        <AnimatePresence>
+          {isModalOpen && (
+            <Dialog as="div" className="relative z-50" open={isModalOpen} onClose={cancelForm} static>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+                aria-hidden="true"
+              />
+
+              <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto py-8 px-4">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                  className="w-full max-w-4xl"
+                >
+                  <DialogPanel className="bg-white rounded-3xl shadow-2xl overflow-hidden ring-1 ring-black/5">
+                    <div className="bg-gradient-to-r from-emerald-800 to-emerald-900 px-8 py-6 flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-md">
+                          {editing ? <Edit2 className="text-emerald-50" size={24} /> : <Plus className="text-emerald-50" size={24} />}
+                        </div>
+                        <div>
+                          <DialogTitle className="text-xl font-black text-white tracking-widest uppercase">
+                            {editing ? 'Koreksi Siklus' : 'Registrasi Siklus'}
+                          </DialogTitle>
+                          <p className="text-emerald-100/80 text-[11px] mt-1 font-bold tracking-widest uppercase">
+                            {editing
+                              ? `Memperbarui parameter periode ${editing.name}`
+                              : 'Daftarkan siklus pelaksanaan KKN baru.'}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={cancelForm}
+                        className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white"
+                      >
+                        <X size={20} />
+                      </button>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="p-8 space-y-6 max-h-[calc(100vh-12rem)] overflow-y-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
@@ -522,10 +598,15 @@ export default function PeriodsIndex({
               </div>
             </div>
           </form>
-        </ContentPanel>
+                  </DialogPanel>
+                </motion.div>
+              </div>
+            </Dialog>
+          )}
+        </AnimatePresence>
 
         {/* --- DATA LIST PANEL (FULL WIDTH) --- */}
-        <div className="space-y-6">
+        <motion.div variants={itemVariants} className="space-y-6">
           <ContentPanel
             title="Arsip Siklus Pelaksanaan"
             description="Daftar induk siklus KKN yang telah terdata dalam sistem."
@@ -675,8 +756,8 @@ export default function PeriodsIndex({
               ))}
             </PremiumTable>
           </ContentPanel>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       <ConfirmDialog
         open={!!duplicating}

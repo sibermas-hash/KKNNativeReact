@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin;
 
-use App\Exports\GradesExport;
 use App\Exports\RekapNilaiExport;
 use App\Http\Controllers\Controller;
 use App\Jobs\GenerateMassCertificatesJob;
@@ -159,7 +158,7 @@ class RekapNilaiController extends Controller
 
         $reportApproved = LaporanAkhir::where('mahasiswa_id', $score->mahasiswa->id)
             ->where('kelompok_id', $score->kelompok_id)
-            ->where('status', 'approved')
+            ->workflowApproved()
             ->exists();
 
         if (! $reportApproved) {
@@ -425,15 +424,23 @@ class RekapNilaiController extends Controller
             return back()->with('error', 'Periode rekap nilai tidak ditemukan.');
         }
 
+        $rows = $this->repo->getRekapNilai($periodeId, [
+            'fakultas_id' => $request->input('fakultas_id') ?? $request->input('faculty_id'),
+            'kelompok_id' => $request->input('kelompok_id'),
+            'search' => $request->input('search'),
+            'huruf' => $request->input('huruf'),
+        ]);
+
         return Excel::download(
-            new GradesExport($periodeId),
+            new RekapNilaiExport($rows, $periode),
             "Ledger_Nilai_KKN_{$periode->name}_".now()->format('Ymd_His').'.xlsx'
         );
     }
 
     private function resolveRequestedPeriodId(Request $request): ?int
     {
-        $requestedPeriodId = $request->integer('periode_id');
+        $requestedPeriodId = $request->integer('periode_id')
+            ?: $request->integer('period_id');
 
         if ($requestedPeriodId > 0) {
             return $requestedPeriodId;

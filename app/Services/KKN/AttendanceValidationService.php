@@ -143,27 +143,124 @@ class AttendanceValidationService
     }
 
     /**
-     * Validate if attendance is within geofence
+     * Validate if attendance is within geofence (dynamic based on JenisKkn config)
      */
     private function validateGeofence(Attendance $attendance): array
     {
-        if (! $attendance->kelompok || ! $attendance->kelompok->posko) {
+        if (! $attendance->kelompok) {
             return [
                 'within_geofence' => false,
                 'distance' => null,
+                'skipped' => true,
+                'reason' => 'No kelompok assigned',
+            ];
+        }
+
+        $jenisKkn = $attendance->kelompok->periode?->jenisKkn;
+        $config = $jenisKkn?->getAttendanceConfig() ?? [];
+
+        $geofenceEnabled = $config['geofence_enabled'] ?? true;
+        $locationSource = $config['location_source'] ?? 'posko';
+        $allowedRadius = $config['radius_meters'] ?? 500;
+
+        if (! $geofenceEnabled) {
+            return [
+                'within_geofence' => true,
+                'distance' => null,
+                'skipped' => true,
+                'reason' => 'Geofencing disabled for this KKN type',
+            ];
+        }
+
+        if ($locationSource === 'domisili') {
+            return $this->validateGeofenceAgainstDomisili($attendance, $allowedRadius);
+        }
+
+        return $this->validateGeofenceAgainstPosko($attendance, $allowedRadius);
+    }
+
+    /**
+     * Validate against kelompok posko location
+     */
+    private function validateGeofenceAgainstPosko(Attendance $attendance, int $allowedRadius): array
+    {
+        if (! $attendance->kelompok->posko) {
+            return [
+                'within_geofence' => false,
+                'distance' => null,
+                'reason' => 'No posko defined for kelompok',
             ];
         }
 
         $posko = $attendance->kelompok->posko;
         $distance = $attendance->calculateDistanceFromPosko();
 
-        // Allowable radius: 500 meters default, can be configured per posko
-        $allowedRadius = $posko->radius_meters ?? 500;
-
         return [
             'within_geofence' => $distance !== null && $distance <= $allowedRadius,
             'distance' => $distance,
+            'location_type' => 'posko',
         ];
+    }
+
+    /**
+     * Validate against student's registered domisili location (for KKN Mandiri)
+     */
+    private function validateGeofenceAgainstDomisili(Attendance $attendance, int $allowedRadius): array
+    {
+        if (! $attendance->peserta?->mahasiswa?->domisili_lat || ! $attendance->peserta?->mahasiswa?->domisili_lng) {
+            return [
+                'within_geofence' => false,
+                'distance' => null,
+                'reason' => 'No domisili location registered',
+            ];
+        }
+
+        $domisiliLat = $attendance->peserta->mahasiswa->domisili_lat;
+        $domisiliLng = $attendance->peserta->mahasiswa->domisili_lng;
+        $attendanceLat = $attendance->latitude;
+        $attendanceLng = $attendance->longitude;
+
+        if ($attendanceLat === null || $attendanceLng === null) {
+            return [
+                'within_geofence' => false,
+                'distance' => null,
+                'reason' => 'No GPS coordinates in attendance',
+            ];
+        }
+
+        $distance = $this->calculateHaversineDistance(
+            $attendanceLat,
+            $attendanceLng,
+            $domisiliLat,
+            $domisiliLng
+        );
+
+        return [
+            'within_geofence' => $distance <= $allowedRadius,
+            'distance' => $distance,
+            'location_type' => 'domisili',
+        ];
+    }
+
+    /**
+     * Calculate distance using Haversine formula
+     */
+    private function calculateHaversineDistance(float $lat1, float $lng1, float $lat2, float $lng2): float
+    {
+        $earthRadius = 6371000;
+
+        $lat1Rad = deg2rad($lat1);
+        $lat2Rad = deg2rad($lat2);
+        $deltaLat = deg2rad($lat2 - $lat1);
+        $deltaLng = deg2rad($lng2 - $lng1);
+
+        $a = sin($deltaLat / 2) * sin($deltaLat / 2) +
+            cos($lat1Rad) * cos($lat2Rad) *
+            sin($deltaLng / 2) * sin($deltaLng / 2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadius * $c;
     }
 
     /**

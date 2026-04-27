@@ -11,6 +11,7 @@ use App\Models\KKN\PesertaKkn;
 use App\Services\KKN\FacultyScopeService;
 use App\Services\KKN\KknRequirementService;
 use App\Services\KKN\RegistrationApprovalService;
+use App\Services\KKN\RegistrationDocumentService;
 use App\Services\KKN\RegistrationExportService;
 use App\Services\PeriodContextService;
 use App\Traits\HandlesPagination;
@@ -63,7 +64,7 @@ class PesertaKknController extends Controller
             'periode:id,periode,name,program_type,program_subtype,registration_mode,placement_mode,start_date,end_date,jenis_kkn_id',
             'periode.jenisKkn:id,name',
             'kelompok:id,periode_id,nama_kelompok,code',
-            'dokumen:id,peserta_kkn_id,document_type',
+            'dokumen:id,peserta_kkn_id,document_type,file_name,file_path,status',
         ])
             ->when($request->input('search'), fn ($query, $search) => $query->search($search))
             ->when($status, fn ($query, $value) => $query->where('status', $value))
@@ -97,6 +98,7 @@ class PesertaKknController extends Controller
         return Inertia::render('Admin/Operational/Registrations/Index', [
             'registrations' => Inertia::defer(function () use ($registrations, $kknRequirementService) {
                 $registrations->through(function (PesertaKkn $reg) use ($kknRequirementService) {
+                    $documentService = app(RegistrationDocumentService::class);
                     $mahasiswa = $reg->mahasiswa;
                     $periode = $reg->periode;
 
@@ -106,6 +108,7 @@ class PesertaKknController extends Controller
                     }
 
                     $isEligible = empty($issues);
+                    $documentSummary = $documentService->summaryForRegistration($reg);
 
                     return [
                         'id' => $reg->id,
@@ -137,11 +140,17 @@ class PesertaKknController extends Controller
                         ] : ['name' => '-', 'id' => null, 'program_type' => null, 'jenis' => null],
                         'group' => $reg->kelompok ? ['name' => $reg->kelompok->nama_kelompok] : null,
                         'documents' => [
-                            'health_cert' => ! empty($mahasiswa?->health_certificate_path),
-                            'parent_permit' => ! empty($mahasiswa?->parent_permission_path),
-                            'krs' => $reg->dokumen->contains('document_type', 'krs'),
-                            'pembayaran' => $reg->dokumen->contains('document_type', 'pembayaran') || $reg->dokumen->contains('document_type', 'payment'),
-                            'asuransi' => $reg->dokumen->contains('document_type', 'asuransi'),
+                            'health_cert' => (bool) ($documentSummary['flags']['health_certificate'] ?? false),
+                            'parent_permit' => (bool) ($documentSummary['flags']['parent_permission'] ?? false),
+                            'krs' => (bool) ($documentSummary['flags']['krs'] ?? false),
+                            'pembayaran' => (bool) ($documentSummary['flags']['pembayaran'] ?? false)
+                                || (bool) ($documentSummary['flags']['payment'] ?? false)
+                                || (bool) ($documentSummary['flags']['payment_proof'] ?? false),
+                            'asuransi' => (bool) ($documentSummary['flags']['asuransi'] ?? false)
+                                || (bool) ($documentSummary['flags']['insurance_proof'] ?? false),
+                            'required_count' => $documentSummary['required_count'],
+                            'uploaded_count' => $documentSummary['uploaded_count'],
+                            'missing_labels' => $documentSummary['missing_labels'],
                         ],
                     ];
                 });
@@ -290,14 +299,18 @@ $validated = $request->validate([
     private function registrationDocuments(PesertaKkn $pesertaKkn): array
     {
         $documents = [];
+        $documentTypes = [];
 
         $typeLabels = [
             'krs' => 'KRS (Kartu Rencana Studi)',
             'pembayaran' => 'Bukti Pembayaran UKT/SPP',
             'payment' => 'Bukti Pembayaran UKT/SPP',
+            'payment_proof' => 'Bukti Pembayaran UKT/SPP',
             'asuransi' => 'Bukti Asuransi',
+            'insurance_proof' => 'Bukti Asuransi',
             'health_certificate' => 'Surat Keterangan Sehat',
             'parent_permission' => 'Surat Izin Orang Tua',
+            'passport_scan' => 'Scan Paspor',
             'photo' => 'Pas Foto',
             'ktp' => 'Kartu Tanda Mahasiswa (KTM)',
             'surat_pernyataan' => 'Surat Pernyataan',
@@ -307,6 +320,7 @@ $validated = $request->validate([
         // Include uploaded documents from dokumen relation
         foreach ($pesertaKkn->dokumen as $doc) {
             $docType = $doc->document_type;
+            $documentTypes[] = $docType;
             $documents[] = [
                 'id' => $doc->id,
                 'document_type' => $typeLabels[$docType] ?? (ucwords(str_replace('_', ' ', $docType)) ?: 'Berkas'),
@@ -318,7 +332,7 @@ $validated = $request->validate([
 
         // Include health certificate and parent permission from mahasiswa
         $mahasiswa = $pesertaKkn->mahasiswa;
-        if ($mahasiswa?->health_certificate_path) {
+        if ($mahasiswa?->health_certificate_path && ! in_array('health_certificate', $documentTypes, true)) {
             $documents[] = [
                 'id' => -1,
                 'document_type' => 'Surat Keterangan Sehat',
@@ -327,7 +341,7 @@ $validated = $request->validate([
                 'status' => 'uploaded',
             ];
         }
-        if ($mahasiswa?->parent_permission_path) {
+        if ($mahasiswa?->parent_permission_path && ! in_array('parent_permission', $documentTypes, true)) {
             $documents[] = [
                 'id' => -2,
                 'document_type' => 'Surat Izin Orang Tua',

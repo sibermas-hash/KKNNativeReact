@@ -25,6 +25,7 @@ import {
 import { Pagination } from '@/Components/UI';
 import type { PaginationMeta } from '@/Components/UI/Pagination';
 import { clsx } from 'clsx';
+import { motion } from 'framer-motion';
 
 // Premium Components
 import PageHeader from '@/Components/Premium/PageHeader';
@@ -77,11 +78,34 @@ export default function ProgramsIndex({ programs, faculties = [], filters = {}, 
     return () => clearTimeout(timer);
   }, [search, facultyId]);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
   return (
     <AppLayout title="Direktori Program Studi">
       <Head title="Direktori Program Studi" />
 
-      <div className="space-y-8 pb-24 font-sans">
+      <motion.div 
+        variants={containerVariants} 
+        initial="hidden" 
+        animate="show" 
+        className="space-y-8 pb-24 font-sans"
+      >
+        <motion.div variants={itemVariants}>
         <PageHeader
           title="Matriks Program."
           subtitle="Matriks pemetaan akademis dan basis distribusi peserta KKN institusional UIN SAIZU."
@@ -109,11 +133,11 @@ export default function ProgramsIndex({ programs, faculties = [], filters = {}, 
               </div>
             </div>
           </div>
-        </PageHeader>
+        </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
           {/* --- LEFT COLUMN: Sync Info & Filters --- */}
-          <div className="lg:col-span-1 space-y-6">
+          <motion.div variants={itemVariants} className="lg:col-span-1 space-y-6">
             <ContentPanel title="Status Integrasi" icon={RefreshCw} padding={true}>
               <div className="space-y-6">
                 <div className="bg-emerald-50/50 rounded-2xl p-5 border border-emerald-100/50 space-y-4">
@@ -213,10 +237,10 @@ export default function ProgramsIndex({ programs, faculties = [], filters = {}, 
                 className="w-full"
               />
             </div>
-          </div>
+          </motion.div>
 
           {/* --- RIGHT COLUMN: Program List --- */}
-          <div className="lg:col-span-2">
+          <motion.div variants={itemVariants} className="lg:col-span-2">
             <ContentPanel
               title="Indeks Antrean Prodi"
               icon={Layers}
@@ -282,11 +306,11 @@ export default function ProgramsIndex({ programs, faculties = [], filters = {}, 
                 ))}
               </PremiumTable>
             </ContentPanel>
-          </div>
+          </motion.div>
         </div>
 
         {/* --- STRATEGIC INFO --- */}
-        <div className="bg-emerald-900 rounded-2xl p-8 text-white relative overflow-hidden shadow-2xl border-b-4 border-emerald-950">
+        <motion.div variants={itemVariants} className="bg-emerald-900 rounded-2xl p-8 text-white relative overflow-hidden shadow-2xl border-b-4 border-emerald-950">
           <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12 -mr-16 -mt-16 pointer-events-none">
             <Database size={350} strokeWidth={0.5} />
           </div>
@@ -303,8 +327,8 @@ export default function ProgramsIndex({ programs, faculties = [], filters = {}, 
               </p>
             </div>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </AppLayout>
   );
 }

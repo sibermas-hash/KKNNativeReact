@@ -2,21 +2,39 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { FormInput, FormTextarea, FormSelect } from '@/Components/UI';
 import { route } from 'ziggy-js';
-import { ChevronLeft, FolderPlus, Target, Users, Wallet, Info, CheckCircle2 } from 'lucide-react';
+import {
+  ChevronLeft,
+  FolderPlus,
+  Target,
+  Users,
+  Wallet,
+  Info,
+  CheckCircle2,
+  Paperclip,
+} from 'lucide-react';
 
 export default function StudentWorkProgramCreate() {
-  const { data, setData, post, processing, errors } = useForm({
+  const { data, setData, post, processing, errors } = useForm<{
+    title: string;
+    description: string;
+    objectives: string;
+    target_participants: string;
+    budget: string;
+    kategori: string;
+    proposal_file: File | null;
+  }>({
     title: '',
     description: '',
     objectives: '',
     target_participants: '',
     budget: '',
     kategori: 'pendukung',
+    proposal_file: null,
   });
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    post(route('student.program-kerja.store'));
+    post(route('student.program-kerja.store'), { forceFormData: true });
   };
 
   return (
@@ -157,6 +175,25 @@ export default function StudentWorkProgramCreate() {
                   <p className="text-sm font-bold text-rose-500 uppercase px-1">{errors.budget}</p>
                 )}
               </div>
+            </div>
+
+            <div className="space-y-3 rounded-3xl border border-emerald-50/60 bg-emerald-50/20 p-6">
+              <label className="flex items-center gap-2 text-sm font-bold uppercase text-xs text-emerald-950">
+                <Paperclip size={14} className="text-emerald-600" />
+                Proposal Program Kerja
+              </label>
+              <input
+                type="file"
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                onChange={(event) => setData('proposal_file', event.target.files?.[0] ?? null)}
+                className="block w-full rounded-2xl border border-emerald-50/60 bg-white px-4 py-3 text-sm text-emerald-950 file:mr-4 file:rounded-xl file:border-0 file:bg-emerald-600 file:px-4 file:py-2 file:text-xs file:font-semibold file:uppercase file:text-white hover:file:bg-emerald-700"
+              />
+              <p className="text-xs font-medium text-emerald-950/70">
+                Opsional. Unggah proposal awal dalam format PDF atau Word, maksimal 4 MB.
+              </p>
+              {errors.proposal_file && (
+                <p className="text-sm font-bold uppercase text-rose-500">{errors.proposal_file}</p>
+              )}
             </div>
           </div>
 

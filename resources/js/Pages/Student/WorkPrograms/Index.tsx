@@ -6,15 +6,22 @@ import { motion } from 'framer-motion';
 import {
   Plus,
   FolderKanban,
-  Info,
   Target,
   Wallet,
   ArrowRight,
   Layers,
   Zap,
   Briefcase,
+  FileText,
+  Clock3,
 } from 'lucide-react';
-import { clsx } from 'clsx';
+
+interface ProposalSummary {
+  id: number;
+  file_name: string;
+  version: number;
+  uploaded_at: string | null;
+}
 
 interface WorkProgram {
   id: number;
@@ -23,6 +30,7 @@ interface WorkProgram {
   objectives?: string | null;
   budget: number;
   status: string;
+  latest_proposal?: ProposalSummary | null;
 }
 
 interface Props {
@@ -172,6 +180,38 @@ export default function StudentWorkProgramsIndex({ workPrograms, canCreate }: Pr
                         </p>
                       </div>
                     </div>
+                  </div>
+
+                  <div className="rounded-3xl border border-emerald-50/60 bg-slate-50/60 px-6 py-5">
+                    {program.latest_proposal ? (
+                      <div className="flex flex-col gap-2 text-emerald-950">
+                        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-emerald-600">
+                          <FileText size={14} />
+                          Proposal Terbaru
+                        </div>
+                        <p className="text-sm font-semibold">{program.latest_proposal.file_name}</p>
+                        <div className="flex flex-wrap items-center gap-3 text-xs text-emerald-950/70">
+                          <span>Versi {program.latest_proposal.version}</span>
+                          {program.latest_proposal.uploaded_at ? (
+                            <span className="inline-flex items-center gap-1">
+                              <Clock3 size={12} />
+                              {new Date(program.latest_proposal.uploaded_at).toLocaleDateString(
+                                'id-ID',
+                                {
+                                  day: '2-digit',
+                                  month: 'short',
+                                  year: 'numeric',
+                                },
+                              )}
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-sm text-emerald-950/70">
+                        Proposal belum diunggah. Detail program sekarang sudah mendukung riwayat versi proposal.
+                      </div>
+                    )}
                   </div>
 
                   <Link

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Button } from '@/Components/UI';
@@ -75,11 +76,28 @@ export default function YudisiumIndex({ periodes, rekap, selectedPeriodeId }: Pr
     }
   };
 
-  return (
+    const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
+return (
     <AppLayout title="Sidang Yudisium & Kelulusan">
       <Head title="Yudisium KKN" />
 
-      <div className="space-y-8 pb-24 text-emerald-950 font-sans">
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-8 pb-24 text-emerald-950 font-sans">
         {/* --- PREMIUM HEADER --- */}
         <div className="space-y-4">
           <div className="flex items-center gap-3 text-[#0d9488]">
@@ -289,7 +307,7 @@ export default function YudisiumIndex({ periodes, rekap, selectedPeriodeId }: Pr
             </div>
           </>
         )}
-      </div>
+      </motion.div>
     </AppLayout>
   );
 }

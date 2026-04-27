@@ -50,6 +50,12 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->name('api.')->group(functi
     // Fix Poin 4: Device Tokens for Push Notifications
     Route::post('/device-tokens', [NotificationController::class, 'storeDeviceToken'])->name('device-tokens.store');
 
+    // Domisili (for KKN Mandiri)
+    Route::prefix('domisili')->name('domisili.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\DomisiliController::class, 'show'])->name('show');
+        Route::post('/', [\App\Http\Controllers\Api\DomisiliController::class, 'store'])->name('store');
+    });
+
     // ─── GEOLOCATION & ATTENDANCE ─────────────────────────────────
     Route::prefix('attendance')->name('attendance.')->group(function () {
         Route::post('/', [AttendanceController::class, 'store'])->name('store');

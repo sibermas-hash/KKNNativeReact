@@ -20,8 +20,11 @@ Schedule::command('kkn:cek-gugur')->dailyAt('23:59');
 // Periodic ABCD Stage Evaluation
 Schedule::command('kkn:advance-abcd')->everySixHours();
 
-// Daily Database Backup at 2 AM (retain last 7)
-Schedule::command('backup:run --only-db --keep=7')->dailyAt('02:00');
+// Daily Database Backup at 02:00 WIB (retain last 7 days)
+Schedule::command('db:backup --keep=7')->dailyAt('02:00');
+
+// Deadline Reminders (H-3, H-1, hari terakhir) at 08:00 WIB
+Schedule::command('kkn:send-deadline-reminders')->dailyAt('08:00');
 
 // Daily Logbook Reminder at 20:00 WIB
 Schedule::command('kkn:send-logbook-reminders')->dailyAt('20:00');

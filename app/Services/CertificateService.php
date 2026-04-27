@@ -98,7 +98,7 @@ class CertificateService
 
         // Cek Laporan Akhir
         $laporanApproved = LaporanAkhir::where('kelompok_id', $kelompok->id)
-            ->where('status', 'approved')
+            ->workflowApproved()
             ->exists();
 
         if (! $laporanApproved) {

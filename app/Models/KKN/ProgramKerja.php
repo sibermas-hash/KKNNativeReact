@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class ProgramKerja extends Model
 {
@@ -56,5 +57,19 @@ class ProgramKerja extends Model
     public function rekapitulasi(): HasMany
     {
         return $this->hasMany(RekapitulasiKegiatan::class, 'program_kerja_id');
+    }
+
+    public function proposals(): HasMany
+    {
+        return $this->hasMany(ProposalProgramKerja::class, 'program_kerja_id')
+            ->orderByDesc('version')
+            ->orderByDesc('uploaded_at')
+            ->orderByDesc('id');
+    }
+
+    public function latestProposal(): HasOne
+    {
+        return $this->hasOne(ProposalProgramKerja::class, 'program_kerja_id')
+            ->latestOfMany('version');
     }
 }

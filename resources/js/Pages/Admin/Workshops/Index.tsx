@@ -19,6 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { Modal, ConfirmDialog } from '@/Components/UI';
+import { motion } from 'framer-motion';
 
 // Premium Components
 import PageHeader from '@/Components/Premium/PageHeader';
@@ -185,13 +186,36 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
     );
   };
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
   return (
     <AppLayout title="Workshop & Pembekalan">
       <Head title="Workshop & Pembekalan" />
-      <div className="space-y-8 pb-24 font-sans text-emerald-950">
-        <PageHeader
-          title="Workshop & Pembekalan."
-          subtitle="Manajemen agenda pelatihan terpusat untuk membekali mahasiswa dan Dosen Pembimbing Lapangan sebelum terjun ke lokasi pengabdian."
+      <motion.div 
+        variants={containerVariants} 
+        initial="hidden" 
+        animate="show" 
+        className="space-y-8 pb-24 font-sans text-emerald-950"
+      >
+        <motion.div variants={itemVariants}>
+          <PageHeader
+            title="Workshop & Pembekalan."
+            subtitle="Manajemen agenda pelatihan terpusat untuk membekali mahasiswa dan Dosen Pembimbing Lapangan sebelum terjun ke lokasi pengabdian."
           icon={GraduationCap}
           groupLabel="Operasional Sistem"
           stats={{
@@ -213,9 +237,10 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
             </button>
           )}
         </PageHeader>
+        </motion.div>
 
         {/* --- DYNAMIC STATS --- */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             label="Agenda Aktif"
             value={workshops.length}
@@ -230,9 +255,10 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
             variant="gray"
           />
           <StatCard label="Status Sistem" value="Online" icon={Activity} variant="success" />
-        </div>
+        </motion.div>
 
         {/* PERIOD FILTER */}
+        <motion.div variants={itemVariants}>
         <ContentPanel title="Konfigurasi Konteks Periode" icon={Filter} padding={true}>
           <div className="flex flex-col md:flex-row md:items-end gap-6">
             <div className="flex-1 max-w-sm space-y-3">
@@ -272,8 +298,10 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
             </button>
           </div>
         </ContentPanel>
+        </motion.div>
 
         {/* SEARCH BAR PANEL */}
+        <motion.div variants={itemVariants}>
         <ContentPanel
           title="Daftar Agenda Pembekalan"
           description="Manajemen Jadwal & Daftar Peserta"
@@ -416,7 +444,8 @@ export default function WorkshopIndex({ workshops = [], periods = [], filters }:
             )}
           </div>
         </ContentPanel>
-      </div>
+        </motion.div>
+      </motion.div>
       {/* FORM MODAL */}
       <Modal
         show={showForm}

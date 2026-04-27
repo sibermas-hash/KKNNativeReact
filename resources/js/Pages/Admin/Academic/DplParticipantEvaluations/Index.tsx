@@ -1,4 +1,5 @@
 import { Head, Link, router } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import AppLayout from '@/Layouts/AppLayout';
 import { BarChart3, Download, Filter, MessageSquareQuote, Search, Star, Users } from 'lucide-react';
 import { useState } from 'react';
@@ -74,11 +75,28 @@ export default function DplParticipantEvaluationIndex({
     );
   };
 
-  return (
+    const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
+return (
     <AppLayout title="Evaluasi DPL Peserta">
       <Head title="Evaluasi DPL Peserta" />
 
-      <div className="space-y-6">
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6">
         <section className="rounded-2xl border border-emerald-50 bg-white p-6 shadow-sm">
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
@@ -296,7 +314,7 @@ export default function DplParticipantEvaluationIndex({
             </div>
           </section>
         </div>
-      </div>
+      </motion.div>
     </AppLayout>
   );
 }

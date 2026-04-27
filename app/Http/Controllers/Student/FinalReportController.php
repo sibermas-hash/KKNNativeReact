@@ -53,6 +53,20 @@ class FinalReportController extends Controller
         }
     }
 
+    private function storeValidatedUpload($file, string $directory, ?array $allowedSignatures = null): string
+    {
+        $this->validateFileMagicBytes($file, $allowedSignatures);
+
+        return $file->storeAs($directory, Str::uuid().'.'.$file->getClientOriginalExtension(), 'local');
+    }
+
+    private function deleteLocalAsset(?string $path): void
+    {
+        if ($path && Storage::disk('local')->exists($path)) {
+            Storage::disk('local')->delete($path);
+        }
+    }
+
     #[Get('/mahasiswa/laporan-akhir', name: 'student.laporan-akhir.index')]
     #[Get('/mahasiswa/laporan-akhir/buat', name: 'student.laporan-akhir.create')]
     public function create(): Response
@@ -66,7 +80,17 @@ class FinalReportController extends Controller
 
         return Inertia::render('Student/FinalReport/Create', [
             'group' => $pendaftaran?->kelompok,
-            'existingReport' => $laporanAda,
+            'existingReport' => $laporanAda ? [
+                'id' => $laporanAda->id,
+                'title' => $laporanAda->title,
+                'abstract' => $laporanAda->abstract,
+                'video_link' => $laporanAda->video_link,
+                'news_link' => $laporanAda->news_link,
+                'status' => $laporanAda->canonicalStatus(),
+                'file_name' => $laporanAda->file_name,
+                'review_notes' => $laporanAda->review_notes,
+                'submitted_at' => optional($laporanAda->submitted_at)->toIso8601String(),
+            ] : null,
             'uploadedBy' => $laporanAda?->mahasiswa?->nama,
         ]);
     }
@@ -95,38 +119,92 @@ class FinalReportController extends Controller
         ]);
 
         return \DB::transaction(function () use ($request, $validated, $pendaftaran, $mahasiswa) {
-            // Re-check existence within transaction to prevent race conditions
-            $existing = LaporanAkhir::where('kelompok_id', $pendaftaran->kelompok_id)->lockForUpdate()->exists();
-            if ($existing) {
+            $existing = LaporanAkhir::where('kelompok_id', $pendaftaran->kelompok_id)
+                ->lockForUpdate()
+                ->latest()
+                ->first();
+
+            if ($existing && ! $existing->canBeResubmitted()) {
                 return redirect()->back()->with('error', 'Laporan akhir untuk kelompok Anda sudah diunggah oleh anggota lain.');
             }
 
             $file = $request->file('file');
-            $this->validateFileMagicBytes($file);
-            $path = $file->storeAs('final-reports', Str::uuid().'.'.$file->getClientOriginalExtension(), 'local');
+            $path = $this->storeValidatedUpload($file, 'final-reports');
 
-            $article1Path = null;
+            $article1Path = $existing?->article_1_path;
             if ($request->hasFile('article_1')) {
-                $this->validateFileMagicBytes($request->file('article_1'));
-                $article1Path = $request->file('article_1')->storeAs('final-reports/articles', Str::uuid().'.'.$request->file('article_1')->getClientOriginalExtension(), 'local');
+                $article1Path = $this->storeValidatedUpload(
+                    $request->file('article_1'),
+                    'final-reports/articles'
+                );
             }
 
-            $article2Path = null;
+            $article2Path = $existing?->article_2_path;
             if ($request->hasFile('article_2')) {
-                $this->validateFileMagicBytes($request->file('article_2'));
-                $article2Path = $request->file('article_2')->storeAs('final-reports/articles', Str::uuid().'.'.$request->file('article_2')->getClientOriginalExtension(), 'local');
+                $article2Path = $this->storeValidatedUpload(
+                    $request->file('article_2'),
+                    'final-reports/articles'
+                );
             }
 
-            $posterPaths = [];
-            foreach (['poster_1', 'poster_2', 'poster_3'] as $key) {
+            $posterSignatures = [
+                'pdf' => [0x25, 0x50, 0x44],
+                'jpg' => [0xFF, 0xD8, 0xFF],
+                'png' => [0x89, 0x50, 0x4E, 0x47],
+            ];
+
+            $posterPaths = [
+                'poster_1' => $existing?->poster_1_path,
+                'poster_2' => $existing?->poster_2_path,
+                'poster_3' => $existing?->poster_3_path,
+            ];
+
+            foreach (array_keys($posterPaths) as $key) {
                 if ($request->hasFile($key)) {
-                    $this->validateFileMagicBytes($request->file($key), [
-                        'pdf' => [0x25, 0x50, 0x44],
-                        'jpg' => [0xFF, 0xD8, 0xFF],
-                        'png' => [0x89, 0x50, 0x4E, 0x47],
-                    ]);
-                    $posterPaths[$key] = $request->file($key)->storeAs('final-reports/posters', Str::uuid().'.'.$request->file($key)->getClientOriginalExtension(), 'local');
+                    $posterPaths[$key] = $this->storeValidatedUpload(
+                        $request->file($key),
+                        'final-reports/posters',
+                        $posterSignatures
+                    );
                 }
+            }
+
+            if ($existing) {
+                $obsoletePaths = array_filter([
+                    $existing->file_path,
+                    $article1Path !== $existing->article_1_path ? $existing->article_1_path : null,
+                    $article2Path !== $existing->article_2_path ? $existing->article_2_path : null,
+                    $posterPaths['poster_1'] !== $existing->poster_1_path ? $existing->poster_1_path : null,
+                    $posterPaths['poster_2'] !== $existing->poster_2_path ? $existing->poster_2_path : null,
+                    $posterPaths['poster_3'] !== $existing->poster_3_path ? $existing->poster_3_path : null,
+                ]);
+
+                $existing->update([
+                    'mahasiswa_id' => $mahasiswa->id,
+                    'title' => $validated['title'],
+                    'abstract' => $validated['abstract'] ?? null,
+                    'video_link' => $validated['video_link'] ?? null,
+                    'news_link' => $validated['news_link'] ?? null,
+                    'file_path' => $path,
+                    'file_name' => Str::limit($file->getClientOriginalName(), 255),
+                    'article_1_path' => $article1Path,
+                    'article_2_path' => $article2Path,
+                    'poster_1_path' => $posterPaths['poster_1'],
+                    'poster_2_path' => $posterPaths['poster_2'],
+                    'poster_3_path' => $posterPaths['poster_3'],
+                    'status' => LaporanAkhir::STATUS_SUBMITTED,
+                    'submitted_at' => now(),
+                    'review_notes' => null,
+                    'reviewed_by' => null,
+                    'reviewed_at' => null,
+                ]);
+
+                foreach ($obsoletePaths as $obsoletePath) {
+                    $this->deleteLocalAsset($obsoletePath);
+                }
+
+                return redirect()->route('student.dashboard')
+                    ->with('success', 'Revisi laporan akhir kelompok berhasil dikirim ulang.');
             }
 
             LaporanAkhir::create([
@@ -140,10 +218,10 @@ class FinalReportController extends Controller
                 'file_name' => Str::limit($file->getClientOriginalName(), 255),
                 'article_1_path' => $article1Path,
                 'article_2_path' => $article2Path,
-                'poster_1_path' => $posterPaths['poster_1'] ?? null,
-                'poster_2_path' => $posterPaths['poster_2'] ?? null,
-                'poster_3_path' => $posterPaths['poster_3'] ?? null,
-                'status' => 'submitted',
+                'poster_1_path' => $posterPaths['poster_1'],
+                'poster_2_path' => $posterPaths['poster_2'],
+                'poster_3_path' => $posterPaths['poster_3'],
+                'status' => LaporanAkhir::STATUS_SUBMITTED,
                 'submitted_at' => now(),
             ]);
 

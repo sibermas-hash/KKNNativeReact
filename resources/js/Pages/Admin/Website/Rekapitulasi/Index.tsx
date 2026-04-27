@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import AppLayout from '@/Layouts/AppLayout';
 import { route } from 'ziggy-js';
 import {
@@ -73,13 +74,31 @@ export default function AdminRekapitulasiIndex({ kelompok, rekapitulasi, dpl }: 
     { mhs: 0, masy: 0, bant: 0, don: 0, total: 0 },
   );
 
-  return (
+    const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
+return (
     <AppLayout title="Audit Finansial">
       <Head title={`Rekapitulasi ${kelompok.nama_kelompok} | SIBERMAS`} />
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans print:p-0 print:space-y-0">
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans print:p-0 print:space-y-0">
         {/* PAGE HEADER */}
-        <PageHeader
+        <motion.div variants={itemVariants}>
+<PageHeader
           title="Fiscal Audit."
           subtitle={`Rekapitulasi laporan kegiatan dan pengawasan finansial kelompok ${kelompok.nama_kelompok}.`}
           icon={Database}
@@ -102,9 +121,10 @@ export default function AdminRekapitulasiIndex({ kelompok, rekapitulasi, dpl }: 
             </button>
           </div>
         </PageHeader>
+</motion.div>
 
         {/* STATS GRID */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
+        <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4 print:hidden">
           <StatCard
             label="Total Investasi"
             value={`Rp ${formatCurrency(totals.total)}`}
@@ -122,7 +142,8 @@ export default function AdminRekapitulasiIndex({ kelompok, rekapitulasi, dpl }: 
         </div>
 
         {/* DOCUMENT CANVAS */}
-        <ContentPanel
+        <motion.div variants={itemVariants}>
+<ContentPanel
           title="Rekapitulasi Laporan Kegiatan"
           description="Lembaga Penelitian dan Pengabdian Masyarakat (LPPM) UIN Saizu"
           icon={FileText}
@@ -289,6 +310,7 @@ export default function AdminRekapitulasiIndex({ kelompok, rekapitulasi, dpl }: 
             </div>
           </div>
         </ContentPanel>
+</motion.div>
 
         {/* PRINT STYLE */}
         <style
@@ -309,7 +331,7 @@ export default function AdminRekapitulasiIndex({ kelompok, rekapitulasi, dpl }: 
         `,
           }}
         />
-      </div>
+      </motion.div>
     </AppLayout>
   );
 }

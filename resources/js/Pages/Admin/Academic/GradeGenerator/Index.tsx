@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Button } from '@/Components/UI';
@@ -58,12 +59,30 @@ export default function GradeGeneratorIndex({ periods, groups }: Props) {
     [groups, selectedPeriodId],
   );
 
-  return (
+    const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
+return (
     <AppLayout title="Generator Blanko Nilai">
       <Head title="Generator Nilai KKN" />
 
-      <div className="space-y-8 pb-24 text-emerald-950 font-sans px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
-        <PageHeader
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-8 pb-24 text-emerald-950 font-sans px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
+        <motion.div variants={itemVariants}>
+<PageHeader
           title="Generator Nilai."
           subtitle="Fasilitas ekstraksi blanko penilaian operasional dan manajemen berkas lapangan terpadu bagi Dosen Pembimbing Lapangan."
           icon={FileText}
@@ -86,8 +105,9 @@ export default function GradeGeneratorIndex({ periods, groups }: Props) {
             Unduh Semua (ZIP)
           </a>
         </PageHeader>
+</motion.div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="Status Koneksi" value="AKTIF" icon={Zap} variant="success" />
           <StatCard label="Integritas Data" value="VALID" icon={ShieldCheck} variant="info" />
           <StatCard
@@ -97,9 +117,10 @@ export default function GradeGeneratorIndex({ periods, groups }: Props) {
             variant="gray"
           />
           <StatCard label="Sinkronisasi" value="STABIL" icon={RefreshCw} variant="success" />
-        </div>
+        </motion.div>
 
-        <ContentPanel
+        <motion.div variants={itemVariants}>
+<ContentPanel
           title="Indeks Kelompok KKN"
           description={`Menampilkan ${activeGroups.length} unit kelompok penugasan.`}
           icon={Layers}
@@ -202,6 +223,7 @@ export default function GradeGeneratorIndex({ periods, groups }: Props) {
             ))}
           </PremiumTable>
         </ContentPanel>
+</motion.div>
 
         <div className="bg-emerald-950 rounded-[2rem] p-12 text-white relative overflow-hidden shadow-2xl group">
           <div className="absolute top-0 right-0 p-12 opacity-10 rotate-12 -mr-20 -mt-20 group-hover:rotate-45 transition-transform duration-1000">
@@ -231,7 +253,7 @@ export default function GradeGeneratorIndex({ periods, groups }: Props) {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </AppLayout>
   );
 }

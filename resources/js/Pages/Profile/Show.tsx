@@ -4,6 +4,7 @@ import AppLayout from '@/Layouts/AppLayout';
 import { FormInput, FormTextarea } from '@/Components/UI';
 import type { PageProps } from '@/types';
 import type { FormEventHandlerType } from '@/types/events';
+import { capturePhotoFile, isNativeCameraAvailable } from '@/lib/native-camera';
 import { route } from 'ziggy-js';
 import {
   User,
@@ -110,8 +111,11 @@ export default function ProfileShow() {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [nikChecking, setNikChecking] = useState(false);
   const [nikUniqueError, setNikUniqueError] = useState<string | null>(null);
+  const [avatarUploadError, setAvatarUploadError] = useState<string | null>(null);
+  const [isCapturingAvatar, setIsCapturingAvatar] = useState(false);
 
   const mustChangePassword = user?.must_change_password ?? false;
+  const hasNativeCamera = isNativeCameraAvailable();
 
   const profileForm = useForm({
     name: user?.name ?? '',
@@ -133,8 +137,6 @@ export default function ProfileShow() {
     nama_bank: lecturer?.nama_bank ?? '',
     npwp: lecturer?.npwp ?? '',
   });
-
-  const avatarForm = useForm<{ avatar: File | null }>({ avatar: null });
 
   const validateNik = (value: string): string | undefined => {
     if (!student) return undefined; // Only for students
@@ -201,6 +203,16 @@ export default function ProfileShow() {
     };
   }, [profileForm.data.nik, student]);
 
+  useEffect(() => {
+    if (!previewUrl?.startsWith('blob:')) {
+      return;
+    }
+
+    return () => {
+      URL.revokeObjectURL(previewUrl);
+    };
+  }, [previewUrl]);
+
   const handleProfileSubmit: FormEventHandlerType = (e) => {
     e.preventDefault();
 
@@ -237,28 +249,64 @@ export default function ProfileShow() {
     return null;
   }
 
-  const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setPreviewUrl(URL.createObjectURL(file));
+  const uploadAvatarFile = async (file: File) => {
+    const nextPreviewUrl = URL.createObjectURL(file);
+    setPreviewUrl(nextPreviewUrl);
+    setAvatarUploadError(null);
 
     const formData = new FormData();
     formData.append('avatar', file);
 
-    fetch(route('profile.avatar'), {
+    const response = await fetch(route('profile.avatar'), {
       method: 'POST',
       body: formData,
       headers: {
         'X-CSRF-TOKEN':
           document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
       },
-    })
-      .then(() => {
-        router.reload({ only: ['user'] });
-      })
-      .catch(() => {
-        setPreviewUrl(null);
+    });
+
+    if (!response.ok) {
+      setPreviewUrl(null);
+      throw new Error('Gagal menyimpan foto profil.');
+    }
+
+    router.reload({ only: ['user'] });
+  };
+
+  const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    void uploadAvatarFile(file).catch((error) => {
+      setAvatarUploadError(
+        error instanceof Error ? error.message : 'Gagal menyimpan foto profil.',
+      );
+    });
+  };
+
+  const handleNativeAvatarCapture = async () => {
+    setIsCapturingAvatar(true);
+    setAvatarUploadError(null);
+
+    try {
+      const file = await capturePhotoFile({
+        direction: 'front',
+        fileNamePrefix: 'avatar',
       });
+
+      if (!file) {
+        return;
+      }
+
+      await uploadAvatarFile(file);
+    } catch (error) {
+      setAvatarUploadError(
+        error instanceof Error ? error.message : 'Gagal menyimpan foto profil.',
+      );
+    } finally {
+      setIsCapturingAvatar(false);
+    }
   };
 
   const avatarUrl = previewUrl || (user.avatar ? `/storage/${user.avatar}` : null);
@@ -337,6 +385,32 @@ export default function ProfileShow() {
                   <p className="text-xs text-emerald-700 mt-0.5">NIP: {lecturer.nip}</p>
                 )}
               </div>
+              <div className="flex flex-col sm:flex-row gap-2 w-full">
+                {hasNativeCamera && (
+                  <button
+                    type="button"
+                    onClick={() => void handleNativeAvatarCapture()}
+                    disabled={isCapturingAvatar}
+                    className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <Camera size={14} />
+                    {isCapturingAvatar ? 'Membuka Kamera...' : 'Ambil Foto'}
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => avatarInputRef.current?.click()}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  <UserCheck size={14} />
+                  Pilih Berkas
+                </button>
+              </div>
+              {avatarUploadError && (
+                <p className="w-full rounded-lg bg-rose-50 px-3 py-2 text-left text-xs font-medium text-rose-700">
+                  {avatarUploadError}
+                </p>
+              )}
               <input
                 ref={avatarInputRef}
                 type="file"

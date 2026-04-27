@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (DB::getDriverName() !== 'pgsql') {
+            return;
+        }
+
         $this->convertMasterIdToString('fakultas');
         $this->convertMasterIdToString('prodi');
         $this->convertMasterIdToString('mahasiswa');
@@ -21,6 +25,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::getDriverName() !== 'pgsql') {
+            return;
+        }
+
         if (Schema::hasTable('mahasiswa')) {
             DB::statement('UPDATE mahasiswa SET fakultas_id = (SELECT id FROM fakultas ORDER BY id LIMIT 1) WHERE fakultas_id IS NULL');
             DB::statement('UPDATE mahasiswa SET prodi_id = (SELECT id FROM prodi ORDER BY id LIMIT 1) WHERE prodi_id IS NULL');

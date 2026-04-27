@@ -4,6 +4,7 @@ import { route } from 'ziggy-js';
 import AppLayout from '@/Layouts/AppLayout';
 import { FormInput, FormTextarea, FormSelect } from '@/Components/UI';
 import { getCurrentCoordinates } from '@/lib/geolocation';
+import { capturePhotoFile, isNativeCameraAvailable } from '@/lib/native-camera';
 import {
   listPendingDailyReports,
   queueDailyReport,
@@ -11,17 +12,12 @@ import {
 } from '@/lib/offline-daily-reports';
 import {
   ChevronLeft,
-  MapPin,
   Wifi,
   WifiOff,
-  History,
   CloudUpload,
   Camera,
-  AlertCircle,
-  CheckCircle2,
   Zap,
   Navigation,
-  Clock,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -66,7 +62,7 @@ function formatDateTime(value: string | null): string {
 
 export default function StudentDailyReportCreate({ group, geoPolicy }: Props) {
   const [isFetchingLocation, setIsFetchingLocation] = useState(false);
-  const [isSyncingPending, setIsSyncingPending] = useState(false);
+  const [, setIsSyncingPending] = useState(false);
   const [isOnline, setIsOnline] = useState(
     typeof navigator === 'undefined' ? true : navigator.onLine,
   );
@@ -74,8 +70,14 @@ export default function StudentDailyReportCreate({ group, geoPolicy }: Props) {
     msg: string;
     type: 'success' | 'error' | 'info';
   } | null>(null);
-  const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
+  const [, setSyncFeedback] = useState<string | null>(null);
   const [pendingCount, setPendingCount] = useState(0);
+  const [mediaFeedback, setMediaFeedback] = useState<{
+    msg: string;
+    type: 'success' | 'error';
+  } | null>(null);
+  const [isCapturingPhoto, setIsCapturingPhoto] = useState(false);
+  const hasNativeCamera = isNativeCameraAvailable();
 
   const form = useForm({
     date: new Date().toISOString().split('T')[0],
@@ -153,6 +155,47 @@ export default function StudentDailyReportCreate({ group, geoPolicy }: Props) {
       setIsFetchingLocation(false);
     }
   }, [form]);
+
+  const updateSelectedFiles = useCallback(
+    (files: File[]) => {
+      form.setData('files', files);
+      form.clearErrors('files');
+      setMediaFeedback(
+        files.length > 0
+          ? {
+              msg: `${files.length} foto siap diunggah.`,
+              type: 'success',
+            }
+          : null,
+      );
+    },
+    [form],
+  );
+
+  const handleNativePhotoCapture = useCallback(async () => {
+    setIsCapturingPhoto(true);
+    setMediaFeedback(null);
+
+    try {
+      const file = await capturePhotoFile({
+        direction: 'rear',
+        fileNamePrefix: 'daily-report',
+      });
+
+      if (!file) {
+        return;
+      }
+
+      updateSelectedFiles([...form.data.files, file]);
+    } catch (error) {
+      setMediaFeedback({
+        msg: error instanceof Error ? error.message : 'Gagal membuka kamera perangkat.',
+        type: 'error',
+      });
+    } finally {
+      setIsCapturingPhoto(false);
+    }
+  }, [form.data.files, updateSelectedFiles]);
 
   const handlePendingSync = useCallback(async () => {
     if (!navigator.onLine) {
@@ -351,13 +394,6 @@ export default function StudentDailyReportCreate({ group, geoPolicy }: Props) {
               </div>
 
               <div className="relative group">
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={(e) => form.setData('files', Array.from(e.target.files ?? []))}
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                />
                 <div className="bg-emerald-50/30 border-2 border-dashed border-emerald-50/60 rounded-xl p-12 text-center group-hover:bg-emerald-50/30 transition-all">
                   <CloudUpload
                     size={48}
@@ -371,8 +407,46 @@ export default function StudentDailyReportCreate({ group, geoPolicy }: Props) {
                   <p className="text-sm font-bold text-emerald-950 font-semibold uppercase text-xs mt-2">
                     {isOnline ? 'JPG, PNG Maks 5MB' : 'Ukuran akan divalidasi saat sinkron'}
                   </p>
+                  <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+                    <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-3 text-xs font-semibold uppercase tracking-wide text-emerald-800 transition hover:bg-emerald-100">
+                      <CloudUpload size={16} />
+                      Pilih Foto
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={(e) =>
+                          updateSelectedFiles(Array.from(e.target.files ?? []))
+                        }
+                        className="hidden"
+                      />
+                    </label>
+                    {hasNativeCamera && (
+                      <button
+                        type="button"
+                        onClick={() => void handleNativePhotoCapture()}
+                        disabled={isCapturingPhoto}
+                        className="inline-flex items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <Camera size={16} />
+                        {isCapturingPhoto ? 'Membuka Kamera...' : 'Ambil Foto'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
+              {mediaFeedback && (
+                <p
+                  className={clsx(
+                    'rounded-xl px-4 py-3 text-sm font-medium',
+                    mediaFeedback.type === 'success'
+                      ? 'bg-emerald-50 text-emerald-800'
+                      : 'bg-rose-50 text-rose-700',
+                  )}
+                >
+                  {mediaFeedback.msg}
+                </p>
+              )}
               {form.errors.files && (
                 <p className="text-sm font-bold text-rose-500 uppercase px-4">
                   {form.errors.files}

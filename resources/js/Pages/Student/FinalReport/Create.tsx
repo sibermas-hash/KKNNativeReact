@@ -25,8 +25,13 @@ interface Props extends PageProps {
   existingReport: {
     id: number;
     title: string;
+    abstract?: string | null;
+    video_link?: string | null;
+    news_link?: string | null;
     status: string;
     file_name?: string | null;
+    review_notes?: string | null;
+    submitted_at?: string | null;
   } | null;
   uploadedBy: string | null;
 }
@@ -34,9 +39,9 @@ interface Props extends PageProps {
 export default function StudentFinalReportCreate({ group, existingReport, uploadedBy }: Props) {
   const form = useForm({
     title: existingReport?.title ?? '',
-    abstract: '',
-    video_link: '',
-    news_link: '',
+    abstract: existingReport?.abstract ?? '',
+    video_link: existingReport?.video_link ?? '',
+    news_link: existingReport?.news_link ?? '',
     article_1: null as File | null,
     article_2: null as File | null,
     poster_1: null as File | null,
@@ -51,6 +56,8 @@ export default function StudentFinalReportCreate({ group, existingReport, upload
       forceFormData: true,
     });
   };
+
+  const canResubmit = existingReport?.status === 'revision';
 
   if (!group) {
     return (
@@ -73,7 +80,7 @@ export default function StudentFinalReportCreate({ group, existingReport, upload
     );
   }
 
-  const isReportLocked = !!existingReport;
+  const isReportLocked = !!existingReport && !canResubmit;
 
   return (
     <AppLayout title="Laporan Akhir">
@@ -124,6 +131,27 @@ export default function StudentFinalReportCreate({ group, existingReport, upload
         {/* --- MAIN FORM --- */}
         {!isReportLocked ? (
           <form onSubmit={handleSubmit} className="space-y-10">
+            {canResubmit && (
+              <section className="rounded-[2rem] border border-amber-200 bg-amber-50/80 p-6 lg:p-8 space-y-3">
+                <div className="flex items-start gap-3">
+                  <ShieldAlert size={20} className="mt-0.5 text-amber-600 shrink-0" />
+                  <div className="space-y-2">
+                    <h2 className="text-sm font-bold uppercase tracking-wider text-amber-900">
+                      Revisi Diminta DPL
+                    </h2>
+                    <p className="text-sm text-amber-800">
+                      Laporan kelompok Anda perlu diperbaiki lalu dikirim ulang ke alur review.
+                    </p>
+                    {existingReport?.review_notes && (
+                      <p className="rounded-xl bg-white/80 px-4 py-3 text-sm font-medium text-amber-900">
+                        {existingReport.review_notes}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )}
+
             {/* 1. DATA IDENTITAS LAPORAN */}
             <div className="rounded-[2.5rem] border border-emerald-50/60 bg-white p-10 lg:p-12 shadow-sm space-y-8">
               <div className="flex items-center gap-4 border-b border-slate-50 pb-6">
@@ -327,7 +355,11 @@ export default function StudentFinalReportCreate({ group, existingReport, upload
                   disabled={form.processing}
                   className="px-6 py-5 rounded-2xl bg-emerald-600 text-white font-bold text-sm shadow-xl shadow-emerald-200 hover:bg-emerald-700 transition-all active:scale-95 uppercase tracking-wider text-xs font-semibold flex items-center gap-4"
                 >
-                  {form.processing ? 'Transmitting Data...' : 'Kirim Laporan Akhir'}
+                  {form.processing
+                    ? 'Transmitting Data...'
+                    : canResubmit
+                      ? 'Kirim Ulang Laporan Akhir'
+                      : 'Kirim Laporan Akhir'}
                   <CheckCircle2 size={16} strokeWidth={3} />
                 </button>
               </div>

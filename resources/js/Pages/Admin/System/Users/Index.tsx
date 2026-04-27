@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { router, Head, Link, usePage } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import {
@@ -68,11 +69,28 @@ export default function UsersIndex({
     );
   };
 
-  return (
+    const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
+return (
     <AppLayout title="Akses Pengguna">
       <Head title="Manajemen Pengguna" />
 
-      <div className="space-y-6 font-sans pb-12">
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="space-y-6 font-sans pb-12">
         {/* HEADER SECTION */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-emerald-50 pt-6">
           <div className="space-y-1">
@@ -271,7 +289,7 @@ export default function UsersIndex({
             {users?.meta && <Pagination meta={users.meta} />}
           </div>
         </div>
-      </div>
+      </motion.div>
     </AppLayout>
   );
 }

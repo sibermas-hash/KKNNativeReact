@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Head, router, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import dayjs from 'dayjs';
@@ -325,12 +326,30 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
     });
   };
 
-  return (
+    const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
+return (
     <AppLayout title="Manajemen Berita">
       <Head title="Manajemen Berita | SIBERMAS" />
 
-      <div className="mx-auto max-w-[1480px] space-y-10 px-4 py-10 font-sans text-emerald-950 sm:px-6 lg:px-8">
-        <PageHeader
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="mx-auto max-w-[1480px] space-y-10 px-4 py-10 font-sans text-emerald-950 sm:px-6 lg:px-8">
+        <motion.div variants={itemVariants}>
+<PageHeader
           title="Berita."
           subtitle="Kelola artikel publik di /berita dengan workflow editorial yang lebih lengkap: penulisan, media, penjadwalan, SEO, dan preview publik."
           icon={Newspaper}
@@ -352,8 +371,9 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
             </button>
           </div>
         </PageHeader>
+</motion.div>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <motion.div variants={itemVariants} className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Total Artikel" value={summary.total} icon={FileSearch} variant="gray" />
           <StatCard
             label="Sudah Terbit"
@@ -372,7 +392,8 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
 
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.28fr)]">
           <div className="space-y-6 lg:sticky lg:top-24">
-            <ContentPanel
+            <motion.div variants={itemVariants}>
+<ContentPanel
               title={selectedAnnouncement ? 'Editor Berita' : 'Tulis Berita Baru'}
               description="Panel komposer untuk artikel publik. Perubahan akan muncul di /berita setelah disimpan dan statusnya memenuhi publikasi."
               icon={PenSquare}
@@ -397,7 +418,7 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                   )}
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-[minmax(0,1.3fr)_12rem]">
+                <motion.div variants={itemVariants} className="grid gap-4 sm:grid-cols-[minmax(0,1.3fr)_12rem]">
                   <div className="space-y-2">
                     <label
                       htmlFor="news-slug"
@@ -654,8 +675,10 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                       </div>
                     </div>
                   </ContentPanel>
+</motion.div>
 
-                  <ContentPanel
+                  <motion.div variants={itemVariants}>
+<ContentPanel
                     title="SEO & Preview"
                     description="Siapkan meta dan cek bagaimana artikel akan terlihat di publik."
                     icon={Sparkles}
@@ -788,6 +811,7 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                       </div>
                     </div>
                   </ContentPanel>
+</motion.div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
@@ -835,7 +859,8 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
           </div>
 
           <div className="space-y-6">
-            <ContentPanel
+            <motion.div variants={itemVariants}>
+<ContentPanel
               title="Arsip Berita /berita"
               description="Cari, filter, dan pilih artikel untuk diedit. Panel ini menjadi pusat navigasi editorial."
               icon={SearchCheck}
@@ -1014,9 +1039,10 @@ export default function AnnouncementIndex({ announcements, summary, filters, cat
                 })}
               </div>
             </ContentPanel>
+</motion.div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </AppLayout>
   );
 }

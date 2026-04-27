@@ -1,15 +1,19 @@
 import { Capacitor } from '@capacitor/core';
 import { route } from 'ziggy-js';
 
+let pushRegistrationStarted = false;
+
 /**
  * Register for push notifications on native platforms.
  * Sends the device token to the server for later use.
  * No-op on web.
  */
 export async function registerPushNotifications(): Promise<void> {
-  if (!Capacitor.isNativePlatform()) return;
+  if (!Capacitor.isNativePlatform() || pushRegistrationStarted) return;
+  pushRegistrationStarted = true;
 
   const { PushNotifications } = await import('@capacitor/push-notifications');
+  const platform = Capacitor.getPlatform();
 
   const permResult = await PushNotifications.requestPermissions();
   if (permResult.receive !== 'granted') return;
@@ -23,7 +27,7 @@ export async function registerPushNotifications(): Promise<void> {
         'Content-Type': 'application/json',
         'X-Requested-With': 'XMLHttpRequest',
       },
-      body: JSON.stringify({ token: token.value, platform: 'android' }),
+      body: JSON.stringify({ token: token.value, device_type: platform }),
       credentials: 'same-origin',
     }).catch(() => {
       // Silently fail - token registration is best-effort

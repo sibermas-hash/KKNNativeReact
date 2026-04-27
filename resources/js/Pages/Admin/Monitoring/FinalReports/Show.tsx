@@ -1,11 +1,10 @@
-import { Head, useForm, Link } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { route } from 'ziggy-js';
 import { clsx } from 'clsx';
 import AppLayout from '@/Layouts/AppLayout';
 import {
   Activity,
   ShieldCheck,
-  ChevronLeft,
   ExternalLink,
   FileText,
   Video,
@@ -15,20 +14,14 @@ import {
   Users,
   CheckCircle,
   XCircle,
-  Info,
   ArrowRight,
   Fingerprint,
   Calendar,
   SearchCheck,
   AlertTriangle,
-  Save,
   LayoutGrid,
-  FileCheck,
   Archive,
-  Zap,
-  Globe,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
 
 // Premium Components
 import PageHeader from '@/Components/Premium/PageHeader';
@@ -79,12 +72,12 @@ export default function AdminFinalReportShow({ report }: Props) {
     review_notes: report.review_notes ?? '',
   });
 
-  const handleSubmit = (status: 'disetujui' | 'revisi') => {
+  const handleSubmit = (status: 'approved' | 'revision') => {
     setData('status', status);
     patch(route('admin.laporan.akhir.update-status', report.id));
   };
 
-  const isFinalized = report.status === 'disetujui';
+  const isFinalized = report.status === 'approved';
 
   return (
     <AppLayout title="Detail Audit Laporan">
@@ -102,13 +95,11 @@ export default function AdminFinalReportShow({ report }: Props) {
           <div className="flex items-center gap-4">
             <StatusTag
               status={
-                report.status === 'disetujui'
+                report.status === 'approved'
                   ? 'active'
-                  : report.status === 'revisi'
+                  : report.status === 'revision'
                     ? 'error'
-                    : report.status === 'reviewed'
-                      ? 'info'
-                      : 'pending'
+                    : 'pending'
               }
               label={report.status.toUpperCase()}
               size="lg"
@@ -314,14 +305,14 @@ export default function AdminFinalReportShow({ report }: Props) {
                 !isFinalized ? (
                   <div className="grid grid-cols-2 gap-3 w-full">
                     <button
-                      onClick={() => handleSubmit('disetujui')}
+                      onClick={() => handleSubmit('approved')}
                       disabled={processing}
                       className="h-12 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 shadow-xl shadow-emerald-600/20 active:scale-95 disabled:opacity-50"
                     >
                       <CheckCircle size={16} /> Setujui
                     </button>
                     <button
-                      onClick={() => handleSubmit('revisi')}
+                      onClick={() => handleSubmit('revision')}
                       disabled={processing}
                       className="h-12 bg-rose-600 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-rose-700 transition-all flex items-center justify-center gap-2 shadow-xl shadow-rose-600/20 active:scale-95 disabled:opacity-50"
                     >

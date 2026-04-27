@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import { useMemo, useState } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import {
@@ -75,11 +76,28 @@ export default function ReportsIndex({ reports, summary }: Props) {
     });
   }, [reports.data, search]);
 
-  return (
+    const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
+return (
     <AppLayout title="Pustaka Aset Digital">
       <Head title="Pustaka Aset Digital | SIBERMAS" />
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
         {/* PAGE HEADER */}
         <PageHeader
           title="Pustaka Aset."
@@ -89,7 +107,7 @@ export default function ReportsIndex({ reports, summary }: Props) {
         />
 
         {/* STATS GRID */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             label="Total Aset KKN"
             value={summary.total_reports}
@@ -107,7 +125,8 @@ export default function ReportsIndex({ reports, summary }: Props) {
         </div>
 
         {/* MAIN CONTENT */}
-        <ContentPanel
+        <motion.div variants={itemVariants}>
+<ContentPanel
           title="Digital Asset Inventory"
           description="Direktori inventori produk akademik dan dokumentasi digital dari lokasi pengabdian."
           icon={LayoutGrid}
@@ -218,7 +237,8 @@ export default function ReportsIndex({ reports, summary }: Props) {
             ))}
           </PremiumTable>
         </ContentPanel>
-      </div>
+</motion.div>
+      </motion.div>
     </AppLayout>
   );
 }

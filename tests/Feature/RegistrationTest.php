@@ -79,6 +79,10 @@ class RegistrationTest extends TestCase
     {
         $user = $this->createCompleteStudentUser();
         $jenisKkn = $this->getJenisReguler();
+        $jenisKkn->update([
+            'require_health_certificate' => true,
+            'require_parent_permission' => true,
+        ]);
 
         $period = Periode::factory()->active()->create([
             'jenis_kkn_id' => $jenisKkn->id,
@@ -101,6 +105,82 @@ class RegistrationTest extends TestCase
             'mahasiswa_id' => $user->mahasiswa->id,
             'periode_id' => $period->id,
             'status' => 'document_submitted',
+        ]);
+
+        $registration = PesertaKkn::query()
+            ->where('mahasiswa_id', $user->mahasiswa->id)
+            ->where('periode_id', $period->id)
+            ->firstOrFail();
+
+        $this->assertDatabaseHas('dokumen_peserta_kkn', [
+            'peserta_kkn_id' => $registration->id,
+            'document_type' => 'health_certificate',
+        ]);
+
+        $this->assertDatabaseHas('dokumen_peserta_kkn', [
+            'peserta_kkn_id' => $registration->id,
+            'document_type' => 'parent_permission',
+        ]);
+    }
+
+    public function test_upload_page_displays_dynamic_document_requirements(): void
+    {
+        $user = $this->createCompleteStudentUser();
+        $jenisKkn = $this->getJenisReguler();
+        $jenisKkn->update([
+            'required_documents' => ['Scan KRS', 'Bukti Pembayaran UKT'],
+        ]);
+
+        $period = Periode::factory()->active()->create([
+            'jenis_kkn_id' => $jenisKkn->id,
+            'current_phase' => 'registration',
+        ]);
+
+        $response = $this->actingAs($user)
+            ->get(route('student.registration.documents', ['periode' => $period->id]));
+
+        $response->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('Student/Register/UploadDokumen')
+                ->has('document_requirements', 2)
+                ->where('document_requirements.0.label', 'Scan KRS')
+                ->where('document_requirements.1.label', 'Bukti Pembayaran UKT')
+            );
+    }
+
+    public function test_student_can_upload_dynamic_registration_documents(): void
+    {
+        $user = $this->createCompleteStudentUser();
+        $jenisKkn = $this->getJenisReguler();
+        $jenisKkn->update([
+            'required_documents' => ['Scan KRS'],
+        ]);
+
+        $period = Periode::factory()->active()->create([
+            'jenis_kkn_id' => $jenisKkn->id,
+            'current_phase' => 'registration',
+        ]);
+
+        $krsFile = UploadedFile::fake()->create('krs.pdf', 400);
+
+        $response = $this->actingAs($user)
+            ->post(route('student.registration.documents.store', ['periode' => $period->id]), [
+                'krs' => $krsFile,
+                'notes' => 'Dokumen KRS lengkap',
+            ]);
+
+        $response->assertRedirect(route('student.dashboard'));
+
+        $registration = PesertaKkn::query()
+            ->where('mahasiswa_id', $user->mahasiswa->id)
+            ->where('periode_id', $period->id)
+            ->firstOrFail();
+
+        $this->assertSame('document_submitted', $registration->status);
+
+        $this->assertDatabaseHas('dokumen_peserta_kkn', [
+            'peserta_kkn_id' => $registration->id,
+            'document_type' => 'krs',
         ]);
     }
 

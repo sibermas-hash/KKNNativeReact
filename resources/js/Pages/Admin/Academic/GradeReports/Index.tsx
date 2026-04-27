@@ -1,4 +1,5 @@
 import { type FormEvent, useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Head, router } from '@inertiajs/react';
 import {
   Download,
@@ -192,9 +193,26 @@ export default function RekapNilaiIndex({
     }
   };
 
-  return (
+    const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
+return (
     <AppLayout title="Rekap Nilai">
-      <div className="py-8 font-sans transition-all">
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="py-8 font-sans transition-all">
         {/* Header Sederhana Sesuai Patokan Gold Standard */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 border-b border-emerald-50/50 pb-8">
           <div className="space-y-1">
@@ -241,7 +259,7 @@ export default function RekapNilaiIndex({
 
         {/* Statistik Minimalis */}
         {stats && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
             <MiniStat icon={Users} label="Total Peserta" value={stats.total_students} />
             <MiniStat icon={Activity} label="Sudah Dinilai" value={stats.graded_count} />
             <MiniStat icon={Lock} label="Sudah Dikunci" value={stats.locked_count} />
@@ -250,7 +268,7 @@ export default function RekapNilaiIndex({
               label="Rerata Nilai"
               value={Number(stats.average_value || 0).toFixed(2)}
             />
-          </div>
+          </motion.div>
         )}
 
         {/* --- DATA TABLE CARD (Gold Standard) --- */}
@@ -499,7 +517,7 @@ export default function RekapNilaiIndex({
             </div>
           )}
         </AnimatePresence>
-      </div>
+      </motion.div>
     </AppLayout>
   );
 }

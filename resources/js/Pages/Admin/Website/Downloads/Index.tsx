@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { router, Head, useForm } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Pagination } from '@/Components/UI';
@@ -87,13 +88,31 @@ export default function DownloadIndex({ downloads }: Props) {
     );
   };
 
-  return (
+    const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
+return (
     <AppLayout title="Pusat Unduhan">
       <Head title="Manajemen Aset Digital | SIBERMAS" />
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
         {/* PAGE HEADER */}
-        <PageHeader
+        <motion.div variants={itemVariants}>
+<PageHeader
           title="Pusat Unduhan."
           subtitle="Repositori aset digital, panduan operasional, dan berkas administrasi utama."
           icon={FileDown}
@@ -108,9 +127,10 @@ export default function DownloadIndex({ downloads }: Props) {
             </button>
           </div>
         </PageHeader>
+</motion.div>
 
         {/* STATS GRID */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="Total Aset" value={downloads.meta.total} icon={Archive} variant="gray" />
           <StatCard
             label="Vaults Aktif"
@@ -123,7 +143,8 @@ export default function DownloadIndex({ downloads }: Props) {
         </div>
 
         {/* MAIN CONTENT */}
-        <ContentPanel
+        <motion.div variants={itemVariants}>
+<ContentPanel
           title="Global Binary Archive Ledger"
           description="Daftar berkas administrasi dan panduan operasional yang dapat diunduh publik."
           icon={LayoutGrid}
@@ -205,6 +226,7 @@ export default function DownloadIndex({ downloads }: Props) {
             ))}
           </PremiumTable>
         </ContentPanel>
+</motion.div>
       </div>
 
       {/* ASSET MODAL */}

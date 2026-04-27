@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\KKN\DeviceToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -65,12 +66,20 @@ class NotificationController extends Controller
     {
         $request->validate([
             'token' => 'required|string',
-            'device_type' => 'nullable|string',
+            'device_type' => 'nullable|string|max:20',
+            'platform' => 'nullable|string|max:20',
         ]);
 
-        $request->user()->update([
-            'device_token' => $request->token,
-        ]);
+        $platform = $request->input('device_type') ?: $request->input('platform');
+
+        DeviceToken::query()->updateOrCreate(
+            ['token' => $request->token],
+            [
+                'user_id' => $request->user()->id,
+                'platform' => $platform,
+                'last_used_at' => now(),
+            ]
+        );
 
         return response()->json(['ok' => true, 'message' => 'Device token updated successfully']);
     }

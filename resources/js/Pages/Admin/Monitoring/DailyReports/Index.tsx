@@ -1,4 +1,5 @@
 import AppLayout from '@/Layouts/AppLayout';
+import { motion } from 'framer-motion';
 import type { PageProps } from '@/types';
 import {
   Calendar,
@@ -55,11 +56,28 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
     );
   };
 
-  return (
+    const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
+return (
     <AppLayout title="Monitoring Logbook Harian">
       <Head title="Audit Logbook Harian | SIBERMAS" />
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
         {/* PAGE HEADER */}
         <PageHeader
           title="Logbook Harian."
@@ -69,7 +87,7 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
         />
 
         {/* STATS GRID */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             label="Total Transmisi"
             value={reports.meta.total}
@@ -79,10 +97,11 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
           <StatCard label="Audit State" value="REAL-TIME" icon={RefreshCw} variant="info" />
           <StatCard label="Verifikasi AI" value="ACTIVE" icon={ShieldCheck} variant="gray" />
           <StatCard label="Security" value="ENCRYPTED" icon={Zap} variant="gray" />
-        </div>
+        </motion.div>
 
         {/* MAIN CONTENT */}
-        <ContentPanel
+        <motion.div variants={itemVariants}>
+<ContentPanel
           title="Logbook Transaction Ledger"
           description="Daftar aktivitas harian mahasiswa yang telah dikirimkan melalui sistem."
           icon={LayoutGrid}
@@ -214,7 +233,8 @@ export default function AdminDailyReportsIndex({ reports, filters }: Props) {
             ))}
           </PremiumTable>
         </ContentPanel>
-      </div>
+</motion.div>
+      </motion.div>
     </AppLayout>
   );
 }

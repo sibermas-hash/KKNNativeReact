@@ -1,4 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
+import { motion } from 'framer-motion';
 import React, { useEffect, useState, useMemo } from 'react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Pagination } from '@/Components/UI';
@@ -147,7 +148,24 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
     }
   };
 
-  return (
+    const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
+return (
     <AppLayout title="Data Tahun Akademik">
       <Head title="Data Tahun Akademik | SIBERMAS" />
 
@@ -169,14 +187,15 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
           }}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-start">
+        <motion.div variants={containerVariants} initial="hidden" animate="show" className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-start">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
             className="lg:col-span-1 space-y-6"
           >
-            <ContentPanel
+            <motion.div variants={itemVariants}>
+<ContentPanel
               title="Tambah Tahun"
               description="Daftarkan formasi tahun ajaran baru."
               icon={Plus}
@@ -258,6 +277,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                 </motion.button>
               </form>
             </ContentPanel>
+</motion.div>
           </motion.div>
 
           <motion.div
@@ -266,7 +286,8 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="lg:col-span-2"
           >
-            <ContentPanel
+            <motion.div variants={itemVariants}>
+<ContentPanel
               title="Arsip Tahun Akademik"
               icon={LibraryBig}
               padding={false}
@@ -444,6 +465,7 @@ export default function AcademicYearsIndex({ academicYears, filters }: Props) {
                 </table>
               </div>
             </ContentPanel>
+</motion.div>
           </motion.div>
         </div>
       </motion.div>

@@ -104,14 +104,7 @@ class RegistrationService
                     ]);
                 }
 
-                // 3. DOCUMENT FILTER: Cek keberadaan Surat Sehat & Izin Orang Tua
-                if (! $mahasiswa->health_certificate_path || ! $mahasiswa->parent_permission_path) {
-                    throw ValidationException::withMessages([
-                        'periode_id' => 'Pendaftaran ditolak. Anda wajib mengunggah Surat Keterangan Sehat dan Surat Izin Orang Tua terlebih dahulu.',
-                    ]);
-                }
-
-                // 4. FACULTY FILTER: Cek apakah mahasiswa sesuai dengan fakultas lokasi (jika dibatasi)
+                // 3. FACULTY FILTER: Cek apakah mahasiswa sesuai dengan fakultas lokasi (jika dibatasi)
                 if ($kelompokId) {
                     $kelompok = KelompokKkn::query()->with('lokasi')->findOrFail($kelompokId);
                     if ($kelompok->lokasi?->fakultas_id && $mahasiswa->fakultas_id && $kelompok->lokasi->fakultas_id !== $mahasiswa->fakultas_id) {
@@ -122,7 +115,7 @@ class RegistrationService
                     }
                 }
 
-                // 5. ACTIVE FILTER: Cek apakah sedang mengikuti KKN di periode lain (Status Approved/Pending)
+                // 4. ACTIVE FILTER: Cek apakah sedang mengikuti KKN di periode lain (Status Approved/Pending)
                 $activeInOtherPeriod = PesertaKkn::query()
                     ->where('mahasiswa_id', $mahasiswa->id)
                     ->where('periode_id', '!=', $periodeId)

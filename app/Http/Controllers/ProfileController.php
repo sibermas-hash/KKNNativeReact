@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\Mahasiswa;
 use App\Models\User;
+use App\Services\ProfileSnapshotService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,6 +19,11 @@ use Inertia\Response;
 
 class ProfileController extends Controller
 {
+    private function syncProfileSnapshot(User $user): void
+    {
+        app(ProfileSnapshotService::class)->sync($user);
+    }
+
     private function isProfileComplete(User $user): bool
     {
         // REQUIRED: only Avatar (upload by user)
@@ -93,6 +99,7 @@ class ProfileController extends Controller
         }
 
         $user->loadMissing(['mahasiswa.fakultas', 'mahasiswa.prodi', 'dosen.fakultas']);
+        $this->syncProfileSnapshot($user);
         $student = $user->mahasiswa;
         $lecturer = $user->dosen;
 
@@ -303,6 +310,8 @@ class ProfileController extends Controller
                     $dosen->save();
                 }
             }
+
+            $this->syncProfileSnapshot($user->fresh(['mahasiswa', 'dosen']));
         });
 
         // Check if profile is now complete → unlock and redirect to Daftar
@@ -334,6 +343,7 @@ class ProfileController extends Controller
         $path = $request->file('avatar')->store('avatars', 'public');
         $user->avatar = $path;
         $user->save();
+        $this->syncProfileSnapshot($user->fresh(['mahasiswa', 'dosen']));
 
         // Check if profile is now complete → unlock and redirect
         if ($this->isProfileComplete($user)) {

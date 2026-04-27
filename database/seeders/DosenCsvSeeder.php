@@ -24,7 +24,7 @@ class DosenCsvSeeder extends Seeder
             return;
         }
 
-        $csvPath = base_path('dosen_465_seeder_lain.csv');
+        $csvPath = storage_path('DOC DB/dosen_backup_470.csv');
         if (! file_exists($csvPath)) {
             $this->command->error("CSV file not found: {$csvPath}");
 
@@ -39,7 +39,7 @@ class DosenCsvSeeder extends Seeder
         $header = fgetcsv($handle); // Skip header
 
         while (($data = fgetcsv($handle)) !== false) {
-            if (count($data) < 6) {
+            if (count($data) < 9) {
                 continue;
             }
 
@@ -47,8 +47,11 @@ class DosenCsvSeeder extends Seeder
                 'nip' => trim($data[1], '"'),
                 'nama' => trim($data[2], '"'),
                 'email' => trim($data[3], '"'),
-                'unit_kerja' => trim($data[4], '"'),
-                'status' => trim($data[5], '"'),
+                'phone' => trim($data[4], '"'),
+                'gender' => trim($data[5], '"'),
+                'golongan' => trim($data[6], '"'),
+                'unit_kerja' => trim($data[7], '"'),
+                'status' => trim($data[8], '"'),
             ];
         }
         fclose($handle);
@@ -159,6 +162,9 @@ class DosenCsvSeeder extends Seeder
                 'nip' => $row['nip'],
                 'nama' => $row['nama'],
                 'fakultas_id' => $fakultasId,
+                'phone' => $row['phone'] ?? null,
+                'gender' => $row['gender'] ?? null,
+                'golongan' => $row['golongan'] ?? null,
                 'master_synced_at' => $now,
                 'created_at' => $now,
                 'updated_at' => $now,
@@ -168,6 +174,7 @@ class DosenCsvSeeder extends Seeder
                 'username' => $username,
                 'name' => $row['nama'],
                 'email' => $email,
+                'phone' => $row['phone'] ?? null,
                 'password' => $passwordHash,
                 'is_active' => $row['status'] === 'aktif',
                 'must_change_password' => true,

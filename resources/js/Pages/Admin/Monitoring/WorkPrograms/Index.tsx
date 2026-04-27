@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Head, router, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
 import { Pagination } from '@/Components/UI';
@@ -82,11 +83,28 @@ export default function AdminWorkProgramsIndex({
     );
   };
 
-  return (
+    const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1, delayChildren: 0.1 },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
+return (
     <AppLayout title="Program Kerja Mahasiswa">
       <Head title="Manajemen Program Kerja | SIBERMAS" />
 
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
+      <motion.div variants={containerVariants} initial="hidden" animate="show" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
         {/* PAGE HEADER */}
         <PageHeader
           title="Program Kerja."
@@ -96,7 +114,7 @@ export default function AdminWorkProgramsIndex({
         />
 
         {/* STATS GRID */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             label="Total Program"
             value={workPrograms.meta.total}
@@ -114,7 +132,8 @@ export default function AdminWorkProgramsIndex({
         </div>
 
         {/* SDG DISTRIBUTION PANEL */}
-        <ContentPanel
+        <motion.div variants={itemVariants}>
+<ContentPanel
           title="Distribusi Peta SDGs Global"
           description="Visualisasi sebaran fokus program kerja berdasarkan 17 tujuan pembangunan berkelanjutan."
           icon={Target}
@@ -157,9 +176,11 @@ export default function AdminWorkProgramsIndex({
             </div>
           </div>
         </ContentPanel>
+</motion.div>
 
         {/* MAIN DATA TABLE */}
-        <ContentPanel
+        <motion.div variants={itemVariants}>
+<ContentPanel
           title="Work Program Transaction Ledger"
           description="Daftar lengkap rencana dan implementasi program kerja mahasiswa di lokasi pengabdian."
           icon={FileText}
@@ -271,7 +292,8 @@ export default function AdminWorkProgramsIndex({
             ))}
           </PremiumTable>
         </ContentPanel>
-      </div>
+</motion.div>
+      </motion.div>
     </AppLayout>
   );
 }

@@ -59,8 +59,15 @@ Route::middleware([
         Route::get('progres-sertifikat', [Admin\RekapNilaiController::class, 'getCertificateProgress'])->name('progres-sertifikat');
     });
 
-    // Alias legacy routes to the new grade-reports prefix if needed, or simply use the consolidated ones.
-    // For now, we remove the duplicate 'rekap-nilai' block entirely as requested in the audit fix.
+    // DPL Score Calibration Check
+    Route::get('dpl-calibration/{periode}', function (\App\Models\KKN\Periode $periode) {
+        $service = app(\App\Services\KKN\DplScoreCalibrationService::class);
+
+        return response()->json($service->getCalibrationReport($periode->id));
+    })->name('dpl-calibration');
+
+    // Legacy alias kept for older tests/links that still reference the previous route name.
+    Route::get('rekap-nilai', [Admin\RekapNilaiController::class, 'index'])->name('rekap-nilai.index');
 
     Route::get('certificates/bulk-download', [CertificateController::class, 'downloadMass']);
 
@@ -96,6 +103,7 @@ Route::middleware([
             Route::get('/', [Admin\LaporanAkhirController::class, 'index'])->name('index');
             Route::get('{report}', [Admin\LaporanAkhirController::class, 'show'])->name('show');
             Route::get('{report}/unduh', [Admin\LaporanAkhirController::class, 'download'])->name('unduh');
+            Route::patch('{report}/status', [Admin\LaporanAkhirController::class, 'updateStatus'])->name('update-status');
         });
     });
 

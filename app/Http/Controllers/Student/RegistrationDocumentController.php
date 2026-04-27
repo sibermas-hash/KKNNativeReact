@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
-use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
+use App\Services\KKN\RegistrationDocumentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +17,10 @@ use Inertia\Response;
 
 class RegistrationDocumentController extends Controller
 {
+    public function __construct(
+        private readonly RegistrationDocumentService $documentService,
+    ) {}
+
     /**
      * Show the document upload page for a specific KKN period.
      */
@@ -53,7 +57,8 @@ class RegistrationDocumentController extends Controller
             ->first();
 
         // Build document requirements based on KKN type
-        $documentRequirements = $this->getDocumentRequirements($period);
+        $documentRequirements = $this->documentService->requirementsForPeriod($period);
+        $existingDocuments = $this->documentService->existingDocuments($mahasiswa, $period, $registration);
 
         return Inertia::render('Student/Register/UploadDokumen', [
             'period' => [
@@ -70,11 +75,9 @@ class RegistrationDocumentController extends Controller
                 'status' => $registration->status,
             ] : null,
             'document_requirements' => $documentRequirements,
-            'existing_documents' => [
-                'has_health_certificate' => (bool) $mahasiswa->health_certificate_path,
-                'has_parent_permission' => (bool) $mahasiswa->parent_permission_path,
-            ],
-            'parent_permission_template' => asset('templates/surat_izin_orang_tua.docx'),
+            'existing_documents' => collect($existingDocuments)
+                ->map(fn (array $document) => (bool) ($document['exists'] ?? false))
+                ->all(),
         ]);
     }
 
@@ -90,44 +93,28 @@ class RegistrationDocumentController extends Controller
             return redirect()->back()->with('error', 'Profil mahasiswa tidak ditemukan.');
         }
 
-        $period = Periode::find($periodeId);
+        $period = Periode::with('jenisKkn')->find($periodeId);
         if (! $period) {
             return redirect()->route('student.daftar.index')
                 ->with('error', 'Periode KKN tidak ditemukan.');
         }
 
-        $documentRequirements = $this->getDocumentRequirements($period);
+        $registration = PesertaKkn::query()
+            ->with('dokumen')
+            ->where('mahasiswa_id', $mahasiswa->id)
+            ->where('periode_id', $periodeId)
+            ->first();
 
-        // Build validation rules dynamically based on requirements
-        $rules = [];
-        foreach ($documentRequirements as $doc) {
-            $key = $doc['field'];
-            if ($doc['required'] && ! $this->hasExistingDocument($mahasiswa, $key)) {
-                $rules[$key] = ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'];
-            } else {
-                $rules[$key] = ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'];
-            }
-        }
-        $rules['notes'] = ['nullable', 'string', 'max:1000'];
+        $validated = $request->validate([
+            ...$this->documentService->validationRules($period, $mahasiswa, $registration),
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
 
-        $validated = $request->validate($rules);
 
         try {
             DB::beginTransaction();
 
-            // Upload files
-            if ($request->hasFile('health_certificate')) {
-                $path = $request->file('health_certificate')->store('health-certificates', config('filesystems.default'));
-                $mahasiswa->update(['health_certificate_path' => $path]);
-            }
-
-            if ($request->hasFile('parent_permission')) {
-                $path = $request->file('parent_permission')->store('parent-permissions', config('filesystems.default'));
-                $mahasiswa->update(['parent_permission_path' => $path]);
-            }
-
-            // Create or update registration
-            $registration = PesertaKkn::firstOrCreate(
+            $registration = PesertaKkn::query()->firstOrCreate(
                 [
                     'mahasiswa_id' => $mahasiswa->id,
                     'periode_id' => $periodeId,
@@ -135,17 +122,18 @@ class RegistrationDocumentController extends Controller
                 [
                     'status' => 'document_submitted',
                     'notes' => $validated['notes'] ?? null,
-                    'registered_at' => now(),
-                    'registered_by' => $user->id,
+                    'registration_date' => now(),
                 ]
             );
 
-            if ($registration->wasRecentlyCreated === false && $registration->status === 'pending') {
+            if ($registration->wasRecentlyCreated === false && in_array($registration->status, ['pending', 'rejected', 'document_submitted'], true)) {
                 $registration->update([
                     'status' => 'document_submitted',
                     'notes' => $validated['notes'] ?? $registration->notes,
                 ]);
             }
+
+            $this->documentService->persistUploadedDocuments($request, $mahasiswa, $period, $registration);
 
             DB::commit();
 
@@ -158,55 +146,5 @@ class RegistrationDocumentController extends Controller
 
             return redirect()->back()->with('error', 'Terjadi kesalahan saat mengunggah dokumen.');
         }
-    }
-
-    /**
-     * Get document requirements based on KKN period/type.
-     */
-    private function getDocumentRequirements(Periode $period): array
-    {
-        $governance = $period->governance();
-        $programType = $governance['program_type'] ?? 'reguler';
-
-        // Base documents required for ALL KKN types
-        $docs = [
-            [
-                'field' => 'health_certificate',
-                'label' => 'Surat Keterangan Sehat',
-                'description' => 'Surat keterangan sehat dari dokter/puskesmas/rumah sakit.',
-                'required' => true,
-                'icon' => 'shield-check',
-            ],
-            [
-                'field' => 'parent_permission',
-                'label' => 'Surat Izin Orang Tua/Wali',
-                'description' => 'Surat persetujuan bermaterai dari orang tua/wali.',
-                'required' => true,
-                'icon' => 'file-text',
-                'has_template' => true,
-            ],
-        ];
-
-        // Additional documents for specific KKN types
-        if ($programType === Periode::PROGRAM_TYPE_INTERNASIONAL_MANDIRI) {
-            $docs[] = [
-                'field' => 'passport_scan',
-                'label' => 'Scan Paspor',
-                'description' => 'Scan halaman identitas paspor aktif.',
-                'required' => true,
-                'icon' => 'id-card',
-            ];
-        }
-
-        return $docs;
-    }
-
-    private function hasExistingDocument(Mahasiswa $mahasiswa, string $field): bool
-    {
-        return match ($field) {
-            'health_certificate' => (bool) $mahasiswa->health_certificate_path,
-            'parent_permission' => (bool) $mahasiswa->parent_permission_path,
-            default => false,
-        };
     }
 }

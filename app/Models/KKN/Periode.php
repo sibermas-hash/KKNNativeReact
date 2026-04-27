@@ -37,6 +37,7 @@ class Periode extends Model
         'is_locked',
         'locked_at',
         'locked_by',
+        'settings_override',
     ];
 
     protected function casts(): array
@@ -52,6 +53,7 @@ class Periode extends Model
             'is_locked' => 'boolean',
             'locked_at' => 'datetime',
             'jenis' => KknType::class,
+            'settings_override' => 'array',
         ];
     }
 
@@ -82,6 +84,8 @@ class Periode extends Model
     public const PLACEMENT_MODE_HOST_DEFINED = 'host_defined';
 
     public const PLACEMENT_MODE_PROPOSAL_DEFINED = 'proposal_defined';
+
+    public const PLACEMENT_MODE_SELF_DETERMINED = 'self_determined';
 
     private const CACHE_KEYS = [
         'active_period',
@@ -143,14 +147,13 @@ class Periode extends Model
             self::PLACEMENT_MODE_MANUAL_ADMIN => 'Penempatan manual oleh admin/LPPM',
             self::PLACEMENT_MODE_HOST_DEFINED => 'Penempatan ditentukan oleh mitra/host',
             self::PLACEMENT_MODE_PROPOSAL_DEFINED => 'Penempatan mengikuti desain proposal/program',
+            self::PLACEMENT_MODE_SELF_DETERMINED => 'Mandiri (mahasiswa menentukan lokasi sendiri)',
         ];
     }
 
     public function governance(): array
     {
-        return $this->jenisKkn
-            ? PeriodeGovernanceService::blueprintFromJenisKkn($this->jenisKkn)
-            : [];
+        return PeriodeGovernanceService::blueprintForPeriod($this);
     }
 
     public function usesSelfServiceRegistration(): bool
@@ -170,6 +173,21 @@ class Periode extends Model
         return $jenisKkn
             ? $jenisKkn->placement_mode === self::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL
             : false;
+    }
+
+    public function isGradingOpen(): bool
+    {
+        if (in_array($this->current_phase, ['grading', 'finished'], true)) {
+            return true;
+        }
+
+        if ($this->grading_start && $this->grading_end) {
+            $today = now()->startOfDay();
+
+            return ! $today->lt($this->grading_start) && ! $today->gt($this->grading_end);
+        }
+
+        return true;
     }
 
     public static function getActivePeriod(): ?self

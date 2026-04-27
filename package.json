@@ -3,7 +3,16 @@
   "name": "kknuinsaizu",
   "private": true,
   "type": "module",
+  "lint-staged": {
+    "resources/**/*.{ts,tsx}": [
+      "eslint --fix --max-warnings=0"
+    ],
+    "app/**/*.php": [
+      "php -l"
+    ]
+  },
   "scripts": {
+    "prepare": "husky",
     "build": "vite build",
     "dev": "vite",
     "lint": "eslint \"resources/**/*.{ts,tsx}\"",
@@ -16,7 +25,10 @@
     "test:e2e:install": "playwright install chromium",
     "quality:gate": "npm run lint && npm run test && npm run build && npm run test:backend",
     "quality:gate:full": "npm run quality:gate && npm run test:e2e",
-    "format": "prettier --write \"resources/**/*.{ts,tsx,css,md}\""
+    "format": "prettier --write \"resources/**/*.{ts,tsx,css,md}\"",
+    "mobile:sync": "npm run build && npx cap sync",
+    "mobile:open:android": "npm run mobile:sync && npx cap open android",
+    "mobile:open:ios": "npm run mobile:sync && npx cap open ios"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.1",
@@ -56,6 +68,7 @@
     "@capacitor/cli": "^8.3.0",
     "@capacitor/core": "^8.3.0",
     "@capacitor/geolocation": "^8.2.0",
+    "@capacitor/ios": "^8.3.1",
     "@capacitor/push-notifications": "^8.0.3",
     "@capacitor/splash-screen": "^8.0.1",
     "@capacitor/status-bar": "^8.0.2",

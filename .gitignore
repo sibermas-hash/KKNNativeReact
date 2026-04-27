@@ -109,4 +109,13 @@ run_seed.php
 !.env.example
 !.env.production.example
 public/downloads/*.apk
-/public/build\n/storage/app/private/*\n/storage/app/public/*\n/storage/debugbar/*\n/storage/framework/cache/*\n/storage/framework/sessions/*\n/storage/framework/views/*\n/storage/logs/*\n/storage/DOC\ DB/*\nnode_modules/
+/public/build/*
+/storage/app/private/*
+/storage/app/public/*
+/storage/debugbar/*
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*
+/storage/DOC DB/*
+node_modules/

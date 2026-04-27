@@ -483,10 +483,10 @@ export default function JenisKknIndex({
               </div>
             </div>
 
-            {/* --- STANDAR PERSYARATAN (CEKLIS) --- */}
+            {/* --- VALIDASI OTOMATIS SISTEM --- */}
             <div className="p-5 bg-white rounded-2xl border border-slate-100 space-y-4 shadow-sm">
               <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
-                PERSYARATAN STANDAR (CEKLIS)
+                VALIDASI OTOMATIS SISTEM
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl cursor-pointer hover:border-cyan-200 transition-all">
@@ -498,10 +498,31 @@ export default function JenisKknIndex({
                   />
                   <div className="flex flex-col">
                     <span className="text-xs font-black text-cyan-950 uppercase tracking-tight">Lulus BTA-PPI</span>
-                    <span className="text-[10px] text-slate-500 font-medium">Validasi otomatis kelulusan BTA.</span>
+                    <span className="text-[10px] text-slate-500 font-medium">Sistem mengecek data BTA di database.</span>
                   </div>
                 </label>
 
+                <label className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl cursor-pointer hover:border-cyan-200 transition-all">
+                  <input
+                    type="checkbox"
+                    checked={form.data.require_not_married}
+                    onChange={(e) => form.setData('require_not_married', e.target.checked)}
+                    className="w-5 h-5 text-cyan-600 border-slate-300 rounded-lg focus:ring-cyan-500"
+                  />
+                  <div className="flex flex-col">
+                    <span className="text-xs font-black text-cyan-950 uppercase tracking-tight">Belum Menikah</span>
+                    <span className="text-[10px] text-slate-500 font-medium">Sistem mengecek status pernikahan.</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* --- DOKUMEN PERSYARATAN (CEK MANUAL) --- */}
+            <div className="p-5 bg-white rounded-2xl border border-slate-100 space-y-4 shadow-sm">
+              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                DOKUMEN PERSYARATAN (CEK MANUAL ADMIN)
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl cursor-pointer hover:border-cyan-200 transition-all">
                   <input
                     type="checkbox"
@@ -527,138 +548,68 @@ export default function JenisKknIndex({
                     <span className="text-[10px] text-slate-500 font-medium">Wajib unggah Surat Izin.</span>
                   </div>
                 </label>
-
-                <label className="flex items-center gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl cursor-pointer hover:border-cyan-200 transition-all">
-                  <input
-                    type="checkbox"
-                    checked={form.data.require_not_married}
-                    onChange={(e) => form.setData('require_not_married', e.target.checked)}
-                    className="w-5 h-5 text-cyan-600 border-slate-300 rounded-lg focus:ring-cyan-500"
-                  />
-                  <div className="flex flex-col">
-                    <span className="text-xs font-black text-cyan-950 uppercase tracking-tight">Belum Menikah</span>
-                    <span className="text-[10px] text-slate-500 font-medium">Validasi status pernikahan.</span>
-                  </div>
-                </label>
-              </div>
-            </div>
-
-            <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-6">
-              <div>
-                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">
-                  SISTEM PERSYARATAN TAMBAHAN (OPSIONAL)
-                </h4>
                 
-                <div className="flex gap-2 mb-4">
-                  <button
-                    type="button"
-                    onClick={() => addDynamicRequirement('upload')}
-                    className="h-9 px-4 bg-white border border-slate-200 text-cyan-700 text-[10px] font-black uppercase tracking-wider rounded-xl hover:bg-cyan-50 transition-all flex items-center gap-2 shadow-sm"
-                  >
-                    <Plus size={14} /> Syarat Wajib Upload Dokumen
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => addDynamicRequirement('db_check')}
-                    className="h-9 px-4 bg-white border border-slate-200 text-emerald-700 text-[10px] font-black uppercase tracking-wider rounded-xl hover:bg-emerald-50 transition-all flex items-center gap-2 shadow-sm"
-                  >
-                    <Database size={14} /> Syarat Validasi Sistem Otomatis
-                  </button>
-                </div>
-
-                <div className="space-y-3">
-                  {(form.data.requirements_config || []).map((req, index) => (
-                    <div
-                      key={req.key || index}
-                      className="p-4 bg-white border border-slate-200 rounded-2xl shadow-sm animate-in fade-in slide-in-from-top-2 duration-300"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="space-y-1.5">
-                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Nama / Judul Syarat</label>
-                            <input
-                              type="text"
-                              value={req.name}
-                              onChange={(e) => updateDynamicRequirement(index, 'name', e.target.value)}
-                              className="w-full h-10 px-4 rounded-xl border border-slate-100 text-xs font-bold text-cyan-950 focus:border-cyan-600 outline-none bg-slate-50/30"
-                              placeholder="Cth: Surat Izin Orang Tua"
-                            />
-                          </div>
-                          
-                          <div className="space-y-1.5">
-                            <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tipe Persyaratan</label>
-                            <div className="relative group">
-                              <select
-                                value={req.type}
-                                onChange={(e) => updateDynamicRequirement(index, 'type', e.target.value)}
-                                className="w-full h-10 pl-4 pr-10 rounded-xl border border-slate-100 text-xs font-bold text-cyan-950 focus:border-cyan-600 appearance-none outline-none bg-white shadow-sm"
-                              >
-                                <option value="upload">Mewajibkan Upload Dokumen</option>
-                                <option value="db_check">Validasi Sistem Otomatis (Database)</option>
-                              </select>
-                              <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-cyan-600 pointer-events-none group-focus-within:rotate-180 transition-transform" />
-                            </div>
-                          </div>
-
-                          {req.type === 'db_check' && (
-                            <>
-                              <div className="space-y-1.5">
-                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Parameter yang Dicek</label>
-                                <div className="relative group">
-                                  <select
-                                    value={req.field}
-                                    onChange={(e) => updateDynamicRequirement(index, 'field', e.target.value)}
-                                    className="w-full h-10 pl-4 pr-10 rounded-xl border border-slate-100 text-xs font-bold text-cyan-950 focus:border-cyan-600 appearance-none outline-none bg-white shadow-sm"
-                                  >
-                                    <option value="sks_completed">Jumlah SKS Lulus</option>
-                                    <option value="gpa">IPK Mahasiswa</option>
-                                    <option value="is_bta_ppi_passed">Status Kelulusan BTA-PPI</option>
-                                    <option value="is_paid_ukt">Status Pembayaran UKT Terakhir</option>
-                                  </select>
-                                  <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-cyan-600 pointer-events-none group-focus-within:rotate-180 transition-transform" />
-                                </div>
-                              </div>
-                              <div className="space-y-1.5">
-                                <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Nilai Minimum / Target</label>
-                                <input
-                                  type="text"
-                                  value={req.min_value || req.expected_value || ''}
-                                  onChange={(e) => {
-                                    const val = e.target.value;
-                                    if (req.field === 'sks_completed' || req.field === 'gpa') {
-                                      updateDynamicRequirement(index, 'min_value', val);
-                                    } else {
-                                      updateDynamicRequirement(index, 'expected_value', val);
-                                    }
-                                  }}
-                                  className="w-full h-10 px-4 rounded-xl border border-slate-100 text-xs font-bold text-cyan-950 focus:border-cyan-600 outline-none bg-slate-50/30"
-                                  placeholder="Cth: 100 (SKS) atau LULUS"
-                                />
-                              </div>
-                            </>
-                          )}
-                        </div>
-                        
-                        <button
-                          type="button"
-                          onClick={() => removeDynamicRequirement(index)}
-                          className="mt-6 h-9 w-9 flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+                <div className="flex flex-col gap-3 p-3 bg-slate-50 border border-slate-100 rounded-xl hover:border-cyan-200 transition-all sm:col-span-2">
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={(form.data.custom_requirements || []).length > 0}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          form.setData('custom_requirements', ['']);
+                        } else {
+                          form.setData('custom_requirements', []);
+                        }
+                      }}
+                      className="w-5 h-5 text-cyan-600 border-slate-300 rounded-lg focus:ring-cyan-500"
+                    />
+                    <div className="flex flex-col">
+                      <span className="text-xs font-black text-cyan-950 uppercase tracking-tight">Dokumen Tambahan Opsional Khusus</span>
+                      <span className="text-[10px] text-slate-500 font-medium">Centang bila ada dokumen ekstra spesifik yang harus diunggah mahasiswa.</span>
                     </div>
-                  ))}
-                  
-                  {(form.data.requirements_config || []).length === 0 && (
-                    <div className="text-center py-8 border-2 border-dashed border-slate-200 rounded-2xl bg-white/50">
-                      <ShieldAlert size={32} className="mx-auto text-slate-300 mb-2" />
-                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Belum ada persyaratan tambahan.</p>
-                      <p className="text-[10px] text-slate-400 mt-1">Gunakan tombol di atas untuk menambah syarat baru.</p>
+                  </label>
+                  {(form.data.custom_requirements || []).length > 0 && (
+                    <div className="pl-8 space-y-3">
+                      {(form.data.custom_requirements || []).map((req, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={req}
+                            onChange={(e) => {
+                              const newReqs = [...form.data.custom_requirements];
+                              newReqs[index] = e.target.value;
+                              form.setData('custom_requirements', newReqs);
+                            }}
+                            placeholder="Ketik nama dokumen (Contoh: Surat Rekomendasi Dekan)"
+                            className="flex-1 h-10 px-4 rounded-xl border border-slate-200 text-xs font-bold text-cyan-950 focus:border-cyan-600 outline-none bg-white shadow-sm"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newReqs = [...form.data.custom_requirements];
+                              newReqs.splice(index, 1);
+                              form.setData('custom_requirements', newReqs);
+                            }}
+                            className="h-10 w-10 flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all border border-transparent hover:border-rose-100"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => form.setData('custom_requirements', [...form.data.custom_requirements, ''])}
+                        className="text-[10px] font-bold text-cyan-600 flex items-center gap-1 hover:text-cyan-800 px-2 py-1 transition-colors"
+                      >
+                        <Plus size={12} /> Tambah Syarat Dokumen Lainnya
+                      </button>
                     </div>
                   )}
                 </div>
               </div>
+            </div>
+
+            <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-6">
 
               <div className="pt-6 border-t border-slate-200">
                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">

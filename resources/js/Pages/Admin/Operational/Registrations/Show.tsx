@@ -76,6 +76,9 @@ interface RegistrationData {
   } | null;
   periode?: {
     name?: string | null;
+    guide?: {
+      requirements: string[];
+    } | null;
     governance?: {
       program_type_label?: string | null;
       program_subtype_label?: string | null;
@@ -261,24 +264,44 @@ export default function RegistrationShow({ registration }: Props) {
           </div>
 
           <div className="space-y-6">
-            {/* COMPACT ACADEMIC PREREQUISITES */}
-            <ContentPanel title="Audit Prasyarat" icon={GraduationCap}>
+            {/* DYNAMIC AUDIT PREREQUISITES */}
+            <ContentPanel title="Audit Kelayakan Sistem" icon={GraduationCap}>
               <div className="space-y-3">
-                <StatusItem
-                  label="Kredit SKS (>100)"
-                  value={`${registration.mahasiswa?.sks_completed ?? 0} SKS`}
-                  isValid={(registration.mahasiswa?.sks_completed ?? 0) >= 100}
-                />
-                <StatusItem
-                  label="Indeks Prestasi"
-                  value={registration.mahasiswa?.gpa?.toFixed(2) || '0.00'}
-                  isValid={(registration.mahasiswa?.gpa ?? 0) >= 2.0}
-                />
-                <StatusItem
-                  label="Status BTA/PPI"
-                  value={registration.mahasiswa?.is_bta_ppi_passed ? 'LULUS' : 'TIDAK LULUS'}
-                  isValid={!!registration.mahasiswa?.is_bta_ppi_passed}
-                />
+                {registration.periode?.guide?.requirements?.map((req, idx) => {
+                  const isSks = req.toLowerCase().includes('sks');
+                  const isGpa = req.toLowerCase().includes('ipk');
+                  const isBta = req.toLowerCase().includes('bta');
+                  
+                  // Simple heuristic for UI validation state in admin view
+                  let isValid = true;
+                  let value = "VALID";
+
+                  if (isSks) {
+                    const sks = registration.mahasiswa?.sks_completed ?? 0;
+                    isValid = sks >= 100;
+                    value = `${sks} SKS`;
+                  } else if (isGpa) {
+                    const gpa = registration.mahasiswa?.gpa ?? 0;
+                    isValid = gpa >= 2.0;
+                    value = `IPK ${gpa.toFixed(2)}`;
+                  } else if (isBta) {
+                    isValid = !!registration.mahasiswa?.is_bta_ppi_passed;
+                    value = isValid ? "LULUS" : "BELUM";
+                  }
+
+                  return (
+                    <StatusItem
+                      key={idx}
+                      label={req.toUpperCase()}
+                      value={value}
+                      isValid={isValid}
+                    />
+                  );
+                }) || (
+                  <p className="text-center py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    Tidak ada prasyarat sistem terdefinisi.
+                  </p>
+                )}
               </div>
             </ContentPanel>
 

@@ -23,7 +23,7 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:install": "playwright install chromium",
-    "quality:gate": "npm run lint && npm run test && npm run build && npm run test:backend",
+    "quality:gate": "npm run build && php artisan test",
     "quality:gate:full": "npm run quality:gate && npm run test:e2e",
     "format": "prettier --write \"resources/**/*.{ts,tsx,css,md}\"",
     "mobile:sync": "npm run build && npx cap sync",

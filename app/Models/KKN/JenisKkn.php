@@ -28,12 +28,10 @@ class JenisKkn extends Model
         'specific_prodi_ids',
         'require_bta_ppi',
         'custom_requirements',
-        'required_documents',
         'allowed_regencies',
         'color',
         'is_active',
         'sort_order',
-        'requirements_config',
         'attendance_config',
     ];
 
@@ -46,9 +44,7 @@ class JenisKkn extends Model
         'require_bta_ppi' => 'boolean',
         'specific_prodi_ids' => 'array',
         'custom_requirements' => 'array',
-        'required_documents' => 'array',
         'allowed_regencies' => 'array',
-        'requirements_config' => 'array',
         'attendance_config' => 'array',
     ];
 
@@ -149,15 +145,5 @@ class JenisKkn extends Model
         return $this->getAttendanceConfig()['require_photo'] ?? true;
     }
 
-    // ─── Dynamic Requirements Config ──────────────────────────
 
-    public function getRequirementsConfig(): array
-    {
-        return $this->requirements_config ?? [];
-    }
-
-    public function hasDynamicRequirements(): bool
-    {
-        return ! empty($this->requirements_config);
-    }
 }

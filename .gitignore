@@ -1,3 +1,16 @@
+# local scripts
+scripts/tmp
+*.exp
+*.log
+
+# temporary tools
+run_*.sh
+check_*.py
+auto_commit.sh
+
+# system
+.DS_Store
+
 *.log
 .DS_Store
 .env

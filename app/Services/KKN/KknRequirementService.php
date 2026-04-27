@@ -63,58 +63,38 @@ class KknRequirementService
         $requirements = [];
         $governanceNotes = [];
 
-        // 1. Process Dynamic Requirements from JSON if available
-        $dynamicConfig = $periode->jenisKkn?->requirements_config ?? [];
-        
-        if (!empty($dynamicConfig)) {
-            foreach ($dynamicConfig as $rule) {
-                $name = $rule['name'] ?? 'Syarat tidak dikenal';
-                $type = $rule['type'] ?? 'upload';
-                
-                if ($type === 'db_check') {
-                    $minValue = $rule['min_value'] ?? null;
-                    $requirements[] = $minValue 
-                        ? "{$name} (Minimal {$minValue})."
-                        : "{$name}.";
-                } else {
-                    $requirements[] = "Unggah {$name}.";
-                }
-            }
-        } else {
-            // 2. Fallback to Legacy Hardcoded Logic
-            if (($periode->jenisKkn?->require_bta_ppi ?? true) === true) {
-                $requirements[] = 'Lulus ujian BTA/PPI.';
-            }
+        if (($periode->jenisKkn?->require_bta_ppi ?? true) === true) {
+            $requirements[] = 'Lulus ujian BTA/PPI.';
+        }
 
-            $minSks = $periode->jenisKkn?->min_sks ?? 100;
-            $minGpa = $periode->jenisKkn ? (float) $periode->jenisKkn->min_gpa : 0;
+        $minSks = $periode->jenisKkn?->min_sks ?? 100;
+        $minGpa = $periode->jenisKkn ? (float) $periode->jenisKkn->min_gpa : 0;
 
-            $requirements[] = "Minimal telah menempuh {$minSks} SKS.";
-            if ($minGpa > 0) {
-                $requirements[] = 'Minimal IPK '.number_format($minGpa, 2).'.';
-            }
+        $requirements[] = "Minimal telah menempuh {$minSks} SKS.";
+        if ($minGpa > 0) {
+            $requirements[] = 'Minimal IPK '.number_format($minGpa, 2).'.';
+        }
 
-            foreach ($documentService->requirementsForPeriod($periode) as $documentRequirement) {
-                $requirements[] = 'Unggah '.$documentRequirement['label'].'.';
-            }
+        foreach ($documentService->requirementsForPeriod($periode) as $documentRequirement) {
+            $requirements[] = 'Unggah '.$documentRequirement['label'].'.';
+        }
 
-            foreach (($periode->jenisKkn?->custom_requirements ?? []) as $customRequirement) {
-                if (is_string($customRequirement) && filled($customRequirement)) {
-                    $requirements[] = $customRequirement;
-                }
+        foreach (($periode->jenisKkn?->custom_requirements ?? []) as $customRequirement) {
+            if (is_string($customRequirement) && filled($customRequirement)) {
+                $requirements[] = $customRequirement;
             }
+        }
 
-            // Specific legacy logic for certain types
-            switch ($kknType) {
-                case KknType::NUSANTARA:
-                    $requirements[] = 'Berstatus Belum Menikah.';
-                    $requirements[] = 'Aktif berorganisasi (intra/ekstra).';
-                    break;
-                case KknType::INTERNASIONAL:
-                    $requirements[] = 'Berstatus Belum Menikah dan Tidak Sedang Hamil/Menyusui.';
-                    $requirements[] = 'Memiliki Paspor aktif.';
-                    break;
-            }
+        // Specific legacy logic for certain types
+        switch ($kknType) {
+            case KknType::NUSANTARA:
+                $requirements[] = 'Berstatus Belum Menikah.';
+                $requirements[] = 'Aktif berorganisasi (intra/ekstra).';
+                break;
+            case KknType::INTERNASIONAL:
+                $requirements[] = 'Berstatus Belum Menikah dan Tidak Sedang Hamil/Menyusui.';
+                $requirements[] = 'Memiliki Paspor aktif.';
+                break;
         }
 
         if ($periode->jenisKkn?->description) {

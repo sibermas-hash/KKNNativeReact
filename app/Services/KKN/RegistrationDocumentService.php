@@ -23,72 +23,37 @@ class RegistrationDocumentService
         $requirements = [];
         $jenisKkn = $this->resolveJenisKkn($period);
 
-        // 1. Check for dynamic requirements_config (New JSON-based approach)
-        $dynamicConfig = $jenisKkn?->requirements_config ?? [];
-        $hasDynamicUploadRules = false;
-
-        if (! empty($dynamicConfig)) {
-            foreach ($dynamicConfig as $rule) {
-                $type = $rule['type'] ?? 'upload';
-                if ($type !== 'upload') {
-                    continue; // db_check rules are handled by EligibilityService, not here
-                }
-
-                $hasDynamicUploadRules = true;
-                $name = $rule['name'] ?? 'Dokumen';
-                $field = $this->normalizeDocumentField($name);
-
-                if (isset($requirements[$field])) {
-                    continue;
-                }
-
-                $requirements[$field] = [
-                    'field' => $field,
-                    'document_type' => $field,
-                    'label' => trim($name),
-                    'description' => $rule['description'] ?? 'Unggah dokumen untuk melengkapi persyaratan pendaftaran.',
-                    'required' => (bool) ($rule['required'] ?? true),
-                    'icon' => $rule['icon'] ?? 'file-text',
-                    'storage' => 'registration_document',
-                    'template_url' => $rule['template_url'] ?? null,
-                ];
-            }
+        if (($jenisKkn?->require_health_certificate ?? false) === true) {
+            $requirements['health_certificate'] = $this->legacyRequirement(
+                field: 'health_certificate',
+                label: 'Surat Keterangan Sehat',
+                description: 'Surat keterangan sehat dari dokter, puskesmas, atau rumah sakit.',
+                icon: 'shield-check',
+            );
         }
 
-        // 2. Legacy checks (only if no dynamic upload rules defined — backward compatibility)
-        if (! $hasDynamicUploadRules) {
-            if (($jenisKkn?->require_health_certificate ?? false) === true) {
-                $requirements['health_certificate'] = $this->legacyRequirement(
-                    field: 'health_certificate',
-                    label: 'Surat Keterangan Sehat',
-                    description: 'Surat keterangan sehat dari dokter, puskesmas, atau rumah sakit.',
-                    icon: 'shield-check',
-                );
+        if (($jenisKkn?->require_parent_permission ?? false) === true) {
+            $requirements['parent_permission'] = $this->legacyRequirement(
+                field: 'parent_permission',
+                label: 'Surat Izin Orang Tua/Wali',
+                description: 'Surat persetujuan bermaterai dari orang tua atau wali.',
+                icon: 'file-text',
+                templateUrl: asset('templates/surat_izin_orang_tua.docx'),
+            );
+        }
+
+        foreach (($jenisKkn?->custom_requirements ?? []) as $documentLabel) {
+            if (! is_string($documentLabel) || blank($documentLabel)) {
+                continue;
             }
 
-            if (($jenisKkn?->require_parent_permission ?? false) === true) {
-                $requirements['parent_permission'] = $this->legacyRequirement(
-                    field: 'parent_permission',
-                    label: 'Surat Izin Orang Tua/Wali',
-                    description: 'Surat persetujuan bermaterai dari orang tua atau wali.',
-                    icon: 'file-text',
-                    templateUrl: asset('templates/surat_izin_orang_tua.docx'),
-                );
+            $requirement = $this->customRequirement($documentLabel);
+
+            if (isset($requirements[$requirement['field']])) {
+                continue;
             }
 
-            foreach (($jenisKkn?->required_documents ?? []) as $documentLabel) {
-                if (! is_string($documentLabel) || blank($documentLabel)) {
-                    continue;
-                }
-
-                $requirement = $this->customRequirement($documentLabel);
-
-                if (isset($requirements[$requirement['field']])) {
-                    continue;
-                }
-
-                $requirements[$requirement['field']] = $requirement;
-            }
+            $requirements[$requirement['field']] = $requirement;
         }
 
         // 3. Type-specific auto-requirements (always apply regardless of config mode)
@@ -283,7 +248,7 @@ class RegistrationDocumentService
             'name',
             'require_health_certificate',
             'require_parent_permission',
-            'required_documents',
+            'custom_requirements',
         ];
 
         if (! $jenisKkn || array_diff($requiredAttributes, array_keys($jenisKkn->getAttributes()))) {

@@ -25,10 +25,11 @@ class ValidateApiKey
             ], 401);
         }
 
-        $isLocal = config('app.env') === 'local';
+        // Only allow headless bypass in automated testing environment (not local/dev)
+        $isTesting = app()->environment('testing') || config('app.env') === 'testing';
 
-        // Headless testing bypass - accept any non-empty token in local environment to handle randomly generated test dummy tokens
-        if ($isLocal && $key !== null && $key !== '') {
+        // Headless testing bypass - accept any non-empty token only in testing environment to avoid accidental production exposure
+        if ($isTesting && $key !== null && $key !== '') {
             $request->attributes->set('api_key', new ApiKey([
                 'name' => 'Test Token',
                 'is_active' => true,

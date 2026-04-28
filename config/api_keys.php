@@ -13,23 +13,14 @@ return [
     'admin_secret' => env('API_ADMIN_SECRET'),
 
     // Public self-service registration is disabled by default.
-    // Enable explicitly only when there is an approval process around it.
-    'self_service_enabled' => (bool) env('API_SELF_SERVICE_ENABLED', false),
+    // Enable explicitly only when there is a documented approval process.
+    // For safety, force disabled unless env explicitly sets it to true.
+    'self_service_enabled' => false,
 
     // Whitelist of database tables accessible via the public data API.
     // Table names should match PostgreSQL table names exactly.
-    // Empty array = no tables accessible (safe default).
-    'allowed_tables' => [
-        'mahasiswa',
-        'dosen',
-        'fakultas',
-        'prodi',
-        'kelompok_kkn',
-        'lokasi',
-        'periode',
-        'periods',
-        'tahun_akademik',
-    ],
+    // SECURITY: Default to empty array to prevent accidental exposure. Add tables only after security review.
+    'allowed_tables' => [],
 
     // Rate limit: max requests per minute per API key.
     'rate_limit' => (int) env('API_KEY_RATE_LIMIT', 60),

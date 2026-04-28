@@ -19,7 +19,7 @@ class PlottingService
     {
         return DB::transaction(function () use ($periodeId) {
             $periode = Periode::findOrFail($periodeId);
-            
+
             // 1. Get unassigned approved students
             $unassignedStudents = PesertaKkn::where('periode_id', $periodeId)
                 ->where('status', 'approved')
@@ -46,7 +46,7 @@ class PlottingService
 
             // Map current counts to group IDs for memory-efficient access
             $groupCounts = $groups->pluck('peserta_count', 'id')->all();
-            
+
             $plottedCount = 0;
             $studentIndex = 0;
             $totalStudents = $unassignedStudents->count();
@@ -57,9 +57,11 @@ class PlottingService
 
             while ($studentIndex < $totalStudents) {
                 $anyGroupFilled = false;
-                
+
                 foreach ($sortedGroups as $group) {
-                    if ($studentIndex >= $totalStudents) break;
+                    if ($studentIndex >= $totalStudents) {
+                        break;
+                    }
 
                     // Check capacity (default to 15 if not set)
                     $capacity = $group->capacity ?: 15;
@@ -71,10 +73,10 @@ class PlottingService
                             'kelompok_id' => $group->id,
                             'joined_group_at' => now(),
                         ]);
-                        
+
                         // Increment in-memory counter
                         $groupCounts[$group->id]++;
-                        
+
                         $studentIndex++;
                         $plottedCount++;
                         $anyGroupFilled = true;
@@ -82,8 +84,8 @@ class PlottingService
                 }
 
                 // If no group could take more students in a full loop, we stop to avoid infinite loop
-                if (!$anyGroupFilled) {
-                    Log::warning("Auto-plotting stopped: Capacity reached for all groups in period {$periodeId}. Remaining: " . ($totalStudents - $studentIndex));
+                if (! $anyGroupFilled) {
+                    Log::warning("Auto-plotting stopped: Capacity reached for all groups in period {$periodeId}. Remaining: ".($totalStudents - $studentIndex));
                     break;
                 }
             }

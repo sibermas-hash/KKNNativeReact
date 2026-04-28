@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,6 +15,7 @@ class Lokasi extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'lokasi';
+
     protected $fillable = [
         'province_id',
         'regency_id',
@@ -34,10 +36,6 @@ class Lokasi extends Model
         'longitude' => 'decimal:8',
         'capacity' => 'integer',
     ];
-
-    use HasFactory;
-
-    protected $appends = [];
 
     public function fakultas(): BelongsTo
     {

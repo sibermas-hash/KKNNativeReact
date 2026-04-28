@@ -11,6 +11,7 @@ use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\KelompokKkn;
 use App\Notifications\KknActivityNotification;
 use App\Services\GeoService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -55,7 +56,21 @@ class DailyReportController extends Controller
 
     private function canReview(KegiatanKkn $dailyReport): bool
     {
-        return in_array($dailyReport->status, ['submitted', 'revision'], true);
+        return $dailyReport->canBeReviewed();
+    }
+
+    private function applyStatusFilter(Builder $query, ?string $status): Builder
+    {
+        if (! filled($status)) {
+            return $query;
+        }
+
+        return match (KegiatanKkn::normalizeWorkflowStatus($status)) {
+            KegiatanKkn::STATUS_DRAFT => $query->whereIn('status', KegiatanKkn::draftStatuses()),
+            KegiatanKkn::STATUS_APPROVED => $query->whereIn('status', KegiatanKkn::approvedStatuses()),
+            KegiatanKkn::STATUS_REVISION => $query->whereIn('status', KegiatanKkn::revisionStatuses()),
+            default => $query->whereIn('status', KegiatanKkn::submittedStatuses()),
+        };
     }
 
     public function index(Request $request): Response
@@ -68,7 +83,7 @@ class DailyReportController extends Controller
         // Get groups with pending counts for the tab/filter UI
         $groups = KelompokKkn::whereIn('id', $groupIds)
             ->withCount(['kegiatan' => function ($query) {
-                $query->where('status', 'submitted');
+                $query->workflowSubmitted();
             }])
             ->get()
             ->map(fn ($group) => [
@@ -80,14 +95,14 @@ class DailyReportController extends Controller
         $kegiatan = KegiatanKkn::whereIn('kelompok_id', $groupIds)
             ->with(['mahasiswa', 'kelompok'])
             ->when($request->input('kelompok_id'), fn ($q, $id) => $q->where('kelompok_id', $id))
-            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
+            ->tap(fn (Builder $query) => $this->applyStatusFilter($query, $request->input('status')))
             ->orderByDesc('date')
             ->paginate(15)
             ->through(fn (KegiatanKkn $report) => [
                 'id' => $report->id,
                 'date' => optional($report->date)->format('d M Y') ?? '-',
                 'title' => $report->title,
-                'status' => $report->status,
+                'status' => $report->canonicalStatus(),
                 'student' => [
                     'name' => $report->mahasiswa?->nama ?? 'Mahasiswa tidak ditemukan',
                     'nim' => $report->mahasiswa?->nim ?? '-',
@@ -104,7 +119,12 @@ class DailyReportController extends Controller
         return Inertia::render('Dpl/DailyReports/Index', [
             'reports' => $kegiatan,
             'groups' => $groups,
-            'filters' => $request->only(['status', 'kelompok_id']),
+            'filters' => [
+                'status' => $request->filled('status')
+                    ? KegiatanKkn::normalizeWorkflowStatus($request->input('status'))
+                    : null,
+                'kelompok_id' => $request->input('kelompok_id'),
+            ],
         ]);
     }
 
@@ -146,7 +166,7 @@ class DailyReportController extends Controller
                     'reference_label' => $reference['label'] ?? null,
                     'distance_to_reference_meters' => $distance,
                 ],
-                'status' => $dailyReport->status,
+                'status' => $dailyReport->canonicalStatus(),
                 'can_review' => $this->canReview($dailyReport),
                 'review_notes' => $dailyReport->review_notes,
                 'student' => [
@@ -275,7 +295,7 @@ class DailyReportController extends Controller
         }
 
         $dailyReport->update([
-            'status' => 'approved',
+            'status' => KegiatanKkn::STATUS_APPROVED,
             'review_notes' => null,
             'reviewed_by' => auth()->id(),
             'reviewed_at' => now(),
@@ -309,7 +329,7 @@ class DailyReportController extends Controller
         ]);
 
         $dailyReport->update([
-            'status' => 'revision',
+            'status' => KegiatanKkn::STATUS_REVISION,
             'review_notes' => $validated['revision_notes'],
             'reviewed_by' => auth()->id(),
             'reviewed_at' => now(),
@@ -351,7 +371,7 @@ class DailyReportController extends Controller
 
         // Build query with optional date range
         $query = KegiatanKkn::whereIn('kelompok_id', $groupIds)
-            ->where('status', 'submitted');
+            ->workflowSubmitted();
 
         if (! empty($validated['date_from'])) {
             $query->where('date', '>=', $validated['date_from']);
@@ -369,7 +389,8 @@ class DailyReportController extends Controller
         }
 
         $count = $query->update([
-            'status' => 'approved',
+            'status' => KegiatanKkn::STATUS_APPROVED,
+            'review_notes' => null,
             'reviewed_by' => auth()->id(),
             'reviewed_at' => now(),
         ]);

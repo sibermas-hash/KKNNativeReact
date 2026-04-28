@@ -216,7 +216,7 @@ class PesertaKknController extends Controller
     public function bulkApprove(
         Request $request,
     ): RedirectResponse {
-$validated = $request->validate([
+        $validated = $request->validate([
             'ids' => ['required', 'array', 'min:1', 'max:100'],
             'ids.*' => ['required', 'integer', 'exists:peserta_kkn,id'],
         ]);
@@ -237,7 +237,7 @@ $validated = $request->validate([
     public function bulkReject(
         Request $request,
     ): RedirectResponse {
-$validated = $request->validate([
+        $validated = $request->validate([
             'ids' => ['required', 'array', 'min:1', 'max:100'],
             'ids.*' => ['required', 'integer', 'exists:peserta_kkn,id'],
             'notes' => ['required', 'string', 'max:1000'],

@@ -102,29 +102,29 @@ class GradingService
         }
 
         // 1. Calculate Component A (DPL)
-        // Consolidate 5 sub-items into 3 official weight categories from Panduan
+        // DPL has 3 indicators: Laporan (dpl_administrasi_score), Pelaksanaan (dpl_ketercapaian_score), Artikel (dpl_artikel_score)
         $dplReportWeight = floatval($configs['weight_dpl_report'] ?? 30) / 100;
         $dplExecutionWeight = floatval($configs['weight_dpl_execution'] ?? 40) / 100;
         $dplArticleWeight = floatval($configs['weight_dpl_article'] ?? 30) / 100;
 
         $reportPart = floatval($score->dpl_administrasi_score ?? 0);
-        $executionPart = (floatval($score->dpl_relevansi_score ?? 0) + floatval($score->dpl_ketercapaian_score ?? 0) + floatval($score->dpl_inovasi_score ?? 0)) / 3;
+        $executionPart = floatval($score->dpl_ketercapaian_score ?? 0); // No longer averaged with relevansi & inovasi
         $articlePart = floatval($score->dpl_artikel_score ?? 0);
 
         $aRaw = ($reportPart * $dplReportWeight) + ($executionPart * $dplExecutionWeight) + ($articlePart * $dplArticleWeight);
 
         // 2. Calculate Component B (Village/Mitra)
-        // Consolidate 3 sub-items into 2 official weight categories
+        // Desa has 2 indicators: Sikap (desa_interaksi_score), Kedisiplinan (desa_disiplin_score)
         $villageAttitudeWeight = floatval($configs['weight_village_attitude'] ?? 50) / 100;
         $villageDisciplineWeight = floatval($configs['weight_village_discipline'] ?? 50) / 100;
 
         $attitudePart = floatval($score->desa_interaksi_score ?? 0);
-        $disciplinePart = (floatval($score->desa_disiplin_score ?? 0) + floatval($score->desa_kinerja_score ?? 0)) / 2;
+        $disciplinePart = floatval($score->desa_disiplin_score ?? 0); // No longer averaged with kinerja
 
         $bRaw = ($attitudePart * $villageAttitudeWeight) + ($disciplinePart * $villageDisciplineWeight);
 
         // 3. Calculate Component C (LPPM)
-        // LPPM component is 100% based on Administration Score (includes logbook, video, etc.)
+        // LPPM component is 100% based on Administration Score (administration_score)
         $cRaw = floatval($score->administration_score ?? 0);
 
         // 4. Apply Main Weights
@@ -259,7 +259,7 @@ class GradingService
     {
         return Cache::remember("ai_performance_v3_{$studentId}", 3600, function () use ($studentId) {
             $activities = KegiatanKkn::where('mahasiswa_id', $studentId)
-                ->where('status', 'approved')
+                ->workflowApproved()
                 ->whereNotNull('ai_analysis')
                 ->get();
 

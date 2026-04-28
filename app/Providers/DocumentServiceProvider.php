@@ -23,7 +23,7 @@ class DocumentServiceProvider extends ServiceProvider
 
         // PHPWord Configuration
         $this->app->singleton(PhpWord::class, function ($app) {
-            return new PhpWord();
+            return new PhpWord;
         });
     }
 

@@ -26,11 +26,12 @@ class ProgramKerjaController extends Controller
         $isFacultyAdmin = $user?->hasRole('faculty_admin');
         $facultyId = $isFacultyAdmin ? $user?->fakultas_id : null;
 
-        $query = ProgramKerja::query()
-            ->when($status, fn ($q) => $q->where('status', $status))
+        $baseQuery = ProgramKerja::query()
             ->when($facultyId, function ($query, $id) {
                 $query->whereHas('kelompok.peserta.mahasiswa', fn ($q) => $q->where('fakultas_id', $id));
             });
+
+        $query = (clone $baseQuery)->when($status, fn ($q) => $q->where('status', $status));
 
         $workPrograms = $query->with(['kelompok.lokasi'])
             ->orderByDesc('submitted_at')
@@ -39,6 +40,11 @@ class ProgramKerjaController extends Controller
 
         return Inertia::render('Admin/Monitoring/WorkPrograms/Index', [
             'workPrograms' => $this->formatPaginator($workPrograms),
+            'totalStats' => [
+                'total' => (clone $baseQuery)->count(),
+                'approved' => (clone $baseQuery)->where('status', 'approved')->count(),
+                'pending' => (clone $baseQuery)->where('status', 'pending')->count(),
+            ],
             'sdg_distribution' => Inertia::defer(function () use ($query) {
                 $sdgCounts = array_fill(1, 17, 0);
 

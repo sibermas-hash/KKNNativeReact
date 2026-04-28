@@ -231,7 +231,7 @@ class KKN57RegulerMahasiswaSeeder extends Seeder
         $updated = 0;
         $skipped = 0;
         $now = now();
-        $hashedPassword = Hash::make(self::DEFAULT_PASSWORD);
+        $hashedPassword = Hash::make(env('KKN_LOCAL_SEED_PASSWORD', self::DEFAULT_PASSWORD));
 
         foreach ($rows as $row) {
             $nim = trim($row['NIM']);

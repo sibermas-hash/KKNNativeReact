@@ -135,7 +135,7 @@ class DplTestSeeder extends Seeder
                 [
                     'name' => $dData['nama'],
                     'email' => Str::slug($dData['nama']).'@uinsaizu.ac.id',
-                    'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', Str::random(32))),
+                    'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', 'password')),
                     'is_active' => true,
                     'fakultas_id' => $dData['fakultas_id'],
                 ]

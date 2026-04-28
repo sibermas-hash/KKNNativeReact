@@ -104,9 +104,11 @@ class GradeController extends Controller
 
         // Validate that all students belong to the specified kelompok
         $studentIds = collect($data['scores'])->pluck('student_id')->unique();
-        $validStudentIds = PesertaKkn::where('kelompok_id', $data['kelompok_id'])
+        $validStudentIds = PesertaKkn::with('mahasiswa')
+            ->where('kelompok_id', $data['kelompok_id'])
             ->where('status', 'approved')
             ->whereHas('mahasiswa', fn ($q) => $q->whereIn('user_id', $studentIds))
+            ->get()
             ->pluck('mahasiswa.user_id');
 
         $invalidIds = $studentIds->diff($validStudentIds);

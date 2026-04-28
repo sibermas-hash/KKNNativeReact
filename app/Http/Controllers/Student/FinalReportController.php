@@ -8,13 +8,13 @@ use App\Http\Controllers\Controller;
 use App\Models\KKN\LaporanAkhir;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Attribute\Get;
+use Illuminate\Routing\Attribute\Post;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Illuminate\Routing\Attribute\Get;
-use Illuminate\Routing\Attribute\Post;
 
 class FinalReportController extends Controller
 {
@@ -239,14 +239,14 @@ class FinalReportController extends Controller
         // Security check: Only members of the same group or authorized staff
         $user = auth()->user();
         $mahasiswa = $user->mahasiswa;
-        
+
         abort_if(
-            !$user->hasAnyRole(['admin', 'superadmin', 'dpl']) && 
-            (!$mahasiswa || $mahasiswa->peserta()->where('kelompok_id', $laporanAkhir->kelompok_id)->doesntExist()),
+            ! $user->hasAnyRole(['admin', 'superadmin', 'dpl']) &&
+            (! $mahasiswa || $mahasiswa->peserta()->where('kelompok_id', $laporanAkhir->kelompok_id)->doesntExist()),
             403
         );
 
-        abort_if(!Storage::disk('local')->exists($laporanAkhir->file_path), 404);
+        abort_if(! Storage::disk('local')->exists($laporanAkhir->file_path), 404);
 
         return Storage::disk('local')->response($laporanAkhir->file_path);
     }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CheckPeriodLock;
 use App\Http\Middleware\CspHeaders;
 use App\Http\Middleware\DisableDebugbar;
 use App\Http\Middleware\EnsurePasswordChanged;
@@ -18,10 +19,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Inertia\Inertia;
-use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Spatie\Permission\Exceptions\UnauthorizedException;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
@@ -93,7 +92,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'disable.debugbar' => DisableDebugbar::class,
             'restrict.debugbar' => RestrictDebugbarAccess::class,
             'phase' => EnsurePhase::class,
-            'not_locked' => \App\Http\Middleware\CheckPeriodLock::class,
+            'not_locked' => CheckPeriodLock::class,
         ]);
 
         $middleware->redirectGuestsTo('/login');

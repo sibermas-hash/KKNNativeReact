@@ -34,15 +34,22 @@ class DailyReportCompilationService
             ->orderBy('date')
             ->get();
 
+        $approvedCount = $reports->filter(fn (KegiatanKkn $report) => $report->isApproved())->count();
+        $pendingCount = $reports->filter(
+            fn (KegiatanKkn $report) => $report->canonicalStatus() === KegiatanKkn::STATUS_SUBMITTED
+        )->count();
+        $revisionCount = $reports->filter(
+            fn (KegiatanKkn $report) => $report->canonicalStatus() === KegiatanKkn::STATUS_REVISION
+        )->count();
+
         // Calculate statistics
         $stats = [
             'total' => $reports->count(),
-            'approved' => $reports->where('status', 'approved')->count(),
-            'pending' => $reports->where('status', 'submitted')->count(), // submitted is pending in this context
-            'revision' => $reports->where('status', 'revision')->count(),
-            'rejected' => $reports->where('status', 'rejected')->count(),
+            'approved' => $approvedCount,
+            'pending' => $pendingCount,
+            'revision' => $revisionCount,
             'completion_rate' => $reports->count() > 0
-                ? round(($reports->where('status', 'approved')->count() / $reports->count()) * 100, 2)
+                ? round(($approvedCount / $reports->count()) * 100, 2)
                 : 0,
         ];
 

@@ -395,7 +395,7 @@ class ProfileController extends Controller
                     return redirect('/mahasiswa/daftar')->with('success', 'Profil lengkap! Selamat datang di SIBERMAS.');
                 }
 
-return redirect('/dpl/dashboard')->with('success', 'Profil lengkap! Selamat datang di SIBERMAS.');
+                return redirect('/dpl/dashboard')->with('success', 'Profil lengkap! Selamat datang di SIBERMAS.');
             }
 
             // Profile still incomplete → redirect to profile page to fill remaining data
@@ -461,13 +461,16 @@ return redirect('/dpl/dashboard')->with('success', 'Profil lengkap! Selamat data
     {
         $user = auth()->user();
 
-        if (! $user->must_change_password) {
+        // Check both flags: explicit must_change_password OR never changed (password_changed_at = null)
+        $mustChange = $user->must_change_password || is_null($user->password_changed_at);
+
+        if (! $mustChange) {
             return redirect()->route('profile.show')->with('info', 'Kata sandi Anda sudah diperbarui.');
         }
 
         return Inertia::render('Profile/PasswordChange', [
             'user' => $user->only(['id', 'name', 'email', 'username', 'must_change_password']),
-            'mustChangePassword' => $user->must_change_password,
+            'mustChangePassword' => $mustChange,
         ]);
     }
 }

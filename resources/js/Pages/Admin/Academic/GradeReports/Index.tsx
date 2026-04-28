@@ -1,6 +1,20 @@
 import { type FormEvent, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Head, router } from '@inertiajs/react';
+import { 
+  Activity, 
+  CheckCircle2, 
+  Download, 
+  FileText, 
+  GraduationCap, 
+  Lock, 
+  RefreshCw, 
+  Search, 
+  ShieldCheck, 
+  Users,
+  Table
+} from 'lucide-react';
+import { clsx } from 'clsx';
 import AppLayout from '@/Layouts/AppLayout';
 import { Button } from '@/Components/UI';
 
@@ -212,7 +226,7 @@ return (
                 variant="outline"
                 className="h-9 border-emerald-50 text-emerald-950 hover:bg-gray-50 text-xs font-black uppercase tracking-widest px-4"
               >
-                <FileSpreadsheet size={16} className="mr-2 opacity-30" /> Ekspor Data
+                <Table size={16} className="mr-2 opacity-30" /> Ekspor Data
               </Button>
             )}
             {canFinalizeMass && (

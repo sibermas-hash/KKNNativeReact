@@ -84,4 +84,3 @@ Route::middleware(['auth', 'verified', 'disable.debugbar'])->group(function () {
         ->name('reports.download')
         ->middleware('role:superadmin|dpl|student');
 });
-

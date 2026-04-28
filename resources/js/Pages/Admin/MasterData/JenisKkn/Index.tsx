@@ -77,6 +77,7 @@ export default function JenisKknIndex({
   const [search, setSearch] = useState(filters.search ?? '');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [loadingId, setLoadingId] = useState<number | null>(null);
 
   // ── Premium Confirm Dialog State ──────────────────────────────
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -340,6 +341,8 @@ export default function JenisKknIndex({
                       <button
                         type="button"
                         onClick={cancelEdit}
+                        title="Tutup Panel"
+                        aria-label="Tutup Panel"
                         className="h-10 w-10 flex items-center justify-center rounded-xl bg-white/10 hover:bg-white/20 transition-colors text-white"
                       >
                         <X size={20} />
@@ -350,15 +353,17 @@ export default function JenisKknIndex({
                     <form onSubmit={submit} className="p-8 space-y-6 max-h-[calc(100vh-12rem)] overflow-y-auto">
                       <div className="grid grid-cols-3 gap-4">
                         <div className="space-y-1.5">
-                          <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">
+                          <label htmlFor="code" className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">
                             Kode Skema
                           </label>
                           <input
+                            id="code"
                             type="text"
                             value={form.data.code}
                             onChange={(e) => form.setData('code', e.target.value.toUpperCase())}
                             className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none uppercase font-sans bg-[#F8FAF9]"
                             placeholder="REGULER"
+                            title="Kode Skema"
                             required
                           />
                           {form.errors.code && (
@@ -368,66 +373,76 @@ export default function JenisKknIndex({
                           )}
               </div>
               <div className="space-y-1.5 col-span-2">
-                <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">
+                <label htmlFor="name" className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">
                   Nama Program
                 </label>
                 <input
+                  id="name"
                   type="text"
                   value={form.data.name}
                   onChange={(e) => form.setData('name', e.target.value)}
                   className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none font-sans bg-[#F8FAF9]"
                   placeholder="KKN Reguler"
+                  title="Nama Program"
                   required
                 />
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">
+              <label htmlFor="description" className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">
                 Deskripsi Singkat
               </label>
               <textarea
+                id="description"
                 value={form.data.description}
                 onChange={(e) => form.setData('description', e.target.value)}
                 className="w-full p-4 rounded-xl border-2 border-slate-50 text-sm font-medium text-cyan-950 focus:border-cyan-600 outline-none min-h-[100px] font-sans bg-[#F8FAF9]"
                 placeholder="Penjelasan mengenai skema program ini..."
+                title="Deskripsi Singkat"
               />
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">
+                <label htmlFor="min_sks" className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">
                   Minimal SKS
                 </label>
                 <input
+                  id="min_sks"
                   type="number"
                   value={form.data.min_sks}
                   onChange={(e) => form.setData('min_sks', parseInt(e.target.value))}
                   className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none tabular-nums font-sans bg-[#F8FAF9]"
+                  title="Minimal SKS"
                   required
                 />
               </div>
               <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">
+                <label htmlFor="min_gpa" className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">
                   Minimal IPK
                 </label>
                 <input
+                  id="min_gpa"
                   type="text"
                   value={form.data.min_gpa}
                   onChange={(e) => form.setData('min_gpa', e.target.value)}
                   className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none tabular-nums font-sans bg-[#F8FAF9]"
+                  title="Minimal IPK"
                   required
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">
+                <label htmlFor="registration_mode" className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">
                   Mode Pendaftaran
                 </label>
                 <select
+                  id="registration_mode"
                   value={form.data.registration_mode}
                   onChange={(e) => form.setData('registration_mode', e.target.value)}
                   className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none bg-[#F8FAF9] font-sans"
+                  title="Pilih Mode Pendaftaran"
                 >
                   {registrationModes.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -438,13 +453,15 @@ export default function JenisKknIndex({
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">
+                <label htmlFor="placement_mode" className="text-[11px] font-semibold text-cyan-900 uppercase tracking-wider pl-1 font-sans">
                   Mode Penempatan
                 </label>
                 <select
+                  id="placement_mode"
                   value={form.data.placement_mode}
                   onChange={(e) => form.setData('placement_mode', e.target.value)}
                   className="w-full h-11 px-4 rounded-xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none bg-[#F8FAF9] font-sans"
+                  title="Pilih Mode Penempatan"
                 >
                   {placementModes.map((m) => (
                     <option key={m.value} value={m.value}>
@@ -557,6 +574,8 @@ export default function JenisKknIndex({
                           />
                           <button
                             type="button"
+                            title="Hapus Syarat"
+                            aria-label="Hapus Syarat"
                             onClick={() => {
                               const newReqs = [...form.data.custom_requirements];
                               newReqs.splice(index, 1);
@@ -605,13 +624,15 @@ export default function JenisKknIndex({
 
                     {form.data.attendance_config?.geofence_enabled && (
                       <div className="space-y-1.5 pl-2">
-                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Radius Absensi (Meter)</label>
+                        <label htmlFor="radius_meters" className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Radius Absensi (Meter)</label>
                         <div className="relative">
                           <input
+                            id="radius_meters"
                             type="number"
                             value={form.data.attendance_config?.radius_meters}
                             onChange={(e) => form.setData('attendance_config', { ...form.data.attendance_config, radius_meters: parseInt(e.target.value) })}
                             className="w-full h-11 px-4 rounded-xl border border-slate-200 text-sm font-bold text-cyan-950 focus:border-cyan-600 outline-none bg-white"
+                            title="Radius Absensi dalam Meter"
                           />
                           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-slate-400">METER</span>
                         </div>
@@ -621,12 +642,14 @@ export default function JenisKknIndex({
 
                   <div className="space-y-4">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sumber Lokasi Rujukan</label>
+                      <label htmlFor="location_source" className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sumber Lokasi Rujukan</label>
                       <div className="relative group">
                         <select
+                          id="location_source"
                           value={form.data.attendance_config?.location_source}
                           onChange={(e) => form.setData('attendance_config', { ...form.data.attendance_config, location_source: e.target.value })}
                           className="w-full h-11 pl-4 pr-10 rounded-xl border border-slate-200 text-xs font-bold text-cyan-950 focus:border-cyan-600 appearance-none outline-none bg-white shadow-sm"
+                          title="Pilih Sumber Lokasi Rujukan"
                         >
                           <option value="posko">POSKO KELOMPOK (REGULER)</option>
                           <option value="domisili">LOKASI DOMISILI (MANDIRI)</option>
@@ -695,14 +718,16 @@ export default function JenisKknIndex({
                 </label>
               </div>
               <div className="flex items-center gap-3">
-                <label className="text-[11px] font-semibold text-cyan-950 uppercase tracking-wider font-sans">
+                <label htmlFor="sort_order" className="text-[11px] font-semibold text-cyan-950 uppercase tracking-wider font-sans">
                   Urutan
                 </label>
                 <input
+                  id="sort_order"
                   type="number"
                   value={form.data.sort_order}
                   onChange={(e) => form.setData('sort_order', parseInt(e.target.value))}
                   className="w-16 h-10 text-center rounded-xl border-2 border-slate-50 text-sm font-bold font-sans bg-[#F8FAF9]"
+                  title="Urutan Tampilan"
                 />
               </div>
             </div>
@@ -770,7 +795,7 @@ export default function JenisKknIndex({
                           <span className="text-sm font-bold text-cyan-950 tracking-tight group-hover:text-cyan-600 transition-colors">
                             {item.name}
                           </span>
-                          <span className="px-1.5 py-0.5 bg-slate-50 text-cyan-800/60 rounded text-[9px] font-bold border border-cyan-100 uppercase tracking-wider">
+                          <span className="px-1.5 py-0.5 bg-slate-50 text-cyan-700 rounded text-[9px] font-bold border border-cyan-100 uppercase tracking-wider">
                             {item.code}
                           </span>
                         </div>
@@ -810,24 +835,47 @@ export default function JenisKknIndex({
                     </PremiumTableCell>
                     <PremiumTableCell align="right">
                       <div className="flex items-center justify-end gap-2">
-                        <Link
-                          href={`/admin/jenis-kkn/${item.id}`}
-                          className="h-9 px-3 bg-white border-2 border-slate-50 text-cyan-950 rounded-xl hover:bg-cyan-50 hover:border-cyan-100 transition-all flex items-center gap-2 text-[11px] font-semibold tracking-tight no-underline font-sans"
-                        >
-                          <Eye size={16} /> Detail
-                        </Link>
-                        <button
+                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                          <Link
+                            href={`/admin/jenis-kkn/${item.id}`}
+                            onStart={() => setLoadingId(item.id)}
+                            onFinish={() => setLoadingId(null)}
+                            className={clsx(
+                              "h-9 px-3 rounded-xl transition-all flex items-center gap-2 text-[11px] font-semibold tracking-tight no-underline font-sans border-2",
+                              loadingId === item.id
+                                ? "bg-cyan-50 border-cyan-200 text-cyan-600 cursor-wait"
+                                : "bg-white border-slate-50 text-cyan-950 hover:bg-cyan-50 hover:border-cyan-100"
+                            )}
+                          >
+                            {loadingId === item.id ? (
+                              <RefreshCw size={14} className="animate-spin text-cyan-600" />
+                            ) : (
+                              <Eye size={16} />
+                            )}
+                            {loadingId === item.id ? 'Membuka...' : 'Detail'}
+                          </Link>
+                        </motion.div>
+
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
                           onClick={() => startEdit(item)}
+                          title="Edit Skema"
+                          aria-label={`Edit skema ${item.name}`}
                           className="h-8 w-8 flex items-center justify-center text-emerald-900 hover:bg-emerald-50 border border-transparent hover:border-emerald-100 rounded-lg transition-all"
                         >
                           <Settings size={14} />
-                        </button>
-                        <button
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
                           onClick={() => openConfirmDialog(item)}
+                          title="Hapus Skema"
+                          aria-label={`Hapus skema ${item.name}`}
                           className="h-8 w-8 flex items-center justify-center text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-100 rounded-lg transition-all"
                         >
                           <Trash2 size={14} />
-                        </button>
+                        </motion.button>
                       </div>
                     </PremiumTableCell>
                   </PremiumTableRow>
@@ -865,6 +913,8 @@ export default function JenisKknIndex({
                     {/* Close Button */}
                     <button
                       onClick={closeConfirmDialog}
+                      title="Tutup Dialog"
+                      aria-label="Tutup Dialog Konfirmasi"
                       className="absolute right-4 top-4 z-10 h-8 w-8 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all"
                     >
                       <X size={16} strokeWidth={2.5} />

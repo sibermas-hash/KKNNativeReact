@@ -56,7 +56,7 @@
                 <td>{{ $report->date ? \Carbon\Carbon::parse($report->date)->format('d/m/Y') : '-' }}</td>
                 <td>{{ $report->mahasiswa?->user?->name ?? '-' }}</td>
                 <td>{{ \Illuminate\Support\Str::limit($report->activity ?? '-', 80) }}</td>
-                <td>{{ strtoupper($report->status) }}</td>
+                <td>{{ $report->status_label }}</td>
             </tr>
             @empty
             <tr>

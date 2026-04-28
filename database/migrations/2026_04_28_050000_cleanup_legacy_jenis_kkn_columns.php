@@ -38,7 +38,14 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('jenis_kkn', function (Blueprint $table) {
-            $table->json('requirements_config')->nullable();
+            $table->integer('min_sks')->default(100);
+            $table->decimal('min_gpa', 3, 2)->default(0.00);
+            $table->boolean('require_not_married')->default(false);
+            $table->boolean('require_parent_permission')->default(false);
+            $table->boolean('require_health_certificate')->default(false);
+            $table->json('specific_prodi_ids')->nullable();
+            $table->boolean('require_bta_ppi')->default(true);
+            $table->json('custom_requirements')->nullable();
             $table->json('required_documents')->nullable();
         });
     }

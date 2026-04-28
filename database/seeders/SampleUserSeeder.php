@@ -22,8 +22,8 @@ class SampleUserSeeder extends Seeder
         }
 
         $defaultPassword = env('KKN_LOCAL_SEED_PASSWORD');
-        $studentPassword = $defaultPassword ?: Str::password(16);
-        $lecturerPassword = $defaultPassword ?: Str::password(16);
+        $studentPassword = $defaultPassword ?: 'password';
+        $lecturerPassword = $defaultPassword ?: 'password';
 
         $faculty = Faculty::first() ?? Faculty::create([
             'code' => 'F00',
@@ -43,6 +43,8 @@ class SampleUserSeeder extends Seeder
                 'name' => 'Mahasiswa Contoh',
                 'is_active' => true,
                 'email_verified_at' => now(),
+                'password_changed_at' => null,
+                'must_change_password' => true,
                 'password' => Hash::make($studentPassword),
             ]
         );
@@ -77,6 +79,8 @@ class SampleUserSeeder extends Seeder
                 'name' => 'DPL Contoh',
                 'is_active' => true,
                 'email_verified_at' => now(),
+                'password_changed_at' => null,
+                'must_change_password' => true,
                 'password' => Hash::make($lecturerPassword),
             ]
         );

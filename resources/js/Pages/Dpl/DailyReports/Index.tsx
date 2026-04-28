@@ -89,7 +89,7 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
   };
 
   const statusLabels: Record<string, string> = {
-    submitted: 'Selesai Daftar',
+    submitted: 'Menunggu Review',
     approved: 'Disetujui',
     revision: 'Perlu Revisi',
   };
@@ -120,7 +120,7 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
               onClick={() => {
                 if (
                   confirm(
-                    `Setujui seluruh laporan yang berstatus 'Selesai Daftar' (Antrian) untuk ${groupIdFilter ? 'kelompok ini' : 'semua kelompok Anda'}?`,
+                    `Setujui seluruh laporan yang berstatus 'Menunggu Review' untuk ${groupIdFilter ? 'kelompok ini' : 'semua kelompok Anda'}?`,
                   )
                 ) {
                   router.post(route('dosen.daily-reports.approve-all'), {
@@ -371,7 +371,7 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={5} className="px-6 py-32 text-center">
+                    <td colSpan={6} className="px-6 py-32 text-center">
                       <div className="flex flex-col items-center gap-4">
                         <div className="h-12 w-24 rounded-full bg-emerald-50/30 flex items-center justify-center text-slate-200">
                           <Clock size={48} strokeWidth={1} />
@@ -381,7 +381,7 @@ export default function DailyReportIndex({ reports, groups, filters }: Props) {
                             Antrian Bersih
                           </p>
                           <p className="text-sm font-bold text-slate-300">
-                            Tidak ada laporan pendaftaran yang menunggu untuk diperiksa.
+                            Tidak ada laporan harian yang menunggu untuk diperiksa.
                           </p>
                         </div>
                       </div>

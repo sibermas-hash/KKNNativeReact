@@ -68,8 +68,8 @@ class CircuitBreakerService
             'level' => 'warning',
             'title' => 'Mode Degradasi Aktif',
             'message' => "Koneksi ke SIAKAD terputus setelah {$failures} kegagalan berturut-turut. "
-                . "Sistem menggunakan data lokal (cache/database) sebagai fallback. "
-                . "Percobaan ulang otomatis: {$halfOpenAt}.",
+                .'Sistem menggunakan data lokal (cache/database) sebagai fallback. '
+                ."Percobaan ulang otomatis: {$halfOpenAt}.",
             'actions' => [
                 'Data mahasiswa & dosen menggunakan snapshot terakhir.',
                 'Pendaftaran & absensi tetap berjalan normal.',
@@ -129,4 +129,3 @@ class CircuitBreakerService
         Cache::forget($this->key.'_time');
     }
 }
-

@@ -80,8 +80,8 @@ return (
       <motion.div variants={containerVariants} initial="hidden" animate="show" className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8 py-10 font-sans">
         {/* PAGE HEADER */}
         <PageHeader
-          title="Logbook Harian."
-          subtitle="Audit transmisi aktivitas harian dan verifikasi kehadiran mahasiswa di lapangan."
+          title="Laporan Harian."
+          subtitle="Pantau laporan aktivitas dan kehadiran mahasiswa di lokasi KKN secara langsung."
           icon={Activity}
           groupLabel="Monitoring & Evaluasi"
         />
@@ -89,21 +89,21 @@ return (
         {/* STATS GRID */}
         <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            label="Total Transmisi"
+            label="Total Laporan"
             value={reports.meta.total}
             icon={FileText}
             variant="success"
           />
-          <StatCard label="Audit State" value="REAL-TIME" icon={RefreshCw} variant="info" />
-          <StatCard label="Verifikasi AI" value="ACTIVE" icon={ShieldCheck} variant="gray" />
-          <StatCard label="Security" value="ENCRYPTED" icon={Zap} variant="gray" />
+          <StatCard label="Status Pantauan" value="LANGSUNG" icon={RefreshCw} variant="info" />
+          <StatCard label="Pengecekan AI" value="AKTIF" icon={ShieldCheck} variant="gray" />
+          <StatCard label="Keamanan" value="TERLINDUNGI" icon={Zap} variant="gray" />
           </motion.div>
 
         {/* MAIN CONTENT */}
         <motion.div variants={itemVariants}>
 <ContentPanel
-          title="Logbook Transaction Ledger"
-          description="Daftar aktivitas harian mahasiswa yang telah dikirimkan melalui sistem."
+          title="Daftar Laporan Harian"
+          description="Kumpulan laporan kegiatan harian yang dikirimkan oleh mahasiswa."
           icon={LayoutGrid}
           padding={false}
           headerAction={
@@ -117,6 +117,8 @@ return (
                   onKeyDown={(e) => e.key === 'Enter' && handleApplyFilters()}
                   className="w-full h-11 pl-11 pr-4 bg-gray-50 border-2 border-slate-50 rounded-xl text-[12px] font-bold text-emerald-950 focus:bg-white focus:border-emerald-600 outline-none transition-all placeholder:text-emerald-950/20"
                   placeholder="CARI NAMA, NIM, ATAU JUDUL..."
+                  title="Cari Laporan"
+                  aria-label="Cari Laporan"
                 />
               </div>
               <div className="relative min-w-[200px]">
@@ -124,12 +126,14 @@ return (
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
                   className="w-full h-11 pl-4 pr-10 bg-gray-50 border-2 border-slate-50 rounded-xl text-[11px] font-black uppercase tracking-widest text-emerald-950 focus:bg-white focus:border-emerald-600 outline-none transition-all appearance-none cursor-pointer"
+                  title="Filter Status Laporan"
+                  aria-label="Filter Status Laporan"
                 >
                   <option value="">SEMUA STATUS</option>
                   <option value="submitted">DIKIRIM (PENDING)</option>
-                  <option value="disetujui">DISETUJUI (VERIFIED)</option>
-                  <option value="revisi">REVISI</option>
-                  <option value="draf">DRAF</option>
+                  <option value="approved">DISETUJUI (VERIFIED)</option>
+                  <option value="revision">REVISI</option>
+                  <option value="draft">DRAF</option>
                 </select>
                 <ChevronRight
                   size={14}
@@ -149,7 +153,7 @@ return (
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-[10px] font-black text-emerald-950/40 uppercase tracking-widest tabular-nums">
-                  Audit Trail Aktif &middot; {reports.meta.total} Laporan Terdeteksi
+                  Sistem Aktif &middot; {reports.meta.total} Laporan Ditemukan
                 </span>
               </div>
               <Pagination meta={reports.meta} />
@@ -158,14 +162,14 @@ return (
         >
           <PremiumTable
             headers={[
-              'Aktivitas Mahasiswa',
-              'Identitas Personel',
+              'Kegiatan Mahasiswa',
+              'Identitas Mahasiswa',
               'Lokasi/Kelompok',
-              'Status Audit',
-              'Opsi',
+              'Status Laporan',
+              'Aksi',
             ]}
             isEmpty={reports.data.length === 0}
-            emptyText="Tidak ada transmisi laporan yang ditemukan."
+            emptyText="Tidak ada laporan yang ditemukan."
           >
             {reports.data.map((r) => (
               <PremiumTableRow key={r.id} className="group">
@@ -203,16 +207,16 @@ return (
                 <PremiumTableCell>
                   <StatusTag
                     status={
-                      r.status === 'disetujui'
+                      r.status === 'approved'
                         ? 'active'
-                        : r.status === 'revisi'
+                        : r.status === 'revision'
                           ? 'error'
                           : r.status === 'submitted'
                             ? 'pending'
                             : 'draft'
                     }
                     label={
-                      r.status === 'disetujui'
+                      r.status === 'approved'
                         ? 'VERIFIED'
                         : r.status === 'submitted'
                           ? 'PENDING'

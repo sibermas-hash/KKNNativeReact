@@ -12,14 +12,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\Storage;
 
-
 class LaporanAkhir extends Model
 {
     use HasFactory, SoftDeletes;
 
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_SUBMITTED = 'submitted';
+
     public const STATUS_APPROVED = 'approved';
+
     public const STATUS_REVISION = 'revision';
 
     protected $table = 'laporan_akhir';
@@ -94,7 +96,7 @@ class LaporanAkhir extends Model
      * Replacing old-style getAttribute methods with direct property hooks.
      */
     public string $status_label {
-        get => match($this->canonicalStatus()) {
+        get => match ($this->canonicalStatus()) {
             self::STATUS_SUBMITTED => 'Menunggu Review',
             self::STATUS_APPROVED => 'Disetujui',
             self::STATUS_REVISION => 'Perlu Revisi',
@@ -103,7 +105,7 @@ class LaporanAkhir extends Model
     }
 
     public string $status_color {
-        get => match($this->canonicalStatus()) {
+        get => match ($this->canonicalStatus()) {
             self::STATUS_SUBMITTED => 'yellow',
             self::STATUS_APPROVED => 'green',
             self::STATUS_REVISION => 'red',

@@ -20,7 +20,6 @@
         .status-approved { color: #059669; font-weight: bold; }
         .status-pending { color: #d97706; font-weight: bold; }
         .status-revision { color: #dc2626; font-weight: bold; }
-        .status-rejected { color: #dc2626; font-weight: bold; }
         .footer { margin-top: 30px; text-align: center; font-size: 10px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 10px; }
         .dpl-notes { background: #fef3c7; padding: 8px; margin-top: 8px; border-left: 3px solid #d97706; }
     </style>
@@ -73,8 +72,8 @@
                 <div>Menunggu</div>
             </td>
             <td>
-                <div class="number" style="color: #dc2626;">{{ $stats['revision'] + $stats['rejected'] }}</div>
-                <div>Revisi/Ditolak</div>
+                <div class="number" style="color: #dc2626;">{{ $stats['revision'] }}</div>
+                <div>Perlu Revisi</div>
             </td>
             <td>
                 <div class="number">{{ $stats['completion_rate'] }}%</div>
@@ -90,8 +89,8 @@
         <div class="report-header">
             Tanggal: {{ $report->date ? \Carbon\Carbon::parse($report->date)->format('d F Y') : '-' }}
             | Status:
-            <span class="status-{{ $report->status }}">
-                {{ strtoupper($report->status) }}
+            <span class="status-{{ $report->canonicalStatus() }}">
+                {{ $report->status_label }}
             </span>
         </div>
 

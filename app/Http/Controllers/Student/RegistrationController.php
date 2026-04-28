@@ -14,12 +14,14 @@ use App\Models\User;
 use App\Notifications\KKN\NewRegistrationForAdminNotification;
 use App\Notifications\KKN\RegistrationSubmittedNotification;
 use App\Services\KKN\KknRequirementService;
+use App\Services\KKN\RegistrationDocumentService;
 use App\Services\RegistrationPortalService;
 use App\Services\RegistrationService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -104,22 +106,27 @@ class RegistrationController extends Controller
 
         $isVerified = filled($user?->address_verified_at);
 
+        $missingFields = [];
+        foreach ($missingKeys as $key) {
+            $missingFields[] = [
+                'key' => $key,
+                'label' => $labels[$key] ?? $key,
+            ];
+        }
+
+        if (! $isVerified) {
+            $missingFields[] = [
+                'key' => 'address_verified',
+                'label' => 'Verifikasi alamat domisili',
+            ];
+        }
+
         return [
             'is_complete' => $missingKeys->isEmpty() && $isVerified,
             'is_verified' => $isVerified,
             'verified_at' => $user?->address_verified_at?->toIso8601String(),
             'regency_name' => $user?->domicile_regency_name,
-            'missing_fields' => $missingKeys
-                ->map(fn (string $key) => [
-                    'key' => $key,
-                    'label' => $labels[$key] ?? $key,
-                ])
-                ->when(! $isVerified, fn ($collection) => $collection->push([
-                    'key' => 'address_verified',
-                    'label' => 'Verifikasi alamat domisili',
-                ]))
-                ->values()
-                ->all(),
+            'missing_fields' => $missingFields,
             'profile_url' => route('profile.show'),
         ];
     }
@@ -143,11 +150,13 @@ class RegistrationController extends Controller
         RegistrationService $registrationService,
         RegistrationPortalService $registrationPortalService,
         KknRequirementService $requirementService,
-        \App\Services\KKN\RegistrationDocumentService $documentService
+        RegistrationDocumentService $documentService
     ): Response|RedirectResponse|JsonResponse {
-        \Log::info('RegistrationController@create hit. User: '.($request->user()?->username ?? 'null').' Request expects JSON: '.($request->wantsJson() ? 'YES' : 'NO'));
+        Log::info('RegistrationController@create hit. User: '.($request->user()?->username ?? 'null').' Request expects JSON: '.($request->wantsJson() ? 'YES' : 'NO'));
         $today = now()->toDateString();
-        $mahasiswa = auth()->user()?->mahasiswa;
+        /** @var User|null $user */
+        $user = Auth::user();
+        $mahasiswa = $user?->mahasiswa;
         // dd($mahasiswa);
         if ($this->hasLockedRegistration($mahasiswa)) {
             if ($request->wantsJson()) {
@@ -185,7 +194,13 @@ class RegistrationController extends Controller
 
         $periods = $periods
             ->map(function (array $periodData) use ($registrations, $queues, $registrationService, $requirementService, $documentService) {
+                /** @var Periode|null $period */
                 $period = Periode::find($periodData['id']);
+
+                if (! $period) {
+                    return null;
+                }
+
                 $periodData['registration'] = $registrationService->registrationSummaryForPeriod(
                     $registrations->get($periodData['id']),
                     $queues->get($periodData['id']),
@@ -193,12 +208,13 @@ class RegistrationController extends Controller
 
                 // Add dynamic requirement descriptions
                 $periodData['requirement_info'] = $requirementService->describe($period);
-                
+
                 // Add explicit document upload requirements
                 $periodData['document_requirements'] = $documentService->requirementsForPeriod($period);
 
                 return $periodData;
             })
+            ->filter()
             ->values();
 
         $selfServicePeriods = $periods
@@ -210,9 +226,13 @@ class RegistrationController extends Controller
             ->values();
 
         $firstPeriodId = (int) ($periods->first()['id'] ?? 0);
+        /** @var Periode|null $firstPeriod */
         $firstPeriod = $firstPeriodId ? Periode::find($firstPeriodId) : null;
 
-        $isEligible = (bool) ($mahasiswa && $firstPeriod ? ($requirementService->validate($mahasiswa, $firstPeriod) === []) : false);
+        $isEligible = false;
+        if ($mahasiswa && $firstPeriod) {
+            $isEligible = $requirementService->validate($mahasiswa, $firstPeriod) === [];
+        }
 
         $responseProps = [
             'periods' => $selfServicePeriods,
@@ -238,8 +258,8 @@ class RegistrationController extends Controller
             'eligible' => $isEligible,
             'registration' => ['eligible' => $isEligible],
             'form' => ['eligible' => $isEligible],
-            'biodata_profile' => $this->biodataProfileSummary($mahasiswa, auth()->user()),
-            'domicile_profile' => $this->domicileProfileSummary(auth()->user()),
+            'biodata_profile' => $this->biodataProfileSummary($mahasiswa, $user),
+            'domicile_profile' => $this->domicileProfileSummary($user),
             'current_phase' => 'registration',
         ];
 
@@ -361,11 +381,11 @@ class RegistrationController extends Controller
                 $periodId,
                 $request->input('kelompok_id') ? (int) $request->input('kelompok_id') : null,
                 $request->input('notes'),
-                auth()->id()
+                Auth::id()
             );
 
             // Persist documents using the official service after registration is created
-            app(\App\Services\KKN\RegistrationDocumentService::class)->persistUploadedDocuments(
+            app(RegistrationDocumentService::class)->persistUploadedDocuments(
                 $request,
                 $mahasiswa,
                 $period,
@@ -416,7 +436,9 @@ class RegistrationController extends Controller
 
     public function status(Request $request): Response|RedirectResponse
     {
-        $mahasiswa = auth()->user()?->mahasiswa;
+        /** @var User|null $user */
+        $user = Auth::user();
+        $mahasiswa = $user?->mahasiswa;
 
         if (! $mahasiswa) {
             return redirect()->route('student.dashboard');
@@ -454,7 +476,7 @@ class RegistrationController extends Controller
             'student' => [
                 'nim' => $mahasiswa->nim,
                 'name' => $mahasiswa->nama,
-                'phone' => auth()->user()->phone,
+                'phone' => $user?->phone,
             ],
         ]);
     }

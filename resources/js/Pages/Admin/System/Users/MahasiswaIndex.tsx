@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Database,
   FileSpreadsheet,
@@ -140,6 +141,7 @@ export default function MahasiswaIndex({
   const [showFilters, setShowFilters] = useState(false);
   const [confirmReset, setConfirmReset] = useState<StudentRecord | null>(null);
   const [confirmToggle, setConfirmToggle] = useState<StudentRecord | null>(null);
+  const [loadingId, setLoadingId] = useState<number | null>(null);
 
   useEffect(() => {
     setFormFilters(normalizeFilters(filters));
@@ -343,8 +345,14 @@ export default function MahasiswaIndex({
                       </td>
                     </tr>
                   ) : (
-                    students.data.map((s) => (
-                      <tr key={s.id} className="hover:bg-gray-50 transition-colors">
+                    students.data.map((s, index) => (
+                      <motion.tr 
+                        key={s.id} 
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.03, type: 'spring', stiffness: 300, damping: 25 }}
+                        className="hover:bg-emerald-50/30 transition-colors"
+                      >
                         <td className="px-6 py-4">
                           <div className="flex flex-col">
                             <span className="text-sm font-semibold text-emerald-950">{s.nama}</span>
@@ -425,15 +433,31 @@ export default function MahasiswaIndex({
                             >
                               {s.account?.is_active ? <Lock size={16} /> : <Unlock size={16} />}
                             </button>
-                            <Link
-                              href={`/admin/mahasiswa/${s.id}`}
-                              className="px-3 py-1.5 bg-white text-emerald-800 hover:bg-gray-50 border border-gray-300 rounded-md text-xs font-medium transition-colors"
-                            >
-                              Detail
-                            </Link>
+                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                              <Link
+                                href={`/admin/mahasiswa/${s.id}`}
+                                onStart={() => setLoadingId(s.id)}
+                                onFinish={() => setLoadingId(null)}
+                                className={clsx(
+                                  "px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm border",
+                                  loadingId === s.id 
+                                    ? "bg-emerald-50 text-emerald-600 border-emerald-200 cursor-wait" 
+                                    : "bg-white text-emerald-800 hover:bg-emerald-50 border-gray-300 hover:border-emerald-300"
+                                )}
+                              >
+                                {loadingId === s.id ? (
+                                  <>
+                                    <RefreshCw size={14} className="animate-spin text-emerald-600" />
+                                    <span>Membuka...</span>
+                                  </>
+                                ) : (
+                                  <span>Detail</span>
+                                )}
+                              </Link>
+                            </motion.div>
                           </div>
                         </td>
-                      </tr>
+                      </motion.tr>
                     ))
                   )}
                 </tbody>
@@ -545,6 +569,8 @@ function FilterGroup({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           className="w-full h-10 pl-3 pr-8 rounded-lg border border-gray-300 bg-white text-sm text-emerald-800 focus:border-[#0d9488] focus:ring-[#0d9488] appearance-none shadow-sm"
+          title={label}
+          aria-label={label}
         >
           {options.map((opt) => (
             <option key={opt.value} value={opt.value}>

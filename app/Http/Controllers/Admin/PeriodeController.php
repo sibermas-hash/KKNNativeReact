@@ -43,7 +43,8 @@ class PeriodeController extends Controller
             'periode' => ['required', 'integer'],
             'name' => ['nullable', 'string', 'max:100'],
             'theme' => ['nullable', 'string', 'max:255'],
-            'start_date' => ['required', 'date', function ($attribute, $value, $fail) use ($request) {                $registrationEnd = $request->input('registration_end');
+            'start_date' => ['required', 'date', function ($attribute, $value, $fail) use ($request) {
+                $registrationEnd = $request->input('registration_end');
                 if ($registrationEnd && $value) {
                     $endDate = Carbon::parse($registrationEnd);
                     $startDate = Carbon::parse($value);

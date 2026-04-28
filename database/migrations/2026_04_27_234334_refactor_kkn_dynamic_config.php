@@ -13,7 +13,7 @@ return new class extends Migration
             // Jantung Aturan: Menyimpan daftar syarat (Upload vs DB Check)
             $table->json('requirements_config')->nullable()->after('description')
                 ->comment('Hybrid requirements: [{name, type: "upload|db_check", field, min_value}]');
-            
+
             // Aturan Absensi: Geofencing, Radius, Lokasi Rujukan
             $table->json('attendance_config')->nullable()->after('requirements_config')
                 ->comment('Attendance rules: {radius_check: bool, radius_meter, location_source: "posko|domisili", require_photo: bool}');

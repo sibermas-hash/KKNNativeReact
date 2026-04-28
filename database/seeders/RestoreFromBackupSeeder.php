@@ -37,30 +37,44 @@ class RestoreFromBackupSeeder extends Seeder
 
     private function importDosen()
     {
-        $path = storage_path('app/private/imports/dosen_backup_470.csv');
+        $path = base_path('storage/DOC DB/dosen_backup_470.csv');
         if (! file_exists($path)) {
+            $this->command->error('File Dosen CSV tidak ditemukan di: '.$path);
+
             return;
         }
 
-        $lines = file($path);
-        $header = str_getcsv(array_shift($lines));
+        $handle = fopen($path, 'r');
+        $header = fgetcsv($handle); // Skip header
 
-        foreach ($lines as $index => $line) {
-            $data = str_getcsv($line);
-            if (count($data) < 4) {
+        $count = 0;
+        while (($data = fgetcsv($handle)) !== false) {
+            if (count($data) < 8) {
                 continue;
             }
 
-            $row = array_combine($header, $data);
+            $row = [
+                'ID' => $data[0],
+                'NIP' => $data[1],
+                'Nama' => $data[2],
+                'Email' => $data[3],
+                'Telepon' => $data[4],
+                'Jenis_Kelamin' => $data[5],
+                'Golongan' => $data[6],
+                'Unit_Kerja' => $data[7],
+            ];
 
-            echo 'Importing Dosen: '.($index + 1).'/'.count($lines)."\r";
+            $count++;
+            echo 'Importing Dosen: '.$count."\r";
 
             $user = User::updateOrCreate(
                 ['username' => $row['NIP']],
                 [
                     'name' => $row['Nama'],
                     'email' => $row['Email'] ?: ($row['NIP'].'@kkn.uinsaizu.ac.id'),
-                    'password' => Hash::make('Password#123'),
+                    'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', 'password')),
+                    'password_changed_at' => null,
+                    'must_change_password' => true,
                     'phone' => $row['Telepon'] ?: null,
                     'is_active' => true,
                 ]
@@ -84,27 +98,22 @@ class RestoreFromBackupSeeder extends Seeder
                 ]
             );
         }
-        $this->command->info('Import Dosen selesai.');
+        fclose($handle);
+        $this->command->info('Import Dosen selesai ('.$count.' data).');
     }
 
     private function importStudents()
     {
-        $path = storage_path('app/private/imports/DataKKN_57-KKN Reguler-setuju.xls');
+        $path = base_path('storage/DOC DB/DB Student Contoh.csv');
         if (! file_exists($path)) {
+            $this->command->error('File Student CSV tidak ditemukan di: '.$path);
+
             return;
         }
 
-        $html = file_get_contents($path);
-        preg_match_all('/<tr>(.*?)<\/tr>/s', $html, $matches);
-
-        if (count($matches[1]) < 2) {
-            return;
-        }
-
-        // Header mapping
-        $headerLine = $matches[1][0];
-        preg_match_all('/<td>(.*?)<\/td>/', $headerLine, $headerMatches);
-        $headers = $headerMatches[1];
+        $handle = fopen($path, 'r');
+        fgetcsv($handle); // Skip title line
+        $header = fgetcsv($handle); // Header line
 
         // Create/Get Tahun Akademik 2024/2025
         $ta = TahunAkademik::updateOrCreate(
@@ -137,34 +146,26 @@ class RestoreFromBackupSeeder extends Seeder
             'FUAH' => 'Fakultas Ushuluddin, Adab dan Humaniora',
         ];
 
-        for ($i = 1; $i < count($matches[1]); $i++) {
-            echo 'Importing Student: '.$i.'/'.(count($matches[1]) - 1)."\r";
-            preg_match_all('/<td>(.*?)<\/td>/', $matches[1][$i], $colMatches);
-            $cols = $colMatches[1];
-
-            if (count($cols) < 10) {
+        $count = 0;
+        while (($data = fgetcsv($handle)) !== false) {
+            if (count($data) < 10) {
                 continue;
             }
 
-            $nim = trim($cols[1]);
-            $nama = trim($cols[2]);
-            $gender = trim($cols[3]) == 'L' ? 'L' : 'P';
-            $fakNamaShort = trim($cols[4]);
-            $prodiNamaShort = trim($cols[5]);
-            $ipk = floatval(str_replace("'", '', $cols[6]));
-            $sks = intval($cols[7]);
-            $wa = trim($cols[8]);
-            $nik = str_replace("'", '', trim($colMatches[1][9] ?? ''));
-            $kaos = trim($colMatches[1][11] ?? 'L');
-            $legacyNotes = trim($colMatches[1][14] ?? '');
-            $legacyStatus = trim($colMatches[1][13] ?? '');
+            $nim = trim($data[1]);
+            $nama = trim($data[2]);
+            $gender = trim($data[3]) == 'L' ? 'L' : 'P';
+            $fakNamaShort = trim($data[4]);
+            $prodiNamaShort = trim($data[5]);
+            $ipk = floatval($data[6]);
+            $sks = intval($data[7]);
+            $wa = trim($data[8]);
+            $nik = trim($data[9]);
+            $motherName = trim($data[10] ?? '');
+            $kaos = trim($data[11] ?? 'L');
 
-            // Combine into a searchable note for audit
-            $auditNote = 'Status Sistem Lama: '.strtoupper($legacyStatus);
-            if ($legacyNotes) {
-                $auditNote .= ' | Catatan: '.$legacyNotes;
-            }
-            $auditNote .= ' | Registrasi via: Restorasi Sistem (2026)';
+            $count++;
+            echo 'Importing Student: '.$count."\r";
 
             // Find or Create Fakultas
             $fakName = $facultyMap[$fakNamaShort] ?? $fakNamaShort;
@@ -189,7 +190,9 @@ class RestoreFromBackupSeeder extends Seeder
                 [
                     'name' => $nama,
                     'email' => $nim.'@student.uinsaizu.ac.id',
-                    'password' => Hash::make('Password#123'),
+                    'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', 'password')),
+                    'password_changed_at' => null,
+                    'must_change_password' => true,
                     'phone' => $wa,
                     'is_active' => true,
                 ]
@@ -207,6 +210,7 @@ class RestoreFromBackupSeeder extends Seeder
                     'nim' => $nim,
                     'nik' => $nik,
                     'nama' => $nama,
+                    'mother_name' => $motherName,
                     'gender' => $gender,
                     'fakultas_id' => $fakultas->id,
                     'prodi_id' => $prodi->id,
@@ -216,10 +220,8 @@ class RestoreFromBackupSeeder extends Seeder
                     'batch_year' => $batchYear,
                 ]
             );
-
-            // SKIP automatic registration as PesertaKkn per user request
-            // Just maintain Mahasiswa master data
         }
-        $this->command->info('Import Mahasiswa (Periode 57) selesai.');
+        fclose($handle);
+        $this->command->info('Import Mahasiswa (Periode 57) selesai ('.$count.' data).');
     }
 }

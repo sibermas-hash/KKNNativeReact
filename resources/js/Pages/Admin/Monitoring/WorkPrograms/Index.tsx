@@ -66,6 +66,26 @@ const sdgNames: Record<string, string> = {
   '17': 'Kemitraan untuk Mencapai Tujuan',
 };
 
+const sdgThemes: Record<string, { bg: string, border: string, text: string, hoverBg: string, hoverBorder: string, bar: string }> = {
+  '1': { bg: 'bg-red-50', border: 'border-red-100', text: 'text-red-600', hoverBg: 'group-hover:bg-red-500', hoverBorder: 'group-hover:border-red-500', bar: 'bg-red-400' },
+  '2': { bg: 'bg-orange-50', border: 'border-orange-100', text: 'text-orange-600', hoverBg: 'group-hover:bg-orange-500', hoverBorder: 'group-hover:border-orange-500', bar: 'bg-orange-400' },
+  '3': { bg: 'bg-green-50', border: 'border-green-100', text: 'text-green-600', hoverBg: 'group-hover:bg-green-500', hoverBorder: 'group-hover:border-green-500', bar: 'bg-green-400' },
+  '4': { bg: 'bg-rose-50', border: 'border-rose-100', text: 'text-rose-600', hoverBg: 'group-hover:bg-rose-500', hoverBorder: 'group-hover:border-rose-500', bar: 'bg-rose-400' },
+  '5': { bg: 'bg-orange-50', border: 'border-orange-100', text: 'text-orange-600', hoverBg: 'group-hover:bg-orange-600', hoverBorder: 'group-hover:border-orange-600', bar: 'bg-orange-500' },
+  '6': { bg: 'bg-cyan-50', border: 'border-cyan-100', text: 'text-cyan-600', hoverBg: 'group-hover:bg-cyan-500', hoverBorder: 'group-hover:border-cyan-500', bar: 'bg-cyan-400' },
+  '7': { bg: 'bg-yellow-50', border: 'border-yellow-100', text: 'text-yellow-600', hoverBg: 'group-hover:bg-yellow-500', hoverBorder: 'group-hover:border-yellow-500', bar: 'bg-yellow-400' },
+  '8': { bg: 'bg-pink-50', border: 'border-pink-100', text: 'text-pink-600', hoverBg: 'group-hover:bg-pink-500', hoverBorder: 'group-hover:border-pink-500', bar: 'bg-pink-400' },
+  '9': { bg: 'bg-orange-50', border: 'border-orange-100', text: 'text-orange-600', hoverBg: 'group-hover:bg-orange-500', hoverBorder: 'group-hover:border-orange-500', bar: 'bg-orange-400' },
+  '10': { bg: 'bg-fuchsia-50', border: 'border-fuchsia-100', text: 'text-fuchsia-600', hoverBg: 'group-hover:bg-fuchsia-500', hoverBorder: 'group-hover:border-fuchsia-500', bar: 'bg-fuchsia-400' },
+  '11': { bg: 'bg-amber-50', border: 'border-amber-100', text: 'text-amber-600', hoverBg: 'group-hover:bg-amber-500', hoverBorder: 'group-hover:border-amber-500', bar: 'bg-amber-400' },
+  '12': { bg: 'bg-yellow-50', border: 'border-yellow-100', text: 'text-yellow-600', hoverBg: 'group-hover:bg-yellow-600', hoverBorder: 'group-hover:border-yellow-600', bar: 'bg-yellow-500' },
+  '13': { bg: 'bg-emerald-50', border: 'border-emerald-100', text: 'text-emerald-600', hoverBg: 'group-hover:bg-emerald-500', hoverBorder: 'group-hover:border-emerald-500', bar: 'bg-emerald-400' },
+  '14': { bg: 'bg-blue-50', border: 'border-blue-100', text: 'text-blue-600', hoverBg: 'group-hover:bg-blue-500', hoverBorder: 'group-hover:border-blue-500', bar: 'bg-blue-400' },
+  '15': { bg: 'bg-lime-50', border: 'border-lime-100', text: 'text-lime-600', hoverBg: 'group-hover:bg-lime-500', hoverBorder: 'group-hover:border-lime-500', bar: 'bg-lime-400' },
+  '16': { bg: 'bg-sky-50', border: 'border-sky-100', text: 'text-sky-600', hoverBg: 'group-hover:bg-sky-500', hoverBorder: 'group-hover:border-sky-500', bar: 'bg-sky-400' },
+  '17': { bg: 'bg-indigo-50', border: 'border-indigo-100', text: 'text-indigo-600', hoverBg: 'group-hover:bg-indigo-500', hoverBorder: 'group-hover:border-indigo-500', bar: 'bg-indigo-400' },
+};
+
 export default function AdminWorkProgramsIndex({
   workPrograms,
   sdg_distribution,
@@ -82,7 +102,7 @@ export default function AdminWorkProgramsIndex({
     );
   };
 
-    const containerVariants = {
+  const containerVariants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
@@ -99,7 +119,7 @@ export default function AdminWorkProgramsIndex({
     },
   };
 
-return (
+  return (
     <AppLayout title="Program Kerja Mahasiswa">
       <Head title="Manajemen Program Kerja | SIBERMAS" />
 
@@ -112,76 +132,114 @@ return (
           groupLabel="Monitoring & Evaluasi"
         />
 
-        {/* STATS GRID */}
+        {/* VIBRANT STATS GRID */}
         <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            label="Total Program"
-            value={workPrograms.meta.total}
-            icon={FileText}
-            variant="success"
-          />
-          <StatCard label="Disetujui" value={totalStats.approved} icon={Award} variant="info" />
-          <StatCard
-            label="Menunggu Audit"
-            value={totalStats.pending}
-            icon={Activity}
-            variant="gray"
-          />
-          <StatCard label="SDG Mapping" value="ACTIVE" icon={Globe} variant="gray" />
-                </motion.div>
+          
+          {/* Blue Stat */}
+          <div className="bg-white border border-sky-100 rounded-2xl p-6 flex items-center gap-5 hover:shadow-lg hover:shadow-sky-900/5 hover:border-sky-200 transition-all shadow-sm group relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-sky-50 to-transparent rounded-bl-full -mr-4 -mt-4 opacity-50" />
+            <div className="h-12 w-12 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 group-hover:rotate-6 group-hover:scale-110 group-hover:bg-sky-600 group-hover:text-white relative z-10">
+              <FileText size={22} strokeWidth={2.5} />
+            </div>
+            <div className="flex flex-col relative z-10">
+              <span className="text-[10px] font-black text-sky-800 uppercase tracking-[0.2em] leading-none mb-2">Total Program</span>
+              <span className="text-2xl font-black text-sky-950 tabular-nums leading-none">{workPrograms.meta.total}</span>
+            </div>
+          </div>
+
+          {/* Green Stat */}
+          <div className="bg-white border border-emerald-100 rounded-2xl p-6 flex items-center gap-5 hover:shadow-lg hover:shadow-emerald-900/5 hover:border-emerald-200 transition-all shadow-sm group relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-emerald-50 to-transparent rounded-bl-full -mr-4 -mt-4 opacity-50" />
+            <div className="h-12 w-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 group-hover:rotate-6 group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white relative z-10">
+              <Award size={22} strokeWidth={2.5} />
+            </div>
+            <div className="flex flex-col relative z-10">
+              <span className="text-[10px] font-black text-emerald-800 uppercase tracking-[0.2em] leading-none mb-2">Disetujui</span>
+              <span className="text-2xl font-black text-emerald-950 tabular-nums leading-none">{totalStats?.approved ?? 0}</span>
+            </div>
+          </div>
+
+          {/* Orange Stat */}
+          <div className="bg-white border border-amber-100 rounded-2xl p-6 flex items-center gap-5 hover:shadow-lg hover:shadow-amber-900/5 hover:border-amber-200 transition-all shadow-sm group relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-50 to-transparent rounded-bl-full -mr-4 -mt-4 opacity-50" />
+            <div className="h-12 w-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 group-hover:rotate-6 group-hover:scale-110 group-hover:bg-amber-500 group-hover:text-white relative z-10">
+              <Activity size={22} strokeWidth={2.5} />
+            </div>
+            <div className="flex flex-col relative z-10">
+              <span className="text-[10px] font-black text-amber-800 uppercase tracking-[0.2em] leading-none mb-2">Menunggu Audit</span>
+              <span className="text-2xl font-black text-amber-950 tabular-nums leading-none">{totalStats?.pending ?? 0}</span>
+            </div>
+          </div>
+
+          {/* Purple Stat */}
+          <div className="bg-white border border-indigo-100 rounded-2xl p-6 flex items-center gap-5 hover:shadow-lg hover:shadow-indigo-900/5 hover:border-indigo-200 transition-all shadow-sm group relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-indigo-50 to-transparent rounded-bl-full -mr-4 -mt-4 opacity-50" />
+            <div className="h-12 w-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 group-hover:rotate-6 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white relative z-10">
+              <Globe size={22} strokeWidth={2.5} />
+            </div>
+            <div className="flex flex-col relative z-10">
+              <span className="text-[10px] font-black text-indigo-800 uppercase tracking-[0.2em] leading-none mb-2">Peta SDGs Global</span>
+              <span className="text-2xl font-black text-indigo-950 tabular-nums leading-none tracking-widest text-lg mt-1">AKTIF</span>
+            </div>
+          </div>
+
+        </motion.div>
 
         {/* SDG DISTRIBUTION PANEL */}
         <motion.div variants={itemVariants}>
-<ContentPanel
-          title="Distribusi Peta SDGs Global"
-          description="Visualisasi sebaran fokus program kerja berdasarkan 17 tujuan pembangunan berkelanjutan."
-          icon={Target}
-        >
-          <div className="py-4">
-            <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
-              {Array.from({ length: 17 }, (_, i) => String(i + 1)).map((sdg) => {
-                const count = sdg_distribution
-                  ? Number(sdg_distribution[sdg as keyof typeof sdg_distribution] || 0)
-                  : 0;
-                return (
-                  <motion.div
-                    key={sdg}
-                    whileHover={{ y: -5 }}
-                    className="relative flex flex-col items-center group shrink-0"
-                  >
-                    <div className="w-20 h-24 bg-[#F8FAF9] border-2 border-slate-50 rounded-2xl p-4 flex flex-col justify-between transition-all group-hover:bg-emerald-600 group-hover:border-emerald-600 shadow-sm">
-                      <div className="h-1.5 bg-emerald-500 w-full rounded-full group-hover:bg-white/30" />
-                      <div className="text-center">
-                        <span className="text-[10px] font-black text-emerald-950/20 uppercase tracking-tighter block group-hover:text-white/40">
-                          SDG {sdg}
-                        </span>
-                        <span className="text-xl font-black text-emerald-950 group-hover:text-white tabular-nums leading-none">
-                          {count}
-                        </span>
-                      </div>
-                    </div>
+          <ContentPanel
+            title="Distribusi Peta SDGs Global"
+            description="Visualisasi sebaran fokus program kerja berdasarkan 17 tujuan pembangunan berkelanjutan."
+            icon={Target}
+          >
+            <div className="py-4">
+              <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
+                {Array.from({ length: 17 }, (_, i) => String(i + 1)).map((sdg) => {
+                  const count = sdg_distribution
+                    ? Number(sdg_distribution[sdg as keyof typeof sdg_distribution] || 0)
+                    : 0;
+                  
+                  const theme = sdgThemes[sdg] || sdgThemes['13']; // Fallback to emerald if missing
 
-                    {/* Tooltip */}
-                    <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-50">
-                      <div className="bg-emerald-950 text-white text-[10px] font-black px-4 py-2 rounded-xl whitespace-nowrap shadow-2xl flex flex-col items-center border border-white/10 uppercase tracking-widest">
-                        <span className="text-emerald-400 mb-1">SDG {sdg}</span>
-                        <span className="text-white/80">{sdgNames[sdg]}</span>
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-emerald-950" />
+                  return (
+                    <motion.div
+                      key={sdg}
+                      whileHover={{ y: -5 }}
+                      className="relative flex flex-col items-center group shrink-0"
+                    >
+                      <div className={clsx("w-20 h-24 border-2 rounded-2xl p-4 flex flex-col justify-between transition-all shadow-sm", theme.bg, theme.border, theme.hoverBg, theme.hoverBorder)}>
+                        <div className={clsx("h-1.5 w-full rounded-full group-hover:bg-white/40", theme.bar)} />
+                        <div className="text-center">
+                          <span className={clsx("text-[10px] font-black uppercase tracking-tighter block group-hover:text-white/60", theme.text, "opacity-50")}>
+                            SDG {sdg}
+                          </span>
+                          <span className={clsx("text-xl font-black tabular-nums leading-none group-hover:text-white", theme.text)}>
+                            {count}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
+
+                      {/* Tooltip */}
+                      <div className="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-50">
+                        <div className="bg-gray-900 text-white text-[10px] font-black px-4 py-2 rounded-xl whitespace-nowrap shadow-2xl flex flex-col items-center border border-white/10 uppercase tracking-widest">
+                          <span className={clsx("mb-1", theme.text)}>SDG {sdg}</span>
+                          <span className="text-white/90">{sdgNames[sdg]}</span>
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-gray-900" />
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        </ContentPanel>
-</motion.div>
+          </ContentPanel>
+        </motion.div>
 
         {/* MAIN DATA TABLE */}
         <motion.div variants={itemVariants}>
 <ContentPanel
-          title="Work Program Transaction Ledger"
-          description="Daftar lengkap rencana dan implementasi program kerja mahasiswa di lokasi pengabdian."
+          title="Daftar Program Kerja"
+          description="Daftar lengkap rencana dan pelaksanaan program kerja mahasiswa di lokasi pengabdian."
           icon={FileText}
           padding={false}
           headerAction={
@@ -195,6 +253,8 @@ return (
                   onKeyDown={(e) => e.key === 'Enter' && handleFilterChange('search', search)}
                   className="w-full h-11 pl-11 pr-4 bg-gray-50 border-2 border-slate-50 rounded-xl text-[12px] font-bold text-emerald-950 focus:bg-white focus:border-emerald-600 outline-none transition-all placeholder:text-emerald-950/20"
                   placeholder="CARI PROGRAM CERDAS..."
+                  aria-label="Cari Program Kerja"
+                  title="Cari Program Kerja"
                 />
               </div>
               <div className="relative min-w-[200px]">
@@ -202,6 +262,8 @@ return (
                   value={filters.status}
                   onChange={(e) => handleFilterChange('status', e.target.value)}
                   className="w-full h-11 pl-4 pr-10 bg-gray-50 border-2 border-slate-50 rounded-xl text-[11px] font-black uppercase tracking-widest text-emerald-950 focus:bg-white focus:border-emerald-600 outline-none transition-all appearance-none cursor-pointer"
+                  aria-label="Filter Status Program"
+                  title="Filter Status Program"
                 >
                   <option value="all">SEMUA KONDISI</option>
                   <option value="approved">DISETUJUI (VERIFIED)</option>
@@ -226,7 +288,7 @@ return (
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-[10px] font-black text-emerald-950/40 uppercase tracking-widest tabular-nums">
-                  Real-time Monitoring &middot; {workPrograms.meta.total} Program Terdeteksi
+                  Sistem Aktif &middot; {workPrograms.meta.total} Program Ditemukan
                 </span>
               </div>
               <Pagination meta={workPrograms.meta} />
@@ -234,7 +296,7 @@ return (
           }
         >
           <PremiumTable
-            headers={['Judul Program & ID', 'Unit / Lokasi', 'Kondisi Audit', 'Opsi']}
+            headers={['Judul Program', 'Unit / Lokasi', 'Status Laporan', 'Aksi']}
             isEmpty={workPrograms.data.length === 0}
             emptyText="Tidak ada program kerja yang ditemukan."
           >
@@ -246,7 +308,7 @@ return (
                       {proker.title}
                     </span>
                     <span className="text-[9px] font-black text-emerald-950/40 font-mono tracking-tighter uppercase">
-                      PROKERID: #{proker.proker_id}
+                      ID: #{proker.proker_id}
                     </span>
                   </div>
                 </PremiumTableCell>
@@ -274,18 +336,18 @@ return (
                     }
                     label={
                       proker.status === 'approved'
-                        ? 'VERIFIED'
+                        ? 'DISETUJUI'
                         : proker.status === 'pending'
-                          ? 'PENDING'
-                          : 'REVISION'
+                          ? 'MENUNGGU'
+                          : 'REVISI'
                     }
                     size="sm"
                   />
                 </PremiumTableCell>
                 <PremiumTableCell align="right">
-                  <button className="h-9 w-9 bg-white border border-gray-100 text-emerald-900 rounded-xl hover:bg-emerald-50 hover:border-emerald-200 transition-all shadow-sm active:scale-95 flex items-center justify-center">
-                    <Eye size={14} />
-                  </button>
+                  <Link href={`/admin/laporan/program-kerja/${proker.id}`} className="h-9 px-4 bg-white border border-gray-100 text-emerald-900 rounded-xl hover:bg-emerald-50 hover:border-emerald-200 transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2 text-[10px] font-black uppercase">
+                    <Eye size={14} /> Detail
+                  </Link>
                 </PremiumTableCell>
               </PremiumTableRow>
             ))}

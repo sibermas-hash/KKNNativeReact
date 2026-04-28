@@ -211,6 +211,7 @@ class RegistrationDocumentService
 
             if ($exists) {
                 $uploadedCount++;
+
                 continue;
             }
 

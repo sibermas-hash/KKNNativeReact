@@ -110,7 +110,6 @@ class RegistrationDocumentController extends Controller
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-
         try {
             DB::beginTransaction();
 

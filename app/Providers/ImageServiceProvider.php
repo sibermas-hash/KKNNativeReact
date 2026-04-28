@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver as GdDriver;
 use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
+use Intervention\Image\ImageManager;
 
 class ImageServiceProvider extends ServiceProvider
 {
@@ -17,8 +17,8 @@ class ImageServiceProvider extends ServiceProvider
             $driver = config('image.driver', 'gd');
 
             return match ($driver) {
-                'imagick' => new ImageManager(new ImagickDriver()),
-                default => new ImageManager(new GdDriver()),
+                'imagick' => new ImageManager(new ImagickDriver),
+                default => new ImageManager(new GdDriver),
             };
         });
     }

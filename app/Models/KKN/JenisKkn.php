@@ -20,14 +20,7 @@ class JenisKkn extends Model
         'description',
         'registration_mode',
         'placement_mode',
-        'min_sks',
-        'min_gpa',
-        'require_not_married',
-        'require_parent_permission',
-        'require_health_certificate',
-        'specific_prodi_ids',
-        'require_bta_ppi',
-        'custom_requirements',
+        'requirements_config',
         'allowed_regencies',
         'color',
         'is_active',
@@ -37,13 +30,7 @@ class JenisKkn extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
-        'min_gpa' => 'decimal:2',
-        'require_not_married' => 'boolean',
-        'require_parent_permission' => 'boolean',
-        'require_health_certificate' => 'boolean',
-        'require_bta_ppi' => 'boolean',
-        'specific_prodi_ids' => 'array',
-        'custom_requirements' => 'array',
+        'requirements_config' => 'array',
         'allowed_regencies' => 'array',
         'attendance_config' => 'array',
     ];
@@ -144,6 +131,4 @@ class JenisKkn extends Model
     {
         return $this->getAttendanceConfig()['require_photo'] ?? true;
     }
-
-
 }

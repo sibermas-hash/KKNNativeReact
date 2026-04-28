@@ -48,7 +48,7 @@ class RegistrationPortalService
                 ->whereDate('registration_start', '<=', $today)
                 ->whereDate('registration_end', '>=', $today)
                 ->with([
-                    'jenisKkn:id,code,name,description,registration_mode,placement_mode,min_sks,min_gpa,require_bta_ppi,custom_requirements,required_documents,require_parent_permission,require_health_certificate',
+                    'jenisKkn:id,code,name,description,registration_mode,placement_mode,requirements_config',
                     'kelompok' => function ($query) {
                         $query->select(['id', 'periode_id', 'location_id', 'nama_kelompok', 'capacity', 'status'])
                             ->where('status', 'active')

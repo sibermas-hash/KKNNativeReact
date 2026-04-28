@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services\KKN;
 
-use App\Models\KKN\EvaluasiDplPeserta;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -109,8 +108,8 @@ class DplScoreCalibrationService
                 'avg_score' => $outlier->avg_score,
                 'z_score' => $outlier->z_score,
                 'message' => "{$outlier->dosen_nama} memberi rata-rata nilai {$outlier->avg_score} "
-                    . "(z-score: {$outlier->z_score}), signifikan {$direction} dari rata-rata umum "
-                    . "{$analysis['overall_mean']}. Perlu peninjauan.",
+                    ."(z-score: {$outlier->z_score}), signifikan {$direction} dari rata-rata umum "
+                    ."{$analysis['overall_mean']}. Perlu peninjauan.",
             ];
         })->values();
 
@@ -118,7 +117,7 @@ class DplScoreCalibrationService
             'is_calibrated' => $analysis['is_calibrated'],
             'summary' => $analysis['is_calibrated']
                 ? 'Semua DPL memberikan penilaian dalam rentang wajar.'
-                : count($warnings) . ' DPL terdeteksi memberikan nilai di luar rentang wajar.',
+                : count($warnings).' DPL terdeteksi memberikan nilai di luar rentang wajar.',
             'overall_mean' => $analysis['overall_mean'],
             'overall_stddev' => $analysis['overall_stddev'],
             'total_dpl_analyzed' => $analysis['dpl_stats']->count(),

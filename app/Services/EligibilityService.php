@@ -26,8 +26,8 @@ class EligibilityService
     private function processDynamicChecks(Mahasiswa $mahasiswa, ?Periode $periode, array &$checks): void
     {
         $config = $periode?->jenisKkn?->requirements_config ?? [];
-        
-        if (empty($config)) {
+
+        if (empty($config) || ! is_array($config)) {
             return;
         }
 
@@ -46,25 +46,25 @@ class EligibilityService
                     $message = $rule['name'];
 
                     if ($minValue !== null) {
-                        $passed = (float)$actualValue >= (float)$minValue;
-                        $message .= $passed 
+                        $passed = (float) $actualValue >= (float) $minValue;
+                        $message .= $passed
                             ? " mencukupi ({$actualValue}/{$minValue})"
                             : " tidak mencukupi ({$actualValue}/{$minValue})";
                     } elseif ($expectedValue !== null) {
                         // Normalized string comparison
-                        $passed = strtoupper(trim((string)$actualValue)) === strtoupper(trim((string)$expectedValue));
-                        $message .= $passed ? " Terverifikasi" : " Belum terpenuhi";
+                        $passed = strtoupper(trim((string) $actualValue)) === strtoupper(trim((string) $expectedValue));
+                        $message .= $passed ? ' Terverifikasi' : ' Belum terpenuhi';
                     } else {
                         // Boolean check by default if no min/expected value
-                        $passed = (bool)$actualValue;
-                        $message .= $passed ? " Terverifikasi" : " Belum terpenuhi";
+                        $passed = (bool) $actualValue;
+                        $message .= $passed ? ' Terverifikasi' : ' Belum terpenuhi';
                     }
 
                     $checks[$key] = [
                         'passed' => $passed,
                         'key' => $key,
                         'message' => $message,
-                        'type' => 'db_check'
+                        'type' => 'db_check',
                     ];
                 }
             }
@@ -108,16 +108,24 @@ class EligibilityService
         }
 
         $checks['no_prior_completion'] = $this->checkNoPriorCompletion($mahasiswa, $preloadedData['completed_ids'] ?? null);
-        
+
         // 3a. Process Dynamic JSON Requirements (New Approach)
         $this->processDynamicChecks($mahasiswa, $periode, $checks);
 
         // 3b. Legacy Checks (Hanya berjalan jika belum ada di dynamic checks untuk kompatibilitas)
-        if (!isset($checks['min_sks'])) $checks['min_sks'] = $this->checkMinimumSKS($mahasiswa, $periode, $settings);
-        if (!isset($checks['min_gpa'])) $checks['min_gpa'] = $this->checkMinimumGPA($mahasiswa, $periode, $settings);
-        if (!isset($checks['ukt_payment'])) $checks['ukt_payment'] = $this->checkUkt($mahasiswa);
-        if (!isset($checks['bta_ppi'])) $checks['bta_ppi'] = $this->checkBtaPpi($mahasiswa, $periode);
-        
+        if (! isset($checks['min_sks'])) {
+            $checks['min_sks'] = $this->checkMinimumSKS($mahasiswa, $periode, $settings);
+        }
+        if (! isset($checks['min_gpa'])) {
+            $checks['min_gpa'] = $this->checkMinimumGPA($mahasiswa, $periode, $settings);
+        }
+        if (! isset($checks['ukt_payment'])) {
+            $checks['ukt_payment'] = $this->checkUkt($mahasiswa);
+        }
+        if (! isset($checks['bta_ppi'])) {
+            $checks['bta_ppi'] = $this->checkBtaPpi($mahasiswa, $periode);
+        }
+
         $checks['program_prodi'] = $this->checkProgramProdiRestriction($mahasiswa, $periode);
         $checks['personal_status'] = $this->checkPersonalStatusMandate($mahasiswa, $periode);
 
@@ -288,7 +296,7 @@ class EligibilityService
     private function checkBtaPpi(Mahasiswa $mahasiswa, ?Periode $periode): array
     {
         $required = $periode?->jenisKkn ? (bool) $periode->jenisKkn->require_bta_ppi : true;
-        
+
         if (! $required) {
             return [
                 'passed' => true,
@@ -319,12 +327,12 @@ class EligibilityService
 
         $specificProdiIds = $periode->jenisKkn->specific_prodi_ids;
 
-        if (empty($specificProdiIds) || !is_array($specificProdiIds)) {
+        if (empty($specificProdiIds) || ! is_array($specificProdiIds)) {
             return ['passed' => true, 'key' => 'program_prodi', 'message' => 'Terbuka untuk semua program studi'];
         }
 
         $studentProdiId = $mahasiswa->prodi_id;
-        $isAllowed = in_array((int)$studentProdiId, array_map('intval', $specificProdiIds));
+        $isAllowed = in_array((int) $studentProdiId, array_map('intval', $specificProdiIds));
 
         return [
             'passed' => $isAllowed,
@@ -345,7 +353,7 @@ class EligibilityService
 
         $jkkn = $periode->jenisKkn;
         $messages = [];
-        
+
         if ($jkkn->require_not_married) {
             $messages[] = 'Belum Menikah';
         }
@@ -360,7 +368,7 @@ class EligibilityService
         return [
             'passed' => true, // Notice only
             'key' => 'personal_status',
-            'message' => 'SYARAT KHUSUS: ' . implode(', ', $messages),
+            'message' => 'SYARAT KHUSUS: '.implode(', ', $messages),
             'is_warning' => true,
         ];
     }

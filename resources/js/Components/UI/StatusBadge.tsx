@@ -14,7 +14,7 @@ const STATUS_MAP: StatusMap = {
   completed: { label: 'Selesai', variant: 'success' },
   // Daily Report & Work Program
   draft: { label: 'Draf', variant: 'default' },
-  submitted: { label: 'DIAJUKAN', variant: 'info' },
+  submitted: { label: 'Menunggu review', variant: 'info' },
   revision: { label: 'Perlu revisi', variant: 'warning' },
   // Final Report
   reviewed: { label: 'Sudah ditinjau', variant: 'primary' },

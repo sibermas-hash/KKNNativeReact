@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Services\KKN;
 
+use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
-use App\Models\KKN\KelompokKkn;
 use Illuminate\Support\Facades\DB;
 
 class PlacementService
@@ -51,6 +51,7 @@ class PlacementService
                         return $group;
                     }
                 }
+
                 return null;
             };
 
@@ -59,7 +60,7 @@ class PlacementService
                 if (! $group) {
                     $group = KelompokKkn::create([
                         'periode_id' => $periode->id,
-                        'nama_kelompok' => 'Kelompok ' . (KelompokKkn::where('periode_id', $periode->id)->count() + 1),
+                        'nama_kelompok' => 'Kelompok '.(KelompokKkn::where('periode_id', $periode->id)->count() + 1),
                         'kuota' => $periode->kuota ? intval($periode->kuota) : 10,
                     ]);
                     $groups->put($group->id, $group);
@@ -90,7 +91,7 @@ class PlacementService
 
             $group = KelompokKkn::create([
                 'periode_id' => $periode->id,
-                'nama_kelompok' => 'Mandiri-' . ($mahasiswa->nim ?? $groupNumber),
+                'nama_kelompok' => 'Mandiri-'.($mahasiswa->nim ?? $groupNumber),
                 'kuota' => 1,
             ]);
 

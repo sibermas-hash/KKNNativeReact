@@ -128,6 +128,14 @@ class Mahasiswa extends Model
     }
 
     /**
+     * Unified address accessor.
+     */
+    public function getAddressAttribute(): ?string
+    {
+        return $this->domisili_address ?? $this->user?->address;
+    }
+
+    /**
      * Dynamic completeness calculation.
      * PREVENT N+1: Only checks loaded relations.
      */

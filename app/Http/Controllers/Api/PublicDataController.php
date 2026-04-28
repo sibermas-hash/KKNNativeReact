@@ -46,7 +46,7 @@ class PublicDataController extends Controller
         'fakultas' => [],
         'prodi' => [],
         'kelompok_kkn' => [],
-        'lokasi' => [],
+        'lokasi' => ['village_name', 'district_name', 'regency_name', 'village_code', 'capacity', 'address', 'latitude', 'longitude', 'fakultas_id', 'province_id', 'regency_id', 'district_id'],
         'periode' => [],
         'tahun_akademik' => [],
         '_projects' => ['project_name', 'email', 'description'],

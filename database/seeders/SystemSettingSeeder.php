@@ -32,7 +32,7 @@ class SystemSettingSeeder extends Seeder
                 'type' => 'textarea',
                 'group' => 'general',
             ],
-            
+
             // Contact Information
             [
                 'config_key' => 'contact_address',

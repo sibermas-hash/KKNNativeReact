@@ -19,6 +19,7 @@ class KknThrottleMiddleware extends ThrottleRequests
         // Skip rate limiting in local environment completely
         if (config('app.env') === 'local') {
             \Log::debug('Rate limiting skipped (local env)', ['route' => $request->route()?->getName()]);
+
             return $next($request);
         }
 
@@ -110,5 +111,4 @@ class KknThrottleMiddleware extends ThrottleRequests
             $request->ip(),
         ]));
     }
-
-    }
+}

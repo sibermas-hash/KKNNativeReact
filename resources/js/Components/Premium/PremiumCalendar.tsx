@@ -7,7 +7,6 @@ import {
   startOfMonth,
   endOfMonth,
   eachDayOfInterval,
-  isSameMonth,
   isToday,
   getDay,
   addMonths,
@@ -15,12 +14,21 @@ import {
 } from 'date-fns';
 import { id } from 'date-fns/locale';
 
+type CalendarReportStatus =
+  | 'draft'
+  | 'submitted'
+  | 'approved'
+  | 'revision'
+  | 'pending'
+  | 'rejected'
+  | 'none';
+
 interface CalendarProps {
   currentDate: Date;
   onDateChange: (date: Date) => void;
   reports: Array<{
     date: string;
-    status: 'approved' | 'pending' | 'rejected' | 'none';
+    status: CalendarReportStatus;
   }>;
   onSelectDate: (date: Date) => void;
 }
@@ -48,6 +56,16 @@ export default function PremiumCalendar({
   const prevMonth = () => onDateChange(subMonths(currentDate, 1));
 
   const weekDays = ['Sn', 'Sl', 'Rb', 'Km', 'Jm', 'Sb', 'Mg'];
+
+  const normalizeStatus = (status: CalendarReportStatus | undefined): CalendarReportStatus => {
+    if (!status) return 'none';
+
+    return status === 'submitted'
+      ? 'pending'
+      : status === 'revision'
+        ? 'rejected'
+        : status;
+  };
 
   return (
     <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-emerald-50">
@@ -104,6 +122,7 @@ export default function PremiumCalendar({
         {days.map((day) => {
           const report = getReportForDate(day);
           const isTodayDate = isToday(day);
+          const normalizedStatus = normalizeStatus(report?.status);
 
           return (
             <motion.button
@@ -113,11 +132,11 @@ export default function PremiumCalendar({
               onClick={() => onSelectDate(day)}
               className={clsx(
                 'relative group aspect-square rounded-2xl flex flex-col items-center justify-center transition-all border-2',
-                report?.status === 'approved'
+                normalizedStatus === 'approved'
                   ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-200'
-                  : report?.status === 'pending'
+                  : normalizedStatus === 'pending'
                     ? 'bg-amber-50 border-amber-100 text-amber-700'
-                    : report?.status === 'rejected'
+                    : normalizedStatus === 'rejected'
                       ? 'bg-rose-50 border-rose-100 text-rose-700'
                       : 'bg-[#F8FAF9] border-transparent text-slate-400 hover:bg-white hover:border-emerald-100 hover:shadow-sm',
               )}
@@ -125,9 +144,9 @@ export default function PremiumCalendar({
               <span className="text-sm font-black mb-1">{format(day, 'd')}</span>
               {report && (
                 <span className="text-[8px] font-black uppercase tracking-tighter opacity-80">
-                  {report.status === 'approved'
+                  {normalizedStatus === 'approved'
                     ? 'Valid'
-                    : report.status === 'pending'
+                    : normalizedStatus === 'pending'
                       ? 'Cek'
                       : 'Revisi'}
                 </span>

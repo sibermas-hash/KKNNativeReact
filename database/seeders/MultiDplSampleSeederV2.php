@@ -90,7 +90,7 @@ class MultiDplSampleSeederV2 extends Seeder
             [
                 'name' => 'Dr. Sutrisno (Ketua)',
                 'username' => 'dplketua',
-                'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', Str::random(32))),
+                'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', 'password')),
                 'is_active' => true,
                 'phone' => '081234567890',
             ]
@@ -118,7 +118,7 @@ class MultiDplSampleSeederV2 extends Seeder
             [
                 'name' => 'Budi Santoso, M.Kom (Anggota)',
                 'username' => 'dplanggota',
-                'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', Str::random(32))),
+                'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', 'password')),
                 'is_active' => true,
                 'phone' => '081234567891',
             ]
@@ -170,7 +170,7 @@ class MultiDplSampleSeederV2 extends Seeder
                 [
                     'name' => "Mahasiswa Sample $i",
                     'username' => "mhs$i".rand(100, 999),
-                    'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', Str::random(32))),
+                    'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', 'password')),
                     'is_active' => true,
                 ]
             );

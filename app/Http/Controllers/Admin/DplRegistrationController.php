@@ -31,7 +31,7 @@ class DplRegistrationController extends Controller
         $search = trim((string) $request->input('search', ''));
         $statusFilter = $request->input('status', 'all');
         $escapedSearch = str_replace(['%', '_'], ['\\%', '\\_'], $search);
-        
+
         // Contextual period filtering
         $activePeriodId = $request->input('period_id') ?? $this->periodContext->getActivePeriodId();
 
@@ -67,10 +67,10 @@ class DplRegistrationController extends Controller
 
         // Stats filtered by context
         $stats = [
-            'total' => DplPeriod::when($activePeriodId, fn($q) => $q->where('periode_id', $activePeriodId))->count(),
-            'pending' => DplPeriod::where('status', 'pending')->when($activePeriodId, fn($q) => $q->where('periode_id', $activePeriodId))->count(),
-            'approved' => DplPeriod::where('status', 'approved')->when($activePeriodId, fn($q) => $q->where('periode_id', $activePeriodId))->count(),
-            'rejected' => DplPeriod::where('status', 'rejected')->when($activePeriodId, fn($q) => $q->where('periode_id', $activePeriodId))->count(),
+            'total' => DplPeriod::when($activePeriodId, fn ($q) => $q->where('periode_id', $activePeriodId))->count(),
+            'pending' => DplPeriod::where('status', 'pending')->when($activePeriodId, fn ($q) => $q->where('periode_id', $activePeriodId))->count(),
+            'approved' => DplPeriod::where('status', 'approved')->when($activePeriodId, fn ($q) => $q->where('periode_id', $activePeriodId))->count(),
+            'rejected' => DplPeriod::where('status', 'rejected')->when($activePeriodId, fn ($q) => $q->where('periode_id', $activePeriodId))->count(),
         ];
 
         return Inertia::render('Admin/Operational/Dpl/Registration', [

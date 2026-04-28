@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
-use App\Models\KKN\JenisKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
+use App\Services\EligibilityService;
 use App\Services\KKN\RegistrationDocumentService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -41,7 +41,7 @@ class KknDaftarController extends Controller
                 $jenis = $p->jenisKkn;
                 $canRegister = in_array($p->current_phase, ['registration', 'placement']);
 
-                $eligibility = $this->checkEligibility($mahasiswa, $jenis);
+                $eligibility = $this->checkEligibility($mahasiswa, $p);
                 $documentRequirements = $documentService->requirementsForPeriod($p);
 
                 // Jika sudah pernah daftar KKN apapun, tidak boleh daftar lagi
@@ -59,8 +59,7 @@ class KknDaftarController extends Controller
                         'description' => $jenis?->description,
                     ],
                     'requirements' => [
-                        'min_sks' => $jenis?->min_sks ?? 100,
-                        'min_gpa' => $jenis?->min_gpa ?? 2.0,
+                        'config' => $jenis?->requirements_config ?? [],
                         'documents' => collect($documentRequirements)
                             ->pluck('label')
                             ->values()
@@ -95,7 +94,7 @@ class KknDaftarController extends Controller
         ]);
     }
 
-    private function checkEligibility(?Mahasiswa $mahasiswa, ?JenisKkn $jenis): array
+    private function checkEligibility(?Mahasiswa $mahasiswa, ?Periode $periode): array
     {
         if (! $mahasiswa) {
             return [
@@ -104,33 +103,18 @@ class KknDaftarController extends Controller
             ];
         }
 
-        if (! $jenis) {
+        if (! $periode) {
             return [
                 'is_eligible' => false,
-                'reasons' => ['Konfigurasi jenis KKN belum tersedia.'],
+                'reasons' => ['Data periode tidak ditemukan.'],
             ];
         }
 
-        $reasons = [];
-        $minSks = $jenis->min_sks ?? 100;
-        $minGpa = $jenis->min_gpa ?? 2.0;
-
-        if (($mahasiswa->sks_completed ?? 0) < $minSks) {
-            $reasons[] = "SKS belum mencukupi ({$mahasiswa->sks_completed}/{$minSks})";
-        }
-
-        if (($mahasiswa->gpa ?? 0) < $minGpa) {
-            $reasons[] = 'IPK belum mencukupi ('.number_format($mahasiswa->gpa ?? 0, 2)."/{$minGpa})";
-        }
-
-        $btaPassed = strtoupper(trim($mahasiswa->status_bta_ppi ?? ''));
-        if (! in_array($btaPassed, ['LULUS', 'PASSED', 'SUCCESS'])) {
-            $reasons[] = 'Anda belum lulus BTA/PPI';
-        }
+        $eligibility = app(EligibilityService::class)->checkEligibility($mahasiswa, $periode->id);
 
         return [
-            'is_eligible' => empty($reasons),
-            'reasons' => $reasons,
+            'is_eligible' => $eligibility['is_eligible'],
+            'reasons' => array_column($eligibility['issues'], 'message'),
         ];
     }
 

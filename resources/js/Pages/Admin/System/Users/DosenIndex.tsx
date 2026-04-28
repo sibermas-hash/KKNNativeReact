@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import type { PaginationMeta } from '@/Components/UI/Pagination';
 import type { PageProps } from '@/types';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
 import PageHeader from '@/Components/Premium/PageHeader';
 import StatCard from '@/Components/Premium/StatCard';
 import ContentPanel from '@/Components/Premium/ContentPanel';
@@ -47,6 +47,19 @@ export default function DosenIndex({ users, filters, stats }: Props) {
   const [search, setSearch] = useState(filters.search || '');
   const { flash } = usePage<PageProps>().props;
 
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.05 },
+    },
+  };
+
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 15 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } },
+  };
+
   const handleSearch = () => {
     router.get(
       '/admin/dosen',
@@ -73,8 +86,14 @@ export default function DosenIndex({ users, filters, stats }: Props) {
     <AppLayout title="Direktori Dosen">
       <Head title="Manajemen Data Dosen" />
 
-      <div className="space-y-8 pb-24 text-emerald-950">
-        <PageHeader
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="space-y-8 pb-24 text-emerald-950"
+      >
+        <motion.div variants={itemVariants}>
+          <PageHeader
           title="Direktori Dosen."
           subtitle="Pengelolaan akun Dosen Pembimbing Lapangan (DPL) dan koordinator wilayah operasional KKN."
           icon={Users}
@@ -85,19 +104,26 @@ export default function DosenIndex({ users, filters, stats }: Props) {
             icon: Database,
           }}
         >
-          <Link
-            href="/admin/dosen/sinkron"
-            className="h-12 px-6 bg-white border-2 border-emerald-50 hover:border-emerald-600 text-emerald-950 rounded-xl font-bold text-xs transition-all flex items-center gap-3 active:scale-95 shadow-sm uppercase tracking-wider"
-          >
-            <RefreshCw size={16} strokeWidth={2.5} /> Sinkronisasi
-          </Link>
-          <Link
-            href="/admin/pengguna/buat?role=dpl"
-            className="h-12 px-6 bg-emerald-900 hover:bg-emerald-950 text-white rounded-xl font-bold text-xs transition-all flex items-center gap-3 active:scale-95 shadow-sm uppercase tracking-wider"
-          >
-            <Plus size={16} strokeWidth={2.5} /> Tambah Dosen
-          </Link>
-        </PageHeader>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                href="/admin/dosen/sinkron"
+                className="h-12 px-6 bg-white border-2 border-emerald-50 hover:border-emerald-600 text-emerald-950 rounded-xl font-bold text-xs transition-all flex items-center gap-3 shadow-sm uppercase tracking-wider"
+                aria-label="Sinkronisasi Dosen"
+              >
+                <RefreshCw size={16} strokeWidth={2.5} /> Sinkronisasi
+              </Link>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+              <Link
+                href="/admin/pengguna/buat?role=dpl"
+                className="h-12 px-6 bg-emerald-900 hover:bg-emerald-950 text-white rounded-xl font-bold text-xs transition-all flex items-center gap-3 shadow-sm uppercase tracking-wider"
+                aria-label="Tambah Dosen Baru"
+              >
+                <Plus size={16} strokeWidth={2.5} /> Tambah Dosen
+              </Link>
+            </motion.div>
+          </PageHeader>
+        </motion.div>
 
         {/* PASSWORD FLASH NOTICE */}
         <AnimatePresence>
@@ -136,6 +162,8 @@ export default function DosenIndex({ users, filters, stats }: Props) {
               <button
                 onClick={() => router.reload()}
                 className="text-amber-400 hover:text-amber-700 transition-colors p-1"
+                title="Tutup Notifikasi"
+                aria-label="Tutup Notifikasi"
               >
                 <X size={18} strokeWidth={2.5} />
               </button>
@@ -144,7 +172,7 @@ export default function DosenIndex({ users, filters, stats }: Props) {
         </AnimatePresence>
 
         {/* STATS GRID */}
-        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-3 gap-4">
           <StatCard label="Total Dosen Terdaftar" value={stats.total} icon={Database} />
           <StatCard
             label="Akun Status Aktif"
@@ -153,10 +181,11 @@ export default function DosenIndex({ users, filters, stats }: Props) {
             variant="success"
           />
           <StatCard label="Integritas Layanan" value="Online" icon={ShieldCheck} variant="info" />
-        </div>
+        </motion.div>
 
         {/* TABLE */}
-        <ContentPanel
+        <motion.div variants={itemVariants}>
+          <ContentPanel
           title="Daftar Akun Dosen"
           description="Seluruh Dosen Terdaftar"
           icon={Users}
@@ -172,7 +201,7 @@ export default function DosenIndex({ users, filters, stats }: Props) {
           }
           footer={
             <div className="flex items-center justify-between">
-              <span className="text-xs font-extrabold text-emerald-950/40 uppercase tracking-widest">
+              <span className="text-xs font-extrabold text-emerald-700 uppercase tracking-widest">
                 Halaman{' '}
                 <strong className="text-emerald-950 tabular-nums">{users.meta.current_page}</strong>{' '}
                 dari {users.meta.last_page} — Total {users.meta.total} dosen
@@ -197,7 +226,7 @@ export default function DosenIndex({ users, filters, stats }: Props) {
                       <span className="text-xs font-bold text-emerald-950 uppercase tracking-tight">
                         {user.dosen?.nama || user.name}
                       </span>
-                      <span className="text-[11px] font-semibold text-emerald-950/30">
+                      <span className="text-[11px] font-semibold text-emerald-600">
                         {user.email || '-'}
                       </span>
                     </div>
@@ -211,7 +240,7 @@ export default function DosenIndex({ users, filters, stats }: Props) {
                 <PremiumTableCell>
                   <span className="text-xs font-semibold text-emerald-950">
                     {user.dosen?.fakultas?.nama || (
-                      <span className="font-medium italic text-emerald-950/40">
+                      <span className="font-medium italic text-emerald-500">
                         Belum dipetakan
                       </span>
                     )}
@@ -231,26 +260,33 @@ export default function DosenIndex({ users, filters, stats }: Props) {
                 </PremiumTableCell>
                 <PremiumTableCell align="right">
                   <div className="flex items-center justify-end gap-2">
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
                       onClick={() => resetTemporaryPassword(user)}
-                      className="h-9 w-9 inline-flex items-center justify-center bg-white text-emerald-800 hover:bg-amber-50 hover:text-amber-600 border-2 border-[#f3f4f6] rounded-xl transition-all active:scale-95"
+                      className="h-9 w-9 inline-flex items-center justify-center bg-white text-emerald-800 hover:bg-amber-50 hover:text-amber-600 border-2 border-[#f3f4f6] rounded-xl transition-all"
                       title="Reset Password Sementara"
+                      aria-label="Reset Password Sementara"
                     >
                       <KeyRound size={15} strokeWidth={2.5} />
-                    </button>
-                    <Link
-                      href="/admin/dosen/penugasan"
-                      className="h-9 px-4 inline-flex items-center justify-center bg-white text-emerald-950 hover:bg-emerald-900 hover:text-white border-2 border-[#f3f4f6] rounded-xl text-xs font-extrabold transition-all active:scale-95 uppercase tracking-widest shadow-sm shadow-emerald-900/5"
-                    >
-                      Penugasan <ArrowRight size={14} className="ml-2" strokeWidth={3} />
-                    </Link>
+                    </motion.button>
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Link
+                        href={`/admin/dosen/penugasan?search=${user.dosen?.nip || user.name}`}
+                        className="h-9 px-4 inline-flex items-center justify-center bg-white text-emerald-950 hover:bg-emerald-900 hover:text-white border-2 border-[#f3f4f6] rounded-xl text-xs font-extrabold transition-all uppercase tracking-widest shadow-sm shadow-emerald-900/5"
+                        aria-label={`Atur Penugasan untuk ${user.dosen?.nama || user.name}`}
+                      >
+                        Penugasan <ArrowRight size={14} className="ml-2" strokeWidth={3} />
+                      </Link>
+                    </motion.div>
                   </div>
                 </PremiumTableCell>
               </PremiumTableRow>
             ))}
           </PremiumTable>
         </ContentPanel>
-      </div>
+        </motion.div>
+      </motion.div>
     </AppLayout>
   );
 }

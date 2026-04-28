@@ -1,6 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import AppLayout from '@/Layouts/AppLayout';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, type Variants } from 'framer-motion';
 import React, { useState, useMemo } from 'react';
 import {
   Plus,
@@ -29,10 +29,13 @@ import PremiumCalendar from '@/Components/Premium/PremiumCalendar';
 interface Report {
   id: number;
   date: string;
+  date_label?: string;
   title: string;
   status: string;
   activity: string;
   reflection: string | null;
+  output?: string | null;
+  review_notes?: string | null;
   file_kegiatan: FileKegiatan[];
   ai_summary?: string;
   ai_analysis?: {
@@ -71,6 +74,18 @@ interface FileKegiatan {
   preview_url: string;
 }
 
+function parseReportDate(dateString: string): Date | null {
+  const parsed = new Date(dateString);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function formatReportDate(dateString: string, fallback = '-'): string {
+  const parsed = parseReportDate(dateString);
+  return parsed
+    ? parsed.toLocaleDateString('id-ID', { dateStyle: 'medium' })
+    : fallback;
+}
+
 export default function DailyReportIndex({ reports, flash }: Props) {
   const [viewMode, setViewMode] = useState<'timeline' | 'table' | 'calendar'>('timeline');
   const [searchQuery, setSearchQuery] = useState('');
@@ -83,6 +98,12 @@ export default function DailyReportIndex({ reports, flash }: Props) {
   const [calendarDate, setCalendarDate] = useState(new Date());
 
   const statusColors: Record<string, { bg: string; text: string; ring: string; dot: string }> = {
+    draft: {
+      bg: 'bg-slate-100',
+      text: 'text-slate-600',
+      ring: 'ring-slate-200/60',
+      dot: 'bg-slate-400',
+    },
     submitted: {
       bg: 'bg-amber-50',
       text: 'text-amber-700',
@@ -104,16 +125,25 @@ export default function DailyReportIndex({ reports, flash }: Props) {
   };
 
   const statusLabels: Record<string, string> = {
+    draft: 'Draft',
     submitted: 'Menunggu Review',
     approved: 'Lulus Verifikasi',
     revision: 'Instruksi Revisi',
   };
 
+  const getStatusColors = (status: string) => statusColors[status] ?? statusColors.draft;
+  const getStatusLabel = (status: string) => statusLabels[status] ?? 'Draft';
+
   const processedReports = useMemo(() => {
     let filtered = reports.data.filter((report) => {
-      const matchesSearch =
-        report.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        report.activity.toLowerCase().includes(searchQuery.toLowerCase());
+      const normalizedQuery = searchQuery.toLowerCase();
+      const matchesSearch = [
+        report.title,
+        report.activity,
+        report.date,
+        report.date_label ?? '',
+        report.review_notes ?? '',
+      ].some((value) => value.toLowerCase().includes(normalizedQuery));
       const matchesStatus = statusFilter === 'all' || report.status === statusFilter;
       return matchesSearch && matchesStatus;
     });
@@ -139,12 +169,12 @@ export default function DailyReportIndex({ reports, flash }: Props) {
     }));
   };
 
-  const containerVariants = {
+  const containerVariants: Variants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
   };
 
-  const cardVariants = {
+  const cardVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 100, damping: 20 } },
   };
@@ -263,7 +293,17 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                 <PremiumCalendar
                   currentDate={calendarDate}
                   onDateChange={setCalendarDate}
-                  reports={reports.data.map((r) => ({ date: r.date, status: r.status as any }))}
+                  reports={reports.data.map((r) => ({
+                    date: r.date,
+                    status: r.status as
+                      | 'draft'
+                      | 'submitted'
+                      | 'approved'
+                      | 'revision'
+                      | 'pending'
+                      | 'rejected'
+                      | 'none',
+                  }))}
                   onSelectDate={(date) => {
                     setSearchQuery(date.toISOString().split('T')[0]);
                     setViewMode('timeline');
@@ -318,13 +358,10 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                             <td className="p-6">
                               <div className="flex flex-col">
                                 <span className="text-sm font-black text-emerald-950">
-                                  {new Date(report.date).getDate()}{' '}
-                                  {new Date(report.date).toLocaleDateString('id-ID', {
-                                    month: 'short',
-                                  })}
+                                  {report.date_label ?? formatReportDate(report.date)}
                                 </span>
                                 <span className="text-[10px] font-bold text-slate-400 uppercase">
-                                  {new Date(report.date).getFullYear()}
+                                  {report.date}
                                 </span>
                               </div>
                             </td>
@@ -340,17 +377,17 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                               <span
                                 className={clsx(
                                   'px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2 w-fit',
-                                  statusColors[report.status].bg,
-                                  statusColors[report.status].text,
+                                  getStatusColors(report.status).bg,
+                                  getStatusColors(report.status).text,
                                 )}
                               >
                                 <div
                                   className={clsx(
                                     'w-1.5 h-1.5 rounded-full',
-                                    statusColors[report.status].dot,
+                                    getStatusColors(report.status).dot,
                                   )}
                                 />
-                                {statusLabels[report.status]}
+                                {getStatusLabel(report.status)}
                               </span>
                             </td>
                             <td className="p-6">
@@ -426,6 +463,16 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                                           />
                                         ))}
                                       </div>
+                                      {report.review_notes && (
+                                        <div className="rounded-2xl border border-rose-100 bg-rose-50 p-5">
+                                          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-rose-700">
+                                            Catatan Revisi DPL
+                                          </p>
+                                          <p className="text-sm font-medium leading-relaxed text-rose-700">
+                                            {report.review_notes}
+                                          </p>
+                                        </div>
+                                      )}
                                     </div>
                                     <div className="space-y-4">
                                       <div className="flex items-center gap-2 mb-2">
@@ -478,10 +525,12 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                     <div className="relative z-10 shrink-0">
                       <div className="h-20 w-20 rounded-[1.5rem] bg-white border-2 border-emerald-50 flex flex-col items-center justify-center shadow-sm group-hover:bg-emerald-600 group-hover:border-emerald-600 group-hover:text-white transition-all duration-500">
                         <span className="text-[10px] font-black uppercase tracking-widest opacity-60">
-                          {new Date(report.date).toLocaleDateString('id-ID', { month: 'short' })}
+                          {parseReportDate(report.date)?.toLocaleDateString('id-ID', {
+                            month: 'short',
+                          }) ?? '--'}
                         </span>
                         <span className="text-2xl font-black leading-none">
-                          {new Date(report.date).getDate()}
+                          {parseReportDate(report.date)?.getDate() ?? '--'}
                         </span>
                       </div>
                     </div>
@@ -491,17 +540,17 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                         <span
                           className={clsx(
                             'px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2',
-                            statusColors[report.status].bg,
-                            statusColors[report.status].text,
+                            getStatusColors(report.status).bg,
+                            getStatusColors(report.status).text,
                           )}
                         >
                           <div
                             className={clsx(
                               'w-1.5 h-1.5 rounded-full',
-                              statusColors[report.status].dot,
+                              getStatusColors(report.status).dot,
                             )}
                           />
-                          {statusLabels[report.status]}
+                          {getStatusLabel(report.status)}
                         </span>
                         {report.reflection && (
                           <span className="px-4 py-1.5 rounded-full bg-emerald-950 text-emerald-400 text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
@@ -514,6 +563,16 @@ export default function DailyReportIndex({ reports, flash }: Props) {
                         <h2 className="text-2xl font-black text-emerald-950 group-hover:text-emerald-700 transition-colors uppercase tracking-tight leading-none">
                           {report.title}
                         </h2>
+                        {report.review_notes && (
+                          <div className="rounded-2xl border border-rose-100 bg-rose-50 px-5 py-4">
+                            <p className="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-rose-700">
+                              Catatan Revisi DPL
+                            </p>
+                            <p className="text-sm font-medium leading-relaxed text-rose-700">
+                              {report.review_notes}
+                            </p>
+                          </div>
+                        )}
                         <div className="flex items-start gap-4 p-4 bg-[#F8FAF9] rounded-2xl border border-emerald-50/50">
                           <CornerDownRight size={20} className="text-emerald-200 shrink-0" />
                           <p className="text-sm font-medium text-slate-500 leading-relaxed italic">

@@ -6,7 +6,6 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Process;
-use Illuminate\Support\Facades\Storage;
 
 class DatabaseBackup extends Command
 {
@@ -66,7 +65,7 @@ class DatabaseBackup extends Command
             $result = Process::timeout(600)->run($command);
 
             if ($result->failed()) {
-                $this->error('pg_dump failed: ' . $result->errorOutput());
+                $this->error('pg_dump failed: '.$result->errorOutput());
 
                 return self::FAILURE;
             }
@@ -87,7 +86,7 @@ class DatabaseBackup extends Command
             return self::SUCCESS;
 
         } catch (\Throwable $e) {
-            $this->error('Backup gagal: ' . $e->getMessage());
+            $this->error('Backup gagal: '.$e->getMessage());
 
             return self::FAILURE;
         }

@@ -6,8 +6,8 @@ namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\PesertaKkn;
-use App\Models\KKN\ProposalProgramKerja;
 use App\Models\KKN\ProgramKerja;
+use App\Models\KKN\ProposalProgramKerja;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;

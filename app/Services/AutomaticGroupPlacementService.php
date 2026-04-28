@@ -67,6 +67,7 @@ class AutomaticGroupPlacementService
                 return $group;
             } catch (ValidationException $exception) {
                 $lastValidationException = $exception;
+
                 continue;
             }
         }

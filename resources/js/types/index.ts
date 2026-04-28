@@ -133,6 +133,7 @@ export interface DailyReport {
   title: string;
   activity: string;
   output?: string;
+  review_notes?: string | null;
   status: 'draft' | 'submitted' | 'approved' | 'revision';
   files: DailyReportFile[];
 }

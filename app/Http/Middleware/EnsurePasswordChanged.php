@@ -48,4 +48,3 @@ class EnsurePasswordChanged
             ->with('warning', 'Demi keamanan, Anda wajib mengganti kata sandi default sebelum dapat mengakses portal SIBERMAS.');
     }
 }
-

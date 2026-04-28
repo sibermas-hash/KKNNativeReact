@@ -15,7 +15,7 @@ return new class extends Migration
             $table->string('file_name');
             $table->integer('version')->default(1);
             $table->timestamp('uploaded_at')->useCurrent();
-            
+
             $table->index('program_kerja_id', 'proposal_program_kerja_program_index');
         });
     }

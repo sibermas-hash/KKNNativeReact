@@ -63,7 +63,7 @@ class KegiatanKknPolicy extends BasePolicy
 
         // Only the owner can update, and only if NOT approved yet
         if ($user->hasRole('student')) {
-            return $report->mahasiswa_id === $user->mahasiswa?->id && $report->status !== 'approved';
+            return $report->mahasiswa_id === $user->mahasiswa?->id && $report->canBeUpdatedByStudent();
         }
 
         return false;
@@ -77,7 +77,7 @@ class KegiatanKknPolicy extends BasePolicy
 
         // Only the owner can delete, and only if NOT approved yet
         if ($user->hasRole('student')) {
-            return $report->mahasiswa_id === $user->mahasiswa?->id && $report->status !== 'approved';
+            return $report->mahasiswa_id === $user->mahasiswa?->id && $report->canBeUpdatedByStudent();
         }
 
         return false;

@@ -17,6 +17,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -189,13 +190,13 @@ class KelompokKknController extends Controller
 
         // DEBUG: Check what's being returned
         if ($groups->total() > 0) {
-            \Illuminate\Support\Facades\Log::info('Groups found', [
+            Log::info('Groups found', [
                 'total' => $groups->total(),
                 'count' => $groups->count(),
                 'first_item' => $groupCollection->first() ? ['id' => $groupCollection->first()['id'], 'name' => $groupCollection->first()['name']] : null,
             ]);
         } else {
-            \Illuminate\Support\Facades\Log::warning('No groups found', [
+            Log::warning('No groups found', [
                 'filters' => $request->only('search', 'periode_id', 'jenis_kkn_id', 'status'),
             ]);
         }

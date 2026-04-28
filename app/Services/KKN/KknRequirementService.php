@@ -58,31 +58,31 @@ class KknRequirementService
     {
         $governance = $periode->governance();
         $kknType = $this->resolveType($periode);
-        $documentService = app(RegistrationDocumentService::class);
 
         $requirements = [];
         $governanceNotes = [];
 
-        if (($periode->jenisKkn?->require_bta_ppi ?? true) === true) {
-            $requirements[] = 'Lulus ujian BTA/PPI.';
-        }
-
-        $minSks = $periode->jenisKkn?->min_sks ?? 100;
-        $minGpa = $periode->jenisKkn ? (float) $periode->jenisKkn->min_gpa : 0;
-
-        $requirements[] = "Minimal telah menempuh {$minSks} SKS.";
-        if ($minGpa > 0) {
-            $requirements[] = 'Minimal IPK '.number_format($minGpa, 2).'.';
-        }
-
-        foreach ($documentService->requirementsForPeriod($periode) as $documentRequirement) {
-            $requirements[] = 'Unggah '.$documentRequirement['label'].'.';
-        }
-
-        foreach (($periode->jenisKkn?->custom_requirements ?? []) as $customRequirement) {
-            if (is_string($customRequirement) && filled($customRequirement)) {
-                $requirements[] = $customRequirement;
+        $config = $periode->jenisKkn?->requirements_config ?? [];
+        if (is_array($config) && ! empty($config)) {
+            foreach ($config as $rule) {
+                $name = $rule['name'] ?? 'Persyaratan';
+                if (($rule['type'] ?? 'upload') === 'db_check') {
+                    if (($rule['field'] ?? '') === 'sks_completed') {
+                        $requirements[] = "Minimal telah menempuh {$rule['min_value']} SKS.";
+                    } elseif (($rule['field'] ?? '') === 'gpa') {
+                        $requirements[] = 'Minimal IPK '.number_format((float) ($rule['min_value'] ?? 0), 2).'.';
+                    } else {
+                        $requirements[] = $name;
+                    }
+                } else {
+                    $requirements[] = (str_starts_with(strtolower($name), 'unggah') || str_starts_with(strtolower($name), 'upload'))
+                        ? $name
+                        : 'Unggah '.$name.'.';
+                }
             }
+        } else {
+            // Fallback for periods without dynamic config
+            $requirements[] = 'Minimal telah menempuh 100 SKS.';
         }
 
         // Specific legacy logic for certain types

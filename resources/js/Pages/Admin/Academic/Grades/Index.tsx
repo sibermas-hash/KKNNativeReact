@@ -76,22 +76,19 @@ export default function AdminGradesIndex({ groups }: Props) {
     const W_DPL = 0.4;
     const W_PUSAT = 0.4;
 
-    // Component Averages
-    const desaTotal =
-      (parse(data.desa_interaksi_score) +
-        parse(data.desa_disiplin_score) +
-        parse(data.desa_kinerja_score)) /
-      3;
-    const dplTotal =
-      (parse(data.dpl_relevansi_score) +
-        parse(data.dpl_ketercapaian_score) +
-        parse(data.dpl_inovasi_score) +
-        parse(data.dpl_administrasi_score) +
-        parse(data.dpl_artikel_score)) /
-      5;
+    // Component Averages (Weighted based on GradingService)
+    const attitudePart = parse(data.desa_interaksi_score);
+    const disciplinePart = parse(data.desa_disiplin_score);
+    const desaTotal = (attitudePart * 0.5) + (disciplinePart * 0.5);
+
+    const reportPart = parse(data.dpl_administrasi_score);
+    const executionPart = parse(data.dpl_ketercapaian_score);
+    const articlePart = parse(data.dpl_artikel_score);
+    const dplTotal = (reportPart * 0.3) + (executionPart * 0.4) + (articlePart * 0.3);
+
     const pusatTotal = parse(data.administration_score);
 
-    const finalScore = desaTotal * W_DESA + dplTotal * W_DPL + pusatTotal * W_PUSAT;
+    const finalScore = (dplTotal * W_DPL) + (desaTotal * W_DESA) + (pusatTotal * W_PUSAT);
 
     // Grading Scale (Agt 56)
     let grade = 'E';
@@ -129,10 +126,7 @@ export default function AdminGradesIndex({ groups }: Props) {
     const fields = [
       'desa_interaksi_score',
       'desa_disiplin_score',
-      'desa_kinerja_score',
-      'dpl_relevansi_score',
       'dpl_ketercapaian_score',
-      'dpl_inovasi_score',
       'dpl_administrasi_score',
       'dpl_artikel_score',
       'administration_score',
@@ -143,7 +137,7 @@ export default function AdminGradesIndex({ groups }: Props) {
       score: finalScore.toFixed(2),
       grade,
       color,
-      progress: Math.round((filledCount / 9) * 100),
+      progress: Math.round((filledCount / 6) * 100),
       filledCount,
     };
   }, [data]);
@@ -374,9 +368,8 @@ return (
                 subtitle="Penilaian dari Perangkat Desa"
                 weight="20"
                 fields={[
-                  { id: 'desa_interaksi_score', label: 'Interaksi Sosial', icon: Users },
-                  { id: 'desa_disiplin_score', label: 'Kedisiplinan & Etika', icon: Clock },
-                  { id: 'desa_kinerja_score', label: 'Kinerja Kelompok', icon: Activity },
+                  { id: 'desa_disiplin_score', label: 'Kedisiplinan', icon: Clock },
+                  { id: 'desa_interaksi_score', label: 'Sikap', icon: Users },
                 ]}
                 data={data}
                 setData={setData}
@@ -388,15 +381,9 @@ return (
                 subtitle="Evaluasi dari Dosen Pembimbing Lapangan"
                 weight="40"
                 fields={[
-                  { id: 'dpl_relevansi_score', label: 'Relevansi Program', icon: Target },
-                  { id: 'dpl_ketercapaian_score', label: 'Tingkat Capaian', icon: Zap },
-                  { id: 'dpl_inovasi_score', label: 'Nilai Inovasi', icon: Info },
-                  {
-                    id: 'dpl_administrasi_score',
-                    label: 'Kelengkapan Administrasi',
-                    icon: FileEdit,
-                  },
-                  { id: 'dpl_artikel_score', label: 'Kualitas Artikel', icon: BookOpen },
+                  { id: 'dpl_administrasi_score', label: 'Laporan', icon: FileEdit },
+                  { id: 'dpl_ketercapaian_score', label: 'Pelaksanaan', icon: Target },
+                  { id: 'dpl_artikel_score', label: 'Artikel', icon: BookOpen },
                 ]}
                 data={data}
                 setData={setData}
@@ -408,7 +395,7 @@ return (
                 subtitle="Verifikasi Institusional LPPM"
                 weight="40"
                 fields={[
-                  { id: 'administration_score', label: 'Skor Administrasi Pusat', icon: Layers },
+                  { id: 'administration_score', label: 'LPPM', icon: Layers },
                 ]}
                 data={data}
                 setData={setData}

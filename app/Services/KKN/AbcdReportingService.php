@@ -42,7 +42,7 @@ class AbcdReportingService
 
         // Logic check: Minimum activities submitted in current stage
         $activitiesCount = KegiatanKkn::where('kelompok_id', $program->kelompok_id)
-            ->where('status', 'approved')
+            ->workflowApproved()
             ->count();
 
         // Dynamic threshold based on stage week

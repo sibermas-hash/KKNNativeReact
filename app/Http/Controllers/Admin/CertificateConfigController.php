@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\KonfigurasiSertifikat;
+use App\Models\KKN\Periode;
 use App\Services\KKN\KonfigurasiSertifikatService;
 use App\Services\PeriodContextService;
 use Illuminate\Http\RedirectResponse;
@@ -58,7 +59,7 @@ class CertificateConfigController extends Controller
 
         // Cek apakah periode yang dipilih sedang dikunci (jika bukan global config 0)
         if ($periodId > 0) {
-            $period = \App\Models\KKN\Periode::find($periodId);
+            $period = Periode::find($periodId);
             if ($period?->is_locked) {
                 return redirect()->back()->with('error', 'Kamar periode sedang dikunci. Perubahan konfigurasi diblokir.');
             }

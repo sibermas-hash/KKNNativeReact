@@ -20,7 +20,7 @@ return new class extends Migration
             // Index for financial requirement filtering
             $table->index(['is_paid_ukt'], 'mahasiswa_ukt_status_idx');
         });
-        
+
         Schema::table('peserta_workshop', function (Blueprint $table) {
             // Index for certificate lookup and passing status checks
             $table->index(['workshop_id', 'is_passed'], 'peserta_workshop_passed_idx');

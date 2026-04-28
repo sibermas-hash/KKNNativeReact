@@ -23,8 +23,8 @@ class AccountSeeder extends Seeder
         }
 
         $defaultPassword = env('KKN_LOCAL_SEED_PASSWORD');
-        $studentPassword = $defaultPassword ?: Str::password(16);
-        $lecturerPassword = $defaultPassword ?: Str::password(16);
+        $studentPassword = $defaultPassword ?: 'password';
+        $lecturerPassword = $defaultPassword ?: 'password';
 
         $this->command->info('Start seeding roles...');
         // Pastikan role ada

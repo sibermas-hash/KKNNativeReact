@@ -287,7 +287,7 @@ class DummyKKN56Seeder extends Seeder
             if (! $existing) {
                 $userId = DB::table('users')->insertGetId([
                     'username' => $nip, 'name' => "Dr. DPL Simulator $i, M.Ag",
-                    'email' => $email, 'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', Str::random(32))),
+                    'email' => $email, 'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', 'password')),
                     'email_verified_at' => now(), 'created_at' => now(), 'updated_at' => now(),
                 ]);
             } else {
@@ -315,7 +315,7 @@ class DummyKKN56Seeder extends Seeder
                 $userId = DB::table('users')->insertGetId([
                     'username' => $nim, 'name' => "Mahasiswa Dummy $i",
                     'email' => $email,
-                    'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', Str::random(32))),
+                    'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', 'password')),
                     'email_verified_at' => now(), 'created_at' => now(), 'updated_at' => now(),
                 ]);
             } else {

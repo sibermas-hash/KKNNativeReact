@@ -20,7 +20,7 @@ class KonfigurasiSertifikatService
      */
     public function get(string $key, int $periodeId): ?string
     {
-        $cacheKey = self::CACHE_PREFIX . "{$periodeId}_{$key}";
+        $cacheKey = self::CACHE_PREFIX."{$periodeId}_{$key}";
 
         return Cache::remember($cacheKey, now()->addHours(24), function () use ($key, $periodeId) {
             $config = KonfigurasiSertifikat::withoutGlobalScopes()
@@ -41,7 +41,7 @@ class KonfigurasiSertifikatService
      */
     public function getAllForPeriode(int $periodeId): array
     {
-        $cacheKey = self::CACHE_PREFIX . "all_{$periodeId}";
+        $cacheKey = self::CACHE_PREFIX."all_{$periodeId}";
 
         return Cache::remember($cacheKey, now()->addHours(24), function () use ($periodeId) {
             $globals = KonfigurasiSertifikat::withoutGlobalScopes()
@@ -90,8 +90,8 @@ class KonfigurasiSertifikatService
      */
     private function clearCache(int $periodeId, string $key): void
     {
-        Cache::forget(self::CACHE_PREFIX . "{$periodeId}_{$key}");
-        Cache::forget(self::CACHE_PREFIX . "all_{$periodeId}");
+        Cache::forget(self::CACHE_PREFIX."{$periodeId}_{$key}");
+        Cache::forget(self::CACHE_PREFIX."all_{$periodeId}");
     }
 
     /**
@@ -99,12 +99,12 @@ class KonfigurasiSertifikatService
      */
     public function clearAllCache(): void
     {
-        // Karena kita tidak tahu semua periode ID yang tersimpan di cache, 
-        // idealnya kita gunakan cache tags jika didukung. 
+        // Karena kita tidak tahu semua periode ID yang tersimpan di cache,
+        // idealnya kita gunakan cache tags jika didukung.
         // Jika tidak, kita bisa flush atau biarkan expired.
         // Untuk amannya, kita bisa hapus cache 'all' untuk periode aktif jika tersedia.
         // Namun, cara paling bersih adalah menggunakan tags jika menggunakan redis/memcached.
-        
+
         // Versi sederhana: Kita hanya hapus yang krusial.
         // Jika menggunakan Redis, kita bisa gunakan wildcard (tidak direkomendasikan di prod).
         // Untuk saat ini, kita andalkan TTL 24 jam atau manual clearing jika dibutuhkan.

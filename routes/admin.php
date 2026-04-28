@@ -7,6 +7,8 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportExportController;
 use App\Http\Controllers\WorkshopController;
 use App\Http\Middleware\EnsureAdminAuthorization;
+use App\Models\KKN\Periode;
+use App\Services\KKN\DplScoreCalibrationService;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 
@@ -60,8 +62,8 @@ Route::middleware([
     });
 
     // DPL Score Calibration Check
-    Route::get('dpl-calibration/{periode}', function (\App\Models\KKN\Periode $periode) {
-        $service = app(\App\Services\KKN\DplScoreCalibrationService::class);
+    Route::get('dpl-calibration/{periode}', function (Periode $periode) {
+        $service = app(DplScoreCalibrationService::class);
 
         return response()->json($service->getCalibrationReport($periode->id));
     })->name('dpl-calibration');
@@ -98,6 +100,7 @@ Route::middleware([
 
     Route::prefix('laporan')->name('laporan.')->group(function () {
         Route::get('harian', [Admin\KegiatanKknController::class, 'index'])->name('harian.index');
+        Route::get('harian/{dailyReport}', [Admin\KegiatanKknController::class, 'show'])->name('harian.show');
         Route::get('program-kerja', [Admin\ProgramKerjaController::class, 'index'])->name('program-kerja.index');
         Route::prefix('akhir')->name('akhir.')->group(function () {
             Route::get('/', [Admin\LaporanAkhirController::class, 'index'])->name('index');
@@ -108,7 +111,7 @@ Route::middleware([
     });
 
     Route::get('evaluasi', [Admin\EvaluasiController::class, 'index'])->name('evaluasi.index');
-    
+
     Route::prefix('evaluasi-dpl')->name('evaluasi-dpl.')->group(function () {
         Route::get('/', [Admin\DplParticipantEvaluationController::class, 'index'])->name('index');
         Route::get('ekspor', [Admin\DplParticipantEvaluationController::class, 'export'])->name('export');
@@ -147,10 +150,10 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
         Route::get('ekspor', [Admin\PeriodeController::class, 'export'])->name('ekspor');
         Route::post('{periode}/duplikasi', [Admin\PeriodeController::class, 'duplicate'])->name('duplicate');
     });
-    
+
     Route::resource('periode', Admin\PeriodeController::class)
         ->only(['index', 'show', 'store', 'update', 'destroy']);
-    
+
     Route::get('periods', [Admin\PeriodeController::class, 'index'])->name('periods.index');
 
     // Master Data
@@ -211,7 +214,7 @@ Route::middleware(['role:superadmin|admin'])->prefix('admin')->name('admin.')->g
             Route::post('tolak-massal', [Admin\PesertaKknController::class, 'bulkReject'])
                 ->middleware('throttle:10,60')
                 ->name('tolak-massal');
-            
+
             // Individual Actions
             Route::prefix('{pesertaKkn}')->group(function () {
                 Route::patch('setujui', [Admin\PesertaKknController::class, 'approve'])->name('setujui');
@@ -282,7 +285,7 @@ Route::middleware(['role:superadmin'])->prefix('admin')->name('admin.')->group(f
 
     // Personel Sync & Assignment
     Route::middleware('not_locked')->group(function () {
-        
+
         // Mahasiswa Context
         Route::prefix('mahasiswa')->name('mahasiswa.')->group(function () {
             Route::get('/', [Admin\UserController::class, 'mahasiswaIndex'])->name('index');
@@ -294,10 +297,10 @@ Route::middleware(['role:superadmin'])->prefix('admin')->name('admin.')->group(f
         // Dosen & DPL Context
         Route::prefix('dosen')->name('dpl.')->group(function () {
             Route::get('/', [Admin\UserController::class, 'dosenIndex'])->name('index');
-            
+
             Route::get('sinkron', [Admin\DplSyncController::class, 'index'])->name('sinkron');
             Route::post('sinkron', [Admin\DplSyncController::class, 'sync'])->name('sinkron.store');
-            
+
             // DPL Registration
             Route::prefix('pendaftaran-dpl')->group(function () {
                 Route::get('/', [Admin\DplRegistrationController::class, 'index'])->name('pendaftaran');

@@ -35,6 +35,8 @@ interface ReportData {
   longitude?: number | string | null;
   gps_accuracy?: number | string | null;
   captured_at?: string | null;
+  status?: string;
+  review_notes?: string | null;
   file_kegiatan?: ReportFile[];
   fileKegiatan?: ReportFile[];
 }
@@ -232,6 +234,16 @@ export default function StudentDailyReportEdit({ report }: Props) {
             <p className="text-sm font-medium text-emerald-950">
               ID Laporan: <span className="text-emerald-600 font-bold">#{report.id}</span>
             </p>
+            {report.review_notes && (
+              <div className="mt-4 rounded-2xl border border-rose-100 bg-rose-50 px-5 py-4">
+                <p className="mb-1 text-xs font-bold uppercase tracking-widest text-rose-700">
+                  Catatan Revisi DPL
+                </p>
+                <p className="text-sm font-medium leading-relaxed text-rose-700">
+                  {report.review_notes}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="px-6 py-4 rounded-xl bg-emerald-50/30 border border-emerald-50/60 flex items-center gap-4">

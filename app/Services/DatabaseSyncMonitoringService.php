@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Jobs\SyncFacultyJob;
-use App\Jobs\SyncProgramJob;
 use App\Jobs\SyncDosenJob;
+use App\Jobs\SyncFacultyJob;
 use App\Jobs\SyncMahasiswaJob;
+use App\Jobs\SyncProgramJob;
 use App\Models\KKN\DatabaseSyncLog;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;

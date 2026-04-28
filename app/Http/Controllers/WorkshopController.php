@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\Workshop;
-use App\Models\KKN\Periode;
 use App\Services\DplEligibilityService;
 use App\Services\PeriodContextService;
 use App\Services\WorkshopService;
@@ -41,7 +41,7 @@ class WorkshopController extends Controller
         $activePeriodId = $request->input('period_id') ?? ($periodContextService->getActivePeriodId() ?? $periodContextService->getDefaultPeriodId());
 
         $isAdmin = $user->hasAnyRole(['superadmin', 'admin', 'faculty_admin']);
-        
+
         $workshops = $this->workshopService->getUpcomingWorkshops(
             $user->hasRole('dpl') ? $user->id : null,
             $isAdmin,

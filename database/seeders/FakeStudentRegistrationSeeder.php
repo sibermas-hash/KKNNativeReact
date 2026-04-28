@@ -20,7 +20,7 @@ class FakeStudentRegistrationSeeder extends Seeder
             [
                 'name' => 'Mahasiswa Tester Lengkap',
                 'email' => 'mhs.tester@example.com',
-                'password' => Hash::make('password'),
+                'password' => Hash::make(env('KKN_LOCAL_SEED_PASSWORD', 'password')),
                 'phone' => '081234567890',
                 'address' => 'Jl. Kampus No. 123, Purwokerto',
                 'domicile_village_name' => 'Bancarkembar',

@@ -12,11 +12,13 @@ use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PoskoKelompok;
+use App\Services\EmsifaService;
 use App\Services\PeriodContextService;
 use App\Traits\HandlesPagination;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Maatwebsite\Excel\Facades\Excel;
@@ -138,11 +140,11 @@ class LokasiController extends Controller
     {
         $validated = $request->validate([
             'file' => [
-                'required', 
-                'file', 
+                'required',
+                'file',
                 'mimetypes:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv,text/plain',
-                'mimes:xlsx,xls,csv,txt', 
-                'max:10240'
+                'mimes:xlsx,xls,csv,txt',
+                'max:10240',
             ],
         ], [
             'file.mimetypes' => 'Format file harus berupa Excel (XLSX/XLS) atau CSV yang valid.',
@@ -167,11 +169,24 @@ class LokasiController extends Controller
             'capacity' => ['nullable', 'integer', 'min:0'],
         ]);
 
+        $emsifa = new EmsifaService;
+        $villageCode = $emsifa->findVillageCode(
+            $validated['regency_name'],
+            $validated['district_name'],
+            $validated['village_name']
+        );
+
+        if (! filled($villageCode)) {
+            throw ValidationException::withMessages([
+                'village_name' => 'Kombinasi Desa, Kecamatan, dan Kabupaten tidak terdaftar di BPS (Emsifa). Pastikan ejaan dan hierarkinya benar.',
+            ]);
+        }
+
         Lokasi::create([
             'village_name' => $validated['village_name'],
             'district_name' => $validated['district_name'],
             'regency_name' => $validated['regency_name'],
-            'village_code' => $validated['village_code'] ?? null,
+            'village_code' => $villageCode,
             'capacity' => $validated['capacity'] ?? 0,
         ]);
 
@@ -188,11 +203,24 @@ class LokasiController extends Controller
             'capacity' => ['nullable', 'integer', 'min:0'],
         ]);
 
+        $emsifa = new EmsifaService;
+        $villageCode = $emsifa->findVillageCode(
+            $validated['regency_name'],
+            $validated['district_name'],
+            $validated['village_name']
+        );
+
+        if (! filled($villageCode)) {
+            throw ValidationException::withMessages([
+                'village_name' => 'Kombinasi Desa, Kecamatan, dan Kabupaten tidak terdaftar di BPS (Emsifa). Pastikan ejaan dan hierarkinya benar.',
+            ]);
+        }
+
         $lokasi->update([
             'village_name' => $validated['village_name'],
             'district_name' => $validated['district_name'],
             'regency_name' => $validated['regency_name'],
-            'village_code' => $validated['village_code'] ?? null,
+            'village_code' => $villageCode,
             'capacity' => $validated['capacity'] ?? $lokasi->capacity,
         ]);
 

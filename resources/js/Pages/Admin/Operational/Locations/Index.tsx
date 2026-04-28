@@ -80,6 +80,7 @@ export default function LocationsIndex({
   const [editingLocation, setEditingLocation] = useState<Location | null>(null);
   const [deletingLocation, setDeletingLocation] = useState<Location | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Wilayah dropdown states
   const [provinces, setProvinces] = useState<Array<{ id: string; name: string }>>([]);
@@ -143,8 +144,11 @@ export default function LocationsIndex({
     if (!selectedVillageId) return;
     const village = villages.find(v => v.id === selectedVillageId);
     if (village) {
-      form.setData('village_name', village.name);
-      form.setData('village_code', village.id);
+      form.setData(data => ({
+        ...data,
+        village_name: village.name,
+        village_code: village.id
+      }));
     }
   }, [selectedVillageId]);
 
@@ -174,6 +178,13 @@ export default function LocationsIndex({
     return () => window.clearTimeout(timer);
   }, [search, selectedPeriodId]);
 
+  const resetDropdowns = () => {
+    setSelectedProvinceId('');
+    setSelectedRegencyId('');
+    setSelectedDistrictId('');
+    setSelectedVillageId('');
+  };
+
   const submitForm = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingLocation) {
@@ -181,11 +192,16 @@ export default function LocationsIndex({
         onSuccess: () => {
           setEditingLocation(null);
           form.reset();
+          resetDropdowns();
         },
       });
     } else {
       form.post(route('admin.locations.store'), {
-        onSuccess: () => form.reset(),
+        onSuccess: () => {
+          setShowCreateModal(false);
+          form.reset();
+          resetDropdowns();
+        },
       });
     }
   };
@@ -199,11 +215,39 @@ export default function LocationsIndex({
       village_code: l.village_code ?? '',
       capacity: Number(l.capacity ?? 0),
     });
+    
+    // Reset dropdowns first
+    setSelectedProvinceId('');
+    setSelectedRegencyId('');
+    setSelectedDistrictId('');
+    setSelectedVillageId('');
+    
+    // Pre-select dropdowns based on village_code (BPS code)
+    if (l.village_code) {
+      const code = l.village_code;
+      // BPS code format: 10 digits (province=2, regency=4, district=6, village=10)
+      const provId = code.substring(0, 2);
+      const regId = code.substring(0, 4);
+      const distId = code.substring(0, 6);
+      
+      // Set province first, useEffect will cascade
+      setSelectedProvinceId(provId);
+      setSelectedRegencyId(regId);
+      setSelectedDistrictId(distId);
+      setSelectedVillageId(code);
+    }
   };
 
   const cancelEdit = () => {
     setEditingLocation(null);
     form.reset();
+    resetDropdowns();
+  };
+
+  const cancelCreate = () => {
+    setShowCreateModal(false);
+    form.reset();
+    resetDropdowns();
   };
 
   const setDeleting = (l: Location) => {
@@ -220,7 +264,7 @@ export default function LocationsIndex({
 
   const handleImport = (e: React.FormEvent) => {
     e.preventDefault();
-    importForm.post(route('admin.locations.import'), {
+    importForm.post(route('admin.lokasi.import'), {
       onSuccess: () => {
         setShowImportModal(false);
         importForm.reset();
@@ -267,6 +311,14 @@ export default function LocationsIndex({
               >
                 <Upload size={14} strokeWidth={2.5} /> Impor Massal
               </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowCreateModal(true)}
+                className="h-10 px-5 bg-emerald-900 text-white text-[10px] font-black uppercase tracking-wider rounded-xl hover:bg-emerald-950 transition-all flex items-center gap-2 shadow-sm shadow-emerald-900/20"
+              >
+                <Plus size={14} strokeWidth={2.5} /> Tambah Lokasi
+              </motion.button>
             </div>
           </PageHeader>
         </motion.div>
@@ -300,162 +352,8 @@ export default function LocationsIndex({
           />
         </motion.div>
 
-        {/* --- HORIZONTAL FILTER & FORM SECTION --- */}
+        {/* --- MAIN TABLE SECTION --- */}
         <div className="space-y-6">
-          <motion.div variants={itemVariants}>
-            <ContentPanel title="Filter & Registrasi Wilayah" icon={Filter} padding={true}>
-              <div className="flex flex-col lg:flex-row gap-8">
-                {/* Filter Column */}
-                <div className="lg:w-1/4 space-y-5 border-r border-gray-100 pr-8">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
-                      Periode KKN
-                    </label>
-                    <div className="relative group">
-                      <select
-                        value={selectedPeriodId}
-                        onChange={(e) => setSelectedPeriodId(e.target.value)}
-                        className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none"
-                        title="Filter Periode KKN"
-                        aria-label="Filter Periode KKN"
-                      >
-                        <option value="">SEMUA PERIODE</option>
-                        {periods?.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.name.toUpperCase()}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown
-                        size={14}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform"
-                      />
-                    </div>
-                  </div>
-                  <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100/30 flex items-start gap-3">
-                    <Info size={16} className="text-emerald-600 mt-0.5 shrink-0" />
-                    <p className="text-[10px] font-bold text-emerald-800/60 uppercase tracking-tight leading-relaxed">
-                      Pilih periode untuk memfilter lokasi yang memiliki penempatan kelompok pada
-                      periode tersebut.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Form Column */}
-                <div className="flex-1">
-                  {!editingLocation ? (
-                    <form onSubmit={submitForm}>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
-                        Desa/Kelurahan
-                      </label>
-                      <input
-                        type="text"
-                        value={form.data.village_name}
-                        onChange={(e) => form.setData('village_name', e.target.value)}
-                        className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all placeholder:text-gray-300"
-                        placeholder="Contoh: Karangklesem"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
-                        Kecamatan
-                      </label>
-                      <input
-                        type="text"
-                        value={form.data.district_name}
-                        onChange={(e) => form.setData('district_name', e.target.value)}
-                        className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all placeholder:text-gray-300"
-                        placeholder="Nama Kec."
-                        required
-                      />
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
-                        Kab/Kota
-                      </label>
-                      <input
-                        type="text"
-                        value={form.data.regency_name}
-                        onChange={(e) => form.setData('regency_name', e.target.value)}
-                        className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all placeholder:text-gray-300"
-                        placeholder="Nama Kab."
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-col md:flex-row items-end gap-6 mt-6 pt-6 border-t border-gray-100">
-                    <div className="flex-1 grid grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-emerald-800 uppercase tracking-widest pl-1">
-                          Kode Wilayah (BPS)
-                        </label>
-                        <input
-                          type="text"
-                          value={form.data.village_code}
-                          onChange={(e) => form.setData('village_code', e.target.value)}
-                          className="w-full h-11 px-4 rounded-xl border border-emerald-100 bg-white text-xs font-black text-emerald-950 focus:border-emerald-600 outline-none uppercase tracking-widest"
-                          placeholder="33.02.XX"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-black text-emerald-800 uppercase tracking-widest pl-1">
-                          Kapasitas Maksimal
-                        </label>
-                        <input
-                          type="number"
-                          min="0"
-                          value={form.data.capacity}
-                          onChange={(e) => form.setData('capacity', Number(e.target.value))}
-                          className="w-full h-11 px-4 rounded-xl border border-emerald-100 bg-white text-xs font-black text-emerald-950 text-center tabular-nums focus:border-emerald-600 outline-none"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {editingLocation && (
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          type="button"
-                          onClick={cancelEdit}
-                          className="h-11 px-6 border border-gray-200 text-emerald-950 text-xs font-black rounded-xl hover:bg-gray-50 transition-all uppercase tracking-widest"
-                        >
-                          Batal
-                        </motion.button>
-                      )}
-                      <motion.button
-                        whileHover={!form.processing ? { scale: 1.05 } : {}}
-                        whileTap={!form.processing ? { scale: 0.95 } : {}}
-                        type="submit"
-                        disabled={form.processing}
-                        className="h-11 px-8 bg-emerald-900 text-white text-xs font-black rounded-xl hover:bg-emerald-950 transition-all flex items-center justify-center gap-3 shadow-lg shadow-emerald-900/10 uppercase tracking-widest disabled:opacity-50"
-                      >
-                        {form.processing ? (
-                          <RefreshCw size={14} className="animate-spin" />
-                        ) : (
-                          <Plus size={14} />
-                        )}
-                        Registrasi Wilayah
-                      </motion.button>
-                    </div>
-                  </div>
-                </form>
-              ) : (
-                <div className="flex flex-col items-center justify-center h-full min-h-[200px] border-2 border-dashed border-emerald-100 rounded-2xl bg-emerald-50/50">
-                  <Pencil size={32} className="text-emerald-600/50 mb-3" />
-                  <p className="text-xs font-black text-emerald-800 uppercase tracking-widest">Mode Pengeditan Aktif</p>
-                  <p className="text-[10px] font-bold text-emerald-600/60 mt-1 uppercase tracking-wider">Selesaikan pembaruan data di jendela pop-up</p>
-                </div>
-              )}
-            </div>
-            </div>
-            </ContentPanel>
-          </motion.div>
-
-          {/* --- MAIN TABLE SECTION --- */}
           <motion.div variants={itemVariants}>
             <ContentPanel
               title="Direktori Wilayah Penempatan"
@@ -463,12 +361,34 @@ export default function LocationsIndex({
               icon={MapPinned}
               padding={false}
               headerAction={
-                <SearchInput
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="CARI DESA / KECAMATAN..."
-                  className="w-80"
-                />
+                <div className="flex items-center gap-3">
+                  <div className="relative group">
+                    <select
+                      value={selectedPeriodId}
+                      onChange={(e) => setSelectedPeriodId(e.target.value)}
+                      className="h-9 pl-3 pr-8 rounded-lg border border-gray-200 bg-white text-[10px] font-black text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none uppercase tracking-widest"
+                      title="Filter Periode KKN"
+                      aria-label="Filter Periode KKN"
+                    >
+                      <option value="">SEMUA PERIODE</option>
+                      {periods?.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name.toUpperCase()}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown
+                      size={12}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-800 pointer-events-none group-focus-within:rotate-180 transition-transform"
+                    />
+                  </div>
+                  <SearchInput
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="CARI DESA / KECAMATAN..."
+                    className="w-72"
+                  />
+                </div>
               }
               footer={
                 <div className="flex items-center justify-between">
@@ -529,14 +449,23 @@ export default function LocationsIndex({
                       </div>
                     </PremiumTableCell>
                     <PremiumTableCell>
-                      <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 bg-gray-50 rounded-lg flex items-center justify-center text-emerald-900 border border-gray-100">
-                          <Database size={12} />
+                      {l.village_code ? (
+                        <div className="flex items-center gap-2">
+                          <div className="h-6 w-6 bg-gray-50 rounded-lg flex items-center justify-center text-emerald-900 border border-gray-100">
+                            <Database size={12} />
+                          </div>
+                          <span className="text-[10px] font-black text-emerald-950 tabular-nums tracking-widest">
+                            {l.village_code}
+                          </span>
                         </div>
-                        <span className="text-[10px] font-black text-emerald-950 tabular-nums tracking-widest">
-                          {l.village_code || 'N/A'}
-                        </span>
-                      </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 px-2 py-1 bg-red-50 text-red-700 rounded-lg border border-red-100 w-max" title="Kombinasi wilayah tidak valid. Silakan edit data ini.">
+                          <AlertCircle size={12} strokeWidth={3} className="shrink-0" />
+                          <span className="text-[9px] font-black uppercase tracking-widest leading-none mt-0.5">
+                            Data Cacat
+                          </span>
+                        </div>
+                      )}
                     </PremiumTableCell>
                     <PremiumTableCell>
                       <div className="flex flex-col gap-2 w-28">
@@ -612,11 +541,21 @@ export default function LocationsIndex({
         <form onSubmit={handleImport} className="p-6 space-y-6">
           <div className="p-4 bg-amber-50 border border-amber-100 rounded-2xl flex items-start gap-3">
             <AlertCircle className="text-amber-600 mt-0.5 shrink-0" size={18} />
-            <div className="space-y-1">
-              <p className="text-xs font-bold text-amber-900 uppercase tracking-tight">Format Berkas</p>
-              <p className="text-[10px] font-medium text-amber-800/70 leading-relaxed uppercase">
-                Gunakan format Excel (.xlsx) dengan kolom: Desa, Kecamatan, Kabupaten, Kode_BPS, Kapasitas.
-              </p>
+            <div className="space-y-3 flex-1">
+              <div>
+                <p className="text-xs font-bold text-amber-900 uppercase tracking-tight">Format Berkas</p>
+                <p className="text-[10px] font-medium text-amber-800/70 leading-relaxed uppercase">
+                  Gunakan format Excel (.xlsx) dengan kolom: Desa, Kecamatan, Kabupaten, Kapasitas.
+                </p>
+              </div>
+              <a
+                href={route('admin.lokasi.template')}
+                className="inline-flex items-center gap-2 px-3 py-1.5 bg-amber-100 text-amber-900 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-amber-200 transition-colors"
+                download
+              >
+                <FileSpreadsheet size={14} />
+                Unduh Template Excel
+              </a>
             </div>
           </div>
 
@@ -641,8 +580,18 @@ export default function LocationsIndex({
                 className="absolute inset-0 opacity-0 cursor-pointer"
                 onChange={(e) => importForm.setData('file', e.target.files?.[0] || null)}
                 accept=".xlsx,.xls,.csv"
+                title="Pilih Berkas Spreadsheet"
+                aria-label="Pilih Berkas Spreadsheet"
               />
             </div>
+            {importForm.errors.file && (
+              <div className="p-4 rounded-xl bg-red-50 border border-red-100 flex items-start gap-3 mt-3 shadow-sm">
+                <AlertCircle size={16} className="text-red-600 mt-0.5 shrink-0" />
+                <p className="text-[11px] font-bold text-red-800 leading-relaxed uppercase tracking-wider">
+                  {importForm.errors.file}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-3 pt-4">
@@ -669,74 +618,151 @@ export default function LocationsIndex({
         </form>
       </Modal>
 
-      {/* EDIT MODAL */}
-      <Modal
-        show={!!editingLocation}
-        onClose={cancelEdit}
-        title="Edit Data Wilayah KKN"
-      >
-        <form onSubmit={submitForm} className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
-                Desa/Kelurahan
-              </label>
-              <input
-                type="text"
-                value={form.data.village_name}
-                onChange={(e) => form.setData('village_name', e.target.value)}
-                className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all placeholder:text-gray-300"
-                required
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
-                Kecamatan
-              </label>
-              <input
-                type="text"
-                value={form.data.district_name}
-                onChange={(e) => form.setData('district_name', e.target.value)}
-                className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all placeholder:text-gray-300"
-                required
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
-                Kab/Kota
-              </label>
-              <input
-                type="text"
-                value={form.data.regency_name}
-                onChange={(e) => form.setData('regency_name', e.target.value)}
-                className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all placeholder:text-gray-300"
-                required
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-black text-emerald-800 uppercase tracking-widest pl-1">
-                Kode Wilayah (BPS)
-              </label>
-              <input
-                type="text"
-                value={form.data.village_code}
-                onChange={(e) => form.setData('village_code', e.target.value)}
-                className="w-full h-11 px-4 rounded-xl border border-emerald-100 bg-white text-xs font-black text-emerald-950 focus:border-emerald-600 outline-none uppercase tracking-widest"
-              />
-            </div>
-            <div className="space-y-1.5 md:col-span-2">
-              <label className="text-[10px] font-black text-emerald-800 uppercase tracking-widest pl-1">
-                Kapasitas Maksimal Kelompok
-              </label>
-              <input
-                type="number"
-                min="0"
-                value={form.data.capacity}
-                onChange={(e) => form.setData('capacity', Number(e.target.value))}
-                className="w-full h-11 px-4 rounded-xl border border-emerald-100 bg-white text-xs font-black text-emerald-950 text-center tabular-nums focus:border-emerald-600 outline-none"
-              />
-            </div>
-          </div>
+       {/* EDIT MODAL */}
+       <Modal
+         show={!!editingLocation}
+         onClose={cancelEdit}
+         title="Edit Data Wilayah KKN"
+       >
+         <form onSubmit={submitForm} className="p-6 space-y-6">
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+             <div className="space-y-1.5">
+               <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
+                 Provinsi
+               </label>
+               <select
+                 value={selectedProvinceId}
+                 onChange={(e) => {
+                   setSelectedProvinceId(e.target.value);
+                   form.setData(data => ({
+                     ...data,
+                     regency_name: '',
+                     district_name: '',
+                     village_name: '',
+                     village_code: ''
+                   }));
+                 }}
+                 className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all bg-white"
+                 title="Pilih Provinsi"
+                 aria-label="Pilih Provinsi"
+                 required
+               >
+                 <option value="">-- Pilih Provinsi --</option>
+                 {provinces.map((p) => (
+                   <option key={p.id} value={p.id}>{p.name}</option>
+                 ))}
+               </select>
+             </div>
+             <div className="space-y-1.5">
+               <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
+                 Kab/Kota
+               </label>
+               <select
+                 value={selectedRegencyId}
+                 onChange={(e) => {
+                   setSelectedRegencyId(e.target.value);
+                   const name = regencies.find((r) => r.id === e.target.value)?.name || '';
+                   form.setData(data => ({
+                     ...data,
+                     regency_name: name,
+                     district_name: '',
+                     village_name: '',
+                     village_code: ''
+                   }));
+                 }}
+                 className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all bg-white disabled:opacity-50 disabled:bg-gray-50"
+                 required
+                 disabled={!selectedProvinceId || regencies.length === 0}
+                 title="Pilih Kabupaten atau Kota"
+                 aria-label="Pilih Kabupaten atau Kota"
+               >
+                 <option value="">-- Pilih Kab/Kota --</option>
+                 {regencies.map((r) => (
+                   <option key={r.id} value={r.id}>{r.name}</option>
+                 ))}
+               </select>
+             </div>
+             <div className="space-y-1.5">
+               <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
+                 Kecamatan
+               </label>
+               <select
+                 value={selectedDistrictId}
+                 onChange={(e) => {
+                   setSelectedDistrictId(e.target.value);
+                   const name = districts.find((d) => d.id === e.target.value)?.name || '';
+                   form.setData(data => ({
+                     ...data,
+                     district_name: name,
+                     village_name: '',
+                     village_code: ''
+                   }));
+                 }}
+                 className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all bg-white disabled:opacity-50 disabled:bg-gray-50"
+                 required
+                 disabled={!selectedRegencyId || districts.length === 0}
+                 title="Pilih Kecamatan"
+                 aria-label="Pilih Kecamatan"
+               >
+                 <option value="">-- Pilih Kecamatan --</option>
+                 {districts.map((d) => (
+                   <option key={d.id} value={d.id}>{d.name}</option>
+                 ))}
+               </select>
+             </div>
+             <div className="space-y-1.5">
+               <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
+                 Desa/Kelurahan
+               </label>
+               <select
+                 value={selectedVillageId}
+                 onChange={(e) => setSelectedVillageId(e.target.value)}
+                 className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all bg-white disabled:opacity-50 disabled:bg-gray-50"
+                 required
+                 disabled={!selectedDistrictId || villages.length === 0}
+                 title="Pilih Desa atau Kelurahan"
+                 aria-label="Pilih Desa atau Kelurahan"
+               >
+                 <option value="">-- Pilih Desa --</option>
+                 {villages.map((v) => (
+                   <option key={v.id} value={v.id}>{v.name}</option>
+                 ))}
+               </select>
+               {form.errors.village_name && (
+                 <p className="text-[10px] font-bold text-red-500 mt-1 uppercase tracking-widest leading-relaxed">
+                   {form.errors.village_name}
+                 </p>
+               )}
+             </div>
+             <div className="space-y-1.5">
+               <label className="text-[10px] font-black text-emerald-800 uppercase tracking-widest pl-1">
+                 Kode Wilayah (BPS)
+               </label>
+               <input
+                 type="text"
+                 value={form.data.village_code ?? ''}
+                 onChange={(e) => form.setData('village_code', e.target.value)}
+                 className="w-full h-11 px-4 rounded-xl border border-emerald-100 bg-emerald-50/50 text-xs font-black text-emerald-950 focus:border-emerald-600 outline-none uppercase tracking-widest"
+                 placeholder="Terisi Otomatis"
+                 readOnly
+               />
+             </div>
+             <div className="space-y-1.5 md:col-span-2">
+               <label className="text-[10px] font-black text-emerald-800 uppercase tracking-widest pl-1">
+                 Kapasitas Maksimal Kelompok
+               </label>
+               <input
+                 type="number"
+                 min="0"
+                 value={form.data.capacity}
+                 onChange={(e) => form.setData('capacity', Number(e.target.value))}
+                 className="w-full h-11 px-4 rounded-xl border border-emerald-100 bg-white text-xs font-black text-emerald-950 text-center tabular-nums focus:border-emerald-600 outline-none"
+                 placeholder="0"
+                 title="Kapasitas Maksimal Kelompok"
+                 aria-label="Kapasitas Maksimal Kelompok"
+               />
+             </div>
+           </div>
 
           <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
             <button
@@ -759,6 +785,173 @@ export default function LocationsIndex({
                 <Save size={16} />
               )}
               Update Data Lokasi
+            </motion.button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* CREATE MODAL */}
+      <Modal
+        show={showCreateModal}
+        onClose={cancelCreate}
+        title="Registrasi Wilayah Baru"
+      >
+        <form onSubmit={submitForm} className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
+                Provinsi
+              </label>
+              <select
+                value={selectedProvinceId}
+                onChange={(e) => {
+                  setSelectedProvinceId(e.target.value);
+                  form.setData(data => ({
+                    ...data,
+                    regency_name: '',
+                    district_name: '',
+                    village_name: '',
+                    village_code: ''
+                  }));
+                }}
+                className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all bg-white"
+                title="Pilih Provinsi"
+                aria-label="Pilih Provinsi"
+                required
+              >
+                <option value="">-- Pilih Provinsi --</option>
+                {provinces.map((p) => (
+                  <option key={p.id} value={p.id}>{p.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
+                Kab/Kota
+              </label>
+              <select
+                value={selectedRegencyId}
+                onChange={(e) => {
+                  setSelectedRegencyId(e.target.value);
+                  const name = regencies.find((r) => r.id === e.target.value)?.name || '';
+                  form.setData(data => ({
+                    ...data,
+                    regency_name: name,
+                    district_name: '',
+                    village_name: '',
+                    village_code: ''
+                  }));
+                }}
+                className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all bg-white disabled:opacity-50 disabled:bg-gray-50"
+                required
+                disabled={!selectedProvinceId || regencies.length === 0}
+                title="Pilih Kabupaten atau Kota"
+                aria-label="Pilih Kabupaten atau Kota"
+              >
+                <option value="">-- Pilih Kab/Kota --</option>
+                {regencies.map((r) => (
+                  <option key={r.id} value={r.id}>{r.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
+                Kecamatan
+              </label>
+              <select
+                value={selectedDistrictId}
+                onChange={(e) => {
+                  setSelectedDistrictId(e.target.value);
+                  const name = districts.find((d) => d.id === e.target.value)?.name || '';
+                  form.setData(data => ({
+                    ...data,
+                    district_name: name,
+                    village_name: '',
+                    village_code: ''
+                  }));
+                }}
+                className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all bg-white disabled:opacity-50 disabled:bg-gray-50"
+                required
+                disabled={!selectedRegencyId || districts.length === 0}
+                title="Pilih Kecamatan"
+                aria-label="Pilih Kecamatan"
+              >
+                <option value="">-- Pilih Kecamatan --</option>
+                {districts.map((d) => (
+                  <option key={d.id} value={d.id}>{d.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
+                Desa/Kelurahan
+              </label>
+              <select
+                value={selectedVillageId}
+                onChange={(e) => setSelectedVillageId(e.target.value)}
+                className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all bg-white disabled:opacity-50 disabled:bg-gray-50"
+                required
+                disabled={!selectedDistrictId || villages.length === 0}
+                title="Pilih Desa atau Kelurahan"
+                aria-label="Pilih Desa atau Kelurahan"
+              >
+                <option value="">-- Pilih Desa --</option>
+                {villages.map((v) => (
+                  <option key={v.id} value={v.id}>{v.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-emerald-800 uppercase tracking-widest pl-1">
+                Kode Wilayah (BPS)
+              </label>
+              <input
+                type="text"
+                value={form.data.village_code ?? ''}
+                onChange={(e) => form.setData('village_code', e.target.value)}
+                className="w-full h-11 px-4 rounded-xl border border-emerald-100 bg-emerald-50/50 text-xs font-black text-emerald-950 focus:border-emerald-600 outline-none uppercase tracking-widest"
+                placeholder="Terisi Otomatis"
+                readOnly
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-emerald-800 uppercase tracking-widest pl-1">
+                Kapasitas Maksimal
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={form.data.capacity}
+                onChange={(e) => form.setData('capacity', Number(e.target.value))}
+                className="w-full h-11 px-4 rounded-xl border border-emerald-100 bg-white text-xs font-black text-emerald-950 text-center tabular-nums focus:border-emerald-600 outline-none"
+                placeholder="0"
+                title="Kapasitas Maksimal"
+                aria-label="Kapasitas Maksimal"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={cancelCreate}
+              className="flex-1 h-12 border-2 border-gray-100 text-gray-500 text-xs font-black rounded-xl hover:bg-gray-50 transition-all uppercase tracking-widest"
+            >
+              Batalkan
+            </button>
+            <motion.button
+              whileHover={!form.processing ? { scale: 1.02 } : {}}
+              whileTap={!form.processing ? { scale: 0.98 } : {}}
+              type="submit"
+              disabled={form.processing}
+              className="flex-[2] h-12 bg-emerald-900 text-white text-xs font-black rounded-xl hover:bg-emerald-950 transition-all flex items-center justify-center gap-3 shadow-lg shadow-emerald-900/20 uppercase tracking-widest disabled:opacity-50"
+            >
+              {form.processing ? (
+                <RefreshCw size={16} className="animate-spin" />
+              ) : (
+                <Save size={16} />
+              )}
+              Registrasi Wilayah
             </motion.button>
           </div>
         </form>

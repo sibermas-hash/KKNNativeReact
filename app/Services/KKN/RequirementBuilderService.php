@@ -63,6 +63,7 @@ class RequirementBuilderService
     {
         try {
             self::validateRequirementsConfig($config);
+
             return true;
         } catch (\InvalidArgumentException) {
             return false;

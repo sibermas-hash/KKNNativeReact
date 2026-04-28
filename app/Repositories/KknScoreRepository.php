@@ -61,14 +61,14 @@ class KknScoreRepository
                 'ks.dpl_weighted_score as n_dpl',
                 'ks.village_weighted_score as n_mitra',
                 'ks.lppm_weighted_score as n_admin',
-                // Komponen A
-                'ks.final_report_score as nilai_laporan_akhir',
-                'ks.execution_score as nilai_pelaksanaan',
-                'ks.article_score as nilai_artikel',
-                // Komponen B
-                'ks.attitude_score as nilai_sikap',
-                'ks.discipline_score as nilai_kedisiplinan',
-                // Komponen C
+                // Komponen A (DPL)
+                'ks.dpl_administrasi_score as nilai_laporan_akhir',
+                'ks.dpl_ketercapaian_score as nilai_pelaksanaan',
+                'ks.dpl_artikel_score as nilai_artikel',
+                // Komponen B (Desa)
+                'ks.desa_interaksi_score as nilai_sikap',
+                'ks.desa_disiplin_score as nilai_kedisiplinan',
+                // Komponen C (LPPM)
                 'ks.administration_score as nilai_administrasi',
                 // Output
                 'ks.total_score as nilai_akhir',

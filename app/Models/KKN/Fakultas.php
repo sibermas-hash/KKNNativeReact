@@ -14,6 +14,7 @@ class Fakultas extends Model
     use HasFactory, SoftDeletes;
 
     protected $table = 'fakultas';
+
     protected $fillable = ['nama', 'code', 'master_id', 'master_synced_at'];
 
     protected function casts(): array

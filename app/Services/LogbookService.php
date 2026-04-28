@@ -38,7 +38,7 @@ class LogbookService
                 'latitude' => $latitude,
                 'longitude' => $longitude,
                 'location_name' => $locationName,
-                'status' => 'submitted',
+                'status' => KegiatanKkn::STATUS_SUBMITTED,
             ]);
 
             // If there are files, we can handle them
@@ -66,9 +66,14 @@ class LogbookService
         ?string $reviewNotes = null
     ): KegiatanKkn {
         $kegiatan = KegiatanKkn::findOrFail($kegiatanId);
+        $nextStatus = KegiatanKkn::normalizeWorkflowStatus($status);
+
+        if ($nextStatus === KegiatanKkn::STATUS_DRAFT) {
+            $nextStatus = KegiatanKkn::STATUS_SUBMITTED;
+        }
 
         $kegiatan->update([
-            'status' => $status,
+            'status' => $nextStatus,
             'review_notes' => $reviewNotes,
             'reviewed_by' => $reviewerId,
             'reviewed_at' => now(),
@@ -91,9 +96,13 @@ class LogbookService
             'entries' => $kegiatan,
             'statistics' => [
                 'total' => $kegiatan->count(),
-                'approved' => $kegiatan->where('status', 'approved')->count(),
-                'pending' => $kegiatan->where('status', 'submitted')->count(),
-                'rejected' => $kegiatan->where('status', 'rejected')->count(),
+                'approved' => $kegiatan->filter(fn (KegiatanKkn $report) => $report->isApproved())->count(),
+                'pending' => $kegiatan->filter(
+                    fn (KegiatanKkn $report) => $report->canonicalStatus() === KegiatanKkn::STATUS_SUBMITTED
+                )->count(),
+                'revision' => $kegiatan->filter(
+                    fn (KegiatanKkn $report) => $report->canonicalStatus() === KegiatanKkn::STATUS_REVISION
+                )->count(),
             ],
         ];
     }

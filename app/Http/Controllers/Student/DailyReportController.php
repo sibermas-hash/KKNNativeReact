@@ -81,14 +81,22 @@ class DailyReportController extends Controller
                 ->with(['kelompok', 'fileKegiatan'])
                 ->orderByDesc('date')
                 ->paginate(10)
-                ->through(fn ($report) => [
+                ->through(fn (KegiatanKkn $report) => [
                     'id' => $report->id,
-                    'date' => optional($report->date)->format('d M Y') ?? '-',
+                    'date' => $report->date?->toDateString(),
+                    'date_label' => $report->date?->translatedFormat('d M Y') ?? '-',
                     'title' => $report->title,
-                    'status' => $report->status,
+                    'status' => $report->canonicalStatus(),
+                    'activity' => $report->activity,
+                    'reflection' => $report->reflection,
+                    'output' => $report->output,
+                    'review_notes' => $report->review_notes,
                     'ai_summary' => $report->ai_summary,
                     'ai_analysis' => $report->ai_analysis,
-                    'kelompok' => $report->kelompok,
+                    'kelompok' => [
+                        'id' => $report->kelompok_id,
+                        'name' => $report->kelompok?->nama_kelompok ?? $report->kelompok?->code ?? '-',
+                    ],
                     'file_kegiatan' => $report->fileKegiatan->map(fn ($file) => [
                         'id' => $file->id,
                         'file_path' => $file->file_path,
@@ -168,7 +176,7 @@ class DailyReportController extends Controller
             'captured_at' => Carbon::parse($validated['captured_at']),
             'location_source' => 'gps',
             'location_name' => $validated['location_name'] ?? null,
-            'status' => 'submitted',
+            'status' => KegiatanKkn::STATUS_SUBMITTED,
         ]);
 
         if ($request->hasFile('files')) {
@@ -218,7 +226,27 @@ class DailyReportController extends Controller
         $dailyReport->load(['fileKegiatan', 'kelompok.lokasi', 'kelompok.posko']);
 
         return Inertia::render('Student/DailyReports/Edit', [
-            'report' => $dailyReport,
+            'report' => [
+                'id' => $dailyReport->id,
+                'date' => $dailyReport->date?->toDateString(),
+                'title' => $dailyReport->title,
+                'abcd_stage' => $dailyReport->abcd_stage,
+                'activity' => $dailyReport->activity,
+                'reflection' => $dailyReport->reflection,
+                'social_media_link' => $dailyReport->social_media_link,
+                'output' => $dailyReport->output,
+                'location_name' => $dailyReport->location_name,
+                'latitude' => $dailyReport->latitude,
+                'longitude' => $dailyReport->longitude,
+                'gps_accuracy' => $dailyReport->gps_accuracy,
+                'captured_at' => $dailyReport->captured_at?->toIso8601String(),
+                'status' => $dailyReport->canonicalStatus(),
+                'review_notes' => $dailyReport->review_notes,
+                'file_kegiatan' => $dailyReport->fileKegiatan->map(fn (FileKegiatanKkn $file) => [
+                    'id' => $file->id,
+                    'file_name' => $file->file_name,
+                ])->values(),
+            ],
             'geoPolicy' => $this->buildGeoPolicy($dailyReport->kelompok),
         ]);
     }
@@ -227,6 +255,7 @@ class DailyReportController extends Controller
     {
         Gate::authorize('update', $dailyReport);
         $dailyReport->loadMissing(['kelompok.lokasi', 'kelompok.posko']);
+        $wasRevisionRequest = $dailyReport->isRevisionRequested();
 
         $validated = $request->validated();
         $this->enforceGpsPolicy($validated, $dailyReport->kelompok);
@@ -245,18 +274,25 @@ class DailyReportController extends Controller
             'captured_at' => Carbon::parse($validated['captured_at']),
             'location_source' => 'gps',
             'location_name' => $validated['location_name'] ?? null,
-            'status' => 'submitted',
+            'status' => KegiatanKkn::STATUS_SUBMITTED,
+            'review_notes' => null,
+            'reviewed_by' => null,
+            'reviewed_at' => null,
         ]);
 
         if ($request->expectsJson()) {
             return response()->json([
-                'message' => 'Laporan harian berhasil diperbarui.',
+                'message' => $wasRevisionRequest
+                    ? 'Laporan harian berhasil dikirim ulang.'
+                    : 'Laporan harian berhasil diperbarui.',
                 'report_id' => $dailyReport->id,
             ]);
         }
 
         return redirect()->route('student.laporan-harian.index')
-            ->with('success', 'Laporan harian berhasil diperbarui.');
+            ->with('success', $wasRevisionRequest
+                ? 'Laporan harian berhasil dikirim ulang.'
+                : 'Laporan harian berhasil diperbarui.');
     }
 
     public function destroy(KegiatanKkn $dailyReport): RedirectResponse

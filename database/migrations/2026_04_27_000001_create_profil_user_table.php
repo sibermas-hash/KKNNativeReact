@@ -17,7 +17,7 @@ return new class extends Migration
             $table->text('address')->nullable();
             $table->string('avatar')->nullable();
             $table->timestamps();
-            
+
             $table->index(['profileable_type', 'profileable_id'], 'profil_user_profileable_index');
         });
     }

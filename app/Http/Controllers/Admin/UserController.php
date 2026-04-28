@@ -206,7 +206,7 @@ class UserController extends Controller
                 'is_bta_ppi_passed' => in_array(strtoupper(trim($mahasiswa->status_bta_ppi ?? '')), ['LULUS', 'PASSED', 'SUCCESS']),
                 'master_id' => $mahasiswa->master_id,
                 'master_synced_at' => $mahasiswa->master_synced_at?->toIso8601String(),
-                'address' => $mahasiswa->user?->address,
+                'full_address' => $mahasiswa->address,
                 'fakultas' => $faculty ? [
                     'id' => $faculty->id,
                     'nama' => $faculty->nama,
@@ -311,7 +311,7 @@ class UserController extends Controller
                 'gpa' => $mahasiswa->gpa,
                 'is_bta_ppi_passed' => in_array(strtoupper(trim($mahasiswa->status_bta_ppi ?? '')), ['LULUS', 'PASSED', 'SUCCESS']),
                 'mother_name' => $mahasiswa->mother_name,
-                'address' => $mahasiswa->address ?? null,
+                'full_address' => $mahasiswa->address,
                 'master_synced_at' => $mahasiswa->master_synced_at?->toIso8601String(),
                 'fakultas' => $mahasiswa->fakultas ? ['id' => $mahasiswa->fakultas->id, 'nama' => $mahasiswa->fakultas->nama] : null,
                 'prodi' => $mahasiswa->prodi ? ['id' => $mahasiswa->prodi->id, 'nama' => $mahasiswa->prodi->nama] : null,

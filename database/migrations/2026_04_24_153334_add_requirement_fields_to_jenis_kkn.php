@@ -31,7 +31,7 @@ return new class extends Migration
                 'require_parent_permission',
                 'require_health_certificate',
                 'specific_prodi_ids',
-                'require_bta_ppi'
+                'require_bta_ppi',
             ]);
         });
     }

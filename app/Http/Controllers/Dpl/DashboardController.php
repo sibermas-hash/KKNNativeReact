@@ -53,7 +53,7 @@ class DashboardController extends Controller
             ->get();
 
         $pendingReports = KegiatanKkn::whereIn('kelompok_id', $groupIds)
-            ->where('status', 'submitted')
+            ->workflowSubmitted()
             ->count();
 
         $totalStudents = $kelompok->sum('peserta_count');

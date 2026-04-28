@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
 
         if (app()->environment('local')) {
             $seeders[] = AdminUserSeeder::class;
+            $seeders[] = SampleUserSeeder::class;
             $seeders[] = RestoreFromBackupSeeder::class;
         }
 

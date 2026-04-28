@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\KKN\KonfigurasiSertifikat;
 use App\Models\KKN\LaporanAkhir;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\SertifikatKkn;
+use App\Services\KKN\KonfigurasiSertifikatService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
+use PhpOffice\PhpWord\TemplateProcessor;
 use RuntimeException;
 
 class CertificateService
@@ -20,7 +22,7 @@ class CertificateService
     public function generateForStudent(NilaiKkn $score)
     {
         $data = $this->prepareCertificateData($score);
-        
+
         return Pdf::loadView('reports.certificate', $data)
             ->setPaper('a4', 'landscape');
     }
@@ -31,16 +33,16 @@ class CertificateService
     public function generateWordForStudent(NilaiKkn $score)
     {
         $data = $this->prepareCertificateData($score);
-        
+
         // Path to Word template
         $templatePath = storage_path('app/templates/certificate_template.docx');
-        
-        if (!file_exists($templatePath)) {
+
+        if (! file_exists($templatePath)) {
             throw new RuntimeException('Template Word (.docx) tidak ditemukan di storage/app/templates/certificate_template.docx');
         }
 
-        $templateProcessor = new \PhpOffice\PhpWord\TemplateProcessor($templatePath);
-        
+        $templateProcessor = new TemplateProcessor($templatePath);
+
         // Map data to template placeholders
         $templateProcessor->setValue('TITLE', $data['title']);
         $templateProcessor->setValue('NAME', $data['name']);
@@ -59,7 +61,7 @@ class CertificateService
 
         $tempFile = tempnam(sys_get_temp_dir(), 'cert_');
         $templateProcessor->saveAs($tempFile);
-        
+
         return $tempFile;
     }
 
@@ -105,7 +107,7 @@ class CertificateService
             throw new RuntimeException('Laporan akhir belum disetujui untuk kelompok ini');
         }
 
-        $configService = app(\App\Services\KKN\KonfigurasiSertifikatService::class);
+        $configService = app(KonfigurasiSertifikatService::class);
         $periodeId = (int) $periode->id;
         $configs = $configService->getAllForPeriode($periodeId);
 
@@ -115,14 +117,14 @@ class CertificateService
             $lokasi->district_name ?? null,
             $lokasi->regency_name ?? null,
         ]))) : '-';
-        
+
         $name = $mahasiswaModel->nama ?? $mahasiswaModel->user?->name ?? '-';
         $periodName = $periode->name ?? '-';
         $fakultasName = $mahasiswaModel->fakultas?->nama ?? '-';
         $prodiName = $mahasiswaModel->prodi?->nama ?? '-';
 
         $body = $configs['cert_body'] ?? 'Telah mengikuti Kuliah Kerja Nyata (KKN) periode [Periode] di lokasi [Lokasi].';
-        
+
         $replacements = [
             '[Nama]' => $name,
             '[NIM]' => $mahasiswaModel->nim ?? '',
@@ -163,7 +165,7 @@ class CertificateService
         );
 
         $bgPath = $configs['cert_background'] ?? null;
-        if ($bgPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($bgPath)) {
+        if ($bgPath && Storage::disk('public')->exists($bgPath)) {
             $bgFile = storage_path('app/public/'.$bgPath);
         } else {
             $bgFile = public_path('images/cert-bg-default.png');
@@ -174,14 +176,14 @@ class CertificateService
         if (file_exists($bgFile)) {
             $bgData = file_get_contents($bgFile);
             $bgType = pathinfo($bgFile, PATHINFO_EXTENSION);
-            $bgBase64 = 'data:image/' . $bgType . ';base64,' . base64_encode($bgData);
+            $bgBase64 = 'data:image/'.$bgType.';base64,'.base64_encode($bgData);
         }
 
         // Convert QR URL to base64 to avoid remote fetch issues in DomPDF
         $qrRawUrl = 'https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl='.urlencode($verificationUrl).'&choe=UTF-8';
         try {
             $qrData = file_get_contents($qrRawUrl);
-            $qrBase64 = 'data:image/png;base64,' . base64_encode($qrData);
+            $qrBase64 = 'data:image/png;base64,'.base64_encode($qrData);
         } catch (\Exception $e) {
             $qrBase64 = $qrRawUrl; // Fallback
         }
@@ -212,6 +214,7 @@ class CertificateService
     public function preview(NilaiKkn $score): string
     {
         $pdf = $this->generateForStudent($score);
+
         return base64_encode($pdf->output());
     }
 

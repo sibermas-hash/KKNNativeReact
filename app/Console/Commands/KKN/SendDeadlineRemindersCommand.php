@@ -7,6 +7,7 @@ namespace App\Console\Commands\KKN;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\User;
+use App\Notifications\DeadlineReminderNotification;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -72,7 +73,7 @@ class SendDeadlineRemindersCommand extends Command
             foreach ($eligibleUsers as $user) {
                 try {
                     // Use database notification (shows in app notification center)
-                    $user->notify(new \App\Notifications\DeadlineReminderNotification(
+                    $user->notify(new DeadlineReminderNotification(
                         periode: $periode,
                         label: $label,
                     ));

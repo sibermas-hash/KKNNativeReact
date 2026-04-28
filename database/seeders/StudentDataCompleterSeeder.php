@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use App\Models\KKN\Mahasiswa;
+use App\Models\User;
+use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Faker\Factory as Faker;
 
 class StudentDataCompleterSeeder extends Seeder
 {
@@ -15,7 +15,7 @@ class StudentDataCompleterSeeder extends Seeder
         $faker = Faker::create('id_ID');
         $mahasiswas = Mahasiswa::with('user')->get();
 
-        $this->command->info("Melengkapi data random untuk " . $mahasiswas->count() . " mahasiswa...");
+        $this->command->info('Melengkapi data random untuk '.$mahasiswas->count().' mahasiswa...');
 
         DB::beginTransaction();
         try {
@@ -45,10 +45,10 @@ class StudentDataCompleterSeeder extends Seeder
             }
 
             DB::commit();
-            $this->command->info("Data mahasiswa berhasil dilengkapi secara acak.");
+            $this->command->info('Data mahasiswa berhasil dilengkapi secara acak.');
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->command->error("Gagal melengkapi data: " . $e->getMessage());
+            $this->command->error('Gagal melengkapi data: '.$e->getMessage());
         }
     }
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AdminKeyController;
 use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\Api\DomisiliController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PublicDataController;
 use App\Http\Controllers\Api\RegistrationController;
@@ -52,8 +53,8 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->name('api.')->group(functi
 
     // Domisili (for KKN Mandiri)
     Route::prefix('domisili')->name('domisili.')->group(function () {
-        Route::get('/', [\App\Http\Controllers\Api\DomisiliController::class, 'show'])->name('show');
-        Route::post('/', [\App\Http\Controllers\Api\DomisiliController::class, 'store'])->name('store');
+        Route::get('/', [DomisiliController::class, 'show'])->name('show');
+        Route::post('/', [DomisiliController::class, 'store'])->name('store');
     });
 
     // ─── GEOLOCATION & ATTENDANCE ─────────────────────────────────

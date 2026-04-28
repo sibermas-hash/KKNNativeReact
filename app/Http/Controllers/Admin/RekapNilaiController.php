@@ -19,13 +19,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Maatwebsite\Excel\Facades\Excel;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class RekapNilaiController extends Controller
 {
@@ -233,13 +228,14 @@ class RekapNilaiController extends Controller
     public function previewCertificate(NilaiKkn $score)
     {
         $this->authorize('view', $score);
-        
+
         try {
             $base64 = $this->certificate->preview($score);
+
             return response()->json([
                 'success' => true,
                 'preview' => $base64,
-                'filename' => "Preview_Sertifikat_{$score->mahasiswa->nim}.pdf"
+                'filename' => "Preview_Sertifikat_{$score->mahasiswa->nim}.pdf",
             ]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);

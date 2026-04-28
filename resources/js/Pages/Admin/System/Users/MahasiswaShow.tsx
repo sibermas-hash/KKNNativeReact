@@ -16,6 +16,7 @@ import { clsx } from 'clsx';
 import AppLayout from '@/Layouts/AppLayout';
 import { ConfirmDialog } from '@/Components/UI';
 import { useState } from 'react';
+import { motion, Variants } from 'framer-motion';
 
 interface MahasiswaData {
   id: number;
@@ -115,15 +116,33 @@ export default function MahasiswaShow({
 
   const tempPasswordData = flash?.temporary_password_display;
 
+  const containerVariants: Variants = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: { staggerChildren: 0.08 }
+    }
+  };
+
+  const itemVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: 'spring' as const, stiffness: 300, damping: 24 } }
+  };
+
   return (
     <>
       <AppLayout title={`Detail Mahasiswa: ${mahasiswa.nama}`}>
         <Head title={`Detail — ${mahasiswa.nama}`} />
 
-        <div className="space-y-6 font-sans pb-12">
+        <motion.div 
+          className="space-y-6 font-sans pb-12"
+          variants={containerVariants}
+          initial="hidden"
+          animate="show"
+        >
           {/* TEMPORARY PASSWORD BANNER */}
           {tempPasswordData && (
-            <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-4 shadow-sm animate-pulse">
+            <motion.div variants={itemVariants} className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between gap-4 shadow-sm animate-pulse">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center">
                   <KeyRound size={20} />
@@ -143,10 +162,10 @@ export default function MahasiswaShow({
               <p className="text-xs text-amber-600 font-medium uppercase tracking-wider max-w-[120px] text-right leading-tight">
                 Kopi dan berikan ke mahasiswa. Segera ganti.
               </p>
-            </div>
+            </motion.div>
           )}
           {/* HEADER */}
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-emerald-50 pt-6">
+          <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-emerald-50 pt-6">
             <div className="flex flex-col md:flex-row items-center md:items-start gap-5 text-center md:text-left">
               {/* AVATAR / PHOTO */}
               <div className="relative shrink-0 group">
@@ -177,12 +196,14 @@ export default function MahasiswaShow({
 
               <div className="space-y-1">
                 <div className="flex items-center justify-center md:justify-start gap-2">
-                  <Link
-                    href="/admin/mahasiswa"
-                    className="text-emerald-800 hover:text-[#0d9488] transition-colors flex items-center gap-1.5 text-sm font-medium"
-                  >
-                    <ArrowLeft size={14} strokeWidth={2.5} /> Kembali ke Direktori
-                  </Link>
+                  <motion.div whileHover={{ x: -4 }} whileTap={{ scale: 0.95 }}>
+                    <Link
+                      href="/admin/mahasiswa"
+                      className="text-emerald-800 hover:text-[#0d9488] transition-colors flex items-center gap-1.5 text-sm font-medium"
+                    >
+                      <ArrowLeft size={14} strokeWidth={2.5} /> Kembali ke Direktori
+                    </Link>
+                  </motion.div>
                 </div>
                 <h1 className="text-2xl md:text-3xl font-black font-display uppercase tracking-tight text-emerald-950 leading-none py-1">
                   {mahasiswa.nama}
@@ -232,13 +253,13 @@ export default function MahasiswaShow({
                 </button>
               </div>
             )}
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* LEFT: BIODATA */}
             <div className="lg:col-span-2 space-y-6">
               {/* PROFIL AKADEMIK */}
-              <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
+              <motion.div variants={itemVariants} className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-2">
                   <GraduationCap size={16} className="text-[#0d9488]" />
                   <h2 className="text-sm font-semibold text-[#1f2937]">Profil Akademik</h2>
@@ -261,12 +282,12 @@ export default function MahasiswaShow({
                   <InfoField label="Nama Ibu" value={mahasiswa.mother_name || '—'} />
                   <InfoField label="Fakultas" value={mahasiswa.fakultas?.nama || '—'} span={2} />
                   <InfoField label="Program Studi" value={mahasiswa.prodi?.nama || '—'} span={2} />
-                  <InfoField label="Alamat" value={mahasiswa.address || '—'} span={3} />
+                  <InfoField label="Alamat" value={mahasiswa.full_address || '—'} span={3} />
                 </div>
-              </div>
+              </motion.div>
 
               {/* KELAYAKAN */}
-              <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
+              <motion.div variants={itemVariants} className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-2">
                   <ShieldCheck size={16} className="text-[#0d9488]" />
                   <h2 className="text-sm font-semibold text-[#1f2937]">Kelayakan KKN</h2>
@@ -310,10 +331,10 @@ export default function MahasiswaShow({
                     </p>
                   </div>
                 </div>
-              </div>
+              </motion.div>
 
               {/* PENDAFTARAN */}
-              <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
+              <motion.div variants={itemVariants} className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-2">
                   <ClipboardList size={16} className="text-[#0d9488]" />
                   <h2 className="text-sm font-semibold text-[#1f2937]">Status Pendaftaran</h2>
@@ -366,11 +387,11 @@ export default function MahasiswaShow({
                     </p>
                   </div>
                 )}
-              </div>
+              </motion.div>
 
               {/* KELOMPOK */}
               {group && (
-                <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
+                <motion.div variants={itemVariants} className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
                   <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-2">
                     <Users size={16} className="text-[#0d9488]" />
                     <h2 className="text-sm font-semibold text-[#1f2937]">Penempatan Kelompok</h2>
@@ -389,14 +410,14 @@ export default function MahasiswaShow({
                       </>
                     )}
                   </div>
-                </div>
+                </motion.div>
               )}
             </div>
 
             {/* RIGHT SIDEBAR */}
             <div className="space-y-6">
               {/* AKUN */}
-              <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
+              <motion.div variants={itemVariants} className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-2">
                   <ShieldCheck size={16} className="text-[#0d9488]" />
                   <h2 className="text-sm font-semibold text-[#1f2937]">Hak Akses & Akun</h2>
@@ -439,11 +460,11 @@ export default function MahasiswaShow({
                     </p>
                   </div>
                 )}
-              </div>
+              </motion.div>
 
               {/* DISPENSASI */}
               {dispensasi.length > 0 && (
-                <div className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
+                <motion.div variants={itemVariants} className="bg-white border border-emerald-50 rounded-xl shadow-sm overflow-hidden">
                   <div className="px-5 py-4 border-b border-emerald-50 bg-gray-50 flex items-center gap-2">
                     <ShieldCheck size={16} className="text-amber-500" />
                     <h2 className="text-sm font-semibold text-[#1f2937]">Dispensasi Khusus</h2>
@@ -471,11 +492,11 @@ export default function MahasiswaShow({
                       </div>
                     ))}
                   </div>
-                </div>
+                </motion.div>
               )}
             </div>
           </div>
-        </div>
+        </motion.div>
       </AppLayout>
 
       {account && (

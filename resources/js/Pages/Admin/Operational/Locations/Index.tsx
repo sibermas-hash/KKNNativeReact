@@ -20,6 +20,7 @@ import {
   Upload,
   X,
   FileSpreadsheet,
+  AlertCircle,
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -80,10 +81,77 @@ export default function LocationsIndex({
   const [deletingLocation, setDeletingLocation] = useState<Location | null>(null);
   const [showImportModal, setShowImportModal] = useState(false);
 
+  // Wilayah dropdown states
+  const [provinces, setProvinces] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedProvinceId, setSelectedProvinceId] = useState('');
+  const [regencies, setRegencies] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedRegencyId, setSelectedRegencyId] = useState('');
+  const [districts, setDistricts] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedDistrictId, setSelectedDistrictId] = useState('');
+  const [villages, setVillages] = useState<Array<{ id: string; name: string }>>([]);
+  const [selectedVillageId, setSelectedVillageId] = useState('');
+
+  // Fetch provinces on mount
+  useEffect(() => {
+    fetch('https://emsifa.github.io/api-wilayah-indonesia/api/provinces.json')
+      .then(res => res.json())
+      .then(data => setProvinces(data))
+      .catch(err => console.error('Error fetching provinces:', err));
+  }, []);
+
+  // Fetch regencies when province selected
+  useEffect(() => {
+    if (!selectedProvinceId) {
+      setRegencies([]);
+      setSelectedRegencyId('');
+      return;
+    }
+    fetch(`https://emsifa.github.io/api-wilayah-indonesia/api/regencies/${selectedProvinceId}.json`)
+      .then(res => res.json())
+      .then(data => setRegencies(data))
+      .catch(err => console.error('Error fetching regencies:', err));
+  }, [selectedProvinceId]);
+
+  // Fetch districts when regency selected
+  useEffect(() => {
+    if (!selectedRegencyId) {
+      setDistricts([]);
+      setSelectedDistrictId('');
+      return;
+    }
+    fetch(`https://emsifa.github.io/api-wilayah-indonesia/api/districts/${selectedRegencyId}.json`)
+      .then(res => res.json())
+      .then(data => setDistricts(data))
+      .catch(err => console.error('Error fetching districts:', err));
+  }, [selectedRegencyId]);
+
+  // Fetch villages when district selected
+  useEffect(() => {
+    if (!selectedDistrictId) {
+      setVillages([]);
+      setSelectedVillageId('');
+      return;
+    }
+    fetch(`https://emsifa.github.io/api-wilayah-indonesia/api/villages/${selectedDistrictId}.json`)
+      .then(res => res.json())
+      .then(data => setVillages(data))
+      .catch(err => console.error('Error fetching villages:', err));
+  }, [selectedDistrictId]);
+
+  // Update form when village selected
+  useEffect(() => {
+    if (!selectedVillageId) return;
+    const village = villages.find(v => v.id === selectedVillageId);
+    if (village) {
+      form.setData('village_name', village.name);
+      form.setData('village_code', village.id);
+    }
+  }, [selectedVillageId]);
+
   const form = useForm({
     village_name: '',
     district_name: '',
-    regency_name: 'BANYUMAS',
+    regency_name: '',
     village_code: '',
     capacity: 0,
   });
@@ -131,7 +199,6 @@ export default function LocationsIndex({
       village_code: l.village_code ?? '',
       capacity: Number(l.capacity ?? 0),
     });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const cancelEdit = () => {
@@ -192,12 +259,14 @@ export default function LocationsIndex({
             groupLabel="Master Data Operasional"
           >
             <div className="flex items-center gap-3">
-              <button
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setShowImportModal(true)}
                 className="h-10 px-5 bg-white border border-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-wider rounded-xl hover:bg-emerald-50 transition-all flex items-center gap-2 shadow-sm"
               >
                 <Upload size={14} strokeWidth={2.5} /> Impor Massal
-              </button>
+              </motion.button>
             </div>
           </PageHeader>
         </motion.div>
@@ -247,6 +316,8 @@ export default function LocationsIndex({
                         value={selectedPeriodId}
                         onChange={(e) => setSelectedPeriodId(e.target.value)}
                         className="w-full h-11 pl-4 pr-10 rounded-xl border border-gray-200 bg-white text-xs font-bold text-emerald-950 focus:border-emerald-600 appearance-none shadow-sm transition-all outline-none"
+                        title="Filter Periode KKN"
+                        aria-label="Filter Periode KKN"
                       >
                         <option value="">SEMUA PERIODE</option>
                         {periods?.map((p) => (
@@ -271,8 +342,10 @@ export default function LocationsIndex({
                 </div>
 
                 {/* Form Column */}
-                <form onSubmit={submitForm} className="flex-1">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="flex-1">
+                  {!editingLocation ? (
+                    <form onSubmit={submitForm}>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="space-y-1.5">
                       <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
                         Desa/Kelurahan
@@ -343,32 +416,42 @@ export default function LocationsIndex({
                     </div>
                     <div className="flex items-center gap-3">
                       {editingLocation && (
-                        <button
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           type="button"
                           onClick={cancelEdit}
                           className="h-11 px-6 border border-gray-200 text-emerald-950 text-xs font-black rounded-xl hover:bg-gray-50 transition-all uppercase tracking-widest"
                         >
                           Batal
-                        </button>
+                        </motion.button>
                       )}
-                      <button
+                      <motion.button
+                        whileHover={!form.processing ? { scale: 1.05 } : {}}
+                        whileTap={!form.processing ? { scale: 0.95 } : {}}
                         type="submit"
                         disabled={form.processing}
-                        className="h-11 px-8 bg-emerald-900 text-white text-xs font-black rounded-xl hover:bg-emerald-950 transition-all flex items-center justify-center gap-3 shadow-lg shadow-emerald-900/10 active:scale-95 uppercase tracking-widest disabled:opacity-50"
+                        className="h-11 px-8 bg-emerald-900 text-white text-xs font-black rounded-xl hover:bg-emerald-950 transition-all flex items-center justify-center gap-3 shadow-lg shadow-emerald-900/10 uppercase tracking-widest disabled:opacity-50"
                       >
                         {form.processing ? (
                           <RefreshCw size={14} className="animate-spin" />
-                        ) : editingLocation ? (
-                          <Save size={14} />
                         ) : (
                           <Plus size={14} />
                         )}
-                        {editingLocation ? 'Update Data' : 'Registrasi Wilayah'}
-                      </button>
+                        Registrasi Wilayah
+                      </motion.button>
                     </div>
                   </div>
                 </form>
-              </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full min-h-[200px] border-2 border-dashed border-emerald-100 rounded-2xl bg-emerald-50/50">
+                  <Pencil size={32} className="text-emerald-600/50 mb-3" />
+                  <p className="text-xs font-black text-emerald-800 uppercase tracking-widest">Mode Pengeditan Aktif</p>
+                  <p className="text-[10px] font-bold text-emerald-600/60 mt-1 uppercase tracking-wider">Selesaikan pembaruan data di jendela pop-up</p>
+                </div>
+              )}
+            </div>
+            </div>
             </ContentPanel>
           </motion.div>
 
@@ -391,7 +474,7 @@ export default function LocationsIndex({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[10px] font-black text-emerald-950/40 uppercase tracking-widest tabular-nums">
+                    <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest tabular-nums">
                       Total {locations.meta.total} Titik Terdata &middot; Halaman{' '}
                       {locations.meta.current_page} dari {locations.meta.last_page}
                     </span>
@@ -430,7 +513,7 @@ export default function LocationsIndex({
                             </span>
                           )}
                         </div>
-                        <span className="text-[10px] font-bold text-emerald-800/40 mt-1 uppercase tracking-tighter truncate max-w-[200px]">
+                        <span className="text-[10px] font-bold text-emerald-600 mt-1 uppercase tracking-tighter truncate max-w-[200px]">
                           {l.full_name || '-'}
                         </span>
                       </div>
@@ -440,7 +523,7 @@ export default function LocationsIndex({
                         <span className="text-[10px] font-black text-emerald-900 uppercase tracking-tight">
                           {l.district_name || '-'}
                         </span>
-                        <span className="text-[9px] font-bold text-emerald-800/40 uppercase tracking-widest">
+                        <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">
                           {l.regency_name || '-'}
                         </span>
                       </div>
@@ -470,7 +553,7 @@ export default function LocationsIndex({
                               {l.groups_count}
                             </span>
                           </div>
-                          <span className="text-emerald-800/30">/ {l.capacity ?? 0}</span>
+                          <span className="text-emerald-600">/ {l.capacity ?? 0}</span>
                         </div>
                         <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden border border-gray-50 shadow-inner">
                           <div
@@ -489,21 +572,27 @@ export default function LocationsIndex({
                     </PremiumTableCell>
                     <PremiumTableCell align="right">
                       <div className="flex items-center justify-end gap-2">
-                        <button
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => openEditForm(l)}
-                          className="h-9 px-3 bg-white border border-gray-100 text-emerald-900 rounded-xl hover:bg-emerald-50 hover:border-emerald-200 transition-all shadow-sm active:scale-95 flex items-center gap-2 text-[10px] font-black uppercase"
+                          className="h-9 px-3 bg-white border border-gray-100 text-emerald-900 rounded-xl hover:bg-emerald-50 hover:border-emerald-200 transition-all shadow-sm flex items-center gap-2 text-[10px] font-black uppercase"
                           title="Edit"
+                          aria-label="Edit lokasi"
                         >
                           <Pencil size={14} strokeWidth={2.5} /> Edit
-                        </button>
-                        <button
+                        </motion.button>
+                        <motion.button
+                          whileHover={l.can_delete ? { scale: 1.1 } : {}}
+                          whileTap={l.can_delete ? { scale: 0.9 } : {}}
                           onClick={() => setDeleting(l)}
                           disabled={!l.can_delete}
-                          className="h-9 w-9 flex items-center justify-center bg-white border border-gray-100 text-rose-600 rounded-xl hover:bg-rose-50 hover:border-rose-200 transition-all shadow-sm disabled:opacity-30 active:scale-95"
+                          className="h-9 w-9 flex items-center justify-center bg-white border border-gray-100 text-rose-600 rounded-xl hover:bg-rose-50 hover:border-rose-200 transition-all shadow-sm disabled:opacity-30"
                           title={l.can_delete ? 'Hapus' : (l.delete_blocker ?? 'Tidak dapat dihapus')}
+                          aria-label="Hapus lokasi"
                         >
                           <Trash2 size={16} strokeWidth={2.5} />
-                        </button>
+                        </motion.button>
                       </div>
                     </PremiumTableCell>
                   </PremiumTableRow>
@@ -576,6 +665,101 @@ export default function LocationsIndex({
               )}
               Proses Impor Data
             </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* EDIT MODAL */}
+      <Modal
+        show={!!editingLocation}
+        onClose={cancelEdit}
+        title="Edit Data Wilayah KKN"
+      >
+        <form onSubmit={submitForm} className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
+                Desa/Kelurahan
+              </label>
+              <input
+                type="text"
+                value={form.data.village_name}
+                onChange={(e) => form.setData('village_name', e.target.value)}
+                className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all placeholder:text-gray-300"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
+                Kecamatan
+              </label>
+              <input
+                type="text"
+                value={form.data.district_name}
+                onChange={(e) => form.setData('district_name', e.target.value)}
+                className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all placeholder:text-gray-300"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-emerald-950 uppercase tracking-widest pl-1">
+                Kab/Kota
+              </label>
+              <input
+                type="text"
+                value={form.data.regency_name}
+                onChange={(e) => form.setData('regency_name', e.target.value)}
+                className="w-full h-11 px-4 rounded-xl border border-gray-200 text-xs font-bold text-emerald-950 focus:border-emerald-600 outline-none transition-all placeholder:text-gray-300"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-emerald-800 uppercase tracking-widest pl-1">
+                Kode Wilayah (BPS)
+              </label>
+              <input
+                type="text"
+                value={form.data.village_code}
+                onChange={(e) => form.setData('village_code', e.target.value)}
+                className="w-full h-11 px-4 rounded-xl border border-emerald-100 bg-white text-xs font-black text-emerald-950 focus:border-emerald-600 outline-none uppercase tracking-widest"
+              />
+            </div>
+            <div className="space-y-1.5 md:col-span-2">
+              <label className="text-[10px] font-black text-emerald-800 uppercase tracking-widest pl-1">
+                Kapasitas Maksimal Kelompok
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={form.data.capacity}
+                onChange={(e) => form.setData('capacity', Number(e.target.value))}
+                className="w-full h-11 px-4 rounded-xl border border-emerald-100 bg-white text-xs font-black text-emerald-950 text-center tabular-nums focus:border-emerald-600 outline-none"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={cancelEdit}
+              className="flex-1 h-12 border-2 border-gray-100 text-gray-500 text-xs font-black rounded-xl hover:bg-gray-50 transition-all uppercase tracking-widest"
+            >
+              Batalkan
+            </button>
+            <motion.button
+              whileHover={!form.processing ? { scale: 1.02 } : {}}
+              whileTap={!form.processing ? { scale: 0.98 } : {}}
+              type="submit"
+              disabled={form.processing}
+              className="flex-[2] h-12 bg-emerald-900 text-white text-xs font-black rounded-xl hover:bg-emerald-950 transition-all flex items-center justify-center gap-3 shadow-lg shadow-emerald-900/20 uppercase tracking-widest disabled:opacity-50"
+            >
+              {form.processing ? (
+                <RefreshCw size={16} className="animate-spin" />
+              ) : (
+                <Save size={16} />
+              )}
+              Update Data Lokasi
+            </motion.button>
           </div>
         </form>
       </Modal>

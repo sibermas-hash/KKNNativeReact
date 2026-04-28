@@ -142,7 +142,8 @@ class RegistrationController extends Controller
         Request $request,
         RegistrationService $registrationService,
         RegistrationPortalService $registrationPortalService,
-        KknRequirementService $requirementService
+        KknRequirementService $requirementService,
+        \App\Services\KKN\RegistrationDocumentService $documentService
     ): Response|RedirectResponse|JsonResponse {
         \Log::info('RegistrationController@create hit. User: '.($request->user()?->username ?? 'null').' Request expects JSON: '.($request->wantsJson() ? 'YES' : 'NO'));
         $today = now()->toDateString();
@@ -183,7 +184,7 @@ class RegistrationController extends Controller
             : collect();
 
         $periods = $periods
-            ->map(function (array $periodData) use ($registrations, $queues, $registrationService, $requirementService) {
+            ->map(function (array $periodData) use ($registrations, $queues, $registrationService, $requirementService, $documentService) {
                 $period = Periode::find($periodData['id']);
                 $periodData['registration'] = $registrationService->registrationSummaryForPeriod(
                     $registrations->get($periodData['id']),
@@ -192,6 +193,9 @@ class RegistrationController extends Controller
 
                 // Add dynamic requirement descriptions
                 $periodData['requirement_info'] = $requirementService->describe($period);
+                
+                // Add explicit document upload requirements
+                $periodData['document_requirements'] = $documentService->requirementsForPeriod($period);
 
                 return $periodData;
             })
@@ -352,38 +356,20 @@ class RegistrationController extends Controller
                 $mahasiswa->update(['parent_permission_path' => $path]);
             }
 
-            // 2. Handle Dynamic Files (New Architecture)
-            if ($request->has('dynamic_files')) {
-                foreach ($request->file('dynamic_files', []) as $key => $file) {
-                    if ($file) {
-                        $path = $file->store("registration-docs/{$mahasiswa->nim}", config('filesystems.default'));
-                        
-                        // Simpan ke tabel dokumen_peserta_kkn
-                        DB::table('dokumen_peserta_kkn')->updateOrInsert(
-                            [
-                                'mahasiswa_id' => $mahasiswa->id,
-                                'document_key' => $key,
-                                'periode_id' => $periodId
-                            ],
-                            [
-                                'file_path' => $path,
-                                'file_name' => $file->getClientOriginalName(),
-                                'file_type' => $file->getClientMimeType(),
-                                'verified_at' => null,
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                            ]
-                        );
-                    }
-                }
-            }
-
             $registration = $registrationService->register(
                 $mahasiswa,
                 $periodId,
                 $request->input('kelompok_id') ? (int) $request->input('kelompok_id') : null,
                 $request->input('notes'),
                 auth()->id()
+            );
+
+            // Persist documents using the official service after registration is created
+            app(\App\Services\KKN\RegistrationDocumentService::class)->persistUploadedDocuments(
+                $request,
+                $mahasiswa,
+                $period,
+                $registration
             );
 
             DB::commit();

@@ -7,6 +7,7 @@ interface DynamicDocument {
   name: string;
   key: string;
   type: 'upload' | 'db_check';
+  description?: string;
 }
 
 interface DocumentUploadProps {
@@ -53,6 +54,11 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
                     <span className="text-[10px] font-black uppercase tracking-widest">
                       {doc.name}
                     </span>
+                    {doc.description && (
+                      <span className="text-[9px] text-emerald-700/70 lowercase ml-2 font-medium tracking-normal">
+                        ({doc.description})
+                      </span>
+                    )}
                   </div>
                   {isExisting && (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-[9px] font-black uppercase tracking-tight">

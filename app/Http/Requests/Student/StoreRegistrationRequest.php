@@ -23,6 +23,8 @@ class StoreRegistrationRequest extends FormRequest
             ],
             'health_certificate' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'],
             'parent_permission' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'],
+            'dynamic_files' => ['nullable', 'array'],
+            'dynamic_files.*' => ['file', 'mimes:pdf,jpg,jpeg,png,docx,doc', 'max:5120'], // Max 5MB per file
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
 

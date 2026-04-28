@@ -227,10 +227,11 @@ export default function StudentRegister({
                     <DocumentUpload
                       form={form}
                       student_academic={student_academic}
-                      dynamic_documents={selectedPeriod?.requirement_info?.requirements?.map(r => ({
-                        name: r,
-                        key: r.toLowerCase().replace(/ /g, '_'),
-                        type: r.toLowerCase().includes('unggah') || r.toLowerCase().includes('upload') ? 'upload' : 'db_check'
+                      dynamic_documents={selectedPeriod?.document_requirements?.map((r: any) => ({
+                        name: r.label,
+                        key: r.field,
+                        type: 'upload',
+                        description: r.description
                       })) || []}
                     />
 

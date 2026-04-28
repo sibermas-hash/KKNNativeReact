@@ -143,11 +143,8 @@ class RegistrationDocumentService
         foreach ($this->requirementsForPeriod($period) as $requirement) {
             $field = (string) $requirement['field'];
 
-            if (! $request->hasFile($field)) {
-                continue;
-            }
+            $file = $request->file($field) ?? $request->file("dynamic_files.{$field}");
 
-            $file = $request->file($field);
             if (! $file) {
                 continue;
             }

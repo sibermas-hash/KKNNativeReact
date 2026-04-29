@@ -83,14 +83,14 @@ class StudentSyncService
     {
         return DB::transaction(function () use ($data, $useCachedMaps) {
             if ($useCachedMaps && $this->mapsLoaded) {
-                $organizationMasterId = $this->normalizeMasterId($data['organization_id'] ?? null);
+                $organizationMasterId = $this->normalizeMasterId($data['organization_id'] ?? $data['fakultas_id'] ?? null);
                 $facultyId = $organizationMasterId !== null ? ($this->facultyMap[$organizationMasterId] ?? null) : null;
 
                 $programMasterId = $this->normalizeMasterId($data['prodi_id'] ?? null);
                 $prodiId = $programMasterId !== null ? ($this->prodiMap[$programMasterId] ?? null) : null;
             } else {
                 $facultyId = null;
-                $organizationMasterId = $this->normalizeMasterId($data['organization_id'] ?? null);
+                $organizationMasterId = $this->normalizeMasterId($data['organization_id'] ?? $data['fakultas_id'] ?? null);
                 if ($organizationMasterId !== null) {
                     $facultyId = Fakultas::where('master_id', $organizationMasterId)->first()?->id;
                 }
@@ -110,17 +110,19 @@ class StudentSyncService
             }
 
             $password = PasswordHelper::fromBirthDate(
-                $data['birth_date'] ?? null,
+                $data['birth_date'] ?? $data['tanggal_lahir'] ?? null,
                 $data['nim']
             );
 
             $email = $data['email'] ?? $data['nim'].'@student.uinsaizu.ac.id';
             $isNewUser = ! User::where('username', $data['nim'])->exists();
 
+            $nama = $data['nama'] ?? $data['name'] ?? 'Unknown';
+
             $user = User::firstOrCreate(
                 ['username' => $data['nim']],
                 [
-                    'name' => $data['name'],
+                    'name' => $nama,
                     'email' => $email,
                     'password' => Hash::make($password),
                     'is_active' => true,
@@ -131,7 +133,7 @@ class StudentSyncService
             $address = $data['address'] ?? $data['alamat'] ?? $data['domicile'] ?? null;
 
             $user->fill(array_filter([
-                'name' => $data['name'] ?? null,
+                'name' => $nama,
                 'email' => $email,
                 'address' => $address,
             ], static fn ($value) => $value !== null && $value !== ''));
@@ -144,23 +146,25 @@ class StudentSyncService
                 $user->assignRole('student');
             }
 
+            $sksValue = (int) ($data['sks_completed'] ?? $data['sks'] ?? $data['total_sks'] ?? $data['sks_lulus'] ?? 0);
+
             Mahasiswa::updateOrCreate(
                 ['nim' => $data['nim']],
                 [
                     'user_id' => $user->id,
-                    'nama' => $data['name'],
+                    'nama' => $nama,
                     'nik' => $data['nik'] ?? $data['national_id'] ?? null,
                     'mother_name' => $data['mother_name'] ?? $data['nama_ibu'] ?? $data['mother'] ?? null,
                     'fakultas_id' => $facultyId,
                     'prodi_id' => $prodiId,
-                    'batch_year' => $data['batch_year'] ?? date('Y'),
-                    'gender' => $data['gender'] ?? 'L',
-                    'birth_date' => $data['birth_date'] ?? null,
-                    'sks_completed' => $data['sks_completed'] ?? $data['sks'] ?? 0,
+                    'batch_year' => $data['batch_year'] ?? $data['angkatan'] ?? date('Y'),
+                    'gender' => $data['gender'] ?? $data['jenis_kelamin'] ?? 'L',
+                    'birth_date' => $data['birth_date'] ?? $data['tanggal_lahir'] ?? null,
+                    'sks_completed' => $sksValue,
                     'gpa' => $data['gpa'] ?? $data['ipk'] ?? 0.0,
                     'status_bta_ppi' => $data['status_bta_ppi'] ?? ($data['bta_ppi_passed'] ?? false ? 'LULUS' : 'BELUM_LULUS'),
                     'is_paid_ukt' => $data['is_paid_ukt'] ?? $data['ukt_paid'] ?? false,
-                    'master_id' => $this->normalizeMasterId($data['id'] ?? null),
+                    'master_id' => $this->normalizeMasterId($data['id'] ?? $data['master_id'] ?? null),
                     'master_synced_at' => now(),
                 ]
             );

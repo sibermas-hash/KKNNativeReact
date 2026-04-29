@@ -412,6 +412,7 @@ class SyncMasterData extends Command
                         $user->password = Hash::make(
                             PasswordHelper::fromBirthDate($birthDate, $username)
                         );
+                        $user->must_change_password = true;
                     }
 
                     $user->save();
@@ -547,7 +548,7 @@ class SyncMasterData extends Command
                     'jenis_kelamin' => $stud->jenis_kelamin,
                     'tempat_lahir' => $stud->tempat_lahir,
                     'tanggal_lahir' => $stud->tanggal_lahir,
-                    'total_sks' => $stud->total_sks ?? 0,
+                    'sks_completed' => $stud->total_sks ?? $stud->sks_completed ?? 0,
                     'status_bta_ppi' => $stud->status_bta_ppi ?? 'BELUM_LULUS',
                     'semester' => $stud->semester ?? null,
                 ] : $stud;
@@ -620,8 +621,7 @@ class SyncMasterData extends Command
                             'birth_place' => $studData['tempat_lahir'] ?? $studData['birth_place'] ?? null,
                             'birth_date' => $studData['tanggal_lahir'] ?? $studData['birth_date'] ?? null,
 
-                            'total_sks' => (int) ($studData['total_sks'] ?? $studData['sks_lulus'] ?? 0),
-                            'sks_completed' => (int) ($studData['sks_lulus'] ?? $studData['total_sks'] ?? 0),
+                            'sks_completed' => (int) ($studData['total_sks'] ?? $studData['sks_lulus'] ?? $studData['sks_completed'] ?? 0),
                             'gpa' => (float) ($studData['ipk'] ?? $studData['gpa'] ?? 0),
 
                             'status_bta_ppi' => $studData['status_bta_ppi'] ?? 'BELUM_LULUS',

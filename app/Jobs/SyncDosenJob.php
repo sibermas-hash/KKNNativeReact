@@ -139,6 +139,7 @@ class SyncDosenJob implements ShouldQueue
                 $user->password = Hash::make(
                     PasswordHelper::fromBirthDate($birthDate, $username)
                 );
+                $user->must_change_password = true;
             } elseif (empty($user->email)) {
                 $user->email = ! empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
             }

@@ -42,8 +42,6 @@ return [
         'token' => env('MASTER_API_TOKEN'),
         'timeout' => env('MASTER_API_TIMEOUT', 30),
         'cache_minutes' => env('MASTER_API_CACHE_MINUTES', 60),
-        'webhook_secret' => env('MASTER_WEBHOOK_SECRET'),
-        'webhook_window_seconds' => env('MASTER_WEBHOOK_WINDOW_SECONDS', 600),
 
         // Circuit breaker configuration
         'circuit_breaker_threshold' => env('MASTER_API_CIRCUIT_BREAKER_THRESHOLD', 5),

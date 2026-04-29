@@ -6,8 +6,6 @@ use App\Http\Controllers\Api\DomisiliController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PublicDataController;
 use App\Http\Controllers\Api\RegistrationController;
-use App\Http\Controllers\Api\WebhookController;
-use App\Http\Middleware\VerifyWebhookSignature;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
@@ -78,13 +76,6 @@ Route::post('log-error', function (Request $request) {
 
     return response()->json(['status' => 'logged']);
 })->middleware('throttle:10,1')->name('api.log-error');
-
-// Webhooks from Master Data - signature verification FIRST, then rate limit
-Route::prefix('webhooks')->group(function () {
-    Route::post('/master-data', [WebhookController::class, 'handle'])
-        ->middleware([VerifyWebhookSignature::class, 'throttle:10,1'])
-        ->name('webhooks.master-data');
-});
 
 // ── API Key Distribution System ──────────────────────────────────────────
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\MasterApi;
 
+use App\Models\KKN\SystemSetting;
 use Exception;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -27,10 +28,14 @@ class MasterApiTokenService
 
     public function __construct()
     {
-        $this->clientId = (string) config('services.master_api.client_id', '');
-        $this->clientSecret = (string) config('services.master_api.client_secret', '');
-        $this->staticToken = (string) config('services.master_api.token', '');
-        $this->baseUrl = rtrim((string) config('services.master_api.url', ''), '/');
+        // Priority: SystemSetting (admin UI) → config/env fallback
+        $this->baseUrl = rtrim(
+            (string) (SystemSetting::get('master_api_url') ?: config('services.master_api.url', '')),
+            '/'
+        );
+        $this->clientId = (string) (SystemSetting::get('master_api_client_id') ?: config('services.master_api.client_id', ''));
+        $this->clientSecret = (string) (SystemSetting::get('master_api_client_secret') ?: config('services.master_api.client_secret', ''));
+        $this->staticToken = (string) (SystemSetting::get('master_api_token') ?: config('services.master_api.token', ''));
         $this->verifySsl = config('app.env') !== 'local';
         $this->timeoutSeconds = max(5, (int) config('services.master_api.timeout', 30));
         $this->cacheMinutes = max(5, (int) config('services.master_api.cache_minutes', 60));

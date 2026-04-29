@@ -106,6 +106,7 @@ class ImportKknRoster extends Command
                         'name' => $dplName,
                         'password' => bcrypt($defaultPassword),
                         'is_active' => true,
+                        'must_change_password' => true,
                     ]
                 );
                 $dplUser->assignRole($roleDpl);
@@ -133,6 +134,7 @@ class ImportKknRoster extends Command
                         'name' => $nama,
                         'password' => bcrypt($defaultPassword),
                         'is_active' => true,
+                        'must_change_password' => true,
                     ]
                 );
                 $studentUser->assignRole($roleStudent);

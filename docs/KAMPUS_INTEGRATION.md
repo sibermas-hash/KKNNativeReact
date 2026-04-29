@@ -10,36 +10,41 @@ Sistem KKN UIN Saizu menerima data master (mahasiswa, dosen, lokasi) dari sistem
 
 ### 1. Webhook Secret
 
-Sistem menggunakan **HMAC-SHA256** untuk verifikasi webhook. 
+Sistem menggunakan **HMAC-SHA256** untuk verifikasi webhook.
 
-#### Generate Secret di Sistem KKN:
+#### Generate Secret di Sistem KKN
+
 ```bash
 cd /path/to/kknuinsaizu
 php -r "echo 'MASTER_WEBHOOK_SECRET=' . bin2hex(random_bytes(32)) . PHP_EOL;"
 ```
 
 Output contoh:
+
 ```
-MASTER_WEBHOOK_SECRET=3f4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f6
+MASTER_WEBHOOK_SECRET=<SECRET_YANG_DIGENERATE>
 ```
 
-#### Simpan di `.env` KKN:
+#### Simpan di `.env` KKN
+
 ```env
-MASTER_WEBHOOK_SECRET=3f4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f6
+MASTER_WEBHOOK_SECRET=<SECRET_YANG_DIGENERATE>
 ```
 
-#### Gunakan secret yang sama di sistem kampus untuk generate signature.
+#### Gunakan secret yang sama di sistem kampus untuk generate signature
 
 ---
 
 ## 📡 Endpoint Webhook
 
 ### URL
+
 ```
 POST https://kkn.uinsaizu.ac.id/api/webhooks/master-data
 ```
 
 ### Headers yang Diperlukan
+
 ```http
 Content-Type: application/json
 X-Hub-Signature: sha256=<HMAC_HASH>
@@ -47,6 +52,7 @@ X-Webhook-Timestamp: <UNIX_TIMESTAMP>
 ```
 
 ### Contoh Generate Signature (PHP)
+
 ```php
 <?php
 $secret = 'WEBHOOK_SECRET_DARI_ENV';
@@ -67,6 +73,7 @@ $headers = [
 ```
 
 ### Contoh Generate Signature (Node.js/JavaScript)
+
 ```javascript
 const crypto = require('crypto');
 
@@ -106,6 +113,7 @@ const { signature, timestamp } = generateSignature(payload, process.env.WEBHOOK_
 ## 📦 Format Data Webhook
 
 ### Struktur Umum
+
 ```json
 {
     "event": "mahasiswa.created",
@@ -121,6 +129,7 @@ const { signature, timestamp } = generateSignature(payload, process.env.WEBHOOK_
 ### 1. Event Mahasiswa
 
 #### `mahasiswa.created` / `mahasiswa.updated`
+
 ```json
 {
     "event": "mahasiswa.created",
@@ -144,6 +153,7 @@ const { signature, timestamp } = generateSignature(payload, process.env.WEBHOOK_
 ```
 
 #### `mahasiswa.deleted`
+
 ```json
 {
     "event": "mahasiswa.deleted",
@@ -159,6 +169,7 @@ const { signature, timestamp } = generateSignature(payload, process.env.WEBHOOK_
 ### 2. Event Dosen
 
 #### `dosen.created` / `dosen.updated`
+
 ```json
 {
     "event": "dosen.created",
@@ -181,6 +192,7 @@ const { signature, timestamp } = generateSignature(payload, process.env.WEBHOOK_
 ```
 
 #### `dosen.deleted`
+
 ```json
 {
     "event": "dosen.deleted",
@@ -200,7 +212,9 @@ const { signature, timestamp } = generateSignature(payload, process.env.WEBHOOK_
 Jika kampus perlu mengakses data secara langsung, gunakan **API Key**.
 
 ### Mendapatkan API Key
+
 Hubungi admin KKN untuk generate API key, atau jika self-service diaktifkan:
+
 ```bash
 POST /api/register
 Content-Type: application/json
@@ -212,6 +226,7 @@ Content-Type: application/json
 ```
 
 ### Mengakses Data Lokasi
+
 ```bash
 GET /api/v1/lokasi?per_page=100
 Headers:
@@ -219,6 +234,7 @@ Headers:
 ```
 
 ### Field yang Bisa Ditulis (Lokasi)
+
 - `village_name` - Nama desa/kelurahan
 - `district_name` - Nama kecamatan
 - `regency_name` - Nama kabupaten/kota
@@ -237,6 +253,7 @@ Headers:
 ## 🧪 Testing Webhook
 
 ### Test dari Sistem KKN
+
 ```bash
 cd /Users/macm4/Documents/KKN/kknuinsaizu
 php artisan tinker
@@ -270,6 +287,7 @@ echo $response->status() . ': ' . $response->body();
 ```
 
 ### Check Log
+
 ```bash
 tail -f storage/logs/laravel.log | grep -i "webhook"
 ```
@@ -278,7 +296,8 @@ tail -f storage/logs/laravel.log | grep -i "webhook"
 
 ## ✅ Checklist Integrasi
 
-### Di Sistem Kampus:
+### Di Sistem Kampus
+
 - [ ] Generate `MASTER_WEBHOOK_SECRET` (sama dengan KKN)
 - [ ] Implementasi fungsi generate HMAC-SHA256 signature
 - [ ] Tambahkan header `X-Hub-Signature` dan `X-Webhook-Timestamp`
@@ -286,7 +305,8 @@ tail -f storage/logs/laravel.log | grep -i "webhook"
 - [ ] Test webhook dengan data sample
 - [ ] Setup retry mechanism jika gagal (timeout 10s, max 3x retry)
 
-### Di Sistem KKN:
+### Di Sistem KKN
+
 - [ ] Set `MASTER_WEBHOOK_SECRET` di `.env`
 - [ ] Pastikan route `/api/webhooks/master-data` bisa diakses
 - [ ] Cek log webhook: `storage/logs/laravel.log`
@@ -297,7 +317,8 @@ tail -f storage/logs/laravel.log | grep -i "webhook"
 ## 📞 Bantuan
 
 Jika ada kendala, hubungi:
-- **Email**: admin@uinsaizu.ac.id
+
+- **Email**: <admin@uinsaizu.ac.id>
 - **Cek log**: `storage/logs/laravel.log`
 - **Cek route**: `php artisan route:list | grep webhook`
 
@@ -502,7 +523,7 @@ class KKNWebhookSender
 // ============================================================================
 
 // Konfigurasi (sesuaikan dengan environment kampus)
-$secret = '3f4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f6'; // Dari env KKN
+$secret = 'SECRET_DARI_ADMIN_KKN'; // Hubungi admin KKN untuk mendapatkan secret
 $webhookUrl = 'https://kkn.uinsaizu.ac.id/api/webhooks/master-data';
 
 // Inisialisasi sender
@@ -642,25 +663,28 @@ echo "\n";
 echo "📊 Dokumentasi lengkap: docs/KAMPUS_INTEGRATION.md\n";
 ```
 
-### Cara Menjalankan:
+### Cara Menjalankan
 
 1. **Simpan script** sebagai `send_webhook.php`
 2. **Set secret** di baris 193: `$secret = 'YOUR_SECRET_HERE';`
 3. **Jalankan** dari command line:
+
    ```bash
    php send_webhook.php
    ```
 
-### Fitur Script:
+### Fitur Script
+
 - ✅ **Fungsi lengkap** untuk mengirim webhook mahasiswa & dosen
 - ✅ **Generate signature** HMAC-SHA256 otomatis
 - ✅ **Contoh kode** untuk bulk send dari database
 - ✅ **Error handling** dan timeout configuration
 - ✅ **Helper verify signature** untuk testing
 
-### Integrasi dengan Database Kampus:
+### Integrasi dengan Database Kampus
 
 Tambahkan flag `sync_status` di tabel mahasiswa/dosen kampus:
+
 ```sql
 ALTER TABLE mahasiswa ADD COLUMN sync_status TINYINT DEFAULT 0;
 ALTER TABLE dosen ADD COLUMN sync_status TINYINT DEFAULT 0;
@@ -834,7 +858,7 @@ class KKNWebhookSender:
 
 if __name__ == '__main__':
     # Konfigurasi
-    SECRET = '3f4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f6'  # Dari .env KKN
+    SECRET = 'SECRET_DARI_ADMIN_KKN'  # Hubungi admin KKN untuk mendapatkan secret
     WEBHOOK_URL = 'https://kkn.uinsaizu.ac.id/api/webhooks/master-data'
     
     # Inisialisasi sender
@@ -971,9 +995,10 @@ with engine.connect() as conn:
     print("=" * 60)
 ```
 
-### Cara Menjalankan:
+### Cara Menjalankan
 
 1. **Install dependencies**:
+
    ```bash
    pip install requests
    ```
@@ -981,11 +1006,13 @@ with engine.connect() as conn:
 2. **Set secret** di baris 128: `SECRET = 'YOUR_SECRET_HERE'`
 
 3. **Jalankan**:
+
    ```bash
    python3 send_webhook.py
    ```
 
-### Fitur Script Python:
+### Fitur Script Python
+
 - ✅ **Class lengkap** `KKNWebhookSender` dengan semua fungsi
 - ✅ **Generate signature** HMAC-SHA256 otomatis
 - ✅ **4 contoh penggunaan** (mahasiswa/dosen created/deleted)
@@ -1016,7 +1043,7 @@ Berikut adalah **Postman Collection** untuk testing webhook KKN:
         },
         {
             "key": "webhook_secret",
-            "value": "3f4a5b6c7d8e9f0a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f6"
+            "value": "SECRET_DARI_ADMIN_KKN"
         },
         {
             "key": "webhook_url",
@@ -1172,7 +1199,7 @@ Berikut adalah **Postman Collection** untuk testing webhook KKN:
 }
 ```
 
-### Cara Menggunakan Postman Collection:
+### Cara Menggunakan Postman Collection
 
 1. **Download/Create file** `KKN_Webhook.postman_collection.json`
 2. **Import ke Postman**:
@@ -1185,7 +1212,8 @@ Berikut adalah **Postman Collection** untuk testing webhook KKN:
    - Klik **Send**
    - Signature akan digenerate otomatis di `Pre-request Script`
 
-### Fitur Postman Collection:
+### Fitur Postman Collection
+
 - ✅ **3 Contoh Request** (Mahasiswa/Dosen Created/Deleted)
 - ✅ **Auto-generate HMAC-SHA256** di Pre-request Script
 - ✅ **Environment Variables** untuk konfigurasi mudah

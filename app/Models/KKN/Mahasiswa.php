@@ -27,7 +27,6 @@ class Mahasiswa extends Model
         'prodi_id',
         'batch_year',
         'sks_completed',
-        'total_sks',
         'gpa',
         'status_bta_ppi',
         'is_paid_ukt',
@@ -58,7 +57,6 @@ class Mahasiswa extends Model
         return [
             'birth_date' => 'date',
             'sks_completed' => 'integer',
-            'total_sks' => 'integer',
             'semester' => 'integer',
             'gpa' => 'float',
             'is_paid_ukt' => 'boolean',

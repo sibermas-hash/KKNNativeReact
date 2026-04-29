@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\MasterApi;
 
+use App\Models\KKN\SystemSetting;
 use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -22,7 +23,11 @@ class MasterApiClient
         private readonly CircuitBreakerService $circuitBreaker,
         private readonly FallbackCacheService $fallbackCache,
     ) {
-        $this->baseUrl = rtrim((string) config('services.master_api.url', ''), '/');
+        // Priority: SystemSetting (admin UI) → config/env fallback
+        $this->baseUrl = rtrim(
+            (string) (SystemSetting::get('master_api_url') ?: config('services.master_api.url', '')),
+            '/'
+        );
         $this->verifySsl = config('app.env') !== 'local';
         $this->timeoutSeconds = max(5, (int) config('services.master_api.timeout', 30));
         $this->token = '';

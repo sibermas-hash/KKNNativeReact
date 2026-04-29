@@ -22,7 +22,7 @@ class KknRequirementController extends Controller
             'requirements' => KknRequirement::orderBy('id')->get(),
             // Provide a list of available columns in 'mahasiswa' table to pick from
             'availableColumns' => [
-                ['value' => 'total_sks', 'label' => 'Total SKS'],
+                ['value' => 'sks_completed', 'label' => 'Total SKS'],
                 ['value' => 'status_bta_ppi', 'label' => 'Status BTA PPI'],
                 ['value' => 'semester', 'label' => 'Semester Aktif'],
                 ['value' => 'gpa', 'label' => 'IPK (Grade Point Average)'],

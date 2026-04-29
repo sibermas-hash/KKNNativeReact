@@ -36,7 +36,8 @@ class KknRequirement extends Model
         $actualValue = $mahasiswa->getAttribute($this->column_name);
 
         // Fallbacks for legacy data compatibility
-        if ($this->column_name === 'total_sks' && empty($actualValue)) {
+        if ($this->column_name === 'total_sks') {
+            // total_sks was consolidated into sks_completed
             $actualValue = $mahasiswa->sks_completed;
         }
         if ($this->column_name === 'status_bta_ppi' && empty($actualValue)) {

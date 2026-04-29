@@ -97,11 +97,9 @@ class GenerateDummyStudent extends Command
                 'fakultas_id' => $fakultas->id,
                 'prodi_id' => $prodi->id,
                 'batch_year' => 2022,
-                'sks_completed' => 120,
-                'total_sks' => 144,
+                'sks_completed' => 144,
                 'gpa' => 3.85,
                 'status_bta_ppi' => 'LULUS',
-                'status_bta_ppi' => 'Lulus',
                 'semester' => 7,
                 'shirt_size' => 'L',
             ]

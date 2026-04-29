@@ -73,7 +73,7 @@ export default function RequirementBuilder({ form }: { form: any }) {
 
             <input
               type="text"
-              placeholder="Field (untuk db_check, contoh: total_sks)"
+              placeholder="Field (untuk db_check, contoh: sks_completed)"
               value={r.field || ''}
               onChange={(e) => updateRule(idx, { field: e.target.value })}
               className="col-span-3 h-10 px-3 rounded-xl border border-slate-200 text-xs text-slate-700"

@@ -45,6 +45,7 @@ function createUserWithRole(string $role, array $permissions = []): User
     $user = User::factory()->create([
         'is_active' => true,
         'must_change_password' => false,
+        'password_changed_at' => now(),
         'password' => Hash::make('Test1234!'),
     ]);
     $user->assignRole($role);

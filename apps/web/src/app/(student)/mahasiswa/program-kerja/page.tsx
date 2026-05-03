@@ -5,42 +5,37 @@ import { studentEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
 import { api } from '@/lib/api';
 import Link from 'next/link';
+import { Plus, Presentation } from 'lucide-react';
+import { StatusBadge, EmptyState } from '@/components/ui/shared';
 
 export default function WorkProgramsPage() {
   const endpoints = studentEndpoints(api);
-
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.workPrograms,
-    queryFn: async () => {
-      const res = await endpoints.workPrograms.index();
-      return (res.data as { success: boolean; data: { programs: unknown[] } }).data;
-    },
+    queryFn: async () => { const res = await endpoints.workPrograms.index(); return (res.data as { success: boolean; data: { programs: unknown[] } }).data; },
   });
 
   const programs = (data?.programs as Record<string, unknown>[]) || [];
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-800">Program Kerja</h1>
-        <Link href="/mahasiswa/program-kerja/buat" className="rounded-xl bg-teal-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-teal-700">+ Buat Program</Link>
+        <div className="flex items-center gap-4">
+          <div className="h-14 w-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg"><Presentation size={28} /></div>
+          <div><h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Program Kerja</h1><p className="text-sm text-slate-400">Kelola program kerja kelompok</p></div>
+        </div>
+        <Link href="/mahasiswa/program-kerja/buat" className="px-6 py-3 bg-blue-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs flex items-center gap-2"><Plus size={16} /> Buat Program</Link>
       </div>
 
-      {isLoading ? (
-        <div className="space-y-3">{[1, 2].map((i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-slate-200" />)}</div>
-      ) : programs.length === 0 ? (
-        <div className="rounded-2xl bg-white p-12 text-center shadow-sm">
-          <p className="text-4xl">🎯</p>
-          <p className="mt-4 text-lg font-semibold text-slate-700">Belum Ada Program Kerja</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
+      {isLoading ? <div className="space-y-4">{[1, 2].map((i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-slate-200" />)}</div>
+      : programs.length === 0 ? <EmptyState icon={<Presentation size={48} />} title="Belum Ada Program Kerja" />
+      : (
+        <div className="space-y-4">
           {programs.map((p) => (
-            <Link key={p.id as number} href={`/mahasiswa/program-kerja/${p.id}`} className="block rounded-2xl bg-white p-5 shadow-sm hover:shadow-md">
-              <p className="font-semibold text-slate-800">{p.title as string}</p>
-              <p className="mt-1 line-clamp-2 text-sm text-slate-600">{(p.description as string) || '-'}</p>
-              <div className="mt-2 flex gap-2">
-                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600">{p.status as string}</span>
+            <Link key={String(p.id)} href={`/mahasiswa/program-kerja/${p.id}`} className="block bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+              <div className="flex items-start justify-between">
+                <div><h3 className="text-lg font-black text-slate-900 group-hover:text-blue-700 transition-colors">{String(p.title || '')}</h3><p className="mt-1 text-sm text-slate-500 line-clamp-2">{String(p.description || '-')}</p></div>
+                <StatusBadge status={String(p.status || 'draft')} />
               </div>
             </Link>
           ))}

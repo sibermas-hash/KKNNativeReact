@@ -1,0 +1,91 @@
+# CI runs on ubuntu-latest. Production server is FreeBSD.
+# FreeBSD deployment is handled manually via ssh + service commands.
+
+name: Backend API Tests
+
+on:
+  push:
+    branches: [main, develop]
+    paths: ['apps/api/**']
+  pull_request:
+    branches: [main, develop]
+    paths: ['apps/api/**']
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+
+    services:
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: redis, bcmath, intl, gd, exif, pcntl, pdo_sqlite
+          coverage: none
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: apps/api/vendor
+          key: composer-${{ hashFiles('apps/api/composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          sed -i 's/DB_CONNECTION=pgsql/DB_CONNECTION=sqlite/' .env
+          sed -i 's/DB_DATABASE=.*/DB_DATABASE=:memory:/' .env
+          sed -i 's/CACHE_STORE=.*/CACHE_STORE=redis/' .env
+          sed -i 's/SESSION_DRIVER=.*/SESSION_DRIVER=redis/' .env
+        env:
+          REDIS_HOST: 127.0.0.1
+          REDIS_PORT: 6379
+
+      - name: Run tests
+        run: php artisan test --parallel
+
+  lint:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP 8.4
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: apps/api/vendor
+          key: composer-${{ hashFiles('apps/api/composer.lock') }}
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction
+
+      - name: Check code style (Laravel Pint)
+        run: vendor/bin/pint --test

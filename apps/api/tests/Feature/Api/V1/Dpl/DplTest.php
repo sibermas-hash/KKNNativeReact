@@ -1,20 +1,34 @@
 <?php
 
 use App\Models\KKN\Dosen;
-use App\Models\KKN\DplPeriod;
-use App\Models\KKN\KelompokKkn;
-use App\Models\KKN\KegiatanKkn;
-use App\Models\KKN\Periode;
 use App\Models\User;
 
 describe('DPL API', function () {
 
-    describe('GET /api/v1/dosen/dashboard', function () {
+    describe('Authentication', function () {
         it('returns 401 for unauthenticated', function () {
             $this->getJson('/api/v1/dosen/dashboard')
                 ->assertStatus(401);
         });
 
+        it('returns 403 for non-dpl role', function () {
+            $user = User::factory()->create(['is_active' => true]);
+            $user->assignRole('student');
+
+            $this->actingAs($user)->getJson('/api/v1/dpl/dashboard')
+                ->assertStatus(403);
+        });
+
+        it('returns 403 when dpl tries admin routes', function () {
+            $user = User::factory()->create(['is_active' => true]);
+            $user->assignRole('dpl');
+
+            $this->actingAs($user)->getJson('/api/v1/admin/hub')
+                ->assertStatus(403);
+        });
+    });
+
+    describe('Dosen Dashboard', function () {
         it('returns dashboard data for dosen', function () {
             $user = User::factory()->create(['is_active' => true]);
             $user->assignRole('dosen');
@@ -28,15 +42,7 @@ describe('DPL API', function () {
         });
     });
 
-    describe('GET /api/v1/dpl/dashboard', function () {
-        it('returns 403 for non-dpl role', function () {
-            $user = User::factory()->create(['is_active' => true]);
-            $user->assignRole('student');
-
-            $this->actingAs($user)->getJson('/api/v1/dpl/dashboard')
-                ->assertStatus(403);
-        });
-
+    describe('DPL Dashboard', function () {
         it('returns DPL dashboard data', function () {
             $user = User::factory()->create(['is_active' => true]);
             $user->assignRole('dpl');
@@ -50,7 +56,7 @@ describe('DPL API', function () {
         });
     });
 
-    describe('GET /api/v1/dpl/groups', function () {
+    describe('DPL Groups', function () {
         it('returns groups list for dpl', function () {
             $user = User::factory()->create(['is_active' => true]);
             $user->assignRole('dpl');
@@ -63,7 +69,7 @@ describe('DPL API', function () {
         });
     });
 
-    describe('GET /api/v1/dpl/daily-reports', function () {
+    describe('DPL Daily Reports', function () {
         it('returns daily reports for dpl', function () {
             $user = User::factory()->create(['is_active' => true]);
             $user->assignRole('dpl');
@@ -76,7 +82,7 @@ describe('DPL API', function () {
         });
     });
 
-    describe('GET /api/v1/dpl/evaluations', function () {
+    describe('DPL Evaluations', function () {
         it('returns evaluations for dpl', function () {
             $user = User::factory()->create(['is_active' => true]);
             $user->assignRole('dpl');
@@ -89,7 +95,7 @@ describe('DPL API', function () {
         });
     });
 
-    describe('GET /api/v1/dpl/final-reports', function () {
+    describe('DPL Final Reports', function () {
         it('returns final reports for dpl', function () {
             $user = User::factory()->create(['is_active' => true]);
             $user->assignRole('dpl');
@@ -102,7 +108,7 @@ describe('DPL API', function () {
         });
     });
 
-    describe('GET /api/v1/dpl/monitoring', function () {
+    describe('DPL Monitoring', function () {
         it('returns monitoring list for dpl', function () {
             $user = User::factory()->create(['is_active' => true]);
             $user->assignRole('dpl');
@@ -115,7 +121,7 @@ describe('DPL API', function () {
         });
     });
 
-    describe('GET /api/v1/dpl/leave-requests', function () {
+    describe('DPL Leave Requests', function () {
         it('returns leave requests for dpl', function () {
             $user = User::factory()->create(['is_active' => true]);
             $user->assignRole('dpl');
@@ -128,7 +134,7 @@ describe('DPL API', function () {
         });
     });
 
-    describe('GET /api/v1/dpl/feedback', function () {
+    describe('DPL Feedback', function () {
         it('returns participant feedback for dpl', function () {
             $user = User::factory()->create(['is_active' => true]);
             $user->assignRole('dpl');

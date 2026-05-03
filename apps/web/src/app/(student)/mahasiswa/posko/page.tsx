@@ -2,60 +2,41 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
-import { QUERY_KEYS } from '@sibermas/constants';
 import { api } from '@/lib/api';
-import { useState } from 'react';
 import toast from 'react-hot-toast';
+import { MapPin } from 'lucide-react';
 
 export default function PoskoPage() {
-  const endpoints = studentEndpoints(api);
   const queryClient = useQueryClient();
-
   const { data, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.student.posko,
-    queryFn: async () => {
-      const res = await api.get('/student/posko');
-      return (res.data as { success: boolean; data: Record<string, unknown> }).data;
-    },
+    queryKey: ['student', 'posko'],
+    queryFn: async () => { const res = await api.get('/student/posko'); return (res.data as { success: boolean; data: Record<string, unknown> }).data; },
   });
 
   const mutation = useMutation({
     mutationFn: (formData: FormData) => api.post('/student/posko', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['student', 'posko'] }); toast.success('Data posko berhasil diperbarui'); },
-    onError: () => toast.error('Gagal memperbarui data posko'),
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    mutation.mutate(new FormData(e.currentTarget));
-  };
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => { e.preventDefault(); mutation.mutate(new FormData(e.currentTarget)); };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Posko Kelompok</h1>
-      <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl bg-white p-6 shadow-sm">
-        <div>
-          <label className="mb-1.5 block text-sm font-medium">Nama Posko</label>
-          <input name="nama_posko" defaultValue={String(data?.nama_posko || '')} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" />
+    <div className="max-w-[600px] mx-auto px-4 py-10">
+      <div className="bg-white rounded-[2rem] p-8 border border-emerald-50 shadow-sm">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="h-12 w-12 bg-emerald-600 rounded-xl flex items-center justify-center text-white"><MapPin size={24} /></div>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Posko Kelompok</h1>
         </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium">Alamat</label>
-          <textarea name="address" rows={3} defaultValue={String(data?.address || '')} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" />
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium">Latitude</label>
-            <input name="latitude" type="number" step="any" defaultValue={String(data?.latitude || '')} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div><label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Nama Posko</label><input name="nama_posko" defaultValue={String(data?.nama_posko || '')} className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-bold mt-2" /></div>
+          <div><label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Alamat</label><textarea name="address" rows={3} defaultValue={String(data?.address || '')} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold mt-2" /></div>
+          <div className="grid grid-cols-2 gap-4">
+            <div><label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Latitude</label><input name="latitude" type="number" step="any" defaultValue={String(data?.latitude || '')} className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-bold mt-2" /></div>
+            <div><label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Longitude</label><input name="longitude" type="number" step="any" defaultValue={String(data?.longitude || '')} className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-bold mt-2" /></div>
           </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium">Longitude</label>
-            <input name="longitude" type="number" step="any" defaultValue={String(data?.longitude || '')} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" />
-          </div>
-        </div>
-        <button type="submit" disabled={mutation.isPending} className="w-full rounded-xl bg-teal-600 py-3 text-sm font-semibold text-white disabled:opacity-50">
-          {mutation.isPending ? 'Menyimpan...' : 'Simpan'}
-        </button>
-      </form>
+          <button type="submit" disabled={mutation.isPending} className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black uppercase tracking-widest text-xs disabled:opacity-50">{mutation.isPending ? 'Menyimpan...' : 'Simpan'}</button>
+        </form>
+      </div>
     </div>
   );
 }

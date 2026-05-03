@@ -145,6 +145,14 @@ return new class extends Migration
                 }
                 return false;
             }
+            if ($driver === 'pgsql') {
+                $result = \Illuminate\Support\Facades\DB::select(
+                    "SELECT 1 FROM pg_indexes WHERE tablename = ? AND indexdef LIKE ? LIMIT 1",
+                    [$table, "%({$column})%"]
+                );
+                return count($result) > 0;
+            }
+            // MySQL fallback
             $indexes = \Illuminate\Support\Facades\DB::select("SHOW INDEX FROM {$table} WHERE Column_name = ?", [$column]);
             return count($indexes) > 0;
         } catch (\Throwable $e) {

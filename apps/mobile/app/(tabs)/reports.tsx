@@ -46,7 +46,7 @@ export default function ReportsScreen() {
           </TouchableOpacity>
         )}
       />
-      <TouchableOpacity style={styles.fab} onPress={() => {}}>
+      <TouchableOpacity style={styles.fab} onPress={() => router.push('/(tabs)/reports/create')}>
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
     </View>

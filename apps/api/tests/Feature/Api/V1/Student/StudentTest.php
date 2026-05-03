@@ -17,6 +17,22 @@ describe('Student API', function () {
             $this->actingAs($user)->getJson('/api/v1/student/dashboard')
                 ->assertStatus(403);
         });
+
+        it('returns 403 when student tries dpl routes', function () {
+            $user = User::factory()->create(['is_active' => true]);
+            $user->assignRole('student');
+
+            $this->actingAs($user)->getJson('/api/v1/dpl/dashboard')
+                ->assertStatus(403);
+        });
+
+        it('returns 403 when student tries admin routes', function () {
+            $user = User::factory()->create(['is_active' => true]);
+            $user->assignRole('student');
+
+            $this->actingAs($user)->getJson('/api/v1/admin/hub')
+                ->assertStatus(403);
+        });
     });
 
     describe('Endpoints return JSON', function () {

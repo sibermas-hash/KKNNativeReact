@@ -8,7 +8,6 @@ use App\Models\KKN\Periode;
 use App\Services\PeriodContextService;
 use Closure;
 use Illuminate\Http\Request;
-use Inertia\Inertia;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -81,17 +80,8 @@ class EnsurePhase
             ], 403);
         }
 
-        // Untuk request Inertia (SPA navigation)
-        if ($request->header('X-Inertia')) {
-            return Inertia::render('PhaseBlocked', [
-                'message' => $message,
-                'current_phase' => $currentPhase,
-            ])->toResponse($request)->setStatusCode(403);
-        }
-
-        // Untuk request biasa, redirect kembali dengan flash message
-        $backUrl = $request->headers->get('referer', '/dashboard');
-
+        // Web: redirect with error message
+        $backUrl = $request->headers->get('referer', '/');
         return redirect($backUrl)->with('error', $message);
     }
 

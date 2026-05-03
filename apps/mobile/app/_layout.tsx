@@ -1,8 +1,19 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Stack, useRouter, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Platform } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import * as Application from 'expo-application';
+import * as Device from 'expo-device';
 import { useAuthStore } from '@/stores';
+import { api } from '@/lib/api';
+import {
+  registerForPushNotifications,
+  setupAndroidChannels,
+  handleNotificationReceived,
+  handleNotificationResponse,
+} from '@/lib/notifications';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
@@ -12,9 +23,42 @@ export default function RootLayout() {
   const router = useRouter();
   const pathname = usePathname();
   const { fetchUser, isAuthenticated, isLoading, user } = useAuthStore();
+  const notificationListener = useRef<Notifications.EventSubscription>(null);
+  const responseListener = useRef<Notifications.EventSubscription>(null);
 
-  useEffect(() => { fetchUser(); }, [fetchUser]);
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
 
+  // Push notification setup
+  useEffect(() => {
+    setupAndroidChannels();
+
+    registerForPushNotifications().then((token) => {
+      if (token && isAuthenticated) {
+        const deviceId = Platform.OS === 'android' ? Application.getAndroidId() : Device.deviceName;
+        api.post('/notifications/device-tokens', {
+          token,
+          platform: Platform.OS,
+          device_id: deviceId || 'unknown',
+        }).catch((err) => console.warn('Failed to register device token:', err));
+      }
+    });
+
+    notificationListener.current = Notifications.addNotificationReceivedListener(handleNotificationReceived);
+    responseListener.current = Notifications.addNotificationResponseReceivedListener(handleNotificationResponse);
+
+    return () => {
+      if (notificationListener.current) {
+        Notifications.removeNotificationSubscription(notificationListener.current);
+      }
+      if (responseListener.current) {
+        Notifications.removeNotificationSubscription(responseListener.current);
+      }
+    };
+  }, [isAuthenticated]);
+
+  // Auth routing
   useEffect(() => {
     if (isLoading) return;
     if (!isAuthenticated) {

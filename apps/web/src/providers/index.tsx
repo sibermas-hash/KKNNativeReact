@@ -47,7 +47,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           error: { iconTheme: { primary: '#ef4444', secondary: '#f8fafc' } },
         }}
       />
-      <ReactQueryDevtools initialIsOpen={false} />
+      {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   );
 }

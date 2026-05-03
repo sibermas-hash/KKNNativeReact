@@ -4,6 +4,7 @@ use App\Http\Middleware\CheckPeriodLock;
 use App\Http\Middleware\CspHeaders;
 use App\Http\Middleware\DisableDebugbar;
 use App\Http\Middleware\EnsurePasswordChanged;
+use App\Http\Middleware\EnsureProfileCompleted;
 use App\Http\Middleware\EnsurePhase;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\HandleActivePeriod;
@@ -76,6 +77,8 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->api(append: [
+            EnsurePasswordChanged::class,
+            EnsureProfileCompleted::class,
             EnsureUserIsActive::class,
         ]);
 

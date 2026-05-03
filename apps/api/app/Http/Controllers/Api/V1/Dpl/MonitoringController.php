@@ -21,9 +21,9 @@ class MonitoringController extends Controller
             return $this->success(['monitoring' => []]);
         }
 
-        $monitoring = MonitoringDpl::where('dosen_id', $dosen->id)
+        $monitoring = MonitoringDpl::where('dpl_id', $dosen->id)
             ->with(['kelompok'])
-            ->orderByDesc('visit_date')
+            ->orderByDesc('tanggal_kunjungan')
             ->paginate(25);
 
         return $this->success([
@@ -58,13 +58,11 @@ class MonitoringController extends Controller
         }
 
         $monitoring = MonitoringDpl::create([
-            'dosen_id' => $dosen->id,
+            'dpl_id' => $dosen->id,
             'kelompok_id' => $validated['kelompok_id'],
-            'visit_date' => $validated['visit_date'],
-            'notes' => $validated['notes'],
-            'latitude' => $validated['latitude'] ?? null,
-            'longitude' => $validated['longitude'] ?? null,
-            'photo_path' => $photoPath,
+            'periode_id' => auth()->user()->dosen->dplPeriods()->first()?->periode_id,
+            'tanggal_kunjungan' => $validated['visit_date'],
+            'catatan_tambahan' => $validated['notes'],
         ]);
 
         return $this->created(['id' => $monitoring->id], 'Monitoring berhasil dicatat.');

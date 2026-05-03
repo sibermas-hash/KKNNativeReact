@@ -1,77 +1,72 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
-import { useState } from 'react';
+import Link from 'next/link';
+import { ClipboardList, CheckCircle2, XCircle } from 'lucide-react';
+import { StatusBadge, PageHeader, EmptyState } from '@/components/ui/shared';
 import toast from 'react-hot-toast';
 
-export default function RegistrationsPage() {
+export default function AdminRegistrationsPage() {
   const endpoints = adminEndpoints(api);
   const queryClient = useQueryClient();
   const [status, setStatus] = useState('');
   const [search, setSearch] = useState('');
-  const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'registrations', { status, search, page }],
-    queryFn: async () => { const res = await endpoints.registrations.index({ status, search, page }); return res.data as { success: boolean; data: unknown[]; meta?: Record<string, number> }; },
+    queryKey: ['admin', 'registrations', { status, search }],
+    queryFn: async () => { const res = await endpoints.registrations.index({ status, search }); return res.data as { success: boolean; data: unknown[]; meta?: Record<string, number> }; },
   });
 
   const approveMutation = useMutation({
     mutationFn: (id: number) => endpoints.registrations.approve(id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); toast.success('Pendaftaran disetujui'); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); toast.success('Disetujui'); },
   });
 
   const rejectMutation = useMutation({
     mutationFn: ({ id, reason }: { id: number; reason: string }) => endpoints.registrations.reject(id, { rejection_reason: reason }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); toast.success('Pendaftaran ditolak'); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); toast.success('Ditolak'); },
   });
 
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const registrations = (data?.data as Record<string, unknown>[]) || [];
 
-  const bulkApprove = () => {
-    endpoints.registrations.bulkApprove(selectedIds).then(() => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); setSelectedIds([]); toast.success(`${selectedIds.length} pendaftaran disetujui`); });
-  };
+  const toggleSelect = (id: number) => setSelectedIds((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
+  const bulkApprove = () => endpoints.registrations.bulkApprove(selectedIds).then(() => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); setSelectedIds([]); toast.success(`${selectedIds.length} pendaftaran disetujui`); });
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Pendaftaran KKN</h1>
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      <PageHeader title="Pendaftaran KKN" subtitle="Kelola pendaftaran mahasiswa" />
 
       <div className="flex flex-wrap items-center gap-3">
-        <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Cari NIM/Nama..." className="rounded-lg border border-slate-200 px-3 py-2 text-sm" />
-        <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }} className="rounded-lg border border-slate-200 px-3 py-2 text-sm">
-          <option value="">Semua Status</option>
-          <option value="pending">Menunggu</option>
-          <option value="approved">Disetujui</option>
-          <option value="rejected">Ditolak</option>
+        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari NIM/Nama..." className="w-64 h-10 bg-white border border-slate-200 rounded-xl px-4 text-sm font-bold" />
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className="h-10 bg-white border border-slate-200 rounded-xl px-4 text-sm font-bold">
+          <option value="">Semua Status</option><option value="pending">Menunggu</option><option value="approved">Disetujui</option><option value="rejected">Ditolak</option>
         </select>
-        {selectedIds.length > 0 && (
-          <button onClick={bulkApprove} className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white">✅ Setujui {selectedIds.length} Terpilih</button>
-        )}
+        {selectedIds.length > 0 && <button onClick={bulkApprove} className="h-10 px-4 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase">✅ Setujui {selectedIds.length} Terpilih</button>}
       </div>
 
-      {isLoading ? <div className="h-32 animate-pulse rounded-2xl bg-slate-200" /> : (
+      {isLoading ? <div className="space-y-4">{[1, 2, 3].map((i) => <div key={i} className="h-20 animate-pulse rounded-2xl bg-slate-200" />)}</div>
+      : registrations.length === 0 ? <EmptyState icon={<ClipboardList size={48} />} title="Tidak ada pendaftaran" />
+      : (
         <div className="space-y-3">
           {registrations.map((r) => {
             const mhs = r.mahasiswa as Record<string, unknown> | undefined;
             return (
-              <div key={r.id as number} className="flex items-start gap-3 rounded-2xl bg-white p-5 shadow-sm">
-                <input type="checkbox" checked={selectedIds.includes(r.id as number)} onChange={() => setSelectedIds((prev) => prev.includes(r.id as number) ? prev.filter((i) => i !== r.id) : [...prev, r.id as number])} className="mt-1 h-4 w-4" />
+              <div key={String(r.id)} className="flex items-start gap-3 bg-white rounded-2xl p-5 ring-1 ring-slate-200 shadow-sm">
+                <input type="checkbox" checked={selectedIds.includes(r.id as number)} onChange={() => toggleSelect(r.id as number)} className="mt-1 h-4 w-4" />
                 <div className="flex-1">
                   <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-semibold text-slate-800">{mhs?.nama as string || '-'}</p>
-                      <p className="text-sm text-slate-500">NIM: {mhs?.nim as string} | {((mhs?.fakultas as Record<string, unknown>)?.nama as string) || '-'}</p>
-                    </div>
-                    <span className={`rounded-full px-3 py-1 text-xs font-medium ${r.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : r.status === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}`}>{r.status as string}</span>
+                    <div><p className="font-black text-slate-900">{String(mhs?.nama || '-')}</p><p className="text-xs text-slate-400">NIM: {String(mhs?.nim || '-')} | {String((mhs?.fakultas as Record<string, unknown>)?.nama || '-')}</p></div>
+                    <StatusBadge status={String(r.status || '')} />
                   </div>
                   {r.status === 'pending' && (
-                    <div className="mt-3 flex gap-2">
-                      <button onClick={() => approveMutation.mutate(r.id as number)} className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white">✅ Setujui</button>
-                      <button onClick={() => { const reason = prompt('Alasan penolakan:'); if (reason) rejectMutation.mutate({ id: r.id as number, reason }); }} className="rounded-lg bg-rose-100 px-3 py-1.5 text-xs font-semibold text-rose-700">❌ Tolak</button>
-                      <a href={`/admin/pendaftaran/${r.id}`} className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700">Detail →</a>
+                    <div className="flex gap-2 mt-3">
+                      <button onClick={() => approveMutation.mutate(r.id as number)} className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-black"><CheckCircle2 size={12} /> Setujui</button>
+                      <button onClick={() => { const reason = prompt('Alasan penolakan:'); if (reason) rejectMutation.mutate({ id: r.id as number, reason }); }} className="flex items-center gap-1 px-3 py-1.5 bg-rose-100 text-rose-700 rounded-lg text-xs font-black"><XCircle size={12} /> Tolak</button>
+                      <Link href={`/admin/pendaftaran/${r.id}`} className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold">Detail →</Link>
                     </div>
                   )}
                 </div>

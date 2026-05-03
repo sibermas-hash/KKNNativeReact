@@ -30,8 +30,6 @@ class TestAutoLogin
                 $testLoginHeader = 'admin';
             } elseif (str_contains($tokenStr, 'student') || str_contains($tokenStr, 'valid_test_token') || str_contains($tokenStr, 'valid_token') || str_contains($tokenStr, 'valid.token')) {
                 $testLoginHeader = 'student';
-            } elseif (str_contains($tokenStr, 'student') || str_contains($tokenStr, 'valid_test_token') || str_contains($tokenStr, 'valid_token') || str_contains($tokenStr, 'valid.token')) {
-                $testLoginHeader = 'student';
             }
         }
 

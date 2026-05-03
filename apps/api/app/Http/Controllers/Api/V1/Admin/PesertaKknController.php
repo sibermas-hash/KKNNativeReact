@@ -79,6 +79,16 @@ class PesertaKknController extends Controller
 
     public function export(): JsonResponse
     {
-        return $this->success(PesertaKknResource::collection(PesertaKkn::with(['mahasiswa.user', 'kelompok', 'periode'])->get()));
+        $data = [];
+        PesertaKkn::with(['mahasiswa.user', 'kelompok', 'periode'])
+            ->orderByDesc('created_at')
+            ->limit(5000)
+            ->chunk(500, function ($chunk) use (&$data) {
+                foreach ($chunk as $item) {
+                    $data[] = (new PesertaKknResource($item))->resolve(request());
+                }
+            });
+
+        return $this->success($data, 'Export berhasil. ' . count($data) . ' data diekspor.');
     }
 }

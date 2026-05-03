@@ -1,0 +1,38 @@
+name: Next.js Web Build
+
+on:
+  push:
+    branches: [main, develop]
+    paths: ['apps/web/**', 'packages/**']
+  pull_request:
+    branches: [main, develop]
+    paths: ['apps/web/**', 'packages/**']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm --filter web exec tsc --noEmit
+
+      - name: Build
+        run: pnpm --filter web build
+        env:
+          NEXT_PUBLIC_API_URL: /api/v1
+          API_URL: http://localhost:8000/api/v1

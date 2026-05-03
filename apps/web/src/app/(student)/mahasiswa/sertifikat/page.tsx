@@ -4,71 +4,49 @@ import { useQuery } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
 import { api } from '@/lib/api';
+import { GraduationCap } from 'lucide-react';
+import { StatusBadge, EmptyState } from '@/components/ui/shared';
 
 export default function CertificatesPage() {
   const endpoints = studentEndpoints(api);
-
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.certificates,
-    queryFn: async () => {
-      const res = await endpoints.certificates.index();
-      return (res.data as { success: boolean; data: { scores: unknown[]; certificates: unknown[] } }).data;
-    },
+    queryFn: async () => { const res = await endpoints.certificates.index(); return (res.data as { success: boolean; data: { scores: unknown[]; certificates: unknown[] } }).data; },
   });
 
   const scores = (data?.scores as Record<string, unknown>[]) || [];
   const certificates = (data?.certificates as Record<string, unknown>[]) || [];
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Sertifikat & Nilai</h1>
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      <div className="flex items-center gap-4">
+        <div className="h-14 w-14 bg-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg"><GraduationCap size={28} /></div>
+        <div><h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Sertifikat & Nilai</h1><p className="text-sm text-slate-400">Lihat nilai dan sertifikat KKN</p></div>
+      </div>
 
-      {isLoading ? (
-        <div className="h-32 animate-pulse rounded-2xl bg-slate-200" />
-      ) : (
+      {isLoading ? <div className="h-32 animate-pulse rounded-2xl bg-slate-200" />
+      : scores.length === 0 && certificates.length === 0 ? <EmptyState icon={<GraduationCap size={48} />} title="Belum Ada Nilai atau Sertifikat" description="Nilai dan sertifikat akan muncul setelah KKN selesai" />
+      : (
         <>
           {scores.length > 0 && (
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold text-slate-700">Nilai KKN</h2>
-              {scores.map((score) => (
-                <div key={score.id as number} className="rounded-2xl bg-white p-6 shadow-sm">
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
-                      <p className="text-xs text-slate-500">Total Skor</p>
-                      <p className="text-2xl font-bold text-teal-600">{(score.total_score as number)?.toFixed(1) || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500">Grade</p>
-                      <p className="text-2xl font-bold text-amber-600">{(score.letter_grade as string) || '-'}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-500">Status</p>
-                      <p className="text-sm font-medium">{score.is_finalized ? '✅ Final' : '⏳ Proses'}</p>
-                    </div>
-                  </div>
+            <div className="space-y-4"><h2 className="text-lg font-black text-slate-700">Nilai KKN</h2>
+              {scores.map((s) => (
+                <div key={String(s.id)} className="bg-white rounded-2xl p-6 ring-1 ring-slate-200 shadow-sm grid grid-cols-3 gap-4">
+                  <div><p className="text-[10px] font-black text-slate-400 uppercase">Total Skor</p><p className="text-2xl font-black text-emerald-600">{String(s.total_score || '-')}</p></div>
+                  <div><p className="text-[10px] font-black text-slate-400 uppercase">Grade</p><p className="text-2xl font-black text-amber-600">{String(s.letter_grade || '-')}</p></div>
+                  <div><p className="text-[10px] font-black text-slate-400 uppercase">Status</p><StatusBadge status={s.is_finalized ? 'approved' : 'pending'} size="md" /></div>
                 </div>
               ))}
             </div>
           )}
-
           {certificates.length > 0 && (
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold text-slate-700">Sertifikat</h2>
-              {certificates.map((cert) => (
-                <div key={cert.id as number} className="rounded-2xl bg-white p-6 shadow-sm">
-                  <p className="font-semibold text-slate-800">{cert.nama_mahasiswa as string}</p>
-                  <p className="text-sm text-slate-600">No: {cert.certificate_number as string}</p>
-                  <p className="text-sm text-slate-600">NIM: {cert.nim as string}</p>
+            <div className="space-y-4"><h2 className="text-lg font-black text-slate-700">Sertifikat</h2>
+              {certificates.map((c) => (
+                <div key={String(c.id)} className="bg-white rounded-2xl p-6 ring-1 ring-slate-200 shadow-sm">
+                  <p className="font-black text-slate-900">{String(c.nama_mahasiswa || '-')}</p>
+                  <p className="text-sm text-slate-500">No: {String(c.certificate_number || '-')} | NIM: {String(c.nim || '-')}</p>
                 </div>
               ))}
-            </div>
-          )}
-
-          {scores.length === 0 && certificates.length === 0 && (
-            <div className="rounded-2xl bg-white p-12 text-center shadow-sm">
-              <p className="text-4xl">🎓</p>
-              <p className="mt-4 text-lg font-semibold text-slate-700">Belum Ada Nilai atau Sertifikat</p>
-              <p className="mt-2 text-sm text-slate-500">Nilai dan sertifikat akan muncul setelah KKN selesai dan difinalisasi</p>
             </div>
           )}
         </>

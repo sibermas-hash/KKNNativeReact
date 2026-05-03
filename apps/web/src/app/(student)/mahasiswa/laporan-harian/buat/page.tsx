@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { createDailyReportSchema, type CreateDailyReportFormData } from '@sibermas/schemas';
 import { useCreateDailyReport } from '@sibermas/hooks';
 import { api } from '@/lib/api';
+import { ChevronLeft, Navigation, Camera, CloudUpload } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function CreateDailyReportPage() {
@@ -14,6 +15,7 @@ export default function CreateDailyReportPage() {
   const mutation = useCreateDailyReport(api);
   const [files, setFiles] = useState<File[]>([]);
   const [gpsLoading, setGpsLoading] = useState(false);
+  const [gpsCoords, setGpsCoords] = useState<{ lat: number; lng: number } | null>(null);
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<CreateDailyReportFormData>({
     resolver: zodResolver(createDailyReportSchema),
@@ -28,87 +30,86 @@ export default function CreateDailyReportPage() {
         setValue('longitude', pos.coords.longitude);
         setValue('gps_accuracy', pos.coords.accuracy);
         setValue('captured_at', new Date().toISOString());
+        setGpsCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setGpsLoading(false);
         toast.success(`GPS: ${pos.coords.latitude.toFixed(6)}, ${pos.coords.longitude.toFixed(6)}`);
       },
-      (err) => {
-        setGpsLoading(false);
-        toast.error('Gagal mendapatkan lokasi: ' + err.message);
-      },
+      (err) => { setGpsLoading(false); toast.error('Gagal mendapatkan lokasi: ' + err.message); },
       { enableHighAccuracy: true, timeout: 15000 },
     );
   };
 
   const onSubmit = (data: CreateDailyReportFormData) => {
     const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) formData.append(key, String(value));
-    });
+    Object.entries(data).forEach(([key, value]) => { if (value !== undefined && value !== null) formData.append(key, String(value)); });
     files.forEach((file) => formData.append('files[]', file));
-
     mutation.mutate(formData, {
-      onSuccess: () => {
-        toast.success('Laporan harian berhasil dikirim!');
-        router.push('/mahasiswa/laporan-harian');
-      },
+      onSuccess: () => { toast.success('Laporan harian berhasil dikirim!'); router.push('/mahasiswa/laporan-harian'); },
       onError: () => toast.error('Gagal mengirim laporan'),
     });
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Buat Laporan Harian</h1>
+    <div className="max-w-[800px] mx-auto px-4 py-10">
+      <button onClick={() => router.back()} className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-emerald-600 mb-6">
+        <ChevronLeft size={16} /> Kembali
+      </button>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 rounded-2xl bg-white p-6 shadow-sm">
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Tanggal</label>
-          <input {...register('date')} type="date" className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" />
-          {errors.date && <p className="mt-1 text-xs text-red-500">{errors.date.message}</p>}
+      <div className="bg-white rounded-[2rem] p-8 border border-emerald-50 shadow-sm">
+        <div className="flex items-center gap-4 mb-8">
+          <div className="h-12 w-12 bg-emerald-600 rounded-xl flex items-center justify-center text-white"><CloudUpload size={24} /></div>
+          <div>
+            <h1 className="text-2xl font-black text-emerald-950 tracking-tight uppercase">Buat Laporan Harian</h1>
+            <p className="text-sm text-slate-400">Isi kegiatan hari ini</p>
+          </div>
         </div>
 
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Judul Kegiatan</label>
-          <input {...register('title')} type="text" placeholder="Judul kegiatan hari ini" className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" />
-          {errors.title && <p className="mt-1 text-xs text-red-500">{errors.title.message}</p>}
-        </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div>
+            <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Tanggal</label>
+            <input {...register('date')} type="date" className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-bold mt-2 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500" />
+            {errors.date && <p className="text-[10px] font-bold text-rose-500 mt-1">{errors.date.message}</p>}
+          </div>
 
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Deskripsi Kegiatan</label>
-          <textarea {...register('activity')} rows={5} placeholder="Jelaskan kegiatan yang dilakukan..." className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" />
-          {errors.activity && <p className="mt-1 text-xs text-red-500">{errors.activity.message}</p>}
-        </div>
+          <div>
+            <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Judul Kegiatan</label>
+            <input {...register('title')} placeholder="Judul kegiatan hari ini" className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-bold mt-2 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500" />
+            {errors.title && <p className="text-[10px] font-bold text-rose-500 mt-1">{errors.title.message}</p>}
+          </div>
 
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Refleksi</label>
-          <textarea {...register('reflection')} rows={3} placeholder="Apa yang dipelajari hari ini?" className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" />
-        </div>
+          <div>
+            <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Deskripsi Kegiatan</label>
+            <textarea {...register('activity')} rows={5} placeholder="Jelaskan kegiatan yang dilakukan..." className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold mt-2 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500" />
+            {errors.activity && <p className="text-[10px] font-bold text-rose-500 mt-1">{errors.activity.message}</p>}
+          </div>
 
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Lokasi GPS</label>
-          <button type="button" onClick={getGPS} disabled={gpsLoading} className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
-            {gpsLoading ? 'Mengambil lokasi...' : '📍 Ambil Lokasi GPS'}
-          </button>
-          <input type="hidden" {...register('latitude', { valueAsNumber: true })} />
-          <input type="hidden" {...register('longitude', { valueAsNumber: true })} />
-          <input type="hidden" {...register('gps_accuracy', { valueAsNumber: true })} />
-          <input type="hidden" {...register('captured_at')} />
-          {errors.latitude && <p className="mt-1 text-xs text-red-500">{errors.latitude.message}</p>}
-        </div>
+          <div>
+            <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Refleksi</label>
+            <textarea {...register('reflection')} rows={3} placeholder="Apa yang dipelajari hari ini?" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold mt-2 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-500" />
+          </div>
 
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Lampiran</label>
-          <input type="file" multiple accept=".jpg,.jpeg,.png,.pdf" onChange={(e) => setFiles(Array.from(e.target.files || []))} className="w-full text-sm text-slate-500 file:mr-4 file:rounded-xl file:border-0 file:bg-teal-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-teal-700 hover:file:bg-teal-100" />
-        </div>
+          <div>
+            <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Lokasi GPS</label>
+            <button type="button" onClick={getGPS} disabled={gpsLoading} className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center justify-center gap-2 text-sm font-bold mt-2 disabled:opacity-50">
+              <Navigation size={16} /> {gpsLoading ? 'Mengambil lokasi...' : gpsCoords ? `📍 ${gpsCoords.lat.toFixed(6)}, ${gpsCoords.lng.toFixed(6)}` : '📍 Gunakan Lokasi Saya'}
+            </button>
+            <input type="hidden" {...register('latitude', { valueAsNumber: true })} />
+            <input type="hidden" {...register('longitude', { valueAsNumber: true })} />
+            <input type="hidden" {...register('gps_accuracy', { valueAsNumber: true })} />
+            <input type="hidden" {...register('captured_at')} />
+            {errors.latitude && <p className="text-[10px] font-bold text-rose-500 mt-1">{errors.latitude.message}</p>}
+          </div>
 
-        <div className="flex gap-3 pt-2">
-          <button type="submit" disabled={mutation.isPending} className="flex-1 rounded-xl bg-teal-600 py-3 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50">
+          <div>
+            <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Lampiran</label>
+            <input type="file" multiple accept=".jpg,.jpeg,.png,.pdf" onChange={(e) => setFiles(Array.from(e.target.files || []))} className="w-full text-sm text-slate-500 mt-2 file:mr-4 file:rounded-xl file:border-0 file:bg-emerald-50 file:px-4 file:py-2 file:text-sm file:font-bold file:text-emerald-700" />
+          </div>
+
+          <button type="submit" disabled={mutation.isPending} className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl flex items-center justify-center gap-2 text-sm font-black uppercase tracking-widest disabled:opacity-50">
             {mutation.isPending ? 'Mengirim...' : 'Kirim Laporan'}
           </button>
-          <button type="button" onClick={() => router.back()} className="rounded-xl bg-slate-100 px-6 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200">
-            Batal
-          </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }

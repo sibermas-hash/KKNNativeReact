@@ -74,11 +74,12 @@ class RegistrationController extends Controller
 
         $validated = $request->validate([
             'periode_id' => ['required', 'exists:periode,id'],
-            'jenis_kkn_id' => ['nullable', 'exists:jenis_kkn,id'],
         ]);
 
         try {
-            $registration = $this->registrationService->register($mahasiswa, $validated['periode_id'], $validated['jenis_kkn_id'] ?? null);
+            // Service signature: register(Mahasiswa, int $periodeId, ?int $kelompokId, ?string $notes, ?int $userId)
+            // kelompokId is null — student is placed in a group after admin approval
+            $registration = $this->registrationService->register($mahasiswa, $validated['periode_id'], null, null, $user->id);
 
             return $this->created(
                 new PesertaKknResource($registration->load(['periode', 'kelompok'])),

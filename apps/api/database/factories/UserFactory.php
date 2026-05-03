@@ -29,10 +29,8 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password_changed_at' => null, // Dibuat null agar masuk ke flow Ganti Password
-            'phone' => fake()->phoneNumber(),
-            'is_active' => true,
-            'must_change_password' => true, // Dibuat true agar masuk ke flow Lengkapi Profil
+            'password_changed_at' => now(),
+            'must_change_password' => false,
             'password' => static::$password ??= Hash::make(env('KKN_LOCAL_SEED_PASSWORD', Str::random(32))),
             'remember_token' => Str::random(10),
         ];

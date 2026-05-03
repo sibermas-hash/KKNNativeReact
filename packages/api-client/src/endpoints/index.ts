@@ -51,10 +51,6 @@ export function studentEndpoints(client: AxiosInstance) {
       form: () => client.get('/student/dpl-evaluation/form'),
       store: (data: Record<string, unknown>) => client.post('/student/dpl-evaluation', data),
     },
-    rekapitulasi: {
-      index: () => client.get('/student/rekapitulasi'),
-      store: (data: Record<string, unknown>) => client.post('/student/rekapitulasi', data),
-    },
     notificationShown: (id: number) => client.patch(`/student/peserta-kkn/${id}/notification-shown`),
   };
 }
@@ -190,7 +186,7 @@ export function publicEndpoints(client: AxiosInstance) {
     announcement: (slug: string) => client.get(`/public/announcements/${slug}`),
     downloads: () => client.get('/public/downloads'),
     locations: () => client.get('/public/locations'),
-    certificate: (token: string) => client.get(`/public/certificates/verify/${token}`),
+    certificate: (token: string) => client.get(`/public/verify-certificate/${token}`),
   };
 }
 

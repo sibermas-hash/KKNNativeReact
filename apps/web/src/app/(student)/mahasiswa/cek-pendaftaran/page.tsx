@@ -5,55 +5,40 @@ import { studentEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
 import { api } from '@/lib/api';
 import Link from 'next/link';
+import { FileCheck } from 'lucide-react';
+import { StatusBadge, EmptyState } from '@/components/ui/shared';
 
 export default function RegistrationStatusPage() {
   const endpoints = studentEndpoints(api);
-
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.registration.status,
-    queryFn: async () => {
-      const res = await endpoints.registration.status();
-      return (res.data as { success: boolean; data: { registrations: unknown[] } }).data;
-    },
+    queryFn: async () => { const res = await endpoints.registration.status(); return (res.data as { success: boolean; data: { registrations: unknown[] } }).data; },
   });
 
-  const registrations = (data?.registrations as Record<string, unknown>[]) || [];
+  const registrations = data?.registrations || [];
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Status Pendaftaran</h1>
+    <div className="max-w-[800px] mx-auto px-4 py-10 space-y-8">
+      <div className="flex items-center gap-4">
+        <div className="h-14 w-14 bg-teal-600 rounded-2xl flex items-center justify-center text-white shadow-lg"><FileCheck size={28} /></div>
+        <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Status Pendaftaran</h1>
+      </div>
 
-      {isLoading ? (
-        <div className="h-32 animate-pulse rounded-2xl bg-slate-200" />
-      ) : registrations.length === 0 ? (
-        <div className="rounded-2xl bg-white p-12 text-center shadow-sm">
-          <p className="text-4xl">📝</p>
-          <p className="mt-4 text-lg font-semibold text-slate-700">Belum Pernah Mendaftar</p>
-          <Link href="/mahasiswa/daftar" className="mt-4 inline-block rounded-xl bg-teal-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-teal-700">Daftar KKN</Link>
-        </div>
-      ) : (
+      {isLoading ? <div className="h-32 animate-pulse rounded-2xl bg-slate-200" />
+      : registrations.length === 0 ? <EmptyState icon={<FileCheck size={48} />} title="Belum Pernah Mendaftar" action={<Link href="/mahasiswa/daftar" className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 text-white rounded-xl font-bold text-sm">Daftar KKN</Link>} />
+      : (
         <div className="space-y-4">
-          {registrations.map((reg) => (
-            <div key={reg.id as number} className="rounded-2xl bg-white p-6 shadow-sm">
+          {(registrations as Record<string, unknown>[]).map((reg) => (
+            <div key={String(reg.id)} className="bg-white rounded-2xl p-6 ring-1 ring-slate-200 shadow-sm">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-slate-500">Periode</p>
-                  <p className="font-semibold text-slate-800">{((reg.periode as Record<string, unknown>)?.name as string) || '-'}</p>
+                  <p className="font-black text-slate-900">{String((reg.periode as Record<string, unknown>)?.name || '-')}</p>
                 </div>
-                <span className={`rounded-full px-3 py-1 text-xs font-medium ${reg.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : reg.status === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}`}>
-                  {reg.status === 'approved' ? '✅ Disetujui' : reg.status === 'rejected' ? '❌ Ditolak' : '⏳ Menunggu'}
-                </span>
+                <StatusBadge status={String(reg.status || '-')} size="md" />
               </div>
-              {String(reg.rejection_reason || '') && (
-                <p className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-600">
-                  Alasan: {String(reg.rejection_reason)}
-                </p>
-              )}
-              {(reg.kelompok as Record<string, unknown>) && (
-                <div className="mt-3 rounded-lg bg-teal-50 px-3 py-2">
-                  <p className="text-sm font-medium text-teal-700">Kelompok: {String((reg.kelompok as Record<string, unknown>)?.name || '-')}</p>
-                </div>
-              )}
+              {reg.rejection_reason ? <p className="mt-3 text-sm text-rose-600 bg-rose-50 rounded-lg px-3 py-2">Alasan: {String(reg.rejection_reason)}</p> : null}
+              {reg.kelompok ? <div className="mt-3 rounded-lg bg-emerald-50 px-3 py-2"><p className="text-sm font-bold text-emerald-700">Kelompok: {String((reg.kelompok as Record<string, unknown>)?.name || '-')}</p></div> : null}
             </div>
           ))}
         </div>

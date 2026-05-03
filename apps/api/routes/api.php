@@ -8,6 +8,8 @@ use App\Http\Controllers\Api\PublicDataController;
 use App\Http\Controllers\Api\RegistrationController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\PeriodContextController;
+use App\Http\Controllers\Api\V1\ProfileController;
+use App\Http\Controllers\Api\V1\PublicController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +29,16 @@ use Illuminate\Support\Facades\Route;
 // New JSON API for Next.js SPA and React Native mobile app.
 
 Route::prefix('v1')->group(function () {
+    // Public endpoints — no auth required
+    Route::prefix('public')->middleware('throttle:60,1')->group(function () {
+        Route::get('/home', [PublicController::class, 'home'])->name('api.v1.public.home');
+        Route::get('/announcements', [PublicController::class, 'announcements'])->name('api.v1.public.announcements');
+        Route::get('/announcements/{slug}', [PublicController::class, 'announcementBySlug'])->name('api.v1.public.announcements.show');
+        Route::get('/locations', [PublicController::class, 'locations'])->name('api.v1.public.locations');
+        Route::get('/downloads', [PublicController::class, 'downloads'])->name('api.v1.public.downloads');
+        Route::get('/verify-certificate/{token}', [PublicController::class, 'verifyCertificate'])->name('api.v1.public.verify-certificate');
+    });
+
     // Auth — public
     Route::prefix('auth')->group(function () {
         Route::get('/captcha', [AuthController::class, 'captcha'])
@@ -58,6 +70,16 @@ Route::prefix('v1')->group(function () {
     Route::get('/period-context', [PeriodContextController::class, 'show'])
         ->middleware('auth:sanctum')
         ->name('api.v1.period-context');
+
+    // Profile — authenticated
+    Route::prefix('profile')
+        ->middleware('auth:sanctum')
+        ->group(function () {
+            Route::get('/', [ProfileController::class, 'show'])->name('api.v1.profile.show');
+            Route::patch('/', [ProfileController::class, 'update'])->name('api.v1.profile.update');
+            Route::post('/avatar', [ProfileController::class, 'updateAvatar'])->name('api.v1.profile.avatar');
+            Route::patch('/password', [ProfileController::class, 'changePassword'])->name('api.v1.profile.password');
+        });
 
     // Student routes
     require __DIR__.'/api/v1-student.php';

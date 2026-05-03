@@ -1,35 +1,52 @@
-'use client';
-
-import { useQuery } from '@tanstack/react-query';
-import { publicEndpoints } from '@sibermas/api-client';
-import { QUERY_KEYS } from '@sibermas/constants';
-import { api } from '@/lib/api';
+import type { Metadata } from 'next';
 import Link from 'next/link';
+import { fetchApi } from '@/lib/server-api';
 
-export default function DownloadsPage() {
-  const endpoints = publicEndpoints(api);
+export const revalidate = 3600;
 
-  const { data, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.public.downloads,
-    queryFn: async () => {
-      const res = await endpoints.downloads();
-      return (res.data as { success: boolean; data: unknown[] }).data;
-    },
-    staleTime: 10 * 60 * 1000,
-  });
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Unduhan — SIBERMAS UIN SAIZU',
+    description: 'File unduhan terkait KKN UIN Prof. K.H. Saifuddin Zuhri Purwokerto',
+  };
+}
 
-  const downloads = (data as Record<string, unknown>[]) || [];
+interface Download {
+  id: number;
+  title: string;
+  file_name?: string;
+  file_type?: string;
+  file_url?: string;
+  external_url?: string;
+}
+
+export default async function DownloadsPage() {
+  const data = await fetchApi<{ success: boolean; data: Download[] }>('/public/downloads');
+  const downloads = data?.data || [];
 
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="bg-gradient-to-r from-teal-700 to-teal-900 px-6 py-4">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <Link href="/" className="text-2xl font-bold text-white">SIBERMAS</Link>
+          <Link href="/" className="text-2xl font-bold text-white">
+            SIBERMAS
+          </Link>
           <nav className="flex items-center gap-6">
-            <Link href="/berita" className="text-sm text-teal-100 hover:text-white">Berita</Link>
-            <Link href="/lokasi" className="text-sm text-teal-100 hover:text-white">Lokasi</Link>
-            <Link href="/unduhan" className="text-sm font-semibold text-white">Unduhan</Link>
-            <Link href="/login" className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-teal-700">Masuk</Link>
+            <Link href="/berita" className="text-sm text-teal-100 hover:text-white">
+              Berita
+            </Link>
+            <Link href="/lokasi" className="text-sm text-teal-100 hover:text-white">
+              Lokasi
+            </Link>
+            <Link href="/unduhan" className="text-sm font-semibold text-white">
+              Unduhan
+            </Link>
+            <Link
+              href="/login"
+              className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-teal-700"
+            >
+              Masuk
+            </Link>
           </nav>
         </div>
       </header>
@@ -37,19 +54,31 @@ export default function DownloadsPage() {
       <main className="mx-auto max-w-6xl px-6 py-12">
         <h1 className="mb-8 text-3xl font-bold text-slate-800">Unduhan</h1>
 
-        {isLoading ? (
-          <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-20 animate-pulse rounded-2xl bg-slate-200" />)}</div>
-        ) : downloads.length === 0 ? (
-          <div className="rounded-2xl bg-white p-12 text-center shadow-sm"><p className="text-slate-500">Belum ada file unduhan</p></div>
+        {downloads.length === 0 ? (
+          <div className="rounded-2xl bg-white p-12 text-center shadow-sm">
+            <p className="text-slate-500">Belum ada file unduhan</p>
+          </div>
         ) : (
           <div className="space-y-3">
             {downloads.map((d) => (
-              <div key={String(d.id)} className="flex items-center justify-between rounded-2xl bg-white p-5 shadow-sm">
+              <div
+                key={d.id}
+                className="flex items-center justify-between rounded-2xl bg-white p-5 shadow-sm"
+              >
                 <div>
-                  <p className="font-semibold text-slate-800">{String(d.title || '-')}</p>
-                  <p className="text-sm text-slate-500">{String(d.file_name || '-')} | {String(d.file_type || '-')}</p>
+                  <p className="font-semibold text-slate-800">{d.title}</p>
+                  <p className="text-sm text-slate-500">
+                    {d.file_name || '-'} | {d.file_type || '-'}
+                  </p>
                 </div>
-                <a href={String(d.file_url || d.external_url || '#')} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700">Unduh</a>
+                <a
+                  href={d.file_url || d.external_url || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700"
+                >
+                  Unduh
+                </a>
               </div>
             ))}
           </div>

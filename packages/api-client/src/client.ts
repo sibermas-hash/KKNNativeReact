@@ -1,5 +1,12 @@
 import axios, { type AxiosInstance, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 
+/**
+ * Interceptor decision: Return response.data (the full envelope)
+ * to allow consumers access to 'success', 'message', 'data', 'meta', and 'links'.
+ * 
+ * NOTE: Most consumers in apps/web currently unwrap manually using .data.
+ * We maintain this consistency but document it here.
+ */
 function handleResponse<T>(response: AxiosResponse): T {
   return response.data;
 }

@@ -53,7 +53,10 @@ Route::prefix('admin')
         Route::apiResource('kkn-requirements', KknRequirementController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::patch('/kkn-requirements/{requirement}/toggle', [KknRequirementController::class, 'toggle']);
 
-        // Registrations
+        // Registrations — static routes BEFORE dynamic {param} routes
+        Route::get('/pendaftaran/export', [PesertaKknController::class, 'export']);
+        Route::post('/pendaftaran/bulk-approve', [PesertaKknController::class, 'bulkApprove']);
+        Route::post('/pendaftaran/bulk-reject', [PesertaKknController::class, 'bulkReject']);
         Route::get('/pendaftaran', [PesertaKknController::class, 'index']);
         Route::get('/pendaftaran/{pesertaKkn}', [PesertaKknController::class, 'show']);
         Route::patch('/pendaftaran/{pesertaKkn}/approve', [PesertaKknController::class, 'approve']);
@@ -61,9 +64,6 @@ Route::prefix('admin')
         Route::patch('/pendaftaran/{pesertaKkn}/assign-group', [PesertaKknController::class, 'assignGroup']);
         Route::post('/pendaftaran/{pesertaKkn}/make-leader', [PesertaKknController::class, 'makeLeader']);
         Route::post('/pendaftaran/{pesertaKkn}/make-korcam', [PesertaKknController::class, 'makeKorcam']);
-        Route::post('/pendaftaran/bulk-approve', [PesertaKknController::class, 'bulkApprove']);
-        Route::post('/pendaftaran/bulk-reject', [PesertaKknController::class, 'bulkReject']);
-        Route::get('/pendaftaran/export', [PesertaKknController::class, 'export']);
 
         // Groups
         Route::apiResource('kelompok', KelompokKknAdminController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
@@ -76,7 +76,7 @@ Route::prefix('admin')
         Route::post('/dosen/tugaskan-wilayah', [DplAssignmentController::class, 'assignDistrictCoordinator']);
         Route::post('/dosen/import', [DplAssignmentController::class, 'import']);
         Route::patch('/dosen/lepas-periode/{dplPeriod}', [DplAssignmentController::class, 'removeDplFromPeriod']);
-        Route::get('/api/available-dpl', [DplAssignmentController::class, 'getAvailableDpl']);
+        Route::get('/available-dpl', [DplAssignmentController::class, 'getAvailableDpl']);
 
         // Dispensasi
         Route::get('/dispensasi', [DispensasiController::class, 'index']);

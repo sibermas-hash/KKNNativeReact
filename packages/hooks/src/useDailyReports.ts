@@ -39,7 +39,7 @@ export function useCreateDailyReport(client: AxiosInstance) {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['student', 'daily-reports'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.dailyReports() });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.dashboard });
     },
   });
@@ -55,7 +55,7 @@ export function useUpdateDailyReport(client: AxiosInstance) {
       return res.data;
     },
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['student', 'daily-reports'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.dailyReports() });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.dailyReport(variables.id) });
     },
   });
@@ -70,7 +70,7 @@ export function useDeleteDailyReport(client: AxiosInstance) {
       await endpoints.dailyReports.destroy(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['student', 'daily-reports'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.dailyReports() });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.dashboard });
     },
   });

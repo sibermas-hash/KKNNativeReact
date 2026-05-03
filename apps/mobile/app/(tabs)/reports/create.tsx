@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import NetInfo from '@react-native-community/netinfo';
+import { enqueueReport, processQueue } from '@/lib/offlineQueue';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
@@ -29,8 +31,32 @@ export default function DailyReportCreateScreen() {
       Alert.alert('Berhasil', 'Laporan harian berhasil dikirim.', [
         { text: 'OK', onPress: () => router.back() },
       ]);
+      // Try to process any queued reports
+      processQueue(api).catch(() => {});
     },
-    onError: () => Alert.alert('Error', 'Gagal mengirim laporan. Silakan coba lagi.'),
+    onError: async (err: any) => {
+      // If offline or network error, enqueue the report for later sync
+      const state = await NetInfo.fetch();
+      if (!state.isConnected) {
+        // extract fields for queue
+        const payload = {
+          title,
+          activity,
+          reflection,
+          date: new Date().toISOString().split('T')[0],
+          captured_at: new Date().toISOString(),
+          latitude: location?.latitude ? String(location.latitude) : undefined,
+          longitude: location?.longitude ? String(location.longitude) : undefined,
+        };
+        await enqueueReport(payload);
+        queryClient.invalidateQueries({ queryKey: ['student', 'daily-reports'] });
+        Alert.alert('Offline', 'Anda offline. Laporan disimpan dan akan tersinkronisasi saat jaringan tersedia.');
+        router.back();
+        return;
+      }
+
+      Alert.alert('Error', 'Gagal mengirim laporan. Silakan coba lagi.');
+    },
   });
 
   useEffect(() => {

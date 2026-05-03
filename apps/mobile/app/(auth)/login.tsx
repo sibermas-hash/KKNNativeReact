@@ -12,7 +12,8 @@ export default function LoginScreen() {
   const { login, isAuthenticated, isLoading } = useAuthStore();
 
   const { register, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
+    // Cast to any due to potential Zod/resolver type mismatches across workspace versions
+    resolver: zodResolver(loginSchema as any),
     defaultValues: { login: '', password: '', captcha_id: '', captcha_answer: '', remember: false },
   });
 

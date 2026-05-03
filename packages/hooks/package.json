@@ -1,0 +1,23 @@
+{
+  "name": "@sibermas/hooks",
+  "version": "0.0.1",
+  "private": true,
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^5.0.0",
+    "react": "^19.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "axios": "^1.7.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@sibermas/api-client": "workspace:*",
+    "@sibermas/shared-types": "workspace:*",
+    "@sibermas/constants": "workspace:*"
+  }
+}

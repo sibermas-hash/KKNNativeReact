@@ -1,121 +1,47 @@
-# Laravel Core
-/node_modules
-/public/hot
-/public/storage
-/storage/*.key
-/vendor
-.env
-.env.backup
-.env.production
-.env.testing
-.phpunit.result.cache
-Homestead.json
-Homestead.yaml
-auth.json
-npm-debug.log
-yarn-error.log
-/.phpunit.cache
-/.vscode
-/.idea
-
-# Scripts & Automation Residue
-scripts/tmp
-scripts/dev/tmp
-*.exp
-*.log
-*.bak
-*.swp
-*.swo
-*~
-run_*.sh
-check_*.py
-auto_commit.sh
-setup_remote.sh
-check_tsc.mjs
-fix_imports.mjs
-run_git.php
-
-# OS
+# ── Root ──────────────────────────────────────────────
+node_modules/
+.turbo/
 .DS_Store
-Thumbs.db
+*.log
 
-# Sensitive Data (Excel, CSV, SQL)
+# ── apps/api (Laravel) ──────────────────────────────
+apps/api/vendor/
+apps/api/node_modules/
+apps/api/storage/logs/*
+apps/api/storage/framework/cache/*
+apps/api/storage/framework/sessions/*
+apps/api/storage/framework/views/*
+apps/api/storage/app/public/*
+apps/api/storage/app/private/*
+apps/api/bootstrap/cache/*
+apps/api/.env
+apps/api/.env.backup
+apps/api/.env.production
+apps/api/.env.testing
+apps/api/.phpunit.result.cache
+apps/api/.phpunit.cache/
+
+# ── apps/web (Next.js) ─────────────────────────────
+apps/web/node_modules/
+apps/web/.next/
+apps/web/out/
+apps/web/.env.local
+
+# ── apps/mobile (Expo) ─────────────────────────────
+apps/mobile/node_modules/
+apps/mobile/.expo/
+apps/mobile/dist/
+apps/mobile/android/app/build/
+apps/mobile/android/.gradle/
+apps/mobile/ios/Pods/
+
+# ── packages ────────────────────────────────────────
+packages/*/node_modules/
+packages/*/dist/
+
+# ── Sensitive data ──────────────────────────────────
 *.xlsx
 *.xls
 *.csv
 *.sql
 !template.xlsx
-/DataKKN*
-/data-*
-data/
-exports/
-imports/
-uploads/
-
-# Build & Test Artifacts
-/playwright-report
-/test-results
-/blob-report
-/coverage/
-lint_report.json
-
-# AI Agent Residue
-.claude/
-.cline/
-.qwen/
-.codex-psysh/
-.venv_pdf/
-.antigravity/
-.codeium/
-.windsurf/
-
-# Laravel Storage (Reinforced)
-/storage/app/public/*
-!/storage/app/public/.gitignore
-/storage/framework/cache/*
-!/storage/framework/cache/.gitignore
-/storage/framework/data/*
-!/storage/framework/data/.gitignore
-/storage/framework/sessions/*
-!/storage/framework/sessions/.gitignore
-/storage/framework/testing/*
-!/storage/framework/testing/.gitignore
-/storage/framework/views/*
-!/storage/framework/views/.gitignore
-/storage/logs/*
-!/storage/logs/.gitignore
-/storage/app/private/*
-!/storage/app/private/.gitignore
-
-# Bootstrap Cache
-/bootstrap/cache/*
-!/bootstrap/cache/.gitignore
-
-# Android / Capacitor Build Artifacts
-android/app/build/
-android/.gradle/
-android/local.properties
-*.jks
-*.keystore
-
-# Development Scripts to Exclude
-scripts/ops/
-scripts/tmp/
-scripts/dev/tmp/
-check_git.cjs
-run_seed.php
-
-# Env Files (Additional)
-!.env.example
-!.env.production.example
-public/downloads/*.apk
-/public/build/*
-/storage/app/private/*
-/storage/app/public/*
-/storage/debugbar/*
-/storage/framework/cache/*
-/storage/framework/sessions/*
-/storage/framework/views/*
-/storage/logs/*
-/storage/DOC DB/*
-node_modules/

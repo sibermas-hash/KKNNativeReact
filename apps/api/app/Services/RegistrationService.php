@@ -54,12 +54,6 @@ class RegistrationService
      */
     public function register(Mahasiswa $mahasiswa, int $periodeId, ?int $kelompokId, ?string $notes, ?int $userId = null): PesertaKkn
     {
-        // Headless testing bypass for TC002 stability
-        if (config('app.env') === 'local' && request()->header('X-Test-Force-Register')) {
-            PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
-                ->where('periode_id', $periodeId)
-                ->forceDelete();
-        }
 
         // FIX C10: Verify ownership - the authenticated user must own this mahasiswa record
         if ($userId && $mahasiswa->user_id !== $userId) {

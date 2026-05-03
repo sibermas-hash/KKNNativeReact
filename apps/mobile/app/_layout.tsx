@@ -37,7 +37,7 @@ export default function RootLayout() {
     registerForPushNotifications().then((token) => {
       if (token && isAuthenticated) {
         const deviceId = Platform.OS === 'android' ? Application.getAndroidId() : Device.deviceName;
-        api.post('/notifications/device-tokens', {
+        api.post('/device-tokens', {
           token,
           platform: Platform.OS,
           device_id: deviceId || 'unknown',

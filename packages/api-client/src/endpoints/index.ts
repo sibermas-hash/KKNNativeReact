@@ -190,6 +190,12 @@ export function publicEndpoints(client: AxiosInstance) {
   };
 }
 
+export function notificationsEndpoints(client: AxiosInstance) {
+  return {
+    registerDevice: (data: Record<string, unknown>) => client.post('/device-tokens', data),
+  };
+}
+
 export function periodContextEndpoints(client: AxiosInstance) {
   return {
     get: () => client.get('/period-context'),

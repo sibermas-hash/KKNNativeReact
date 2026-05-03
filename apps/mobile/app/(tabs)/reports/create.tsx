@@ -1,14 +1,13 @@
 import { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, ActivityIndicator } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { enqueueReport, processQueue } from '@/lib/offlineQueue';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, ActivityIndicator } from 'react-native';
+import type { QueuedReport } from '@/lib/offlineQueue';
 import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
-import NetInfo from '@react-native-community/netinfo';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
-import { addToQueue } from '@/lib/offline-queue';
 
 type LocationState = { latitude: number; longitude: number } | null;
 
@@ -117,7 +116,7 @@ export default function DailyReportCreateScreen() {
   };
 
   const submitReport = async () => {
-    const payload: Record<string, any> = {
+    const payload: QueuedReport = {
       title,
       activity,
       reflection,
@@ -132,7 +131,7 @@ export default function DailyReportCreateScreen() {
 
     const state = await NetInfo.fetch();
     if (!state.isConnected) {
-      await addToQueue(payload);
+      await enqueueReport(payload);
       Alert.alert('Offline', 'Laporan tersimpan di antrian offline. Akan dikirim saat Anda kembali online.', [
         { text: 'OK', onPress: () => router.back() },
       ]);
@@ -140,9 +139,13 @@ export default function DailyReportCreateScreen() {
     }
 
     const formData = new FormData();
-    Object.keys(payload).forEach((key) => {
-      formData.append(key, payload[key]);
-    });
+    formData.append('title', payload.title);
+    formData.append('activity', payload.activity);
+    formData.append('reflection', payload.reflection || '');
+    formData.append('date', payload.date);
+    formData.append('captured_at', payload.captured_at);
+    if (payload.latitude) formData.append('latitude', payload.latitude);
+    if (payload.longitude) formData.append('longitude', payload.longitude);
 
     mutation.mutate(formData);
   };

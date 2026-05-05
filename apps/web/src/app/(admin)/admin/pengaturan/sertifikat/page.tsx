@@ -6,14 +6,14 @@ import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 export default function CertificateConfigPage() {
-  const endpoints = adminEndpoints(api);
+  
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'certificate-config'],
     queryFn: async () => {
       const res = await api.get('/admin/pengaturan/sertifikat');
-      return (res.data as { success: boolean; data: { config: Record<string, unknown> } }).data;
+      return res;
     },
   });
 

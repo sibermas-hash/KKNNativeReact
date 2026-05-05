@@ -7,13 +7,13 @@ import { useParams } from 'next/navigation';
 
 export default function JenisKknDetailPage() {
   const { id } = useParams();
-  const endpoints = adminEndpoints(api);
+  
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'jenis-kkn', Number(id)],
     queryFn: async () => {
       const res = await api.get(`/admin/jenis-kkn/${id}`);
-      return (res.data as { success: boolean; data: Record<string, unknown> }).data;
+      return res;
     },
     enabled: !!id,
   });

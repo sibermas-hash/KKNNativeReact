@@ -11,7 +11,7 @@ export default function DosenIndexPage() {
     queryKey: ['admin', 'dosen', { search }],
     queryFn: async () => {
       const res = await api.get('/admin/dosen', { params: { search } });
-      return res.data as { success: boolean; data: unknown[] };
+      return (res as unknown as { success: boolean; data: unknown[] }).data;
     },
   });
 

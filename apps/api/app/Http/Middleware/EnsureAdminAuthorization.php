@@ -4,39 +4,39 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
-use App\Http\Controllers\Admin\ActivityAuditController;
-use App\Http\Controllers\Admin\AnnouncementController;
-use App\Http\Controllers\Admin\CertificateConfigController;
-use App\Http\Controllers\Admin\DatabaseSyncController;
-use App\Http\Controllers\Admin\DownloadController;
-use App\Http\Controllers\Admin\DplAssignmentController;
-use App\Http\Controllers\Admin\DplParticipantEvaluationController;
-use App\Http\Controllers\Admin\DplSyncController;
-use App\Http\Controllers\Admin\EligibilityController;
-use App\Http\Controllers\Admin\EvaluasiController;
-use App\Http\Controllers\Admin\FakultasController;
-use App\Http\Controllers\Admin\GeneratorNilaiController;
-use App\Http\Controllers\Admin\GradeController;
-use App\Http\Controllers\Admin\KegiatanKknController;
-use App\Http\Controllers\Admin\KelompokKknController;
-use App\Http\Controllers\Admin\KknRequirementController;
-use App\Http\Controllers\Admin\KonfigurasiPenilaianController;
-use App\Http\Controllers\Admin\LaporanAkhirController;
-use App\Http\Controllers\Admin\LogAuditController;
-use App\Http\Controllers\Admin\LokasiController;
-use App\Http\Controllers\Admin\PeriodeController;
-use App\Http\Controllers\Admin\PesertaKknController;
-use App\Http\Controllers\Admin\ProdiController;
-use App\Http\Controllers\Admin\ProgramKerjaController;
-use App\Http\Controllers\Admin\PublicContentController;
-use App\Http\Controllers\Admin\RekapitulasiController;
-use App\Http\Controllers\Admin\RekapNilaiController;
-use App\Http\Controllers\Admin\StudentSyncController;
-use App\Http\Controllers\Admin\StudentTransferController;
-use App\Http\Controllers\Admin\SystemSettingController;
-use App\Http\Controllers\Admin\TahunAkademikController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\YudisiumController;
+use App\Http\Controllers\Api\V1\Admin\ActivityAuditController;
+use App\Http\Controllers\Api\V1\Admin\AnnouncementController;
+use App\Http\Controllers\Api\V1\Admin\CertificateConfigController;
+use App\Http\Controllers\Api\V1\Admin\DatabaseSyncController;
+use App\Http\Controllers\Api\V1\Admin\DownloadController;
+use App\Http\Controllers\Api\V1\Admin\DplAssignmentController;
+use App\Http\Controllers\Api\V1\Admin\DplParticipantEvaluationController;
+use App\Http\Controllers\Api\V1\Admin\DplSyncController;
+use App\Http\Controllers\Api\V1\Admin\EligibilityController;
+use App\Http\Controllers\Api\V1\Admin\EvaluasiController;
+use App\Http\Controllers\Api\V1\Admin\FakultasController;
+use App\Http\Controllers\Api\V1\Admin\GeneratorNilaiController;
+use App\Http\Controllers\Api\V1\Admin\GradeController;
+use App\Http\Controllers\Api\V1\Admin\KegiatanKknController;
+use App\Http\Controllers\Api\V1\Admin\KelompokKknController;
+use App\Http\Controllers\Api\V1\Admin\KknRequirementController;
+use App\Http\Controllers\Api\V1\Admin\KonfigurasiPenilaianController;
+use App\Http\Controllers\Api\V1\Admin\LaporanAkhirController;
+use App\Http\Controllers\Api\V1\Admin\LogAuditController;
+use App\Http\Controllers\Api\V1\Admin\LokasiController;
+use App\Http\Controllers\Api\V1\Admin\PeriodeController;
+use App\Http\Controllers\Api\V1\Admin\PesertaKknController;
+use App\Http\Controllers\Api\V1\Admin\ProdiController;
+use App\Http\Controllers\Api\V1\Admin\ProgramKerjaController;
+use App\Http\Controllers\Api\V1\Admin\PublicContentController;
+use App\Http\Controllers\Api\V1\Admin\RekapitulasiController;
+use App\Http\Controllers\Api\V1\Admin\RekapNilaiController;
+use App\Http\Controllers\Api\V1\Admin\StudentSyncController;
+use App\Http\Controllers\Api\V1\Admin\StudentTransferController;
+use App\Http\Controllers\Api\V1\Admin\SystemSettingController;
+use App\Http\Controllers\Api\V1\Admin\TahunAkademikController;
+use App\Http\Controllers\Api\V1\Admin\UserController;
+use App\Http\Controllers\Api\V1\Admin\YudisiumController;
 use App\Http\Controllers\WorkshopController;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
@@ -260,8 +260,9 @@ class EnsureAdminAuthorization
         }
         $controllerClass = get_class($controller);
 
-        // Only apply to admin controllers
-        if (! str_starts_with($controllerClass, 'App\\Http\\Controllers\\Admin\\')) {
+        // Only apply to admin controllers (both legacy and V1)
+        if (! str_starts_with($controllerClass, 'App\\Http\\Controllers\\Admin\\')
+            && ! str_starts_with($controllerClass, 'App\\Http\\Controllers\\Api\\V1\\Admin\\')) {
             return $next($request);
         }
 
@@ -270,7 +271,7 @@ class EnsureAdminAuthorization
         // Ensure user is authenticated
         if (! $user) {
             throw new AuthenticationException(
-                'Unauthenticated.', [], route('login')
+                'Unauthenticated.', [], url('/login')
             );
         }
 

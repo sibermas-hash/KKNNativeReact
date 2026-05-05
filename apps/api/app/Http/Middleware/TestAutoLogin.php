@@ -40,7 +40,7 @@ class TestAutoLogin
             $testLoginHeader = 'student';
         }
         // Force Accept: application/json for headless API tests so Laravel returns 401/422 instead of 302 redirects
-        if ($isLocal && $isSensitivePath && ! $request->header('X-Inertia')) {
+        if ($isLocal && $isSensitivePath) {
             $request->headers->set('Accept', 'application/json');
             $_SERVER['HTTP_ACCEPT'] = 'application/json';
         }

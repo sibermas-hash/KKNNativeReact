@@ -3,17 +3,17 @@
 import { useQuery } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api } from '@/lib/api';
+import { api, studentApi } from '@/lib/api';
 import Link from 'next/link';
 
 export default function RegistrationFormPage() {
-  const endpoints = studentEndpoints(api);
+  
 
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.registration.form,
     queryFn: async () => {
-      const res = await endpoints.registration.form();
-      return (res.data as { success: boolean; data: Record<string, unknown> }).data;
+      const res = await studentApi.registration.form();
+      return res;
     },
   });
 

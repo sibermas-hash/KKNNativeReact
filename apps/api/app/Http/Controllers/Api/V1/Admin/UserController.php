@@ -17,6 +17,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -30,7 +31,14 @@ class UserController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $validated = $request->validate(['username' => ['required', 'string', 'max:255', 'unique:users,username'], 'name' => ['required', 'string', 'max:255'], 'email' => ['nullable', 'email', 'unique:users,email'], 'password' => ['required', 'string', 'min:8'], 'role' => ['required', 'string'], 'fakultas_id' => ['nullable', 'exists:fakultas,id']]);
+        $validated = $request->validate([
+            'username' => ['required', 'string', 'max:255', 'unique:users,username'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
+            'role' => ['required', 'string', \Illuminate\Validation\Rule::in(['superadmin', 'admin', 'faculty_admin', 'dosen', 'dpl', 'student'])],
+            'fakultas_id' => ['nullable', 'exists:fakultas,id'],
+        ]);
         $user = User::create(['username' => $validated['username'], 'name' => $validated['name'], 'email' => $validated['email'] ?? null, 'password' => Hash::make($validated['password']), 'must_change_password' => true, 'is_active' => true, 'fakultas_id' => $validated['fakultas_id'] ?? null]);
         $user->assignRole($validated['role']);
         return $this->created(new UserResource($user->load('roles')), 'Pengguna berhasil ditambahkan.');

@@ -3,24 +3,24 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { dplEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api } from '@/lib/api';
+import { api, dplApi } from '@/lib/api';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { CheckCircle2, FileText } from 'lucide-react';
 import { PageHeader, EmptyState } from '@/components/ui/shared';
 
 export default function DplEvaluationsPage() {
-  const endpoints = dplEndpoints(api);
+  
   const queryClient = useQueryClient();
   const [scores, setScores] = useState<Record<number, Record<string, number>>>({});
 
   const { data } = useQuery({
     queryKey: QUERY_KEYS.dpl.evaluations,
-    queryFn: async () => { const res = await endpoints.evaluations.index(); return (res.data as { success: boolean; data: Record<string, unknown> }).data; },
+    queryFn: async () => { const res = await dplApi.evaluations.index() as unknown as { success: boolean; data: Record<string, unknown> }; return res.data; },
   });
 
   const saveMutation = useMutation({
-    mutationFn: (payload: Record<string, unknown>) => endpoints.evaluations.store(payload),
+    mutationFn: (payload: Record<string, unknown>) => dplApi.evaluations.store(payload),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['dpl', 'evaluations'] }); toast.success('Nilai disimpan'); },
     onError: () => toast.error('Gagal menyimpan nilai'),
   });

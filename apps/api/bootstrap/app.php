@@ -62,7 +62,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         // TestAutoLogin: HANYA aktif di environment lokal untuk keperluan testing
-        if (env('APP_ENV') === 'local') {
+        if (env('APP_ENV', 'production') === 'local') {
             $middleware->prepend([
                 TestAutoLogin::class,
             ]);
@@ -98,16 +98,16 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectGuestsTo('/login');
         $middleware->redirectUsersTo('/');
 
-        // CSRF Protection: Nonaktifkan sementara untuk debugging local
-        // $middleware->validateCsrfTokens(except: [
-        //     'api/*',
-        //     'webhooks/*',
-        // ]);
+        // CSRF Protection: exclude API and webhook routes (they use Bearer tokens / HMAC)
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
+            'webhooks/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         // ── API JSON error envelope ──────────────────────────────────────────
         // All /api/* requests get a consistent { success, error } envelope.
-        // Web/Inertia requests keep existing behavior.
+        // Web requests keep existing behavior.
 
         $exceptions->render(function (AuthenticationException $e, $request) {
             // API: return 401 JSON envelope

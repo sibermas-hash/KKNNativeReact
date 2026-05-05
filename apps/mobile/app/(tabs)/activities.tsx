@@ -10,7 +10,7 @@ export default function ActivitiesScreen() {
     queryKey: ['student', 'work-programs'],
     queryFn: async () => {
       const res = await endpoints.workPrograms.index();
-      return (res.data as { success: boolean; data: { programs: Record<string, unknown>[] } }).data;
+      return res;
     },
   });
 

@@ -3,16 +3,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { dplEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api } from '@/lib/api';
+import { api, dplApi } from '@/lib/api';
 import Link from 'next/link';
 
 export default function GroupsPage() {
-  const endpoints = dplEndpoints(api);
+  
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.dpl.groups,
     queryFn: async () => {
-      const res = await endpoints.groups.index();
-      return (res.data as { success: boolean; data: { groups: unknown[] } }).data;
+      const res = await dplApi.groups.index();
+      return res;
     },
   });
 

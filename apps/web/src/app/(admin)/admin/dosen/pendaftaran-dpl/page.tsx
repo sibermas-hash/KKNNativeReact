@@ -12,7 +12,7 @@ export default function DplRegistrationPage() {
     queryKey: ['admin', 'dpl-registration'],
     queryFn: async () => {
       const res = await api.get('/admin/dosen/pendaftaran-dpl');
-      return res.data as { success: boolean; data: unknown[] };
+      return (res as unknown as { success: boolean; data: unknown[] }).data;
     },
   });
 

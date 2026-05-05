@@ -15,6 +15,9 @@ class ProcessActivityAiAnalysis implements ShouldQueue
 {
     use Queueable;
 
+    public int $tries = 3;
+    public int $maxExceptions = 2;
+
     /**
      * Create a new job instance.
      */

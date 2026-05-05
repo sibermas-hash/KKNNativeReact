@@ -11,7 +11,7 @@ export default function DplReportsScreen() {
     queryKey: ['dpl', 'daily-reports'],
     queryFn: async () => {
       const res = await endpoints.dailyReports.index({ status: 'submitted' });
-      return res.data as { success: boolean; data: Record<string, unknown>[] };
+      return res as { success: boolean; data: Record<string, unknown>[] };
     },
   });
 

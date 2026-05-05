@@ -39,7 +39,7 @@ class AnnouncementController extends Controller
         $announcement = Announcement::create(array_merge($validated, [
             'image' => $imagePath,
             'published_at' => now(),
-            'slug' => Str::slug($validated['title']),
+            'slug' => $this->uniqueSlug($validated['title']),
         ]));
 
         return $this->created(new AnnouncementResource($announcement), 'Berita berhasil dipublikasikan.');
@@ -47,12 +47,23 @@ class AnnouncementController extends Controller
 
     public function update(Request $request, Announcement $announcement): JsonResponse
     {
-        $announcement->update($request->validate([
+        $validated = $request->validate([
             'title' => ['sometimes', 'string', 'max:255'],
             'content' => ['sometimes', 'string'],
             'excerpt' => ['nullable', 'string', 'max:500'],
+            'category' => ['nullable', 'string', 'max:50'],
+            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:2048'],
             'is_active' => ['nullable', 'boolean'],
-        ]));
+        ]);
+
+        if ($request->hasFile('image')) {
+            if ($announcement->image) {
+                Storage::disk(config('filesystems.default'))->delete($announcement->image);
+            }
+            $validated['image'] = $request->file('image')->store('announcements', config('filesystems.default'));
+        }
+
+        $announcement->update($validated);
         return $this->success(new AnnouncementResource($announcement->refresh()), 'Berita berhasil diperbarui.');
     }
 
@@ -66,5 +77,16 @@ class AnnouncementController extends Controller
     public function preview(Announcement $announcement): JsonResponse
     {
         return $this->success(new AnnouncementResource($announcement));
+    }
+
+    private function uniqueSlug(string $title): string
+    {
+        $base = Str::slug($title);
+        $slug = $base;
+        $i = 1;
+        while (Announcement::where('slug', $slug)->exists()) {
+            $slug = $base . '-' . $i++;
+        }
+        return $slug;
     }
 }

@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { dplEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api } from '@/lib/api';
+import { api, dplApi } from '@/lib/api';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -11,7 +11,7 @@ import toast from 'react-hot-toast';
 export default function DplFinalReportDetailPage() {
   const { id } = useParams();
   const router = useRouter();
-  const endpoints = dplEndpoints(api);
+  
   const queryClient = useQueryClient();
   const [reviewNotes, setReviewNotes] = useState('');
   const [score, setScore] = useState<number | undefined>();
@@ -19,19 +19,19 @@ export default function DplFinalReportDetailPage() {
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.dpl.finalReports,
     queryFn: async () => {
-      const res = await endpoints.finalReports.show(Number(id));
-      return (res.data as { success: boolean; data: Record<string, unknown> }).data;
+      const res = await dplApi.finalReports.show(Number(id));
+      return res;
     },
     enabled: !!id,
   });
 
   const approveMutation = useMutation({
-    mutationFn: () => endpoints.finalReports.approve(Number(id), { score }),
+    mutationFn: () => dplApi.finalReports.approve(Number(id), { score }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['dpl', 'final-reports'] }); toast.success('Laporan akhir disetujui'); router.push('/dosen/laporan-akhir'); },
   });
 
   const revisionMutation = useMutation({
-    mutationFn: () => endpoints.finalReports.revision(Number(id), { review_notes: reviewNotes }),
+    mutationFn: () => dplApi.finalReports.revision(Number(id), { review_notes: reviewNotes }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['dpl', 'final-reports'] }); toast.success('Revisi diminta'); router.push('/dosen/laporan-akhir'); },
   });
 

@@ -2,13 +2,13 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { adminEndpoints } from '@sibermas/api-client';
-import { api } from '@/lib/api';
+import { api, adminApi } from '@/lib/api';
 
 export default function AdminDailyReportsPage() {
-  const endpoints = adminEndpoints(api);
+  
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'daily-reports'],
-    queryFn: async () => { const res = await endpoints.grades.reports({}); return res.data as { success: boolean; data: unknown[] }; },
+    queryFn: async () => { const res = await adminApi.grades.reports({}); return (res as unknown as { success: boolean; data: unknown[] }).data; },
   });
 
   return (

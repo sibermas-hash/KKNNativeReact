@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS, PHASE_LABELS } from '@sibermas/constants';
-import { api } from '@/lib/api';
+import { api, adminApi } from '@/lib/api';
 import { useAuthStore, usePeriodStore } from '@/stores';
 import {
   Users, LayoutGrid, FileText, ClipboardList, AlertTriangle,
@@ -45,22 +45,29 @@ export default function AdminDashboardPage() {
   const { user } = useAuthStore();
   const { activePeriod, currentPhase, availablePeriods } = usePeriodStore();
   const queryClient = useQueryClient();
-  const endpoints = adminEndpoints(api);
+  
 
   const [selectedPeriodId, setSelectedPeriodId] = useState<number | undefined>(
     activePeriod?.id as number | undefined,
   );
 
+  // Sync selectedPeriodId when activePeriod loads asynchronously
+  useEffect(() => {
+    if (activePeriod?.id && !selectedPeriodId) {
+      setSelectedPeriodId(activePeriod.id as number);
+    }
+  }, [activePeriod?.id, selectedPeriodId]);
+
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'dashboard', { periode_id: selectedPeriodId }],
     queryFn: async () => {
-      const res = await endpoints.dashboard({ periode_id: selectedPeriodId });
-      return (res.data as { success: boolean; data: Record<string, unknown> }).data;
+      const res = await adminApi.dashboard({ periode_id: selectedPeriodId }) as unknown as { success: boolean; data: Record<string, unknown> };
+      return res.data;
     },
   });
 
   const phaseMutation = useMutation({
-    mutationFn: (payload: { periode_id: number; phase: string }) => endpoints.switchPhase(payload),
+    mutationFn: (payload: { periode_id: number; phase: string }) => adminApi.switchPhase(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'dashboard'] });
       queryClient.invalidateQueries({ queryKey: ['period-context'] });
@@ -98,6 +105,7 @@ export default function AdminDashboardPage() {
             <div className="w-full sm:w-56">
               <label className="block text-[11px] font-semibold text-cyan-900 uppercase tracking-wider mb-1.5">Fase Saat Ini</label>
               <select
+                title="Pilih Fase Saat Ini"
                 value={phaseKey}
                 onChange={(e) => handlePhaseChange(e.target.value)}
                 className="w-full h-11 text-xs font-semibold rounded-xl border-2 bg-cyan-600 border-cyan-500 text-white focus:ring-cyan-400 py-2 px-4 shadow-sm"
@@ -185,6 +193,7 @@ function CompactProgress({ label, current, total }: { label: string; current: nu
         <span className="text-[10px] font-black text-cyan-600">{current}/{total}</span>
       </div>
       <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+        {/* eslint-disable-next-line react/forbid-dom-props */}
         <div className="bg-cyan-600 h-full rounded-full transition-all" style={{ width: `${pct}%` }} />
       </div>
     </div>

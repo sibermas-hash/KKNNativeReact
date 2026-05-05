@@ -23,6 +23,9 @@ class MonitoringDpl extends Model
         'permasalahan',
         'solusi',
         'catatan_tambahan',
+        'latitude',
+        'longitude',
+        'photo_path',
     ];
 
     protected $casts = ['tanggal_kunjungan' => 'date'];

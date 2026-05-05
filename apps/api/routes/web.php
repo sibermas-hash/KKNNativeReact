@@ -3,23 +3,26 @@
 use App\Http\Controllers\HealthController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Only public routes that serve HTML or health checks remain here.
-| All auth, student, DPL, and admin routes are handled by the API.
-| Next.js handles all page rendering.
-|
-*/
+// Named 'login' route required by Laravel's auth redirector (redirectGuestsTo).
+// Returns JSON 401 — this is a headless API, no HTML login page exists here.
+Route::get('/login', function () {
+    return response()->json([
+        'success' => false,
+        'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Silakan login terlebih dahulu.'],
+    ], 401);
+})->name('login');
 
-// Health Check Endpoint (used by load balancers and monitoring)
+// Health Check — public (load balancers)
 Route::get('/health', [HealthController::class, 'check'])->name('health');
-Route::get('/health/detailed', [HealthController::class, 'detailed'])->name('health.detailed');
 
-// Catch-all: redirect any non-API, non-health web requests to Next.js
-// This handles old bookmarks during the transition period
+// Detailed health — restricted to internal/admin use
+Route::get('/health/detailed', [HealthController::class, 'detailed'])
+    ->middleware('auth:sanctum')
+    ->name('health.detailed');
+
+// Catch-all: redirect to Next.js frontend (strip host to prevent open redirect)
 Route::fallback(function () {
-    return redirect(config('app.url') . request()->getRequestUri(), 302);
+    $path = '/' . ltrim(request()->path(), '/');
+    $query = request()->getQueryString();
+    return redirect(config('app.url') . $path . ($query ? '?' . $query : ''), 302);
 });

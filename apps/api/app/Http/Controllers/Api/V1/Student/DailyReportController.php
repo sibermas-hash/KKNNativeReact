@@ -39,6 +39,10 @@ class DailyReportController extends Controller
         }
 
         $reports = KegiatanKkn::where('mahasiswa_id', $mahasiswa->id)
+            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
+            ->when($request->input('search'), fn ($q, $s) => $q->where(function ($q) use ($s) {
+                $q->where('title', 'like', "%{$s}%")->orWhere('activity', 'like', "%{$s}%");
+            }))
             ->with(['kelompok', 'fileKegiatan'])
             ->orderByDesc('date')
             ->paginate($request->input('per_page', 10));
@@ -118,6 +122,7 @@ class DailyReportController extends Controller
 
         $dailyReport->update([
             'date' => $validated['date'],
+            'category' => $validated['category'] ?? null,
             'title' => $validated['title'],
             'abcd_stage' => $validated['abcd_stage'] ?? null,
             'activity' => $validated['activity'],

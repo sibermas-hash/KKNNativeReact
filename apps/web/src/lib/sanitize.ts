@@ -1,32 +1,31 @@
-/**
- * Sanitize HTML content to prevent XSS attacks.
- * Removes script tags, event handlers, and dangerous attributes.
- * Allows safe HTML tags for content formatting.
- */
+import DOMPurify from 'isomorphic-dompurify';
+
+DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+  // Force rel="noopener noreferrer" on all links with target="_blank"
+  if (node.tagName === 'A' && node.getAttribute('target') === '_blank') {
+    node.setAttribute('rel', 'noopener noreferrer');
+  }
+  // Block external img src (pixel tracking / data exfiltration)
+  if (node.tagName === 'IMG') {
+    const src = node.getAttribute('src') || '';
+    if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('//')) {
+      node.removeAttribute('src');
+    }
+  }
+});
+
 export function sanitizeHtml(html: string): string {
   if (!html) return '';
-
-  // Remove script tags and their content
-  let sanitized = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-
-  // Remove event handlers (onclick, onload, onerror, etc.)
-  sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '');
-  sanitized = sanitized.replace(/\s*on\w+\s*=\s*[^\s>]*/gi, '');
-
-  // Remove javascript: protocol
-  sanitized = sanitized.replace(/javascript\s*:/gi, '');
-
-  // Remove data: protocol (can be used for XSS)
-  sanitized = sanitized.replace(/data\s*:/gi, '');
-
-  // Remove vbscript: protocol
-  sanitized = sanitized.replace(/vbscript\s*:/gi, '');
-
-  // Remove formaction attribute
-  sanitized = sanitized.replace(/\s*formaction\s*=\s*["'][^"']*["']/gi, '');
-
-  // Remove style attributes with expression()
-  sanitized = sanitized.replace(/\s*style\s*=\s*["'][^"']*expression\s*\([^"']*["']/gi, '');
-
-  return sanitized;
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: [
+      'p', 'br', 'strong', 'em', 'u', 's', 'a', 'ul', 'ol', 'li',
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'blockquote', 'pre', 'code',
+      'img', 'figure', 'figcaption',
+      'table', 'thead', 'tbody', 'tr', 'th', 'td',
+      'div', 'span', 'hr',
+    ],
+    ALLOWED_ATTR: ['href', 'target', 'rel', 'src', 'alt', 'width', 'height', 'class', 'id'],
+    ALLOW_DATA_ATTR: false,
+  });
 }

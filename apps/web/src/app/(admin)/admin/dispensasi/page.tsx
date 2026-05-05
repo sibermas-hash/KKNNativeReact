@@ -11,7 +11,7 @@ export default function DispensasiPage() {
     queryKey: ['admin', 'dispensasi'],
     queryFn: async () => {
       const res = await api.get('/admin/dispensasi');
-      return res.data as { success: boolean; data: Record<string, unknown> };
+      return (res as unknown as { success: boolean; data: Record<string, unknown> }).data;
     },
   });
 

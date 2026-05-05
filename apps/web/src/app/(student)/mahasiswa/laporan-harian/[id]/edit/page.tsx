@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
-import { api } from '@/lib/api';
+import { api, studentApi } from '@/lib/api';
 import { useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,27 +13,29 @@ import toast from 'react-hot-toast';
 export default function EditDailyReportPage() {
   const { id } = useParams();
   const router = useRouter();
-  const endpoints = studentEndpoints(api);
+  
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'daily-report', Number(id)],
     queryFn: async () => {
-      const res = await endpoints.dailyReports.show(Number(id));
-      return (res.data as { success: boolean; data: Record<string, unknown> }).data;
+      const res = await studentApi.dailyReports.show(Number(id));
+      return res;
     },
     enabled: !!id,
   });
 
   const updateMutation = useMutation({
-    mutationFn: (formData: FormData) => endpoints.dailyReports.update(Number(id), formData),
+    mutationFn: (formData: FormData) => studentApi.dailyReports.update(Number(id), formData),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['student', 'daily-reports'] }); toast.success('Laporan berhasil diperbarui'); router.push('/mahasiswa/laporan-harian'); },
     onError: () => toast.error('Gagal memperbarui laporan'),
   });
 
   const { register, handleSubmit, formState: { errors } } = useForm<EditDailyReportFormData>({
-    resolver: zodResolver(editDailyReportSchema),
-    values: data ? { date: String(data.date || ''), title: String(data.title || ''), activity: String(data.activity || ''), reflection: String(data.reflection || ''), latitude: Number(data.latitude || 0), longitude: Number(data.longitude || 0), captured_at: String(data.captured_at || '') } : undefined,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(editDailyReportSchema) as any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    values: data ? { date: String(data.date || ''), title: String(data.title || ''), activity: String(data.activity || ''), reflection: String(data.reflection || ''), latitude: Number(data.latitude || 0), longitude: Number(data.longitude || 0), captured_at: String(data.captured_at || '') } as any : undefined,
   });
 
   if (isLoading) return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" /></div>;

@@ -20,9 +20,9 @@ class StoreDailyReportRequest extends FormRequest
     {
         $rules = [
             'date' => ['required', 'date', 'before_or_equal:today'],
-            'category' => ['required', new Enum(LogbookCategory::class)],
+            'category' => ['nullable', 'string', 'max:50'],
             'title' => ['required', 'string', 'max:200'],
-            'abcd_stage' => ['required', new Enum(AbcdStage::class)],
+            'abcd_stage' => ['nullable', 'string', 'max:20'],
             'activity' => ['required', 'string'],
             'reflection' => ['nullable', 'string'],
             'social_media_link' => ['nullable', 'url', 'max:255'],
@@ -31,14 +31,13 @@ class StoreDailyReportRequest extends FormRequest
             'longitude' => ['required', 'numeric', 'between:-180,180'],
             'gps_accuracy' => ['nullable', 'numeric', 'min:0', 'max:5000'],
             'captured_at' => ['required', 'date'],
-            'location_source' => ['required', 'in:gps'],
-            'location_name' => ['required', 'string', 'max:255'],
+            'location_source' => ['nullable', 'string', 'max:20'],
+            'location_name' => ['nullable', 'string', 'max:255'],
         ];
 
         if ($this->isMethod('POST')) {
-            // SOP LPPM: Setiap logbook WAJIB menyertakan minimal 1 foto bukti kegiatan
-            $rules['files'] = ['required', 'array', 'min:1', 'max:5'];
-            $rules['files.*'] = ['required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'];
+            $rules['files'] = ['nullable', 'array', 'max:5'];
+            $rules['files.*'] = ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'];
         } else {
             $rules['files.*'] = ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'];
         }

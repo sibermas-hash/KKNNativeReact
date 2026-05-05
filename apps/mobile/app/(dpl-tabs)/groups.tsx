@@ -10,7 +10,7 @@ export default function DplGroupsScreen() {
     queryKey: ['dpl', 'groups'],
     queryFn: async () => {
       const res = await endpoints.groups.index();
-      return (res.data as { success: boolean; data: { groups: Record<string, unknown>[] } }).data;
+      return res;
     },
   });
 

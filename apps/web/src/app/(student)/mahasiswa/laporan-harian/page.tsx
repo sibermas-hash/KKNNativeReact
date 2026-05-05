@@ -5,33 +5,30 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api } from '@/lib/api';
+import { api, studentApi } from '@/lib/api';
 import { Plus, Search, Filter, ClipboardList, Activity, List as ListIcon } from 'lucide-react';
 import clsx from 'clsx';
 import { StatusBadge, PageHeader, EmptyState } from '@/components/ui/shared';
 
 export default function DailyReportsPage() {
   const [page, setPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const endpoints = studentEndpoints(api);
+  
 
   const { data, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.student.dailyReports(page),
+    queryKey: QUERY_KEYS.student.dailyReports(page, statusFilter, searchQuery),
     queryFn: async () => {
-      const res = await endpoints.dailyReports.index(page);
-      return res.data as { success: boolean; data: unknown[]; meta?: { current_page: number; last_page: number; total: number } };
+      const res = await studentApi.dailyReports.index(page, {
+        status: statusFilter || undefined,
+        search: searchQuery || undefined,
+      });
+      return res as { success: boolean; data: unknown[]; meta?: { current_page: number; last_page: number; total: number } };
     },
   });
 
   const reports = (data?.data as Record<string, unknown>[]) || [];
   const meta = data?.meta;
-
-  const filteredReports = reports.filter((r) => {
-    const matchesSearch = !searchQuery || String(r.title || '').toLowerCase().includes(searchQuery.toLowerCase()) || String(r.activity || '').toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || r.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
@@ -59,16 +56,16 @@ export default function DailyReportsPage() {
               type="text"
               placeholder="Cari aktivitas atau judul laporan..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
               className="w-full pl-12 pr-6 py-3 bg-slate-50 border-transparent rounded-2xl text-sm font-bold focus:bg-white focus:ring-2 focus:ring-emerald-100 transition-all"
             />
           </div>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
             className="px-6 py-3 bg-slate-50 border-transparent rounded-2xl text-sm font-black uppercase tracking-widest focus:bg-white focus:ring-2 focus:ring-emerald-100"
           >
-            <option value="all">Semua Status</option>
+            <option value="">Semua Status</option>
             <option value="submitted">Menunggu</option>
             <option value="approved">Diterima</option>
             <option value="revision">Revisi</option>
@@ -79,7 +76,7 @@ export default function DailyReportsPage() {
       {/* REPORTS LIST */}
       {isLoading ? (
         <div className="space-y-4">{[1, 2, 3].map((i) => <div key={i} className="h-32 animate-pulse rounded-2xl bg-slate-200" />)}</div>
-      ) : filteredReports.length === 0 ? (
+      ) : reports.length === 0 ? (
         <EmptyState
           icon={<ClipboardList size={48} />}
           title="Belum Ada Laporan"
@@ -88,7 +85,7 @@ export default function DailyReportsPage() {
         />
       ) : (
         <div className="space-y-4">
-          {filteredReports.map((report) => (
+          {reports.map((report) => (
             <Link
               key={String(report.id)}
               href={`/mahasiswa/laporan-harian/${report.id}/edit`}

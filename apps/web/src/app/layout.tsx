@@ -5,6 +5,11 @@ import { Providers } from '@/providers';
 export const metadata: Metadata = {
   title: 'SIBERMAS - KKN UIN Saizu',
   description: 'Sistem Informasi KKN UIN Prof. K.H. Saifuddin Zuhri Purwokerto',
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/logo_kkn.png',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

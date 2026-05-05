@@ -2,26 +2,26 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminEndpoints } from '@sibermas/api-client';
-import { api } from '@/lib/api';
+import { api, adminApi } from '@/lib/api';
 import { useParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 
 export default function RegistrationDetailPage() {
   const { id } = useParams();
   const queryClient = useQueryClient();
-  const endpoints = adminEndpoints(api);
+  
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'registration', Number(id)],
     queryFn: async () => {
-      const res = await endpoints.registrations.show(Number(id));
-      return (res.data as { success: boolean; data: Record<string, unknown> }).data;
+      const res = await adminApi.registrations.show(Number(id));
+      return res;
     },
     enabled: !!id,
   });
 
   const approveMutation = useMutation({
-    mutationFn: () => endpoints.registrations.approve(Number(id)),
+    mutationFn: () => adminApi.registrations.approve(Number(id)),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'registration', Number(id)] }); toast.success('Pendaftaran disetujui'); },
   });
 

@@ -2,21 +2,21 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminEndpoints } from '@sibermas/api-client';
-import { api } from '@/lib/api';
+import { api, adminApi } from '@/lib/api';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function SystemSettingsPage() {
-  const endpoints = adminEndpoints(api);
+  
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'settings'],
-    queryFn: async () => { const res = await endpoints.settings.index(); return (res.data as { success: boolean; data: { settings: Record<string, string> } }).data; },
+    queryFn: async () => { const res = await adminApi.settings.index() as unknown as { success: boolean; data: Record<string, unknown> }; return res.data; },
   });
 
   const updateMutation = useMutation({
-    mutationFn: (settings: Record<string, string>) => endpoints.settings.update({ settings }),
+    mutationFn: (settings: Record<string, string>) => adminApi.settings.update({ settings }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'settings'] }); toast.success('Pengaturan berhasil diperbarui'); },
   });
 

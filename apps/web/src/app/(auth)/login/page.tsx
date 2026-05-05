@@ -1,14 +1,21 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, type LoginFormData } from '@sibermas/schemas';
 import { useAuthStore } from '@/stores';
+import { setAuthToken } from '@/stores';
+import type { User } from '@sibermas/shared-types';
 import { api } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { Lock, Eye, EyeOff, RefreshCw, User, AlertCircle, ArrowRight } from 'lucide-react';
+import { Lock, Eye, EyeOff, RefreshCw, User as UserIcon, AlertCircle, ArrowRight, Home } from 'lucide-react';
+import { ParticleBackground } from '@/components/ui/particle-background';
+import Image from 'next/image';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
+
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,29 +25,38 @@ export default function LoginPage() {
   const [serverErrors, setServerErrors] = useState<string[]>([]);
   const [captcha, setCaptcha] = useState<{ captcha_id: string; question: string; expires_at: string } | null>(null);
   const [loading, setLoading] = useState(false);
+  const refreshCooldown = useRef(false);
+
+  // Auto-refresh captcha when it expires
+  useEffect(() => {
+    if (!captcha?.expires_at) return;
+    const expiresAt = new Date(captcha.expires_at).getTime();
+    const timeout = Math.max(0, expiresAt - Date.now());
+    const timer = window.setTimeout(() => { void fetchCaptcha(); }, timeout);
+    return () => window.clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [captcha?.expires_at]);
 
   const {
     register,
     handleSubmit,
     setValue,
     setError,
-    watch,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
 
-  const captchaAnswer = watch('captcha_answer');
-
   const fetchCaptcha = useCallback(async () => {
+    if (refreshCooldown.current) return;
+    refreshCooldown.current = true;
+    setTimeout(() => { refreshCooldown.current = false; }, 3000);
     setIsRefreshing(true);
     try {
-      await api.get('/sanctum/csrf-cookie');
-      const res = await api.get('/auth/captcha');
-      const data = res.data as { success: boolean; data: { captcha_id: string; question: string; expires_at: string } };
-      if (data.success) {
-        setCaptcha(data.data);
-        setValue('captcha_id', data.data.captcha_id);
+      const res = await api.get('/auth/captcha') as { success: boolean; data: { captcha_id: string; question: string; expires_at: string } };
+      if (res.success) {
+        setCaptcha(res.data);
+        setValue('captcha_id', res.data.captcha_id);
         setValue('captcha_answer', '');
       }
     } catch {
@@ -66,9 +82,9 @@ export default function LoginPage() {
     setLoading(true);
     setServerErrors([]);
     try {
-      const res = await api.post('/auth/login', data);
-      const result = res.data as { success: boolean; data: { user: typeof user } };
+      const result = await api.post('/auth/login', data) as { success: boolean; data: { user: User; token?: string } };
       if (result.success) {
+        if (result.data.token) setAuthToken(result.data.token);
         setUser(result.data.user);
         toast.success('Login berhasil!');
       }
@@ -82,6 +98,7 @@ export default function LoginPage() {
             fetchCaptcha();
           } else if (errorData?.code === 'CREDENTIALS_INVALID') {
             setError('login', { message: 'Username/email atau kata sandi salah' });
+            fetchCaptcha();
           } else if (errorData?.errors) {
             Object.entries(errorData.errors).forEach(([field, messages]) => {
               setError(field as keyof LoginFormData, { message: messages[0] });
@@ -89,9 +106,13 @@ export default function LoginPage() {
           } else {
             setServerErrors([errorData?.message || 'Terjadi kesalahan']);
           }
+        } else {
+          setServerErrors(['Terjadi kesalahan server. Silakan coba lagi.']);
+          fetchCaptcha();
         }
       } else {
         setServerErrors(['Terjadi kesalahan. Silakan coba lagi.']);
+        fetchCaptcha();
       }
     } finally {
       setLoading(false);
@@ -104,25 +125,59 @@ export default function LoginPage() {
     .trim();
 
   return (
-    <div className="relative min-h-screen flex flex-col sm:justify-center items-center overflow-hidden font-sans selection:bg-cyan-500/30">
-      {/* Background */}
-      <div className="absolute inset-0 z-0 bg-slate-950">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-950" />
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-cyan-500/30 rounded-full blur-[100px] mix-blend-screen pointer-events-none animate-pulse" style={{ animationDuration: '8s' }} />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-lime-500/20 rounded-full blur-[120px] mix-blend-screen pointer-events-none animate-pulse" style={{ animationDuration: '12s' }} />
-        <div className="absolute top-[20%] right-[10%] w-[300px] h-[300px] bg-amber-400/20 rounded-full blur-[80px] mix-blend-screen pointer-events-none" />
+    <div className="relative min-h-screen flex flex-col sm:justify-center items-center overflow-hidden font-sans selection:bg-cyan-500/30 bg-slate-950">
+      {/* Background Layers */}
+      {/* Background Layers */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        {/* Large Cinematic Glows */}
+        <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-emerald-500/10 rounded-full blur-[150px] mix-blend-screen animate-pulse [animation-duration:10s]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[900px] h-[900px] bg-cyan-500/10 rounded-full blur-[180px] mix-blend-screen animate-pulse [animation-duration:15s]" />
+        <div className="absolute top-[40%] left-[20%] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[100px] mix-blend-screen" />
       </div>
 
-      {/* Card */}
-      <div className="relative z-10 w-full max-w-[420px] px-6 py-12">
-        <div className="backdrop-blur-2xl bg-white/70 border border-white p-8 sm:p-10 rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(6,182,212,0.25)] relative overflow-hidden">
+      {/* Interactive Particle System (Above Background, Below Card) */}
+      <div className="fixed inset-0 z-[1] pointer-events-none">
+        <ParticleBackground />
+      </div>
+
+      {/* Relocated Back to Home Button - Above Card */}
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="relative z-20 mb-4"
+      >
+        <Link 
+          href="/" 
+          className="flex items-center gap-2 px-6 py-2.5 bg-white/5 backdrop-blur-md border border-white/10 rounded-full text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] hover:bg-white/10 hover:text-white hover:border-white/20 transition-all group"
+        >
+          <Home size={14} className="group-hover:-translate-x-0.5 transition-transform" />
+          <span>Kembali ke Beranda Utama</span>
+        </Link>
+      </motion.div>
+
+
+
+      {/* Card - Animated with Framer Motion */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 w-full max-w-[420px] min-w-[320px] px-4 py-8 sm:px-6 sm:py-12"
+      >
+        <div className="backdrop-blur-2xl bg-white/70 border border-white p-6 sm:p-10 rounded-2xl sm:rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(6,182,212,0.25)] relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-transparent pointer-events-none" />
           <div className="relative z-10 space-y-10">
             {/* Header */}
             <div className="space-y-6 flex flex-col items-center">
               <div className="flex flex-col items-center gap-5">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  <Image src="/images/logo_uinsaizu.png" alt="Logo UIN SAIZU" width={48} height={48} className="h-10 sm:h-12 w-auto object-contain drop-shadow-sm" />
+                  <div className="w-px h-7 sm:h-8 bg-emerald-200" />
+                  <Image src="/images/Logo_SIBERMAS.png" alt="Logo SIBERMAS" width={120} height={40} className="h-8 sm:h-10 w-auto object-contain drop-shadow-sm" />
+                </div>
                 <div className="text-center space-y-2">
-                  <h1 className="text-[2.5rem] font-black text-emerald-950 tracking-tight font-display leading-none uppercase">
+                  <h1 className="text-4xl sm:text-[2.5rem] font-black text-emerald-950 tracking-tight font-display leading-none uppercase">
                     Portal <span className="text-sky-500">SIBER</span>
                     <span className="text-emerald-500">MAS.</span>
                   </h1>
@@ -134,17 +189,24 @@ export default function LoginPage() {
             </div>
 
             {/* Errors */}
-            {serverErrors.length > 0 && (
-              <div className="bg-rose-50 border border-rose-100 rounded-2xl p-4 flex gap-3 overflow-hidden shadow-sm">
-                <AlertCircle className="text-rose-500 shrink-0 mt-0.5" size={16} />
-                <div className="space-y-1">
-                  <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">Otentikasi Gagal</p>
-                  <div className="text-xs font-medium text-rose-900 space-y-0.5 leading-relaxed">
-                    {serverErrors.map((err, i) => <p key={i}>{err}</p>)}
+            <AnimatePresence>
+              {serverErrors.length > 0 && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="bg-rose-50 border border-rose-100 rounded-2xl p-4 flex gap-3 overflow-hidden shadow-sm"
+                >
+                  <AlertCircle className="text-rose-500 shrink-0 mt-0.5" size={16} />
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black text-rose-600 uppercase tracking-widest">Otentikasi Gagal</p>
+                    <div className="text-xs font-medium text-rose-900 space-y-0.5 leading-relaxed">
+                      {serverErrors.map((err, i) => <p key={i}>{err}</p>)}
+                    </div>
                   </div>
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -154,13 +216,13 @@ export default function LoginPage() {
                   <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Identitas Pengguna</label>
                   <div className="relative group">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400 group-focus-within:text-emerald-600 transition-colors">
-                      <User size={16} />
+                      <UserIcon size={16} />
                     </div>
                     <input
                       {...register('login')}
+                      data-testid="login-identifier"
                       type="text"
-                      style={{ paddingLeft: '3.2rem' }}
-                      className="w-full h-12 bg-white/60 border border-white focus:bg-white rounded-xl pr-4 text-sm font-bold text-emerald-950 placeholder:text-emerald-800/40 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none shadow-sm"
+                      className="w-full h-12 bg-white/60 border border-white focus:bg-white rounded-xl pl-[3.2rem] pr-4 text-sm font-bold text-emerald-950 placeholder:text-emerald-800/40 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none shadow-sm"
                       placeholder="NIM / NIP / Username"
                       autoFocus
                     />
@@ -177,9 +239,9 @@ export default function LoginPage() {
                     </div>
                     <input
                       {...register('password')}
+                      data-testid="login-password"
                       type={showPassword ? 'text' : 'password'}
-                      style={{ paddingLeft: '3.2rem' }}
-                      className="w-full h-12 bg-white/60 border border-white focus:bg-white rounded-xl pr-11 text-sm font-bold text-emerald-950 placeholder:text-emerald-800/40 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none shadow-sm"
+                      className="w-full h-12 bg-white/60 border border-white focus:bg-white rounded-xl pl-[3.2rem] pr-11 text-sm font-bold text-emerald-950 placeholder:text-emerald-800/40 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none shadow-sm"
                       placeholder="••••••••"
                     />
                     <button
@@ -207,14 +269,19 @@ export default function LoginPage() {
                         onClick={fetchCaptcha}
                         disabled={isRefreshing}
                         className="p-1.5 text-emerald-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                        title="Segarkan CAPTCHA"
+                        aria-label="Segarkan CAPTCHA"
                       >
                         <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
                       </button>
                     </div>
                     <input
                       {...register('captcha_answer')}
+                      data-testid="login-captcha-answer"
                       type="text"
                       inputMode="numeric"
+                      autoComplete="off"
+                      onChange={(e) => setValue('captcha_answer', e.target.value.replace(/[^0-9]/g, ''))}
                       className="w-24 h-12 bg-white/60 border border-white focus:bg-white rounded-xl text-center text-base font-bold text-emerald-950 placeholder:text-emerald-800/40 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none shadow-sm"
                       placeholder="???"
                     />
@@ -238,14 +305,15 @@ export default function LoginPage() {
                   </div>
                   <span className="text-[10px] font-black text-cyan-600 uppercase tracking-widest group-hover:text-cyan-500 transition-colors">Ingat Sesi Saya</span>
                 </label>
-                <a href="/lupa-kata-sandi" className="text-[10px] font-black text-emerald-600 hover:text-emerald-800 hover:underline underline-offset-4 uppercase tracking-widest transition-colors">
+                <Link href="/lupa-kata-sandi" className="text-[10px] font-black text-emerald-600 hover:text-emerald-800 hover:underline underline-offset-4 uppercase tracking-widest transition-colors">
                   Lupa Sandi?
-                </a>
+                </Link>
               </div>
 
               {/* Submit */}
               <div className="pt-4">
                 <button
+                  data-testid="login-submit"
                   type="submit"
                   disabled={loading || !captcha}
                   className="w-full h-12 bg-amber-500 hover:bg-amber-600 text-white rounded-xl flex items-center justify-center gap-2 group transition-all shadow-[0_8px_20px_rgba(245,158,11,0.3)] hover:shadow-[0_8px_25px_rgba(245,158,11,0.4)] hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
@@ -265,16 +333,12 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <div className="mt-8 text-center space-y-4">
-          <a href="/" className="text-xs font-bold text-emerald-200/80 hover:text-white transition-colors flex items-center justify-center gap-2 group">
-            <span className="group-hover:-translate-x-1 transition-transform">&larr;</span>
-            Kembali ke Beranda Publik
-          </a>
+        <div className="mt-6 text-center">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
             &copy; {new Date().getFullYear()} LPPM UIN Saizu Purwokerto
           </p>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

@@ -1,19 +1,33 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { dplEndpoints } from '@sibermas/api-client';
-import { api } from '@/lib/api';
+import { api, dplApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 
+type Group = { id: number; name: string; code: string };
+
 export default function CreateMonitoringPage() {
   const router = useRouter();
-  const endpoints = dplEndpoints(api);
+  
   const queryClient = useQueryClient();
 
+  const { data: groupsData } = useQuery({
+    queryKey: ['dpl', 'groups'],
+    queryFn: async () => {
+      const res = await dplApi.groups.index() as unknown as { success: boolean; data: { groups: Group[] } };
+      return res?.data?.groups ?? [];
+    },
+  });
+
   const mutation = useMutation({
-    mutationFn: (data: FormData) => endpoints.monitoring.store(data),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['dpl', 'monitoring'] }); toast.success('Kunjungan tercatat'); router.push('/dosen/monitoring'); },
+    mutationFn: (data: FormData) => dplApi.monitoring.store(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['dpl', 'monitoring'] });
+      toast.success('Kunjungan tercatat');
+      router.push('/dosen/monitoring');
+    },
     onError: () => toast.error('Gagal mencatat kunjungan'),
   });
 
@@ -34,6 +48,15 @@ export default function CreateMonitoringPage() {
     <div className="mx-auto max-w-2xl space-y-6">
       <h1 className="text-2xl font-bold text-slate-800">Catat Kunjungan Monitoring</h1>
       <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl bg-white p-6 shadow-sm">
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">Kelompok</label>
+          <select name="kelompok_id" required className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none">
+            <option value="">-- Pilih Kelompok --</option>
+            {(groupsData ?? []).map((g) => (
+              <option key={g.id} value={g.id}>{g.name} ({g.code})</option>
+            ))}
+          </select>
+        </div>
         <div>
           <label className="mb-1.5 block text-sm font-medium text-slate-700">Tanggal Kunjungan</label>
           <input name="visit_date" type="date" required defaultValue={new Date().toISOString().split('T')[0]} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" />

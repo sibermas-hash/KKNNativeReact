@@ -2,17 +2,17 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
-import { api } from '@/lib/api';
+import { api, studentApi } from '@/lib/api';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 
 export default function WorkProgramDetailPage() {
   const { id } = useParams();
-  const endpoints = studentEndpoints(api);
+  
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'work-program', Number(id)],
-    queryFn: async () => { const res = await endpoints.workPrograms.show(Number(id)); return (res.data as { success: boolean; data: Record<string, unknown> }).data; },
+    queryFn: async () => { const res = await studentApi.workPrograms.show(Number(id)); return res; },
     enabled: !!id,
   });
 

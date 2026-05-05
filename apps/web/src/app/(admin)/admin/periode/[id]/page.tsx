@@ -2,19 +2,19 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { adminEndpoints } from '@sibermas/api-client';
-import { api } from '@/lib/api';
+import { api, adminApi } from '@/lib/api';
 import { useParams } from 'next/navigation';
 import { PHASE_LABELS } from '@sibermas/constants';
 
 export default function PeriodDetailPage() {
   const { id } = useParams();
-  const endpoints = adminEndpoints(api);
+  
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'period', Number(id)],
     queryFn: async () => {
-      const res = await endpoints.periods.show(Number(id));
-      return (res.data as { success: boolean; data: Record<string, unknown> }).data;
+      const res = await adminApi.periods.show(Number(id));
+      return res;
     },
     enabled: !!id,
   });

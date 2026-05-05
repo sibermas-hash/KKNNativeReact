@@ -23,7 +23,8 @@ export function studentEndpoints(client: AxiosInstance) {
       leave: (periodeId: number) => client.delete(`/student/registration/${periodeId}`),
     },
     dailyReports: {
-      index: (page = 1) => client.get(`/student/daily-reports?page=${page}`),
+      index: (page = 1, params?: { status?: string; search?: string }) =>
+        client.get('/student/daily-reports', { params: { page, ...params } }),
       show: (id: number) => client.get(`/student/daily-reports/${id}`),
       store: (data: FormData) => client.post('/student/daily-reports', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
       update: (id: number, data: FormData) => client.put(`/student/daily-reports/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
@@ -52,6 +53,23 @@ export function studentEndpoints(client: AxiosInstance) {
       store: (data: Record<string, unknown>) => client.post('/student/dpl-evaluation', data),
     },
     notificationShown: (id: number) => client.patch(`/student/peserta-kkn/${id}/notification-shown`),
+    // GAP-1: document upload for registration
+    documents: (periodeId: number, data: FormData) =>
+      client.post(`/student/registration/${periodeId}/documents`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    // GAP-2: workshops
+    workshops: {
+      index: () => client.get('/student/workshops'),
+    },
+    // GAP-3: posko
+    posko: {
+      show: () => client.get('/student/posko'),
+      store: (data: Record<string, unknown>) => client.post('/student/posko', data),
+    },
+    // GAP-4: domisili (V1 path)
+    domisili: {
+      show: () => client.get('/student/domisili'),
+      store: (data: Record<string, unknown>) => client.post('/student/domisili', data),
+    },
   };
 }
 
@@ -115,6 +133,49 @@ export function adminEndpoints(client: AxiosInstance) {
       duplicate: (id: number) => client.post(`/admin/periode/${id}/duplicate`),
     },
 
+    master: {
+      academicYears: {
+        index: (params?: Record<string, unknown>) => client.get('/admin/tahun-akademik', { params }),
+        store: (data: Record<string, unknown>) => client.post('/admin/tahun-akademik', data),
+        update: (id: number, data: Record<string, unknown>) => client.put(`/admin/tahun-akademik/${id}`, data),
+        destroy: (id: number) => client.delete(`/admin/tahun-akademik/${id}`),
+      },
+      kknTypes: {
+        index: (params?: Record<string, unknown>) => client.get('/admin/jenis-kkn', { params }),
+        show: (id: number) => client.get(`/admin/jenis-kkn/${id}`),
+        store: (data: Record<string, unknown>) => client.post('/admin/jenis-kkn', data),
+        update: (id: number, data: Record<string, unknown>) => client.put(`/admin/jenis-kkn/${id}`, data),
+        destroy: (id: number) => client.delete(`/admin/jenis-kkn/${id}`),
+      },
+      faculties: {
+        index: (params?: Record<string, unknown>) => client.get('/admin/fakultas', { params }),
+        store: (data: Record<string, unknown>) => client.post('/admin/fakultas', data),
+        update: (id: number, data: Record<string, unknown>) => client.put(`/admin/fakultas/${id}`, data),
+        destroy: (id: number) => client.delete(`/admin/fakultas/${id}`),
+      },
+      studyPrograms: {
+        index: (params?: Record<string, unknown>) => client.get('/admin/prodi', { params }),
+        store: (data: Record<string, unknown>) => client.post('/admin/prodi', data),
+        update: (id: number, data: Record<string, unknown>) => client.put(`/admin/prodi/${id}`, data),
+        destroy: (id: number) => client.delete(`/admin/prodi/${id}`),
+      },
+      locations: {
+        index: (params?: Record<string, unknown>) => client.get('/admin/lokasi', { params }),
+        store: (data: Record<string, unknown>) => client.post('/admin/lokasi', data),
+        update: (id: number, data: Record<string, unknown>) => client.put(`/admin/lokasi/${id}`, data),
+        destroy: (id: number) => client.delete(`/admin/lokasi/${id}`),
+        import: (data: FormData) => client.post('/admin/lokasi/import', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+      },
+    },
+
+    requirements: {
+      index: (params?: Record<string, unknown>) => client.get('/admin/kkn-requirements', { params }),
+      store: (data: Record<string, unknown>) => client.post('/admin/kkn-requirements', data),
+      update: (id: number, data: Record<string, unknown>) => client.put(`/admin/kkn-requirements/${id}`, data),
+      destroy: (id: number) => client.delete(`/admin/kkn-requirements/${id}`),
+      toggle: (id: number) => client.patch(`/admin/kkn-requirements/${id}/toggle`),
+    },
+
     registrations: {
       index: (params?: Record<string, unknown>) => client.get('/admin/pendaftaran', { params }),
       show: (id: number) => client.get(`/admin/pendaftaran/${id}`),
@@ -133,11 +194,32 @@ export function adminEndpoints(client: AxiosInstance) {
       destroy: (id: number) => client.delete(`/admin/kelompok/${id}`),
     },
 
+    dpl: {
+      registrations: (params?: Record<string, unknown>) => client.get('/admin/dosen/pendaftaran-dpl', { params }),
+      approve: (id: number) => client.patch(`/admin/dosen/pendaftaran-dpl/${id}/setujui`),
+      reject: (id: number) => client.patch(`/admin/dosen/pendaftaran-dpl/${id}/tolak`),
+      assignments: (params?: Record<string, unknown>) => client.get('/admin/dosen/penugasan', { params }),
+    },
+
+    kknOperations: {
+      dailyReports: {
+        index: (params?: Record<string, unknown>) => client.get('/admin/laporan/harian', { params }),
+        show: (id: number) => client.get(`/admin/laporan/harian/${id}`),
+      },
+      finalReports: {
+        index: (params?: Record<string, unknown>) => client.get('/admin/laporan/akhir', { params }),
+        show: (id: number) => client.get(`/admin/laporan/akhir/${id}`),
+        updateStatus: (id: number, data: { status: string }) => client.patch(`/admin/laporan/akhir/${id}/status`, data),
+      },
+    },
+
     users: {
       index: (params?: Record<string, unknown>) => client.get('/admin/pengguna', { params }),
       store: (data: Record<string, unknown>) => client.post('/admin/pengguna', data),
       toggleStatus: (id: number) => client.patch(`/admin/pengguna/${id}/ubah-status`),
       resetPassword: (id: number) => client.post(`/admin/pengguna/${id}/reset-password`),
+      students: (params?: Record<string, unknown>) => client.get('/admin/mahasiswa', { params }),
+      lecturers: (params?: Record<string, unknown>) => client.get('/admin/dosen', { params }),
     },
 
     grades: {
@@ -161,6 +243,7 @@ export function adminEndpoints(client: AxiosInstance) {
       aiConfig: () => client.get('/admin/pengaturan/sistem/ai/config'),
       testAi: () => client.post('/admin/pengaturan/sistem/ai/test'),
       updateAi: (data: Record<string, unknown>) => client.patch('/admin/pengaturan/sistem/ai/update', data),
+      certificates: () => client.get('/admin/pengaturan/sertifikat'),
     },
 
     auditLog: {

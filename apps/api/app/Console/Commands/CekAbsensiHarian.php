@@ -126,7 +126,7 @@ class CekAbsensiHarian extends Command
                                 'title' => 'Peringatan Absensi',
                                 'message' => "Anda telah {$daysWithoutInfo} hari tanpa keterangan. Jika mencapai 3 hari, Anda akan dianggap mengundurkan diri dari KKN.",
                                 'icon' => 'exclamation-triangle',
-                                'action' => route('student.dashboard'),
+                                'action' => url('/mahasiswa'),
                             ]));
                         }
                     }

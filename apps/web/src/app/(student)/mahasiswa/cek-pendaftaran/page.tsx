@@ -3,16 +3,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api } from '@/lib/api';
+import { api, studentApi } from '@/lib/api';
 import Link from 'next/link';
 import { FileCheck } from 'lucide-react';
 import { StatusBadge, EmptyState } from '@/components/ui/shared';
 
 export default function RegistrationStatusPage() {
-  const endpoints = studentEndpoints(api);
+  
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.registration.status,
-    queryFn: async () => { const res = await endpoints.registration.status(); return (res.data as { success: boolean; data: { registrations: unknown[] } }).data; },
+    queryFn: async () => { const res = await studentApi.registration.status() as unknown as { success: boolean; data: Record<string, unknown> }; return res.data; },
   });
 
   const registrations = data?.registrations || [];

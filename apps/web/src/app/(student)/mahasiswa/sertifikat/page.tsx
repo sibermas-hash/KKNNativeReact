@@ -3,15 +3,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api } from '@/lib/api';
+import { api, studentApi } from '@/lib/api';
 import { GraduationCap } from 'lucide-react';
 import { StatusBadge, EmptyState } from '@/components/ui/shared';
 
 export default function CertificatesPage() {
-  const endpoints = studentEndpoints(api);
+  
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.certificates,
-    queryFn: async () => { const res = await endpoints.certificates.index(); return (res.data as { success: boolean; data: { scores: unknown[]; certificates: unknown[] } }).data; },
+    queryFn: async () => { const res = await studentApi.certificates.index(); return res; },
   });
 
   const scores = (data?.scores as Record<string, unknown>[]) || [];

@@ -1,110 +1,327 @@
-import type { Metadata } from 'next';
+import { Metadata } from 'next';
 import Link from 'next/link';
+import { ArrowRight, Download, FileText, MapPinned, Newspaper } from 'lucide-react';
 import { fetchApi } from '@/lib/server-api';
+import { Navbar } from '@/components/public/navbar';
+import { Footer } from '@/components/public/footer';
+import { HeroTitle } from '@/components/public/hero-title';
 
-export const revalidate = 3600;
+export const revalidate = 3600; // 1 hour
 
-export async function generateMetadata(): Promise<Metadata> {
-  return {
-    title: 'SIBERMAS — KKN UIN Saizu',
-    description:
-      'Sistem Informasi Kuliah Kerja Nyata (KKN) UIN Prof. K.H. Saifuddin Zuhri Purwokerto. Pendaftaran, pelaporan, dan penilaian KKN.',
-    openGraph: {
-      title: 'SIBERMAS — KKN UIN Saizu',
-      description: 'Sistem Informasi KKN UIN Prof. K.H. Saifuddin Zuhri Purwokerto',
-      url: 'https://sibermas.uinsaizu.ac.id',
-    },
-  };
-}
+export const metadata: Metadata = {
+  title: 'Beranda | SIBERMAS KKN UIN SAIZU',
+};
 
 interface Announcement {
   id: number;
   title: string;
   slug?: string;
+  category?: string;
   excerpt?: string;
-  published_at?: string;
   image_url?: string;
+  published_at?: string;
+  reading_time?: number;
+}
+
+interface DownloadItem {
+  id: number;
+  title: string;
+  file_type?: string;
+  file_path?: string;
+  external_url?: string;
 }
 
 interface HomeData {
-  announcements?: Announcement[];
-  stats?: { locations?: number; announcements?: number };
+  featuredAnnouncements: Announcement[];
+  featuredDownloads: DownloadItem[];
+  stats: {
+    students: number;
+    groups: number;
+    locations: number;
+  };
+  aboutContent?: {
+    visi: string;
+  };
 }
 
-export default async function HomePage() {
-  const data = await fetchApi<{ success: boolean; data: HomeData }>('/public/home');
-  const announcements = data?.data?.announcements || [];
+async function getHomeData(): Promise<HomeData> {
+  const res = await fetchApi<{ success: boolean; data: HomeData }>('/public/home');
+  const data = res?.data;
+  
+  return {
+    featuredAnnouncements: data?.featuredAnnouncements || [],
+    featuredDownloads: data?.featuredDownloads || [],
+    stats: {
+      students: data?.stats?.students || 0,
+      groups: data?.stats?.groups || 0,
+      locations: data?.stats?.locations || 0,
+    },
+    aboutContent: {
+      visi: data?.aboutContent?.visi || 'Menjadi Lembaga Penelitian dan Pengabdian kepada Masyarakat yang unggul dan kompetitif dalam pengembangan ilmu pengetahuan, teknologi, dan seni yang berbasis pada nilai-nilai moderasi Islam dan kearifan lokal.'
+    }
+  };
+}
+
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return 'Informasi terbaru';
+  try {
+    return new Intl.DateTimeFormat('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    }).format(new Date(dateStr));
+  } catch {
+    return 'Informasi terbaru';
+  }
+};
+
+export default async function LandingPage() {
+  const data = await getHomeData();
+  const announcements = data.featuredAnnouncements || [];
+  const featuredAnnouncement = announcements[0];
+  const latestAnnouncements = announcements.slice(1, 5);
+  const featuredDownloads = data.featuredDownloads || [];
+  const stats = data.stats;
+  const visi = data.aboutContent?.visi;
 
   return (
-    <div className="min-h-screen">
-      <header className="bg-gradient-to-r from-teal-700 to-teal-900 px-6 py-4">
-        <div className="mx-auto flex max-w-6xl items-center justify-between">
-          <h1 className="text-2xl font-bold text-white">SIBERMAS</h1>
-          <nav className="flex items-center gap-6">
-            <Link href="/berita" className="text-sm text-teal-100 hover:text-white">
-              Berita
-            </Link>
-            <Link href="/lokasi" className="text-sm text-teal-100 hover:text-white">
-              Lokasi
-            </Link>
-            <Link href="/unduhan" className="text-sm text-teal-100 hover:text-white">
-              Unduhan
+    <div className="min-h-screen bg-white text-emerald-950">
+      <Navbar overlayNav={true} />
+
+      {/* --- HERO SECTION --- */}
+      <section className="relative h-screen min-h-[100svh] overflow-hidden bg-emerald-950">
+        <video
+          className="absolute inset-0 h-full w-full object-cover brightness-[0.58] saturate-[0.9]"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster="/images/home-gallery/hero-1.svg"
+        >
+          <source src="/videos/Video.mp4" type="video/mp4" />
+        </video>
+
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.54)_0%,rgba(0,0,0,0.62)_36%,rgba(0,0,0,0.68)_100%)]" />
+
+        <div className="relative z-10 flex h-screen min-h-[100svh] items-center justify-center px-6 pb-16 pt-24 sm:pt-28 lg:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <HeroTitle title="SIBERMAS KKN" />
+            <p className="mx-auto mt-6 max-w-2xl text-base font-medium leading-relaxed text-white/90 sm:text-lg">
+              Lembaga Penelitian dan Pengabdian kepada Masyarakat (LPPM) <br className="hidden sm:block" />
+              UIN Prof. K.H. Saifuddin Zuhri Purwokerto
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* --- INFORMATION SECTION --- */}
+      <section className="bg-white py-14 sm:py-16">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="max-w-3xl">
+            <p className="home-kicker text-emerald-600 font-semibold uppercase tracking-widest text-xs">Informasi Terkini</p>
+            <h2 className="mt-3 text-3xl font-display font-bold tracking-tight text-emerald-950 sm:text-4xl">
+              Berita, pembaruan program, dan dokumen publik KKN.
+            </h2>
+            <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
+              Semua informasi terbaru ditempatkan di beranda agar mudah dipantau oleh mahasiswa,
+              dosen, mitra desa, dan masyarakat umum.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-7 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+            <div className="space-y-5">
+              {featuredAnnouncement ? (
+                <article className="overflow-hidden rounded-[1.6rem] border border-emerald-100 bg-white shadow-[0_20px_55px_rgba(6,78,59,0.07)]">
+                  <div className="aspect-[16/9] overflow-hidden bg-emerald-50">
+                    <img
+                      src={featuredAnnouncement.image_url || '/images/home-gallery/hero-1.svg'}
+                      alt={featuredAnnouncement.title}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div className="space-y-4 p-5 sm:p-6">
+                    <div className="flex flex-wrap items-center gap-3 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+                      <span className="rounded-full bg-emerald-50 px-3 py-1.5">
+                        {featuredAnnouncement.category || 'Berita'}
+                      </span>
+                      <span>{formatDate(featuredAnnouncement.published_at)}</span>
+                      {featuredAnnouncement.reading_time ? (
+                        <span>{featuredAnnouncement.reading_time} menit baca</span>
+                      ) : null}
+                    </div>
+                    <h3 className="text-xl font-display font-bold leading-tight text-emerald-950 sm:text-[1.7rem]">
+                      {featuredAnnouncement.title}
+                    </h3>
+                    <p className="text-sm leading-7 text-slate-600 sm:text-base">
+                      {featuredAnnouncement.excerpt ||
+                        'Baca pengumuman lengkap untuk mengetahui rincian informasi terbaru dari LPPM UIN SAIZU.'}
+                    </p>
+                    <Link
+                      href={`/berita/${featuredAnnouncement.slug}`}
+                      className="inline-flex items-center gap-2 font-display text-sm font-semibold uppercase tracking-[0.16em] text-emerald-700 no-underline"
+                    >
+                      Baca selengkapnya
+                      <ArrowRight size={16} />
+                    </Link>
+                  </div>
+                </article>
+              ) : (
+                <div className="rounded-[1.6rem] border border-dashed border-emerald-200 bg-emerald-50/60 p-6 sm:p-7">
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                    Belum ada berita utama
+                  </p>
+                  <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
+                    Saat ini belum ada warta yang dipublikasikan. Begitu berita terbaru tersedia,
+                    tampilannya akan muncul di bagian ini.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-5">
+              <div className="rounded-[1.6rem] border border-emerald-100 bg-white p-5 shadow-[0_18px_45px_rgba(6,78,59,0.05)]">
+                <div className="flex items-center gap-3">
+                  <Newspaper size={18} className="text-emerald-600" />
+                  <h3 className="font-display text-lg font-bold text-emerald-950">
+                    Berita Terbaru
+                  </h3>
+                </div>
+                <div className="mt-5 space-y-4">
+                  {latestAnnouncements.length > 0 ? (
+                    latestAnnouncements.map((announcement) => (
+                      <Link
+                        key={announcement.id}
+                        href={`/berita/${announcement.slug}`}
+                        className="block rounded-[1.15rem] border border-emerald-100 p-4 no-underline transition-colors hover:border-emerald-300"
+                      >
+                        <div className="flex flex-wrap items-center gap-3 text-[0.72rem] font-semibold uppercase tracking-[0.14em] text-emerald-700">
+                          <span>{announcement.category || 'Berita'}</span>
+                          <span>{formatDate(announcement.published_at)}</span>
+                        </div>
+                        <h4 className="mt-2.5 text-base font-display font-bold leading-snug text-emerald-950">
+                          {announcement.title}
+                        </h4>
+                        <p className="mt-2 text-sm leading-6 text-slate-600">
+                          {announcement.excerpt ||
+                            'Ringkasan berita akan tampil di bagian ini saat konten dipublikasikan.'}
+                        </p>
+                      </Link>
+                    ))
+                  ) : (
+                    <p className="text-sm leading-7 text-slate-600">
+                      Belum ada berita tambahan yang dipublikasikan.
+                    </p>
+                  )}
+                </div>
+                <Link
+                  href="/berita"
+                  className="mt-5 inline-flex items-center gap-2 font-display text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700 no-underline"
+                >
+                  Lihat semua berita
+                  <ArrowRight size={16} />
+                </Link>
+              </div>
+
+              <div className="rounded-[1.6rem] border border-emerald-100 bg-emerald-50/55 p-5">
+                <div className="flex items-center gap-3">
+                  <Download size={18} className="text-emerald-600" />
+                  <h3 className="font-display text-lg font-bold text-emerald-950">
+                    Unduhan Terbaru
+                  </h3>
+                </div>
+                <div className="mt-5 space-y-3">
+                  {featuredDownloads.length > 0 ? (
+                    featuredDownloads.map((download) => (
+                      <a
+                        key={download.id}
+                        href={download.external_url || download.file_path || '/unduhan'}
+                        className="flex items-start gap-3 rounded-[1.15rem] border border-emerald-100 bg-white p-4 no-underline transition-colors hover:border-emerald-300"
+                      >
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                          <FileText size={16} />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold leading-6 text-emerald-950 sm:text-base">
+                            {download.title}
+                          </p>
+                          <p className="mt-1 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+                            {download.file_type || 'Dokumen publik'}
+                          </p>
+                        </div>
+                      </a>
+                    ))
+                  ) : (
+                    <p className="text-sm leading-7 text-slate-600">
+                      Belum ada dokumen publik yang ditampilkan.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* --- STATS SECTION --- */}
+      <section className="border-t border-emerald-100 bg-emerald-50/70 py-12">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8">
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="rounded-[1.4rem] border border-emerald-100 bg-white p-5">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                Mahasiswa
+              </p>
+              <p className="mt-2 font-display text-3xl font-bold text-emerald-950">
+                {stats.students || 0}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Peserta yang tercatat dalam pelaksanaan program KKN.
+              </p>
+            </div>
+            <div className="rounded-[1.4rem] border border-emerald-100 bg-white p-5">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                Kelompok
+              </p>
+              <p className="mt-2 font-display text-3xl font-bold text-emerald-950">
+                {stats.groups || 0}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Kelompok yang bergerak di berbagai wilayah pengabdian.
+              </p>
+            </div>
+            <div className="rounded-[1.4rem] border border-emerald-100 bg-white p-5">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                Desa Mitra
+              </p>
+              <p className="mt-2 font-display text-3xl font-bold text-emerald-950">
+                {stats.locations || 0}
+              </p>
+              <p className="mt-2 text-sm leading-6 text-slate-600">
+                Lokasi pengabdian yang menjadi bagian dari jejaring KKN UIN SAIZU.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-7 flex flex-wrap gap-3">
+            <Link
+              href="/lokasi"
+              className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-4 py-2.5 text-sm font-semibold text-emerald-950 no-underline transition-colors hover:border-emerald-300"
+            >
+              <MapPinned size={16} className="text-emerald-600" />
+              Lihat sebaran lokasi
             </Link>
             <Link
-              href="/login"
-              className="rounded-xl bg-white px-4 py-2 text-sm font-semibold text-teal-700 hover:bg-teal-50"
+              href="/unduhan"
+              className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white px-4 py-2.5 text-sm font-semibold text-emerald-950 no-underline transition-colors hover:border-emerald-300"
             >
-              Masuk
+              <Download size={16} className="text-emerald-600" />
+              Buka unduhan publik
             </Link>
-          </nav>
-        </div>
-      </header>
-
-      <section className="bg-gradient-to-br from-teal-600 to-teal-800 px-6 py-20 text-center text-white">
-        <h2 className="text-4xl font-bold">Kuliah Kerja Nyata</h2>
-        <p className="mt-4 text-xl text-teal-100">UIN Prof. K.H. Saifuddin Zuhri Purwokerto</p>
-        <div className="mt-8 flex justify-center gap-4">
-          <Link
-            href="/login"
-            className="rounded-xl bg-white px-8 py-3 text-sm font-semibold text-teal-700 hover:bg-teal-50"
-          >
-            Masuk Portal
-          </Link>
-          <Link
-            href="/lokasi"
-            className="rounded-xl border border-white px-8 py-3 text-sm font-semibold text-white hover:bg-white/10"
-          >
-            Lihat Lokasi KKN
-          </Link>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-6 py-16">
-        <h3 className="mb-8 text-2xl font-bold text-slate-800">Berita Terbaru</h3>
-        {announcements.length === 0 ? (
-          <p className="text-slate-500">Belum ada berita.</p>
-        ) : (
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {announcements.slice(0, 3).map((item) => (
-              <Link
-                key={item.id}
-                href={`/berita/${item.slug || ''}`}
-                className="group rounded-2xl bg-white p-6 shadow-sm transition hover:shadow-md"
-              >
-                <p className="text-xs text-slate-500">{item.published_at || ''}</p>
-                <p className="mt-2 font-semibold text-slate-800 group-hover:text-teal-600">
-                  {item.title}
-                </p>
-                <p className="mt-2 line-clamp-3 text-sm text-slate-600">{item.excerpt || ''}</p>
-              </Link>
-            ))}
           </div>
-        )}
+        </div>
       </section>
 
-      <footer className="bg-slate-900 px-6 py-8 text-center text-sm text-slate-400">
-        <p>&copy; {new Date().getFullYear()} UIN Prof. K.H. Saifuddin Zuhri Purwokerto</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

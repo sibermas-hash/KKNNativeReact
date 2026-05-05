@@ -8,7 +8,7 @@ export default function RekapitulasiPage() {
     queryKey: ['admin', 'rekapitulasi'],
     queryFn: async () => {
       const res = await api.get('/admin/rekapitulasi');
-      return res.data as { success: boolean; data: unknown };
+      return (res as unknown as { success: boolean; data: unknown }).data;
     },
   });
 

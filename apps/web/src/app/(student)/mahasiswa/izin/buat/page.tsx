@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
-import { api } from '@/lib/api';
+import { api, studentApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,14 +13,14 @@ import { useState } from 'react';
 
 export default function CreateIzinPage() {
   const router = useRouter();
-  const endpoints = studentEndpoints(api);
+  
   const queryClient = useQueryClient();
   const [file, setFile] = useState<File | null>(null);
 
   const { register, handleSubmit, formState: { errors } } = useForm<CreateLeaveRequestFormData>({ resolver: zodResolver(createLeaveRequestSchema) });
 
   const mutation = useMutation({
-    mutationFn: (formData: FormData) => endpoints.leaveRequests.store(formData),
+    mutationFn: (formData: FormData) => studentApi.leaveRequests.store(formData),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['student', 'leave-requests'] }); toast.success('Pengajuan izin berhasil'); router.push('/mahasiswa/izin'); },
     onError: () => toast.error('Gagal mengajukan izin'),
   });

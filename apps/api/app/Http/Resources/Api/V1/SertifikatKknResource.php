@@ -27,7 +27,7 @@ class SertifikatKknResource extends JsonResource
             'issued_at' => $this->issued_at?->toIso8601String(),
             'is_revoked' => $this->isRevoked(),
             'revoked_at' => $this->revoked_at?->toIso8601String(),
-            'download_url' => route('certificate.verify', ['token' => $this->verification_token]),
+            'download_url' => url('/api/v1/public/verify-certificate/' . $this->verification_token),
         ];
     }
 }

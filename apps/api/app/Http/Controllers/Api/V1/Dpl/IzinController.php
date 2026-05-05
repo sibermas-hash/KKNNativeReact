@@ -29,14 +29,9 @@ class IzinController extends Controller
             ->orderByDesc('created_at')
             ->paginate($request->input('per_page', 25));
 
-        return $this->success([
-            'izin' => $izin->items(),
-            'meta' => [
-                'current_page' => $izin->currentPage(),
-                'last_page' => $izin->lastPage(),
-                'total' => $izin->total(),
-            ],
-        ]);
+        return $this->successCollection(
+            \App\Http\Resources\Api\V1\IzinMeninggalkanResource::collection($izin)
+        );
     }
 
     public function approve(IzinMeninggalkan $izin): JsonResponse

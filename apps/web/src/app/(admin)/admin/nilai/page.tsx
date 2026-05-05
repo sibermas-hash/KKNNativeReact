@@ -2,22 +2,22 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminEndpoints } from '@sibermas/api-client';
-import { api } from '@/lib/api';
+import { api, adminApi } from '@/lib/api';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function AdminGradesPage() {
-  const endpoints = adminEndpoints(api);
+  
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'grades', { page }],
-    queryFn: async () => { const res = await endpoints.grades.reports({ page }); return res.data as { success: boolean; data: unknown[]; meta?: Record<string, number> }; },
+    queryFn: async () => { const res = await adminApi.grades.reports({ page }); return (res as unknown as { success: boolean; data: unknown[]; meta?: Record<string, number> }).data; },
   });
 
   const finalizeMutation = useMutation({
-    mutationFn: (id: number) => endpoints.grades.finalize(id),
+    mutationFn: (id: number) => adminApi.grades.finalize(id),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'grades'] }); toast.success('Nilai berhasil difinalisasi'); },
   });
 

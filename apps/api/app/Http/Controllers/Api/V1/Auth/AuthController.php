@@ -117,10 +117,21 @@ class AuthController extends Controller
             ], 'Login berhasil.');
         }
 
-        // Web: Sanctum session auth (cookie-based)
-        $request->session()->regenerate();
+        // Web: Sanctum session auth (cookie-based) or token if no session
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+
+            return $this->success([
+                'user' => $this->buildUserData($user),
+            ], 'Login berhasil.');
+        }
+
+        // Fallback: token-based (Next.js SPA via API)
+        $token = $user->createToken('web')->plainTextToken;
 
         return $this->success([
+            'token' => $token,
+            'token_type' => 'Bearer',
             'user' => $this->buildUserData($user),
         ], 'Login berhasil.');
     }
@@ -134,10 +145,13 @@ class AuthController extends Controller
         $user = $request->user();
 
         if ($request->header('X-App-Type') === 'mobile' && $user) {
-            // Mobile: revoke current access token
+            // Mobile: revoke only the current token
             $user->currentAccessToken()->delete();
         } else {
-            // Web: logout session
+            // Web: invalidate session AND revoke all web Sanctum tokens
+            if ($user) {
+                $user->tokens()->where('name', 'web')->delete();
+            }
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
@@ -224,14 +238,16 @@ class AuthController extends Controller
 
     /**
      * Build the standard user data array for API responses.
+     * Uses once() to prevent duplicate PeriodContextService calls within the same request.
      */
     private function buildUserData(User $user): array
     {
         // Eager load relationships to prevent N+1
         $user->loadMissing(['mahasiswa', 'fakultas']);
 
-        $activePeriod = $this->periodContextService->getActivePeriodData();
-        $availablePeriods = $this->periodContextService->getAvailablePeriods();
+        // once() caches per-request — prevents duplicate DB hits if called multiple times
+        $activePeriod = once(fn () => $this->periodContextService->getActivePeriodData());
+        $availablePeriods = once(fn () => $this->periodContextService->getAvailablePeriods());
 
         $data = [
             'id' => $user->id,

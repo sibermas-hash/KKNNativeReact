@@ -3,16 +3,21 @@ import { z } from 'zod';
 export const createDailyReportSchema = z.object({
   date: z.string().min(1, 'Tanggal wajib diisi'),
   title: z.string().min(3, 'Judul minimal 3 karakter').max(255),
-  abcd_stage: z.string().optional(),
-  category: z.string().optional(),
+  abcd_stage: z.enum(['discovery', 'dream', 'design', 'define', 'destiny', 'reflection'], {
+    errorMap: () => ({ message: 'Tahap ABCD wajib dipilih' }),
+  }),
+  category: z.enum(['shilaturrahmi', 'program_unggulan', 'program_pendukung', 'administrasi'], {
+    errorMap: () => ({ message: 'Kategori kegiatan wajib dipilih' }),
+  }),
   activity: z.string().min(10, 'Deskripsi kegiatan minimal 10 karakter'),
   reflection: z.string().optional(),
   social_media_link: z.string().url('URL tidak valid').optional().or(z.literal('')),
-  latitude: z.number().min(-90).max(90),
-  longitude: z.number().min(-180).max(180),
+  latitude: z.number().min(-90, 'Latitude tidak valid').max(90),
+  longitude: z.number().min(-180, 'Longitude tidak valid').max(180),
   gps_accuracy: z.number().min(0).optional(),
   captured_at: z.string().min(1, 'Waktu capture wajib diisi'),
-  location_name: z.string().optional(),
+  location_name: z.string().min(3, 'Nama lokasi minimal 3 karakter').max(255),
+  location_source: z.enum(['gps', 'manual', 'tower', 'wifi']).optional().default('gps'),
 });
 
 export const editDailyReportSchema = createDailyReportSchema.extend({

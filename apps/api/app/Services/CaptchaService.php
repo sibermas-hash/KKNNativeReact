@@ -25,7 +25,7 @@ class CaptchaService
         $operators = ['+', '-'];
         $operator = $operators[array_rand($operators)];
 
-        $a = random_int(1, 20);
+        $a = random_int(2, 20);
         $b = match ($operator) {
             '+' => random_int(1, 20),
             '-' => random_int(1, $a - 1),

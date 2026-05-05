@@ -3,16 +3,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api } from '@/lib/api';
+import { api, studentApi } from '@/lib/api';
 import Link from 'next/link';
 import { Plus, Presentation } from 'lucide-react';
 import { StatusBadge, EmptyState } from '@/components/ui/shared';
 
 export default function WorkProgramsPage() {
-  const endpoints = studentEndpoints(api);
+  
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.workPrograms,
-    queryFn: async () => { const res = await endpoints.workPrograms.index(); return (res.data as { success: boolean; data: { programs: unknown[] } }).data; },
+    queryFn: async () => { const res = await studentApi.workPrograms.index() as unknown as { success: boolean; data: Record<string, unknown> }; return res.data; },
   });
 
   const programs = (data?.programs as Record<string, unknown>[]) || [];

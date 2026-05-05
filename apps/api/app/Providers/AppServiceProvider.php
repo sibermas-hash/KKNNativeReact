@@ -127,8 +127,6 @@ class AppServiceProvider extends ServiceProvider
     {
         $settingsMap = [
             'services.master_api.url' => 'master_api_url',
-            'services.master_api.client_id' => 'master_api_client_id',
-            'services.master_api.client_secret' => 'master_api_client_secret',
             'services.master_api.token' => 'master_api_token',
         ];
 

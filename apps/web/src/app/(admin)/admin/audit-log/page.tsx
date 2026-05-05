@@ -2,14 +2,14 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { adminEndpoints } from '@sibermas/api-client';
-import { api } from '@/lib/api';
+import { api, adminApi } from '@/lib/api';
 import Link from 'next/link';
 
 export default function AuditLogPage() {
-  const endpoints = adminEndpoints(api);
+  
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'audit-log'],
-    queryFn: async () => { const res = await endpoints.auditLog.index(); return res.data as { success: boolean; data: unknown[]; meta?: Record<string, number> }; },
+    queryFn: async () => { const res = await adminApi.auditLog.index(); return (res as unknown as { success: boolean; data: unknown[]; meta?: Record<string, number> }).data; },
   });
 
   const logs = (data?.data as Record<string, unknown>[]) || [];

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS, PHASE_LABELS } from '@sibermas/constants';
-import { api } from '@/lib/api';
+import { api, studentApi } from '@/lib/api';
 import { useAuthStore, usePeriodStore } from '@/stores';
 import {
   Calendar, MapPin, ArrowRight, ClipboardList, CheckCircle2,
@@ -48,18 +48,18 @@ export default function StudentDashboard() {
   const queryClient = useQueryClient();
   const [showPopup, setShowPopup] = useState(false);
 
-  const endpoints = studentEndpoints(api);
+  
 
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.dashboard,
     queryFn: async () => {
-      const res = await endpoints.dashboard();
-      return (res.data as { success: boolean; data: Record<string, unknown> }).data;
+      const res = await studentApi.dashboard() as unknown as { success: boolean; data: Record<string, unknown> };
+      return res.data;
     },
   });
 
   const notificationMutation = useMutation({
-    mutationFn: (id: number) => endpoints.notificationShown(id),
+    mutationFn: (id: number) => studentApi.notificationShown(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.dashboard }),
   });
 
@@ -199,6 +199,7 @@ export default function StudentDashboard() {
                 </span>
               </div>
               <div className="w-full bg-slate-100 h-1.5 rounded-full mb-6 overflow-hidden">
+                {/* eslint-disable-next-line react/forbid-dom-props */}
                 <div className="bg-emerald-600 h-full rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">

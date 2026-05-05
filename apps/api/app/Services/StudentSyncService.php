@@ -38,8 +38,11 @@ class StudentSyncService
 
     /**
      * Sync students from Master API.
+     *
+     * @param  array  $nimList  Specific NIMs to sync (empty = all)
+     * @param  string|null  $since  ISO 8601 timestamp for delta sync (e.g. '2026-05-01T00:00:00Z')
      */
-    public function syncFromApi(array $nimList = []): array
+    public function syncFromApi(array $nimList = [], ?string $since = null): array
     {
         $this->loadMaps();
 
@@ -52,7 +55,7 @@ class StudentSyncService
 
         $externalStudents = ! empty($nimList)
             ? $this->masterApi->getStudentsByNimList($nimList)
-            : $this->masterApi->yieldSyncMahasiswa();
+            : $this->masterApi->yieldSyncMahasiswa($since);
 
         foreach ($externalStudents as $studentData) {
             $results['total']++;

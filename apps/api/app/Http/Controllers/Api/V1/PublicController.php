@@ -116,11 +116,26 @@ class PublicController extends Controller
             ->limit(6)
             ->get();
 
+        $downloads = Download::where('is_active', true)
+            ->orderByDesc('created_at')
+            ->limit(4)
+            ->get();
+
+        // Count students via peserta_kkn, groups via kelompok_kkn
+        $studentCount = \App\Models\KKN\PesertaKkn::where('status', 'approved')->count();
+        $groupCount = \App\Models\KKN\KelompokKkn::count();
+        $locationCount = Lokasi::count();
+
         return $this->success([
-            'announcements' => AnnouncementResource::collection($announcements),
+            'featuredAnnouncements' => AnnouncementResource::collection($announcements),
+            'featuredDownloads' => DownloadResource::collection($downloads),
             'stats' => [
-                'locations' => Lokasi::count(),
-                'announcements' => Announcement::where('is_active', true)->count(),
+                'students' => $studentCount,
+                'groups' => $groupCount,
+                'locations' => $locationCount,
+            ],
+            'aboutContent' => [
+                'visi' => config('app.visi', 'Menjadi Lembaga Penelitian dan Pengabdian kepada Masyarakat yang unggul dan kompetitif dalam pengembangan ilmu pengetahuan, teknologi, dan seni yang berbasis pada nilai-nilai moderasi Islam dan kearifan lokal.'),
             ],
         ]);
     }

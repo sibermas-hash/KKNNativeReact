@@ -10,14 +10,14 @@ import toast from 'react-hot-toast';
 export default function UploadDokumenPage() {
   const { id } = useParams();
   const router = useRouter();
-  const endpoints = studentEndpoints(api);
+  
   const queryClient = useQueryClient();
   const [files, setFiles] = useState<Record<string, File | null>>({});
 
   const mutation = useMutation({
     mutationFn: async (formData: FormData) => {
       const res = await api.post(`/student/registration/${id}/documents`, formData, { headers: { 'Content-Type': 'multipart/form-data' } });
-      return res.data;
+      return res;
     },
     onSuccess: () => { toast.success('Dokumen berhasil diunggah'); router.push('/mahasiswa/cek-pendaftaran'); },
     onError: () => toast.error('Gagal mengunggah dokumen'),

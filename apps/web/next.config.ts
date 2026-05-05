@@ -2,6 +2,11 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  serverExternalPackages: ['canvas', 'jsdom'],
+  webpack: (config) => {
+    config.resolve.alias.canvas = false;
+    return config;
+  },
   transpilePackages: [
     '@sibermas/shared-types',
     '@sibermas/api-client',

@@ -3,14 +3,14 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminEndpoints } from '@sibermas/api-client';
-import { api } from '@/lib/api';
+import { api, adminApi } from '@/lib/api';
 import Link from 'next/link';
 import { ClipboardList, CheckCircle2, XCircle } from 'lucide-react';
 import { StatusBadge, PageHeader, EmptyState } from '@/components/ui/shared';
 import toast from 'react-hot-toast';
 
 export default function AdminRegistrationsPage() {
-  const endpoints = adminEndpoints(api);
+  
   const queryClient = useQueryClient();
   const [status, setStatus] = useState('');
   const [search, setSearch] = useState('');
@@ -18,23 +18,23 @@ export default function AdminRegistrationsPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'registrations', { status, search }],
-    queryFn: async () => { const res = await endpoints.registrations.index({ status, search }); return res.data as { success: boolean; data: unknown[]; meta?: Record<string, number> }; },
+    queryFn: async () => { const res = await adminApi.registrations.index({ status, search }); return (res as unknown as { success: boolean; data: unknown[]; meta?: Record<string, number> }).data; },
   });
 
   const approveMutation = useMutation({
-    mutationFn: (id: number) => endpoints.registrations.approve(id),
+    mutationFn: (id: number) => adminApi.registrations.approve(id),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); toast.success('Disetujui'); },
   });
 
   const rejectMutation = useMutation({
-    mutationFn: ({ id, reason }: { id: number; reason: string }) => endpoints.registrations.reject(id, { rejection_reason: reason }),
+    mutationFn: ({ id, reason }: { id: number; reason: string }) => adminApi.registrations.reject(id, { rejection_reason: reason }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); toast.success('Ditolak'); },
   });
 
   const registrations = (data?.data as Record<string, unknown>[]) || [];
 
   const toggleSelect = (id: number) => setSelectedIds((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
-  const bulkApprove = () => endpoints.registrations.bulkApprove(selectedIds).then(() => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); setSelectedIds([]); toast.success(`${selectedIds.length} pendaftaran disetujui`); });
+  const bulkApprove = () => adminApi.registrations.bulkApprove(selectedIds).then(() => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); setSelectedIds([]); toast.success(`${selectedIds.length} pendaftaran disetujui`); });
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">

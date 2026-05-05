@@ -8,7 +8,7 @@ import { EmptyState } from '@/components/ui/shared';
 export default function WorkshopsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'workshops'],
-    queryFn: async () => { const res = await api.get('/student/workshops'); return (res.data as { success: boolean; data: { workshops: unknown[] } }).data; },
+    queryFn: async () => { const res = await api.get('/student/workshops'); return res; },
   });
 
   const workshops = data?.workshops || [];

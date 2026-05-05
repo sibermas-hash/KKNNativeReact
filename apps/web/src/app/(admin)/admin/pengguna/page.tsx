@@ -2,14 +2,14 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminEndpoints } from '@sibermas/api-client';
-import { api } from '@/lib/api';
+import { api, adminApi } from '@/lib/api';
 import { Users, Trash2, UserPlus } from 'lucide-react';
 import { StatusBadge, PageHeader } from '@/components/ui/shared';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
 
 export default function AdminUsersPage() {
-  const endpoints = adminEndpoints(api);
+  
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -17,17 +17,17 @@ export default function AdminUsersPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'users', { search }],
-    queryFn: async () => { const res = await endpoints.users.index({ search }); return res.data as { success: boolean; data: unknown[] }; },
+    queryFn: async () => { const res = await adminApi.users.index({ search }); return (res as unknown as { success: boolean; data: unknown[] }).data; },
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: Record<string, unknown>) => endpoints.users.store(data),
+    mutationFn: (data: Record<string, unknown>) => adminApi.users.store(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'users'] }); setShowForm(false); toast.success('Pengguna ditambahkan'); },
     onError: () => toast.error('Gagal menambahkan pengguna'),
   });
 
   const toggleMutation = useMutation({
-    mutationFn: (id: number) => endpoints.users.toggleStatus(id),
+    mutationFn: (id: number) => adminApi.users.toggleStatus(id),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'users'] }); toast.success('Status diubah'); },
   });
 

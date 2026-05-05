@@ -203,6 +203,6 @@ class AiConfigServiceProvider extends ServiceProvider
         }
 
         // Fallback to .env
-        return env('AI_PROVIDER', 'gemini');
+        return config('ai.provider', 'gemini');
     }
 }

@@ -11,7 +11,7 @@ export default function MahasiswaDetailPage() {
     queryKey: ['admin', 'mahasiswa', Number(id)],
     queryFn: async () => {
       const res = await api.get(`/admin/mahasiswa/${id}`);
-      return (res.data as { success: boolean; data: Record<string, unknown> }).data;
+      return res;
     },
     enabled: !!id,
   });

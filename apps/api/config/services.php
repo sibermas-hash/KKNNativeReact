@@ -37,19 +37,10 @@ return [
 
     'master_api' => [
         'url' => env('MASTER_API_URL'),
-        'client_id' => env('MASTER_API_CLIENT_ID'),
-        'client_secret' => env('MASTER_API_CLIENT_SECRET'),
         'token' => env('MASTER_API_TOKEN'),
         'timeout' => env('MASTER_API_TIMEOUT', 30),
-        'cache_minutes' => env('MASTER_API_CACHE_MINUTES', 60),
-
-        // Circuit breaker configuration
         'circuit_breaker_threshold' => env('MASTER_API_CIRCUIT_BREAKER_THRESHOLD', 5),
-        'circuit_breaker_timeout' => env('MASTER_API_CIRCUIT_BREAKER_TIMEOUT', 300), // 5 minutes
-
-        // Retry configuration
-        'retry_max_attempts' => env('MASTER_API_RETRY_MAX_ATTEMPTS', 3),
-        'retry_initial_delay' => env('MASTER_API_RETRY_INITIAL_DELAY', 300), // 300ms
+        'circuit_breaker_timeout' => env('MASTER_API_CIRCUIT_BREAKER_TIMEOUT', 300),
     ],
 
     'gemini' => [

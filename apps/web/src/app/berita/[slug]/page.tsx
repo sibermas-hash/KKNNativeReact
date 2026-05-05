@@ -43,8 +43,29 @@ export async function generateMetadata({
 }
 
 export async function generateStaticParams(): Promise<{ slug: string }[]> {
-  const data = await fetchApi<{ success: boolean; data: Announcement[] }>('/public/announcements');
-  return (data?.data || []).filter((a) => a.slug).map((a) => ({ slug: a.slug! }));
+  // Fetch all pages of announcements for static generation
+  const allSlugs: string[] = [];
+  let page = 1;
+  let hasMore = true;
+
+  try {
+    while (hasMore && page <= 10) {
+      const data = await fetchApi<{ success: boolean; data: unknown[]; meta?: { last_page?: number } }>(
+        `/public/announcements?page=${page}`,
+      );
+      const items = data?.data || [];
+      items.forEach((a: unknown) => {
+        const slug = (a as Record<string, unknown>)?.slug;
+        if (slug) allSlugs.push(String(slug));
+      });
+      hasMore = items.length > 0 && page < (data?.meta?.last_page || 1);
+      page++;
+    }
+  } catch {
+    // Backend unavailable at build time — pages will be rendered on-demand (SSR)
+  }
+
+  return allSlugs.map((slug) => ({ slug }));
 }
 
 export default async function AnnouncementDetailPage({

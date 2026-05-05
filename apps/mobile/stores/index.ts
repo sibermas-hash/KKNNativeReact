@@ -30,7 +30,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       captcha_answer: captchaAnswer,
     }, { headers: { 'X-App-Type': 'mobile' } });
 
-    const data = res.data as { success: boolean; data: { token: string; user: User } };
+    const data = res as { success: boolean; data: { token: string; user: User } };
     if (data.success) {
       await storeToken(data.data.token);
       set({ user: data.data.user, isAuthenticated: true, isLoading: false });
@@ -48,7 +48,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   fetchUser: async () => {
     try {
       const res = await api.get('/auth/user');
-      const data = res.data as { success: boolean; data: User };
+      const data = res as { success: boolean; data: User };
       if (data.success) {
         set({ user: data.data, isAuthenticated: true, isLoading: false });
       } else {

@@ -3,15 +3,15 @@
 import { useQuery } from '@tanstack/react-query';
 import { dplEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api } from '@/lib/api';
+import { api, dplApi } from '@/lib/api';
 
 export default function ParticipantFeedbackPage() {
-  const endpoints = dplEndpoints(api);
+  
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.dpl.feedback,
     queryFn: async () => {
-      const res = await endpoints.feedback();
-      return res.data as { success: boolean; data: unknown[] };
+      const res = await dplApi.feedback();
+      return (res as unknown as { success: boolean; data: unknown[] }).data;
     },
   });
 

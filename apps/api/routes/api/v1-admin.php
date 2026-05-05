@@ -4,9 +4,13 @@ use App\Http\Controllers\Api\V1\Admin\AnnouncementController;
 use App\Http\Controllers\Api\V1\Admin\CertificateConfigController;
 use App\Http\Controllers\Api\V1\Admin\DashboardController;
 use App\Http\Controllers\Api\V1\Admin\DplAssignmentController;
+use App\Http\Controllers\Api\V1\Admin\DplParticipantEvaluationController;
+use App\Http\Controllers\Api\V1\Admin\DplRegistrationController;
 use App\Http\Controllers\Api\V1\Admin\DownloadController;
+use App\Http\Controllers\Api\V1\Admin\EligibilityController;
 use App\Http\Controllers\Api\V1\Admin\FakultasController;
 use App\Http\Controllers\Api\V1\Admin\GradeController;
+use App\Http\Controllers\Api\V1\Admin\GeneratorNilaiController;
 use App\Http\Controllers\Api\V1\Admin\JenisKknController;
 use App\Http\Controllers\Api\V1\Admin\KegiatanKknAdminController;
 use App\Http\Controllers\Api\V1\Admin\KknRequirementController;
@@ -18,7 +22,9 @@ use App\Http\Controllers\Api\V1\Admin\DispensasiController;
 use App\Http\Controllers\Api\V1\Admin\KelompokKknAdminController;
 use App\Http\Controllers\Api\V1\Admin\PeriodeController;
 use App\Http\Controllers\Api\V1\Admin\ProdiController;
+use App\Http\Controllers\Api\V1\Admin\RekapitulasiController;
 use App\Http\Controllers\Api\V1\Admin\RekapNilaiController;
+use App\Http\Controllers\Api\V1\Admin\StudentTransferController;
 use App\Http\Controllers\Api\V1\Admin\SystemSettingController;
 use App\Http\Controllers\Api\V1\Admin\TahunAkademikController;
 use App\Http\Controllers\Api\V1\Admin\UserController;
@@ -69,7 +75,27 @@ Route::prefix('admin')
         Route::apiResource('kelompok', KelompokKknAdminController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
         Route::post('/kelompok/import', [KelompokKknAdminController::class, 'import']);
 
-        // DPL Assignment
+        // DPL Registration
+        Route::get('/dosen/pendaftaran-dpl', [DplRegistrationController::class, 'index']);
+        Route::patch('/dosen/pendaftaran-dpl/{registration}/setujui', [DplRegistrationController::class, 'approve']);
+        Route::patch('/dosen/pendaftaran-dpl/{registration}/tolak', [DplRegistrationController::class, 'reject']);
+
+        // Student Transfer
+        Route::post('/peserta/pindah', [StudentTransferController::class, 'transfer']);
+
+        // Eligibility
+        Route::get('/audit-kualifikasi', [EligibilityController::class, 'index']);
+
+        // Rekapitulasi
+        Route::get('/rekapitulasi', [RekapitulasiController::class, 'index']);
+
+        // Generator Nilai
+        Route::get('/generator-nilai', [GeneratorNilaiController::class, 'index']);
+        Route::get('/generator-nilai/kelompok/{kelompokKkn}/mahasiswa', [GeneratorNilaiController::class, 'students']);
+        Route::post('/generator-nilai/skor', [GeneratorNilaiController::class, 'saveScores']);
+
+        // Evaluasi DPL
+        Route::get('/evaluasi-dpl', [DplParticipantEvaluationController::class, 'index']);
         Route::get('/dosen/penugasan', [DplAssignmentController::class, 'index']);
         Route::post('/dosen/tugaskan-periode', [DplAssignmentController::class, 'assignToPeriod']);
         Route::post('/dosen/tugaskan-kelompok/{group}', [DplAssignmentController::class, 'assignToGroup']);

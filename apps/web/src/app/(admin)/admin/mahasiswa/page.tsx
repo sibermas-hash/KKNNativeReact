@@ -7,7 +7,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 
 export default function MahasiswaIndexPage() {
-  const endpoints = adminEndpoints(api);
+  
   const [search, setSearch] = useState('');
   const [fakultasId, setFakultasId] = useState('');
   const [page, setPage] = useState(1);
@@ -16,7 +16,7 @@ export default function MahasiswaIndexPage() {
     queryKey: ['admin', 'mahasiswa', { search, fakultas_id: fakultasId, page }],
     queryFn: async () => {
       const res = await (await import('@sibermas/api-client')).adminEndpoints(api).users.index({ search, fakultas_id: fakultasId, page, role: 'student' });
-      return res.data as { success: boolean; data: unknown[]; meta?: Record<string, number> };
+      return (res as unknown as { success: boolean; data: unknown[]; meta?: Record<string, number> }).data;
     },
   });
 

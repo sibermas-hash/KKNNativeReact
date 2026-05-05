@@ -17,7 +17,7 @@ class McpServiceProvider extends ServiceProvider
     {
         // MCP Server - Enable via .env: MCP_ENABLED=true
         // Basic setup - full MCP config can be added later
-        if (env('MCP_ENABLED', false)) {
+        if (config('mcp.enabled', false)) {
             $this->setupMcpServer();
         }
     }

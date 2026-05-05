@@ -20,7 +20,8 @@ class SyncMahasiswaJob implements ShouldQueue
     public int $backoff = 30;
 
     public function __construct(
-        protected ?string $mahasiswaId = null
+        protected ?string $mahasiswaId = null,
+        protected ?string $since = null,
     ) {}
 
     public function handle(MasterApiService $masterApi, StudentSyncService $studentSync): void
@@ -78,14 +79,16 @@ class SyncMahasiswaJob implements ShouldQueue
 
     protected function syncAllMahasiswa(StudentSyncService $studentSync): void
     {
-        Log::info('SyncMahasiswaJob: syncing all mahasiswa from API');
+        Log::info('SyncMahasiswaJob: syncing mahasiswa from API', ['since' => $this->since]);
 
-        $results = $studentSync->syncFromApi();
+        // Pass since parameter for delta sync (only fetch records changed after this timestamp)
+        $results = $studentSync->syncFromApi([], $this->since);
 
-        Log::info('SyncMahasiswaJob: completed full sync', [
+        Log::info('SyncMahasiswaJob: completed sync', [
             'total' => $results['total'],
             'synced' => $results['synced'],
             'errors' => $results['errors'],
+            'mode' => $this->since ? 'delta' : 'full',
         ]);
     }
 }

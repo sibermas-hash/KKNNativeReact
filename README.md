@@ -5,6 +5,7 @@ Sistem Informasi KKN (Kuliah Kerja Nyata) untuk UIN Prof. K.H. Saifuddin Zuhri P
 ## 📖 Deskripsi
 
 Aplikasi ini mengelola seluruh siklus KKN:
+
 - Pendaftaran & penempatan mahasiswa
 - Pembagian kelompok & penugasan DPL
 - Pelaporan kegiatan harian (dengan GPS)
@@ -23,6 +24,7 @@ Aplikasi ini mengelola seluruh siklus KKN:
 ## 🚀 Instalasi
 
 ### Prasyarat
+
 - PHP 8.4+
 - Composer
 - Node.js 20+
@@ -60,11 +62,15 @@ npm run dev
 
 Dokumentasi lengkap tersedia di folder `docs/`:
 
-- [📘 Panduan Sistem](docs/PANDUAN_SISTEM.md) - Cara penggunaan sistem
-- [🔧 Services](docs/SERVICES.md) - Dokumentasi service layer
-- [🗄️ Database Schema](docs/DATABASE_SCHEMA.md) - Skema database
-- [🏗️ Arsitektur](docs/KKN_LARAVEL_INERTIA_REACT.md) - Arsitektur aplikasi
-- [📝 Changelog](docs/CHANGELOG.md) - Riwayat perubahan
+- [📋 Dokumentasi Index](docs/INDEX.md) - Indeks seluruh dokumentasi
+- [📘 API Reference](docs/API_REFERENCE.md) - Referensi API lengkap (V1)
+- [🏗️ Arsitektur](docs/ARCHITECTURE.md) - Gambaran arsitektur sistem
+- [🔧 Setup Guide](docs/SETUP.md) - Panduan setup & pengembangan lokal
+- [🔒 Security Guide](docs/SECURITY_GUIDE.md) - Best practices keamanan
+- [📡 External API](docs/EXTERNAL_API_GUIDE.md) - Panduan integrasi SIAKAD
+- [⚙️ SIAKAD Config](docs/SIAKAD_CONFIG.md) - Konfigurasi API SIAKAD
+- [📋 Audit Status](docs/auditnow.md) - Temuan audit & status terkini
+- [✅ Implementation Checklist](docs/IMPLEMENTATION_CHECKLIST.md) - Checklist implementasi
 
 ## 🧪 Testing
 

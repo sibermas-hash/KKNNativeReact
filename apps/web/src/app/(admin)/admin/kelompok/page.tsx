@@ -2,23 +2,23 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminEndpoints } from '@sibermas/api-client';
-import { api } from '@/lib/api';
+import { api, adminApi } from '@/lib/api';
 import Link from 'next/link';
 import { Users, Trash2 } from 'lucide-react';
 import { PageHeader, EmptyState } from '@/components/ui/shared';
 import toast from 'react-hot-toast';
 
 export default function AdminGroupsPage() {
-  const endpoints = adminEndpoints(api);
+  
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'groups'],
-    queryFn: async () => { const res = await endpoints.groups.index(); return res.data as { success: boolean; data: unknown[] }; },
+    queryFn: async () => { const res = await adminApi.groups.index(); return (res as unknown as { success: boolean; data: unknown[] }).data; },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => endpoints.groups.destroy(id),
+    mutationFn: (id: number) => adminApi.groups.destroy(id),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'groups'] }); toast.success('Kelompok dihapus'); },
     onError: () => toast.error('Gagal menghapus'),
   });

@@ -25,13 +25,8 @@ class ParticipantFeedbackController extends Controller
             ->orderByDesc('created_at')
             ->paginate(25);
 
-        return $this->success([
-            'feedback' => $feedback->items(),
-            'meta' => [
-                'current_page' => $feedback->currentPage(),
-                'last_page' => $feedback->lastPage(),
-                'total' => $feedback->total(),
-            ],
-        ]);
+        return $this->successCollection(
+            \App\Http\Resources\Api\V1\EvaluasiDplPesertaResource::collection($feedback)
+        );
     }
 }

@@ -8,7 +8,7 @@ export default function GradeGeneratorPage() {
     queryKey: ['admin', 'grade-generator'],
     queryFn: async () => {
       const res = await api.get('/admin/generator-nilai');
-      return res.data as { success: boolean; data: unknown };
+      return (res as unknown as { success: boolean; data: unknown }).data;
     },
   });
 

@@ -3,30 +3,30 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { dplEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api } from '@/lib/api';
+import { api, dplApi } from '@/lib/api';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { CheckCircle2, XCircle, FileText } from 'lucide-react';
 import { StatusBadge, EmptyState } from '@/components/ui/shared';
 
 export default function DplIzinPage() {
-  const endpoints = dplEndpoints(api);
+  
   const queryClient = useQueryClient();
   const [rejectId, setRejectId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState('');
 
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.dpl.leaveRequests,
-    queryFn: async () => { const res = await endpoints.leaveRequests.index(); return res.data as { success: boolean; data: unknown[] }; },
+    queryFn: async () => { const res = await dplApi.leaveRequests.index(); return (res as unknown as { success: boolean; data: unknown[] }).data; },
   });
 
   const approveMutation = useMutation({
-    mutationFn: (id: number) => endpoints.leaveRequests.approve(id),
+    mutationFn: (id: number) => dplApi.leaveRequests.approve(id),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['dpl', 'leave-requests'] }); toast.success('Izin disetujui'); },
   });
 
   const rejectMutation = useMutation({
-    mutationFn: ({ id, reason }: { id: number; reason: string }) => endpoints.leaveRequests.reject(id, { rejection_reason: reason }),
+    mutationFn: ({ id, reason }: { id: number; reason: string }) => dplApi.leaveRequests.reject(id, { rejection_reason: reason }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['dpl', 'leave-requests'] }); setRejectId(null); setRejectReason(''); toast.success('Izin ditolak'); },
   });
 

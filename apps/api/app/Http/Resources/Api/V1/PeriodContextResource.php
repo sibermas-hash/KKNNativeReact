@@ -4,18 +4,24 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V1;
 
+use App\Http\Resources\Api\V1\PeriodeResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class PeriodContextResource extends JsonResource
 {
+    public function __construct($resource)
+    {
+        parent::__construct($resource);
+    }
+
     public function toArray(Request $request): array
     {
         return [
-            'active_period' => $this['active_period'] ? new PeriodeResource($this['active_period']) : null,
-            'available_periods' => PeriodeResource::collection($this['available_periods'] ?? collect()),
-            'current_phase' => $this['current_phase'] ?? 'upcoming',
-            'phase_label' => $this->getPhaseLabel($this['current_phase'] ?? 'upcoming'),
+            'active_period' => $this->resource['active_period'] ? new PeriodeResource($this->resource['active_period']) : null,
+            'available_periods' => $this->resource['available_periods'] ?? [],
+            'current_phase' => $this->resource['current_phase'] ?? 'upcoming',
+            'phase_label' => $this->getPhaseLabel($this->resource['current_phase'] ?? 'upcoming'),
         ];
     }
 

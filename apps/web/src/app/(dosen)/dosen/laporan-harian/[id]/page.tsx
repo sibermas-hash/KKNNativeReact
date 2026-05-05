@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { dplEndpoints } from '@sibermas/api-client';
-import { api } from '@/lib/api';
+import { api, dplApi } from '@/lib/api';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { ChevronLeft, CheckCircle2, XCircle } from 'lucide-react';
@@ -11,23 +11,23 @@ import toast from 'react-hot-toast';
 export default function DplReportDetailPage() {
   const { id } = useParams();
   const router = useRouter();
-  const endpoints = dplEndpoints(api);
+  
   const queryClient = useQueryClient();
   const [reviewNotes, setReviewNotes] = useState('');
 
   const { data, isLoading } = useQuery({
     queryKey: ['dpl', 'daily-report', Number(id)],
-    queryFn: async () => { const res = await endpoints.dailyReports.show(Number(id)); return (res.data as { success: boolean; data: Record<string, unknown> }).data; },
+    queryFn: async () => { const res = await dplApi.dailyReports.show(Number(id)); return res; },
     enabled: !!id,
   });
 
   const approveMutation = useMutation({
-    mutationFn: () => endpoints.dailyReports.approve(Number(id)),
+    mutationFn: () => dplApi.dailyReports.approve(Number(id)),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['dpl', 'daily-reports'] }); toast.success('Laporan disetujui'); router.push('/dosen/laporan-harian'); },
   });
 
   const revisionMutation = useMutation({
-    mutationFn: () => endpoints.dailyReports.revision(Number(id), { review_notes: reviewNotes }),
+    mutationFn: () => dplApi.dailyReports.revision(Number(id), { review_notes: reviewNotes }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['dpl', 'daily-reports'] }); toast.success('Revisi diminta'); router.push('/dosen/laporan-harian'); },
   });
 

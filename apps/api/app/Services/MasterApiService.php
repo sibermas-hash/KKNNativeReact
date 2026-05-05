@@ -10,7 +10,6 @@ use App\Services\MasterApi\FallbackCacheService;
 use App\Services\MasterApi\MasterApiClient;
 use App\Services\MasterApi\MasterApiTokenService;
 use Exception;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -35,8 +34,6 @@ class MasterApiService
 
     public function clearCache(): void
     {
-        Cache::forget('master_api_token_'.config('services.master_api.client_id'));
-        Cache::forget('master_api_token_'.config('services.master_api.client_id').'_fallback');
         $this->circuitBreaker->reset();
         $this->fallbackCache->flush();
     }

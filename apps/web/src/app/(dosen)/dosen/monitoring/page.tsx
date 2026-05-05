@@ -3,18 +3,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { dplEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api } from '@/lib/api';
+import { api, dplApi } from '@/lib/api';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 
 export default function MonitoringPage() {
-  const endpoints = dplEndpoints(api);
+  
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.dpl.monitoring,
     queryFn: async () => {
-      const res = await endpoints.monitoring.index();
-      return res.data as { success: boolean; data: unknown[] };
+      const res = await dplApi.monitoring.index();
+      return (res as unknown as { success: boolean; data: unknown[] }).data;
     },
   });
 

@@ -2,28 +2,28 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminEndpoints } from '@sibermas/api-client';
-import { api } from '@/lib/api';
+import { api, adminApi } from '@/lib/api';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function AnnouncementsPage() {
-  const endpoints = adminEndpoints(api);
+  
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: '', content: '', excerpt: '', category: 'berita' });
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'announcements'],
-    queryFn: async () => { const res = await endpoints.announcements.index(); return res.data as { success: boolean; data: unknown[] }; },
+    queryFn: async () => { const res = await adminApi.announcements.index(); return (res as unknown as { success: boolean; data: unknown[] }).data; },
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: Record<string, unknown>) => endpoints.announcements.store(data),
+    mutationFn: (data: Record<string, unknown>) => adminApi.announcements.store(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'announcements'] }); setShowForm(false); setForm({ title: '', content: '', excerpt: '', category: 'berita' }); toast.success('Berita berhasil dipublikasikan'); },
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => endpoints.announcements.destroy(id),
+    mutationFn: (id: number) => adminApi.announcements.destroy(id),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'announcements'] }); toast.success('Berita berhasil dihapus'); },
   });
 

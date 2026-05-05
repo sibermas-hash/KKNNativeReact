@@ -26,14 +26,9 @@ class MonitoringController extends Controller
             ->orderByDesc('tanggal_kunjungan')
             ->paginate(25);
 
-        return $this->success([
-            'monitoring' => $monitoring->items(),
-            'meta' => [
-                'current_page' => $monitoring->currentPage(),
-                'last_page' => $monitoring->lastPage(),
-                'total' => $monitoring->total(),
-            ],
-        ]);
+        return $this->successCollection(
+            \App\Http\Resources\Api\V1\MonitoringDplResource::collection($monitoring)
+        );
     }
 
     public function store(Request $request): JsonResponse
@@ -47,8 +42,8 @@ class MonitoringController extends Controller
             'kelompok_id' => ['required', 'exists:kelompok_kkn,id'],
             'visit_date' => ['required', 'date'],
             'notes' => ['required', 'string', 'max:5000'],
-            'latitude' => ['nullable', 'numeric'],
-            'longitude' => ['nullable', 'numeric'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
             'photo' => ['nullable', 'file', 'mimes:jpg,jpeg,png', 'max:5120'],
         ]);
 
@@ -62,7 +57,12 @@ class MonitoringController extends Controller
             'kelompok_id' => $validated['kelompok_id'],
             'periode_id' => auth()->user()->dosen->dplPeriods()->first()?->periode_id,
             'tanggal_kunjungan' => $validated['visit_date'],
+            'permasalahan' => '-',
+            'solusi' => '-',
             'catatan_tambahan' => $validated['notes'],
+            'latitude' => $validated['latitude'] ?? null,
+            'longitude' => $validated['longitude'] ?? null,
+            'photo_path' => $photoPath,
         ]);
 
         return $this->created(['id' => $monitoring->id], 'Monitoring berhasil dicatat.');

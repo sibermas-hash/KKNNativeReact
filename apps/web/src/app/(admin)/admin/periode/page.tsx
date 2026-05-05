@@ -2,29 +2,29 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminEndpoints } from '@sibermas/api-client';
-import { api } from '@/lib/api';
+import { api, adminApi } from '@/lib/api';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function PeriodsPage() {
-  const endpoints = adminEndpoints(api);
+  
   const queryClient = useQueryClient();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ name: '', periode: 1, start_date: '', end_date: '', kuota: 0, academic_year_id: 0, jenis_kkn_id: 0 });
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'periods'],
-    queryFn: async () => { const res = await endpoints.periods.index(); return res.data as { success: boolean; data: unknown[]; meta?: Record<string, number> }; },
+    queryFn: async () => { const res = await adminApi.periods.index(); return (res as unknown as { success: boolean; data: unknown[]; meta?: Record<string, number> }).data; },
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: Record<string, unknown>) => endpoints.periods.store(data),
+    mutationFn: (data: Record<string, unknown>) => adminApi.periods.store(data),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'periods'] }); setShowForm(false); toast.success('Periode berhasil dibuat'); },
     onError: () => toast.error('Gagal membuat periode'),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => endpoints.periods.destroy(id),
+    mutationFn: (id: number) => adminApi.periods.destroy(id),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'periods'] }); toast.success('Periode berhasil dihapus'); },
   });
 

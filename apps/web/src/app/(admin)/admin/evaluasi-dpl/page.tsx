@@ -11,7 +11,7 @@ export default function EvaluasiDplPage() {
     queryKey: ['admin', 'evaluasi-dpl', { periode_id: periodeId }],
     queryFn: async () => {
       const res = await api.get('/admin/evaluasi-dpl', { params: { periode_id: periodeId || undefined } });
-      return res.data as { success: boolean; data: unknown[] };
+      return (res as unknown as { success: boolean; data: unknown[] }).data;
     },
   });
 

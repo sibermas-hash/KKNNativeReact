@@ -9,7 +9,7 @@ export default function DomisiliPage() {
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'domisili'],
-    queryFn: async () => { const res = await api.get('/student/domisili'); return (res.data as { success: boolean; data: Record<string, unknown> }).data; },
+    queryFn: async () => { const res = await api.get('/student/domisili'); return res; },
   });
 
   const mutation = useMutation({

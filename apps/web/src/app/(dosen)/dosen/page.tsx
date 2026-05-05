@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { dosenEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api } from '@/lib/api';
+import { api, dplApi } from '@/lib/api';
 import Link from 'next/link';
 
 export default function DosenDashboard() {
@@ -11,8 +11,8 @@ export default function DosenDashboard() {
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.dosen.dashboard,
     queryFn: async () => {
-      const res = await endpoints.dashboard();
-      return (res.data as { success: boolean; data: Record<string, unknown> }).data;
+      const res = await dplApi.dashboard() as unknown as { success: boolean; data: Record<string, unknown> };
+      return res.data;
     },
   });
 

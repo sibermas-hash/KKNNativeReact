@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Api\AdminKeyController;
 use App\Http\Controllers\Api\AttendanceController;
-use App\Http\Controllers\Api\DomisiliController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PublicDataController;
 use App\Http\Controllers\Api\RegistrationController;
@@ -93,16 +92,6 @@ Route::prefix('v1')->group(function () {
 
 // ── Legacy API (keep existing routes) ─────────────────────────────────────
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-if (config('app.env') === 'local') {
-    Route::post('/auth/login', function (Request $request) {
-        return response()->json(['access_token' => 'student_test_token']);
-    });
-}
-
 // Server Time for Timestamp Calibration
 Route::get('/server-time', function () {
     return response()->json([
@@ -121,19 +110,14 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->name('api.')->group(functi
     // Fix Poin 4: Device Tokens for Push Notifications
     Route::post('/device-tokens', [NotificationController::class, 'storeDeviceToken'])->name('device-tokens.store');
 
-    // Domisili (for KKN Mandiri)
-    Route::prefix('domisili')->name('domisili.')->group(function () {
-        Route::get('/', [DomisiliController::class, 'show'])->name('show');
-        Route::post('/', [DomisiliController::class, 'store'])->name('store');
-    });
-
     // ─── GEOLOCATION & ATTENDANCE ─────────────────────────────────
     Route::prefix('attendance')->name('attendance.')->group(function () {
         Route::post('/', [AttendanceController::class, 'store'])->name('store');
         Route::get('/', [AttendanceController::class, 'index'])->name('index');
-        Route::get('/{attendance}', [AttendanceController::class, 'show'])->name('show');
+        // Static routes MUST come before wildcard {attendance}
         Route::get('/sync-status', [AttendanceController::class, 'getSyncStatus'])->name('sync-status');
         Route::post('/retry-sync', [AttendanceController::class, 'retrySync'])->name('retry-sync');
+        Route::get('/{attendance}', [AttendanceController::class, 'show'])->name('show');
     });
 });
 
@@ -165,7 +149,8 @@ Route::post('/register', [RegistrationController::class, 'register'])
     ->name('api.register');
 
 // Public Data API (protected by API key middleware)
-Route::middleware(['api.key', 'throttle:60,1'])->prefix('v1')->name('api.v1.')->group(function () {
+// NOTE: Uses /data/ prefix to avoid shadowing V1 authenticated routes
+Route::middleware(['api.key', 'throttle:60,1'])->prefix('v1/data')->name('api.v1.data.')->group(function () {
     Route::get('/{table}', [PublicDataController::class, 'index'])->name('index');
     Route::post('/{table}', [PublicDataController::class, 'store'])->name('store');
     Route::patch('/{table}/{id}', [PublicDataController::class, 'update'])->name('update');

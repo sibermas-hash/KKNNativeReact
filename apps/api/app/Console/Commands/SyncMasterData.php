@@ -140,11 +140,15 @@ class SyncMasterData extends Command
         ];
         $errorDetails = [];
         $now = now();
+        $this->info("Fetched " . count($orgs) . " organizations from API.");
+        if (count($orgs) > 0) {
+            $this->info("Sample data: " . json_encode($orgs[0]));
+        }
 
         foreach ($orgs as $orgData) {
             try {
                 $name = trim((string) ($orgData['name'] ?? $orgData['nama'] ?? ''));
-                $code = trim((string) ($orgData['code'] ?? ''));
+                $code = trim((string) ($orgData['code'] ?? $orgData['id'] ?? ''));
 
                 if ($name === '' || $code === '') {
                     $stats['total_skipped']++;
@@ -152,13 +156,18 @@ class SyncMasterData extends Command
                     continue;
                 }
 
-                // Only sync faculties (check if name contains 'Fakultas' or specific level)
-                if (str_contains($name, 'Fakultas') || (int) ($orgData['level'] ?? 0) === 2) {
+                // If name is "Default Faculty" or contains "Fakultas" or level 2
+                $isFaculty = str_contains(strtolower($name), 'fakultas') 
+                    || (int) ($orgData['level'] ?? 0) === 2
+                    || $name === 'Default Faculty';
+
+                if ($isFaculty) {
                     $faculty = Fakultas::updateOrCreate(
                         ['master_id' => $this->normalizeMasterId($orgData['id'] ?? null) ?? $code],
                         [
                             'code' => $code,
                             'nama' => $name,
+                            'short_name' => trim((string) ($orgData['short_name'] ?? '')),
                             'master_synced_at' => $now,
                         ]
                     );
@@ -179,7 +188,7 @@ class SyncMasterData extends Command
         }
 
         $endTime = now();
-        $duration = $endTime->diffInSeconds($startTime);
+        $duration = (int) $endTime->diffInSeconds($startTime);
 
         SyncLog::create([
             'sync_type' => $isDelta ? 'delta' : 'full',
@@ -229,7 +238,7 @@ class SyncMasterData extends Command
         $errorDetails = [];
         $now = now();
 
-        $defaultFaculty = Fakultas::first();
+        $defaultFaculty = Fakultas::orderBy('id')->first();
         if (! $defaultFaculty) {
             $defaultFaculty = Fakultas::create([
                 'code' => 'DEFAULT',
@@ -273,6 +282,8 @@ class SyncMasterData extends Command
                         'fakultas_id' => $facultyId,
                         'code' => $this->resolveProgramCode($programData, $name),
                         'nama' => $name,
+                        'short_name' => trim((string) ($programData['short_name'] ?? '')),
+                        'jenjang' => trim((string) ($programData['jenjang'] ?? '')),
                         'master_synced_at' => $now,
                     ]
                 );
@@ -297,7 +308,7 @@ class SyncMasterData extends Command
         }
 
         $endTime = now();
-        $duration = $endTime->diffInSeconds($startTime);
+        $duration = (int) $endTime->diffInSeconds($startTime);
 
         SyncLog::create([
             'sync_type' => $isDelta ? 'delta' : 'full',
@@ -353,7 +364,7 @@ class SyncMasterData extends Command
         $now = now();
 
         // Default faculty if not found in data
-        $defaultFaculty = Fakultas::first();
+        $defaultFaculty = Fakultas::orderBy('id')->first();
         if (! $defaultFaculty) {
             $defaultFaculty = Fakultas::create([
                 'code' => 'DEFAULT',
@@ -395,13 +406,22 @@ class SyncMasterData extends Command
                 $fallbackEmail = $username.'@kkn.local';
 
                 DB::transaction(function () use ($empData, $nip, $username, $incomingEmail, $fallbackEmail, &$stats, $now, $defaultFaculty) {
+                    // Upsert by username. Jika user belum ada, coba pakai email dari API.
+                    // Jika email sudah dipakai user lain (duplicate), gunakan fallback @kkn.local.
                     $user = User::firstOrNew(['username' => $username]);
                     $isNewUser = ! $user->exists;
 
                     if ($isNewUser) {
-                        $user->email = ! empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
+                        $emailToUse = $fallbackEmail;
+                        if (! empty($incomingEmail)) {
+                            $emailTaken = User::where('email', $incomingEmail)
+                                ->where('username', '!=', $username)
+                                ->exists();
+                            $emailToUse = $emailTaken ? $fallbackEmail : $incomingEmail;
+                        }
+                        $user->email = $emailToUse;
                     } elseif (empty($user->email)) {
-                        $user->email = ! empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
+                        $user->email = $fallbackEmail;
                     }
 
                     $user->username = $username;
@@ -439,6 +459,10 @@ class SyncMasterData extends Command
                             'birth_date' => $empData['tanggal_lahir'] ?? $empData['birth_date'] ?? null,
                             'is_cpns' => $isCpns,
                             'is_tugas_belajar' => $isTugasBelajar,
+                            'status_aktif' => $empData['status_aktif'] ?? null,
+                            'status_pegawai' => $empData['status_pegawai'] ?? null,
+                            'no_rekening' => $empData['no_rekening'] ?? null,
+                            'nama_bank' => $empData['nama_bank'] ?? null,
                             'master_synced_at' => $now,
                         ]
                     );
@@ -461,7 +485,7 @@ class SyncMasterData extends Command
         }
 
         $endTime = now();
-        $duration = $endTime->diffInSeconds($startTime);
+        $duration = (int) $endTime->diffInSeconds($startTime);
 
         SyncLog::create([
             'sync_type' => $isDelta ? 'delta' : 'full',
@@ -519,7 +543,7 @@ class SyncMasterData extends Command
         $errorDetails = [];
 
         $now = now();
-        $defaultFaculty = Fakultas::first();
+        $defaultFaculty = Fakultas::orderBy('id')->first();
         if (! $defaultFaculty) {
             $defaultFaculty = Fakultas::create([
                 'code' => 'DEFAULT',
@@ -533,8 +557,16 @@ class SyncMasterData extends Command
         $facultyMap = Fakultas::pluck('id', 'master_id')->all();
         $prodiMap = Prodi::pluck('id', 'master_id')->all();
 
+        $this->info("Starting to process " . (is_countable($students) ? count($students) : "generator") . " students...");
+        $processedCount = 0;
+
         foreach ($students as $stud) {
             $stats['total_fetched']++;
+            $processedCount++;
+            
+            if ($processedCount <= 1) {
+                $this->info("First student raw data: " . json_encode($stud));
+            }
 
             try {
                 $studData = ($source === 'db') ? [
@@ -565,11 +597,20 @@ class SyncMasterData extends Command
                     $programMasterId = isset($studData['prodi_id']) ? (string) $studData['prodi_id'] : null;
                     $prodiId = $programMasterId !== null ? ($prodiMap[$programMasterId] ?? null) : null;
 
+                    if ($stats['total_fetched'] <= 1) {
+                        Log::debug("Processing first student", [
+                            'nim' => $nim,
+                            'prodi_id_from_api' => $programMasterId,
+                            'prodi_id_mapped' => $prodiId,
+                            'faculty_id_from_api' => $studData['fakultas_id'] ?? null,
+                        ]);
+                    }
+
                     if (! $prodiId) {
                         $program = Prodi::firstOrCreate(
                             $programMasterId ? ['master_id' => $programMasterId] : ['nama' => $prodiName],
                             [
-                                'code' => strtoupper(substr(Str::slug($prodiName), 0, 10)),
+                                'code' => $this->resolveProgramCode($studData, $prodiName),
                                 'nama' => $prodiName,
                                 'fakultas_id' => $defaultFaculty?->id,
                                 'master_synced_at' => $now,
@@ -578,7 +619,7 @@ class SyncMasterData extends Command
                         $prodiId = $program->id;
                     }
 
-                    $organizationMasterId = isset($studData['organization_id']) ? (string) $studData['organization_id'] : null;
+                    $organizationMasterId = isset($studData['fakultas_id']) ? (string) $studData['fakultas_id'] : (isset($studData['organization_id']) ? (string) $studData['organization_id'] : null);
                     $facultyId = $organizationMasterId !== null ? ($facultyMap[$organizationMasterId] ?? null) : null;
 
                     $username = (string) $nim;
@@ -589,19 +630,22 @@ class SyncMasterData extends Command
                     $isNewUser = ! $user->exists;
 
                     if ($isNewUser) {
-                        $user->email = ! empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
+                        $emailToUse = $fallbackEmail;
+                        if (! empty($incomingEmail)) {
+                            $emailTaken = User::where('email', $incomingEmail)
+                                ->where('username', '!=', $username)
+                                ->exists();
+                            $emailToUse = $emailTaken ? $fallbackEmail : $incomingEmail;
+                        }
+                        $user->email = $emailToUse;
+                        $user->password = Hash::make(Str::random(12));
+                        $user->must_change_password = true;
                     } elseif (empty($user->email)) {
                         $user->email = $fallbackEmail;
                     }
 
                     $user->username = $username;
                     $user->name = $studData['nama'] ?? $studData['name'] ?? 'Unknown';
-
-                    if ($isNewUser) {
-                        $user->password = Hash::make(Str::password(12));
-                        $user->must_change_password = true;
-                    }
-
                     $user->save();
 
                     if (! $user->hasRole('student')) {
@@ -613,6 +657,8 @@ class SyncMasterData extends Command
                         [
                             'master_id' => (string) $studData['id'],
                             'user_id' => $user->id,
+                            'nim' => $nim,
+                            'nik' => $studData['nik'] ?? null,
                             'nama' => $studData['nama'] ?? $studData['name'] ?? 'Unknown',
                             'fakultas_id' => $facultyId ?? $defaultFaculty?->id,
                             'prodi_id' => $prodiId,
@@ -620,15 +666,20 @@ class SyncMasterData extends Command
                             'gender' => $studData['jenis_kelamin'] ?? $studData['gender'] ?? 'L',
                             'birth_place' => $studData['tempat_lahir'] ?? $studData['birth_place'] ?? null,
                             'birth_date' => $studData['tanggal_lahir'] ?? $studData['birth_date'] ?? null,
+                            'alamat' => $studData['alamat'] ?? null,
+                            'phone' => $studData['phone'] ?? $studData['telepon'] ?? null,
 
                             'sks_completed' => (int) ($studData['total_sks'] ?? $studData['sks_lulus'] ?? $studData['sks_completed'] ?? 0),
                             'gpa' => (float) ($studData['ipk'] ?? $studData['gpa'] ?? 0),
 
                             'status_bta_ppi' => $studData['status_bta_ppi'] ?? 'BELUM_LULUS',
+                            'status_aktif' => $studData['status_aktif'] ?? null,
+                            'is_paid_ukt' => (bool) ($studData['is_paid_ukt'] ?? false),
                             'semester' => (int) ($studData['semester'] ?? $studData['semester_aktif'] ?? 0),
                             'master_synced_at' => $now,
                         ]
                     );
+                    
                     if ($mahasiswa->wasRecentlyCreated) {
                         $stats['total_created']++;
                     } else {
@@ -647,7 +698,7 @@ class SyncMasterData extends Command
         }
 
         $endTime = now();
-        $duration = $endTime->diffInSeconds($startTime);
+        $duration = (int) $endTime->diffInSeconds($startTime);
 
         SyncLog::create([
             'sync_type' => $isDelta ? 'delta' : 'full',
@@ -700,8 +751,16 @@ class SyncMasterData extends Command
             return $incoming;
         }
 
-        $fallback = Str::upper((string) Str::of($programName)->ascii()->replaceMatches('/[^A-Za-z0-9]/', '')->substr(0, 10));
+        // Gunakan prodi_id/master_id sebagai code, bukan 'id' (yang bisa berisi student id)
+        $masterId = $this->normalizeMasterId(
+            $programData['prodi_id'] ?? $programData['master_id'] ?? $programData['program_id'] ?? null
+        );
+        $cleanName = Str::upper((string) Str::of($programName)->ascii()->replaceMatches('/[^A-Za-z0-9]/', '')->substr(0, 10));
 
-        return $fallback !== '' ? $fallback : 'PRODI';
+        if ($cleanName === '' || $cleanName === 'UNKNOWNPRO') {
+            return $masterId ? 'PR-' . $masterId : 'PRODI-' . Str::random(4);
+        }
+
+        return $cleanName;
     }
 }

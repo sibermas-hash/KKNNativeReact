@@ -37,8 +37,7 @@ class EnsureUserIsActive
             // For web requests, redirect to login
             Auth::logout();
 
-            return redirect()
-                ->route('login')
+            return redirect(url('/login'))
                 ->withErrors([
                     'email' => 'Akun Anda telah dinonaktifkan. Silakan hubungi administrator.',
                 ]);

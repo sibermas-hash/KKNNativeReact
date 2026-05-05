@@ -3,16 +3,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api } from '@/lib/api';
+import { api, studentApi } from '@/lib/api';
 import Link from 'next/link';
 import { Plus, Plane } from 'lucide-react';
 import { StatusBadge, EmptyState } from '@/components/ui/shared';
 
 export default function IzinPage() {
-  const endpoints = studentEndpoints(api);
+  
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.leaveRequests,
-    queryFn: async () => { const res = await endpoints.leaveRequests.index(); return (res.data as { success: boolean; data: { izin: unknown[] } }).data; },
+    queryFn: async () => { const res = await studentApi.leaveRequests.index(); return res; },
   });
 
   const izinList = data?.izin || [];

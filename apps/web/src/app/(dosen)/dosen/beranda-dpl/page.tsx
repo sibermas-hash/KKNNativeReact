@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { dplEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api } from '@/lib/api';
+import { api, dplApi } from '@/lib/api';
 import { useAuthStore } from '@/stores';
 import {
   Users, FileText, CheckCircle2, MapPin, AlertTriangle,
@@ -32,13 +32,13 @@ function StatBox({ label, value, icon: Icon, color }: { label: string; value: st
 
 export default function DplDashboardPage() {
   const { user } = useAuthStore();
-  const endpoints = dplEndpoints(api);
+  
 
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.dpl.dashboard,
     queryFn: async () => {
-      const res = await endpoints.dashboard();
-      return (res.data as { success: boolean; data: Record<string, unknown> }).data;
+      const res = await dplApi.dashboard() as unknown as { success: boolean; data: Record<string, unknown> };
+      return res.data;
     },
   });
 

@@ -3,17 +3,17 @@
 import { useQuery } from '@tanstack/react-query';
 import { dplEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api } from '@/lib/api';
+import { api, dplApi } from '@/lib/api';
 import { useParams } from 'next/navigation';
 
 export default function GroupDetailPage() {
   const { id } = useParams();
-  const endpoints = dplEndpoints(api);
+  
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.dpl.group(Number(id)),
     queryFn: async () => {
-      const res = await endpoints.groups.show(Number(id));
-      return (res.data as { success: boolean; data: Record<string, unknown> }).data;
+      const res = await dplApi.groups.show(Number(id));
+      return res;
     },
     enabled: !!id,
   });

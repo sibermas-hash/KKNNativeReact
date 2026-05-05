@@ -11,7 +11,7 @@ export default function DplAssignmentPage() {
     queryKey: ['admin', 'dpl-assignment'],
     queryFn: async () => {
       const res = await api.get('/admin/dosen/penugasan');
-      return res.data as { success: boolean; data: unknown[] };
+      return (res as unknown as { success: boolean; data: unknown[] }).data;
     },
   });
 

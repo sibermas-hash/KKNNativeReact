@@ -30,32 +30,30 @@ class EnsurePasswordChanged
             return $next($request);
         }
 
-        // Allow access to password change page, profile, and logout
+        // Allow access to password change page, profile, auth routes, and logout
         $routeName = $request->route()?->getName();
+        $path = $request->path();
 
-        if ($routeName && in_array($routeName, [
-            'profile.password-change',
-            'profile.password',
-            'profile.show',
-            'keluar',
-            'logout',
-        ], true)) {
+        // Bypass auth routes and profile routes (both legacy and API)
+        $allowedRoutes = [
+            'profile.password-change', 'profile.password', 'profile.show', 'profile.avatar',
+            'api.v1.profile.show', 'api.v1.profile.update', 'api.v1.profile.avatar', 'api.v1.profile.password',
+            'logout', 'keluar',
+        ];
+
+        if (($routeName && in_array($routeName, $allowedRoutes, true))
+            || str_starts_with($path, 'api/v1/auth/')
+            || str_starts_with($path, 'api/v1/profile')) {
             return $next($request);
         }
 
-        // API: return JSON envelope
-        if ($request->is('api/*') || $request->expectsJson()) {
-            return response()->json([
-                'success' => false,
-                'error' => [
-                    'code' => 'PASSWORD_CHANGE_REQUIRED',
-                    'message' => 'Demi keamanan, Anda wajib mengganti kata sandi default sebelum dapat mengakses portal SIBERMAS.',
-                ],
-            ], 403);
-        }
-
-        return redirect()
-            ->route('profile.password-change')
-            ->with('warning', 'Demi keamanan, Anda wajib mengganti kata sandi default sebelum dapat mengakses portal SIBERMAS.');
+        // Always return JSON 403 — this is a headless API, no web routes for profile pages
+        return response()->json([
+            'success' => false,
+            'error' => [
+                'code' => 'PASSWORD_CHANGE_REQUIRED',
+                'message' => 'Demi keamanan, Anda wajib mengganti kata sandi default sebelum dapat mengakses portal SIBERMAS.',
+            ],
+        ], 403);
     }
 }

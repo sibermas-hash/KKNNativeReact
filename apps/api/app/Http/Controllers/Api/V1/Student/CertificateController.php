@@ -47,7 +47,7 @@ class CertificateController extends Controller
         }
 
         return $this->success([
-            'download_url' => route('admin.grade-reports.sertifikat', $sertifikat->nilai_kkn_id),
+            'download_url' => url("/api/v1/student/certificates/{$sertifikat->id}/download"),
             'certificate_number' => $sertifikat->certificate_number,
         ]);
     }

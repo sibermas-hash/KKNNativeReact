@@ -24,7 +24,8 @@ class SyncDosenJob implements ShouldQueue
     public int $backoff = 30;
 
     public function __construct(
-        protected ?string $dosenId = null
+        protected ?string $dosenId = null,
+        protected ?string $since = null,
     ) {}
 
     public function handle(MasterApiService $masterApi): void
@@ -82,9 +83,10 @@ class SyncDosenJob implements ShouldQueue
 
     protected function syncAllDosen(MasterApiService $masterApi): void
     {
-        Log::info('SyncDosenJob: syncing all dosen from API');
+        Log::info('SyncDosenJob: syncing dosen from API', ['since' => $this->since]);
 
-        $lecturers = $masterApi->getSyncDosen();
+        // Use yieldSyncDosen for memory-efficient streaming with optional delta sync
+        $lecturers = $masterApi->yieldSyncDosen($this->since);
         $synced = 0;
         $errors = 0;
 
@@ -101,9 +103,10 @@ class SyncDosenJob implements ShouldQueue
             }
         }
 
-        Log::info('SyncDosenJob: completed full sync', [
+        Log::info('SyncDosenJob: completed sync', [
             'synced' => $synced,
             'errors' => $errors,
+            'mode' => $this->since ? 'delta' : 'full',
         ]);
     }
 

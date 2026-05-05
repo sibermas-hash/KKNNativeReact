@@ -1,13 +1,7 @@
 import axios, { type AxiosInstance, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 
-/**
- * Interceptor decision: Return response.data (the full envelope)
- * to allow consumers access to 'success', 'message', 'data', 'meta', and 'links'.
- * 
- * NOTE: Most consumers in apps/web currently unwrap manually using .data.
- * We maintain this consistency but document it here.
- */
-function handleResponse<T>(response: AxiosResponse): T {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function handleResponse(response: AxiosResponse): any {
   return response.data;
 }
 
@@ -41,8 +35,18 @@ export function createWebClient(baseURL?: string): AxiosInstance {
   client.interceptors.response.use(
     (response: AxiosResponse) => handleResponse(response),
     (error) => {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        emitLogout();
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          emitLogout();
+        } else if (error.response?.status === 403 && error.response?.data?.error?.code === 'PASSWORD_CHANGE_REQUIRED') {
+          if (typeof window !== 'undefined' && window.dispatchEvent) {
+            window.dispatchEvent(new CustomEvent('auth:require_password_change'));
+          }
+        } else if (error.response?.status === 403 && error.response?.data?.error?.code === 'PROFILE_INCOMPLETE') {
+          if (typeof window !== 'undefined' && window.dispatchEvent) {
+            window.dispatchEvent(new CustomEvent('auth:profile_incomplete'));
+          }
+        }
       }
       return handleError(error);
     },

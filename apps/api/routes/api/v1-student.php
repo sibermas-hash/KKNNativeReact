@@ -3,11 +3,15 @@
 use App\Http\Controllers\Api\V1\Student\CertificateController;
 use App\Http\Controllers\Api\V1\Student\DailyReportController;
 use App\Http\Controllers\Api\V1\Student\DashboardController;
+use App\Http\Controllers\Api\V1\Student\DomisiliController;
 use App\Http\Controllers\Api\V1\Student\DplEvaluationController;
 use App\Http\Controllers\Api\V1\Student\FinalReportController;
 use App\Http\Controllers\Api\V1\Student\IzinController;
+use App\Http\Controllers\Api\V1\Student\PoskoController;
 use App\Http\Controllers\Api\V1\Student\RegistrationController;
+use App\Http\Controllers\Api\V1\Student\RegistrationDocumentController;
 use App\Http\Controllers\Api\V1\Student\WorkProgramController;
+use App\Http\Controllers\Api\V1\Student\WorkshopController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -59,4 +63,18 @@ Route::prefix('student')
         // DPL Evaluation
         Route::get('/dpl-evaluation/form', [DplEvaluationController::class, 'index'])->name('api.v1.student.dpl-evaluation.index');
         Route::post('/dpl-evaluation', [DplEvaluationController::class, 'store'])->name('api.v1.student.dpl-evaluation.store');
+
+        // Workshops
+        Route::get('/workshops', [WorkshopController::class, 'index'])->name('api.v1.student.workshops.index');
+
+        // Posko
+        Route::get('/posko', [PoskoController::class, 'show'])->name('api.v1.student.posko.show');
+        Route::post('/posko', [PoskoController::class, 'store'])->name('api.v1.student.posko.store');
+
+        // Domisili
+        Route::get('/domisili', [DomisiliController::class, 'show'])->name('api.v1.student.domisili.show');
+        Route::post('/domisili', [DomisiliController::class, 'store'])->name('api.v1.student.domisili.store');
+
+        // Registration Documents
+        Route::post('/registration/{id}/documents', [RegistrationDocumentController::class, 'store'])->name('api.v1.student.registration.documents');
     });

@@ -27,9 +27,15 @@ export default function TabLayout() {
       tabBarStyle: { borderTopWidth: 1, borderTopColor: '#e2e8f0', paddingBottom: 4, height: 60 },
     }}>
       <Tabs.Screen name="index" options={{ title: 'Dashboard', headerTitle: 'SIBERMAS', tabBarIcon: ({ focused }) => <TabIcon icon="📊" focused={focused} /> }} />
-      <Tabs.Screen name="reports" options={{ title: 'Laporan', tabBarIcon: ({ focused }) => <TabIcon icon="📋" focused={focused} /> }} />
-      <Tabs.Screen name="activities" options={{ title: 'Kegiatan', tabBarIcon: ({ focused }) => <TabIcon icon="🎯" focused={focused} /> }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profil', tabBarIcon: ({ focused }) => <TabIcon icon="👤" focused={focused} /> }} />
+      <Tabs.Screen name="workshops" options={{ title: 'Pembekalan', headerTitle: 'KKN Pembekalan', tabBarIcon: ({ focused }) => <TabIcon icon="🎓" focused={focused} /> }} />
+      <Tabs.Screen name="posko" options={{ title: 'Posko', headerTitle: 'Posko Kelompok', tabBarIcon: ({ focused }) => <TabIcon icon="📍" focused={focused} /> }} />
+      <Tabs.Screen name="domisili" options={{ title: 'Domisili', headerTitle: 'Domisili KKN', tabBarIcon: ({ focused }) => <TabIcon icon="🏠" focused={focused} /> }} />
+      <Tabs.Screen name="registration" options={{ title: 'Pendaftaran', headerTitle: 'Pendaftaran KKN', tabBarIcon: ({ focused }) => <TabIcon icon="📝" focused={focused} /> }} />
+      <Tabs.Screen name="reports" options={{ title: 'Laporan', headerTitle: 'Laporan KKN', tabBarIcon: ({ focused }) => <TabIcon icon="📋" focused={focused} /> }} />
+      <Tabs.Screen name="activities" options={{ title: 'Kegiatan', headerTitle: 'Kegiatan Harian', tabBarIcon: ({ focused }) => <TabIcon icon="🎯" focused={focused} /> }} />
+      <Tabs.Screen name="work-programs" options={{ title: 'Proker', headerTitle: 'Program Kerja', tabBarIcon: ({ focused }) => <TabIcon icon="📌" focused={focused} /> }} />
+      <Tabs.Screen name="poster" options={{ title: 'Poster', headerTitle: 'Poster Potensi Desa', tabBarIcon: ({ focused }) => <TabIcon icon="🗺️" focused={focused} /> }} />
+      <Tabs.Screen name="profile" options={{ title: 'Profil', headerTitle: 'Profil Mahasiswa', tabBarIcon: ({ focused }) => <TabIcon icon="👤" focused={focused} /> }} />
     </Tabs>
   );
 }

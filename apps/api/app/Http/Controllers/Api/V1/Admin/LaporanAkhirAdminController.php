@@ -10,6 +10,7 @@ use App\Http\Traits\ApiResponse;
 use App\Models\KKN\LaporanAkhir;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class LaporanAkhirAdminController extends Controller
 {
@@ -32,5 +33,12 @@ class LaporanAkhirAdminController extends Controller
         $request->validate(['status' => ['required', 'string', 'in:approved,revision'], 'review_notes' => ['nullable', 'string']]);
         $report->update(['status' => $request->input('status'), 'reviewed_by' => auth()->id(), 'reviewed_at' => now(), 'review_notes' => $request->input('review_notes')]);
         return $this->success(new LaporanAkhirResource($report->refresh()), 'Status laporan diperbarui.');
+    }
+
+    public function download(LaporanAkhir $report)
+    {
+        abort_if(! $report->file_path || ! Storage::exists($report->file_path), 404, 'File laporan tidak ditemukan.');
+
+        return Storage::download($report->file_path, 'Laporan_Akhir_' . ($report->title ?? $report->id) . '.pdf');
     }
 }

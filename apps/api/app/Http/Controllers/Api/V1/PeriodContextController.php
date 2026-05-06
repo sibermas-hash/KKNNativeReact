@@ -21,7 +21,7 @@ class PeriodContextController extends Controller
     /**
      * GET /api/v1/period-context
      * Returns the active period, available periods, and current phase.
-     * Replaces HandleInertiaRequests and HandleActivePeriod shared data.
+     * Replaces legacy middleware shared data for SPA consumption.
      */
     public function show(Request $request): JsonResponse
     {

@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\V1\Dpl\IzinController;
 use App\Http\Controllers\Api\V1\Dpl\MonitoringController;
 use App\Http\Controllers\Api\V1\Dpl\ParticipantFeedbackController;
 use App\Http\Controllers\Api\V1\Dosen\DashboardController as DosenDashboardController;
+use App\Http\Controllers\Api\V1\Dosen\DplRegistrationController;
+use App\Http\Controllers\Api\V1\Dosen\WorkshopController as DosenWorkshopController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,14 +21,23 @@ use Illuminate\Support\Facades\Route;
 
 // Dosen routes (all dosen can access)
 Route::prefix('dosen')
-    ->middleware(['auth:sanctum', 'role:dosen|dpl|superadmin'])
+    ->middleware(['auth:sanctum', 'role:dosen|dpl|superadmin', 'not_locked'])
     ->group(function () {
         Route::get('/dashboard', [DosenDashboardController::class, 'index'])->name('api.v1.dosen.dashboard');
+
+        // Workshop — semua dosen bisa akses
+        Route::get('/workshops', [DosenWorkshopController::class, 'index'])->name('api.v1.dosen.workshops.index');
+        Route::post('/workshops/{workshopId}/register', [DosenWorkshopController::class, 'register'])->name('api.v1.dosen.workshops.register');
+        Route::get('/workshops/my-certificates', [DosenWorkshopController::class, 'myCertificates'])->name('api.v1.dosen.workshops.certificates');
+        Route::get('/workshops/{participant}/certificate', [DosenWorkshopController::class, 'downloadCertificate'])->name('api.v1.dosen.workshops.certificate.download');
+
+        // Pendaftaran DPL
+        Route::post('/daftar-dpl', [DplRegistrationController::class, 'store'])->name('api.v1.dosen.daftar-dpl');
     });
 
 // DPL routes (only approved DPL can access)
 Route::prefix('dpl')
-    ->middleware(['auth:sanctum', 'role:dpl|superadmin'])
+    ->middleware(['auth:sanctum', 'role:dpl|superadmin', 'not_locked'])
     ->group(function () {
         // Dashboard
         Route::get('/dashboard', [DplDashboardController::class, 'index'])->name('api.v1.dpl.dashboard');
@@ -41,6 +52,8 @@ Route::prefix('dpl')
         Route::patch('/daily-reports/{dailyReport}/approve', [DailyReportController::class, 'approve'])->name('api.v1.dpl.daily-reports.approve');
         Route::patch('/daily-reports/{dailyReport}/revision', [DailyReportController::class, 'revision'])->name('api.v1.dpl.daily-reports.revision');
         Route::post('/daily-reports/batch-approve', [DailyReportController::class, 'batchApprove'])->name('api.v1.dpl.daily-reports.batch-approve');
+        Route::get('/daily-reports/file/{fileKegiatan}/download', [DailyReportController::class, 'downloadFile'])->name('api.v1.dpl.daily-reports.files.download');
+        Route::get('/daily-reports/file/{fileKegiatan}/preview', [DailyReportController::class, 'previewFile'])->name('api.v1.dpl.daily-reports.files.preview');
 
         // Evaluations
         Route::get('/evaluations', [EvaluationController::class, 'index'])->name('api.v1.dpl.evaluations.index');
@@ -53,9 +66,11 @@ Route::prefix('dpl')
         Route::get('/final-reports/{report}', [FinalReportController::class, 'show'])->name('api.v1.dpl.final-reports.show');
         Route::patch('/final-reports/{report}/approve', [FinalReportController::class, 'approve'])->name('api.v1.dpl.final-reports.approve');
         Route::patch('/final-reports/{report}/revision', [FinalReportController::class, 'revision'])->name('api.v1.dpl.final-reports.revision');
+        Route::get('/final-reports/{report}/download', [FinalReportController::class, 'download'])->name('api.v1.dpl.final-reports.download');
 
         // Monitoring
         Route::get('/monitoring', [MonitoringController::class, 'index'])->name('api.v1.dpl.monitoring.index');
+        Route::get('/monitoring/buat', [MonitoringController::class, 'create'])->name('api.v1.dpl.monitoring.create');
         Route::post('/monitoring', [MonitoringController::class, 'store'])->name('api.v1.dpl.monitoring.store');
 
         // Leave Requests

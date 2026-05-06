@@ -20,7 +20,7 @@ export default function EditDailyReportPage() {
     queryKey: ['student', 'daily-report', Number(id)],
     queryFn: async () => {
       const res = await studentApi.dailyReports.show(Number(id));
-      return res;
+      return (res as any).data ?? res;
     },
     enabled: !!id,
   });

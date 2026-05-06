@@ -5,7 +5,8 @@
   "main": "src/index.ts",
   "types": "src/index.ts",
   "scripts": {
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test": "vitest run"
   },
   "peerDependencies": {
     "axios": "^1.7.0"
@@ -13,6 +14,8 @@
   "devDependencies": {
     "typescript": "^5.7.0",
     "@types/node": "^22.0.0",
-    "@sibermas/shared-types": "workspace:*"
+    "@sibermas/shared-types": "workspace:*",
+    "vitest": "^4.1.5",
+    "axios": "^1.9.0"
   }
 }

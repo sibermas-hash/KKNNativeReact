@@ -37,7 +37,7 @@ class SampleUserSeeder extends Seeder
         ]);
 
         $studentUser = User::firstOrCreate(
-            ['email' => 'student@kkn.uinsaizu.ac.id'],
+            ['email' => 'student@sibermas.uinsaizu.ac.id'],
             [
                 'username' => 'student',
                 'name' => 'Mahasiswa Contoh',
@@ -73,7 +73,7 @@ class SampleUserSeeder extends Seeder
         }
 
         $lecturerUser = User::firstOrCreate(
-            ['email' => 'dpl@kkn.uinsaizu.ac.id'],
+            ['email' => 'dpl@sibermas.uinsaizu.ac.id'],
             [
                 'username' => 'dpl',
                 'name' => 'DPL Contoh',

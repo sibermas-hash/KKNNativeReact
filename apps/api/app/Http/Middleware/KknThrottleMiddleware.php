@@ -16,14 +16,6 @@ class KknThrottleMiddleware extends ThrottleRequests
      */
     public function handle($request, $next, $maxAttempts = 60, $decayMinutes = 1, $prefix = ''): Response
     {
-        // Skip rate limiting in local environment completely
-        if (config('app.env') === 'local') {
-            \Log::debug('Rate limiting skipped (local env)', ['route' => $request->route()?->getName()]);
-
-            return $next($request);
-        }
-
-        // ... rest of the original code stays here
         // Define critical endpoints that need stricter limits
         $criticalEndpoints = [
             'password.email',

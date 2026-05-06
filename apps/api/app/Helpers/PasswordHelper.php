@@ -4,19 +4,22 @@ declare(strict_types=1);
 
 namespace App\Helpers;
 
-use Illuminate\Support\Str;
-
 class PasswordHelper
 {
     /**
-     * Generate a secure random default password.
-     *
-     * Returns a 12-character random password.
-     * The $birthDate and $username params are kept for backward compatibility
-     * but are no longer used in password generation.
+     * Generate default password from birth date in DDMMYYYY format.
+     * Falls back to username if birth date is not available.
      */
     public static function fromBirthDate(?string $birthDate, string $username): string
     {
-        return Str::password(12);
+        if ($birthDate) {
+            try {
+                return (new \DateTime($birthDate))->format('dmY');
+            } catch (\Exception) {
+                // fall through to fallback
+            }
+        }
+
+        return $username;
     }
 }

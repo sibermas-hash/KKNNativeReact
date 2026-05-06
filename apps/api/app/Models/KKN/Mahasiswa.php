@@ -29,6 +29,7 @@ class Mahasiswa extends Model
         'sks_completed',
         'gpa',
         'status_bta_ppi',
+        'status_aktif',
         'is_paid_ukt',
         'semester',
         'health_certificate_path',
@@ -37,6 +38,8 @@ class Mahasiswa extends Model
         'shirt_size',
         'birth_place',
         'birth_date',
+        'alamat',
+        'phone',
         'master_id',
         'master_synced_at',
         'domisili_lat',
@@ -49,8 +52,6 @@ class Mahasiswa extends Model
         'domisili_postal_code',
         'domisili_registered_at',
     ];
-
-    protected $guarded = [];
 
     protected function casts(): array
     {

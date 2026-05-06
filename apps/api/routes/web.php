@@ -12,17 +12,41 @@ Route::get('/login', function () {
     ], 401);
 })->name('login');
 
+// Password reset link — redirects to Next.js frontend with token
+Route::get('/password/reset/{token}', function (string $token) {
+    $frontendUrl = config('app.frontend_url', config('app.url'));
+    $email = request()->query('email');
+
+    return redirect($frontendUrl . '/atur-ulang-kata-sandi?token=' . $token . ($email ? '&email=' . urlencode($email) : ''));
+})->name('password.reset');
+
 // Health Check — public (load balancers)
 Route::get('/health', [HealthController::class, 'check'])->name('health');
+
+// Readiness Check — public (Kubernetes/Docker probes)
+Route::get('/ready', [HealthController::class, 'ready'])->name('ready');
 
 // Detailed health — restricted to internal/admin use
 Route::get('/health/detailed', [HealthController::class, 'detailed'])
     ->middleware('auth:sanctum')
     ->name('health.detailed');
 
-// Catch-all: redirect to Next.js frontend (strip host to prevent open redirect)
+// Catch-all: return JSON 404 for API paths, redirect to Next.js frontend for everything else.
 Route::fallback(function () {
-    $path = '/' . ltrim(request()->path(), '/');
-    $query = request()->getQueryString();
+    $request = request();
+
+    if ($request->is('api/*') || $request->expectsJson()) {
+        return response()->json([
+            'success' => false,
+            'error' => [
+                'code' => 'NOT_FOUND',
+                'message' => 'Endpoint tidak ditemukan.',
+            ],
+        ], 404);
+    }
+
+    $path = '/' . ltrim($request->path(), '/');
+    $query = $request->getQueryString();
+
     return redirect(config('app.url') . $path . ($query ? '?' . $query : ''), 302);
 });

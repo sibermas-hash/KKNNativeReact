@@ -1,11 +1,20 @@
 import { create } from 'zustand';
 import type { User, Period } from '@sibermas/shared-types';
-import { api } from '@/lib/api';
+import { api, authApi, periodContextApi } from '@/lib/api';
 
 export function setAuthToken(token: string | null) {
   if (token) {
-    // Web uses Sanctum cookie auth (withCredentials). Bearer token only for mobile fallback.
-    // Do NOT store in localStorage — XSS risk.
+    // Web: Set cookie for middleware auth check + Axios header
+    // Note: Client-side cookies cannot be HttpOnly. Use Secure + SameSite for XSS protection.
+    const isSecure = window.location.protocol === 'https:';
+    const cookieOptions = [
+      'path=/',
+      `max-age=${60 * 60 * 24 * 7}`, // 7 days
+      'samesite=strict',
+      isSecure ? 'secure' : '',
+    ].filter(Boolean).join('; ');
+
+    document.cookie = `sibermas_token=${token}; ${cookieOptions}`;
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
   } else {
     document.cookie = 'sibermas_token=; path=/; max-age=0';
@@ -48,15 +57,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   fetchUser: async () => {
     if (get().hasFetched) return;
     try {
-      const res = await api.get('/auth/user') as unknown as { success: boolean; data: User };
-      if (res.success && res.data) {
-        set({ user: res.data, isAuthenticated: true, isLoading: false, hasFetched: true });
+      // handleResponse in client.ts already extracts response.data.data,
+      // so the result is the User object directly.
+      const user = await authApi.user() as unknown as User | null;
+      if (user && typeof user === 'object' && 'id' in user) {
+        set({ user, isAuthenticated: true, isLoading: false, hasFetched: true });
       } else {
         set({ user: null, isAuthenticated: false, isLoading: false, hasFetched: true });
       }
     } catch {
       set({ user: null, isAuthenticated: false, isLoading: false });
-      // hasFetched stays false — allows retry on next navigation
     }
   },
 }));
@@ -80,19 +90,18 @@ export const usePeriodStore = create<PeriodState>((set, get) => ({
   fetchPeriodContext: async () => {
     if (get().hasFetched) return;
     try {
-      const res = await api.get('/period-context') as unknown as {
-        success: boolean;
-        data: {
-          active_period: Period | null;
-          available_periods: Period[];
-          current_phase: string;
-        };
-      };
-      if (res.success) {
+      // handleResponse in client.ts already extracts response.data.data,
+      // so the result is the period context object directly.
+      const data = await periodContextApi.get() as unknown as {
+        active_period: Period | null;
+        available_periods: Period[];
+        current_phase: string;
+      } | null;
+      if (data) {
         set({
-          activePeriod: res.data.active_period,
-          availablePeriods: res.data.available_periods,
-          currentPhase: res.data.current_phase,
+          activePeriod: data.active_period,
+          availablePeriods: data.available_periods,
+          currentPhase: data.current_phase,
           isLoading: false,
           hasFetched: true,
         });
@@ -101,7 +110,6 @@ export const usePeriodStore = create<PeriodState>((set, get) => ({
       }
     } catch {
       set({ isLoading: false });
-      // hasFetched stays false — allows retry
     }
   },
 }));

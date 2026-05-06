@@ -17,7 +17,7 @@ export default function DplReportDetailPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['dpl', 'daily-report', Number(id)],
-    queryFn: async () => { const res = await dplApi.dailyReports.show(Number(id)); return res; },
+    queryFn: async () => { const res = await dplApi.dailyReports.show(Number(id)); return (res as any).data ?? res; },
     enabled: !!id,
   });
 

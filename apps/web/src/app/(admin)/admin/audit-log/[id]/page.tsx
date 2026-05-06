@@ -9,11 +9,11 @@ export default function AuditLogDetailPage() {
   const { id } = useParams();
   
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<Record<string, unknown>>({
     queryKey: ['admin', 'audit-log', Number(id)],
     queryFn: async () => {
       const res = await adminApi.auditLog.show(Number(id));
-      return res;
+      return (res as any).data;
     },
     enabled: !!id,
   });

@@ -30,24 +30,6 @@ class Dosen extends Model
         'status' => 'string',
     ];
 
-    public string $nip;
-
-    public string $nama;
-
-    public string $email;
-
-    public ?string $telepon = null;
-
-    public ?string $gelar_depan = null;
-
-    public ?string $gelar_belakang = null;
-
-    public ?string $jabatan = null;
-
-    public ?string $prodi = null;
-
-    public string $status;
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id')->whereNotNull('user_id');

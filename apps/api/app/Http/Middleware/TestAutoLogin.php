@@ -13,16 +13,29 @@ class TestAutoLogin
 {
     /**
      * Handle an incoming request.
-     * Automatically logs in a user if X-Test-Login header is present (Local Environment Only).
+     * Automatically logs in a user if X-Test-Login header is present (Testing ONLY).
+     *
+     * SECURITY WARNING: This bypasses authentication and should only be used in:
+     * - Local development environment
+     * - Explicitly enabled via X-Test-Mode: enabled header
+     *
+     * Never deploy this to production without disabling it.
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // SECURITY: Only allow when explicitly enabled via config AND header is present.
+        // NEVER use config('app.env') for security decisions.
+        $testAutoLoginEnabled = config('auth.test_auto_login_enabled', false);
+        $testModeEnabled = $request->header('X-Test-Mode') === 'enabled';
+
+        if (! ($testAutoLoginEnabled && $testModeEnabled)) {
+            return $next($request);
+        }
+
         $testLoginHeader = $request->header('X-Test-Login');
         $bearerToken = $request->bearerToken();
-        $isLocal = config('app.env') === 'local';
 
-        // Translate hardcoded TestSprite bearer tokens into X-Test-Login values
-        if ($isLocal && ! $testLoginHeader && $bearerToken) {
+        if (! $testLoginHeader && $bearerToken) {
             $tokenStr = strtolower($bearerToken);
             if (str_contains($tokenStr, 'non-admin') || str_contains($tokenStr, 'non_admin') || str_contains($tokenStr, 'nonadm')) {
                 $testLoginHeader = 'student';
@@ -35,46 +48,37 @@ class TestAutoLogin
 
         $isSensitivePath = $request->is('mahasiswa*', 'admin*', 'api*', 'dpl*');
 
-        // Fallback: If it has a Bearer token and hits a student route, assume it's a student token
-        if ($isLocal && ! $testLoginHeader && $bearerToken && $request->is('mahasiswa*')) {
-            $testLoginHeader = 'student';
-        }
-        // Force Accept: application/json for headless API tests so Laravel returns 401/422 instead of 302 redirects
-        if ($isLocal && $isSensitivePath) {
+        if ($isSensitivePath) {
             $request->headers->set('Accept', 'application/json');
             $_SERVER['HTTP_ACCEPT'] = 'application/json';
         }
 
-        if ($isLocal && ($testLoginHeader || $request->hasHeader('Authorization') || $isSensitivePath)) {
-            if ($testLoginHeader) {
-                $username = $testLoginHeader;
-                \Log::info('TestAutoLogin: Attempting login for '.$username.' based on token/header.');
+        if ($testLoginHeader) {
+            $username = $testLoginHeader;
+            \Log::info('TestAutoLogin: Attempting login for '.$username.' based on token/header.');
 
-                $user = User::where('username', $username)->first();
+            $user = User::where('username', $username)->first();
 
-                if ($user) {
-                    // Full login for test stability
-                    auth('web')->login($user);
-                    $request->setUserResolver(fn () => $user);
+            if ($user) {
+                auth('web')->login($user);
+                $request->setUserResolver(fn () => $user);
 
-                    // Strictly bind roles to the mock identities for local testing:
-                    if ($username === 'student' && ! $user->hasRole('student')) {
-                        $user->assignRole('student');
-                    }
-                    if ($username === 'admin' && ! $user->hasRole('superadmin')) {
-                        $user->assignRole('superadmin');
-                    }
-                    if ($username === 'dpl' && ! $user->hasRole('dosen')) {
-                        $user->assignRole('dosen');
-                    }
-                    if ($username === 'dpl' && ! $user->hasRole('dpl')) {
-                        $user->assignRole('dpl');
-                    }
-
-                    \Log::info('TestAutoLogin: Success. Logged in User ID: '.$user->id);
-                } else {
-                    \Log::warning('TestAutoLogin: User not found: '.$username);
+                if ($username === 'student' && ! $user->hasRole('student')) {
+                    $user->assignRole('student');
                 }
+                if ($username === 'admin' && ! $user->hasRole('superadmin')) {
+                    $user->assignRole('superadmin');
+                }
+                if ($username === 'dpl' && ! $user->hasRole('dosen')) {
+                    $user->assignRole('dosen');
+                }
+                if ($username === 'dpl' && ! $user->hasRole('dpl')) {
+                    $user->assignRole('dpl');
+                }
+
+                \Log::info('TestAutoLogin: Success. Logged in User ID: '.$user->id);
+            } else {
+                \Log::warning('TestAutoLogin: User not found: '.$username);
             }
         }
 

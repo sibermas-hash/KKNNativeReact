@@ -14,7 +14,7 @@ export default function DashboardScreen() {
     queryKey: ['student', 'dashboard'],
     queryFn: async () => {
       const res = await endpoints.dashboard();
-      return res;
+      return res.data;
     },
   });
 

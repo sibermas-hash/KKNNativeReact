@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Api\V1\EvaluasiDplPesertaResource;
 use App\Http\Traits\ApiResponse;
-use App\Models\KKN\EvaluasiDplPeserta;
+use App\Models\KKN\Dosen;
+use App\Services\KKN\DplParticipantEvaluationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -15,14 +15,34 @@ class DplParticipantEvaluationController extends Controller
 {
     use ApiResponse;
 
+    public function __construct(private readonly DplParticipantEvaluationService $service) {}
+
     public function index(Request $request): JsonResponse
     {
-        $query = EvaluasiDplPeserta::with(['mahasiswa.user', 'dosen.user', 'items'])
-            ->when($request->input('dosen_id'), fn ($q, $id) => $q->where('dosen_id', $id))
-            ->orderByDesc('created_at');
+        $data = $this->service->adminOverview(
+            $request->user(),
+            $request->only(['period_id', 'search', 'recommendation'])
+        );
 
-        $evaluations = $query->paginate($request->input('per_page', 25));
+        return $this->success($data);
+    }
 
-        return $this->successCollection(EvaluasiDplPesertaResource::collection($evaluations));
+    public function show(Request $request, Dosen $dosen): JsonResponse
+    {
+        $data = $this->service->adminDetail(
+            $request->user(),
+            $dosen,
+            $request->filled('period_id') ? $request->integer('period_id') : null
+        );
+
+        return $this->success($data);
+    }
+
+    public function export(Request $request)
+    {
+        return $this->service->exportAdminOverview(
+            $request->user(),
+            $request->only(['period_id', 'search', 'recommendation'])
+        );
     }
 }

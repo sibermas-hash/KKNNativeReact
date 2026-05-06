@@ -37,7 +37,6 @@ use App\Http\Controllers\Api\V1\Admin\SystemSettingController;
 use App\Http\Controllers\Api\V1\Admin\TahunAkademikController;
 use App\Http\Controllers\Api\V1\Admin\UserController;
 use App\Http\Controllers\Api\V1\Admin\YudisiumController;
-use App\Http\Controllers\WorkshopController;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;
@@ -132,7 +131,6 @@ class EnsureAdminAuthorization
     protected array $settingControllers = [
         CertificateConfigController::class,
         SystemSettingController::class,
-        KonfigurasiPenilaianController::class,
     ];
 
     /**
@@ -146,7 +144,7 @@ class EnsureAdminAuthorization
      * List of controllers that require 'manage-workshops' permission
      */
     protected array $workshopControllers = [
-        WorkshopController::class,
+        \App\Http\Controllers\Api\V1\Admin\WorkshopController::class,
     ];
 
     /**

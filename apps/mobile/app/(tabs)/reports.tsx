@@ -12,7 +12,7 @@ export default function ReportsScreen() {
     queryKey: ['student', 'daily-reports'],
     queryFn: async () => {
       const res = await endpoints.dailyReports.index();
-      return res as { success: boolean; data: Record<string, unknown>[] };
+      return res.data as { success: boolean; data: Record<string, unknown>[] };
     },
   });
 

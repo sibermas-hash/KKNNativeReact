@@ -13,7 +13,7 @@ export default function CertificateConfigPage() {
     queryKey: ['admin', 'certificate-config'],
     queryFn: async () => {
       const res = await api.get('/admin/pengaturan/sertifikat');
-      return res;
+      return res.data;
     },
   });
 

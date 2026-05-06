@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1\Student;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\IzinMeninggalkan;
+use App\Services\IzinService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -14,69 +15,66 @@ class IzinController extends Controller
 {
     use ApiResponse;
 
+    public function __construct(
+        private readonly IzinService $izinService,
+    ) {}
+
     public function index(): JsonResponse
     {
         $mahasiswa = auth()->user()?->mahasiswa;
 
         if (! $mahasiswa) {
-            return $this->success(['izin' => []]);
+            return $this->success(['izin' => [], 'akumulasi_tanpa_keterangan' => 0]);
         }
 
         $izin = IzinMeninggalkan::where('mahasiswa_id', $mahasiswa->id)
+            ->with(['kelompok'])
             ->orderByDesc('created_at')
             ->get();
 
         return $this->success([
             'izin' => $izin->map(fn ($i) => [
-                'id' => $i->id,
-                'type' => $i->type,
-                'reason' => $i->reason,
-                'start_date' => $i->start_date?->toDateString(),
-                'end_date' => $i->end_date?->toDateString(),
-                'status' => $i->status,
-                'rejection_reason' => $i->rejection_reason,
-                'file_url' => $i->file_bukti_path ? asset('storage/'.$i->file_bukti_path) : null,
-                'created_at' => $i->created_at?->toIso8601String(),
+                'id'               => $i->id,
+                'tanggal_mulai'    => $i->tanggal_mulai?->toDateString(),
+                'tanggal_kembali'  => $i->tanggal_kembali?->toDateString(),
+                'durasi_hari'      => $i->durasi_hari,
+                'alasan'           => $i->alasan,
+                'status'           => $i->status,
+                'catatan_dpl'      => $i->catatan_dpl,
+                'file_url'         => $i->file_bukti ? asset('storage/'.$i->file_bukti) : null,
+                'created_at'       => $i->created_at?->toIso8601String(),
             ]),
+            'akumulasi_tanpa_keterangan' => $this->izinService->hitungAkumulasiTanpaKeterangan($mahasiswa->id),
         ]);
     }
 
     public function store(Request $request): JsonResponse
     {
-        $mahasiswa = auth()->user()?->mahasiswa;
+        $user = auth()->user();
+        $mahasiswa = $user?->mahasiswa;
         $registration = $mahasiswa?->peserta()->where('status', 'approved')->first();
 
         if (! $registration?->kelompok_id) {
             return $this->forbidden('Anda belum ditempatkan di kelompok.');
         }
 
-        $validated = $request->validate([
-            'type' => ['required', 'string', 'in:sakit,izin,keperluan_mendesak'],
-            'reason' => ['required', 'string', 'max:1000'],
-            'start_date' => ['required', 'date'],
-            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
-            'file_bukti' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+        $request->validate([
+            'tanggal_mulai'   => ['required', 'date', 'after_or_equal:today'],
+            'tanggal_kembali' => ['required', 'date', 'after_or_equal:tanggal_mulai'],
+            'alasan'          => ['required', 'string', 'max:1000'],
+            'file_bukti'      => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
         ]);
 
-        $filePath = null;
         if ($request->hasFile('file_bukti')) {
-            $filePath = $request->file('file_bukti')->store('izin', config('filesystems.default'));
+            $path = $request->file('file_bukti')->store('evidence/perizinan', config('filesystems.default'));
+            $request->merge(['file_bukti' => $path]);
         }
 
-        $izin = IzinMeninggalkan::create([
-            'mahasiswa_id' => $mahasiswa->id,
-            'kelompok_id' => $registration->kelompok_id,
-            'type' => $validated['type'],
-            'reason' => $validated['reason'],
-            'start_date' => $validated['start_date'],
-            'end_date' => $validated['end_date'],
-            'file_bukti_path' => $filePath,
-            'status' => 'pending',
-        ]);
+        $izin = $this->izinService->ajukanIzin($user, $request->only('tanggal_mulai', 'tanggal_kembali', 'alasan', 'file_bukti'));
 
         return $this->created([
-            'id' => $izin->id,
+            'id'     => $izin->id,
             'status' => $izin->status,
-        ], 'Pengajuan izin berhasil dikirim.');
+        ], 'Permohonan izin berhasil diajukan.');
     }
 }

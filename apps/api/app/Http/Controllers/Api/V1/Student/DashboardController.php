@@ -37,9 +37,11 @@ class DashboardController extends Controller
         $registration = PesertaKkn::query()
             ->where('mahasiswa_id', $mahasiswa->id)
             ->when($activePeriodId, fn ($q) => $q->where('periode_id', $activePeriodId))
-            ->with(['periode.jenisKkn', 'kelompok.lokasi', 'kelompok.dosen' => function ($q) {
-                $q->wherePivot('role', 'Ketua');
-            }])
+            ->with([
+                'periode.jenisKkn',
+                'kelompok.lokasi',
+                'kelompok.dosen' => fn ($q) => $q->wherePivot('role', 'Ketua'),
+            ])
             ->latest('created_at')
             ->first();
 

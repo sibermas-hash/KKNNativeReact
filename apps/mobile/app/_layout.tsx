@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { Stack, useRouter, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -25,23 +25,37 @@ export default function RootLayout() {
   const { fetchUser, isAuthenticated, isLoading, user } = useAuthStore();
   const notificationListener = useRef<Notifications.EventSubscription>(null);
   const responseListener = useRef<Notifications.EventSubscription>(null);
+  const deviceTokenRegistered = useRef(false);
 
   useEffect(() => {
     fetchUser();
   }, [fetchUser]);
 
-  // Push notification setup
+  // Push notification setup - run once on mount
   useEffect(() => {
     setupAndroidChannels();
 
     registerForPushNotifications().then((token) => {
-      if (token && isAuthenticated) {
+      // Registration function - only called when auth state is confirmed
+      const registerToken = async () => {
+        if (!token || deviceTokenRegistered.current) return;
+
         const deviceId = Platform.OS === 'android' ? Application.getAndroidId() : Device.deviceName;
-        api.post('/device-tokens', {
-          token,
-          platform: Platform.OS,
-          device_id: deviceId || 'unknown',
-        }).catch((err) => console.warn('Failed to register device token:', err));
+        try {
+          await api.post('/device-tokens', {
+            token,
+            platform: Platform.OS,
+            device_id: deviceId || 'unknown',
+          });
+          deviceTokenRegistered.current = true;
+        } catch (err) {
+          console.warn('Failed to register device token:', err);
+        }
+      };
+
+      // Only register when user is authenticated and stable
+      if (isAuthenticated) {
+        registerToken();
       }
     });
 
@@ -55,6 +69,7 @@ export default function RootLayout() {
       if (responseListener.current) {
         Notifications.removeNotificationSubscription(responseListener.current);
       }
+      deviceTokenRegistered.current = false;
     };
   }, [isAuthenticated]);
 

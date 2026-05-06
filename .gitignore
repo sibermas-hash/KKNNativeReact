@@ -21,6 +21,9 @@ apps/api/.env.testing
 apps/api/.phpunit.result.cache
 apps/api/.phpunit.cache/
 
+# ── DebugBar
+apps/api/storage/debugbar/*
+
 # ── apps/web (Next.js) ─────────────────────────────
 apps/web/node_modules/
 apps/web/.next/

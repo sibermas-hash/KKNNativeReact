@@ -1,8 +1,18 @@
 import axios, { type AxiosInstance, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function handleResponse(response: AxiosResponse): any {
-  return response.data;
+// API Response shape - matches Laravel JSON API structure
+interface ApiResponse<T = unknown> {
+  success?: boolean;
+  data?: T;
+  error?: {
+    code?: string;
+    message?: string;
+    errors?: Record<string, string[]>;
+  };
+}
+
+function handleResponse<T = unknown>(response: AxiosResponse<ApiResponse<T>>): T {
+  return response.data.data as T;
 }
 
 function handleError(error: unknown): never {
@@ -57,7 +67,7 @@ export function createWebClient(baseURL?: string): AxiosInstance {
 
 export function createMobileClient(getToken: () => Promise<string | null>, baseURL?: string): AxiosInstance {
   const client = axios.create({
-    baseURL: baseURL || (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_API_URL) || 'https://sibermas.uinsaizu.ac.id/api/v1',
+    baseURL: baseURL || (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_API_URL) || undefined,
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',

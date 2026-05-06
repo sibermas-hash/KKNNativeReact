@@ -74,7 +74,8 @@ class WorkProgramController extends Controller
             'target_participants' => $validated['target_participants'] ?? null,
             'budget' => $validated['budget'] ?? null,
             'kategori' => $validated['kategori'] ?? null,
-            'status' => 'draft',
+            'status' => 'submitted',
+            'submitted_at' => now(),
         ]);
 
         return $this->created(

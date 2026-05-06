@@ -10,7 +10,7 @@ export default function PoskoPage() {
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'posko'],
-    queryFn: async () => { const res = await api.get('/student/posko'); return res; },
+    queryFn: async () => { const res = await api.get('/student/posko'); return (res as any).data ?? res; },
   });
 
   const mutation = useMutation({

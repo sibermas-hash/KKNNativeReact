@@ -17,14 +17,6 @@ class AutoSyncPeriodePhase extends Command
 
     protected $description = 'Automatically sync periode phase based on dates (cron job)';
 
-    private const PHASE_TRANSITIONS = [
-        'registration' => 'registration_end',
-        'placement' => 'end_date',
-        'execution' => 'end_date',
-        'grading' => 'grading_end',
-        'finished' => 'finished',
-    ];
-
     public function handle(): int
     {
         $dryRun = $this->option('dry-run');
@@ -37,7 +29,11 @@ class AutoSyncPeriodePhase extends Command
             ->get();
 
         if ($periods->isEmpty()) {
-            $this->info('No active periods found.');
+            $totalPeriods = Periode::count();
+            $activePeriods = Periode::where('is_active', true)->count();
+            $this->warn("No active periods found with valid phase.");
+            $this->info("Total periods: {$totalPeriods}, Active periods: {$activePeriods}");
+            $this->info("Make sure periods have 'is_active=true' AND 'current_phase' is not null.");
 
             return self::SUCCESS;
         }

@@ -7,12 +7,17 @@ namespace App\Http\Controllers\Api\V1\Dpl;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\IzinMeninggalkan;
+use App\Services\IzinService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class IzinController extends Controller
 {
     use ApiResponse;
+
+    public function __construct(
+        private readonly IzinService $izinService,
+    ) {}
 
     public function index(Request $request): JsonResponse
     {
@@ -24,8 +29,8 @@ class IzinController extends Controller
         $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
 
         $izin = IzinMeninggalkan::whereIn('kelompok_id', $groupIds)
-            ->with(['mahasiswa.user'])
-            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
+            ->with(['mahasiswa.user', 'kelompok'])
+            ->orderBy('status')
             ->orderByDesc('created_at')
             ->paginate($request->input('per_page', 25));
 
@@ -36,20 +41,32 @@ class IzinController extends Controller
 
     public function approve(IzinMeninggalkan $izin): JsonResponse
     {
-        $izin->update(['status' => 'approved']);
+        $this->authorizeDplAccess($izin);
 
-        return $this->success(['id' => $izin->id, 'status' => 'approved'], 'Izin disetujui.');
+        $this->izinService->setujuiIzin(auth()->user(), $izin);
+
+        return $this->success(['id' => $izin->id, 'status' => 'disetujui'], 'Izin berhasil disetujui.');
     }
 
     public function reject(Request $request, IzinMeninggalkan $izin): JsonResponse
     {
-        $request->validate(['rejection_reason' => ['required', 'string', 'max:500']]);
+        $this->authorizeDplAccess($izin);
 
-        $izin->update([
-            'status' => 'rejected',
-            'rejection_reason' => $request->input('rejection_reason'),
+        $validated = $request->validate([
+            'catatan' => ['required', 'string', 'max:500'],
         ]);
 
-        return $this->success(['id' => $izin->id, 'status' => 'rejected'], 'Izin ditolak.');
+        $this->izinService->tolakIzin(auth()->user(), $izin, $validated['catatan']);
+
+        return $this->success(['id' => $izin->id, 'status' => 'ditolak'], 'Izin berhasil ditolak.');
+    }
+
+    private function authorizeDplAccess(IzinMeninggalkan $izin): void
+    {
+        $dosen = auth()->user()->dosen;
+        abort_if(! $dosen, 403, 'Data dosen tidak ditemukan.');
+
+        $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
+        abort_unless($groupIds->contains($izin->kelompok_id), 403, 'Anda tidak memiliki akses ke izin ini.');
     }
 }

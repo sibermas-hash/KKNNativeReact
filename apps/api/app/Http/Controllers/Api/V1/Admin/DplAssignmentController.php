@@ -42,8 +42,20 @@ class DplAssignmentController extends Controller
 
     public function assignDistrictCoordinator(Request $request): JsonResponse
     {
-        $validated = $request->validate(['dosen_id' => ['required', 'exists:dosen,id'], 'district_id' => ['required', 'string'], 'periode_id' => ['required', 'exists:periode,id']]);
-        return $this->created(['id' => DplKecamatanAssignment::create($validated)->id], 'Koordinator kecamatan berhasil ditugaskan.');
+        $validated = $request->validate([
+            'dosen_id' => ['required', 'exists:dosen,id'],
+            'kecamatan_id' => ['required', 'string'],
+            'district_name' => ['nullable', 'string'],
+            'regency_name' => ['nullable', 'string'],
+            'periode_id' => ['required', 'exists:periode,id'],
+        ]);
+
+        $assignment = DplKecamatanAssignment::create(array_merge($validated, [
+            'assigned_by' => auth()->id(),
+            'is_active' => true,
+        ]));
+
+        return $this->created(['id' => $assignment->id], 'Koordinator kecamatan berhasil ditugaskan.');
     }
 
     public function import(Request $request): JsonResponse
@@ -56,6 +68,12 @@ class DplAssignmentController extends Controller
     {
         $dplPeriod->update(['is_active' => false]);
         return $this->noContent('DPL berhasil dilepas dari periode.');
+    }
+
+    public function removeDistrictCoordinator(DplKecamatanAssignment $districtCoordinator): JsonResponse
+    {
+        $districtCoordinator->delete();
+        return $this->noContent('Koordinator kecamatan berhasil dilepas.');
     }
 
     public function getAvailableDpl(Request $request): JsonResponse

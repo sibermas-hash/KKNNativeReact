@@ -28,7 +28,7 @@ export default function LoginScreen() {
   const fetchCaptcha = async () => {
     try {
       const res = await api.get('/auth/captcha');
-      const data = res as { success: boolean; data: { captcha_id: string; question: string } };
+      const data = res.data as { success: boolean; data: { captcha_id: string; question: string } };
       if (data.success) {
         setValue('captcha_id', data.data.captcha_id);
         setValue('captcha_answer', '');

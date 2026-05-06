@@ -10,11 +10,11 @@ export default function ActivitiesScreen() {
     queryKey: ['student', 'work-programs'],
     queryFn: async () => {
       const res = await endpoints.workPrograms.index();
-      return res;
+      return res.data;
     },
   });
 
-  const programs = data?.programs || [];
+  const programs = data?.data || [];
 
   return (
     <View style={styles.container}>

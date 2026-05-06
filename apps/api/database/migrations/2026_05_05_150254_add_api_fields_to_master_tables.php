@@ -69,7 +69,61 @@ return new class extends Migration
 
     public function down(): void
     {
-        // Standard down() implementation omitted for brevity as per mandates, 
-        // but typically would drop the added columns.
+        // 1. Drop Mahasiswa columns
+        if (Schema::hasTable('mahasiswa')) {
+            Schema::table('mahasiswa', function (Blueprint $table) {
+                if (Schema::hasColumn('mahasiswa', 'alamat')) {
+                    $table->dropColumn('alamat');
+                }
+                if (Schema::hasColumn('mahasiswa', 'phone')) {
+                    $table->dropColumn('phone');
+                }
+                if (Schema::hasColumn('mahasiswa', 'status_aktif')) {
+                    $table->dropColumn('status_aktif');
+                }
+                if (Schema::hasColumn('mahasiswa', 'nik')) {
+                    $table->dropColumn('nik');
+                }
+            });
+        }
+
+        // 2. Drop Dosen columns
+        if (Schema::hasTable('dosen')) {
+            Schema::table('dosen', function (Blueprint $table) {
+                if (Schema::hasColumn('dosen', 'status_aktif')) {
+                    $table->dropColumn('status_aktif');
+                }
+                if (Schema::hasColumn('dosen', 'status_pegawai')) {
+                    $table->dropColumn('status_pegawai');
+                }
+                if (Schema::hasColumn('dosen', 'no_rekening')) {
+                    $table->dropColumn('no_rekening');
+                }
+                if (Schema::hasColumn('dosen', 'nama_bank')) {
+                    $table->dropColumn('nama_bank');
+                }
+            });
+        }
+
+        // 3. Drop Fakultas columns
+        if (Schema::hasTable('fakultas')) {
+            Schema::table('fakultas', function (Blueprint $table) {
+                if (Schema::hasColumn('fakultas', 'short_name')) {
+                    $table->dropColumn('short_name');
+                }
+            });
+        }
+
+        // 4. Drop Prodi columns
+        if (Schema::hasTable('prodi')) {
+            Schema::table('prodi', function (Blueprint $table) {
+                if (Schema::hasColumn('prodi', 'short_name')) {
+                    $table->dropColumn('short_name');
+                }
+                if (Schema::hasColumn('prodi', 'jenjang')) {
+                    $table->dropColumn('jenjang');
+                }
+            });
+        }
     }
 };

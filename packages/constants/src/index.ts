@@ -8,7 +8,7 @@ export const QUERY_KEYS = {
   },
   student: {
     dashboard: ['student', 'dashboard'] as const,
-    dailyReports: (page?: number) => ['student', 'daily-reports', { page }] as const,
+    dailyReports: (page?: number, status?: string, search?: string) => ['student', 'daily-reports', { page, status, search }] as const,
     dailyReport: (id: number) => ['student', 'daily-reports', id] as const,
     workPrograms: ['student', 'work-programs'] as const,
     workProgram: (id: number) => ['student', 'work-programs', id] as const,
@@ -29,7 +29,7 @@ export const QUERY_KEYS = {
     dashboard: ['dpl', 'dashboard'] as const,
     groups: ['dpl', 'groups'] as const,
     group: (id: number) => ['dpl', 'groups', id] as const,
-    dailyReports: (page?: number) => ['dpl', 'daily-reports', { page }] as const,
+    dailyReports: (page?: number, status?: string, search?: string) => ['dpl', 'daily-reports', { page, status, search }] as const,
     dailyReport: (id: number) => ['dpl', 'daily-reports', id] as const,
     evaluations: ['dpl', 'evaluations'] as const,
     finalReports: ['dpl', 'final-reports'] as const,

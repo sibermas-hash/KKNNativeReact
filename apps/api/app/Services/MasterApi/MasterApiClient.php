@@ -100,7 +100,10 @@ class MasterApiClient
         while (true) {
             try {
                 $url = $this->baseUrl.$endpoint;
-                Log::debug("API Request: GET {$url}", ['params' => array_merge($params, ['page' => $page])]);
+                // Only log every 10th page to avoid massive log files
+                if ($page === 1 || $page % 10 === 0) {
+                    Log::debug("API Request: GET {$url}", ['page' => $page]);
+                }
 
                 $payload = $this->request($endpoint, array_merge($params, [
                     'page' => $page,
@@ -111,12 +114,6 @@ class MasterApiClient
                     Log::warning("API Response: Empty payload for {$endpoint} page {$page}");
                     break;
                 }
-
-                Log::debug("API Response: Success for {$endpoint} page {$page}", [
-                    'status' => $payload['status'] ?? 'unknown',
-                    'has_data_key' => isset($payload['data']),
-                    'data_is_array' => isset($payload['data']) && is_array($payload['data']),
-                ]);
 
                 // Format 1 — Laravel Resource Collection (SIAKAD aktual):
                 // { "data": [...], "meta": { "current_page": 1, "last_page": N }, "links": {...} }

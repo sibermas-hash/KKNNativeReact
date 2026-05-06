@@ -20,7 +20,7 @@ class AdminUserSeeder extends Seeder
         $forcedPassword = env('KKN_LOCAL_SEED_PASSWORD');
         $plainPassword = $forcedPassword ?: Str::password(16);
 
-        $user = User::firstOrNew(['email' => 'admin@kkn.uinsaizu.ac.id']);
+        $user = User::firstOrNew(['email' => 'admin@sibermas.uinsaizu.ac.id']);
         $wasRecentlyCreated = ! $user->exists;
 
         $user->username = 'admin';

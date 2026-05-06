@@ -15,11 +15,12 @@ class Fakultas extends Model
 
     protected $table = 'fakultas';
 
-    protected $fillable = ['nama', 'code', 'master_id', 'master_synced_at'];
+    protected $fillable = ['nama', 'code', 'short_name', 'level', 'master_id', 'master_synced_at'];
 
     protected function casts(): array
     {
         return [
+            'level' => 'integer',
             'master_synced_at' => 'datetime',
         ];
     }

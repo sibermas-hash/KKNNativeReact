@@ -1,20 +1,138 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { adminEndpoints } from '@sibermas/api-client';
-import { api, adminApi } from '@/lib/api';
+import { adminApi } from '@/lib/api';
+import Link from 'next/link';
+import { Activity, Search, FileText, Eye, RefreshCw, Filter } from 'lucide-react';
+import { PageHeader, DataTable, StatusBadge, StatCard, EmptyState } from '@/components/ui/shared';
 
 export default function AdminDailyReportsPage() {
-  
-  const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'daily-reports'],
-    queryFn: async () => { const res = await adminApi.grades.reports({}); return (res as unknown as { success: boolean; data: unknown[] }).data; },
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('');
+  const [page, setPage] = useState(1);
+
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ['admin', 'daily-reports', { search, status, page }],
+    queryFn: async () => {
+      const res = await (adminApi as unknown as {
+        dailyReports: { index: (p: Record<string, unknown>) => Promise<unknown> };
+      }).dailyReports.index({ search: search || undefined, status: status || undefined, page });
+      return (res as { data?: unknown }).data ?? res;
+    },
   });
 
+  const reports = (data as { data?: Record<string, unknown>[] })?.data ?? [];
+  const meta = (data as { meta?: { total?: number; last_page?: number } })?.meta ?? {};
+
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Laporan Harian</h1>
-      {isLoading ? <div className="h-32 animate-pulse rounded-2xl bg-slate-200" /> : <p className="text-slate-500">Gunakan API endpoint untuk data laporan harian</p>}
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      <PageHeader
+        title="Laporan Harian"
+        subtitle="Pantau laporan aktivitas mahasiswa di lokasi KKN"
+        actions={
+          <button
+            onClick={() => refetch()}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-200 text-xs font-black text-slate-600 hover:bg-slate-50 transition-colors uppercase tracking-wider"
+          >
+            <RefreshCw size={14} /> Refresh
+          </button>
+        }
+      />
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard icon={FileText} label="Total Laporan" value={meta.total ?? 0} color="emerald" />
+        <StatCard icon={Activity} label="Monitoring" value="LANGSUNG" color="blue" />
+        <StatCard icon={RefreshCw} label="Pengecekan AI" value="AKTIF" color="amber" />
+        <StatCard icon={Filter} label="Filter Aktif" value={[search, status].filter(Boolean).length} color="indigo" />
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              value={search}
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              placeholder="Cari nama mahasiswa, judul laporan..."
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+            />
+          </div>
+          <select
+            value={status}
+            onChange={(e) => { setStatus(e.target.value); setPage(1); }}
+            className="px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-medium focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-100"
+          >
+            <option value="">Semua Status</option>
+            <option value="submitted">Menunggu Review</option>
+            <option value="approved">Disetujui</option>
+            <option value="revision">Perlu Revisi</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Table */}
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3, 4, 5].map((i) => <div key={i} className="h-16 animate-pulse rounded-xl bg-slate-200" />)}
+        </div>
+      ) : reports.length === 0 ? (
+        <EmptyState icon={<FileText size={48} />} title="Belum Ada Laporan" description="Laporan harian mahasiswa akan muncul di sini" />
+      ) : (
+        <>
+          <DataTable columns={['Tanggal', 'Mahasiswa', 'Kelompok', 'Judul', 'Status', 'Aksi']}>
+            {reports.map((r) => (
+              <tr key={String(r.id)} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
+                <td className="p-4 text-xs font-bold text-slate-500 whitespace-nowrap">
+                  {String(r.formatted_date ?? r.date ?? '-')}
+                </td>
+                <td className="p-4">
+                  <p className="text-sm font-bold text-slate-900">{String((r.student as Record<string, unknown>)?.name ?? '-')}</p>
+                  <p className="text-xs text-slate-400">{String((r.student as Record<string, unknown>)?.nim ?? '')}</p>
+                </td>
+                <td className="p-4 text-xs text-slate-600">{String((r.group as Record<string, unknown>)?.name ?? '-')}</td>
+                <td className="p-4 text-sm text-slate-700 max-w-[200px] truncate">{String(r.title ?? '-')}</td>
+                <td className="p-4">
+                  <StatusBadge status={String(r.status ?? 'pending')} />
+                </td>
+                <td className="p-4">
+                  <Link
+                    href={`/admin/laporan/harian/${r.id}`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-black hover:bg-emerald-50 hover:text-emerald-700 transition-colors"
+                  >
+                    <Eye size={12} /> Detail
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </DataTable>
+
+          {/* Pagination */}
+          {(meta.last_page ?? 1) > 1 && (
+            <div className="flex items-center justify-center gap-2">
+              <button
+                disabled={page <= 1}
+                onClick={() => setPage((p) => p - 1)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-black disabled:opacity-40 hover:bg-slate-50 transition-colors"
+              >
+                ← Sebelumnya
+              </button>
+              <span className="text-xs font-bold text-slate-500">
+                Halaman {page} / {meta.last_page}
+              </span>
+              <button
+                disabled={page >= (meta.last_page ?? 1)}
+                onClick={() => setPage((p) => p + 1)}
+                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-black disabled:opacity-40 hover:bg-slate-50 transition-colors"
+              >
+                Berikutnya →
+              </button>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

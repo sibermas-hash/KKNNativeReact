@@ -14,7 +14,7 @@ export default function DplDashboardScreen() {
     queryKey: ['dpl', 'dashboard'],
     queryFn: async () => {
       const res = await endpoints.dashboard();
-      return res;
+      return res.data;
     },
   });
 

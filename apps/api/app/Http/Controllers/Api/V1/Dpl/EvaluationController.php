@@ -67,14 +67,14 @@ class EvaluationController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'student_id' => ['required', 'integer'],
+            'student_id'  => ['required', 'integer'],
             'kelompok_id' => ['required', 'integer'],
-            'scores' => ['required', 'array'],
-            'scores.dpl_relevansi_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'scores.dpl_ketercapaian_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'scores.dpl_inovasi_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'scores.dpl_administrasi_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'scores.dpl_artikel_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'scores'      => ['required', 'array'],
+            'scores.relevansi'      => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'scores.ketercapaian'   => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'scores.inovasi'        => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'scores.administrasi'   => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'scores.artikel'        => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
 
         $dosen = auth()->user()->dosen;
@@ -84,20 +84,16 @@ class EvaluationController extends Controller
             return $this->forbidden('Anda tidak memiliki akses ke kelompok ini.');
         }
 
-        $scores = $request->input('scores');
-
-        $nilai = NilaiKkn::updateOrCreate(
-            ['user_id' => $request->input('student_id'), 'kelompok_id' => $request->input('kelompok_id')],
-            [
-                'dpl_relevansi_score' => $scores['dpl_relevansi_score'] ?? null,
-                'dpl_ketercapaian_score' => $scores['dpl_ketercapaian_score'] ?? null,
-                'dpl_inovasi_score' => $scores['dpl_inovasi_score'] ?? null,
-                'dpl_administrasi_score' => $scores['dpl_administrasi_score'] ?? null,
-                'dpl_artikel_score' => $scores['dpl_artikel_score'] ?? null,
-                'dpl_graded_by' => auth()->id(),
-                'dpl_graded_at' => now(),
-            ]
-        );
+        try {
+            $nilai = app(\App\Services\GradingService::class)->submitDPLScores(
+                userId: $request->input('student_id'),
+                groupId: $request->input('kelompok_id'),
+                scores: $request->input('scores'),
+                dplId: auth()->id(),
+            );
+        } catch (\DomainException $e) {
+            return $this->error('VALIDATION_ERROR', $e->getMessage(), 422);
+        }
 
         return $this->success(new NilaiKknResource($nilai), 'Nilai DPL berhasil disimpan.');
     }

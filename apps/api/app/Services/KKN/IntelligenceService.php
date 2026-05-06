@@ -27,7 +27,8 @@ class IntelligenceService
             'kelompok:id,nama_kelompok,code',
         ])
             ->where(function ($q) {
-                // Gunakan query yang lebih efisien untuk PostgreSQL
+                // SECURITY: whereRaw is safe here ONLY because all patterns are hardcoded.
+                // NEVER make these patterns dynamic/user-input or you will introduce SQL injection.
                 $q->whereRaw('LENGTH(activity) < 30')
                     ->orWhereRaw("activity ~* '(lorem ipsum|test|asdf|dummy|testing)'")
                     ->orWhere(function ($hourQuery) {

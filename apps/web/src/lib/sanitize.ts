@@ -1,6 +1,6 @@
 import DOMPurify from 'isomorphic-dompurify';
 
-DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+DOMPurify.addHook('afterSanitizeAttributes', (node: any) => {
   // Force rel="noopener noreferrer" on all links with target="_blank"
   if (node.tagName === 'A' && node.getAttribute('target') === '_blank') {
     node.setAttribute('rel', 'noopener noreferrer');

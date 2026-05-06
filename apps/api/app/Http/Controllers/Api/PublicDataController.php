@@ -150,92 +150,27 @@ class PublicDataController extends Controller
     }
 
     /**
-     * Insert a new row using Eloquent Models to trigger events.
+     * DISABLED: Public write access via generic CRUD is permanently disabled.
      */
     public function store(Request $request, string $table): JsonResponse
     {
-        if ($error = $this->validateAccess($request, $table, 'write')) {
-            return $error;
-        }
-
-        $modelClass = self::MODEL_MAP[$table] ?? null;
-        if (! $modelClass) {
-            return $this->apiResponse(false, 'Model mapping tidak ditemukan untuk tabel ini.', null, 500);
-        }
-
-        try {
-            $allowedColumns = $this->getWritableColumns($table);
-            if (empty($allowedColumns)) {
-                return $this->apiResponse(false, 'Tabel ini tidak dapat ditulis melalui API.', null, 403);
-            }
-
-            $record = $modelClass::create($request->only($allowedColumns));
-
-            return $this->apiResponse(true, 'Data berhasil ditambahkan.', $record, 201);
-        } catch (\Throwable $e) {
-            Log::error('PublicData API error', ['exception' => $e]);
-
-            return $this->apiResponse(false, 'Terjadi kesalahan pada server.', null, 500);
-        }
+        return $this->apiResponse(false, 'Penulisan data melalui API publik tidak diizinkan.', null, 403);
     }
 
     /**
-     * Update a row using Eloquent to trigger business logic (Cache flush, sync, etc).
+     * DISABLED: Public write access via generic CRUD is permanently disabled.
      */
     public function update(Request $request, string $table, int $id): JsonResponse
     {
-        if ($error = $this->validateAccess($request, $table, 'write')) {
-            return $error;
-        }
-
-        $modelClass = self::MODEL_MAP[$table] ?? null;
-        $record = $modelClass ? $modelClass::find($id) : null;
-
-        if (! $record) {
-            return $this->apiResponse(false, 'Data tidak ditemukan.', null, 404);
-        }
-
-        try {
-            $allowedColumns = $this->getWritableColumns($table);
-            if (empty($allowedColumns)) {
-                return $this->apiResponse(false, 'Tabel ini tidak dapat ditulis melalui API.', null, 403);
-            }
-
-            $record->update($request->only($allowedColumns));
-
-            return $this->apiResponse(true, 'Data berhasil diupdate dan disinkronkan.', $record->fresh());
-        } catch (\Throwable $e) {
-            Log::error('PublicData API error', ['exception' => $e]);
-
-            return $this->apiResponse(false, 'Terjadi kesalahan pada server.', null, 500);
-        }
+        return $this->apiResponse(false, 'Penulisan data melalui API publik tidak diizinkan.', null, 403);
     }
 
+    /**
+     * DISABLED: Public delete access via generic CRUD is permanently disabled.
+     */
     public function destroy(Request $request, string $table, int $id): JsonResponse
     {
-        if ($error = $this->validateAccess($request, $table, 'delete')) {
-            return $error;
-        }
-
-        // Fix: Prevent deletion of reference tables via API
-        if (! in_array($table, self::DELETABLE_TABLES, true)) {
-            return $this->apiResponse(false, "Penghapusan data '{$table}' tidak diizinkan melalui API.", null, 403);
-        }
-
-        $modelClass = self::MODEL_MAP[$table] ?? null;
-        $record = $modelClass ? $modelClass::find($id) : null;
-
-        if (! $record) {
-            return $this->apiResponse(false, 'Data tidak ditemukan.', null, 404);
-        }
-
-        try {
-            $record->delete();
-
-            return $this->apiResponse(true, 'Data berhasil dihapus.');
-        } catch (\Throwable $e) {
-            return $this->apiResponse(false, 'Gagal menghapus data.', null, 500);
-        }
+        return $this->apiResponse(false, 'Penghapusan data melalui API publik tidak diizinkan.', null, 403);
     }
 
     /**

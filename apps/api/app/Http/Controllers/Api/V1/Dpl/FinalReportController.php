@@ -10,6 +10,7 @@ use App\Http\Traits\ApiResponse;
 use App\Models\KKN\LaporanAkhir;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class FinalReportController extends Controller
 {
@@ -72,5 +73,23 @@ class FinalReportController extends Controller
             new LaporanAkhirResource($report->refresh()),
             'Revisi laporan akhir diminta.'
         );
+    }
+
+    /**
+     * Download file laporan akhir.
+     */
+    public function download(LaporanAkhir $report)
+    {
+        $dosen = auth()->user()->dosen;
+        abort_if(! $dosen, 403, 'Akses ditolak.');
+
+        $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
+        abort_unless($groupIds->contains($report->kelompok_id), 403, 'Akses ditolak.');
+
+        abort_if(! $report->file_path || ! Storage::exists($report->file_path), 404, 'File laporan tidak ditemukan.');
+
+        $filename = 'Laporan_Akhir_' . ($report->title ?? $report->id) . '.pdf';
+
+        return Storage::download($report->file_path, $filename);
     }
 }

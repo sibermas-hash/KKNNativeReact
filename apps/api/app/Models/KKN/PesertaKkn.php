@@ -39,8 +39,6 @@ class PesertaKkn extends Model
         'notification_shown',
     ];
 
-    protected $guarded = [];
-
     protected function casts(): array
     {
         return [

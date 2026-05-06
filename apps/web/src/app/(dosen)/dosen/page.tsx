@@ -1,13 +1,16 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { dosenEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api, dplApi } from '@/lib/api';
+import { dplApi } from '@/lib/api';
+import { useAuthStore } from '@/stores';
+import { StatCard, NavButton } from '@/components/ui/shared';
 import Link from 'next/link';
+import { Users, ClipboardList, MapPin, FileText, Star, BookOpen, Calendar } from 'lucide-react';
 
 export default function DosenDashboard() {
-  const endpoints = dosenEndpoints(api);
+  const { user } = useAuthStore();
+
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.dosen.dashboard,
     queryFn: async () => {
@@ -16,34 +19,69 @@ export default function DosenDashboard() {
     },
   });
 
-  if (isLoading) return <div className="h-32 animate-pulse rounded-2xl bg-slate-200" />;
+  if (isLoading) return (
+    <div className="space-y-6">
+      <div className="h-28 animate-pulse rounded-2xl bg-slate-200" />
+      <div className="grid grid-cols-2 gap-4">
+        {[1,2].map(i => <div key={i} className="h-24 animate-pulse rounded-xl bg-slate-200" />)}
+      </div>
+    </div>
+  );
 
   const isDpl = (data?.is_dpl as boolean) || false;
   const periods = (data?.dpl_periods as Record<string, unknown>[]) || [];
+  const workshops = (data?.workshops as Record<string, unknown>[]) || [];
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Dashboard Dosen</h1>
+      <div className="rounded-2xl bg-gradient-to-br from-emerald-600 to-cyan-700 p-6 text-white shadow-lg">
+        <p className="text-xs font-black uppercase tracking-widest text-emerald-200 mb-1">Selamat datang</p>
+        <h1 className="text-2xl font-black tracking-tight">{user?.name ?? 'Dosen'}</h1>
+        <p className="text-sm text-emerald-100 mt-1">{isDpl ? 'Dosen Pembimbing Lapangan (DPL)' : 'Dosen'}</p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <StatCard icon={Calendar} label="Periode DPL" value={periods.length} color="emerald" />
+        <StatCard icon={BookOpen} label="Workshop" value={workshops.length} color="indigo" />
+      </div>
+
       {isDpl && (
-        <Link href="/dosen/beranda-dpl" className="block rounded-2xl bg-gradient-to-r from-blue-600 to-blue-800 p-6 text-white shadow-sm hover:shadow-md">
-          <p className="text-lg font-semibold">🏠 Buka Dashboard DPL</p>
-          <p className="mt-1 text-sm text-blue-100">Kelola kelompok bimbingan Anda</p>
+        <Link href="/dosen/beranda-dpl" className="flex items-center justify-between rounded-2xl bg-cyan-50 border border-cyan-200 p-5 hover:bg-cyan-100 transition-colors group">
+          <div>
+            <p className="text-xs font-black uppercase tracking-widest text-cyan-600 mb-0.5">Mode DPL Aktif</p>
+            <p className="text-sm font-bold text-cyan-900">Buka Dashboard DPL →</p>
+          </div>
+          <div className="h-10 w-10 rounded-xl bg-cyan-600 flex items-center justify-center text-white group-hover:scale-105 transition-transform">
+            <Users size={20} />
+          </div>
         </Link>
       )}
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
-        <h2 className="mb-4 text-lg font-semibold text-slate-700">Penugasan DPL</h2>
-        {periods.length === 0 ? (
-          <p className="text-sm text-slate-500">Belum ada penugasan DPL</p>
-        ) : (
-          <div className="space-y-3">
+
+      {periods.length > 0 && (
+        <div className="rounded-2xl bg-white ring-1 ring-slate-200 p-5 shadow-sm">
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Penugasan DPL</p>
+          <div className="space-y-2">
             {periods.map((p) => (
-              <div key={p.id as number} className="rounded-xl border border-slate-100 p-4">
-                <p className="font-medium text-slate-800">{((p.periode as Record<string, unknown>)?.name as string) || '-'}</p>
-                <p className="text-sm text-slate-500">Max kelompok: {p.max_kelompok_kkn as number}</p>
+              <div key={p.id as number} className="flex items-center justify-between rounded-xl border border-slate-100 px-4 py-3">
+                <p className="text-sm font-bold text-slate-800">{((p.periode as Record<string, unknown>)?.name as string) || '-'}</p>
+                <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 border border-emerald-100 rounded px-2 py-0.5 uppercase tracking-wider">
+                  Max {p.max_kelompok_kkn as number} kelompok
+                </span>
               </div>
             ))}
           </div>
-        )}
+        </div>
+      )}
+
+      <div className="rounded-2xl bg-white ring-1 ring-slate-200 p-5 shadow-sm">
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Menu</p>
+        <div className="space-y-1">
+          {isDpl && <NavButton href="/dosen/beranda-dpl" icon={MapPin} label="Beranda DPL" />}
+          <NavButton href="/dosen/laporan-harian" icon={ClipboardList} label="Laporan Harian" />
+          <NavButton href="/dosen/laporan-akhir" icon={FileText} label="Laporan Akhir" />
+          <NavButton href="/dosen/evaluasi" icon={Star} label="Evaluasi" />
+          <NavButton href="/dosen/monitoring" icon={Users} label="Monitoring" />
+        </div>
       </div>
     </div>
   );

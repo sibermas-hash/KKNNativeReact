@@ -10,7 +10,7 @@ use Illuminate\Support\Arr;
 trait HandlesPagination
 {
     /**
-     * Format a paginator for standard Inertia/React consumption
+     * Format a paginator for standard SPA/React consumption
      */
     protected function formatPaginator(LengthAwarePaginator $paginator): array
     {

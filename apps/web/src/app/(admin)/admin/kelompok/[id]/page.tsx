@@ -13,7 +13,7 @@ export default function GroupDetailPage() {
     queryKey: ['admin', 'group', Number(id)],
     queryFn: async () => {
       const res = await adminApi.groups.show(Number(id));
-      return res;
+      return res.data;
     },
     enabled: !!id,
   });

@@ -23,7 +23,7 @@ export default function AdminGroupsPage() {
     onError: () => toast.error('Gagal menghapus'),
   });
 
-  const groups = (data?.data as Record<string, unknown>[]) || [];
+   const groups = (data as Record<string, unknown>[]) || [];
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">

@@ -53,10 +53,12 @@ export default function LoginPage() {
     setTimeout(() => { refreshCooldown.current = false; }, 3000);
     setIsRefreshing(true);
     try {
-      const res = await api.get('/auth/captcha') as { success: boolean; data: { captcha_id: string; question: string; expires_at: string } };
-      if (res.success) {
-        setCaptcha(res.data);
-        setValue('captcha_id', res.data.captcha_id);
+      // handleResponse in client.ts already extracts response.data.data,
+      // so the result is the captcha object directly.
+      const data = await api.get('/auth/captcha') as { captcha_id: string; question: string; expires_at: string };
+      if (data?.captcha_id) {
+        setCaptcha(data);
+        setValue('captcha_id', data.captcha_id);
         setValue('captcha_answer', '');
       }
     } catch {
@@ -82,10 +84,12 @@ export default function LoginPage() {
     setLoading(true);
     setServerErrors([]);
     try {
-      const result = await api.post('/auth/login', data) as { success: boolean; data: { user: User; token?: string } };
-      if (result.success) {
-        if (result.data.token) setAuthToken(result.data.token);
-        setUser(result.data.user);
+      // handleResponse in client.ts already extracts response.data.data,
+      // so the result is { user, token } directly.
+      const result = await api.post('/auth/login', data) as { user: User; token?: string };
+      if (result?.user) {
+        if (result.token) setAuthToken(result.token);
+        setUser(result.user);
         toast.success('Login berhasil!');
       }
     } catch (err: unknown) {
@@ -172,9 +176,9 @@ export default function LoginPage() {
             <div className="space-y-6 flex flex-col items-center">
               <div className="flex flex-col items-center gap-5">
                 <div className="flex items-center gap-3 sm:gap-4">
-                  <Image src="/images/logo_uinsaizu.png" alt="Logo UIN SAIZU" width={48} height={48} className="h-10 sm:h-12 w-auto object-contain drop-shadow-sm" />
+                  <Image src="/images/logo_uinsaizu.png" alt="Logo UIN SAIZU" width={120} height={120} className="h-10 sm:h-12 w-auto object-contain drop-shadow-sm" />
                   <div className="w-px h-7 sm:h-8 bg-emerald-200" />
-                  <Image src="/images/Logo_SIBERMAS.png" alt="Logo SIBERMAS" width={120} height={40} className="h-8 sm:h-10 w-auto object-contain drop-shadow-sm" />
+                  <Image src="/images/Logo_SIBERMAS.png" alt="Logo SIBERMAS" width={360} height={120} className="h-10 sm:h-12 w-auto object-contain drop-shadow-sm" />
                 </div>
                 <div className="text-center space-y-2">
                   <h1 className="text-4xl sm:text-[2.5rem] font-black text-emerald-950 tracking-tight font-display leading-none uppercase">

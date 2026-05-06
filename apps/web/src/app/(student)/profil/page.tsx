@@ -57,7 +57,7 @@ export default function ProfilePage() {
 
   const onSubmit = async (data: UpdateProfileFormData) => {
     try {
-      await studentApi.update(data);
+      await profileApi.update(data);
       await fetchUser();
       toast.success('Profil berhasil diperbarui');
       setIsEditing(false);
@@ -75,7 +75,7 @@ export default function ProfilePage() {
 
     setAvatarLoading(true);
     try {
-      await studentApi.updateAvatar(formData);
+      await profileApi.updateAvatar(formData);
       await fetchUser();
       toast.success('Foto profil diperbarui');
     } catch (err: any) {

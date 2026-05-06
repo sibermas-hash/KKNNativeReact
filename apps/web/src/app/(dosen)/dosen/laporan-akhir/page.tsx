@@ -18,7 +18,7 @@ export default function DplFinalReportsPage() {
     },
   });
 
-  const reports = (data?.data as Record<string, unknown>[]) || [];
+  const reports = (data as Record<string, unknown>[]) || [];
 
   return (
     <div className="space-y-6">

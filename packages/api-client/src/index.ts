@@ -8,4 +8,7 @@ export {
   profileEndpoints,
   publicEndpoints,
   periodContextEndpoints,
+  notificationsEndpoints,
+  attendanceEndpoints,
+  serverTimeEndpoints,
 } from './endpoints/index';

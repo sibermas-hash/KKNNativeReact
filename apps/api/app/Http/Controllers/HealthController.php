@@ -22,11 +22,28 @@ class HealthController extends Controller
         ], $healthy ? 200 : 503);
     }
 
+    public function ready(): JsonResponse
+    {
+        $checks = [
+            'database' => $this->checkDatabase(),
+            'cache' => $this->checkCache(),
+            'storage' => $this->checkStorage(),
+        ];
+
+        $allHealthy = collect($checks)->every(fn ($check) => $check['status'] === true);
+
+        return response()->json([
+            'status' => $allHealthy ? 'ready' : 'not_ready',
+            'timestamp' => now()->toIso8601String(),
+        ], $allHealthy ? 200 : 503);
+    }
+
     public function detailed(): JsonResponse
     {
         $checks = [
             'database' => $this->checkDatabase(),
             'cache' => $this->checkCache(),
+            'redis' => $this->checkRedis(),
             'queue' => $this->checkQueue(),
             'storage' => $this->checkStorage(),
             'api_external' => $this->checkExternalApi(),
@@ -96,6 +113,29 @@ class HealthController extends Controller
                 'status' => $value === 'ok',
                 'latency_ms' => $latency,
                 'driver' => config('cache.default'),
+            ];
+        } catch (\Exception $e) {
+            return [
+                'status' => false,
+                'error' => $e->getMessage(),
+            ];
+        }
+    }
+
+    protected function checkRedis(): array
+    {
+        try {
+            $start = microtime(true);
+            Redis::ping();
+            $latency = round((microtime(true) - $start) * 1000, 2);
+
+            $info = Redis::info('server');
+            $version = $info['redis_version'] ?? 'unknown';
+
+            return [
+                'status' => true,
+                'latency_ms' => $latency,
+                'version' => $version,
             ];
         } catch (\Exception $e) {
             return [

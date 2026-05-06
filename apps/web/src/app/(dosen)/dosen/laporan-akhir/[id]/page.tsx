@@ -20,7 +20,7 @@ export default function DplFinalReportDetailPage() {
     queryKey: QUERY_KEYS.dpl.finalReports,
     queryFn: async () => {
       const res = await dplApi.finalReports.show(Number(id));
-      return res;
+      return (res as any).data ?? res;
     },
     enabled: !!id,
   });

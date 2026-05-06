@@ -23,12 +23,12 @@ export default function DailyReportsPage() {
         status: statusFilter || undefined,
         search: searchQuery || undefined,
       });
-      return res as { success: boolean; data: unknown[]; meta?: { current_page: number; last_page: number; total: number } };
+      return (res as any) as { success: boolean; data: unknown[]; meta?: { current_page: number; last_page: number; total: number } };
     },
   });
 
-  const reports = (data?.data as Record<string, unknown>[]) || [];
-  const meta = data?.meta;
+  const reports = (data as any)?.data || [];
+  const meta = (data as any)?.meta;
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
@@ -85,7 +85,7 @@ export default function DailyReportsPage() {
         />
       ) : (
         <div className="space-y-4">
-          {reports.map((report) => (
+          {reports.map((report: any) => (
             <Link
               key={String(report.id)}
               href={`/mahasiswa/laporan-harian/${report.id}/edit`}

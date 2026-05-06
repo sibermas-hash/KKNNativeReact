@@ -18,7 +18,7 @@ export default function MonitoringPage() {
     },
   });
 
-  const monitoring = (data?.data as Record<string, unknown>[]) || [];
+  const monitoring = (data as Record<string, unknown>[]) || [];
 
   return (
     <div className="space-y-6">

@@ -89,6 +89,74 @@ class PesertaKknController extends Controller
                 }
             });
 
-        return $this->success($data, 'Export berhasil. ' . count($data) . ' data diekspor.');
+        return $this->success($data, 'Export berhasil. '.count($data).' data diekspor.');
+    }
+
+    public function exportBiodata(Request $request): JsonResponse
+    {
+        $periodeId = $request->input('periode_id');
+
+        $data = PesertaKkn::with([
+            'mahasiswa:id,nim,nama,nik,mother_name,gpa,sks_completed',
+            'mahasiswa.user:id,name,email,phone,address',
+            'mahasiswa.fakultas:id,nama',
+            'mahasiswa.prodi:id,nama',
+            'kelompok:id,nama_kelompok,code',
+        ])
+            ->when($periodeId, fn ($q, $id) => $q->where('periode_id', $id))
+            ->where('status', 'approved')
+            ->get()
+            ->map(fn ($p) => [
+                'nim'         => $p->mahasiswa?->nim,
+                'nama'        => $p->mahasiswa?->nama,
+                'nik'         => $p->mahasiswa?->nik,
+                'ibu_kandung' => $p->mahasiswa?->mother_name,
+                'email'       => $p->mahasiswa?->user?->email,
+                'phone'       => $p->mahasiswa?->user?->phone,
+                'alamat'      => $p->mahasiswa?->user?->address,
+                'fakultas'    => $p->mahasiswa?->fakultas?->nama,
+                'prodi'       => $p->mahasiswa?->prodi?->nama,
+                'ipk'         => $p->mahasiswa?->gpa,
+                'sks'         => $p->mahasiswa?->sks_completed,
+                'kelompok'    => $p->kelompok?->nama_kelompok,
+            ]);
+
+        return $this->success($data, 'Export biodata berhasil. '.count($data).' data.');
+    }
+
+    public function exportBpjs(Request $request): JsonResponse
+    {
+        $periodeId = $request->input('periode_id');
+
+        $data = PesertaKkn::with([
+            'mahasiswa:id,nim,nama,nik,mother_name',
+            'mahasiswa.user:id,name,address',
+            'kelompok:id,nama_kelompok',
+        ])
+            ->when($periodeId, fn ($q, $id) => $q->where('periode_id', $id))
+            ->where('status', 'approved')
+            ->get()
+            ->map(fn ($p) => [
+                'nim'         => $p->mahasiswa?->nim,
+                'nama'        => $p->mahasiswa?->nama,
+                'nik'         => $p->mahasiswa?->nik,
+                'ibu_kandung' => $p->mahasiswa?->mother_name,
+                'alamat'      => $p->mahasiswa?->user?->address,
+                'kelompok'    => $p->kelompok?->nama_kelompok,
+            ]);
+
+        return $this->success($data, 'Export BPJS berhasil. '.count($data).' data.');
+    }
+
+    public function downloadDocument(Request $request)
+    {
+        $path = $request->input('path');
+
+        if (! $path) {
+            abort(400, 'Path dokumen tidak diberikan.');
+        }
+
+        return app(\App\Services\KKN\RegistrationApprovalService::class)
+            ->downloadDocument($path, auth()->user());
     }
 }

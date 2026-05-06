@@ -135,6 +135,11 @@ class WorkshopService
         return DB::transaction(function () use ($workshopId, $userId, $lat, $lng, $token, $deviceSignature, $ip) {
             $workshop = Workshop::findOrFail($workshopId);
 
+            // 0. Workshop must be open for attendance
+            if ($workshop->status !== 'scheduled') {
+                throw new \InvalidArgumentException('Pembekalan tidak sedang berlangsung.');
+            }
+
             // 1. Validate Secret Token
             if ($workshop->active_token !== $token) {
                 throw new \InvalidArgumentException('Kode rahasia absensi salah atau sudah kadaluwarsa.');
@@ -167,6 +172,11 @@ class WorkshopService
             $participant = PesertaWorkshop::where('workshop_id', $workshopId)
                 ->where('user_id', $userId)
                 ->firstOrFail();
+
+            // Guard: already attended
+            if ($participant->attendance_status === 'attended') {
+                return $participant;
+            }
 
             $participant->update([
                 'attendance_status' => 'attended',
@@ -201,19 +211,26 @@ class WorkshopService
     /**
      * Sync workshop attendance to student's KKN grade
      */
-    protected function syncWorkshopScore(PesertaWorkshop $participant): void
+    protected function syncWorkshopScore(PesertaWorkshop $participant, ?float $configuredScore = null): void
     {
         $user = $participant->user;
         $groupId = $user->getActiveGroupId();
 
         if ($groupId) {
-            $configuredScore = KonfigurasiPenilaian::where('config_key', 'workshop_attendance_score')
-                ->first()?->percentage ?? 100;
+            $configuredScore ??= (float) (KonfigurasiPenilaian::where('config_key', 'workshop_attendance_score')
+                ->first()?->percentage ?? 100);
+
             $workshopScore = $participant->attendance_status === 'attended'
-                ? (float) $configuredScore
+                ? $configuredScore
                 : 0.0;
+
             $adminId = auth()->id()
-                ?? User::role('superadmin')->value('id');
+                ?? User::role('superadmin')->value('id')
+                ?? 0;
+
+            if (! $adminId) {
+                return;
+            }
 
             $this->gradingService->updateUnifiedScore(
                 $user->id,
@@ -238,6 +255,10 @@ class WorkshopService
                 ->with('user.mahasiswa.peserta')
                 ->get();
 
+            // Cache config outside loop — prevents N+1
+            $configuredScore = KonfigurasiPenilaian::where('config_key', 'workshop_attendance_score')
+                ->first()?->percentage ?? 100;
+
             foreach ($participants as $participant) {
                 $attended = in_array($participant->user_id, $attendedUserIds);
 
@@ -253,7 +274,7 @@ class WorkshopService
                     $this->revokeCertificate($participant);
                 }
 
-                $this->syncWorkshopScore($participant);
+                $this->syncWorkshopScore($participant, $configuredScore);
 
                 $results[] = $participant->fresh();
             }
@@ -274,6 +295,10 @@ class WorkshopService
                 ->with('user.mahasiswa.peserta')
                 ->get();
 
+            // Cache config outside loop — prevents N+1
+            $configuredScore = KonfigurasiPenilaian::where('config_key', 'workshop_attendance_score')
+                ->first()?->percentage ?? 100;
+
             foreach ($participants as $participant) {
                 $passed = in_array($participant->user_id, $passedUserIds);
 
@@ -287,8 +312,7 @@ class WorkshopService
                     $this->revokeCertificate($participant);
                 }
 
-                // Sinkronisasi nilai otomatis ketika kelulusan berubah
-                $this->syncWorkshopScore($participant);
+                $this->syncWorkshopScore($participant, $configuredScore);
 
                 $results[] = $participant->fresh();
             }
@@ -351,8 +375,11 @@ class WorkshopService
     {
         $workshop = $participant->workshop;
         $date = now()->format('Ymd');
+        $identity = $participant->user?->mahasiswa?->nim
+            ?? $participant->user?->dosen?->nip
+            ?? $participant->user_id;
 
-        return "B-449/Un.19/K.LPPM/P.{$date}/{$workshop->id}";
+        return "B-449/Un.19/K.LPPM/P.{$date}/{$workshop->id}/{$identity}";
     }
 
     private function revokeCertificate(PesertaWorkshop $participant): void
@@ -468,6 +495,47 @@ class WorkshopService
                     : [],
             ];
         })->toArray();
+    }
+
+    public function getWorkshopWithParticipantStatus(int $workshopId, int $userId): ?array
+    {
+        $workshop = Workshop::with([
+            'peserta' => function ($query) use ($userId) {
+                $query->where('user_id', $userId);
+            },
+        ])->find($workshopId);
+
+        if (! $workshop) {
+            return null;
+        }
+
+        $participant = $workshop->peserta->first();
+        $timeWindow = collect([$workshop->start_time, $workshop->end_time])
+            ->filter()
+            ->implode(' - ');
+
+        return [
+            'id' => $workshop->id,
+            'title' => $workshop->title,
+            'description' => $workshop->description,
+            'workshop_date' => $workshop->workshop_date->format('d-m-Y'),
+            'time' => $timeWindow !== '' ? $timeWindow : 'Menunggu jadwal',
+            'start_time' => $workshop->start_time ? substr((string) $workshop->start_time, 0, 5) : null,
+            'end_time' => $workshop->end_time ? substr((string) $workshop->end_time, 0, 5) : null,
+            'location' => $workshop->location,
+            'latitude' => $workshop->latitude,
+            'longitude' => $workshop->longitude,
+            'radius_meters' => $workshop->radius_meters ?? 50,
+            'status' => $workshop->status,
+            'active_token' => $workshop->active_token,
+            'is_registered' => (bool) $participant,
+            'attendance_status' => $participant?->attendance_status,
+            'attendance_score' => $participant?->attendance_score,
+            'checked_in_at' => $participant?->checked_in_at?->toDateTimeString(),
+            'media' => [
+                'attendance_proof_url' => $participant?->media->where('collection_name', 'attendance-proof')->first()?->url ?? null,
+            ],
+        ];
     }
 
     private function canMutateWorkshop(Workshop $workshop): bool

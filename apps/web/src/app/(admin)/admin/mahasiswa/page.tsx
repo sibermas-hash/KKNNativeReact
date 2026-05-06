@@ -1,8 +1,8 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { adminEndpoints } from '@sibermas/api-client';
-import { api } from '@/lib/api';
+
+import { api, adminApi } from '@/lib/api';
 import { useState } from 'react';
 import Link from 'next/link';
 
@@ -12,15 +12,15 @@ export default function MahasiswaIndexPage() {
   const [fakultasId, setFakultasId] = useState('');
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'mahasiswa', { search, fakultas_id: fakultasId, page }],
-    queryFn: async () => {
-      const res = await (await import('@sibermas/api-client')).adminEndpoints(api).users.index({ search, fakultas_id: fakultasId, page, role: 'student' });
-      return (res as unknown as { success: boolean; data: unknown[]; meta?: Record<string, number> }).data;
-    },
-  });
+const { data, isLoading } = useQuery<any[]>({
+  queryKey: ['admin', 'mahasiswa', { search, fakultas_id: fakultasId, page }],
+  queryFn: async () => {
+    const res = await adminApi.users.index({ search, fakultas_id: fakultasId, page, role: 'student' });
+    return (res as any).data;
+  },
+});
 
-  const students = (data?.data as Record<string, unknown>[]) || [];
+const students = data ?? [];
 
   return (
     <div className="space-y-6">

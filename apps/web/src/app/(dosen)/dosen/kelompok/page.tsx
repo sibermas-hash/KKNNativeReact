@@ -12,7 +12,7 @@ export default function GroupsPage() {
     queryKey: QUERY_KEYS.dpl.groups,
     queryFn: async () => {
       const res = await dplApi.groups.index();
-      return res;
+      return (res as any).data ?? res;
     },
   });
 

@@ -97,8 +97,6 @@ class CircuitBreakerService
 
         if ($wasOpen) {
             Log::info('Circuit breaker: CLOSED — SIAKAD connection restored, exiting degradation mode');
-        } else {
-            Log::debug('Circuit breaker: Success, resetting counter');
         }
     }
 

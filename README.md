@@ -96,6 +96,100 @@ docker-compose up -d
 docker-compose exec app php artisan migrate
 ```
 
+## 🖥️ Deployment FreeBSD
+
+### Prasyarat FreeBSD
+- FreeBSD 14.x
+- PHP 8.4 (`php84` via pkg)
+- PostgreSQL 16 (`postgresql16-server`)
+- Redis (`redis`)
+- Nginx (`nginx`)
+- Supervisor (`py311-supervisor`)
+- Node.js 22 + pnpm
+
+### Instalasi Otomatis
+
+```bash
+# Jalankan sebagai root
+sh install-freebsd.sh
+```
+
+### Instalasi Manual
+
+```bash
+# 1. Install dependensi
+pkg install -y php84 php84-extensions php84-pdo_pgsql php84-mbstring \
+    php84-xml php84-curl php84-zip php84-gd php84-redis php84-opcache \
+    php84-pcntl php84-posix composer nginx postgresql16-server redis \
+    node22 npm-node22 py311-supervisor
+
+# 2. Aktifkan layanan
+sysrc nginx_enable="YES" postgresql_enable="YES" \
+      redis_enable="YES" supervisord_enable="YES"
+
+# 3. Init & start PostgreSQL
+service postgresql initdb
+service postgresql start
+
+# 4. Buat database
+su -l postgres -c "psql -c \"CREATE USER kkn_app WITH PASSWORD 'password';\""
+su -l postgres -c "psql -c \"CREATE DATABASE kkn_production OWNER kkn_app;\""
+
+# 5. Deploy aplikasi ke /usr/local/www/sibermas
+git clone <repository-url> /usr/local/www/sibermas
+cd /usr/local/www/sibermas/apps/api
+
+# 6. Setup environment
+cp .env.production.example .env
+# Edit .env: APP_KEY, DB_PASSWORD, dll
+
+# 7. Install dependencies & build
+composer install --no-dev --optimize-autoloader
+php artisan key:generate
+php artisan migrate --force
+php artisan storage:link
+php artisan config:cache && php artisan route:cache
+
+cd /usr/local/www/sibermas
+pnpm install && pnpm build
+
+# 8. Set permissions (user www = FreeBSD web user)
+chown -R www:www /usr/local/www/sibermas/apps/api/storage
+chown -R www:www /usr/local/www/sibermas/apps/api/bootstrap/cache
+
+# 9. Konfigurasi nginx & supervisor
+cp nginx-freebsd.conf /usr/local/etc/nginx/nginx.conf
+cp apps/api/supervisord.conf /usr/local/etc/supervisord.d/sibermas.conf
+
+# 10. Start semua layanan
+service nginx start
+service redis start
+service supervisord start
+```
+
+### Path Penting di FreeBSD
+
+| Komponen | Path |
+|---|---|
+| Web root | `/usr/local/www/sibermas` |
+| Nginx config | `/usr/local/etc/nginx/nginx.conf` |
+| PHP binary | `/usr/local/bin/php` |
+| Supervisor config | `/usr/local/etc/supervisord.d/` |
+| SSL cert (Let's Encrypt) | `/usr/local/etc/letsencrypt/live/` |
+| Log aplikasi | `/var/log/sibermas/` |
+| PostgreSQL data | `/var/db/postgres/data16/` |
+
+### Perbedaan dari Linux
+
+| | Linux (Ubuntu/Debian) | FreeBSD |
+|---|---|---|
+| Web user | `www-data` | `www` |
+| Web root | `/var/www/` | `/usr/local/www/` |
+| Package manager | `apt` | `pkg` |
+| PHP package | `php8.4` | `php84` |
+| Service control | `systemctl` | `service` |
+| SSL path | `/etc/letsencrypt/` | `/usr/local/etc/letsencrypt/` |
+
 ## 📱 Mobile App
 
 Aplikasi Android tersedia via Capacitor:

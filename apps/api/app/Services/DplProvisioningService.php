@@ -78,6 +78,6 @@ class DplProvisioningService
 
     private function defaultEmail(Dosen $dosen): string
     {
-        return sprintf('%s@kkn.uinsaizu.ac.id', $dosen->nip);
+        return sprintf('%s@sibermas.uinsaizu.ac.id', $dosen->nip);
     }
 }

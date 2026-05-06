@@ -21,7 +21,7 @@ export default function AdminGradesPage() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'grades'] }); toast.success('Nilai berhasil difinalisasi'); },
   });
 
-  const scores = (data?.data as Record<string, unknown>[]) || [];
+   const scores = (data as Record<string, unknown>[]) || [];
 
   return (
     <div className="space-y-6">

@@ -62,7 +62,7 @@ return new class extends Migration
             $table->string('gender', 1)->nullable();
             $table->string('birth_place', 100)->nullable();
             $table->date('birth_date')->nullable();
-            $table->string('university', 100)->nullable();
+            $table->string('university', 100)->default('Universitas UIN SAIZU Purwokerto');
             $table->integer('sks_completed')->default(0);
             $table->decimal('gpa', 3, 2)->default(0.00);
             $table->string('health_certificate_path')->nullable();

@@ -9,6 +9,17 @@ import { ClipboardList, CheckCircle2, XCircle } from 'lucide-react';
 import { StatusBadge, PageHeader, EmptyState } from '@/components/ui/shared';
 import toast from 'react-hot-toast';
 
+interface Registration {
+  id: number;
+  mahasiswa: {
+    nama: string;
+    nim: string;
+    fakultas: { nama: string };
+  };
+  status: string;
+  [key: string]: unknown;
+}
+
 export default function AdminRegistrationsPage() {
   
   const queryClient = useQueryClient();
@@ -18,8 +29,13 @@ export default function AdminRegistrationsPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'registrations', { status, search }],
-    queryFn: async () => { const res = await adminApi.registrations.index({ status, search }); return (res as unknown as { success: boolean; data: unknown[]; meta?: Record<string, number> }).data; },
+    queryFn: async () => { 
+      const res = await adminApi.registrations.index({ status, search }); 
+      return (res as any).data as Registration[]; 
+    },
   });
+
+  const registrations = data || [];
 
   const approveMutation = useMutation({
     mutationFn: (id: number) => adminApi.registrations.approve(id),
@@ -31,8 +47,6 @@ export default function AdminRegistrationsPage() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); toast.success('Ditolak'); },
   });
 
-  const registrations = (data?.data as Record<string, unknown>[]) || [];
-
   const toggleSelect = (id: number) => setSelectedIds((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
   const bulkApprove = () => adminApi.registrations.bulkApprove(selectedIds).then(() => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); setSelectedIds([]); toast.success(`${selectedIds.length} pendaftaran disetujui`); });
 
@@ -42,7 +56,7 @@ export default function AdminRegistrationsPage() {
 
       <div className="flex flex-wrap items-center gap-3">
         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari NIM/Nama..." className="w-64 h-10 bg-white border border-slate-200 rounded-xl px-4 text-sm font-bold" />
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className="h-10 bg-white border border-slate-200 rounded-xl px-4 text-sm font-bold">
+        <select aria-label="Filter status pendaftaran" title="Filter status pendaftaran" value={status} onChange={(e) => setStatus(e.target.value)} className="h-10 bg-white border border-slate-200 rounded-xl px-4 text-sm font-bold">
           <option value="">Semua Status</option><option value="pending">Menunggu</option><option value="approved">Disetujui</option><option value="rejected">Ditolak</option>
         </select>
         {selectedIds.length > 0 && <button onClick={bulkApprove} className="h-10 px-4 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase">✅ Setujui {selectedIds.length} Terpilih</button>}
@@ -56,7 +70,7 @@ export default function AdminRegistrationsPage() {
             const mhs = r.mahasiswa as Record<string, unknown> | undefined;
             return (
               <div key={String(r.id)} className="flex items-start gap-3 bg-white rounded-2xl p-5 ring-1 ring-slate-200 shadow-sm">
-                <input type="checkbox" checked={selectedIds.includes(r.id as number)} onChange={() => toggleSelect(r.id as number)} className="mt-1 h-4 w-4" />
+                <input type="checkbox" aria-label={`Pilih pendaftaran ${String(mhs?.nama || '-')}`} title={`Pilih pendaftaran ${String(mhs?.nama || '-')}`} checked={selectedIds.includes(r.id as number)} onChange={() => toggleSelect(r.id as number)} className="mt-1 h-4 w-4" />
                 <div className="flex-1">
                   <div className="flex items-start justify-between">
                     <div><p className="font-black text-slate-900">{String(mhs?.nama || '-')}</p><p className="text-xs text-slate-400">NIM: {String(mhs?.nim || '-')} | {String((mhs?.fakultas as Record<string, unknown>)?.nama || '-')}</p></div>

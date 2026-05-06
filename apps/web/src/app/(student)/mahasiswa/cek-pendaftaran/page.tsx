@@ -15,7 +15,7 @@ export default function RegistrationStatusPage() {
     queryFn: async () => { const res = await studentApi.registration.status() as unknown as { success: boolean; data: Record<string, unknown> }; return res.data; },
   });
 
-  const registrations = data?.registrations || [];
+  const registrations = (data?.registrations as Record<string, unknown>[]) || [];
 
   return (
     <div className="max-w-[800px] mx-auto px-4 py-10 space-y-8">

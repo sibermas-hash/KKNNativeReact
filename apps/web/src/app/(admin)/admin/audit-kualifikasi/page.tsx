@@ -7,7 +7,7 @@ import { useState } from 'react';
 export default function EligibilityCheckPage() {
   const [search, setSearch] = useState('');
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<unknown[]>({
     queryKey: ['admin', 'eligibility', { search }],
     queryFn: async () => {
       const res = await api.get('/admin/audit-kualifikasi', { params: { search } });
@@ -15,7 +15,7 @@ export default function EligibilityCheckPage() {
     },
   });
 
-  const students = (data?.data as Record<string, unknown>[]) || [];
+  const students = data ?? [];
 
   return (
     <div className="space-y-6">
@@ -25,12 +25,15 @@ export default function EligibilityCheckPage() {
 
       {isLoading ? <div className="h-32 animate-pulse rounded-2xl bg-slate-200" /> : (
         <div className="space-y-3">
-          {students.map((s) => (
-            <div key={String(s.id)} className="rounded-2xl bg-white p-5 shadow-sm">
-              <p className="font-semibold text-slate-800">{String((s as Record<string, unknown>)?.nama || '-')}</p>
-              <p className="text-sm text-slate-500">NIM: {String((s as Record<string, unknown>)?.nim || '-')} | SKS: {String((s as Record<string, unknown>)?.sks_completed || '-')} | IPK: {String((s as Record<string, unknown>)?.gpa || '-')}</p>
-            </div>
-          ))}
+{students.map((s: unknown) => {
+  const r = s as Record<string, unknown>;
+  return (
+    <div key={String(r.id)} className="rounded-2xl bg-white p-5 shadow-sm">
+      <p className="font-semibold text-slate-800">{String(r.nama || '-')}</p>
+      <p className="text-sm text-slate-500">NIM: {String(r.nim || '-')} | SKS: {String(r.sks_completed || '-')} | IPK: {String(r.gpa || '-')}</p>
+    </div>
+  );
+})}
         </div>
       )}
     </div>

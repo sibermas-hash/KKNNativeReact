@@ -27,7 +27,7 @@ export default function AnnouncementsPage() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'announcements'] }); toast.success('Berita berhasil dihapus'); },
   });
 
-  const announcements = (data?.data as Record<string, unknown>[]) || [];
+  const announcements = (data as Record<string, unknown>[]) || [];
 
   return (
     <div className="space-y-6">

@@ -13,7 +13,7 @@ export default function JenisKknDetailPage() {
     queryKey: ['admin', 'jenis-kkn', Number(id)],
     queryFn: async () => {
       const res = await api.get(`/admin/jenis-kkn/${id}`);
-      return res;
+      return res.data;
     },
     enabled: !!id,
   });

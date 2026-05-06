@@ -12,10 +12,17 @@ export const forgotPasswordSchema = z.object({
   email: z.string().email('Format email tidak valid'),
 });
 
+const passwordValidation = z.string()
+  .min(8, 'Kata sandi minimal 8 karakter')
+  .regex(/[a-z]/, 'Kata sandi harus mengandung huruf kecil')
+  .regex(/[A-Z]/, 'Kata sandi harus mengandung huruf besar')
+  .regex(/[0-9]/, 'Kata sandi harus mengandung angka')
+  .regex(/[^a-zA-Z0-9]/, 'Kata sandi harus mengandung simbol');
+
 export const resetPasswordSchema = z.object({
   token: z.string().min(1, 'Token wajib diisi'),
   email: z.string().email('Format email tidak valid'),
-  password: z.string().min(8, 'Kata sandi minimal 8 karakter'),
+  password: passwordValidation,
   password_confirmation: z.string().min(1, 'Konfirmasi kata sandi wajib diisi'),
 }).refine((data) => data.password === data.password_confirmation, {
   message: 'Kata sandi tidak cocok',
@@ -24,7 +31,7 @@ export const resetPasswordSchema = z.object({
 
 export const changePasswordSchema = z.object({
   current_password: z.string().min(1, 'Kata sandi saat ini wajib diisi'),
-  password: z.string().min(8, 'Kata sandi minimal 8 karakter'),
+  password: passwordValidation,
   password_confirmation: z.string().min(1, 'Konfirmasi kata sandi wajib diisi'),
 }).refine((data) => data.password === data.password_confirmation, {
   message: 'Kata sandi tidak cocok',

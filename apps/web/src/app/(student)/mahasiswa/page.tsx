@@ -14,32 +14,15 @@ import {
   GraduationCap, ShieldCheck, Activity, X,
 } from 'lucide-react';
 import clsx from 'clsx';
+import { StatusBadge } from '@/components/ui/shared';
 
-function normalizeStatus(status?: string): 'approved' | 'pending' | 'rejected' | 'unknown' {
-  if (!status) return 'unknown';
-  const s = status.toLowerCase();
+function normalizeStatus(status?: string): string | undefined {
+  if (!status) return status;
+  const s = String(status).toLowerCase();
   if (['approved', 'disetujui', 'verifikasi_pusat', 'completed'].includes(s)) return 'approved';
-  if (['pending', 'menunggu'].includes(s)) return 'pending';
-  if (['rejected', 'ditolak', 'gugur', 'dismissed'].includes(s)) return 'rejected';
-  return 'unknown';
-}
-
-function StatusTag({ status }: { status: string }) {
-  const normalized = normalizeStatus(status);
-  const config = {
-    approved: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', label: 'DISETUJUI' },
-    pending: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'MENUNGGU' },
-    rejected: { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', label: 'DITOLAK' },
-    unknown: { bg: 'bg-slate-50', text: 'text-slate-500', border: 'border-slate-200', label: 'BELUM DAFTAR' },
-  }[normalized];
-
-  return (
-    <span className={clsx('inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider border', config.bg, config.text, config.border)}>
-      {normalized === 'approved' && <BadgeCheck size={10} />}
-      {normalized === 'pending' && <Lock size={10} />}
-      {config.label}
-    </span>
-  );
+  if (['pending', 'menunggu', 'document_submitted', 'document_verified'].includes(s)) return 'pending';
+  if (['rejected', 'ditolak', 'gugur'].includes(s)) return 'rejected';
+  return status;
 }
 
 export default function StudentDashboard() {
@@ -95,6 +78,15 @@ export default function StudentDashboard() {
   const shouldShowPopup = isApproved && registration && !registration.notification_shown;
   useEffect(() => { if (shouldShowPopup) setShowPopup(true); }, [shouldShowPopup]);
 
+  // Escape key handler for modal accessibility
+  useEffect(() => {
+    if (!showPopup) return;
+    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClosePopup(); };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showPopup]);
+
   const handleClosePopup = () => {
     setShowPopup(false);
     if (registration?.id && !registration.notification_shown) {
@@ -115,13 +107,13 @@ export default function StudentDashboard() {
     <>
       {/* POPUP */}
       {showPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="popup-status-title">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 border ring-1 ring-slate-200">
             <div className="text-center">
               <div className={clsx('h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-6', isApproved ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600')}>
                 {isApproved ? <ShieldCheck size={32} /> : <AlertTriangle size={32} />}
               </div>
-              <h2 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">
+              <h2 id="popup-status-title" className="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">
                 Status Pendaftaran: {isApproved ? 'DISETUJUI' : 'DITOLAK'}
               </h2>
               <p className="text-sm text-slate-500 mb-6 font-medium">
@@ -176,7 +168,7 @@ export default function StudentDashboard() {
           <div className="flex items-center gap-4 bg-white ring-1 ring-slate-200 rounded-lg px-4 py-3">
             <div className="flex flex-col border-r border-slate-100 pr-4">
               <span className="text-[8px] font-black text-slate-400 uppercase mb-0.5">Status Registrasi</span>
-              <StatusTag status={registration?.status as string || 'unregistered'} />
+              <StatusBadge status={registration?.status as string || 'unregistered'} />
             </div>
             <div className="flex flex-col">
               <span className="text-[8px] font-black text-slate-400 uppercase mb-0.5">Tahun Akademik</span>
@@ -199,7 +191,7 @@ export default function StudentDashboard() {
                 </span>
               </div>
               <div className="w-full bg-slate-100 h-1.5 rounded-full mb-6 overflow-hidden">
-                {/* eslint-disable-next-line react/forbid-dom-props */}
+                {/* eslint-disable-next-line */}
                 <div className="bg-emerald-600 h-full rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">

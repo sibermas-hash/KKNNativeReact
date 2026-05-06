@@ -14,8 +14,8 @@ export default function EvaluasiDplPage() {
       return (res as unknown as { success: boolean; data: unknown[] }).data;
     },
   });
-
-  const evaluations = (data?.data as Record<string, unknown>[]) || [];
+  
+  const evaluations = (data as Record<string, unknown>[]) || [];
 
   return (
     <div className="space-y-6">

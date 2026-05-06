@@ -11,7 +11,7 @@ export default function CertificatesPage() {
   
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.certificates,
-    queryFn: async () => { const res = await studentApi.certificates.index(); return res; },
+    queryFn: async () => { const res = await studentApi.certificates.index(); return (res as any).data ?? res; },
   });
 
   const scores = (data?.scores as Record<string, unknown>[]) || [];

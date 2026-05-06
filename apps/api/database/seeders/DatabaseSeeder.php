@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
         $seeders = [
             RoleSeeder::class,
             PermissionSeeder::class,
+            SuperAdminSeeder::class,       // ← Superadmin (semua environment)
             MasterDataSeeder::class,
             KonfigurasiPenilaianSeeder::class,
             KonfigurasiSertifikatSeeder::class,
@@ -27,7 +28,6 @@ class DatabaseSeeder extends Seeder
         if (app()->environment('local')) {
             $seeders[] = AdminUserSeeder::class;
             $seeders[] = SampleUserSeeder::class;
-            $seeders[] = RestoreFromBackupSeeder::class;
         }
 
         $this->call($seeders);

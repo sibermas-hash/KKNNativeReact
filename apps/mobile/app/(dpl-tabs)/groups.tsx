@@ -14,7 +14,7 @@ export default function DplGroupsScreen() {
     },
   });
 
-  const groups = data?.groups || [];
+  const groups = data?.data?.groups || [];
 
   return (
     <View style={styles.container}>

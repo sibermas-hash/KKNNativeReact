@@ -17,7 +17,7 @@ export default function FinalReportPage() {
     queryKey: ['student', 'final-report'],
     queryFn: async () => {
       const res = await studentApi.finalReport.index() as any;
-      return res;
+      return (res as any).data ?? res;
     },
   });
 

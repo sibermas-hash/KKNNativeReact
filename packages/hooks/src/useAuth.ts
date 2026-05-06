@@ -1,10 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import type { AxiosInstance } from 'axios';
 import { authEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
 
 export function useAuth(client: AxiosInstance) {
-  const endpoints = authEndpoints(client);
+  const endpoints = useMemo(() => authEndpoints(client), [client]);
   const queryClient = useQueryClient();
 
   const useCurrentUser = () =>

@@ -5,12 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Student;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Api\V1\DosenResource;
-use App\Http\Resources\Api\V1\EvaluasiResource;
 use App\Http\Traits\ApiResponse;
-use App\Models\KKN\DplPeriod;
-use App\Models\KKN\EvaluasiDplPeserta;
-use App\Models\KKN\ItemEvaluasiDplPeserta;
+use App\Services\KKN\DplParticipantEvaluationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -18,66 +14,59 @@ class DplEvaluationController extends Controller
 {
     use ApiResponse;
 
+    public function __construct(
+        private readonly DplParticipantEvaluationService $service,
+    ) {}
+
     public function index(): JsonResponse
     {
-        $user = auth()->user();
-        $mahasiswa = $user->mahasiswa;
-        $registration = $mahasiswa?->peserta()->where('status', 'approved')->first();
-
-        if (! $registration?->kelompok_id) {
-            return $this->success(['dpl_list' => [], 'has_submitted' => false]);
-        }
-
-        $group = $registration->kelompok;
-        $dplList = $group->dosen()->wherePivot('role', 'Ketua')->get();
-
-        $hasSubmitted = EvaluasiDplPeserta::where('mahasiswa_id', $mahasiswa->id)
-            ->where('kelompok_id', $group->id)
-            ->exists();
+        $context = $this->service->resolveStudentContext(auth()->user());
 
         return $this->success([
-            'dpl_list' => DosenResource::collection($dplList),
-            'has_submitted' => $hasSubmitted,
-            'period_id' => $registration->periode_id,
+            'eligible'              => $context['eligible'],
+            'reason'                => $context['reason'] ?? null,
+            'criteria'              => $this->service->criteria(),
+            'recommendation_options' => $this->service->recommendationOptions(),
+            'registration'          => $context['registration'] ? [
+                'period_name' => $context['registration']->periode?->name ?? '-',
+            ] : null,
+            'group'                 => $context['group'] ? [
+                'id'            => $context['group']->id,
+                'name'          => $context['group']->nama_kelompok,
+                'code'          => $context['group']->code,
+                'location_name' => $context['group']->lokasi?->village_name ?? '-',
+            ] : null,
+            'dpl'                   => $context['dpl'] ? [
+                'id'   => $context['dpl']->id,
+                'name' => $context['dpl']->nama ?? $context['dpl']->user?->name ?? '-',
+                'nip'  => $context['dpl']->nip,
+            ] : null,
+            'existing_evaluation'   => $context['existingEvaluation'] ? [
+                'id'           => $context['existingEvaluation']->id,
+                'total_score'  => (float) $context['existingEvaluation']->total_score,
+                'recommendation' => $context['existingEvaluation']->recommendation,
+                'notes'        => $context['existingEvaluation']->notes,
+                'submitted_at' => $context['existingEvaluation']->submitted_at?->toIso8601String(),
+                'items'        => $context['existingEvaluation']->items->map(fn ($item) => [
+                    'criterion_key'   => $item->criterion_key,
+                    'criterion_label' => $item->criterion_label,
+                    'score'           => $item->score,
+                    'weight'          => $item->weight,
+                ])->values(),
+            ] : null,
         ]);
     }
 
     public function store(Request $request): JsonResponse
     {
-        $user = auth()->user();
-        $mahasiswa = $user->mahasiswa;
-        $registration = $mahasiswa?->peserta()->where('status', 'approved')->first();
-
-        if (! $registration?->kelompok_id) {
-            return $this->forbidden();
-        }
-
-        $validated = $request->validate([
-            'dosen_id' => ['required', 'exists:dosen,id'],
-            'ratings' => ['required', 'array', 'min:1'],
-            'ratings.*.aspect' => ['required', 'string'],
-            'ratings.*.score' => ['required', 'integer', 'min:1', 'max:5'],
-            'comment' => ['nullable', 'string', 'max:2000'],
+        $request->validate([
+            'scores'         => ['required', 'array'],
+            'recommendation' => ['required', 'string', 'in:'.implode(',', array_keys($this->service->recommendationOptions()))],
+            'notes'          => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $eval = EvaluasiDplPeserta::create([
-            'mahasiswa_id' => $mahasiswa->id,
-            'dosen_id' => $validated['dosen_id'],
-            'kelompok_id' => $registration->kelompok_id,
-            'periode_id' => $registration->periode_id,
-            'comment' => $validated['comment'] ?? null,
-        ]);
+        $this->service->store($request->user(), $request->validated());
 
-        foreach ($validated['ratings'] as $rating) {
-            ItemEvaluasiDplPeserta::create([
-                'evaluasi_dpl_peserta_id' => $eval->id,
-                'aspect' => $rating['aspect'],
-                'score' => $rating['score'],
-            ]);
-        }
-
-        return $this->created([
-            'id' => $eval->id,
-        ], 'Evaluasi DPL berhasil dikirim. Terima kasih atas masukan Anda.');
+        return $this->created([], 'Evaluasi DPL berhasil dikirim. Terima kasih atas umpan balik Anda.');
     }
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AdminKeyController;
 use App\Http\Controllers\Api\AttendanceController;
+use App\Http\Controllers\HealthController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PublicDataController;
 use App\Http\Controllers\Api\RegistrationController;
@@ -23,6 +24,12 @@ use Illuminate\Support\Facades\Route;
  | be assigned to the "api" middleware group. Make something great!
  |
  */
+
+// ── Health Checks ─────────────────────────────────────────────────────────
+// Monitoring, load balancer, and Kubernetes probes. No auth required.
+
+Route::get('/health', [HealthController::class, 'check'])->name('api.health');
+Route::get('/ready', [HealthController::class, 'ready'])->name('api.ready');
 
 // ── V1 API ────────────────────────────────────────────────────────────────
 // New JSON API for Next.js SPA and React Native mobile app.
@@ -88,6 +95,7 @@ Route::prefix('v1')->group(function () {
 
     // Admin routes
     require __DIR__.'/api/v1-admin.php';
+require __DIR__.'/api/v1-domisili.php';
 });
 
 // ── Legacy API (keep existing routes) ─────────────────────────────────────
@@ -124,11 +132,20 @@ Route::middleware(['auth:sanctum', 'throttle:60,1'])->name('api.')->group(functi
 // Frontend Error Logging (no auth required - errors can happen before login)
 Route::post('log-error', function (Request $request) {
     $validated = $request->validate([
-        'message' => 'required|string|max:2000',
-        'url' => 'nullable|string|max:2048',
-        'stack' => 'nullable|string|max:10000',
+        'message' => 'required|string|max:1000',
+        'url' => 'nullable|string|max:1000',
+        'stack' => 'nullable|string|max:5000',
     ]);
-    Log::channel('frontend')->error('Frontend Error: '.$validated['message'], $validated);
+
+    $sanitize = fn (string $value): string => preg_replace('/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/', '', $value);
+
+    $payload = [
+        'message' => $sanitize($validated['message']),
+        'url' => isset($validated['url']) ? $sanitize($validated['url']) : null,
+        'stack' => isset($validated['stack']) ? $sanitize($validated['stack']) : null,
+    ];
+
+    Log::channel('frontend')->error('Frontend Error: '.$payload['message'], $payload);
 
     return response()->json(['status' => 'logged']);
 })->middleware('throttle:10,1')->name('api.log-error');
@@ -148,11 +165,8 @@ Route::post('/register', [RegistrationController::class, 'register'])
     ->middleware('throttle:5,1')
     ->name('api.register');
 
-// Public Data API (protected by API key middleware)
+// Public Data API (protected by API key middleware, READ-ONLY)
 // NOTE: Uses /data/ prefix to avoid shadowing V1 authenticated routes
 Route::middleware(['api.key', 'throttle:60,1'])->prefix('v1/data')->name('api.v1.data.')->group(function () {
     Route::get('/{table}', [PublicDataController::class, 'index'])->name('index');
-    Route::post('/{table}', [PublicDataController::class, 'store'])->name('store');
-    Route::patch('/{table}/{id}', [PublicDataController::class, 'update'])->name('update');
-    Route::delete('/{table}/{id}', [PublicDataController::class, 'destroy'])->name('destroy');
 });

@@ -25,7 +25,7 @@ export default function DplDailyReportsPage() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['dpl', 'daily-reports'] }); toast.success('Laporan disetujui'); },
   });
 
-  const reports = (data?.data as Record<string, unknown>[]) || [];
+  const reports = (data as Record<string, unknown>[]) || [];
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">

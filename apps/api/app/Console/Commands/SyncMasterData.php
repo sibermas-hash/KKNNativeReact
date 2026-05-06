@@ -19,6 +19,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Attribute\AsCommand;
 
@@ -68,15 +69,30 @@ class SyncMasterData extends Command
             $this->info('Master API is UP');
         } else {
             $this->info('Syncing directly from database (using default connection)');
-            try {
-                DB::connection()->getPdo();
-                $this->info('Database connection is UP');
-            } catch (\Exception $e) {
-                $this->error('Database connection failed: '.$e->getMessage());
+        }
+
+        // ALWAYS verify database connection before writing
+        try {
+            DB::connection()->getPdo();
+            $dbName = DB::connection()->getDatabaseName();
+            $this->info("Database connection OK: {$dbName}");
+        } catch (\Exception $e) {
+            $this->error('Database connection failed: '.$e->getMessage());
+            $this->error('Sync cannot proceed without a working database. Please check your .env DB_* settings and ensure PostgreSQL is running.');
+
+            return 1;
+        }
+
+        // Verify migrations have been run by checking if core tables exist
+        $requiredTables = ['fakultas', 'prodi', 'dosen', 'mahasiswa', 'users'];
+        foreach ($requiredTables as $table) {
+            if (! Schema::hasTable($table)) {
+                $this->error("Table '{$table}' does not exist. Please run: php artisan migrate");
 
                 return 1;
             }
         }
+        $this->info('All required tables verified.');
 
         // REMOVED: DB::beginTransaction() at global level to prevent long-running mass locks
         // We will use individual transactions or direct writes per record for stability
@@ -156,29 +172,25 @@ class SyncMasterData extends Command
                     continue;
                 }
 
-                // If name is "Default Faculty" or contains "Fakultas" or level 2
-                $isFaculty = str_contains(strtolower($name), 'fakultas') 
-                    || (int) ($orgData['level'] ?? 0) === 2
-                    || $name === 'Default Faculty';
+                // Sync ALL organizations from the API as fakultas.
+                // The API already curates which orgs it returns;
+                // filtering by name/level caused FK violations for mahasiswa
+                // whose fakultas_id didn't pass the old filter.
+                $faculty = Fakultas::updateOrCreate(
+                    ['master_id' => $this->normalizeMasterId($orgData['id'] ?? null) ?? $code],
+                    [
+                        'code' => $code,
+                        'nama' => $name,
+                        'short_name' => trim((string) ($orgData['short_name'] ?? '')),
+                        'level' => isset($orgData['level']) ? (int) $orgData['level'] : null,
+                        'master_synced_at' => $now,
+                    ]
+                );
 
-                if ($isFaculty) {
-                    $faculty = Fakultas::updateOrCreate(
-                        ['master_id' => $this->normalizeMasterId($orgData['id'] ?? null) ?? $code],
-                        [
-                            'code' => $code,
-                            'nama' => $name,
-                            'short_name' => trim((string) ($orgData['short_name'] ?? '')),
-                            'master_synced_at' => $now,
-                        ]
-                    );
-
-                    if ($faculty->wasRecentlyCreated) {
-                        $stats['total_created']++;
-                    } else {
-                        $stats['total_updated']++;
-                    }
+                if ($faculty->wasRecentlyCreated) {
+                    $stats['total_created']++;
                 } else {
-                    $stats['total_skipped']++;
+                    $stats['total_updated']++;
                 }
             } catch (\Exception $e) {
                 $stats['total_errors']++;
@@ -187,8 +199,38 @@ class SyncMasterData extends Command
             }
         }
 
+        // Deduplicate: API may return same faculty with different master_ids
+        // (e.g. "FDAK" and "Dakwah" both for "Fakultas Dakwah")
+        // Keep the canonical record (earliest ID) and merge FKs from duplicates.
+        $duplicateGroups = DB::table('fakultas')
+            ->whereNull('deleted_at')
+            ->select('nama', DB::raw('COUNT(*) as cnt'), DB::raw('MIN(id) as canonical_id'))
+            ->groupBy('nama')
+            ->having(DB::raw('COUNT(*)'), '>', 1)
+            ->get();
+
+        foreach ($duplicateGroups as $group) {
+            $duplicateIds = DB::table('fakultas')
+                ->whereNull('deleted_at')
+                ->where('nama', $group->nama)
+                ->where('id', '!=', $group->canonical_id)
+                ->pluck('id');
+
+            foreach ($duplicateIds as $dupId) {
+                // Reassign all FKs to canonical
+                DB::table('dosen')->where('fakultas_id', $dupId)->update(['fakultas_id' => $group->canonical_id]);
+                DB::table('mahasiswa')->where('fakultas_id', $dupId)->update(['fakultas_id' => $group->canonical_id]);
+                DB::table('prodi')->where('fakultas_id', $dupId)->update(['fakultas_id' => $group->canonical_id]);
+
+                // Soft-delete the duplicate
+                DB::table('fakultas')->where('id', $dupId)->update(['deleted_at' => $now]);
+
+                $this->warn("  Merged duplicate fakultas ID={$dupId} → ID={$group->canonical_id} ({$group->nama})");
+            }
+        }
+
         $endTime = now();
-        $duration = (int) $endTime->diffInSeconds($startTime);
+        $duration = (int) abs($endTime->diffInSeconds($startTime));
 
         SyncLog::create([
             'sync_type' => $isDelta ? 'delta' : 'full',
@@ -283,7 +325,8 @@ class SyncMasterData extends Command
                         'code' => $this->resolveProgramCode($programData, $name),
                         'nama' => $name,
                         'short_name' => trim((string) ($programData['short_name'] ?? '')),
-                        'jenjang' => trim((string) ($programData['jenjang'] ?? '')),
+                        'jenjang' => trim((string) ($programData['jenjang'] ?? $programData['degree'] ?? '')),
+                        'organization_id' => $facultyMasterId,
                         'master_synced_at' => $now,
                     ]
                 );
@@ -308,7 +351,7 @@ class SyncMasterData extends Command
         }
 
         $endTime = now();
-        $duration = (int) $endTime->diffInSeconds($startTime);
+        $duration = (int) abs($endTime->diffInSeconds($startTime));
 
         SyncLog::create([
             'sync_type' => $isDelta ? 'delta' : 'full',
@@ -375,6 +418,9 @@ class SyncMasterData extends Command
             $this->info('  Created Default Faculty as fallback');
         }
 
+        // Build faculty map for proper dosen→fakultas mapping
+        $facultyMap = Fakultas::pluck('id', 'master_id')->all();
+
         foreach ($employees as $emp) {
             $stats['total_fetched']++;
 
@@ -394,6 +440,13 @@ class SyncMasterData extends Command
 
                 // Use 'nip' as stable identifier
                 $nip = $empData['nip'] ?? null;
+
+                // Log ALL fields from the first record so we can verify mapping
+                if ($stats['total_fetched'] <= 1) {
+                    Log::info('DOSEN SYNC: First raw record from API', $empData);
+                    $this->info('  First dosen raw keys: ' . implode(', ', array_keys($empData)));
+                }
+
                 if (! $nip) {
                     $stats['total_skipped']++;
 
@@ -405,7 +458,7 @@ class SyncMasterData extends Command
                 $incomingEmail = $empData['email'] ?? null;
                 $fallbackEmail = $username.'@kkn.local';
 
-                DB::transaction(function () use ($empData, $nip, $username, $incomingEmail, $fallbackEmail, &$stats, $now, $defaultFaculty) {
+                DB::transaction(function () use ($empData, $nip, $username, $incomingEmail, $fallbackEmail, &$stats, $now, $defaultFaculty, $facultyMap) {
                     // Upsert by username. Jika user belum ada, coba pakai email dari API.
                     // Jika email sudah dipakai user lain (duplicate), gunakan fallback @kkn.local.
                     $user = User::firstOrNew(['username' => $username]);
@@ -447,18 +500,33 @@ class SyncMasterData extends Command
                     $statusAktif = strtoupper($empData['status_aktif'] ?? $empData['active_status'] ?? 'AKTIF');
                     $isTugasBelajar = str_contains($statusAktif, 'TUGAS BELAJAR') || ($empData['is_tugas_belajar'] ?? false);
 
+                    // Map dosen to proper fakultas from API data
+                    $dosenOrgMasterId = $this->normalizeMasterId(
+                        $empData['organization_id']
+                        ?? $empData['fakultas_id']
+                        ?? $empData['faculty_id']
+                        ?? null
+                    );
+                    $dosenFakultasId = $dosenOrgMasterId !== null
+                        ? ($facultyMap[$dosenOrgMasterId] ?? null)
+                        : null;
+                    $dosenFakultasId ??= $defaultFaculty?->id;
+
                     $dosen = Dosen::updateOrCreate(
                         ['nip' => $nip],
                         [
                             'master_id' => (string) $empData['id'],
                             'user_id' => $user->id,
                             'nama' => $empData['nama'] ?? $empData['name'] ?? 'Unknown',
-                            'fakultas_id' => $defaultFaculty?->id,
+                            'fakultas_id' => $dosenFakultasId,
                             'phone' => $empData['telepon'] ?? $empData['phone'] ?? null,
                             'gender' => $empData['jenis_kelamin'] ?? $empData['gender'] ?? 'L',
                             'birth_date' => $empData['tanggal_lahir'] ?? $empData['birth_date'] ?? null,
                             'is_cpns' => $isCpns,
                             'is_tugas_belajar' => $isTugasBelajar,
+                            'jabatan' => $empData['jabatan'] ?? $empData['jabatan_fungsional'] ?? null,
+                            'golongan' => $empData['golongan'] ?? $empData['pangkat_golongan'] ?? null,
+                            'npwp' => $empData['npwp'] ?? null,
                             'status_aktif' => $empData['status_aktif'] ?? null,
                             'status_pegawai' => $empData['status_pegawai'] ?? null,
                             'no_rekening' => $empData['no_rekening'] ?? null,
@@ -480,12 +548,13 @@ class SyncMasterData extends Command
             } catch (\Exception $e) {
                 $stats['total_errors']++;
                 $errorDetails[] = ['nip' => $nip ?? 'unknown', 'error' => $e->getMessage()];
+                $this->error("  FAIL lecturer NIP={$nip}: {$e->getMessage()}");
                 Log::warning('Failed to sync lecturer', ['nip' => $nip ?? 'unknown', 'error' => $e->getMessage()]);
             }
         }
 
         $endTime = now();
-        $duration = (int) $endTime->diffInSeconds($startTime);
+        $duration = (int) abs($endTime->diffInSeconds($startTime));
 
         SyncLog::create([
             'sync_type' => $isDelta ? 'delta' : 'full',
@@ -586,6 +655,13 @@ class SyncMasterData extends Command
                 ] : $stud;
 
                 $nim = $studData['nim'] ?? null;
+
+                // Log ALL fields from the first record so we can verify mapping
+                if ($stats['total_fetched'] <= 1) {
+                    Log::info('MAHASISWA SYNC: First raw record from API', $studData);
+                    $this->info('  First mahasiswa raw keys: ' . implode(', ', array_keys($studData)));
+                }
+
                 if (! $nim) {
                     $stats['total_skipped']++;
 
@@ -621,6 +697,26 @@ class SyncMasterData extends Command
 
                     $organizationMasterId = isset($studData['fakultas_id']) ? (string) $studData['fakultas_id'] : (isset($studData['organization_id']) ? (string) $studData['organization_id'] : null);
                     $facultyId = $organizationMasterId !== null ? ($facultyMap[$organizationMasterId] ?? null) : null;
+
+                    // Guard: verify mapped fakultas_id actually exists (handles stale maps / soft-deleted rows).
+                    // If not found, auto-create the fakultas record so the FK is satisfied.
+                    if ($facultyId !== null && ! Fakultas::where('id', $facultyId)->exists()) {
+                        $facultyId = null;
+                    }
+                    if ($facultyId === null && $organizationMasterId !== null) {
+                        // Auto-create a stub fakultas from the master_id so future syncs pick it up
+                        $stubFaculty = Fakultas::firstOrCreate(
+                            ['master_id' => $organizationMasterId],
+                            [
+                                'code' => $organizationMasterId,
+                                'nama' => 'Fakultas ' . $organizationMasterId,
+                                'master_synced_at' => $now,
+                            ]
+                        );
+                        $facultyId = $stubFaculty->id;
+                        // Update the map for subsequent iterations
+                        $facultyMap[$organizationMasterId] = $facultyId;
+                    }
 
                     $username = (string) $nim;
                     $incomingEmail = $studData['email'] ?? null;
@@ -660,6 +756,7 @@ class SyncMasterData extends Command
                             'nim' => $nim,
                             'nik' => $studData['nik'] ?? null,
                             'nama' => $studData['nama'] ?? $studData['name'] ?? 'Unknown',
+                            'mother_name' => $studData['nama_ibu'] ?? $studData['mother_name'] ?? null,
                             'fakultas_id' => $facultyId ?? $defaultFaculty?->id,
                             'prodi_id' => $prodiId,
                             'batch_year' => $studData['angkatan'] ?? $studData['batch_year'] ?? date('Y'),
@@ -693,12 +790,13 @@ class SyncMasterData extends Command
             } catch (\Exception $e) {
                 $stats['total_errors']++;
                 $errorDetails[] = ['nim' => $nim ?? 'unknown', 'error' => $e->getMessage()];
+                $this->error("  FAIL student NIM={$nim}: {$e->getMessage()}");
                 Log::warning('Failed to sync student', ['nim' => $nim ?? 'unknown', 'error' => $e->getMessage()]);
             }
         }
 
         $endTime = now();
-        $duration = (int) $endTime->diffInSeconds($startTime);
+        $duration = (int) abs($endTime->diffInSeconds($startTime));
 
         SyncLog::create([
             'sync_type' => $isDelta ? 'delta' : 'full',

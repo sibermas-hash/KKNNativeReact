@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use App\Services\CaptchaService;
 
 class LoginRequest extends FormRequest
 {
@@ -35,19 +36,10 @@ class LoginRequest extends FormRequest
 
     public function authenticate(): void
     {
-        \Log::info('=== AUTHENTICATE DEBUG ===', [
-            'credentials' => $this->credentials(),
-            'session_id' => $this->session()->getId(),
-            'csrf_token' => $this->session()->token(),
-            '_token' => $this->input('_token'),
-        ]);
-
         $this->ensureIsNotRateLimited();
 
         if (! Auth::attempt($this->credentials(), $this->boolean('remember'))) {
             RateLimiter::hit($this->throttleKey());
-
-            \Log::warning('Auth attempt failed', ['credentials' => $this->credentials()]);
 
             throw ValidationException::withMessages([
                 'login' => __('auth.failed'),

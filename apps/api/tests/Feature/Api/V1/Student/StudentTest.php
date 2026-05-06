@@ -36,36 +36,42 @@ describe('Student API', function () {
     });
 
     describe('Endpoints return JSON', function () {
-        it('work programs returns JSON response', function () {
+        // Users without complete profile get PROFILE_INCOMPLETE (403), not success.
+        // These tests verify the middleware fires correctly for incomplete profiles.
+        it('work programs returns 403 PROFILE_INCOMPLETE for incomplete profile', function () {
             $user = User::factory()->create(['is_active' => true]);
             $user->assignRole('student');
 
             $this->actingAs($user)->getJson('/api/v1/student/work-programs')
-                ->assertJson(['success' => true]);
+                ->assertStatus(403)
+                ->assertJsonPath('error.code', 'PROFILE_INCOMPLETE');
         });
 
-        it('certificates returns JSON response', function () {
+        it('certificates returns 403 PROFILE_INCOMPLETE for incomplete profile', function () {
             $user = User::factory()->create(['is_active' => true]);
             $user->assignRole('student');
 
             $this->actingAs($user)->getJson('/api/v1/student/certificates')
-                ->assertJson(['success' => true]);
+                ->assertStatus(403)
+                ->assertJsonPath('error.code', 'PROFILE_INCOMPLETE');
         });
 
-        it('leave requests returns JSON response', function () {
+        it('leave requests returns 403 PROFILE_INCOMPLETE for incomplete profile', function () {
             $user = User::factory()->create(['is_active' => true]);
             $user->assignRole('student');
 
             $this->actingAs($user)->getJson('/api/v1/student/leave-requests')
-                ->assertJson(['success' => true]);
+                ->assertStatus(403)
+                ->assertJsonPath('error.code', 'PROFILE_INCOMPLETE');
         });
 
-        it('final report returns JSON response', function () {
+        it('final report returns 403 PROFILE_INCOMPLETE for incomplete profile', function () {
             $user = User::factory()->create(['is_active' => true]);
             $user->assignRole('student');
 
             $this->actingAs($user)->getJson('/api/v1/student/final-report')
-                ->assertJson(['success' => true]);
+                ->assertStatus(403)
+                ->assertJsonPath('error.code', 'PROFILE_INCOMPLETE');
         });
     });
 

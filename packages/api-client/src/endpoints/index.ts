@@ -59,6 +59,9 @@ export function studentEndpoints(client: AxiosInstance) {
     // GAP-2: workshops
     workshops: {
       index: () => client.get('/student/workshops'),
+      show: (id: number) => client.get(`/student/workshops/${id}`),
+      attend: (id: number, data: { token: string; latitude: number; longitude: number; device_signature: string; ip?: string }) =>
+        client.post(`/student/workshops/${id}/attend`, data),
     },
     // GAP-3: posko
     posko: {
@@ -217,6 +220,7 @@ export function adminEndpoints(client: AxiosInstance) {
       index: (params?: Record<string, unknown>) => client.get('/admin/pengguna', { params }),
       store: (data: Record<string, unknown>) => client.post('/admin/pengguna', data),
       toggleStatus: (id: number) => client.patch(`/admin/pengguna/${id}/ubah-status`),
+      updateRole: (id: number, data: { role: string }) => client.patch(`/admin/pengguna/${id}/role`, data),
       resetPassword: (id: number) => client.post(`/admin/pengguna/${id}/reset-password`),
       students: (params?: Record<string, unknown>) => client.get('/admin/mahasiswa', { params }),
       lecturers: (params?: Record<string, unknown>) => client.get('/admin/dosen', { params }),
@@ -276,6 +280,22 @@ export function publicEndpoints(client: AxiosInstance) {
 export function notificationsEndpoints(client: AxiosInstance) {
   return {
     registerDevice: (data: Record<string, unknown>) => client.post('/device-tokens', data),
+  };
+}
+
+export function attendanceEndpoints(client: AxiosInstance) {
+  return {
+    index: (params?: Record<string, unknown>) => client.get('/attendance', { params }),
+    store: (data: Record<string, unknown>) => client.post('/attendance', data),
+    show: (id: number) => client.get(`/attendance/${id}`),
+    syncStatus: () => client.get('/attendance/sync-status'),
+    retrySync: () => client.post('/attendance/retry-sync'),
+  };
+}
+
+export function serverTimeEndpoints(client: AxiosInstance) {
+  return {
+    get: () => client.get('/server-time'),
   };
 }
 

@@ -41,6 +41,8 @@ return [
         'timeout' => env('MASTER_API_TIMEOUT', 30),
         'circuit_breaker_threshold' => env('MASTER_API_CIRCUIT_BREAKER_THRESHOLD', 5),
         'circuit_breaker_timeout' => env('MASTER_API_CIRCUIT_BREAKER_TIMEOUT', 300),
+        'webhook_secret' => env('MASTER_WEBHOOK_SECRET'),
+        'webhook_window_seconds' => env('MASTER_WEBHOOK_WINDOW_SECONDS', 600),
     ],
 
     'gemini' => [

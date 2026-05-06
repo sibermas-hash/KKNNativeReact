@@ -12,8 +12,8 @@ export default function GroupDetailPage() {
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.dpl.group(Number(id)),
     queryFn: async () => {
-      const res = await dplApi.groups.show(Number(id));
-      return res;
+      const res = await dplApi.groups.show(Number(id)) as unknown as { success: boolean; data: Record<string, unknown> };
+      return res.data;
     },
     enabled: !!id,
   });

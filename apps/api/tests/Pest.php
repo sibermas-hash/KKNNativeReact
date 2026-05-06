@@ -11,9 +11,19 @@ use Tests\TestCase;
 |--------------------------------------------------------------------------
 */
 
+// SECURITY FIX: RefreshDatabase causes PostgreSQL deadlocks when multiple
+// test classes concurrently DROP tables. We run migrations once up-front
+// and rely on DatabaseTransactions to roll back data after each test.
 pest()->extend(TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+    ->use(Illuminate\Foundation\Testing\DatabaseTransactions::class)
     ->in('Feature');
+
+// Run migrations once before the entire Feature test suite.
+// This is safe because DatabaseTransactions only starts a transaction
+// inside setUp(), which runs *after* this beforeAll hook.
+beforeAll(function () {
+    \Illuminate\Support\Facades\Artisan::call('migrate:fresh');
+});
 
 /*
 |--------------------------------------------------------------------------

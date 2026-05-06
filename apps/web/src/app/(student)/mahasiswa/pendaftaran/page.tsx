@@ -1,19 +1,35 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { studentEndpoints } from '@sibermas/api-client';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api, studentApi } from '@/lib/api';
+import { studentApi } from '@/lib/api';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import toast from 'react-hot-toast';
+import { CheckCircle2, XCircle } from 'lucide-react';
 
 export default function RegistrationFormPage() {
-  
+  const router = useRouter();
+  const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.registration.form,
     queryFn: async () => {
       const res = await studentApi.registration.form();
-      return res;
+      return (res as any).data ?? res;
+    },
+  });
+
+  // Step 1: POST /student/registration → buat PesertaKkn dulu
+  const registerMutation = useMutation({
+    mutationFn: (periodeId: number) => studentApi.registration.store({ periode_id: periodeId }),
+    onSuccess: (_data, periodeId) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.registration.form });
+      router.push(`/mahasiswa/pendaftaran/${periodeId}/dokumen`);
+    },
+    onError: (err: any) => {
+      const msg = err?.response?.data?.error?.message || 'Gagal mendaftar. Periksa kelayakan Anda.';
+      toast.error(msg);
     },
   });
 
@@ -22,6 +38,7 @@ export default function RegistrationFormPage() {
   const periods = (data?.periods as Record<string, unknown>[]) || [];
   const eligibility = data?.eligibility as Record<string, unknown> | undefined;
   const existing = data?.existing_registration as Record<string, unknown> | null | undefined;
+  const isEligible = (eligibility as any)?.eligible === true;
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -43,16 +60,36 @@ export default function RegistrationFormPage() {
       {eligibility && (
         <div className="rounded-2xl bg-white p-6 shadow-sm">
           <h2 className="mb-4 text-lg font-semibold text-slate-700">Kelayakan</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-xs text-slate-500">SKS</p>
-              <p className="font-semibold">{String((eligibility as Record<string, unknown>)?.sks_completed || '-')}</p>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500">IPK</p>
-              <p className="font-semibold">{String((eligibility as Record<string, unknown>)?.gpa || '-')}</p>
-            </div>
+          <div className="space-y-2">
+            {((eligibility as any).checks as Array<{ key: string; label: string; met: boolean; message?: string }> || []).map((check) => (
+              <div key={check.key} className="flex items-center gap-3">
+                {check.met
+                  ? <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                  : <XCircle className="h-4 w-4 shrink-0 text-red-400" />}
+                <span className={`text-sm ${check.met ? 'text-slate-700' : 'text-red-600'}`}>
+                  {check.label}{check.message ? ` — ${check.message}` : ''}
+                </span>
+              </div>
+            ))}
+            {/* Fallback jika backend tidak kirim checks array */}
+            {!((eligibility as any).checks) && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-xs text-slate-500">SKS</p>
+                  <p className="font-semibold">{String((eligibility as any)?.sks_completed || '-')}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">IPK</p>
+                  <p className="font-semibold">{String((eligibility as any)?.gpa || '-')}</p>
+                </div>
+              </div>
+            )}
           </div>
+          {!isEligible && (
+            <p className="mt-4 rounded-lg bg-red-50 px-4 py-2 text-sm text-red-600">
+              Anda belum memenuhi syarat pendaftaran KKN.
+            </p>
+          )}
         </div>
       )}
 
@@ -74,7 +111,13 @@ export default function RegistrationFormPage() {
                     <p className="text-sm text-slate-500">Periode {String(p.periode || '-')} | Kuota: {String(p.kuota || '-')}</p>
                     <p className="text-xs text-slate-500 mt-1">{String(p.start_date || '-')} — {String(p.end_date || '-')}</p>
                   </div>
-                  <Link href={`/mahasiswa/pendaftaran/${p.id}/dokumen`} className="rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700">Daftar</Link>
+                  <button
+                    onClick={() => registerMutation.mutate(Number(p.id))}
+                    disabled={!isEligible || registerMutation.isPending}
+                    className="rounded-xl bg-teal-600 px-4 py-2 text-sm font-semibold text-white hover:bg-teal-700 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    {registerMutation.isPending ? 'Memproses...' : 'Daftar'}
+                  </button>
                 </div>
                 {p.jenis_kkn ? (
                   <div className="mt-3 rounded-lg bg-slate-50 px-3 py-2">

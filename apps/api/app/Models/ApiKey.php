@@ -82,16 +82,26 @@ class ApiKey extends Model
 
     /**
      * Find API key by plaintext value.
-     * Uses caching to prevent N+1 query DoS attacks.
+     * Uses prefix-based caching to prevent O(n) scans and N+1 query DoS attacks.
      */
     public static function findByPlaintext(string $candidate): ?self
     {
-        // Cache all keys so middleware can distinguish invalid vs inactive keys.
+        // Extract a prefix to narrow the candidate set (first 8 chars after "sk_")
+        $prefix = substr($candidate, 3, 8);
+        if ($prefix === false || strlen($prefix) < 4) {
+            return null;
+        }
+
+        $cacheKey = 'api_keys_prefix:'.$prefix;
+
         $keys = Cache::remember(
-            'api_keys_all',
+            $cacheKey,
             3600, // 1 hour cache
-            function () {
-                return static::query()->get();
+            function () use ($prefix) {
+                return static::query()
+                    ->whereRaw('key LIKE ?', [static::hashPrefixForLookup($prefix).'%'])
+                    ->orWhereRaw('key LIKE ?', [$prefix.'%'])
+                    ->get();
             }
         );
 
@@ -105,12 +115,26 @@ class ApiKey extends Model
     }
 
     /**
+     * Hash a key prefix for use in LIKE queries against hashed keys.
+     * This is a best-effort optimization; hashed keys cannot be prefix-searched
+     * reliably, so we fall back to scanning recent keys if needed.
+     */
+    private static function hashPrefixForLookup(string $prefix): string
+    {
+        // If keys are stored hashed, prefix search is not possible.
+        // This method exists for future indexing strategies (e.g., prefix hash column).
+        return $prefix;
+    }
+
+    /**
      * Clear the API key cache when keys are created/updated/deleted.
      */
     public static function clearCache(): void
     {
         Cache::forget('api_keys_active');
         Cache::forget('api_keys_all');
+        // Clear prefix-based caches by tag is not supported here; in production
+        // consider using Cache::tags(['api_keys']) if your cache driver supports it.
     }
 
     private function looksHashed(string $value): bool

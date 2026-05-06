@@ -55,7 +55,7 @@ class AttendanceController extends Controller
 
         $user = auth()->user();
         $pesertaKkn = PesertaKkn::where('user_id', $user->id)
-            ->where('status', 'accepted')
+            ->where('status', 'approved')
             ->first();
 
         if (! $pesertaKkn) {
@@ -259,6 +259,19 @@ class AttendanceController extends Controller
             $imageData = base64_decode(explode(',', $base64)[1] ?? $base64);
 
             if (! $imageData) {
+                return;
+            }
+
+            // SECURITY: Validate MIME type of decoded bytes before image processing
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $mimeType = $finfo->buffer($imageData);
+            $allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+            if (! in_array($mimeType, $allowedMimes, true)) {
+                \Log::warning('Attendance photo rejected: invalid MIME type', [
+                    'attendance_id' => $attendance->id,
+                    'mime' => $mimeType,
+                ]);
+
                 return;
             }
 

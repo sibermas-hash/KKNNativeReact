@@ -30,7 +30,7 @@ export default function DplIzinPage() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['dpl', 'leave-requests'] }); setRejectId(null); setRejectReason(''); toast.success('Izin ditolak'); },
   });
 
-  const izinList = (data?.data as Record<string, unknown>[]) || [];
+  const izinList = (data as Record<string, unknown>[]) || [];
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">

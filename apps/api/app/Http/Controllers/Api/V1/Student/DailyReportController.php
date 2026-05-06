@@ -193,6 +193,7 @@ class DailyReportController extends Controller
     {
         $radiusMeters = (int) SystemSetting::get('daily_report_geo_radius_meters', '5000');
         $maxAccuracy = (int) SystemSetting::get('daily_report_geo_max_accuracy_meters', '250');
+        $isSuperadmin = auth()->user()->hasRole('superadmin');
 
         $reference = null;
         if ($group->posko?->latitude !== null && $group->posko?->longitude !== null) {
@@ -202,7 +203,7 @@ class DailyReportController extends Controller
         }
 
         $accuracy = isset($validated['gps_accuracy']) ? (float) $validated['gps_accuracy'] : null;
-        if ($accuracy !== null && $maxAccuracy > 0 && $accuracy > $maxAccuracy && ! auth()->user()->hasRole('superadmin')) {
+        if ($accuracy !== null && $maxAccuracy > 0 && $accuracy > $maxAccuracy && ! $isSuperadmin) {
             throw ValidationException::withMessages([
                 'gps_accuracy' => "Akurasi GPS terlalu lemah ({$accuracy} m).",
             ]);
@@ -216,7 +217,7 @@ class DailyReportController extends Controller
                 $reference['lng']
             );
 
-            if ($distance > $radiusMeters && ! auth()->user()->hasRole('superadmin')) {
+            if ($distance > $radiusMeters && ! $isSuperadmin) {
                 throw ValidationException::withMessages([
                     'latitude' => 'Lokasi GPS berada di luar radius yang diizinkan ('.round($distance).' m).',
                 ]);

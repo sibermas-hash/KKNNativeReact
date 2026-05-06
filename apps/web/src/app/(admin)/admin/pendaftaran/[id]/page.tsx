@@ -15,7 +15,7 @@ export default function RegistrationDetailPage() {
     queryKey: ['admin', 'registration', Number(id)],
     queryFn: async () => {
       const res = await adminApi.registrations.show(Number(id));
-      return res;
+      return res.data;
     },
     enabled: !!id,
   });

@@ -12,7 +12,7 @@ export default function WorkProgramDetailPage() {
   
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'work-program', Number(id)],
-    queryFn: async () => { const res = await studentApi.workPrograms.show(Number(id)); return res; },
+    queryFn: async () => { const res = await studentApi.workPrograms.show(Number(id)); return (res as any).data ?? res; },
     enabled: !!id,
   });
 

@@ -30,6 +30,8 @@ class Dosen extends Model
         'gender',
         'is_cpns',
         'is_tugas_belajar',
+        'status_aktif',
+        'status_pegawai',
         'fakultas_id',
         'master_id',
         'master_synced_at',

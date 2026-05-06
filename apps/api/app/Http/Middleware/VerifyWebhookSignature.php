@@ -19,7 +19,7 @@ class VerifyWebhookSignature
             return response()->json(['error' => 'Signature missing'], 401);
         }
 
-        $secret = config('services.master_api.webhook_secret') ?? env('MASTER_WEBHOOK_SECRET');
+        $secret = config('services.master_api.webhook_secret');
         
         if (! $secret) {
             Log::critical('Webhook secret not configured. Set MASTER_WEBHOOK_SECRET in .env');

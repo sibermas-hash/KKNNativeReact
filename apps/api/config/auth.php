@@ -114,4 +114,17 @@ return [
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Test Auto Login
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, the TestAutoLogin middleware will allow authentication
+    | bypass via the X-Test-Mode and X-Test-Login headers. This MUST be
+    | disabled in production and only used in controlled test environments.
+    |
+    */
+
+    'test_auto_login_enabled' => env('AUTH_TEST_AUTO_LOGIN_ENABLED', false),
+
 ];

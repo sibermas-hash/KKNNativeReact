@@ -52,9 +52,37 @@ class Periode extends Model
             'is_active' => 'boolean',
             'is_locked' => 'boolean',
             'locked_at' => 'datetime',
-            'jenis' => KknType::class,
             'settings_override' => 'array',
         ];
+    }
+
+    public function getJenisAttribute($value): ?KknType
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if ($value instanceof KknType) {
+            return $value;
+        }
+
+        $enum = KknType::tryFrom($value);
+        if ($enum !== null) {
+            return $enum;
+        }
+
+        return self::inferLegacyJenisEnum($value);
+    }
+
+    public function setJenisAttribute($value): void
+    {
+        if ($value instanceof KknType) {
+            $this->attributes['jenis'] = $value->value;
+        } elseif (is_string($value)) {
+            $this->attributes['jenis'] = $value;
+        } else {
+            $this->attributes['jenis'] = $value;
+        }
     }
 
     public const PROGRAM_TYPE_REGULER = 'reguler';

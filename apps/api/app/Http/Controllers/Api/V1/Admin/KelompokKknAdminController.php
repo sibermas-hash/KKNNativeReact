@@ -51,4 +51,26 @@ class KelompokKknAdminController extends Controller
         $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240']]);
         return $this->success(['imported' => 0], 'Import kelompok selesai.');
     }
+
+    /**
+     * Daftar mahasiswa dalam kelompok (endpoint terpisah untuk tabel).
+     */
+    public function mahasiswaList(KelompokKkn $kelompok): JsonResponse
+    {
+        $peserta = $kelompok->peserta()
+            ->with(['mahasiswa.user', 'mahasiswa.prodi.fakultas'])
+            ->get()
+            ->map(fn ($p) => [
+                'id'           => $p->id,
+                'mahasiswa_id' => $p->mahasiswa?->id,
+                'nim'          => $p->mahasiswa?->nim,
+                'nama'         => $p->mahasiswa?->nama,
+                'prodi'        => $p->mahasiswa?->prodi?->name,
+                'fakultas'     => $p->mahasiswa?->prodi?->fakultas?->name,
+                'role'         => $p->role,
+                'status'       => $p->status,
+            ]);
+
+        return $this->success(['mahasiswa' => $peserta, 'total' => $peserta->count()]);
+    }
 }

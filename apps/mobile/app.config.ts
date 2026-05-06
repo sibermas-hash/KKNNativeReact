@@ -17,9 +17,25 @@ const config: ExpoConfig = {
       backgroundColor: '#0f172a',
     },
     package: 'ac.id.uinsaizu.kkn',
+    permissions: [
+      'CAMERA',
+      'WRITE_EXTERNAL_STORAGE',
+      'READ_EXTERNAL_STORAGE',
+      'ACCESS_FINE_LOCATION',
+      'ACCESS_COARSE_LOCATION',
+      'INTERNET',
+      'VIBRATE',
+      'RECEIVE_BOOT_COMPLETED',
+    ],
   },
   ios: {
     bundleIdentifier: 'ac.id.uinsaizu.kkn',
+    infoPlist: {
+      NSCameraUsageDescription: 'Aplikasi membutuhkan akses kamera untuk mengambil bukti kegiatan.',
+      NSPhotoLibraryUsageDescription: 'Aplikasi membutuhkan akses galeri untuk memilih dan mengunggah foto.',
+      NSLocationWhenInUseUsageDescription: 'Aplikasi membutuhkan akses lokasi untuk pencatatan kehadiran.',
+      NSLocationAlwaysAndWhenInUseUsageDescription: 'Aplikasi membutuhkan akses lokasi untuk pencatatan kehadiran.',
+    },
   },
   plugins: [
     'expo-router',
@@ -33,7 +49,7 @@ const config: ExpoConfig = {
     typedRoutes: true,
   },
   extra: {
-    apiUrl: 'https://sibermas.uinsaizu.ac.id/api/v1',
+    apiUrl: process.env.EXPO_PUBLIC_API_URL || 'https://sibermas.uinsaizu.ac.id/api/v1',
   },
 };
 

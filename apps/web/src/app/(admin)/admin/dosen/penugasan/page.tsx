@@ -14,8 +14,8 @@ export default function DplAssignmentPage() {
       return (res as unknown as { success: boolean; data: unknown[] }).data;
     },
   });
-
-  const assignments = (data?.data as Record<string, unknown>[]) || [];
+  
+  const assignments = (data as Record<string, unknown>[]) || [];
 
   return (
     <div className="space-y-6">

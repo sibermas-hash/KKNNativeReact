@@ -12,7 +12,7 @@ export default function IzinPage() {
   
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.leaveRequests,
-    queryFn: async () => { const res = await studentApi.leaveRequests.index(); return res; },
+    queryFn: async () => { const res = await studentApi.leaveRequests.index(); return (res as any).data ?? res; },
   });
 
   const izinList = data?.izin || [];

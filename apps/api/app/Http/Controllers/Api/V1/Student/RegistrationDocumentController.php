@@ -6,13 +6,19 @@ namespace App\Http\Controllers\Api\V1\Student;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
+use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
+use App\Services\KKN\RegistrationDocumentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class RegistrationDocumentController extends Controller
 {
     use ApiResponse;
+
+    public function __construct(
+        private readonly RegistrationDocumentService $documentService,
+    ) {}
 
     public function store(Request $request, int $id): JsonResponse
     {
@@ -31,19 +37,20 @@ class RegistrationDocumentController extends Controller
             return $this->notFound('Pendaftaran tidak ditemukan.');
         }
 
-        $validated = $request->validate([
-            'health_certificate' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'parent_permission' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-        ]);
+        $periode = Periode::with('jenisKkn')->findOrFail($id);
 
-        if ($request->hasFile('health_certificate')) {
-            $path = $request->file('health_certificate')->store('documents/health', config('filesystems.default'));
-            $mahasiswa->update(['health_certificate_path' => $path]);
-        }
+        // Validasi dinamis berdasarkan requirements jenisKkn (sesuai codebase lama)
+        $rules = $this->documentService->validationRules($periode, $mahasiswa, $registration);
+        $rules['notes'] = ['nullable', 'string', 'max:1000'];
 
-        if ($request->hasFile('parent_permission')) {
-            $path = $request->file('parent_permission')->store('documents/parent', config('filesystems.default'));
-            $mahasiswa->update(['parent_permission_path' => $path]);
+        $request->validate($rules);
+
+        // Simpan dokumen ke DokumenPesertaKkn + sync legacy path (sesuai codebase lama)
+        $this->documentService->persistUploadedDocuments($request, $mahasiswa, $periode, $registration);
+
+        // Update status ke document_submitted jika masih pending
+        if ($registration->status === 'pending') {
+            $registration->update(['status' => 'document_submitted']);
         }
 
         return $this->noContent('Dokumen berhasil diunggah.');

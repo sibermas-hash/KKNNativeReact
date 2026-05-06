@@ -35,7 +35,7 @@ class UserController extends Controller
             'username' => ['required', 'string', 'max:255', 'unique:users,username'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8'],
+            'password' => ['required', 'string', User::PASSWORD_REQUIREMENTS],
             'role' => ['required', 'string', \Illuminate\Validation\Rule::in(['superadmin', 'admin', 'faculty_admin', 'dosen', 'dpl', 'student'])],
             'fakultas_id' => ['nullable', 'exists:fakultas,id'],
         ]);
@@ -55,6 +55,22 @@ class UserController extends Controller
         $tempPassword = Str::random(12);
         $user->update(['password' => Hash::make($tempPassword), 'must_change_password' => true]);
         return $this->success(['temporary_username' => $user->username, 'temporary_password' => $tempPassword], 'Password sementara berhasil dibuat.');
+    }
+
+    public function updateRole(Request $request, User $user): JsonResponse
+    {
+        $validated = $request->validate([
+            'role' => ['required', 'string', \Illuminate\Validation\Rule::in(['superadmin', 'admin', 'faculty_admin', 'dosen', 'dpl', 'student'])],
+        ]);
+
+        // Cegah superadmin menghapus role superadminnya sendiri jika dia satu-satunya
+        if ($user->id === auth()->id() && $user->hasRole('superadmin') && $validated['role'] !== 'superadmin') {
+            return $this->error('Anda tidak dapat mengubah role superadmin Anda sendiri.', 403);
+        }
+
+        $user->syncRoles([$validated['role']]);
+
+        return $this->success(new UserResource($user->refresh()->load('roles')), 'Role pengguna berhasil diperbarui.');
     }
 
     public function mahasiswaIndex(Request $request): JsonResponse

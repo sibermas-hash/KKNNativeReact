@@ -20,7 +20,7 @@ export default function DplEvaluationPage() {
     queryKey: ['student', 'dpl-evaluation', 'form'],
     queryFn: async () => {
       const res = await studentApi.dplEvaluation.form() as any;
-      return res;
+      return (res as any).data ?? res;
     },
   });
 

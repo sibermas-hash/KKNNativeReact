@@ -15,7 +15,7 @@ export default function ParticipantFeedbackPage() {
     },
   });
 
-  const feedback = (data?.data as Record<string, unknown>[]) || [];
+  const feedback = (data as Record<string, unknown>[]) || [];
 
   return (
     <div className="space-y-6">

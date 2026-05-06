@@ -7,7 +7,7 @@ import { useState } from 'react';
 export default function DosenIndexPage() {
   const [search, setSearch] = useState('');
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<unknown[]>({
     queryKey: ['admin', 'dosen', { search }],
     queryFn: async () => {
       const res = await api.get('/admin/dosen', { params: { search } });
@@ -15,7 +15,7 @@ export default function DosenIndexPage() {
     },
   });
 
-  const dosen = (data?.data as Record<string, unknown>[]) || [];
+  const dosen = data ?? [];
 
   return (
     <div className="space-y-6">
@@ -29,14 +29,17 @@ export default function DosenIndexPage() {
               <th className="p-4">NIP</th><th className="p-4">Nama</th><th className="p-4">Fakultas</th><th className="p-4">Jabatan</th>
             </tr></thead>
             <tbody>
-              {dosen.map((d) => (
-                <tr key={String(d.id)} className="border-b border-slate-50">
-                  <td className="p-4 font-mono text-xs">{String((d as Record<string, unknown>)?.nip || '-')}</td>
-                  <td className="p-4 font-medium">{String(d.nama || '-')}</td>
-                  <td className="p-4 text-slate-600">{String(((d as Record<string, unknown>)?.fakultas as Record<string, unknown>)?.nama || '-')}</td>
-                  <td className="p-4 text-slate-600">{String((d as Record<string, unknown>)?.jabatan || '-')}</td>
-                </tr>
-              ))}
+              {dosen.map((d: unknown) => {
+  const item = d as Record<string, unknown>;
+  return (
+    <tr key={String(item.id)} className="border-b border-slate-50">
+      <td className="p-4 font-mono text-xs">{String(item.nip || '-')}</td>
+      <td className="p-4 font-medium">{String(item.nama || '-')}</td>
+      <td className="p-4 text-slate-600">{String((item.fakultas as Record<string, unknown>)?.nama || '-')}</td>
+      <td className="p-4 text-slate-600">{String(item.jabatan || '-')}</td>
+    </tr>
+  );
+})}
             </tbody>
           </table>
         </div>

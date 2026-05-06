@@ -12,10 +12,10 @@ export default function PeriodDetailPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'period', Number(id)],
-    queryFn: async () => {
-      const res = await adminApi.periods.show(Number(id));
-      return res;
-    },
+      queryFn: async () => {
+        const res = await adminApi.periods.show(Number(id));
+        return res.data;
+      },
     enabled: !!id,
   });
 

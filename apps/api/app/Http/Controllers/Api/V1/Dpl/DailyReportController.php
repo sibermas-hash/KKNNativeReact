@@ -7,11 +7,13 @@ namespace App\Http\Controllers\Api\V1\Dpl;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\KegiatanKknResource;
 use App\Http\Traits\ApiResponse;
+use App\Models\KKN\FileKegiatanKkn;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\KelompokKkn;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 class DailyReportController extends Controller
 {
@@ -98,5 +100,42 @@ class DailyReportController extends Controller
             ]);
 
         return $this->success(['approved_count' => $count], "{$count} laporan berhasil disetujui.");
+    }
+
+    /**
+     * Download file lampiran laporan harian.
+     */
+    public function downloadFile(FileKegiatanKkn $fileKegiatan)
+    {
+        $this->authorizeFileAccess($fileKegiatan);
+
+        abort_unless(Storage::exists($fileKegiatan->file_path), 404, 'File tidak ditemukan.');
+
+        return Storage::download($fileKegiatan->file_path, $fileKegiatan->original_name ?? basename($fileKegiatan->file_path));
+    }
+
+    /**
+     * Preview file lampiran laporan harian (inline).
+     */
+    public function previewFile(FileKegiatanKkn $fileKegiatan)
+    {
+        $this->authorizeFileAccess($fileKegiatan);
+
+        abort_unless(Storage::exists($fileKegiatan->file_path), 404, 'File tidak ditemukan.');
+
+        return response()->file(
+            Storage::path($fileKegiatan->file_path),
+            ['Content-Disposition' => 'inline; filename="' . ($fileKegiatan->original_name ?? basename($fileKegiatan->file_path)) . '"']
+        );
+    }
+
+    private function authorizeFileAccess(FileKegiatanKkn $fileKegiatan): void
+    {
+        $dosen = auth()->user()->dosen;
+        abort_if(! $dosen, 403, 'Akses ditolak.');
+
+        $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
+        $report = $fileKegiatan->kegiatan;
+        abort_unless($report && $groupIds->contains($report->kelompok_id), 403, 'Akses ditolak.');
     }
 }

@@ -31,10 +31,11 @@ class EnsurePhase
 
     public function handle(Request $request, Closure $next, string ...$allowedPhases): Response
     {
-        // Admin/Superadmin selalu lolos — mereka yang mengelola fase
-        // Headless testing bypass in local
+        // SECURITY: Admin/Superadmin always bypass — they manage phases.
+        // Non-admins NEVER bypass phase checks regardless of environment.
         $user = auth()->user();
-        if (config('app.env') === 'local' || $user?->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])) {
+
+        if ($user?->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])) {
             return $next($request);
         }
 

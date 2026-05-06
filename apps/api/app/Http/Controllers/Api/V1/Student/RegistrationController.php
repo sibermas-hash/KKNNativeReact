@@ -8,16 +8,19 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\PesertaKknResource;
 use App\Http\Resources\Api\V1\PeriodeResource;
 use App\Http\Traits\ApiResponse;
-use App\Models\KKN\DokumenPesertaKkn;
 use App\Models\KKN\JenisKkn;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
+use App\Models\User;
+use App\Notifications\KKN\NewRegistrationForAdminNotification;
+use App\Notifications\KKN\RegistrationSubmittedNotification;
 use App\Services\EligibilityService;
+use App\Services\KKN\RegistrationDocumentService;
 use App\Services\PeriodContextService;
 use App\Services\RegistrationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class RegistrationController extends Controller
@@ -28,6 +31,7 @@ class RegistrationController extends Controller
         private readonly EligibilityService $eligibilityService,
         private readonly RegistrationService $registrationService,
         private readonly PeriodContextService $periodContextService,
+        private readonly RegistrationDocumentService $documentService,
     ) {}
 
     public function form(): JsonResponse
@@ -53,13 +57,19 @@ class RegistrationController extends Controller
             ->latest()
             ->first();
 
-        $eligibility = $this->eligibilityService->checkStudent($mahasiswa);
+        $eligibility = $this->eligibilityService->checkEligibility($mahasiswa);
 
         return $this->success([
             'periods' => PeriodeResource::collection($periods),
             'eligibility' => $eligibility,
             'existing_registration' => $existingRegistration ? new PesertaKknResource($existingRegistration) : null,
             'jenis_kkn_options' => JenisKkn::dropdownOptions(),
+            'biodata_complete' => $this->isBiodataComplete($mahasiswa, $user),
+            'domisili_complete' => $this->isDomisiliComplete($user),
+            'document_requirements' => $periods->map(fn ($p) => [
+                'periode_id' => $p->id,
+                'requirements' => $this->documentService->requirementsForPeriod($p),
+            ])->values(),
         ]);
     }
 
@@ -72,21 +82,71 @@ class RegistrationController extends Controller
             return $this->forbidden('Profil mahasiswa tidak ditemukan.');
         }
 
+        // Cek biodata lengkap (sesuai codebase lama)
+        if (! $this->isBiodataComplete($mahasiswa, $user)) {
+            return $this->validationError(
+                ['biodata' => ['Lengkapi biodata peserta terlebih dahulu.']],
+                'Lengkapi biodata peserta terlebih dahulu.'
+            );
+        }
+
+        // Cek domisili lengkap & terverifikasi (sesuai codebase lama)
+        if (! $this->isDomisiliComplete($user)) {
+            return $this->validationError(
+                ['domisili' => ['Lengkapi dan verifikasi alamat domisili terlebih dahulu.']],
+                'Lengkapi dan verifikasi alamat domisili terlebih dahulu.'
+            );
+        }
+
         $validated = $request->validate([
             'periode_id' => ['required', 'exists:periode,id'],
         ]);
 
+        $periode = Periode::findOrFail($validated['periode_id']);
+
+        // Cek self-service registration (sesuai codebase lama)
+        if (! $periode->usesSelfServiceRegistration()) {
+            return $this->validationError(
+                ['periode_id' => ['Periode ini tidak menggunakan pendaftaran mandiri.']],
+                'Periode ini tidak menggunakan pendaftaran mandiri.'
+            );
+        }
+
         try {
-            // Service signature: register(Mahasiswa, int $periodeId, ?int $kelompokId, ?string $notes, ?int $userId)
-            // kelompokId is null — student is placed in a group after admin approval
-            $registration = $this->registrationService->register($mahasiswa, $validated['periode_id'], null, null, $user->id);
+            $registration = $this->registrationService->register(
+                $mahasiswa,
+                $validated['periode_id'],
+                null,
+                null,
+                $user->id
+            );
+
+            // Kirim notifikasi ke mahasiswa & superadmin (sesuai codebase lama)
+            try {
+                $user->notify(new RegistrationSubmittedNotification($registration, $periode->name));
+                User::role('superadmin')->chunk(50, function ($admins) use ($registration, $mahasiswa, $periode) {
+                    foreach ($admins as $admin) {
+                        $admin->notify(new NewRegistrationForAdminNotification(
+                            $registration,
+                            $mahasiswa->nama ?? 'Mahasiswa',
+                            $periode->name
+                        ));
+                    }
+                });
+            } catch (\Throwable $e) {
+                Log::warning('Registration notification failed: ' . $e->getMessage());
+            }
 
             return $this->created(
                 new PesertaKknResource($registration->load(['periode', 'kelompok'])),
                 'Pendaftaran KKN berhasil dikirim.'
             );
-        } catch (\Throwable $e) {
-            return $this->error('VALIDATION_ERROR', $e->getMessage(), 422);
+        } catch (ValidationException $e) {
+            return $this->validationError($e->errors(), $e->getMessage());
+        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+            return $this->forbidden($e->getMessage());
+        } catch (\Exception $e) {
+            return $this->serverError('Terjadi kesalahan saat memproses pendaftaran.');
         }
     }
 
@@ -126,12 +186,44 @@ class RegistrationController extends Controller
             return $this->notFound('Pendaftaran tidak ditemukan.');
         }
 
+        if ($registration->status === 'completed') {
+            return $this->error('VALIDATION_ERROR', 'Pendaftaran yang sudah selesai tidak dapat dibatalkan.', 422);
+        }
+
         if ($registration->status === 'approved' && $registration->kelompok_id) {
             return $this->error('VALIDATION_ERROR', 'Anda sudah ditempatkan di kelompok. Hubungi admin untuk keluar.', 422);
+        }
+
+        $now = now();
+        if ($periode->registration_end && $now->gt($periode->registration_end)) {
+            return $this->error('VALIDATION_ERROR', 'Masa pendaftaran sudah ditutup. Pembatalan tidak diizinkan.', 422);
         }
 
         $registration->delete();
 
         return $this->noContent('Anda telah keluar dari pendaftaran KKN.');
+    }
+
+    // ─── Helpers ─────────────────────────────────────────────────────────────
+
+    private function isBiodataComplete($mahasiswa, $user): bool
+    {
+        return filled($mahasiswa?->nik)
+            && filled($mahasiswa?->mother_name)
+            && filled($mahasiswa?->birth_place)
+            && filled($mahasiswa?->birth_date)
+            && filled($mahasiswa?->gender)
+            && filled($mahasiswa?->shirt_size)
+            && filled($user?->phone)
+            && filled($user?->address);
+    }
+
+    private function isDomisiliComplete($user): bool
+    {
+        return filled($user?->address)
+            && filled($user?->domicile_village_name)
+            && filled($user?->domicile_district_name)
+            && filled($user?->domicile_regency_name)
+            && filled($user?->address_verified_at);
     }
 }

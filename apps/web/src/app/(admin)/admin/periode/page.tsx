@@ -6,6 +6,16 @@ import { api, adminApi } from '@/lib/api';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
+interface Period {
+  id: number;
+  name: string;
+  periode: number;
+  start_date: string;
+  end_date: string;
+  kuota: number;
+  current_phase?: string;
+}
+
 export default function PeriodsPage() {
   
   const queryClient = useQueryClient();
@@ -14,7 +24,7 @@ export default function PeriodsPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'periods'],
-    queryFn: async () => { const res = await adminApi.periods.index(); return (res as unknown as { success: boolean; data: unknown[]; meta?: Record<string, number> }).data; },
+    queryFn: async () => { const res = await adminApi.periods.index(); return res.data; },
   });
 
   const createMutation = useMutation({
@@ -28,7 +38,7 @@ export default function PeriodsPage() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'periods'] }); toast.success('Periode berhasil dihapus'); },
   });
 
-  const periods = (data?.data as Record<string, unknown>[]) || [];
+   const periods = (data as Period[]) || [];
 
   return (
     <div className="space-y-6">

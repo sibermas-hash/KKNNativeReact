@@ -16,20 +16,29 @@ class Dosen extends Model
 {
     protected $table = 'dosen';
 
-    protected $fillable = [
+protected $fillable = [
         'user_id',
         'nip',
         'nama',
+        'nama_gelar',
+        'nidn',
+        'nik',
         'phone',
         'jabatan',
+        'kelas_jabatan',
+        'tugas_tambahan',
+        'pendidikan_terakhir',
         'golongan',
-        'no_rekening',
-        'nama_bank',
-        'npwp',
+        'pangkat',
         'birth_date',
+        'tempat_lahir',
         'gender',
+        'alamat',
+        'tanggal_pensiun',
         'is_cpns',
         'is_tugas_belajar',
+        'has_workshop',
+        'workshop_date',
         'status_aktif',
         'status_pegawai',
         'fakultas_id',
@@ -37,10 +46,19 @@ class Dosen extends Model
         'master_synced_at',
     ];
 
+    protected $hidden = [
+        'no_rekening',
+        'nama_bank',
+        'npwp',
+    ];
+
     protected $casts = [
         'birth_date' => 'date',
+        'tanggal_pensiun' => 'date',
         'is_cpns' => 'boolean',
         'is_tugas_belajar' => 'boolean',
+        'has_workshop' => 'boolean',
+        'workshop_date' => 'date',
         'master_synced_at' => 'datetime',
     ];
 

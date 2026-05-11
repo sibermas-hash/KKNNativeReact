@@ -6,6 +6,38 @@ function handleResponse<T = unknown>(response: AxiosResponse<ApiResponse<T>>): T
     return response.data as T;
   }
 
+  // ── Defensive guard: non-JSON response ──────────────────────────────────
+  // Jika nginx salah routing `/api` → request bocor ke Next.js dan balas
+  // HTML (mis. halaman 404 Next.js). Axios TIDAK auto-throw untuk ini —
+  // body di-keep sebagai `string` di `response.data`. Tanpa guard, caller
+  // akan lihat crash kriptik `Cannot read properties of undefined (reading
+  // 'call')` saat mencoba unwrap ApiResponse envelope. Throw error jelas
+  // supaya Sentry/log langsung menangkap akar masalahnya.
+  //
+  // Cast ke `unknown` dulu karena `ApiResponse<T>` tidak mengizinkan string
+  // di type system, tapi SECARA RUNTIME axios bisa lempar string kalau
+  // response bukan JSON. Runtime check tetap wajib di sini.
+  const rawData = response.data as unknown;
+  if (typeof rawData === 'string') {
+    const contentType =
+      (response.headers?.['content-type'] as string | undefined) ?? '';
+    const trimmed = rawData.trimStart();
+    const looksLikeHtml =
+      trimmed.startsWith('<!DOCTYPE') ||
+      trimmed.startsWith('<html') ||
+      trimmed.startsWith('<');
+
+    if (looksLikeHtml || !contentType.toLowerCase().includes('application/json')) {
+      const err = new Error(
+        `API mengembalikan respons non-JSON (content-type: ${contentType || 'unknown'}). ` +
+          `Kemungkinan routing nginx /api bocor ke frontend Next.js. ` +
+          `URL: ${response.config.url ?? '?'} | status: ${response.status}`,
+      );
+      (err as Error & { isNonJsonResponse?: boolean }).isNonJsonResponse = true;
+      throw err;
+    }
+  }
+
   if (response.data && typeof response.data === 'object' && 'data' in response.data) {
     return response.data.data as T;
   }

@@ -121,14 +121,17 @@ cp "${APP_DIR}/apps/api/supervisord.conf" /usr/local/etc/supervisord.d/sibermas.
 
 echo "==> Menyalin konfigurasi nginx..."
 if [ -f "${APP_DIR}/nginx-freebsd.conf" ]; then
-    # Template placeholder: __WEB_DOMAIN__, __CERT_BASE__
+    # Template placeholder: __WEB_DOMAIN__, __CERT_BASE__, __APP_DIR__
     # (API_DOMAIN tidak lagi dipakai — single-domain path-based deploy.)
-    sed -e "s/__WEB_DOMAIN__/${WEB_DOMAIN}/g" \
-        -e "s/__CERT_BASE__/${CERT_BASE}/g" \
+    # Escape slash di APP_DIR supaya sed tidak bingung — pakai | sebagai delim.
+    sed -e "s|__WEB_DOMAIN__|${WEB_DOMAIN}|g" \
+        -e "s|__CERT_BASE__|${CERT_BASE}|g" \
+        -e "s|__APP_DIR__|${APP_DIR}|g" \
         "${APP_DIR}/nginx-freebsd.conf" > /usr/local/etc/nginx/nginx.conf
     echo "  [+] Rendered nginx config:"
     echo "      WEB=${WEB_DOMAIN}"
     echo "      CERT_BASE=${CERT_BASE}"
+    echo "      APP_DIR=${APP_DIR}"
 else
     echo "  [!] nginx-freebsd.conf belum ada, salin manual setelah deploy."
 fi

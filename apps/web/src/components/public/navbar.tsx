@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LifeBuoy } from 'lucide-react';
 import { useScroll, useTransform, motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/stores';
 
@@ -21,6 +21,11 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
   const { user, isAuthenticated } = useAuthStore();
+
+  // Hydration guard: defer auth-dependent rendering until after mount
+  // so the initial client render matches the server HTML exactly.
+  const [hasMounted, setHasMounted] = useState(false);
+  useEffect(() => setHasMounted(true), []);
 
   const { scrollY } = useScroll();
 
@@ -44,24 +49,37 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
     { label: 'Berita', href: '/berita' },
     { label: 'Lokasi', href: '/lokasi' },
     { label: 'Unduhan', href: '/unduhan' },
-    { label: 'Bantuan', href: '/support' },
   ];
 
-  const dashboardHref = (() => {
-    const roles = user?.roles || [];
-    if (roles.some((role) => ['superadmin', 'admin', 'faculty_admin'].includes(role))) return '/admin';
-    if (roles.some((role) => ['dosen', 'dpl'].includes(role))) return '/dosen';
-    if (roles.includes('student')) return '/mahasiswa';
-    return '/';
-  })();
-  const loginHref = pathname === '/login' ? '/login' : `/login?redirect=${encodeURIComponent(pathname || '/')}`;
-  const loginItem: NavItem = isAuthenticated ? { label: 'Dashboard', href: dashboardHref } : { label: 'Login', href: loginHref };
+  // Compute auth-dependent nav item only after hydration to avoid SSR mismatch.
+  // Before mount, loginItem is null — the nav renders only the static navItems,
+  // which are identical on server and client.
+  const loginItem: NavItem | null = hasMounted
+    ? isAuthenticated
+      ? { label: 'Dashboard', href: (() => {
+          const roles = user?.roles || [];
+          if (roles.some((role) => ['superadmin', 'admin', 'faculty_admin'].includes(role))) return '/admin';
+          if (roles.some((role) => ['dosen', 'dpl'].includes(role))) return '/dosen';
+          if (roles.includes('student')) return '/mahasiswa';
+          return '/';
+        })() }
+      : { label: 'Login', href: pathname === '/login' ? '/login' : `/login?redirect=${encodeURIComponent(pathname || '/')}` }
+    : null;
+
+  // Build the full nav list: static items + conditional login/dashboard item
+  const allNavItems = loginItem ? [...navItems, loginItem] : navItems;
 
   const navTextClass = overlayNav
     ? isScrolled
       ? 'text-emerald-950 hover:text-emerald-600'
       : 'text-white hover:text-white/80'
     : 'text-emerald-950 hover:text-emerald-700';
+
+  const helpIconClass = overlayNav
+    ? isScrolled
+      ? 'text-emerald-700 hover:text-emerald-500 hover:bg-emerald-50'
+      : 'text-white/80 hover:text-white hover:bg-white/10'
+    : 'text-emerald-700 hover:text-emerald-500 hover:bg-emerald-50';
 
   const overlayStyle = overlayNav
     ? { backgroundColor: bgColor, backdropFilter: backdropBlur, minHeight: navHeight, boxShadow }
@@ -89,7 +107,7 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
 
           {/* Menu Navigasi (Tengah) */}
           <div className="hidden lg:flex flex-none items-center justify-center gap-8">
-            {[...navItems, loginItem].map((item) => (
+            {allNavItems.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
@@ -101,8 +119,19 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
             ))}
           </div>
 
-          {/* Action (Kanan) - Hanya untuk mobile menu di layar kecil */}
-          <div className="flex-1 flex items-center justify-end gap-6">
+          {/* Action (Kanan) — Icon Bantuan + Mobile Hamburger */}
+          <div className="flex-1 flex items-center justify-end gap-3">
+            {/* Icon Bantuan / Support — selalu tampil */}
+            <Link
+              href="/support"
+              title="Bantuan"
+              className={`relative rounded-full p-2 transition-all duration-300 ${helpIconClass}`}
+            >
+              <LifeBuoy size={20} strokeWidth={2} />
+              <span className="sr-only">Bantuan</span>
+            </Link>
+
+            {/* Hamburger — hanya tampil di mobile */}
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label={isMenuOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
@@ -139,7 +168,7 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
                   : 'bg-white border-emerald-100 text-emerald-950'
               }`}>
                 <div className="flex flex-col gap-5">
-                  {[...navItems, loginItem].map((item) => (
+                  {allNavItems.map((item) => (
                     <Link
                       key={item.label}
                       href={item.href}
@@ -149,6 +178,15 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
                       {item.label}
                     </Link>
                   ))}
+                  {/* Bantuan di mobile dropdown */}
+                  <Link
+                    href="/support"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-2 font-display text-xs font-semibold uppercase tracking-[0.16em] no-underline [color:inherit]"
+                  >
+                    <LifeBuoy size={14} strokeWidth={2} />
+                    Bantuan
+                  </Link>
                 </div>
               </div>
             </MotionDiv>

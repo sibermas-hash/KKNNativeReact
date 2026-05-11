@@ -27,9 +27,27 @@ class LokasiResource extends JsonResource
             'capacity' => $this->capacity,
             'fakultas_id' => $this->fakultas_id,
             'faculty' => new FakultasResource($this->whenLoaded('fakultas')),
+
+            // Stats — only exposed when `kelompok` relation is eager-loaded.
+            // Dipakai oleh halaman /lokasi (peta sebaran realtime) untuk
+            // menghitung badge counter per pin marker tanpa round-trip API
+            // tambahan. Lihat PublicController::locations().
             'group_count' => $this->when(
                 $this->relationLoaded('kelompok'),
                 fn () => $this->kelompok->count()
+            ),
+            'students_count' => $this->when(
+                $this->relationLoaded('kelompok'),
+                fn () => (int) $this->kelompok->sum('peserta_count')
+            ),
+            'groups' => $this->when(
+                $this->relationLoaded('kelompok'),
+                fn () => $this->kelompok->map(fn ($group) => [
+                    'id' => $group->id,
+                    'nama_kelompok' => $group->nama_kelompok,
+                    'code' => $group->code,
+                    'peserta_count' => (int) ($group->peserta_count ?? 0),
+                ])->values()
             ),
         ];
     }

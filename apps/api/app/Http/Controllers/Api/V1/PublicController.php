@@ -81,13 +81,19 @@ class PublicController extends Controller
 
     /**
      * GET /api/v1/public/locations
-     * All active locations. No auth required.
+     * All active locations with group stats. No auth required.
+     *
+     * Eager-loads `kelompok` + peserta count so the public map page can
+     * render pin markers with group/student counts without N+1 queries.
      */
     public function locations(Request $request): JsonResponse
     {
-        $locations = Lokasi::with('fakultas')
+        $locations = Lokasi::with([
+            'fakultas',
+            'kelompok' => fn ($q) => $q->withCount('peserta'),
+        ])
             ->orderBy('village_name')
-            ->paginate($request->input('per_page', 100));
+            ->paginate($request->input('per_page', 200));
 
         return $this->successCollection(LokasiResource::collection($locations));
     }

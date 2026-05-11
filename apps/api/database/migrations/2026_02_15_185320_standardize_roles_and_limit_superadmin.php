@@ -38,7 +38,8 @@ return new class extends Migration
                 ]);
             }
 
-            $adminRole->delete();
+            // NOTE: Do NOT delete admin role — it is required by the current RBAC system.
+            // Previously this migration deleted it, causing CI failures on migrate:fresh.
         }
 
         // Assign 'superadmin' to the first user if exists

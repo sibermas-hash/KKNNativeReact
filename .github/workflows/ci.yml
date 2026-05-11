@@ -2,36 +2,48 @@ name: CI
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 jobs:
-  build-test:
+  frontend:
+    name: Frontend (Web + Packages)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - name: Setup Node
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'pnpm'
-      - name: Install pnpm
-        run: npm install -g pnpm
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-      - name: Lint
-        run: pnpm run lint
+
       - name: Type check
         run: pnpm run type-check
+
+      - name: Lint
+        run: pnpm run lint
+
       - name: Build
         run: pnpm run build
+        env:
+          NEXT_PUBLIC_API_URL: /api/v1
+
       - name: Run tests
         run: pnpm run test
-      - name: Security audit (pnpm)
+
+      - name: Security audit
         run: pnpm audit --audit-level=high
 
-  backend-test:
+  backend:
+    name: Backend (Laravel API)
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -56,37 +68,104 @@ jobs:
       run:
         working-directory: apps/api
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@v4
+
       - name: Setup PHP
-        uses: shivammathur/setup-php@9e72090525849c5e82e596468b86eb55e9cc5401 # v2.32.0
+        uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
-          extensions: pdo_pgsql, redis, mbstring, xml, curl, zip, gd, pcntl
+          extensions: pdo_pgsql, redis, mbstring, xml, curl, zip, gd, pcntl, intl, bcmath, sodium
           coverage: none
-      - name: Install Composer dependencies
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: apps/api/vendor
+          key: composer-${{ hashFiles('apps/api/composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
-      - name: Copy .env
-        run: cp .env.example .env
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+        env:
+          DB_CONNECTION: pgsql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: kkn_test
+          DB_USERNAME: kkn_test
+          DB_PASSWORD: kkn_test
+
       - name: Set test env vars
         run: |
-          echo "APP_KEY=" >> .env
           echo "DB_DATABASE=kkn_test" >> .env
           echo "DB_USERNAME=kkn_test" >> .env
           echo "DB_PASSWORD=kkn_test" >> .env
+          echo "DB_HOST=127.0.0.1" >> .env
           echo "REDIS_HOST=127.0.0.1" >> .env
           echo "QUEUE_CONNECTION=sync" >> .env
           echo "SESSION_DRIVER=array" >> .env
           echo "CACHE_STORE=array" >> .env
           echo "MAIL_MAILER=array" >> .env
-      - name: Generate app key
-        run: php artisan key:generate
+          echo "AUTH_TEST_AUTO_LOGIN_ENABLED=false" >> .env
+
       - name: Run migrations
         run: php artisan migrate --force
+
       - name: Run Pest tests
         run: php artisan test --no-coverage
+
       - name: Run PHPStan
         run: composer stan
-      - name: Run Pint (lint)
+
+      - name: Run Pint (code style)
         run: ./vendor/bin/pint --test
+
       - name: Security audit (Composer)
         run: composer audit
+
+  deploy:
+    name: Deploy to FreeBSD
+    needs: [frontend, backend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            cd /usr/local/www/sibermas
+            git pull origin main
+
+            # Backend
+            cd apps/api
+            composer install --no-dev --optimize-autoloader --no-interaction
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache
+            php artisan event:cache
+
+            # Frontend
+            cd /usr/local/www/sibermas
+            pnpm install --frozen-lockfile
+            pnpm build
+            cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static
+            cp -r apps/web/public apps/web/.next/standalone/apps/web/public
+            chown -R www:www apps/web/.next apps/api/storage apps/api/bootstrap/cache
+
+            # Restart services
+            supervisorctl restart workers:*
+
+            # Health check
+            sleep 5
+            curl -sf http://127.0.0.1:8000/api/health || echo "WARNING: API health check failed"
+            curl -sf http://127.0.0.1:3000 || echo "WARNING: Web health check failed"

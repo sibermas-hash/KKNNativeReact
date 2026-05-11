@@ -270,6 +270,11 @@ class AppServiceProvider extends ServiceProvider
     /**
      * H-011 fix. Verifies that in production the CORS origin list does not
      * include '*' or dev-only origins. Fails boot with a clear error otherwise.
+     *
+     * Pola `localhost`/`127.0.0.1` — dengan atau tanpa port — langsung ditolak
+     * supaya deployer cepat menyadari kesalahan. Pesan error meng-embed
+     * seluruh nilai CORS_ALLOWED_ORIGINS yang terbaca supaya operator bisa
+     * debug langsung dari log tanpa perlu SSH ke server.
      */
     private function assertSafeCorsInProduction(): void
     {
@@ -284,16 +289,35 @@ class AppServiceProvider extends ServiceProvider
             return;
         }
 
-        $forbidden = ['*', 'null', 'http://localhost', 'http://localhost:3000', 'http://localhost:8000', 'http://127.0.0.1', 'http://127.0.0.1:3000'];
-        $bad = array_intersect($origins, $forbidden);
+        // Blacklist literal plus regex untuk menangkap variasi port.
+        $literalForbidden = ['*', 'null'];
+        $bad = array_values(array_intersect($origins, $literalForbidden));
 
-        if (! empty($bad)) {
-            throw new \RuntimeException(
-                'Unsafe CORS configuration detected in production. '.
-                'Found forbidden origin(s) with supports_credentials=true: '.implode(', ', $bad).'. '.
-                'Set CORS_ALLOWED_ORIGINS to an explicit list of production hosts only.'
-            );
+        // Pola regex: localhost / 127.0.0.1 / 0.0.0.0 (dengan optional scheme + port).
+        $devPatterns = '#^(https?://)?(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])(:[0-9]+)?$#i';
+        foreach ($origins as $origin) {
+            if ($origin !== '' && preg_match($devPatterns, $origin)) {
+                $bad[] = $origin;
+            }
         }
+
+        $bad = array_values(array_unique($bad));
+
+        if ($bad === []) {
+            return;
+        }
+
+        $hint = 'Set CORS_ALLOWED_ORIGINS di .env.production hanya ke host publik, '.
+            'contohnya: "https://sibermas.uinsaizu.ac.id,https://api.sibermas.uinsaizu.ac.id". '.
+            'Jangan sertakan origin development (localhost, 127.0.0.1) di production '.
+            'saat supports_credentials=true — ini mencegah kebocoran cookie sesi ke origin dev.';
+
+        throw new \RuntimeException(
+            'Unsafe CORS configuration detected in production. '.
+            'Forbidden origin(s) found with supports_credentials=true: ['.implode(', ', $bad).']. '.
+            'Origins saat ini: ['.implode(', ', $origins).']. '.
+            $hint
+        );
     }
 
     private function applyMasterApiRuntimeOverrides(): void

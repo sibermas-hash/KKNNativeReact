@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Models\KKN\Periode;
+use App\Models\User;
 use App\Services\PeriodContextService;
 use Closure;
 use Illuminate\Http\Request;
@@ -33,7 +34,7 @@ class EnsurePhase
     {
         // SECURITY: Admin/Superadmin always bypass — they manage phases.
         // Non-admins NEVER bypass phase checks regardless of environment.
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = auth()->user();
 
         if ($user?->hasAnyRole(['superadmin', 'admin'])) {
@@ -84,6 +85,7 @@ class EnsurePhase
 
         // Web: redirect with error message
         $backUrl = $request->headers->get('referer', '/');
+
         return redirect($backUrl)->with('error', $message);
     }
 

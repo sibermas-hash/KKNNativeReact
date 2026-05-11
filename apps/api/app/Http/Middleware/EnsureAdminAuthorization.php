@@ -9,13 +9,11 @@ use App\Http\Controllers\Api\V1\Admin\AdminChatController;
 use App\Http\Controllers\Api\V1\Admin\AnnouncementController;
 use App\Http\Controllers\Api\V1\Admin\AvatarModerationController;
 use App\Http\Controllers\Api\V1\Admin\BulkCertificateDownloadController;
-use App\Http\Controllers\Api\V1\Admin\ComprehensiveReportController;
-use App\Http\Controllers\Api\V1\Admin\LogbookPdfController as AdminLogbookPdfController;
-use App\Http\Controllers\Api\V1\Admin\MonitoringController;
 use App\Http\Controllers\Api\V1\Admin\CertificateConfigController;
+use App\Http\Controllers\Api\V1\Admin\ComprehensiveReportController;
 use App\Http\Controllers\Api\V1\Admin\DashboardController;
-use App\Http\Controllers\Api\V1\Admin\DataImportController;
 use App\Http\Controllers\Api\V1\Admin\DatabaseSyncController;
+use App\Http\Controllers\Api\V1\Admin\DataImportController;
 use App\Http\Controllers\Api\V1\Admin\DispensasiController;
 use App\Http\Controllers\Api\V1\Admin\DocumentTemplateController;
 use App\Http\Controllers\Api\V1\Admin\DownloadController;
@@ -37,27 +35,29 @@ use App\Http\Controllers\Api\V1\Admin\KknRequirementController;
 use App\Http\Controllers\Api\V1\Admin\KonfigurasiPenilaianController;
 use App\Http\Controllers\Api\V1\Admin\LaporanAkhirAdminController;
 use App\Http\Controllers\Api\V1\Admin\LogAuditController;
+use App\Http\Controllers\Api\V1\Admin\LogbookPdfController as AdminLogbookPdfController;
 use App\Http\Controllers\Api\V1\Admin\LokasiController;
+use App\Http\Controllers\Api\V1\Admin\MonitoringController;
 use App\Http\Controllers\Api\V1\Admin\NotificationBroadcastController;
 use App\Http\Controllers\Api\V1\Admin\PeriodeController;
 use App\Http\Controllers\Api\V1\Admin\PeriodeDocumentTemplateController;
 use App\Http\Controllers\Api\V1\Admin\PesertaKknController;
+use App\Http\Controllers\Api\V1\Admin\PlaygroundController;
 use App\Http\Controllers\Api\V1\Admin\ProdiController;
 use App\Http\Controllers\Api\V1\Admin\ProfileChangeRequestController;
 use App\Http\Controllers\Api\V1\Admin\ProfileLockController;
 use App\Http\Controllers\Api\V1\Admin\ProgramKerjaController;
 use App\Http\Controllers\Api\V1\Admin\PublicContentController;
-use App\Http\Controllers\Api\V1\Admin\RekapNilaiController;
 use App\Http\Controllers\Api\V1\Admin\RekapitulasiController;
+use App\Http\Controllers\Api\V1\Admin\RekapNilaiController;
 use App\Http\Controllers\Api\V1\Admin\ReportExportController;
 use App\Http\Controllers\Api\V1\Admin\SiakadSyncAdminController;
 use App\Http\Controllers\Api\V1\Admin\StudentSyncController;
 use App\Http\Controllers\Api\V1\Admin\StudentTransferController;
 use App\Http\Controllers\Api\V1\Admin\SystemSettingController;
-use App\Http\Controllers\Api\V1\Admin\PlaygroundController;
 use App\Http\Controllers\Api\V1\Admin\TahunAkademikController;
-use App\Http\Controllers\Api\V1\Admin\UserController;
 use App\Http\Controllers\Api\V1\Admin\UserActivityController;
+use App\Http\Controllers\Api\V1\Admin\UserController;
 use App\Http\Controllers\Api\V1\Admin\WorkshopController;
 use App\Http\Controllers\Api\V1\Admin\YudisiumController;
 use Closure;
@@ -93,95 +93,95 @@ class EnsureAdminAuthorization
      */
     public const PERMISSION_MAP = [
         // Dashboard / landing — all admin roles
-        DashboardController::class                  => 'access-admin-panel',
+        DashboardController::class => 'access-admin-panel',
 
         // Master data
-        TahunAkademikController::class              => 'manage-master-data',
-        PeriodeController::class                    => 'manage-master-data',
-        PeriodeDocumentTemplateController::class    => 'manage-master-data',
-        FakultasController::class                   => 'manage-master-data',
-        ProdiController::class                      => 'manage-master-data',
-        LokasiController::class                     => 'manage-master-data',
-        JenisKknController::class                   => 'manage-master-data',
+        TahunAkademikController::class => 'manage-master-data',
+        PeriodeController::class => 'manage-master-data',
+        PeriodeDocumentTemplateController::class => 'manage-master-data',
+        FakultasController::class => 'manage-master-data',
+        ProdiController::class => 'manage-master-data',
+        LokasiController::class => 'manage-master-data',
+        JenisKknController::class => 'manage-master-data',
         JenisKknDocumentRequirementController::class => 'manage-master-data',
-        DocumentTemplateController::class           => 'manage-master-data',
+        DocumentTemplateController::class => 'manage-master-data',
 
         // Users
-        UserController::class                       => 'manage-users',
-        ProfileChangeRequestController::class       => 'manage-users',
-        ProfileLockController::class                => 'manage-users',
-        StudentSyncController::class                => 'manage-users',
-        DplSyncController::class                    => 'manage-users',
+        UserController::class => 'manage-users',
+        ProfileChangeRequestController::class => 'manage-users',
+        ProfileLockController::class => 'manage-users',
+        StudentSyncController::class => 'manage-users',
+        DplSyncController::class => 'manage-users',
 
         // Grades
-        GradeController::class                      => 'view-grades',
-        GeneratorNilaiController::class             => 'view-grades',
-        KonfigurasiPenilaianController::class       => 'view-grades',
-        BulkCertificateDownloadController::class    => 'view-grades',
-        DplCalibrationController::class             => 'view-grades',
+        GradeController::class => 'view-grades',
+        GeneratorNilaiController::class => 'view-grades',
+        KonfigurasiPenilaianController::class => 'view-grades',
+        BulkCertificateDownloadController::class => 'view-grades',
+        DplCalibrationController::class => 'view-grades',
 
         // Participants (view-only for faculty_admin; mutating methods
         // must re-check 'manage-participants' at the controller level)
-        PesertaKknController::class                 => 'view-participants',
-        StudentTransferController::class            => 'view-participants',
+        PesertaKknController::class => 'view-participants',
+        StudentTransferController::class => 'view-participants',
 
         // Groups
-        KelompokKknAdminController::class           => 'manage-groups',
+        KelompokKknAdminController::class => 'manage-groups',
 
         // DPL
-        DplAssignmentController::class              => 'manage-dpl',
-        DplRegistrationController::class            => 'manage-dpl',
+        DplAssignmentController::class => 'manage-dpl',
+        DplRegistrationController::class => 'manage-dpl',
 
         // Content
-        AnnouncementController::class               => 'manage-content',
-        DownloadController::class                   => 'manage-content',
-        PublicContentController::class              => 'manage-content',
-        NotificationBroadcastController::class      => 'manage-content',
+        AnnouncementController::class => 'manage-content',
+        DownloadController::class => 'manage-content',
+        PublicContentController::class => 'manage-content',
+        NotificationBroadcastController::class => 'manage-content',
 
         // Audit
-        LogAuditController::class                   => 'view-audit-logs',
-        ActivityAuditController::class              => 'view-audit-logs',
-        UserActivityController::class               => 'view-audit-logs',
+        LogAuditController::class => 'view-audit-logs',
+        ActivityAuditController::class => 'view-audit-logs',
+        UserActivityController::class => 'view-audit-logs',
 
         // Avatar moderation
-        AvatarModerationController::class           => 'manage-users',
+        AvatarModerationController::class => 'manage-users',
 
         // Chat Konsultasi (PRD_CHAT_SYSTEM.md)
-        AdminChatController::class                  => 'manage-content',
+        AdminChatController::class => 'manage-content',
 
         // Reports
-        RekapNilaiController::class                 => 'manage-reports',
-        RekapitulasiController::class               => 'manage-reports',
-        ReportExportController::class               => 'manage-reports',
-        ComprehensiveReportController::class        => 'manage-reports',
-        AdminLogbookPdfController::class            => 'manage-reports',
-        MonitoringController::class                 => 'manage-settings',
+        RekapNilaiController::class => 'manage-reports',
+        RekapitulasiController::class => 'manage-reports',
+        ReportExportController::class => 'manage-reports',
+        ComprehensiveReportController::class => 'manage-reports',
+        AdminLogbookPdfController::class => 'manage-reports',
+        MonitoringController::class => 'manage-settings',
 
         // Settings
-        CertificateConfigController::class          => 'manage-settings',
-        SystemSettingController::class              => 'manage-settings',
-        PlaygroundController::class                 => 'manage-settings',
+        CertificateConfigController::class => 'manage-settings',
+        SystemSettingController::class => 'manage-settings',
+        PlaygroundController::class => 'manage-settings',
 
         // Database sync / imports
-        DatabaseSyncController::class               => 'manage-database-sync',
-        DataImportController::class                 => 'manage-database-sync',
-        SiakadSyncAdminController::class            => 'manage-database-sync',
+        DatabaseSyncController::class => 'manage-database-sync',
+        DataImportController::class => 'manage-database-sync',
+        SiakadSyncAdminController::class => 'manage-database-sync',
 
         // Workshops
-        WorkshopController::class                   => 'manage-workshops',
+        WorkshopController::class => 'manage-workshops',
 
         // KKN operations
-        EvaluasiController::class                   => 'manage-kkn-operations',
-        DplParticipantEvaluationController::class   => 'manage-kkn-operations',
-        KegiatanKknAdminController::class           => 'manage-kkn-operations',
-        ProgramKerjaController::class               => 'manage-kkn-operations',
-        LaporanAkhirAdminController::class          => 'manage-kkn-operations',
-        YudisiumController::class                   => 'manage-kkn-operations',
-        DispensasiController::class                 => 'manage-kkn-operations',
+        EvaluasiController::class => 'manage-kkn-operations',
+        DplParticipantEvaluationController::class => 'manage-kkn-operations',
+        KegiatanKknAdminController::class => 'manage-kkn-operations',
+        ProgramKerjaController::class => 'manage-kkn-operations',
+        LaporanAkhirAdminController::class => 'manage-kkn-operations',
+        YudisiumController::class => 'manage-kkn-operations',
+        DispensasiController::class => 'manage-kkn-operations',
 
         // Eligibility / requirements
-        EligibilityController::class                => 'manage-eligibility',
-        KknRequirementController::class             => 'manage-requirements',
+        EligibilityController::class => 'manage-eligibility',
+        KknRequirementController::class => 'manage-requirements',
     ];
 
     /**
@@ -207,6 +207,7 @@ class EnsureAdminAuthorization
                     'user_id' => $request->user()?->id,
                 ]);
             }
+
             return $next($request);
         }
 

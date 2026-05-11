@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Student;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\ApiResponse;
 use App\Models\KKN\BimbinganSession;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-
-use App\Http\Traits\ApiResponse;
 
 /**
  * Student side — Sistem Bimbingan Online (R6).
@@ -22,6 +21,7 @@ use App\Http\Traits\ApiResponse;
 class BimbinganController extends Controller
 {
     use ApiResponse;
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();

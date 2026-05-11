@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Student;
 
-use App\Enums\AbcdStage;
-use App\Enums\LogbookCategory;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Enum;
 
 class StoreDailyReportRequest extends FormRequest
 {

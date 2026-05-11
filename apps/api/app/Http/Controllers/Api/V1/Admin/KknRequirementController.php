@@ -22,24 +22,28 @@ class KknRequirementController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate(['name' => ['required', 'string', 'max:255'], 'description' => ['nullable', 'string'], 'is_active' => ['nullable', 'boolean'], 'sort_order' => ['nullable', 'integer']]);
+
         return $this->created(['id' => KknRequirement::create($validated)->id], 'Persyaratan berhasil dibuat.');
     }
 
     public function update(Request $request, KknRequirement $requirement): JsonResponse
     {
         $requirement->update($request->validate(['name' => ['sometimes', 'string', 'max:255'], 'description' => ['nullable', 'string'], 'is_active' => ['nullable', 'boolean']]));
+
         return $this->success(['requirement' => $requirement->refresh()], 'Persyaratan berhasil diperbarui.');
     }
 
     public function destroy(KknRequirement $requirement): JsonResponse
     {
         $requirement->delete();
+
         return $this->noContent('Persyaratan berhasil dihapus.');
     }
 
     public function toggle(KknRequirement $requirement): JsonResponse
     {
         $requirement->update(['is_active' => ! $requirement->is_active]);
+
         return $this->success(['requirement' => $requirement->refresh()], 'Status persyaratan berhasil diubah.');
     }
 }

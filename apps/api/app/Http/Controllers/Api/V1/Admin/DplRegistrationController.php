@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Traits\ApiResponse;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\DplPeriod;
-use App\Models\KKN\Periode;
 use App\Services\DplAssignmentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -33,7 +31,7 @@ class DplRegistrationController extends Controller
                 $q->whereHas('dosen', function ($dq) use ($escaped, $search) {
                     $dq->where('nama', 'ilike', "%{$escaped}%");
                     if (preg_match('/^\d{6,20}$/', trim($search))) {
-                        $dq->orWhere('nip_bidx', \App\Models\KKN\Dosen::computeBlindIndex(trim($search)));
+                        $dq->orWhere('nip_bidx', Dosen::computeBlindIndex(trim($search)));
                     }
                 });
             })
@@ -128,6 +126,7 @@ class DplRegistrationController extends Controller
 
                 if (! $dosen || ! $periode) {
                     $errors[] = "ID {$id}: Data dosen/periode tidak ditemukan.";
+
                     continue;
                 }
 
@@ -139,7 +138,7 @@ class DplRegistrationController extends Controller
 
                 $approved++;
             } catch (\DomainException $e) {
-                $errors[] = "ID {$id}: " . $e->getMessage();
+                $errors[] = "ID {$id}: ".$e->getMessage();
             }
         }
 

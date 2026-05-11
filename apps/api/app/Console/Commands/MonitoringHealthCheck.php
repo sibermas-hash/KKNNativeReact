@@ -31,7 +31,9 @@ class MonitoringHealthCheck extends Command
     protected $description = 'Probe infrastruktur health + alert via Telegram jika ada issue (DB/Redis/Queue/Storage)';
 
     private const DEDUP_TTL_MINUTES = 30;
+
     private const DEDUP_KEY_PREFIX = 'monitoring:telegram:last-alert:';
+
     private const HEARTBEAT_KEY = 'monitoring:telegram:last-heartbeat';
 
     public function handle(TelegramAlertService $telegram): int

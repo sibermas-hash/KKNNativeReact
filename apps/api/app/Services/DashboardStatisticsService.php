@@ -30,6 +30,7 @@ class DashboardStatisticsService
      * identify which computation is expensive without stack-walking.
      *
      * @template T
+     *
      * @param  \Closure():T  $callback
      * @return T
      */
@@ -240,7 +241,7 @@ class DashboardStatisticsService
         return Cache::remember($cacheKey, 300, function () use ($periodId) {
             $days = collect(range(6, 0))->map(fn ($i) => now()->subDays($i)->format('Y-m-d'));
             $from = now()->subDays(6)->startOfDay();
-            $to   = now()->endOfDay();
+            $to = now()->endOfDay();
 
             $registrations = PesertaKkn::where('periode_id', $periodId)
                 ->whereBetween('created_at', [$from, $to])
@@ -259,9 +260,10 @@ class DashboardStatisticsService
 
             return $days->map(function ($date) use ($registrations, $validations, $dayNames) {
                 $dow = (int) date('w', strtotime($date));
+
                 return [
-                    'day'      => $dayNames[$dow],
-                    'daftar'   => (int) ($registrations[$date] ?? 0),
+                    'day' => $dayNames[$dow],
+                    'daftar' => (int) ($registrations[$date] ?? 0),
                     'validasi' => (int) ($validations[$date] ?? 0),
                 ];
             })->values()->toArray();

@@ -20,12 +20,14 @@ class KegiatanKknAdminController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = KegiatanKkn::with(['mahasiswa.user', 'mahasiswa.prodi', 'mahasiswa.fakultas', 'kelompok.lokasi', 'fileKegiatan', 'reviewer'])->when($request->input('kelompok_id'), fn ($q, $id) => $q->where('kelompok_id', $id))->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))->orderByDesc('date');
+
         return $this->successCollection(KegiatanKknResource::collection($query->paginate(25)));
     }
 
     public function show(KegiatanKkn $dailyReport): JsonResponse
     {
         $dailyReport->load(['mahasiswa.user', 'mahasiswa.prodi', 'mahasiswa.fakultas', 'kelompok.lokasi', 'fileKegiatan', 'reviewer']);
+
         return $this->success(new KegiatanKknResource($dailyReport));
     }
 
@@ -67,7 +69,7 @@ class KegiatanKknAdminController extends Controller
 
         return response()->file(
             Storage::path($fileKegiatan->file_path),
-            ['Content-Disposition' => 'inline; filename="' . ($fileKegiatan->original_name ?? basename($fileKegiatan->file_path)) . '"']
+            ['Content-Disposition' => 'inline; filename="'.($fileKegiatan->original_name ?? basename($fileKegiatan->file_path)).'"']
         );
     }
 }

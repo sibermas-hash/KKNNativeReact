@@ -2,7 +2,6 @@
 
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
-use App\Models\User;
 use App\Services\ComprehensiveReportService;
 
 describe('Comprehensive Report (R4)', function () {

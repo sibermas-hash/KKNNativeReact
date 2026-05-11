@@ -44,12 +44,12 @@ class NotificationBroadcastController extends Controller
     public function broadcast(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'title'    => ['required', 'string', 'max:150'],
-            'message'  => ['required', 'string', 'max:500'],
+            'title' => ['required', 'string', 'max:150'],
+            'message' => ['required', 'string', 'max:500'],
             'priority' => ['nullable', 'in:info,success,warning,danger'],
-            'action'   => ['nullable', 'string', 'max:500'],
-            'type'     => ['nullable', 'string', 'max:50'],
-            'target'   => ['required', 'string', 'max:100'],
+            'action' => ['nullable', 'string', 'max:500'],
+            'type' => ['nullable', 'string', 'max:50'],
+            'target' => ['required', 'string', 'max:100'],
             'user_ids' => ['sometimes', 'array'],
             'user_ids.*' => ['integer', 'exists:users,id'],
         ]);

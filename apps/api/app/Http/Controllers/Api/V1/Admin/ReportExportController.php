@@ -11,7 +11,6 @@ use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use App\Services\DailyReportCompilationService;
-use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class ReportExportController extends Controller
@@ -51,7 +50,7 @@ class ReportExportController extends Controller
         }
 
         $pdf = $this->compilationService->generateForStudent($mahasiswa->user_id);
-        $filename = 'Laporan_Harian_KKN_' . str_replace(' ', '_', $mahasiswa->user->name) . '.pdf';
+        $filename = 'Laporan_Harian_KKN_'.str_replace(' ', '_', $mahasiswa->user->name).'.pdf';
 
         return $pdf->download($filename);
     }
@@ -80,7 +79,7 @@ class ReportExportController extends Controller
         }
 
         $pdf = $this->compilationService->generateForGroup($groupId);
-        $filename = 'Ringkasan_Laporan_Kelompok_' . $kelompok->code . '.pdf';
+        $filename = 'Ringkasan_Laporan_Kelompok_'.$kelompok->code.'.pdf';
 
         return $pdf->download($filename);
     }

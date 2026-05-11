@@ -94,7 +94,7 @@ it('FCM channel is a no-op when FCM_SERVER_KEY is not set', function () {
     $user = createUserWithRole('superadmin');
     DeviceToken::create(['token' => 'some-token', 'user_id' => $user->id, 'platform' => 'android']);
 
-    $channel = new FcmChannel();
+    $channel = new FcmChannel;
     $channel->send($user, new GenericNotification('Title', 'Body'));
 
     Http::assertNothingSent();
@@ -109,7 +109,7 @@ it('FCM channel is a no-op when user has disabled push', function () {
     $user->save();
     DeviceToken::create(['token' => 'tkn', 'user_id' => $user->id, 'platform' => 'android']);
 
-    (new FcmChannel())->send($user, new GenericNotification('Title', 'Body'));
+    (new FcmChannel)->send($user, new GenericNotification('Title', 'Body'));
 
     Http::assertNothingSent();
 });
@@ -122,13 +122,14 @@ it('FCM channel POSTs to Firebase with tokens + notification payload', function 
     DeviceToken::create(['token' => 'tkn-1', 'user_id' => $user->id, 'platform' => 'android']);
     DeviceToken::create(['token' => 'tkn-2', 'user_id' => $user->id, 'platform' => 'ios']);
 
-    (new FcmChannel())->send(
+    (new FcmChannel)->send(
         $user,
         new GenericNotification(title: 'Laporan disetujui', message: 'Laporan harian disetujui DPL.', action: '/mahasiswa/laporan-harian')
     );
 
     Http::assertSent(function ($req) {
         $body = $req->data();
+
         return $req->hasHeader('Authorization', 'key=fake-server-key')
             && $req->url() === 'https://fcm.googleapis.com/fcm/send'
             && $body['notification']['title'] === 'Laporan disetujui'
@@ -150,7 +151,7 @@ it('FCM channel deletes tokens flagged NotRegistered by Firebase', function () {
     DeviceToken::create(['token' => 'good-token', 'user_id' => $user->id, 'platform' => 'android']);
     DeviceToken::create(['token' => 'dead-token', 'user_id' => $user->id, 'platform' => 'ios']);
 
-    (new FcmChannel())->send($user, new GenericNotification('T', 'M'));
+    (new FcmChannel)->send($user, new GenericNotification('T', 'M'));
 
     expect(DeviceToken::where('token', 'good-token')->exists())->toBeTrue();
     expect(DeviceToken::where('token', 'dead-token')->exists())->toBeFalse();

@@ -98,6 +98,7 @@ class AutomaticGroupPlacementService
             //   - slot terkunci rules + gender quota (matters at seat boundary)
             if (! $this->quickEligibilityCheck($group, $mahasiswa)) {
                 $quickSkipped++;
+
                 continue;
             }
 
@@ -120,6 +121,7 @@ class AutomaticGroupPlacementService
                 return $group;
             } catch (ValidationException $exception) {
                 $lastValidationException = $exception;
+
                 continue;
             }
         }

@@ -10,8 +10,10 @@ use App\Models\KKN\DplPeriod;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Periode;
 use App\Models\User;
+use App\Notifications\KKN\DplChangedForGroupNotification;
 use DomainException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DplAssignmentService
 {
@@ -137,7 +139,7 @@ class DplAssignmentService
                 return;
             }
 
-            $notification = new \App\Notifications\KKN\DplChangedForGroupNotification(
+            $notification = new DplChangedForGroupNotification(
                 groupName: $group->nama_kelompok ?? $group->code ?? 'Kelompok KKN',
                 periodName: $group->periode?->name ?? 'Periode KKN',
                 newDplName: $newDpl->nama ?? 'DPL Baru',
@@ -148,7 +150,7 @@ class DplAssignmentService
                 $user->notify($notification);
             }
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Gagal kirim notifikasi perubahan DPL', [
+            Log::error('Gagal kirim notifikasi perubahan DPL', [
                 'group_id' => $group->id,
                 'new_dosen_id' => $dplPeriod->dosen_id,
                 'previous_dosen_id' => $previousDpl->id,

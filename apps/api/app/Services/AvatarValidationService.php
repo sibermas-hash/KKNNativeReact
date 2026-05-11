@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\KKN\SystemSetting;
+use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Exception;
 
 /**
  * Memvalidasi foto profil menggunakan AI Vision (Graceful Degradation 4 Lapis).
@@ -31,9 +31,9 @@ class AvatarValidationService
      */
     public function validateAvatar(string $imagePath): array
     {
-        $absolutePath = storage_path('app/public/' . $imagePath);
+        $absolutePath = storage_path('app/public/'.$imagePath);
 
-        if (!file_exists($absolutePath)) {
+        if (! file_exists($absolutePath)) {
             return ['is_valid' => false, 'reason' => 'File tidak ditemukan.', 'requires_manual_review' => false];
         }
 
@@ -46,21 +46,24 @@ class AvatarValidationService
         foreach ($tiers as $index => $tier) {
             if (empty($tier['key'])) {
                 Log::info("Avatar validation tier {$tier['label']} skipped: no API key configured");
+
                 continue;
             }
 
             try {
                 $result = $this->callOpenAICompatibleApi($tier['url'], $tier['key'], $tier['model'], $payload);
                 Log::info("Avatar validation succeeded on tier {$tier['label']}");
+
                 return $result;
             } catch (Exception $e) {
-                Log::warning("Avatar validation tier {$tier['label']} failed: " . $e->getMessage());
+                Log::warning("Avatar validation tier {$tier['label']} failed: ".$e->getMessage());
                 // Try next tier
             }
         }
 
         // Semua tier gagal → Layer 4 (manual review)
         Log::error('All AI tiers failed for avatar validation. Falling back to manual review.');
+
         return [
             'is_valid' => true, // Foto disimpan, tapi ditandai perlu review admin
             'reason' => null,
@@ -99,12 +102,12 @@ class AvatarValidationService
 
     private function buildPayload(string $base64Image, string $mimeType): array
     {
-        $prompt = 'Anda adalah petugas verifikasi dokumen akademik yang sangat ketat. ' .
-            'Analisis gambar yang dilampirkan dan pastikan HANYA lolos jika memenuhi SEMUA 3 syarat mutlak berikut: ' .
-            '1. Latar Belakang (Background) WAJIB berwarna MERAH polos. ' .
-            '2. Orang di dalam foto WAJIB mengenakan Jas Almamater kampus (berupa jas/blazer resmi). ' .
-            '3. Pose dan penampilan WAJIB formal (wajah menghadap lurus ke depan, mata menatap kamera, tidak memakai kacamata hitam, dan rambut/hijab tertata rapi). ' .
-            'Format balasan Anda HARUS berupa JSON murni dengan struktur berikut: ' .
+        $prompt = 'Anda adalah petugas verifikasi dokumen akademik yang sangat ketat. '.
+            'Analisis gambar yang dilampirkan dan pastikan HANYA lolos jika memenuhi SEMUA 3 syarat mutlak berikut: '.
+            '1. Latar Belakang (Background) WAJIB berwarna MERAH polos. '.
+            '2. Orang di dalam foto WAJIB mengenakan Jas Almamater kampus (berupa jas/blazer resmi). '.
+            '3. Pose dan penampilan WAJIB formal (wajah menghadap lurus ke depan, mata menatap kamera, tidak memakai kacamata hitam, dan rambut/hijab tertata rapi). '.
+            'Format balasan Anda HARUS berupa JSON murni dengan struktur berikut: '.
             '{"is_valid": true/false, "reason": "Kosongkan jika true. Jika false, sebutkan secara singkat dalam bahasa Indonesia mengapa ditolak."}';
 
         return [
@@ -131,14 +134,14 @@ class AvatarValidationService
     private function callOpenAICompatibleApi(string $baseUrl, string $apiKey, string $model, array $payload): array
     {
         $payload['model'] = $model;
-        $endpoint = rtrim($baseUrl, '/') . '/chat/completions';
+        $endpoint = rtrim($baseUrl, '/').'/chat/completions';
 
         $response = Http::withToken($apiKey)
             ->timeout(20) // Vision API kadang lambat
             ->post($endpoint, $payload);
 
-        if (!$response->successful()) {
-            throw new Exception("HTTP {$response->status()}: " . $response->body());
+        if (! $response->successful()) {
+            throw new Exception("HTTP {$response->status()}: ".$response->body());
         }
 
         $jsonResponse = $response->json();
@@ -151,7 +154,7 @@ class AvatarValidationService
 
         $decoded = json_decode($content, true);
 
-        if (!is_array($decoded) || !array_key_exists('is_valid', $decoded)) {
+        if (! is_array($decoded) || ! array_key_exists('is_valid', $decoded)) {
             throw new Exception("Invalid JSON response from AI: {$content}");
         }
 

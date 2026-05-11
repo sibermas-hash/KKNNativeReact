@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Sentry\BeforeSendScrub;
+use Illuminate\Support\Facades\Artisan;
 
 /**
  * Regression: config/sentry.php `before_send` harus tetap melakukan scrubbing
@@ -134,10 +135,10 @@ it('config sentry.before_send references the class name string (cacheable)', fun
 
 it('artisan config cache berhasil (regression: closure sudah hilang)', function () {
     // Hapus dulu cache kalau ada
-    \Illuminate\Support\Facades\Artisan::call('config:clear');
-    $exitCode = \Illuminate\Support\Facades\Artisan::call('config:cache');
+    Artisan::call('config:clear');
+    $exitCode = Artisan::call('config:cache');
     expect($exitCode)->toBe(0);
 
     // Clean up supaya test lain tidak bawa-bawa cached config
-    \Illuminate\Support\Facades\Artisan::call('config:clear');
+    Artisan::call('config:clear');
 });

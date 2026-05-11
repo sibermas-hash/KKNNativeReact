@@ -33,6 +33,7 @@ class FilterStatusCommand extends Command
         if (! $this->option('dry-run')) {
             $this->line('');
             $this->info('Pass --dry-run to see actual filter effects on the live SIAKAD API.');
+
             return self::SUCCESS;
         }
 
@@ -63,6 +64,7 @@ class FilterStatusCommand extends Command
         if (! $enabled) {
             $this->warn('  ⚠ Filters are DISABLED (SIAKAD_FILTERS_ENABLED=false)');
             $this->line('    All records will be accepted.');
+
             return;
         }
 

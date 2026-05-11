@@ -23,35 +23,35 @@ class DplEvaluationController extends Controller
         $context = $this->service->resolveStudentContext(auth()->user());
 
         return $this->success([
-            'eligible'              => $context['eligible'],
-            'reason'                => $context['reason'] ?? null,
-            'criteria'              => $this->service->criteria(),
+            'eligible' => $context['eligible'],
+            'reason' => $context['reason'] ?? null,
+            'criteria' => $this->service->criteria(),
             'recommendation_options' => $this->service->recommendationOptions(),
-            'registration'          => $context['registration'] ? [
+            'registration' => $context['registration'] ? [
                 'period_name' => $context['registration']->periode?->name ?? '-',
             ] : null,
-            'group'                 => $context['group'] ? [
-                'id'            => $context['group']->id,
-                'name'          => $context['group']->nama_kelompok,
-                'code'          => $context['group']->code,
+            'group' => $context['group'] ? [
+                'id' => $context['group']->id,
+                'name' => $context['group']->nama_kelompok,
+                'code' => $context['group']->code,
                 'location_name' => $context['group']->lokasi?->village_name ?? '-',
             ] : null,
-            'dpl'                   => $context['dpl'] ? [
-                'id'   => $context['dpl']->id,
+            'dpl' => $context['dpl'] ? [
+                'id' => $context['dpl']->id,
                 'name' => $context['dpl']->nama ?? $context['dpl']->user?->name ?? '-',
-                'nip'  => $context['dpl']->nip,
+                'nip' => $context['dpl']->nip,
             ] : null,
-            'existing_evaluation'   => $context['existingEvaluation'] ? [
-                'id'           => $context['existingEvaluation']->id,
-                'total_score'  => (float) $context['existingEvaluation']->total_score,
+            'existing_evaluation' => $context['existingEvaluation'] ? [
+                'id' => $context['existingEvaluation']->id,
+                'total_score' => (float) $context['existingEvaluation']->total_score,
                 'recommendation' => $context['existingEvaluation']->recommendation,
-                'notes'        => $context['existingEvaluation']->notes,
+                'notes' => $context['existingEvaluation']->notes,
                 'submitted_at' => $context['existingEvaluation']->submitted_at?->toIso8601String(),
-                'items'        => $context['existingEvaluation']->items->map(fn ($item) => [
-                    'criterion_key'   => $item->criterion_key,
+                'items' => $context['existingEvaluation']->items->map(fn ($item) => [
+                    'criterion_key' => $item->criterion_key,
                     'criterion_label' => $item->criterion_label,
-                    'score'           => $item->score,
-                    'weight'          => $item->weight,
+                    'score' => $item->score,
+                    'weight' => $item->weight,
                 ])->values(),
             ] : null,
         ]);
@@ -60,9 +60,9 @@ class DplEvaluationController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'scores'         => ['required', 'array'],
+            'scores' => ['required', 'array'],
             'recommendation' => ['required', 'string', 'in:'.implode(',', array_keys($this->service->recommendationOptions()))],
-            'notes'          => ['nullable', 'string', 'max:2000'],
+            'notes' => ['nullable', 'string', 'max:2000'],
         ]);
 
         $this->service->store($request->user(), $request->validated());

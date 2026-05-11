@@ -14,6 +14,7 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 class WorkshopAttendanceImport implements ToCollection, WithHeadingRow
 {
     private int $workshopId;
+
     private string $type; // 'mahasiswa' or 'dosen'
 
     public int $processedCount = 0;

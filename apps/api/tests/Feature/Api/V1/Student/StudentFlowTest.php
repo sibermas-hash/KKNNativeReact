@@ -1,10 +1,5 @@
 <?php
 
-use App\Models\KKN\Mahasiswa as KknMahasiswa;
-use App\Models\Master\Mahasiswa;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-
 describe('Student Registration Flow (E2E)', function () {
 
     // Student without complete profile gets PROFILE_INCOMPLETE on most endpoints

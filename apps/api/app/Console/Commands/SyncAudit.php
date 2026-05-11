@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Schema;
 class SyncAudit extends Command
 {
     protected $signature = 'sync:audit';
+
     protected $description = 'Audit sync results and FK integrity';
 
     public function handle(): int
@@ -17,11 +18,11 @@ class SyncAudit extends Command
 
         // Tables that use SoftDeletes have deleted_at column
         $tables = [
-            'fakultas'  => true,  // has SoftDeletes
-            'prodi'     => true,  // has SoftDeletes
-            'dosen'     => false, // no SoftDeletes
+            'fakultas' => true,  // has SoftDeletes
+            'prodi' => true,  // has SoftDeletes
+            'dosen' => false, // no SoftDeletes
             'mahasiswa' => false, // no SoftDeletes
-            'users'     => false, // no SoftDeletes
+            'users' => false, // no SoftDeletes
         ];
 
         $counts = [];
@@ -59,31 +60,31 @@ class SyncAudit extends Command
         }
 
         // FK integrity: mahasiswa → fakultas
-        $orphansFak = DB::select("
+        $orphansFak = DB::select('
             SELECT m.fakultas_id, COUNT(*) as cnt
             FROM mahasiswa m
             LEFT JOIN fakultas f ON f.id = m.fakultas_id
             WHERE f.id IS NULL
             GROUP BY m.fakultas_id
-        ");
+        ');
 
         // FK integrity: mahasiswa → prodi
-        $orphansProdi = DB::select("
+        $orphansProdi = DB::select('
             SELECT m.prodi_id, COUNT(*) as cnt
             FROM mahasiswa m
             LEFT JOIN prodi p ON p.id = m.prodi_id
             WHERE p.id IS NULL
             GROUP BY m.prodi_id
-        ");
+        ');
 
         // FK integrity: dosen → fakultas
-        $orphansDosen = DB::select("
+        $orphansDosen = DB::select('
             SELECT d.fakultas_id, COUNT(*) as cnt
             FROM dosen d
             LEFT JOIN fakultas f ON f.id = d.fakultas_id
             WHERE f.id IS NULL
             GROUP BY d.fakultas_id
-        ");
+        ');
 
         $o[] = '';
         $o[] = '=== FK INTEGRITY ===';
@@ -120,10 +121,10 @@ class SyncAudit extends Command
 
         $o[] = '';
         $o[] = '=== LATEST SYNC TIMESTAMPS ===';
-        $o[] = "  mahasiswa: " . ($latestMhs ?? 'never');
-        $o[] = "  dosen:     " . ($latestDosen ?? 'never');
-        $o[] = "  fakultas:  " . ($latestFak ?? 'never');
-        $o[] = "  prodi:     " . ($latestProdi ?? 'never');
+        $o[] = '  mahasiswa: '.($latestMhs ?? 'never');
+        $o[] = '  dosen:     '.($latestDosen ?? 'never');
+        $o[] = '  fakultas:  '.($latestFak ?? 'never');
+        $o[] = '  prodi:     '.($latestProdi ?? 'never');
 
         // Sync logs summary
         $syncLogs = DB::table('sync_logs')
@@ -137,7 +138,7 @@ class SyncAudit extends Command
             $o[] = "  [{$log->created_at}] {$log->entity_type} ({$log->sync_type}): {$log->status} | fetched={$log->total_fetched} created={$log->total_created} updated={$log->total_updated} errors={$log->total_errors} | {$log->duration_seconds}s";
         }
 
-        $output = implode("\n", $o) . "\n";
+        $output = implode("\n", $o)."\n";
 
         // Write to file
         file_put_contents(base_path('storage/logs/audit_result_artisan.txt'), $output);

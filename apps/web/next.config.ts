@@ -29,6 +29,13 @@ const nextConfig: NextConfig = {
   },
 
   experimental: {
+    // Monorepo: izinkan resolve import di luar `apps/web` (mis. `packages/*`).
+    // Tanpa flag ini, Next 15 tracer kadang tidak ikut sertakan file di
+    // luar cwd yang dibutuhkan standalone build — terutama di monorepo
+    // pnpm dengan symlink. Bersama `.npmrc` `node-linker=hoisted` ini
+    // mengeliminasi error "Cannot find module '../../lib/get-network-host'"
+    // di FreeBSD production.
+    externalDir: true,
     optimizePackageImports: [
       'lucide-react',
       '@tanstack/react-query',

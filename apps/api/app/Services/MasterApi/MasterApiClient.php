@@ -172,7 +172,7 @@ class MasterApiClient
         try {
             // The health endpoint is at the root /api/health regardless of the sync prefix
             $domainUrl = preg_replace('/\/api$/', '', $this->baseUrl);
-            $healthUrl = rtrim($domainUrl, '/') . '/api/health';
+            $healthUrl = rtrim($domainUrl, '/').'/api/health';
 
             // /api/health does not require authentication per SIAKAD API spec
             $response = Http::withHeaders(['Accept' => 'application/json'])
@@ -234,7 +234,7 @@ class MasterApiClient
             'status' => $response->status(),
             'body' => $response->body(),
             'url' => $this->baseUrl.$endpoint,
-            'token_exists' => !empty($this->token),
+            'token_exists' => ! empty($this->token),
         ]);
 
         return null;

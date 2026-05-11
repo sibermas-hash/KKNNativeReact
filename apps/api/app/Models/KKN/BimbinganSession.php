@@ -22,8 +22,11 @@ class BimbinganSession extends Model
     use HasFactory, SoftDeletes;
 
     public const STATUS_SCHEDULED = 'scheduled';
+
     public const STATUS_ONGOING = 'ongoing';
+
     public const STATUS_COMPLETED = 'completed';
+
     public const STATUS_CANCELLED = 'cancelled';
 
     public const MIN_SESSIONS_REQUIRED = 4;

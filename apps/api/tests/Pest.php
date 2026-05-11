@@ -1,8 +1,14 @@
 <?php
 
+use App\Models\KKN\JenisKkn;
+use App\Models\KKN\Periode;
+use App\Models\KKN\TahunAkademik;
 use App\Models\User;
+use App\Services\CaptchaService;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /*
@@ -15,15 +21,15 @@ use Tests\TestCase;
 // test classes concurrently DROP tables. We run migrations once up-front
 // and rely on DatabaseTransactions to roll back data after each test.
 pest()->extend(TestCase::class)
-    ->use(Illuminate\Foundation\Testing\DatabaseTransactions::class)
+    ->use(DatabaseTransactions::class)
     ->in('Feature');
 
 // Run migrations once before the entire Feature test suite.
 // This is safe because DatabaseTransactions only starts a transaction
 // inside setUp(), which runs *after* this beforeAll hook.
 beforeAll(function () {
-    \Illuminate\Support\Facades\Artisan::call('migrate:fresh');
-    \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\DatabaseSeeder', '--force' => true]);
+    Artisan::call('migrate:fresh');
+    Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\DatabaseSeeder', '--force' => true]);
 });
 
 /*
@@ -34,8 +40,8 @@ beforeAll(function () {
 
 function getCaptchaAnswer(string $captchaId): string
 {
-    $cacheKey = 'captcha:' . $captchaId;
-    $hashedAnswer = \Illuminate\Support\Facades\Cache::get($cacheKey);
+    $cacheKey = 'captcha:'.$captchaId;
+    $hashedAnswer = Cache::get($cacheKey);
 
     if (! $hashedAnswer) {
         return '0';
@@ -43,7 +49,8 @@ function getCaptchaAnswer(string $captchaId): string
 
     for ($i = 0; $i <= 40; $i++) {
         if (Hash::check((string) $i, $hashedAnswer)) {
-            \Illuminate\Support\Facades\Cache::forget($cacheKey);
+            Cache::forget($cacheKey);
+
             return (string) $i;
         }
     }
@@ -70,7 +77,7 @@ function createUserWithRole(string $role, array $permissions = []): User
 
 function generateCaptchaWithAnswer(): array
 {
-    $captcha = app(\App\Services\CaptchaService::class)->generate();
+    $captcha = app(CaptchaService::class)->generate();
     $answer = getCaptchaAnswer($captcha['captcha_id']);
 
     return [
@@ -79,9 +86,9 @@ function generateCaptchaWithAnswer(): array
     ];
 }
 
-function createActivePeriod(string $phase = 'execution'): \App\Models\KKN\Periode
+function createActivePeriod(string $phase = 'execution'): Periode
 {
-    $jenis = \App\Models\KKN\JenisKkn::firstOrCreate(
+    $jenis = JenisKkn::firstOrCreate(
         ['code' => 'REGULER'],
         [
             'name' => 'KKN Reguler',
@@ -96,15 +103,15 @@ function createActivePeriod(string $phase = 'execution'): \App\Models\KKN\Period
         ]
     );
 
-    $tahunAkademik = \App\Models\KKN\TahunAkademik::firstOrCreate(
+    $tahunAkademik = TahunAkademik::firstOrCreate(
         ['year' => '2025/2026'],
         ['is_active' => true]
     );
 
     // Deactivate all other periods to ensure this is the only active one
-    \App\Models\KKN\Periode::where('is_active', true)->update(['is_active' => false]);
+    Periode::where('is_active', true)->update(['is_active' => false]);
 
-    $period = \App\Models\KKN\Periode::factory()->state([
+    $period = Periode::factory()->state([
         'is_active' => true,
         'current_phase' => $phase,
         'jenis_kkn_id' => $jenis->id,
@@ -112,10 +119,10 @@ function createActivePeriod(string $phase = 'execution'): \App\Models\KKN\Period
     ])->create();
 
     // Clear PeriodContextService caches so the new period is picked up
-    \Illuminate\Support\Facades\Cache::forget('default_periode_id');
-    \Illuminate\Support\Facades\Cache::forget('available_periods');
+    Cache::forget('default_periode_id');
+    Cache::forget('available_periods');
     if (auth()->check()) {
-        \Illuminate\Support\Facades\Cache::forget('period_context:'.auth()->id());
+        Cache::forget('period_context:'.auth()->id());
     }
 
     return $period;

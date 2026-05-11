@@ -15,42 +15,41 @@ use App\Models\KKN\Announcement;
  *   - Home feature list               → hanya berita
  *   - Resource exposes `content_type`
  */
-
 beforeEach(function () {
     // Buat dataset: 2 berita (BERITA + AGENDA) dan 2 pengumuman (PENGUMUMAN).
     Announcement::query()->delete();
 
     Announcement::create([
-        'title'        => 'Berita 1 Launching',
-        'slug'         => 'berita-1-launching',
-        'category'     => 'BERITA',
-        'content'      => 'Konten berita 1',
-        'is_active'    => true,
+        'title' => 'Berita 1 Launching',
+        'slug' => 'berita-1-launching',
+        'category' => 'BERITA',
+        'content' => 'Konten berita 1',
+        'is_active' => true,
         'published_at' => now(),
     ]);
     Announcement::create([
-        'title'        => 'Agenda Workshop KKN',
-        'slug'         => 'agenda-workshop-kkn',
-        'category'     => 'AGENDA',
-        'content'      => 'Konten agenda',
-        'is_active'    => true,
+        'title' => 'Agenda Workshop KKN',
+        'slug' => 'agenda-workshop-kkn',
+        'category' => 'AGENDA',
+        'content' => 'Konten agenda',
+        'is_active' => true,
         'published_at' => now()->subHour(),
     ]);
     Announcement::create([
-        'title'        => 'Pengumuman Jadwal UTS',
-        'slug'         => 'pengumuman-jadwal-uts',
-        'category'     => 'PENGUMUMAN',
-        'content'      => 'Jadwal UTS ditangguhkan.',
-        'is_active'    => true,
+        'title' => 'Pengumuman Jadwal UTS',
+        'slug' => 'pengumuman-jadwal-uts',
+        'category' => 'PENGUMUMAN',
+        'content' => 'Jadwal UTS ditangguhkan.',
+        'is_active' => true,
         'show_as_popup' => true,
         'published_at' => now()->subMinutes(30),
     ]);
     Announcement::create([
-        'title'        => 'Pengumuman Perbaikan Server',
-        'slug'         => 'pengumuman-perbaikan-server',
-        'category'     => 'PENGUMUMAN',
-        'content'      => 'Server down 2 jam.',
-        'is_active'    => true,
+        'title' => 'Pengumuman Perbaikan Server',
+        'slug' => 'pengumuman-perbaikan-server',
+        'category' => 'PENGUMUMAN',
+        'content' => 'Server down 2 jam.',
+        'is_active' => true,
         'show_as_popup' => true,
         'published_at' => now()->subMinutes(10),
     ]);

@@ -14,6 +14,9 @@ use App\Services\WorkshopService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class WorkshopController extends Controller
 {
@@ -36,14 +39,14 @@ class WorkshopController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'periode_id'       => 'required|exists:periode,id',
-            'title'            => 'required|string|max:255',
-            'description'      => 'nullable|string',
-            'workshop_date'    => 'required|date',
-            'methodology'      => 'nullable|string',
-            'start_time'       => 'nullable|date_format:H:i',
-            'end_time'         => 'nullable|date_format:H:i|after:start_time',
-            'location'         => 'nullable|string',
+            'periode_id' => 'required|exists:periode,id',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'workshop_date' => 'required|date',
+            'methodology' => 'nullable|string',
+            'start_time' => 'nullable|date_format:H:i',
+            'end_time' => 'nullable|date_format:H:i|after:start_time',
+            'location' => 'nullable|string',
             'max_participants' => 'nullable|integer|min:1',
         ]);
 
@@ -55,13 +58,13 @@ class WorkshopController extends Controller
     public function update(Request $request, Workshop $workshop): JsonResponse
     {
         $validated = $request->validate([
-            'title'            => 'required|string|max:255',
-            'description'      => 'nullable|string',
-            'workshop_date'    => 'required|date',
-            'methodology'      => 'nullable|string',
-            'start_time'       => 'nullable|date_format:H:i',
-            'end_time'         => 'nullable|date_format:H:i|after:start_time',
-            'location'         => 'nullable|string',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'workshop_date' => 'required|date',
+            'methodology' => 'nullable|string',
+            'start_time' => 'nullable|date_format:H:i',
+            'end_time' => 'nullable|date_format:H:i|after:start_time',
+            'location' => 'nullable|string',
             'max_participants' => 'nullable|integer|min:1',
         ]);
 
@@ -88,7 +91,7 @@ class WorkshopController extends Controller
     public function markAttendance(Request $request, int $workshopId): JsonResponse
     {
         $validated = $request->validate([
-            'user_ids'   => 'nullable|array',
+            'user_ids' => 'nullable|array',
             'user_ids.*' => 'integer',
         ]);
 
@@ -123,10 +126,10 @@ class WorkshopController extends Controller
             ->with('user:id,name,email')
             ->get()
             ->map(fn ($p) => [
-                'nama'                  => $p->user?->name,
-                'email'                 => $p->user?->email,
-                'attended'              => $p->attended ? 'Hadir' : 'Tidak Hadir',
-                'is_passed'             => $p->is_passed ? 'Lulus' : 'Belum',
+                'nama' => $p->user?->name,
+                'email' => $p->user?->email,
+                'attended' => $p->attended ? 'Hadir' : 'Tidak Hadir',
+                'is_passed' => $p->is_passed ? 'Lulus' : 'Belum',
                 'certificate_generated' => $p->certificate_generated ? 'Ya' : 'Tidak',
             ]);
 
@@ -191,7 +194,7 @@ class WorkshopController extends Controller
      * GET /admin/workshops/template-peserta
      * Download template Excel untuk import peserta workshop.
      */
-    public function downloadPesertaTemplate(): \Symfony\Component\HttpFoundation\BinaryFileResponse
+    public function downloadPesertaTemplate(): BinaryFileResponse
     {
         $templatePath = storage_path('app/templates/template_peserta_workshop.xlsx');
 
@@ -202,7 +205,7 @@ class WorkshopController extends Controller
                 mkdir($dir, 0755, true);
             }
 
-            $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $spreadsheet = new Spreadsheet;
             $sheet = $spreadsheet->getActiveSheet();
             $sheet->setTitle('Peserta Workshop');
 
@@ -236,7 +239,7 @@ class WorkshopController extends Controller
 
             $spreadsheet->setActiveSheetIndex(0);
 
-            $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+            $writer = new Xlsx($spreadsheet);
             $writer->save($templatePath);
         }
 
@@ -249,7 +252,7 @@ class WorkshopController extends Controller
             'file' => ['required', 'file', 'mimes:xlsx,xls', 'max:10240'],
         ]);
 
-        $import = new MetodologiPkmImport();
+        $import = new MetodologiPkmImport;
         Excel::import($import, $request->file('file'));
 
         $response = [

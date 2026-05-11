@@ -91,7 +91,7 @@ class CspHeaders
         }
 
         $isAuthenticated = $request->user() !== null;
-        $isMutation = !in_array($request->method(), ['GET', 'HEAD', 'OPTIONS'], true);
+        $isMutation = ! in_array($request->method(), ['GET', 'HEAD', 'OPTIONS'], true);
 
         if ($isAuthenticated || $isMutation) {
             $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');

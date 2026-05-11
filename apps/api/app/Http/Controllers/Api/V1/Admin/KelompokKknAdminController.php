@@ -30,6 +30,7 @@ class KelompokKknAdminController extends Controller
         if ($user?->hasRole('faculty_admin') && $user->fakultas_id) {
             return (int) $user->fakultas_id;
         }
+
         return null;
     }
 
@@ -47,6 +48,7 @@ class KelompokKknAdminController extends Controller
         if ($facultyId === null) {
             return true; // superadmin/admin boleh semua
         }
+
         return $kelompok->peserta()
             ->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId))
             ->exists();
@@ -57,6 +59,7 @@ class KelompokKknAdminController extends Controller
         if (auth()->user()?->hasRole('faculty_admin')) {
             return $this->error('FORBIDDEN', 'Admin fakultas hanya memiliki akses baca (read-only).', 403);
         }
+
         return null;
     }
 
@@ -79,6 +82,7 @@ class KelompokKknAdminController extends Controller
         }
 
         $kelompok->load(['lokasi', 'dosen', 'periode', 'peserta.mahasiswa.user', 'posko']);
+
         return $this->success(new KelompokKknResource($kelompok));
     }
 
@@ -95,6 +99,7 @@ class KelompokKknAdminController extends Controller
             'code' => ['required', 'string', 'max:50'],
             'capacity' => ['nullable', 'integer', 'min:1'],
         ]);
+
         return $this->created(new KelompokKknResource(KelompokKkn::create($validated)->load(['lokasi', 'periode'])), 'Kelompok berhasil dibuat.');
     }
 
@@ -110,6 +115,7 @@ class KelompokKknAdminController extends Controller
             'capacity' => ['nullable', 'integer', 'min:1'],
             'status' => ['nullable', 'string'],
         ]));
+
         return $this->success(new KelompokKknResource($kelompok->refresh()), 'Kelompok berhasil diperbarui.');
     }
 
@@ -123,6 +129,7 @@ class KelompokKknAdminController extends Controller
             return $this->error('VALIDATION_ERROR', 'Kelompok masih memiliki peserta aktif.', 422);
         }
         $kelompok->delete();
+
         return $this->noContent('Kelompok berhasil dihapus.');
     }
 
@@ -134,7 +141,7 @@ class KelompokKknAdminController extends Controller
 
         $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240']]);
 
-        $import = new KelompokKknImport();
+        $import = new KelompokKknImport;
         Excel::import($import, $request->file('file'));
 
         return $this->success([
@@ -161,14 +168,14 @@ class KelompokKknAdminController extends Controller
             ->when($facultyId, fn ($q, $fid) => $q->whereHas('mahasiswa', fn ($qq) => $qq->where('fakultas_id', $fid)))
             ->get()
             ->map(fn ($p) => [
-                'id'           => $p->id,
+                'id' => $p->id,
                 'mahasiswa_id' => $p->mahasiswa?->id,
-                'nim'          => $p->mahasiswa?->nim,
-                'nama'         => $p->mahasiswa?->nama,
-                'prodi'        => $p->mahasiswa?->prodi?->name,
-                'fakultas'     => $p->mahasiswa?->prodi?->fakultas?->name,
-                'role'         => $p->role,
-                'status'       => $p->status,
+                'nim' => $p->mahasiswa?->nim,
+                'nama' => $p->mahasiswa?->nama,
+                'prodi' => $p->mahasiswa?->prodi?->name,
+                'fakultas' => $p->mahasiswa?->prodi?->fakultas?->name,
+                'role' => $p->role,
+                'status' => $p->status,
             ]);
 
         return $this->success(['mahasiswa' => $peserta, 'total' => $peserta->count()]);

@@ -129,7 +129,6 @@ class SuperAdminSeeder extends Seeder
             'must_change_password' => ! $envPassword, // Wajib ganti jika password auto-generated
         ]);
 
-
         // Set password hanya jika: (1) user baru, atau (2) password diberikan via env
         if ($isNewUser || $envPassword) {
             $user->password = Hash::make($plainPassword);
@@ -150,19 +149,19 @@ class SuperAdminSeeder extends Seeder
         $this->command?->info('╠══════════════════════════════════════════════════╣');
 
         if ($isNewUser) {
-            $this->command?->warn("║  Status  : BARU DIBUAT                           ║");
-            $this->command?->warn("║  Email   : " . self::SUPERADMIN_EMAIL . "   ║");
-            $this->command?->warn("║  Username: " . self::SUPERADMIN_USERNAME . "                        ║");
+            $this->command?->warn('║  Status  : BARU DIBUAT                           ║');
+            $this->command?->warn('║  Email   : '.self::SUPERADMIN_EMAIL.'   ║');
+            $this->command?->warn('║  Username: '.self::SUPERADMIN_USERNAME.'                        ║');
             $this->command?->warn("║  Password: {$plainPassword}                   ║");
             if (! $envPassword) {
-                $this->command?->error("║  ⚠ CATAT PASSWORD DI ATAS — tidak ditampilkan lagi! ║");
+                $this->command?->error('║  ⚠ CATAT PASSWORD DI ATAS — tidak ditampilkan lagi! ║');
             }
         } elseif ($envPassword) {
-            $this->command?->info("║  Status  : PASSWORD DIPERBARUI                   ║");
-            $this->command?->info("║  Email   : " . self::SUPERADMIN_EMAIL . "   ║");
+            $this->command?->info('║  Status  : PASSWORD DIPERBARUI                   ║');
+            $this->command?->info('║  Email   : '.self::SUPERADMIN_EMAIL.'   ║');
         } else {
-            $this->command?->info("║  Status  : SUDAH ADA (tidak diubah)              ║");
-            $this->command?->info("║  Email   : " . self::SUPERADMIN_EMAIL . "   ║");
+            $this->command?->info('║  Status  : SUDAH ADA (tidak diubah)              ║');
+            $this->command?->info('║  Email   : '.self::SUPERADMIN_EMAIL.'   ║');
         }
 
         $this->command?->info('╚══════════════════════════════════════════════════╝');

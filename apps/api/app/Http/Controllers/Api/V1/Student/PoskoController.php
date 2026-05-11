@@ -10,6 +10,7 @@ use App\Models\KKN\PoskoKelompok;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\Response;
 
 class PoskoController extends Controller
 {
@@ -22,13 +23,13 @@ class PoskoController extends Controller
         $posko = $registration?->kelompok?->posko;
 
         return $this->success([
-            'id'         => $posko?->id,
+            'id' => $posko?->id,
             'nama_posko' => $posko?->nama_posko ?? null,
-            'address'    => $posko?->address ?? null,
-            'latitude'   => $posko?->latitude !== null ? (float) $posko->latitude : null,
-            'longitude'  => $posko?->longitude !== null ? (float) $posko->longitude : null,
+            'address' => $posko?->address ?? null,
+            'latitude' => $posko?->latitude !== null ? (float) $posko->latitude : null,
+            'longitude' => $posko?->longitude !== null ? (float) $posko->longitude : null,
             'gmaps_link' => $posko?->gmaps_link,
-            'photo_url'  => $posko?->photo_path ? route('api.v1.student.posko.photo', $posko) : null,
+            'photo_url' => $posko?->photo_path ? route('api.v1.student.posko.photo', $posko) : null,
             'photo_name' => $posko?->photo_name,
             'updated_at' => $posko?->updated_at?->toIso8601String(),
         ]);
@@ -50,10 +51,10 @@ class PoskoController extends Controller
         $existingPosko = PoskoKelompok::where('kelompok_id', $registration->kelompok_id)->first();
 
         $validated = $request->validate([
-            'latitude'   => ['required', 'numeric', 'between:-90,90'],
-            'longitude'  => ['required', 'numeric', 'between:-180,180'],
+            'latitude' => ['required', 'numeric', 'between:-90,90'],
+            'longitude' => ['required', 'numeric', 'between:-180,180'],
             'gmaps_link' => ['nullable', 'url', 'max:500'],
-            'photo'      => [$existingPosko ? 'nullable' : 'required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'photo' => [$existingPosko ? 'nullable' : 'required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ]);
 
         $photoPath = $existingPosko?->photo_path;
@@ -76,26 +77,26 @@ class PoskoController extends Controller
         $posko = PoskoKelompok::updateOrCreate(
             ['kelompok_id' => $registration->kelompok_id],
             [
-                'latitude'    => $validated['latitude'],
-                'longitude'   => $validated['longitude'],
-                'gmaps_link'  => $validated['gmaps_link'] ?? null,
-                'photo_path'  => $photoPath,
-                'photo_name'  => $photoName,
-                'photo_size'  => $photoSize,
+                'latitude' => $validated['latitude'],
+                'longitude' => $validated['longitude'],
+                'gmaps_link' => $validated['gmaps_link'] ?? null,
+                'photo_path' => $photoPath,
+                'photo_name' => $photoName,
+                'photo_size' => $photoSize,
                 'uploaded_by' => $user->id,
             ]
         );
 
         return $this->success([
-            'id'         => $posko->id,
-            'latitude'   => (float) $posko->latitude,
-            'longitude'  => (float) $posko->longitude,
+            'id' => $posko->id,
+            'latitude' => (float) $posko->latitude,
+            'longitude' => (float) $posko->longitude,
             'gmaps_link' => $posko->gmaps_link,
-            'photo_url'  => $posko->photo_path ? route('api.v1.student.posko.photo', $posko) : null,
+            'photo_url' => $posko->photo_path ? route('api.v1.student.posko.photo', $posko) : null,
         ], 'Data posko berhasil diperbarui.');
     }
 
-    public function photo(PoskoKelompok $posko): \Symfony\Component\HttpFoundation\Response
+    public function photo(PoskoKelompok $posko): Response
     {
         $user = auth()->user();
         abort_unless($user, 403);

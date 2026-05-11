@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\LaporanAkhir;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use Illuminate\Http\UploadedFile;
@@ -16,7 +17,6 @@ use Illuminate\Support\Facades\Storage;
  * tanpa ownership check). Sekarang hanya peserta dengan role='Ketua' boleh
  * POST /api/v1/student/final-report.
  */
-
 beforeEach(function () {
     $this->periode = createActivePeriod('grading');
     $this->kelompok = KelompokKkn::factory()->create(['periode_id' => $this->periode->id]);
@@ -117,7 +117,7 @@ it('prevents member B from overwriting member A submission', function () {
         ->assertStatus(403);
 
     // Tidak ada laporan akhir tersimpan karena dua-duanya di-reject.
-    expect(\App\Models\KKN\LaporanAkhir::where('kelompok_id', $this->kelompok->id)->count())
+    expect(LaporanAkhir::where('kelompok_id', $this->kelompok->id)->count())
         ->toBe(0);
 });
 

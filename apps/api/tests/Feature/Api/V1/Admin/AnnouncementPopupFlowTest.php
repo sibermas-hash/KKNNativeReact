@@ -20,7 +20,6 @@ use App\Models\KKN\Announcement;
  *   5. Toggle is_active=false membuat popup hilang dari public endpoint.
  *   6. Non-popup announcement tidak bocor ke popup endpoint.
  */
-
 beforeEach(function () {
     Announcement::query()->delete();
 });
@@ -29,12 +28,12 @@ it('superadmin dapat membuat pengumuman + langsung muncul sebagai popup di home 
     $admin = createUserWithRole('superadmin');
 
     $payload = [
-        'title'             => 'Pengumuman Penting UTS',
-        'content'           => 'Jadwal UTS ditangguhkan hingga pengumuman berikutnya.',
-        'excerpt'           => 'UTS ditunda.',
-        'category'          => 'PENGUMUMAN',
-        'is_active'         => true,
-        'show_as_popup'     => true,
+        'title' => 'Pengumuman Penting UTS',
+        'content' => 'Jadwal UTS ditangguhkan hingga pengumuman berikutnya.',
+        'excerpt' => 'UTS ditunda.',
+        'category' => 'PENGUMUMAN',
+        'is_active' => true,
+        'show_as_popup' => true,
         'popup_dismissable' => true,
     ];
 
@@ -56,8 +55,8 @@ it('menolak kategori yang tidak ada di CATEGORY_OPTIONS', function () {
     $admin = createUserWithRole('superadmin');
 
     $response = $this->actingAs($admin)->postJson('/api/v1/admin/warta-utama', [
-        'title'    => 'Judul',
-        'content'  => 'Isi konten',
+        'title' => 'Judul',
+        'content' => 'Isi konten',
         'category' => 'lowercase-invalid',
     ]);
 
@@ -72,7 +71,7 @@ it('mengeset is_active=true by default saat form tidak mengirim field is_active'
     $admin = createUserWithRole('superadmin');
 
     $response = $this->actingAs($admin)->postJson('/api/v1/admin/warta-utama', [
-        'title'   => 'Tanpa is_active',
+        'title' => 'Tanpa is_active',
         'content' => 'Konten',
     ]);
 
@@ -85,9 +84,9 @@ it('matikan popup via PUT is_active=false menyembunyikan dari endpoint public', 
 
     // Create popup
     $created = $this->actingAs($admin)->postJson('/api/v1/admin/warta-utama', [
-        'title'         => 'Popup Darurat',
-        'content'       => 'Konten darurat',
-        'category'      => 'PENGUMUMAN',
+        'title' => 'Popup Darurat',
+        'content' => 'Konten darurat',
+        'category' => 'PENGUMUMAN',
         'show_as_popup' => true,
     ])->assertCreated();
     $id = $created->json('data.id');
@@ -102,7 +101,7 @@ it('matikan popup via PUT is_active=false menyembunyikan dari endpoint public', 
         ->assertOk();
 
     // Verify di DB langsung — assertJsonPath kadang mismatch untuk boolean false
-    expect(\App\Models\KKN\Announcement::find($id)->is_active)->toBeFalse();
+    expect(Announcement::find($id)->is_active)->toBeFalse();
 
     // Public endpoint tidak lagi mengembalikannya
     $this->getJson('/api/v1/public/popup-announcement')
@@ -114,9 +113,9 @@ it('pengumuman aktif tanpa show_as_popup TIDAK muncul di endpoint popup', functi
     $admin = createUserWithRole('superadmin');
 
     $this->actingAs($admin)->postJson('/api/v1/admin/warta-utama', [
-        'title'         => 'Hanya di list berita',
-        'content'       => 'Konten berita biasa',
-        'category'      => 'BERITA',
+        'title' => 'Hanya di list berita',
+        'content' => 'Konten berita biasa',
+        'category' => 'BERITA',
         'show_as_popup' => false,
     ])->assertCreated();
 
@@ -130,15 +129,15 @@ it('popup dengan popup_until yang sudah lewat tidak ditampilkan', function () {
 
     // Buat langsung via factory untuk kontrol popup_until di masa lalu.
     Announcement::query()->create([
-        'title'             => 'Popup Kadaluwarsa',
-        'slug'              => 'popup-kadaluwarsa',
-        'category'          => 'PENGUMUMAN',
-        'content'           => 'Sudah lewat',
-        'is_active'         => true,
-        'show_as_popup'     => true,
-        'popup_until'       => now()->subDay(),
+        'title' => 'Popup Kadaluwarsa',
+        'slug' => 'popup-kadaluwarsa',
+        'category' => 'PENGUMUMAN',
+        'content' => 'Sudah lewat',
+        'is_active' => true,
+        'show_as_popup' => true,
+        'popup_until' => now()->subDay(),
         'popup_dismissable' => true,
-        'published_at'      => now()->subDays(2),
+        'published_at' => now()->subDays(2),
     ]);
 
     $this->getJson('/api/v1/public/popup-announcement')

@@ -269,6 +269,7 @@ class AttendanceController extends Controller
                     'attendance_id' => $attendance->id,
                     'size_bytes' => strlen($imageData),
                 ]);
+
                 return;
             }
 

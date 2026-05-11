@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Hash;
  */
 function getCaptchaAnswerPeek(string $captchaId): string
 {
-    $cacheKey = 'captcha:' . $captchaId;
+    $cacheKey = 'captcha:'.$captchaId;
     $hashedAnswer = Cache::get($cacheKey);
 
     if (! $hashedAnswer) {

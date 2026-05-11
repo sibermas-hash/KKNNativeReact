@@ -6,6 +6,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
 class EnsurePasswordChanged
@@ -27,8 +29,8 @@ class EnsurePasswordChanged
             $needsRotation = $user->must_change_password || is_null($user->password_changed_at);
             if ($needsRotation) {
                 $cacheKey = 'auth:superadmin_unrotated_log:'.$user->id;
-                if (\Illuminate\Support\Facades\Cache::add($cacheKey, 1, now()->addHour())) {
-                    \Illuminate\Support\Facades\Log::warning(
+                if (Cache::add($cacheKey, 1, now()->addHour())) {
+                    Log::warning(
                         'Superadmin account has not rotated default password',
                         [
                             'user_id' => $user->id,
@@ -38,6 +40,7 @@ class EnsurePasswordChanged
                     );
                 }
             }
+
             return $next($request);
         }
 

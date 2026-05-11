@@ -11,10 +11,11 @@ class ImportWorkshopDplSeeder extends Seeder
     public function run(): void
     {
         $folderPath = storage_path('DPL/Rekap_Peserta_Metodologi_PKM (1).fld');
-        $sheetFile = $folderPath . '/sheet001.html';
+        $sheetFile = $folderPath.'/sheet001.html';
 
-        if (!File::isDirectory($folderPath) || !File::exists($sheetFile)) {
+        if (! File::isDirectory($folderPath) || ! File::exists($sheetFile)) {
             $this->command->error("File tidak ditemukan: {$sheetFile}");
+
             return;
         }
 
@@ -121,24 +122,24 @@ class ImportWorkshopDplSeeder extends Seeder
                 ]);
                 $updatedCount++;
 
-                if (!$matchFound && $bestMatch) {
-                    $this->command->line("<fg=yellow>Fuzzy:</> '{$nama}' → <fg=green>{$bestMatch->nama}</> (" . round($highestPercent, 1) . "%)");
+                if (! $matchFound && $bestMatch) {
+                    $this->command->line("<fg=yellow>Fuzzy:</> '{$nama}' → <fg=green>{$bestMatch->nama}</> (".round($highestPercent, 1).'%)');
                 }
             } else {
-                $notFoundNames[] = "{$nama} (" . round($highestPercent, 1) . "%)";
+                $notFoundNames[] = "{$nama} (".round($highestPercent, 1).'%)';
             }
         }
 
         $this->command->newLine();
         $this->command->info("Selesai! {$updatedCount} Dosen berhasil ditandai lulus workshop.");
 
-        if (!empty($notFoundNames)) {
-            $this->command->warn(count($notFoundNames) . " nama tidak dapat dipasangkan:");
+        if (! empty($notFoundNames)) {
+            $this->command->warn(count($notFoundNames).' nama tidak dapat dipasangkan:');
             foreach ($notFoundNames as $n) {
                 $this->command->line("  ✗ {$n}");
             }
             $this->command->newLine();
-            $this->command->line("Nama-nama di atas kemungkinan besar adalah <fg=cyan>dosen luar / narasumber</> yang bukan dosen UIN Saizu.");
+            $this->command->line('Nama-nama di atas kemungkinan besar adalah <fg=cyan>dosen luar / narasumber</> yang bukan dosen UIN Saizu.');
         }
     }
 
@@ -159,6 +160,7 @@ class ImportWorkshopDplSeeder extends Seeder
         $name = str_replace(['.', "'", "'", '`', '"'], '', $name);
         // Lowercase + trim spasi berlebih
         $name = strtolower(trim(preg_replace('/\s+/', ' ', $name)));
+
         return $name;
     }
 }

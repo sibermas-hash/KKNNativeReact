@@ -169,8 +169,8 @@ return [
     'try_it_out' => [
         'enabled' => true,
         'include_csrf_token' => true,
-            'base_url' => env('APP_URL'),
-        ],
+        'base_url' => env('APP_URL'),
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -211,7 +211,7 @@ return [
         'description' => 'SIBERMAS REST API for KKN Management',
         'export_filename' => 'sibermas-api-collection.json',
         'collection_name' => 'SIBERMAS API v1',
-        'collection_base_url' => env('APP_URL') . '/api/v1',
+        'collection_base_url' => env('APP_URL').'/api/v1',
         'base_url_params' => [
             'api_path' => 'api/v1',
         ],
@@ -241,7 +241,7 @@ return [
         ],
 
         'static' => [
-            'baseUrl' => env('APP_URL') . '/api/v1',
+            'baseUrl' => env('APP_URL').'/api/v1',
             'headers' => [
                 'Accept' => 'application/json',
             ],

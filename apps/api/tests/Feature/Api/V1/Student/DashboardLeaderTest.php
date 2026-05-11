@@ -13,7 +13,6 @@ use App\Models\KKN\SystemSetting;
  * (bukan hardcoded "Sedang Ditentukan"), serta threshold certificate_min_score
  * dan min_daily_reports dari SystemSetting.
  */
-
 beforeEach(function () {
     $this->periode = createActivePeriod('execution');
     $this->kelompok = KelompokKkn::factory()->create(['periode_id' => $this->periode->id]);

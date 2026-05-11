@@ -4,14 +4,15 @@ declare(strict_types=1);
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     private function indexExists(string $table, string $index): bool
     {
-        return \Illuminate\Support\Facades\DB::select(
-            "SELECT 1 FROM pg_indexes WHERE tablename = ? AND indexname = ?",
+        return DB::select(
+            'SELECT 1 FROM pg_indexes WHERE tablename = ? AND indexname = ?',
             [$table, $index]
         ) !== [];
     }
@@ -36,16 +37,15 @@ return new class extends Migration
         foreach ($indexes as $table => $tableIndexes) {
             Schema::table($table, function (Blueprint $t) use ($table, $tableIndexes) {
                 foreach ($tableIndexes as [$name, $cols]) {
-                    if (!$this->indexExists($table, $name)) {
+                    if (! $this->indexExists($table, $name)) {
                         $t->index($cols, $name);
                     }
                 }
             });
         }
 
-        if (Schema::hasTable('sync_logs') && !$this->indexExists('sync_logs', 'idx_sync_logs_entity_created')) {
-            Schema::table('sync_logs', fn (Blueprint $t) =>
-                $t->index(['entity_type', 'created_at'], 'idx_sync_logs_entity_created')
+        if (Schema::hasTable('sync_logs') && ! $this->indexExists('sync_logs', 'idx_sync_logs_entity_created')) {
+            Schema::table('sync_logs', fn (Blueprint $t) => $t->index(['entity_type', 'created_at'], 'idx_sync_logs_entity_created')
             );
         }
     }

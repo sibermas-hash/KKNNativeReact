@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use App\Models\KKN\LogAudit;
 use App\Models\KKN\Mahasiswa;
-use App\Models\User;
 
 /*
  * AuditObserver + LogAuditController behavior.
@@ -177,7 +176,7 @@ it('admin audit-log index supports severity + date range filters', function () {
 
     // date_from filter — exclude the 10-days-old row
     $dateResp = $this->actingAs($admin)->getJson(
-        '/api/v1/admin/audit-log?date_from=' . now()->subDays(1)->toDateString()
+        '/api/v1/admin/audit-log?date_from='.now()->subDays(1)->toDateString()
     );
     $dateResp->assertOk();
     $actions = array_column($dateResp->json('data'), 'action');

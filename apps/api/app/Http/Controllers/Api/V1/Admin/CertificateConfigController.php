@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Api\V1\LogAuditResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\KonfigurasiSertifikat;
-use App\Models\KKN\LogAudit;
-use App\Models\KKN\SystemSetting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 

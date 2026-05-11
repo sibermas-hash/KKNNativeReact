@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
+use App\Models\User;
 
 /**
  * Regression test untuk audit F-08 fix: faculty_admin tidak lagi bypass
@@ -14,8 +15,7 @@ use App\Models\KKN\PesertaKkn;
  * faculty_admin DAN student transien). Sebelumnya, user seperti itu bisa
  * akses student feature di fase manapun. Sekarang harus ikut phase rules.
  */
-
-function makeStudentWithKelompok(KelompokKkn $kelompok, ?int $periodeId): \App\Models\User
+function makeStudentWithKelompok(KelompokKkn $kelompok, ?int $periodeId): User
 {
     $user = createUserWithRole('student');
     $user->update([

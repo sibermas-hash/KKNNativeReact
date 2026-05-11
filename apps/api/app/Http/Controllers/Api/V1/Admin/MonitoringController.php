@@ -10,6 +10,7 @@ use App\Http\Traits\ApiResponse;
 use App\Services\TelegramAlertService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -142,8 +143,8 @@ class MonitoringController extends Controller
      */
     public function triggerCheck(Request $request): JsonResponse
     {
-        $exitCode = \Illuminate\Support\Facades\Artisan::call('monitoring:health-check');
-        $output = \Illuminate\Support\Facades\Artisan::output();
+        $exitCode = Artisan::call('monitoring:health-check');
+        $output = Artisan::output();
 
         return response()->json([
             'success' => $exitCode === 0,

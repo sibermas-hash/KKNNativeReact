@@ -28,17 +28,17 @@ class RekapitulasiController extends Controller
 
             return $this->success([
                 'kelompok' => [
-                    'id'            => $kelompok->id,
+                    'id' => $kelompok->id,
                     'nama_kelompok' => $kelompok->nama_kelompok,
-                    'lokasi'        => $kelompok->lokasi ? [
-                        'village_name'  => $kelompok->lokasi->village_name,
+                    'lokasi' => $kelompok->lokasi ? [
+                        'village_name' => $kelompok->lokasi->village_name,
                         'district_name' => $kelompok->lokasi->district_name,
-                        'regency_name'  => $kelompok->lokasi->regency_name,
+                        'regency_name' => $kelompok->lokasi->regency_name,
                     ] : null,
-                    'periode'       => $kelompok->periode ? ['name' => $kelompok->periode->name] : null,
+                    'periode' => $kelompok->periode ? ['name' => $kelompok->periode->name] : null,
                 ],
                 'rekapitulasi' => $rekapitulasi,
-                'dpl'          => $kelompok->dosen ? ['nama' => $kelompok->dosen->nama] : null,
+                'dpl' => $kelompok->dosen ? ['nama' => $kelompok->dosen->nama] : null,
             ]);
         }
 
@@ -48,12 +48,12 @@ class RekapitulasiController extends Controller
             ->orderBy('nama_kelompok')
             ->get()
             ->map(fn ($k) => [
-                'id'              => $k->id,
-                'nama_kelompok'   => $k->nama_kelompok,
-                'desa'            => $k->lokasi?->village_name,
-                'kecamatan'       => $k->lokasi?->district_name,
-                'periode'         => $k->periode?->name,
-                'total_dana'      => $k->rekapitulasiKegiatan()->sum('jumlah'),
+                'id' => $k->id,
+                'nama_kelompok' => $k->nama_kelompok,
+                'desa' => $k->lokasi?->village_name,
+                'kecamatan' => $k->lokasi?->district_name,
+                'periode' => $k->periode?->name,
+                'total_dana' => $k->rekapitulasiKegiatan()->sum('jumlah'),
                 'jumlah_kegiatan' => $k->rekapitulasiKegiatan()->count(),
             ]);
 

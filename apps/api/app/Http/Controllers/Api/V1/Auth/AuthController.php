@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Api\V1\Auth\CaptchaRequest;
 use App\Http\Traits\ApiResponse;
+use App\Models\KKN\PesertaKkn;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use App\Services\CaptchaService;
 use App\Services\PeriodContextService;
 use Illuminate\Auth\Events\Lockout;
@@ -15,12 +16,14 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\Validation\ValidationException;
+use PragmaRX\Google2FA\Google2FA;
 
 class AuthController extends Controller
 {
@@ -96,7 +99,7 @@ class AuthController extends Controller
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             RateLimiter::hit($throttleKey);
 
-            \App\Services\ActivityLogger::log('login', 'failed', null, [
+            ActivityLogger::log('login', 'failed', null, [
                 'attempted_username' => $loginValue,
                 'reason' => 'invalid_credentials',
             ]);
@@ -121,13 +124,13 @@ class AuthController extends Controller
         // client must present along with the 6-digit code to /auth/2fa-verify.
         if ($user->hasTwoFactorEnabled()) {
             // Log the first-factor success separately from full login
-            \App\Services\ActivityLogger::log('login', 'success', $user->id, [
+            ActivityLogger::log('login', 'success', $user->id, [
                 'method' => $isMobile ? 'mobile' : 'web',
                 'stage' => 'first_factor',
             ]);
 
-            $challengeToken = \Illuminate\Support\Str::random(64);
-            \Illuminate\Support\Facades\Cache::put(
+            $challengeToken = Str::random(64);
+            Cache::put(
                 "2fa-challenge:{$challengeToken}",
                 ['user_id' => $user->id, 'is_mobile' => $isMobile, 'remember' => $request->boolean('remember')],
                 now()->addMinutes(5)
@@ -144,7 +147,7 @@ class AuthController extends Controller
             );
         }
 
-        \App\Services\ActivityLogger::log('login', 'success', $user->id, [
+        ActivityLogger::log('login', 'success', $user->id, [
             'method' => $isMobile ? 'mobile' : 'web',
         ]);
 
@@ -177,7 +180,6 @@ class AuthController extends Controller
         $isSecure = app()->environment('production') ? true : $request->secure();
         $expiry = 60 * 60 * 24 * 7; // 7 days
 
-
         return $this->success([
             'user' => $this->buildUserData($user),
         ], 'Login berhasil.')
@@ -202,10 +204,11 @@ class AuthController extends Controller
         // tunduk pada 5 attempts / TTL 5 menit per specific challenge token. Burn
         // token setelah 5× gagal — paksa user login ulang.
         $throttleKey = "2fa-verify:{$data['challenge_token']}";
-        $attempts = \Illuminate\Support\Facades\Cache::get($throttleKey, 0);
+        $attempts = Cache::get($throttleKey, 0);
         if ($attempts >= 5) {
-            \Illuminate\Support\Facades\Cache::forget("2fa-challenge:{$data['challenge_token']}");
-            \Illuminate\Support\Facades\Cache::forget($throttleKey);
+            Cache::forget("2fa-challenge:{$data['challenge_token']}");
+            Cache::forget($throttleKey);
+
             return $this->error(
                 'TWO_FACTOR_CHALLENGE_EXPIRED',
                 'Terlalu banyak percobaan 2FA. Silakan login ulang.',
@@ -213,14 +216,14 @@ class AuthController extends Controller
             );
         }
 
-        $challenge = \Illuminate\Support\Facades\Cache::get("2fa-challenge:{$data['challenge_token']}");
+        $challenge = Cache::get("2fa-challenge:{$data['challenge_token']}");
 
-        if (!$challenge || !isset($challenge['user_id'])) {
+        if (! $challenge || ! isset($challenge['user_id'])) {
             return $this->error('TWO_FACTOR_CHALLENGE_EXPIRED', 'Sesi 2FA kedaluwarsa. Silakan login ulang.', 401);
         }
 
         $user = User::find($challenge['user_id']);
-        if (!$user || !$user->hasTwoFactorEnabled()) {
+        if (! $user || ! $user->hasTwoFactorEnabled()) {
             return $this->error('TWO_FACTOR_INVALID', 'User tidak valid atau 2FA tidak aktif.', 401);
         }
 
@@ -230,15 +233,15 @@ class AuthController extends Controller
 
         // Try TOTP first (6 digits)
         if (preg_match('/^[0-9]{6}$/', $code)) {
-            $g2fa = new \PragmaRX\Google2FA\Google2FA();
+            $g2fa = new Google2FA;
             $isValidCode = $g2fa->verifyKey($user->two_factor_secret, $code);
         }
 
         // Try recovery code (format XXXX-XXXX)
-        if (!$isValidCode && $user->two_factor_recovery_codes) {
+        if (! $isValidCode && $user->two_factor_recovery_codes) {
             $codes = $user->two_factor_recovery_codes;
             foreach ($codes as $i => $hashed) {
-                if (\Illuminate\Support\Facades\Hash::check($code, $hashed)) {
+                if (Hash::check($code, $hashed)) {
                     $isValidCode = true;
                     $usedRecovery = true;
                     // Remove used recovery code
@@ -249,26 +252,27 @@ class AuthController extends Controller
             }
         }
 
-        if (!$isValidCode) {
+        if (! $isValidCode) {
             // Increment per-challenge-token throttle counter (TTL 5 min, same as challenge)
-            \Illuminate\Support\Facades\Cache::put(
+            Cache::put(
                 $throttleKey,
                 $attempts + 1,
                 now()->addMinutes(5)
             );
 
-            \App\Services\ActivityLogger::log('2fa_verify', 'failed', $user->id, [
+            ActivityLogger::log('2fa_verify', 'failed', $user->id, [
                 'reason' => 'invalid_code',
                 'attempts' => $attempts + 1,
             ]);
+
             return $this->error('TWO_FACTOR_INVALID', 'Kode 2FA tidak valid.', 422);
         }
 
         // Success! Burn the challenge + throttle counter, issue real token
-        \Illuminate\Support\Facades\Cache::forget("2fa-challenge:{$data['challenge_token']}");
-        \Illuminate\Support\Facades\Cache::forget($throttleKey);
+        Cache::forget("2fa-challenge:{$data['challenge_token']}");
+        Cache::forget($throttleKey);
 
-        \App\Services\ActivityLogger::log('2fa_verify', 'success', $user->id, [
+        ActivityLogger::log('2fa_verify', 'success', $user->id, [
             'used_recovery_code' => $usedRecovery,
             'recovery_codes_remaining' => $user->two_factor_recovery_codes ? count($user->two_factor_recovery_codes) : 0,
         ]);
@@ -278,6 +282,7 @@ class AuthController extends Controller
 
         if ($isMobile) {
             $token = $user->createToken('mobile')->plainTextToken;
+
             return $this->success([
                 'token' => $token,
                 'token_type' => 'Bearer',
@@ -288,6 +293,7 @@ class AuthController extends Controller
 
         if ($request->hasSession()) {
             $request->session()->regenerate();
+
             return $this->success([
                 'user' => $this->buildUserData($user),
                 'recovery_code_used' => $usedRecovery,
@@ -314,7 +320,7 @@ class AuthController extends Controller
         $user = $request->user();
 
         if ($user) {
-            \App\Services\ActivityLogger::log('logout', 'success', $user->id);
+            ActivityLogger::log('logout', 'success', $user->id);
         }
 
         if ($request->header('X-App-Type') === 'mobile' && $user) {
@@ -445,7 +451,7 @@ class AuthController extends Controller
 
         // Add registration status for students (single query for both status and lock)
         if ($user->hasRole('student') && $user->mahasiswa) {
-            $latestRegistration = \App\Models\KKN\PesertaKkn::query()
+            $latestRegistration = PesertaKkn::query()
                 ->where('mahasiswa_id', $user->mahasiswa->id)
                 ->latest()
                 ->first();

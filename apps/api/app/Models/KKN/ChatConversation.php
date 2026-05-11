@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class ChatConversation extends Model
 {
     use SoftDeletes;
+
     protected $fillable = [
         'user_id', 'subject', 'status', 'priority',
         'last_message_at', 'closed_at', 'closed_by',

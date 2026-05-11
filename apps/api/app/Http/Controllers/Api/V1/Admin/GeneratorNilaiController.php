@@ -70,7 +70,7 @@ class GeneratorNilaiController extends Controller
         $saved = 0;
         foreach ($validated['scores'] as $item) {
             // Verify student is registered in the specified group
-            $inGroup = \App\Models\KKN\PesertaKkn::where('kelompok_id', $item['kelompok_id'])
+            $inGroup = PesertaKkn::where('kelompok_id', $item['kelompok_id'])
                 ->whereHas('mahasiswa', fn ($q) => $q->where('user_id', $item['user_id']))
                 ->whereIn('status', ['approved', 'pending'])
                 ->exists();

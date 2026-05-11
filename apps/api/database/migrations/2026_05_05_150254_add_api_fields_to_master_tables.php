@@ -11,16 +11,16 @@ return new class extends Migration
         // 1. Align Mahasiswa Table
         if (Schema::hasTable('mahasiswa')) {
             Schema::table('mahasiswa', function (Blueprint $table) {
-                if (!Schema::hasColumn('mahasiswa', 'alamat')) {
+                if (! Schema::hasColumn('mahasiswa', 'alamat')) {
                     $table->text('alamat')->nullable()->after('birth_date');
                 }
-                if (!Schema::hasColumn('mahasiswa', 'phone')) {
+                if (! Schema::hasColumn('mahasiswa', 'phone')) {
                     $table->string('phone', 20)->nullable()->after('alamat');
                 }
-                if (!Schema::hasColumn('mahasiswa', 'status_aktif')) {
+                if (! Schema::hasColumn('mahasiswa', 'status_aktif')) {
                     $table->string('status_aktif', 50)->nullable()->after('is_paid_ukt');
                 }
-                if (!Schema::hasColumn('mahasiswa', 'nik')) {
+                if (! Schema::hasColumn('mahasiswa', 'nik')) {
                     $table->string('nik', 32)->nullable()->after('nim');
                 }
                 // birth_place is already there but API uses birth_place
@@ -30,16 +30,16 @@ return new class extends Migration
         // 2. Align Dosen Table
         if (Schema::hasTable('dosen')) {
             Schema::table('dosen', function (Blueprint $table) {
-                if (!Schema::hasColumn('dosen', 'status_aktif')) {
+                if (! Schema::hasColumn('dosen', 'status_aktif')) {
                     $table->string('status_aktif', 50)->nullable()->after('is_tugas_belajar');
                 }
-                if (!Schema::hasColumn('dosen', 'status_pegawai')) {
+                if (! Schema::hasColumn('dosen', 'status_pegawai')) {
                     $table->string('status_pegawai', 50)->nullable()->after('status_aktif');
                 }
-                if (!Schema::hasColumn('dosen', 'no_rekening')) {
+                if (! Schema::hasColumn('dosen', 'no_rekening')) {
                     $table->string('no_rekening', 50)->nullable();
                 }
-                if (!Schema::hasColumn('dosen', 'nama_bank')) {
+                if (! Schema::hasColumn('dosen', 'nama_bank')) {
                     $table->string('nama_bank', 100)->nullable();
                 }
             });
@@ -48,7 +48,7 @@ return new class extends Migration
         // 3. Align Fakultas Table
         if (Schema::hasTable('fakultas')) {
             Schema::table('fakultas', function (Blueprint $table) {
-                if (!Schema::hasColumn('fakultas', 'short_name')) {
+                if (! Schema::hasColumn('fakultas', 'short_name')) {
                     $table->string('short_name', 20)->nullable()->after('nama');
                 }
             });
@@ -57,10 +57,10 @@ return new class extends Migration
         // 4. Align Prodi Table
         if (Schema::hasTable('prodi')) {
             Schema::table('prodi', function (Blueprint $table) {
-                if (!Schema::hasColumn('prodi', 'short_name')) {
+                if (! Schema::hasColumn('prodi', 'short_name')) {
                     $table->string('short_name', 20)->nullable()->after('nama');
                 }
-                if (!Schema::hasColumn('prodi', 'jenjang')) {
+                if (! Schema::hasColumn('prodi', 'jenjang')) {
                     $table->string('jenjang', 10)->nullable()->after('short_name');
                 }
             });

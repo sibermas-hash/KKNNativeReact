@@ -188,16 +188,15 @@ class DplParticipantEvaluationService
         $responseCount = $evaluations->count();
         $eligibleCount = $evaluations->count(); // Simplified - could be enhanced
         $responseRate = $eligibleCount > 0 ? ($responseCount / $eligibleCount) * 100 : 0;
-        
+
         $totalScores = $evaluations->pluck('total_score')->filter()->toArray();
         $averageScore = count($totalScores) > 0 ? round(array_sum($totalScores) / count($totalScores), 2) : 0;
 
         // Calculate criterion averages
         $criterionAverages = collect(self::CRITERIA)->map(function ($criterion) use ($evaluations) {
-            $scores = $evaluations->flatMap(fn ($eval) => 
-                $eval->items->where('criterion_key', $criterion['key'])->pluck('score')
+            $scores = $evaluations->flatMap(fn ($eval) => $eval->items->where('criterion_key', $criterion['key'])->pluck('score')
             )->toArray();
-            
+
             return [
                 'key' => $criterion['key'],
                 'label' => $criterion['label'],
@@ -247,7 +246,7 @@ class DplParticipantEvaluationService
                         // nip encrypted — swap partial LIKE with nama + bidx exact
                         $dosen->where('nama', 'like', "%{$escaped}%");
                         if (preg_match('/^\d{6,20}$/', trim($search))) {
-                            $dosen->orWhere('nip_bidx', \App\Models\KKN\Dosen::computeBlindIndex(trim($search)));
+                            $dosen->orWhere('nip_bidx', Dosen::computeBlindIndex(trim($search)));
                         }
                     })
                         ->orWhereHas('dosen.user', fn (Builder $u) => $u->where('name', 'like', "%{$escaped}%"))

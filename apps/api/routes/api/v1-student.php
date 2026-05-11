@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Student\BimbinganController;
 use App\Http\Controllers\Api\V1\Student\CertificateController;
 use App\Http\Controllers\Api\V1\Student\DailyReportController;
 use App\Http\Controllers\Api\V1\Student\DashboardController;
@@ -7,11 +8,12 @@ use App\Http\Controllers\Api\V1\Student\DplEvaluationController;
 use App\Http\Controllers\Api\V1\Student\FinalReportController;
 use App\Http\Controllers\Api\V1\Student\IzinController;
 use App\Http\Controllers\Api\V1\Student\KknDaftarController;
+use App\Http\Controllers\Api\V1\Student\LogbookPdfController;
 use App\Http\Controllers\Api\V1\Student\PoskoController;
 use App\Http\Controllers\Api\V1\Student\PosterController;
-use App\Http\Controllers\Api\V1\Student\RekapitulasiController;
 use App\Http\Controllers\Api\V1\Student\RegistrationController;
 use App\Http\Controllers\Api\V1\Student\RegistrationDocumentController;
+use App\Http\Controllers\Api\V1\Student\RekapitulasiController;
 use App\Http\Controllers\Api\V1\Student\WorkProgramController;
 use Illuminate\Support\Facades\Route;
 
@@ -105,14 +107,14 @@ Route::prefix('student')
         });
 
         // Logbook PDF (tersedia di fase execution + grading)
-        Route::get('/logbook/pdf', [\App\Http\Controllers\Api\V1\Student\LogbookPdfController::class, 'download'])
+        Route::get('/logbook/pdf', [LogbookPdfController::class, 'download'])
             ->middleware('throttle:10,1')
             ->name('api.v1.student.logbook.pdf');
 
         // Sistem Bimbingan Online — mahasiswa sisi (R6)
         Route::prefix('bimbingan')->group(function () {
-            Route::get('/', [\App\Http\Controllers\Api\V1\Student\BimbinganController::class, 'index'])->name('api.v1.student.bimbingan.index');
-            Route::get('/progress', [\App\Http\Controllers\Api\V1\Student\BimbinganController::class, 'progress'])->name('api.v1.student.bimbingan.progress');
-            Route::get('/{session}', [\App\Http\Controllers\Api\V1\Student\BimbinganController::class, 'show'])->name('api.v1.student.bimbingan.show');
+            Route::get('/', [BimbinganController::class, 'index'])->name('api.v1.student.bimbingan.index');
+            Route::get('/progress', [BimbinganController::class, 'progress'])->name('api.v1.student.bimbingan.progress');
+            Route::get('/{session}', [BimbinganController::class, 'show'])->name('api.v1.student.bimbingan.show');
         });
     });

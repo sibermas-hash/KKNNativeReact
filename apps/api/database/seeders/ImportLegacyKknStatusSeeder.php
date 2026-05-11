@@ -18,10 +18,11 @@ class ImportLegacyKknStatusSeeder extends Seeder
     {
         // Path dialihkan ke storage internal Laravel agar mudah di-upload manual di server
         $docsPath = storage_path('Nilai KKN');
-        
-        if (!File::isDirectory($docsPath)) {
+
+        if (! File::isDirectory($docsPath)) {
             $this->command->warn("Direktori $docsPath tidak ditemukan.");
             $this->command->line("Silakan upload folder 'Nilai KKN' ke dalam folder 'storage/' di server Anda terlebih dahulu.");
+
             return;
         }
 
@@ -52,12 +53,12 @@ class ImportLegacyKknStatusSeeder extends Seeder
         $this->command->info('Mulai mengekstrak data dari folder /storage/Nilai KKN...');
 
         foreach ($directories as $dir) {
-            if (!str_ends_with($dir, '.fld')) {
+            if (! str_ends_with($dir, '.fld')) {
                 continue;
             }
 
-            $sheetFile = $dir . '/sheet001.html';
-            if (!File::exists($sheetFile)) {
+            $sheetFile = $dir.'/sheet001.html';
+            if (! File::exists($sheetFile)) {
                 continue;
             }
 
@@ -100,10 +101,10 @@ class ImportLegacyKknStatusSeeder extends Seeder
         }
 
         $this->command->info("Selesai! $totalImported mahasiswa berhasil ditandai LULUS KKN.");
-        
+
         if ($notFound > 0) {
             $this->command->warn("$notFound NIM dari Excel tidak ditemukan di database tabel Mahasiswa.");
-            $this->command->line("Pastikan Anda sudah menjalankan Sync Master API (php artisan kkn:sync-master) agar seluruh profil mahasiswa masuk ke database lokal.");
+            $this->command->line('Pastikan Anda sudah menjalankan Sync Master API (php artisan kkn:sync-master) agar seluruh profil mahasiswa masuk ke database lokal.');
         }
     }
 }

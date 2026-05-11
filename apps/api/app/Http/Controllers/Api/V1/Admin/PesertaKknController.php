@@ -7,10 +7,20 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\PesertaKknResource;
 use App\Http\Traits\ApiResponse;
+use App\Models\KKN\DokumenPesertaKkn;
+use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
+use App\Services\ActivityLogger;
+use App\Services\AuditService;
 use App\Services\EligibilityService;
+use App\Services\GroupSelectionService;
+use App\Services\KKN\RegistrationApprovalService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class PesertaKknController extends Controller
 {
@@ -72,6 +82,7 @@ class PesertaKknController extends Controller
         if ($user?->hasRole('faculty_admin') && $user->fakultas_id) {
             return (int) $user->fakultas_id;
         }
+
         return null;
     }
 
@@ -96,6 +107,7 @@ class PesertaKknController extends Controller
             return true; // superadmin/admin can access all
         }
         $pesertaKkn->loadMissing('mahasiswa');
+
         return $pesertaKkn->mahasiswa?->fakultas_id === $facultyId;
     }
 
@@ -110,7 +122,7 @@ class PesertaKknController extends Controller
                 $q->whereHas('mahasiswa', function ($q2) use ($escaped, $s) {
                     $q2->where('nama', 'like', "%{$escaped}%");
                     if (preg_match('/^\d{6,20}$/', trim($s))) {
-                        $q2->orWhere('nim_bidx', \App\Models\KKN\Mahasiswa::computeBlindIndex(trim($s)));
+                        $q2->orWhere('nim_bidx', Mahasiswa::computeBlindIndex(trim($s)));
                     }
                 });
             })
@@ -127,6 +139,7 @@ class PesertaKknController extends Controller
             return $this->error('FORBIDDEN', 'Anda tidak memiliki akses ke data mahasiswa ini.', 403);
         }
         $pesertaKkn->load(['mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'kelompok.lokasi', 'periode', 'dokumen']);
+
         return $this->success(new PesertaKknResource($pesertaKkn));
     }
 
@@ -157,6 +170,7 @@ class PesertaKknController extends Controller
         }
 
         $pesertaKkn->update(['status' => 'approved', 'approved_at' => now(), 'approved_by' => auth()->id()]);
+
         return $this->success(new PesertaKknResource($pesertaKkn->refresh()), 'Pendaftaran disetujui.');
     }
 
@@ -170,6 +184,7 @@ class PesertaKknController extends Controller
         }
         $request->validate(['rejection_reason' => ['required', 'string', 'max:500']]);
         $pesertaKkn->update(['status' => 'rejected', 'last_rejected_at' => now(), 'last_rejected_by' => auth()->id(), 'rejection_reason' => $request->input('rejection_reason')]);
+
         return $this->success(new PesertaKknResource($pesertaKkn->refresh()), 'Pendaftaran ditolak.');
     }
 
@@ -217,8 +232,8 @@ class PesertaKknController extends Controller
             if ($force && $isSuperadmin) {
                 // Superadmin override: skip cooling period + max moves,
                 // tapi capacity + slot + gender rules TETAP di-check.
-                $group = \App\Models\KKN\KelompokKkn::findOrFail($validated['kelompok_id']);
-                app(\App\Services\GroupSelectionService::class)
+                $group = KelompokKkn::findOrFail($validated['kelompok_id']);
+                app(GroupSelectionService::class)
                     ->validateGroupAcceptance($group, $pesertaKkn->mahasiswa, $pesertaKkn->id);
 
                 $pesertaKkn->update([
@@ -227,14 +242,15 @@ class PesertaKknController extends Controller
                 ]);
             } else {
                 // Normal path: full validation via service.
-                app(\App\Services\GroupSelectionService::class)->assignGroup(
+                app(GroupSelectionService::class)->assignGroup(
                     $pesertaKkn,
                     $pesertaKkn->mahasiswa,
                     (int) $validated['kelompok_id'],
                 );
             }
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             $firstMessage = collect($e->errors())->flatten()->first() ?? 'Penugasan kelompok gagal.';
+
             return $this->error('VALIDATION_ERROR', (string) $firstMessage, 422);
         }
 
@@ -262,7 +278,7 @@ class PesertaKknController extends Controller
         // yang sama ke role 'Anggota' dulu, baru promote target. Kolom `role`
         // NOT NULL dengan default 'Anggota'; jangan set null. Tambahan:
         // unique partial index di DB (migration baru) sebagai double-guard.
-        \Illuminate\Support\Facades\DB::transaction(function () use ($pesertaKkn): void {
+        DB::transaction(function () use ($pesertaKkn): void {
             PesertaKkn::where('kelompok_id', $pesertaKkn->kelompok_id)
                 ->where('id', '!=', $pesertaKkn->id)
                 ->where('role', 'Ketua')
@@ -273,8 +289,6 @@ class PesertaKknController extends Controller
 
         return $this->success(new PesertaKknResource($pesertaKkn->refresh()), 'Peserta dijadikan ketua.');
     }
-
-
 
     public function bulkApprove(Request $request): JsonResponse
     {
@@ -295,7 +309,7 @@ class PesertaKknController extends Controller
         $skipped = [];
 
         foreach ($query->cursor() as $peserta) {
-            /** @var \App\Models\KKN\PesertaKkn $peserta */
+            /** @var PesertaKkn $peserta */
             $forceBypass = false;
             $bypassedReasons = null;
             if (! ($force && $isSuperadmin)) {
@@ -307,6 +321,7 @@ class PesertaKknController extends Controller
                         'nama' => $peserta->mahasiswa?->nama,
                         'reason' => $eligibility['first_message'],
                     ];
+
                     continue;
                 }
             } else {
@@ -328,7 +343,7 @@ class PesertaKknController extends Controller
             $approved++;
 
             if ($forceBypass) {
-                \App\Services\AuditService::log(
+                AuditService::log(
                     'FORCE_APPROVE',
                     "Superadmin force-approved peserta id={$peserta->id} (NIM {$peserta->mahasiswa?->nim}) melewati pengecekan eligibility",
                     $peserta,
@@ -358,6 +373,7 @@ class PesertaKknController extends Controller
         $query = PesertaKkn::whereIn('id', $request->input('ids'))->where('status', 'pending');
         $this->scopeByFaculty($query);
         $count = $query->update(['status' => 'rejected', 'last_rejected_at' => now(), 'last_rejected_by' => auth()->id(), 'rejection_reason' => $request->input('rejection_reason')]);
+
         return $this->success(['rejected_count' => $count], "{$count} pendaftaran ditolak.");
     }
 
@@ -392,22 +408,22 @@ class PesertaKknController extends Controller
 
         $data = $query->get()
             ->map(fn ($p) => [
-                'nim'         => $p->mahasiswa?->nim,
-                'nama'        => $p->mahasiswa?->nama,
-                'nik'         => $p->mahasiswa?->nik,
+                'nim' => $p->mahasiswa?->nim,
+                'nama' => $p->mahasiswa?->nama,
+                'nik' => $p->mahasiswa?->nik,
                 'ibu_kandung' => $p->mahasiswa?->mother_name,
-                'email'       => $p->mahasiswa?->user?->email,
-                'phone'       => $p->mahasiswa?->user?->phone,
-                'alamat'      => $p->mahasiswa?->user?->address,
-                'fakultas'    => $p->mahasiswa?->fakultas?->nama,
-                'prodi'       => $p->mahasiswa?->prodi?->nama,
-                'ipk'         => $p->mahasiswa?->gpa,
-                'sks'         => $p->mahasiswa?->sks_completed,
-                'kelompok'    => $p->kelompok?->nama_kelompok,
+                'email' => $p->mahasiswa?->user?->email,
+                'phone' => $p->mahasiswa?->user?->phone,
+                'alamat' => $p->mahasiswa?->user?->address,
+                'fakultas' => $p->mahasiswa?->fakultas?->nama,
+                'prodi' => $p->mahasiswa?->prodi?->nama,
+                'ipk' => $p->mahasiswa?->gpa,
+                'sks' => $p->mahasiswa?->sks_completed,
+                'kelompok' => $p->kelompok?->nama_kelompok,
             ]);
 
         // PII audit trail (R11 audit-pendaftaran fix)
-        \App\Services\ActivityLogger::log('pii_export', 'success', $request->user()?->id, [
+        ActivityLogger::log('pii_export', 'success', $request->user()?->id, [
             'export_type' => 'biodata',
             'periode_id' => $periodeId ? (int) $periodeId : null,
             'record_count' => count($data),
@@ -433,16 +449,16 @@ class PesertaKknController extends Controller
 
         $data = $query->get()
             ->map(fn ($p) => [
-                'nim'         => $p->mahasiswa?->nim,
-                'nama'        => $p->mahasiswa?->nama,
-                'nik'         => $p->mahasiswa?->nik,
+                'nim' => $p->mahasiswa?->nim,
+                'nama' => $p->mahasiswa?->nama,
+                'nik' => $p->mahasiswa?->nik,
                 'ibu_kandung' => $p->mahasiswa?->mother_name,
-                'alamat'      => $p->mahasiswa?->user?->address,
-                'kelompok'    => $p->kelompok?->nama_kelompok,
+                'alamat' => $p->mahasiswa?->user?->address,
+                'kelompok' => $p->kelompok?->nama_kelompok,
             ]);
 
         // PII audit trail (R11 audit-pendaftaran fix)
-        \App\Services\ActivityLogger::log('pii_export', 'success', $request->user()?->id, [
+        ActivityLogger::log('pii_export', 'success', $request->user()?->id, [
             'export_type' => 'bpjs',
             'periode_id' => $periodeId ? (int) $periodeId : null,
             'record_count' => count($data),
@@ -466,20 +482,20 @@ class PesertaKknController extends Controller
         }
 
         // Verify file exists in storage before serving
-        if (! \Illuminate\Support\Facades\Storage::exists($path)) {
+        if (! Storage::exists($path)) {
             abort(404, 'Dokumen tidak ditemukan.');
         }
 
         // Faculty admin scoping: verify the document belongs to a student in their faculty
         $facultyId = $this->getFacultyScope();
         if ($facultyId) {
-            $ownsDocument = \App\Models\KKN\DokumenPesertaKkn::where('file_path', $path)
+            $ownsDocument = DokumenPesertaKkn::where('file_path', $path)
                 ->whereHas('pesertaKkn.mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId))
                 ->exists();
 
             if (! $ownsDocument) {
                 // Also check legacy paths on mahasiswa table
-                $ownsLegacy = \App\Models\KKN\Mahasiswa::where('fakultas_id', $facultyId)
+                $ownsLegacy = Mahasiswa::where('fakultas_id', $facultyId)
                     ->where(fn ($q) => $q->where('health_certificate_path', $path)->orWhere('parent_permission_path', $path))
                     ->exists();
 
@@ -490,13 +506,13 @@ class PesertaKknController extends Controller
         }
 
         // PII audit trail (R11 audit-pendaftaran fix)
-        \App\Services\ActivityLogger::log('pii_export', 'success', $request->user()?->id, [
+        ActivityLogger::log('pii_export', 'success', $request->user()?->id, [
             'export_type' => 'document_download',
             'file_path' => $path,
             'faculty_scope' => $this->getFacultyScope(),
         ]);
 
-        return app(\App\Services\KKN\RegistrationApprovalService::class)
+        return app(RegistrationApprovalService::class)
             ->downloadDocument($path, auth()->user());
     }
 }

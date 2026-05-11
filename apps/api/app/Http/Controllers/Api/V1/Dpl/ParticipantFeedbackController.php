@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1\Dpl;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\EvaluasiDplPeserta;
+use App\Services\KKN\DplParticipantEvaluationService;
 use Illuminate\Http\JsonResponse;
 
 class ParticipantFeedbackController extends Controller
@@ -20,13 +21,13 @@ class ParticipantFeedbackController extends Controller
             return $this->success([
                 'summary' => null,
                 'comments' => [],
-                'criteria_labels' => \App\Services\KKN\DplParticipantEvaluationService::CRITERIA,
+                'criteria_labels' => DplParticipantEvaluationService::CRITERIA,
             ]);
         }
 
-        $service = app(\App\Services\KKN\DplParticipantEvaluationService::class);
+        $service = app(DplParticipantEvaluationService::class);
         $summary = $service->getDplSummary($dosen->id);
-        
+
         $comments = EvaluasiDplPeserta::where('dosen_id', $dosen->id)
             ->with(['mahasiswa.user', 'kelompok', 'periode', 'items'])
             ->orderByDesc('created_at')
@@ -45,7 +46,7 @@ class ParticipantFeedbackController extends Controller
         return $this->success([
             'summary' => $summary,
             'comments' => $comments,
-            'criteria_labels' => \App\Services\KKN\DplParticipantEvaluationService::CRITERIA,
+            'criteria_labels' => DplParticipantEvaluationService::CRITERIA,
         ]);
     }
 }

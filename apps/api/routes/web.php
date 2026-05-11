@@ -17,7 +17,7 @@ Route::get('/password/reset/{token}', function (string $token) {
     $frontendUrl = config('app.frontend_url', config('app.url'));
     $email = request()->query('email');
 
-    return redirect($frontendUrl . '/atur-ulang-kata-sandi?token=' . $token . ($email ? '&email=' . urlencode($email) : ''));
+    return redirect($frontendUrl.'/atur-ulang-kata-sandi?token='.$token.($email ? '&email='.urlencode($email) : ''));
 })->name('password.reset');
 
 // Health Check — public (load balancers)
@@ -47,8 +47,8 @@ Route::fallback(function () {
         ], 404);
     }
 
-    $path = '/' . ltrim($request->path(), '/');
+    $path = '/'.ltrim($request->path(), '/');
     $query = $request->getQueryString();
 
-    return redirect(config('app.url') . $path . ($query ? '?' . $query : ''), 302);
+    return redirect(config('app.url').$path.($query ? '?'.$query : ''), 302);
 });

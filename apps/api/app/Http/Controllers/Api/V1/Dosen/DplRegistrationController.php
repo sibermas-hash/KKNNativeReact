@@ -37,7 +37,7 @@ class DplRegistrationController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        $user  = auth()->user();
+        $user = auth()->user();
         $dosen = $user->dosen;
 
         if (! $dosen) {
@@ -72,11 +72,11 @@ class DplRegistrationController extends Controller
         $periode = Periode::findOrFail($validated['periode_id']);
 
         $registration = DplPeriod::create([
-            'dosen_id'        => $dosen->id,
-            'periode_id'      => $periode->id,
+            'dosen_id' => $dosen->id,
+            'periode_id' => $periode->id,
             'max_kelompok_kkn' => $validated['max_kelompok_kkn'] ?? 5,
-            'is_active'       => false,
-            'status'          => 'pending',
+            'is_active' => false,
+            'status' => 'pending',
         ]);
 
         return $this->success($registration, 'Pendaftaran DPL berhasil diajukan. Menunggu verifikasi admin.', 201);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Dpl;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Api\V1\IzinMeninggalkanResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\IzinMeninggalkan;
 use App\Services\IzinService;
@@ -35,7 +36,7 @@ class IzinController extends Controller
             ->paginate($request->input('per_page', 25));
 
         return $this->successCollection(
-            \App\Http\Resources\Api\V1\IzinMeninggalkanResource::collection($izin)
+            IzinMeninggalkanResource::collection($izin)
         );
     }
 

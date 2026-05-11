@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\KKN\Dosen;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\File;
-use Carbon\Carbon;
 
 class ImportDb2DosenSeeder extends Seeder
 {
@@ -17,8 +17,9 @@ class ImportDb2DosenSeeder extends Seeder
     {
         $sheetFile = storage_path('DB2/DB2.fld/sheet001.html');
 
-        if (!File::exists($sheetFile)) {
+        if (! File::exists($sheetFile)) {
             $this->command->error("File tidak ditemukan: {$sheetFile}");
+
             return;
         }
 
@@ -30,6 +31,7 @@ class ImportDb2DosenSeeder extends Seeder
 
         if (count($rows) < 2) {
             $this->command->error('Tidak ditemukan data baris.');
+
             return;
         }
 
@@ -40,7 +42,7 @@ class ImportDb2DosenSeeder extends Seeder
             $cleanNip = preg_replace('/\s+/', '', $d->nip);
             $dosenByNip[$cleanNip] = $d;
         }
-        $this->command->info('Total dosen di database: ' . count($dosenByNip));
+        $this->command->info('Total dosen di database: '.count($dosenByNip));
 
         $updatedCount = 0;
         $skippedCount = 0;
@@ -57,18 +59,20 @@ class ImportDb2DosenSeeder extends Seeder
                 $text = strip_tags($cell);
                 $text = html_entity_decode($text, ENT_QUOTES, 'UTF-8');
                 $text = preg_replace('/\s+/', ' ', $text);
+
                 return trim($text);
             }, $cells);
 
             $no = $clean[0] ?? '';
-            if (!is_numeric($no) || empty($clean[1] ?? '')) {
+            if (! is_numeric($no) || empty($clean[1] ?? '')) {
                 continue;
             }
 
             // Validasi: kolom gender (index 8) harus L atau P
             $genderCheck = strtoupper(trim($clean[8] ?? ''));
-            if (!in_array($genderCheck, ['L', 'P'])) {
+            if (! in_array($genderCheck, ['L', 'P'])) {
                 $skippedCount++;
+
                 continue;
             }
 
@@ -81,12 +85,12 @@ class ImportDb2DosenSeeder extends Seeder
             // 2. Jika gagal, cari berdasarkan NIDN (karena Master API kadang menyimpan NIDN di kolom nip)
             $dosen = $dosenByNip[$nipClean] ?? null;
 
-            if (!$dosen && !empty($nidn)) {
+            if (! $dosen && ! empty($nidn)) {
                 $dosen = $dosenByNip[$nidn] ?? null;
             }
 
             // 3. Fallback: cari nama yang mirip (fuzzy) jika NIP & NIDN tidak ditemukan
-            if (!$dosen) {
+            if (! $dosen) {
                 $namaBersih = strtolower(trim($clean[1] ?? ''));
                 if (strlen($namaBersih) > 3) {
                     foreach ($dosenByNip as $d) {
@@ -104,8 +108,9 @@ class ImportDb2DosenSeeder extends Seeder
                 }
             }
 
-            if (!$dosen) {
+            if (! $dosen) {
                 $skippedCount++;
+
                 continue;
             }
 
@@ -124,36 +129,46 @@ class ImportDb2DosenSeeder extends Seeder
 
                 $kelasJab = $clean[12] ?? '';
                 if (is_numeric($kelasJab)) {
-                    $fieldsToFill['kelas_jabatan'] = (int)$kelasJab;
+                    $fieldsToFill['kelas_jabatan'] = (int) $kelasJab;
                 }
 
                 $pensiunDate = $this->parseDate($clean[17] ?? '');
-                if ($pensiunDate) $fieldsToFill['tanggal_pensiun'] = $pensiunDate;
+                if ($pensiunDate) {
+                    $fieldsToFill['tanggal_pensiun'] = $pensiunDate;
+                }
 
                 $birthDate = $this->parseDate($clean[19] ?? '');
-                if ($birthDate && empty($dosen->birth_date)) $fieldsToFill['birth_date'] = $birthDate;
+                if ($birthDate && empty($dosen->birth_date)) {
+                    $fieldsToFill['birth_date'] = $birthDate;
+                }
 
                 // Kolom lama: hanya isi jika masih kosong + validasi format
                 $golVal = trim($clean[10] ?? '');
                 if (empty($dosen->golongan) && preg_match('/^(I|II|III|IV|V)\//', $golVal)) {
                     $fieldsToFill['golongan'] = $golVal;
                 }
-                if (empty($dosen->jabatan))         $this->fillIfNotEmpty($fieldsToFill, 'jabatan', $clean[11] ?? '');
-                if (empty($dosen->gender))          $fieldsToFill['gender'] = $genderCheck;
+                if (empty($dosen->jabatan)) {
+                    $this->fillIfNotEmpty($fieldsToFill, 'jabatan', $clean[11] ?? '');
+                }
+                if (empty($dosen->gender)) {
+                    $fieldsToFill['gender'] = $genderCheck;
+                }
                 // Phone harus numerik dan max 20 karakter (bukan email)
                 $phoneVal = trim($clean[21] ?? '');
                 if (empty($dosen->phone) && preg_match('/^[\d\+\-\s]+$/', $phoneVal) && strlen($phoneVal) <= 20) {
                     $fieldsToFill['phone'] = $phoneVal;
                 }
-                if (empty($dosen->status_pegawai))  $this->fillIfNotEmpty($fieldsToFill, 'status_pegawai', $clean[6] ?? '');
+                if (empty($dosen->status_pegawai)) {
+                    $this->fillIfNotEmpty($fieldsToFill, 'status_pegawai', $clean[6] ?? '');
+                }
 
-                if (!empty($fieldsToFill)) {
+                if (! empty($fieldsToFill)) {
                     $dosen->update($fieldsToFill);
                     $updatedCount++;
                 }
             } catch (\Exception $e) {
                 $skippedCount++;
-                $this->command->warn("Error: {$clean[1]} - " . $e->getMessage());
+                $this->command->warn("Error: {$clean[1]} - ".$e->getMessage());
             }
         }
 
@@ -167,19 +182,23 @@ class ImportDb2DosenSeeder extends Seeder
     private function fillIfNotEmpty(array &$fields, string $key, string $value): void
     {
         $value = trim($value);
-        if (!empty($value)) {
+        if (! empty($value)) {
             $fields[$key] = $value;
         }
     }
 
     private function parseDate(?string $raw): ?string
     {
-        if (empty($raw)) return null;
+        if (empty($raw)) {
+            return null;
+        }
         try {
             if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/', $raw, $m)) {
-                return Carbon::createFromDate((int)$m[3], (int)$m[2], (int)$m[1])->toDateString();
+                return Carbon::createFromDate((int) $m[3], (int) $m[2], (int) $m[1])->toDateString();
             }
-        } catch (\Exception $e) {}
+        } catch (\Exception $e) {
+        }
+
         return null;
     }
 }

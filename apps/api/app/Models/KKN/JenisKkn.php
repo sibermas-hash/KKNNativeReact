@@ -149,12 +149,14 @@ class JenisKkn extends Model
     public function getMinSksAttribute(): ?int
     {
         $value = $this->requirements_config['min_sks'] ?? null;
+
         return $value !== null ? (int) $value : null;
     }
 
     public function getMinGpaAttribute(): ?float
     {
         $value = $this->requirements_config['min_gpa'] ?? null;
+
         return $value !== null ? (float) $value : null;
     }
 
@@ -177,6 +179,7 @@ class JenisKkn extends Model
     public function getSpecificProdiIdsAttribute(): ?array
     {
         $value = $this->requirements_config['specific_prodi_ids'] ?? null;
+
         return is_array($value) && $value !== [] ? array_map('intval', $value) : null;
     }
 }

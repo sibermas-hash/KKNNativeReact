@@ -9,7 +9,6 @@ use App\Services\GroupSelectionService;
  * Regression test R9-R04: hometown normalization regex harus handle
  * varian penulisan administrative prefix.
  */
-
 beforeEach(function () {
     // Pakai reflection untuk akses private method.
     $this->service = new AutomaticGroupPlacementService(
@@ -19,6 +18,7 @@ beforeEach(function () {
     $this->normalize = function (?string $v): string {
         $reflection = new ReflectionMethod(AutomaticGroupPlacementService::class, 'normalizeAdministrativeName');
         $reflection->setAccessible(true);
+
         return $reflection->invoke($this->service, $v);
     };
 });

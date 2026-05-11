@@ -40,8 +40,8 @@ class BeforeSendScrub
 
     /**
      * @param  object  $event  Sentry\Event instance (duck-typed to avoid hard dep)
-     * @param  object|null  $hint   Sentry\EventHint instance
-     * @return object|null  null → event dropped
+     * @param  object|null  $hint  Sentry\EventHint instance
+     * @return object|null null → event dropped
      */
     public function __invoke(object $event, ?object $hint = null): ?object
     {
@@ -89,6 +89,7 @@ class BeforeSendScrub
 
             if (is_string($lower) && in_array($lower, self::SENSITIVE_KEYS, true)) {
                 $data[$key] = '[Filtered]';
+
                 continue;
             }
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V1;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -51,7 +52,7 @@ class MahasiswaResource extends JsonResource
     /**
      * Determine if sensitive PII data should be exposed.
      */
-    private function shouldShowSensitiveData(?\App\Models\User $user): bool
+    private function shouldShowSensitiveData(?User $user): bool
     {
         if (! $user) {
             return false;

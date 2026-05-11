@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Storage;
 class AvatarModerationController extends Controller
 {
     use ApiResponse;
+
     /**
      * GET /admin/avatar-moderation
      * List avatars awaiting moderation (pending first, then rejected for audit trail).
@@ -33,7 +34,7 @@ class AvatarModerationController extends Controller
     {
         $status = $request->query('status', 'pending');
         $allowed = ['pending', 'approved', 'rejected', 'all'];
-        if (!in_array($status, $allowed, true)) {
+        if (! in_array($status, $allowed, true)) {
             $status = 'pending';
         }
 
@@ -61,7 +62,7 @@ class AvatarModerationController extends Controller
                 'name' => $u->name,
                 'username' => $u->username,
                 'email' => $u->email,
-                'avatar_url' => $u->avatar ? asset('storage/' . $u->avatar) : null,
+                'avatar_url' => $u->avatar ? asset('storage/'.$u->avatar) : null,
                 'status' => $u->avatar_moderation_status,
                 'reason' => $u->avatar_moderation_reason,
                 'reviewed_at' => $u->avatar_moderation_reviewed_at,

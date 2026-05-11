@@ -5,17 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Dpl;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Api\V1\KelompokKknResource;
-use App\Http\Resources\Api\V1\KegiatanKknResource;
-use App\Http\Resources\Api\V1\LaporanAkhirResource;
-use App\Http\Resources\Api\V1\NilaiKknResource;
 use App\Http\Traits\ApiResponse;
-use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\KelompokKkn;
-use App\Models\KKN\LaporanAkhir;
-use App\Models\KKN\NilaiKkn;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class GroupController extends Controller
 {

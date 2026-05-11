@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class FinalReportController extends Controller
 {
@@ -58,16 +59,16 @@ class FinalReportController extends Controller
         }
 
         $validated = $request->validate([
-            'title'     => ['required', 'string', 'max:300'],
-            'abstract'  => ['nullable', 'string'],
+            'title' => ['required', 'string', 'max:300'],
+            'abstract' => ['nullable', 'string'],
             'video_link' => ['nullable', 'url', 'max:255'],
-            'news_link'  => ['nullable', 'url', 'max:255'],
-            'file'       => ['required', 'file', 'mimes:pdf,doc,docx', 'max:20480'],
-            'article_1'  => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
-            'article_2'  => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
-            'poster_1'   => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
-            'poster_2'   => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
-            'poster_3'   => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'news_link' => ['nullable', 'url', 'max:255'],
+            'file' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:20480'],
+            'article_1' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'article_2' => ['nullable', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
+            'poster_1' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'poster_2' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'poster_3' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
         ]);
 
         return DB::transaction(function () use ($request, $validated, $registration, $mahasiswa) {
@@ -111,23 +112,23 @@ class FinalReportController extends Controller
             }
 
             $payload = [
-                'mahasiswa_id'  => $mahasiswa->id,
-                'title'         => $validated['title'],
-                'abstract'      => $validated['abstract'] ?? null,
-                'video_link'    => $validated['video_link'] ?? null,
-                'news_link'     => $validated['news_link'] ?? null,
-                'file_path'     => $filePath,
-                'file_name'     => Str::limit($file->getClientOriginalName(), 255),
+                'mahasiswa_id' => $mahasiswa->id,
+                'title' => $validated['title'],
+                'abstract' => $validated['abstract'] ?? null,
+                'video_link' => $validated['video_link'] ?? null,
+                'news_link' => $validated['news_link'] ?? null,
+                'file_path' => $filePath,
+                'file_name' => Str::limit($file->getClientOriginalName(), 255),
                 'article_1_path' => $article1Path,
                 'article_2_path' => $article2Path,
-                'poster_1_path'  => $posterPaths['poster_1'],
-                'poster_2_path'  => $posterPaths['poster_2'],
-                'poster_3_path'  => $posterPaths['poster_3'],
-                'status'        => LaporanAkhir::STATUS_SUBMITTED,
-                'submitted_at'  => now(),
-                'review_notes'  => null,
-                'reviewed_by'   => null,
-                'reviewed_at'   => null,
+                'poster_1_path' => $posterPaths['poster_1'],
+                'poster_2_path' => $posterPaths['poster_2'],
+                'poster_3_path' => $posterPaths['poster_3'],
+                'status' => LaporanAkhir::STATUS_SUBMITTED,
+                'submitted_at' => now(),
+                'review_notes' => null,
+                'reviewed_by' => null,
+                'reviewed_at' => null,
             ];
 
             if ($existing) {
@@ -143,7 +144,7 @@ class FinalReportController extends Controller
         });
     }
 
-    public function preview(LaporanAkhir $laporanAkhir): \Symfony\Component\HttpFoundation\StreamedResponse
+    public function preview(LaporanAkhir $laporanAkhir): StreamedResponse
     {
         $user = auth()->user();
         $mahasiswa = $user->mahasiswa;

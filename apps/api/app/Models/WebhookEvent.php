@@ -17,7 +17,9 @@ use Illuminate\Database\Eloquent\Model;
 class WebhookEvent extends Model
 {
     public const STATE_PROCESSING = 'processing';
+
     public const STATE_DONE = 'done';
+
     public const STATE_FAILED = 'failed';
 
     protected $fillable = [

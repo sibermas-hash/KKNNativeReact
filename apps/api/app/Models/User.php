@@ -12,7 +12,9 @@ use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\ProfilUser;
 use App\Models\KKN\ProgramKerja;
+use App\Models\KKN\SystemSetting;
 use App\Notifications\Auth\ResetPasswordNotification;
+use App\Traits\HasManuallyEditedFields;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -113,7 +115,7 @@ class User extends Authenticatable
     ];
 
     /** @use HasFactory<UserFactory> */
-    use \App\Traits\HasManuallyEditedFields, HasApiTokens, HasFactory, HasRoles, Notifiable;
+    use HasApiTokens, HasFactory, HasManuallyEditedFields, HasRoles, Notifiable;
 
     /**
      * Send the password reset notification.
@@ -131,8 +133,8 @@ class User extends Authenticatable
      */
     public const DEFAULT_NOTIFICATION_PREFERENCES = [
         'in_app' => true,
-        'email'  => true,
-        'push'   => true,
+        'email' => true,
+        'push' => true,
     ];
 
     /**
@@ -143,11 +145,12 @@ class User extends Authenticatable
     public function notificationPreferences(): array
     {
         $defaults = [
-            'in_app' => \App\Models\KKN\SystemSetting::get('notification_default_in_app', '1') !== '0',
-            'email'  => \App\Models\KKN\SystemSetting::get('notification_default_email', '1') !== '0',
-            'push'   => \App\Models\KKN\SystemSetting::get('notification_default_push', '1') !== '0',
+            'in_app' => SystemSetting::get('notification_default_in_app', '1') !== '0',
+            'email' => SystemSetting::get('notification_default_email', '1') !== '0',
+            'push' => SystemSetting::get('notification_default_push', '1') !== '0',
         ];
         $stored = $this->notification_preferences ?? [];
+
         return array_merge($defaults, is_array($stored) ? $stored : []);
     }
 
@@ -159,11 +162,12 @@ class User extends Authenticatable
     public function wantsNotificationVia(string $channel): bool
     {
         $prefs = $this->notificationPreferences();
+
         return match ($channel) {
-            'database'          => $prefs['in_app'] ?? true,
-            'mail', 'email'     => $prefs['email']  ?? true,
-            'fcm', 'push'       => $prefs['push']   ?? true,
-            default             => true,
+            'database' => $prefs['in_app'] ?? true,
+            'mail', 'email' => $prefs['email'] ?? true,
+            'fcm', 'push' => $prefs['push'] ?? true,
+            default => true,
         };
     }
 
@@ -192,11 +196,16 @@ class User extends Authenticatable
      */
     public function requiresTwoFactor(): bool
     {
-        if ($this->two_factor_enforced) return true;
+        if ($this->two_factor_enforced) {
+            return true;
+        }
         $privilegedRoles = ['superadmin', 'admin', 'faculty_admin', 'dpl'];
         foreach ($privilegedRoles as $role) {
-            if ($this->hasRole($role)) return true;
+            if ($this->hasRole($role)) {
+                return true;
+            }
         }
+
         return false;
     }
 

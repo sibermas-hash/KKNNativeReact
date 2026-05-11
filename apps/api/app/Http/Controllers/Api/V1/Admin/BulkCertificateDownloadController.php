@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -35,7 +36,7 @@ class BulkCertificateDownloadController extends Controller
         // the admin id + token match, to defend against URL sharing.
         $signedAdminId = (int) $request->query('admin');
 
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = $request->user();
         if (! $user) {
             abort(401);

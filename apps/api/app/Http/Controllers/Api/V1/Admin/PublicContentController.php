@@ -18,8 +18,8 @@ class PublicContentController extends Controller
     {
         return $this->success([
             'about' => SystemSetting::get('site_about', ''),
-            'visi'  => SystemSetting::get('site_visi', ''),
-            'misi'  => SystemSetting::get('site_misi', ''),
+            'visi' => SystemSetting::get('site_visi', ''),
+            'misi' => SystemSetting::get('site_misi', ''),
         ]);
     }
 
@@ -27,8 +27,8 @@ class PublicContentController extends Controller
     {
         $validated = $request->validate([
             'about' => ['required', 'string', 'max:4000'],
-            'visi'  => ['required', 'string', 'max:2000'],
-            'misi'  => ['required', 'string', 'max:2000'],
+            'visi' => ['required', 'string', 'max:2000'],
+            'misi' => ['required', 'string', 'max:2000'],
         ]);
 
         SystemSetting::set('site_about', $validated['about']);
@@ -41,8 +41,8 @@ class PublicContentController extends Controller
     public function schemes(): JsonResponse
     {
         return $this->success([
-            'title'   => SystemSetting::get('site_schemes_title', ''),
-            'intro'   => SystemSetting::get('site_schemes_intro', ''),
+            'title' => SystemSetting::get('site_schemes_title', ''),
+            'intro' => SystemSetting::get('site_schemes_intro', ''),
             'schemes' => json_decode((string) SystemSetting::get('site_schemes_items', '[]'), true) ?? [],
         ]);
     }
@@ -50,18 +50,18 @@ class PublicContentController extends Controller
     public function updateSchemes(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'title'               => ['required', 'string', 'max:255'],
-            'intro'               => ['required', 'string', 'max:2000'],
-            'schemes'             => ['required', 'array', 'min:1', 'max:8'],
-            'schemes.*.title'     => ['required', 'string', 'max:100'],
+            'title' => ['required', 'string', 'max:255'],
+            'intro' => ['required', 'string', 'max:2000'],
+            'schemes' => ['required', 'array', 'min:1', 'max:8'],
+            'schemes.*.title' => ['required', 'string', 'max:100'],
             'schemes.*.description' => ['required', 'string', 'max:500'],
-            'schemes.*.color'     => ['required', 'in:emerald,blue,amber,slate'],
+            'schemes.*.color' => ['required', 'in:emerald,blue,amber,slate'],
         ]);
 
         $items = collect($validated['schemes'])->map(fn ($s) => [
-            'title'       => trim($s['title']),
+            'title' => trim($s['title']),
             'description' => trim($s['description']),
-            'color'       => $s['color'],
+            'color' => $s['color'],
         ])->values()->all();
 
         SystemSetting::set('site_schemes_title', $validated['title']);

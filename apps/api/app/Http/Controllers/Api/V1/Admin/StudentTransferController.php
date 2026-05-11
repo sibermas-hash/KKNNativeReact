@@ -23,10 +23,10 @@ class StudentTransferController extends Controller
     public function transfer(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'peserta_kkn_id'     => ['required', 'exists:peserta_kkn,id'],
-            'target_periode_id'  => ['required', 'exists:periode,id'],
+            'peserta_kkn_id' => ['required', 'exists:peserta_kkn,id'],
+            'target_periode_id' => ['required', 'exists:periode,id'],
             'target_kelompok_id' => ['nullable', 'exists:kelompok_kkn,id'],
-            'reason'             => ['required', 'string', 'max:1000'],
+            'reason' => ['required', 'string', 'max:1000'],
         ]);
 
         $history = $this->transferService->transferStudent(
@@ -46,7 +46,7 @@ class StudentTransferController extends Controller
         $periodeId = $request->input('periode_id');
 
         if ($pesertaId) {
-            $peserta   = PesertaKkn::with('kelompok')->findOrFail($pesertaId);
+            $peserta = PesertaKkn::with('kelompok')->findOrFail($pesertaId);
             $periodeId = $peserta->kelompok?->periode_id;
             $currentGroupId = $peserta->kelompok_id;
         }
@@ -57,11 +57,11 @@ class StudentTransferController extends Controller
             ->get(['id', 'nama_kelompok', 'code', 'capacity']);
 
         return $this->success($groups->map(fn ($g) => [
-            'id'             => $g->id,
-            'nama_kelompok'  => $g->nama_kelompok,
-            'code'           => $g->code,
-            'capacity'       => $g->capacity,
-            'member_count'   => $g->peserta_count,
+            'id' => $g->id,
+            'nama_kelompok' => $g->nama_kelompok,
+            'code' => $g->code,
+            'capacity' => $g->capacity,
+            'member_count' => $g->peserta_count,
             'available_slots' => $g->capacity ? max(0, $g->capacity - $g->peserta_count) : null,
         ]));
     }

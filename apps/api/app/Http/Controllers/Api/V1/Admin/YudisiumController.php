@@ -30,8 +30,8 @@ class YudisiumController extends Controller
             : null;
 
         return $this->success([
-            'periodes'           => $periodes,
-            'rekap'              => $rekap,
+            'periodes' => $periodes,
+            'rekap' => $rekap,
             'selected_periode_id' => $periodeId,
         ]);
     }

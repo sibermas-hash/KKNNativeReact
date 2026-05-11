@@ -10,8 +10,8 @@ use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Prodi;
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
 /**
@@ -59,14 +59,14 @@ class LocalDevSeeder extends Seeder
 
         $this->command?->info('LocalDevSeeder done.');
         $this->command?->line('');
-        $this->command?->line("  All fake accounts use password: <options=bold>".self::DEV_PASSWORD."</>");
+        $this->command?->line('  All fake accounts use password: <options=bold>'.self::DEV_PASSWORD.'</>');
         $this->command?->line('  Student usernames: MHS000001 .. MHS000020');
         $this->command?->line('  Dosen usernames  : DSN000001 .. DSN000005');
         $this->command?->line('');
     }
 
     /**
-     * @return array{0: \Illuminate\Support\Collection<int,Fakultas>, 1: \Illuminate\Support\Collection<int,Prodi>}
+     * @return array{0: Collection<int,Fakultas>, 1: Collection<int,Prodi>}
      */
     private function seedMasterData(): array
     {

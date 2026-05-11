@@ -1,7 +1,5 @@
 <?php
 
-use App\Models\User;
-
 describe('Profile & Period Context (E2E)', function () {
 
     it('authenticated user can view their profile', function () {

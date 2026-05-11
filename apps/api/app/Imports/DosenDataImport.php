@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Imports;
 
 use App\Models\KKN\Dosen;
+use Carbon\Carbon;
 use DOMDocument;
 
 /**
@@ -15,30 +16,52 @@ use DOMDocument;
 class DosenDataImport
 {
     public int $updatedCount = 0;
+
     public int $skippedCount = 0;
+
     public int $notFoundCount = 0;
+
     public array $notFoundDetails = [];
 
     // Column index mapping from DB2 HTML
     private const COL_NAMA_TANPA_GELAR = 1;
+
     private const COL_NAMA_DENGAN_GELAR = 2;
+
     private const COL_NIP = 3;
+
     private const COL_NIDN = 4;
+
     private const COL_NIK = 5;
+
     private const COL_STATUS_KEPEGAWAIAN = 6;
+
     private const COL_GENDER = 8;
+
     private const COL_PANGKAT = 9;
+
     private const COL_GOLONGAN = 10;
+
     private const COL_JABATAN = 11;
+
     private const COL_KELAS_JABATAN = 12;
+
     private const COL_TUGAS_TAMBAHAN = 13;
+
     private const COL_TEMPAT_LAHIR = 18;
+
     private const COL_TANGGAL_LAHIR = 19;
+
     private const COL_ALAMAT = 20;
+
     private const COL_NO_HP = 21;
+
     private const COL_EMAIL = 22;
+
     private const COL_NO_REKENING = 23; // BRI first, then BNI, BSI, Lainnya
+
     private const COL_NAMA_REKENING = 24;
+
     private const COL_NO_HP_WA = 32;
 
     public function import(string $htmlFilePath): void
@@ -48,7 +71,7 @@ class DosenDataImport
             return;
         }
 
-        $dom = new DOMDocument();
+        $dom = new DOMDocument;
         @$dom->loadHTML($html);
         $rows = $dom->getElementsByTagName('tr');
 
@@ -63,6 +86,7 @@ class DosenDataImport
             $nip = $this->cleanNip(trim($cells->item(self::COL_NIP)->textContent ?? ''));
             if (empty($nip)) {
                 $this->skippedCount++;
+
                 continue;
             }
 
@@ -73,6 +97,7 @@ class DosenDataImport
                     'nip' => $nip,
                     'nama' => trim($cells->item(self::COL_NAMA_DENGAN_GELAR)->textContent ?? ''),
                 ];
+
                 continue;
             }
 
@@ -127,7 +152,7 @@ class DosenDataImport
             $tglLahir = $this->cellValue($cells, self::COL_TANGGAL_LAHIR);
             if (! empty($tglLahir)) {
                 try {
-                    $changes['birth_date'] = \Carbon\Carbon::parse($tglLahir)->toDateString();
+                    $changes['birth_date'] = Carbon::parse($tglLahir)->toDateString();
                 } catch (\Throwable) {
                     // Skip invalid date
                 }
@@ -147,6 +172,7 @@ class DosenDataImport
         }
 
         $dosen->update($changes);
+
         return true;
     }
 
@@ -163,6 +189,7 @@ class DosenDataImport
             return null;
         }
         $val = trim($cells->item($index)->textContent ?? '');
+
         return $val !== '' ? $val : null;
     }
 

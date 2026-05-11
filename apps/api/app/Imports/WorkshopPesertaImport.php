@@ -6,7 +6,6 @@ namespace App\Imports;
 
 use App\Models\KKN\Dosen;
 use App\Models\KKN\PesertaWorkshop;
-use App\Models\User;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
@@ -21,8 +20,11 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 class WorkshopPesertaImport implements ToCollection, WithHeadingRow
 {
     public int $successCount = 0;
+
     public int $skippedCount = 0;
+
     public int $notFoundCount = 0;
+
     public array $notFoundDetails = [];
 
     public function __construct(
@@ -38,6 +40,7 @@ class WorkshopPesertaImport implements ToCollection, WithHeadingRow
 
             if (empty($nip)) {
                 $this->skippedCount++;
+
                 continue;
             }
 
@@ -50,6 +53,7 @@ class WorkshopPesertaImport implements ToCollection, WithHeadingRow
                     'nip' => $nip,
                     'nama' => trim((string) ($rowArray['nama'] ?? '')),
                 ];
+
                 continue;
             }
 
@@ -60,6 +64,7 @@ class WorkshopPesertaImport implements ToCollection, WithHeadingRow
 
             if ($exists) {
                 $this->skippedCount++;
+
                 continue;
             }
 

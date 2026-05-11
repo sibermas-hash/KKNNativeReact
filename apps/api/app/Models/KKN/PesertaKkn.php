@@ -119,7 +119,7 @@ class PesertaKkn extends Model
         return $query->whereHas('mahasiswa', function ($q) use ($s, $search) {
             $q->where('nama', 'like', "%{$s}%");
             if (preg_match('/^\d{6,20}$/', trim($search))) {
-                $q->orWhere('nim_bidx', \App\Models\KKN\Mahasiswa::computeBlindIndex(trim($search)));
+                $q->orWhere('nim_bidx', Mahasiswa::computeBlindIndex(trim($search)));
             }
         });
     }

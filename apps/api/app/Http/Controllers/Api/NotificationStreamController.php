@@ -32,7 +32,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class NotificationStreamController extends Controller
 {
     private const STREAM_TTL_SECONDS = 60;
+
     private const POLL_INTERVAL_SECONDS = 3;
+
     private const HEARTBEAT_EVERY_POLLS = 4; // = 12 seconds
 
     public function stream(Request $request): StreamedResponse
@@ -98,9 +100,9 @@ class NotificationStreamController extends Controller
 
             $this->sendEvent('close', ['reason' => 'ttl']);
         }, 200, [
-            'Content-Type'      => 'text/event-stream',
-            'Cache-Control'     => 'no-cache, no-store, must-revalidate',
-            'Connection'        => 'keep-alive',
+            'Content-Type' => 'text/event-stream',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Connection' => 'keep-alive',
             'X-Accel-Buffering' => 'no', // nginx
         ]);
     }
@@ -112,7 +114,7 @@ class NotificationStreamController extends Controller
     private function sendEvent(string $event, array $data): void
     {
         echo "event: {$event}\n";
-        echo 'data: ' . json_encode($data, JSON_UNESCAPED_UNICODE) . "\n\n";
+        echo 'data: '.json_encode($data, JSON_UNESCAPED_UNICODE)."\n\n";
         $this->flushBuffers();
     }
 

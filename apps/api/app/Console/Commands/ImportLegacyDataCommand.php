@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\KKN\Dosen;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
@@ -9,12 +10,12 @@ use Illuminate\Support\Facades\File;
 class ImportLegacyDataCommand extends Command
 {
     protected $signature = 'kkn:import-legacy {--force : Force the operation to run when in production} {--clean : Delete legacy source folders after a successful import}';
-    
+
     protected $description = 'Import legacy KKN and DPL data from uploaded HTML/Excel exports in storage/';
 
     public function handle()
     {
-        $this->info("Memulai proses deployment sinkronisasi data Legacy SIBERMAS...");
+        $this->info('Memulai proses deployment sinkronisasi data Legacy SIBERMAS...');
 
         if (app()->environment('production') && ! $this->option('force')) {
             $this->error('Import legacy dinonaktifkan di production tanpa --force.');
@@ -24,15 +25,15 @@ class ImportLegacyDataCommand extends Command
 
         $storagePath = storage_path();
         $directories = [
-            'DB2' => $storagePath . '/DB2',
-            'DPL' => $storagePath . '/DPL',
-            'Nilai KKN' => $storagePath . '/Nilai KKN',
+            'DB2' => $storagePath.'/DB2',
+            'DPL' => $storagePath.'/DPL',
+            'Nilai KKN' => $storagePath.'/Nilai KKN',
         ];
 
         // 1. Verifikasi direktori ada
         $missing = false;
         foreach ($directories as $name => $path) {
-            if (!File::isDirectory($path)) {
+            if (! File::isDirectory($path)) {
                 $this->error("Direktori 'storage/{$name}' tidak ditemukan. Pastikan Anda telah mengunggah file tersebut.");
                 $missing = true;
             }
@@ -50,7 +51,7 @@ class ImportLegacyDataCommand extends Command
 
         // 3. Sync Master API
         $this->info("\n--- Menyinkronkan Master Data SIAKAD ---");
-        $this->info("(Harap tunggu, proses ini mungkin membutuhkan waktu 1-2 menit)");
+        $this->info('(Harap tunggu, proses ini mungkin membutuhkan waktu 1-2 menit)');
         Artisan::call('kkn:sync-master', [], $this->getOutput());
 
         // 4. Jalankan Seeders
@@ -65,11 +66,11 @@ class ImportLegacyDataCommand extends Command
 
         // 5. Patch Manual Anomali (Hikamudin)
         $this->info("\n--- Menjalankan Patching Anomali Data ---");
-        \App\Models\KKN\Dosen::whereBlind('nip', '2021018302')->update([
-            'has_workshop' => true, 
-            'workshop_date' => '2024-01-01'
+        Dosen::whereBlind('nip', '2021018302')->update([
+            'has_workshop' => true,
+            'workshop_date' => '2024-01-01',
         ]);
-        $this->line("Data spesifik (Hikamudin) telah di-patch.");
+        $this->line('Data spesifik (Hikamudin) telah di-patch.');
 
         // 6. Cleanup (Optional)
         if ($this->option('clean')) {
@@ -82,8 +83,8 @@ class ImportLegacyDataCommand extends Command
         }
 
         $this->newLine();
-        $this->info("✨ DEPLOYMENT DATA LEGACY SELESAI DENGAN SUKSES ✨");
-        
+        $this->info('✨ DEPLOYMENT DATA LEGACY SELESAI DENGAN SUKSES ✨');
+
         return 0;
     }
 }

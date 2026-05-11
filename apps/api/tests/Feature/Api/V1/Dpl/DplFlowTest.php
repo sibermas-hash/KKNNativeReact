@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\KKN\Dosen;
-use App\Models\User;
 
 describe('DPL Flow (E2E)', function () {
 

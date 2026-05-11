@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -23,7 +22,7 @@ class ProfileChangeRequest extends Model
     {
         return [
             'requested_changes' => 'array',
-            'reviewed_at'       => 'datetime',
+            'reviewed_at' => 'datetime',
         ];
     }
 

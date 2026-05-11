@@ -7,6 +7,7 @@ namespace App\Models\KKN;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * UserActivityLog — pencatatan aksi pengguna (login, logout, update profil, dll).
@@ -24,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property array|null $metadata
  * @property string|null $ip_address
  * @property string|null $user_agent
- * @property \Illuminate\Support\Carbon $created_at
+ * @property Carbon $created_at
  */
 class UserActivityLog extends Model
 {

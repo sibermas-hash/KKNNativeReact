@@ -22,21 +22,32 @@ class SiakadRecordFilter
 
     // student reasons
     public const SKIP_STUDENT_BATCH_TOO_OLD = 'skip_student_batch_too_old';
+
     public const SKIP_STUDENT_BATCH_FUTURE = 'skip_student_batch_future';
+
     public const SKIP_STUDENT_INACTIVE = 'skip_student_inactive';
+
     public const SKIP_STUDENT_GRADUATE_PROGRAM = 'skip_student_graduate_program';
+
     public const SKIP_STUDENT_NO_NIK = 'skip_student_no_nik';
+
     public const SKIP_STUDENT_BLOCKLISTED = 'skip_student_blocklisted';
+
     public const SKIP_STUDENT_NO_NIM = 'skip_student_no_nim';
 
     // lecturer reasons
     public const SKIP_LECTURER_INACTIVE = 'skip_lecturer_inactive';
+
     public const SKIP_LECTURER_TUGAS_BELAJAR = 'skip_lecturer_tugas_belajar';
+
     public const SKIP_LECTURER_BLOCKLISTED = 'skip_lecturer_blocklisted';
+
     public const SKIP_LECTURER_NO_NIP = 'skip_lecturer_no_nip';
 
     private array $studentCfg;
+
     private array $lecturerCfg;
+
     private bool $enabled;
 
     /** @var array<int,string>|null cached non-eligible prodi ids */
@@ -204,6 +215,7 @@ class SiakadRecordFilter
                 return true;
             }
         }
+
         return false;
     }
 
@@ -227,6 +239,7 @@ class SiakadRecordFilter
                 ->map(fn ($v) => (string) $v)
                 ->all();
         }
+
         return in_array($prodiMasterId, $this->nonKknProdiIds, true);
     }
 
@@ -248,6 +261,7 @@ class SiakadRecordFilter
                 return true;
             }
         }
+
         return false;
     }
 

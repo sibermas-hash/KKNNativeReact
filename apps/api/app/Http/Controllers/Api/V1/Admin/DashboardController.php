@@ -9,14 +9,16 @@ use App\Http\Resources\Api\V1\PeriodeResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\KelompokKkn;
-use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Services\DashboardStatisticsService;
 use App\Services\PeriodContextService;
+use App\Services\RedisCacheService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
 {
@@ -113,9 +115,9 @@ class DashboardController extends Controller
         $facultyId = $user?->hasRole('faculty_admin') ? $user->fakultas_id : null;
         $phase = $period->current_phase ?? 'upcoming';
 
-        $cacheKey = "phase_context_{$periodId}_{$phase}_" . ($facultyId ?? 'all');
+        $cacheKey = "phase_context_{$periodId}_{$phase}_".($facultyId ?? 'all');
 
-        return \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () use ($phase, $periodId, $facultyId) {
+        return Cache::remember($cacheKey, 300, function () use ($phase, $periodId, $facultyId) {
             return match ($phase) {
                 'upcoming' => [
                     'hint' => 'Periode siap dimulai. Klik "Buka Pendaftaran" untuk membuka portal mahasiswa.',
@@ -142,7 +144,7 @@ class DashboardController extends Controller
 
     private function registrationContext(int $periodId, ?int $facultyId): array
     {
-        $query = \App\Models\KKN\PesertaKkn::where('periode_id', $periodId);
+        $query = PesertaKkn::where('periode_id', $periodId);
         if ($facultyId) {
             $query->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
         }
@@ -167,14 +169,14 @@ class DashboardController extends Controller
 
     private function placementContext(int $periodId, ?int $facultyId): array
     {
-        $query = \App\Models\KKN\PesertaKkn::where('periode_id', $periodId)->where('status', 'approved');
+        $query = PesertaKkn::where('periode_id', $periodId)->where('status', 'approved');
         if ($facultyId) {
             $query->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
         }
 
         $approved = (clone $query)->count();
         $assigned = (clone $query)->whereNotNull('kelompok_id')->count();
-        $totalGroups = \App\Models\KKN\KelompokKkn::where('periode_id', $periodId)->count();
+        $totalGroups = KelompokKkn::where('periode_id', $periodId)->count();
         $unassigned = $approved - $assigned;
 
         return [
@@ -195,7 +197,7 @@ class DashboardController extends Controller
     private function executionContext(int $periodId, ?int $facultyId): array
     {
         $today = now()->format('Y-m-d');
-        $queryReports = \App\Models\KKN\KegiatanKkn::where('date', $today)
+        $queryReports = KegiatanKkn::where('date', $today)
             ->whereIn('kelompok_id', function ($sub) use ($periodId) {
                 $sub->select('id')->from('kelompok_kkn')->where('periode_id', $periodId);
             });
@@ -204,7 +206,7 @@ class DashboardController extends Controller
         }
         $todayReports = (clone $queryReports)->count();
 
-        $totalStudents = \App\Models\KKN\PesertaKkn::where('periode_id', $periodId)
+        $totalStudents = PesertaKkn::where('periode_id', $periodId)
             ->whereIn('status', ['approved', 'active'])
             ->whereNotNull('kelompok_id')
             ->count();
@@ -224,13 +226,13 @@ class DashboardController extends Controller
 
     private function gradingContext(int $periodId, ?int $facultyId): array
     {
-        $totalStudents = \App\Models\KKN\PesertaKkn::where('periode_id', $periodId)
+        $totalStudents = PesertaKkn::where('periode_id', $periodId)
             ->whereIn('status', ['approved', 'active'])
             ->whereNotNull('kelompok_id')
             ->count();
 
         // Subquery: avoid pluck+whereIn round-trip
-        $gradedStudents = \App\Models\KKN\NilaiKkn::whereHas(
+        $gradedStudents = NilaiKkn::whereHas(
             'kelompok', fn ($q) => $q->where('periode_id', $periodId)
         )
             ->where('total_score', '>', 0)
@@ -263,12 +265,12 @@ class DashboardController extends Controller
 
         // State machine: define valid transitions
         $validTransitions = [
-            'upcoming'     => ['registration'],
+            'upcoming' => ['registration'],
             'registration' => ['placement', 'upcoming'],
-            'placement'    => ['execution', 'registration'],
-            'execution'    => ['grading', 'placement'],
-            'grading'      => ['finished', 'execution'],
-            'finished'     => [],
+            'placement' => ['execution', 'registration'],
+            'execution' => ['grading', 'placement'],
+            'grading' => ['finished', 'execution'],
+            'finished' => [],
         ];
 
         $period = Periode::findOrFail($periodId);
@@ -288,7 +290,7 @@ class DashboardController extends Controller
 
         $period->update(['current_phase' => $phase]);
 
-        \Illuminate\Support\Facades\Log::info('Phase switched', [
+        Log::info('Phase switched', [
             'periode_id' => $periodId,
             'from' => $currentPhase,
             'to' => $phase,
@@ -297,7 +299,7 @@ class DashboardController extends Controller
 
         // Clear cache
         app(PeriodContextService::class)->clear();
-        \App\Services\RedisCacheService::invalidateMasterData();
+        RedisCacheService::invalidateMasterData();
 
         return $this->success(
             new PeriodeResource($period->refresh()),
@@ -305,7 +307,7 @@ class DashboardController extends Controller
         );
     }
 
-    private function calculateCurrentPhase(\App\Models\KKN\Periode $period): array
+    private function calculateCurrentPhase(Periode $period): array
     {
         $phaseLabels = [
             'upcoming' => ['key' => 'upcoming', 'label' => 'Pra-Pendaftaran', 'color' => 'slate'],

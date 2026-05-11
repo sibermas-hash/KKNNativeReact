@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Student;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Api\V1\KegiatanKknResource;
 use App\Http\Resources\Api\V1\LaporanAkhirResource;
-use App\Http\Resources\Api\V1\NilaiKknResource;
-use App\Http\Resources\Api\V1\ProgramKerjaResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\KegiatanKkn;
+use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\LaporanAkhir;
+use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\ProgramKerja;
+use App\Models\KKN\SystemSetting;
+use App\Models\User;
 use App\Services\PeriodContextService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -25,7 +26,7 @@ class DashboardController extends Controller
 
     public function index(PeriodContextService $periodContextService): JsonResponse
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = auth()->user();
         $mahasiswa = $user->mahasiswa;
 
@@ -79,8 +80,8 @@ class DashboardController extends Controller
                 ->first()
             : null;
 
-        $certificateMinScore = (float) \App\Models\KKN\SystemSetting::get('certificate_min_score', '70');
-        $minDailyReports = (int) \App\Models\KKN\SystemSetting::get('min_daily_reports', '30');
+        $certificateMinScore = (float) SystemSetting::get('certificate_min_score', '70');
+        $minDailyReports = (int) SystemSetting::get('min_daily_reports', '30');
 
         return $this->success([
             'student' => [
@@ -146,7 +147,7 @@ class DashboardController extends Controller
 
     public function markNotificationShown(Request $request, PesertaKkn $pesertaKkn): JsonResponse
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = auth()->user();
 
         if ($pesertaKkn->mahasiswa_id !== $user->mahasiswa?->id) {
@@ -175,15 +176,15 @@ class DashboardController extends Controller
      *
      * @return array{id: ?int, name: ?string, nim: ?string, is_self: bool}|null
      */
-    private function leaderPayload(\App\Models\KKN\KelompokKkn $kelompok, int $currentMahasiswaId): ?array
+    private function leaderPayload(KelompokKkn $kelompok, int $currentMahasiswaId): ?array
     {
-        /** @var \App\Models\KKN\PesertaKkn|null $leader */
+        /** @var PesertaKkn|null $leader */
         $leader = $kelompok->peserta->first();
         if (! $leader) {
             return null;
         }
 
-        /** @var \App\Models\KKN\Mahasiswa|null $mhs */
+        /** @var Mahasiswa|null $mhs */
         $mhs = $leader->mahasiswa;
         if (! $mhs) {
             return ['id' => null, 'name' => null, 'nim' => null, 'is_self' => false];

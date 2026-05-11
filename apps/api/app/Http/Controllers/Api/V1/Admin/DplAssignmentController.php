@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Api\V1\DplPeriodResource;
 use App\Http\Resources\Api\V1\DosenResource;
+use App\Http\Resources\Api\V1\DplPeriodResource;
+use App\Http\Resources\Api\V1\KelompokKknResource;
 use App\Imports\DplAssignmentImport;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\DplKecamatanAssignment;
@@ -54,7 +55,7 @@ class DplAssignmentController extends Controller
         // Check eligibility
         $qualification = $this->eligibilityService->isQualifiedForDpl($dosen, $periode->id);
         if (! $qualification['eligible']) {
-            return $this->error('VALIDATION_ERROR', 'Dosen tidak memenuhi syarat: ' . $qualification['reason'], 422);
+            return $this->error('VALIDATION_ERROR', 'Dosen tidak memenuhi syarat: '.$qualification['reason'], 422);
         }
 
         try {
@@ -85,8 +86,9 @@ class DplAssignmentController extends Controller
 
         try {
             $this->assignmentService->assignPrimaryGroup($dplPeriod, $group);
+
             return $this->success(
-                new \App\Http\Resources\Api\V1\KelompokKknResource($group->refresh()->load('dosen')),
+                new KelompokKknResource($group->refresh()->load('dosen')),
                 'DPL berhasil ditugaskan ke kelompok.'
             );
         } catch (\DomainException $e) {
@@ -158,6 +160,7 @@ class DplAssignmentController extends Controller
         Gate::authorize('manageDplAssignment');
 
         $dplPeriod->update(['is_active' => false]);
+
         return $this->noContent('DPL berhasil dilepas dari periode.');
     }
 
@@ -166,6 +169,7 @@ class DplAssignmentController extends Controller
         Gate::authorize('manageDplAssignment');
 
         $districtCoordinator->delete();
+
         return $this->noContent('Koordinator kecamatan berhasil dilepas.');
     }
 

@@ -17,7 +17,7 @@ class Mahasiswa extends Model
     // R13-DB-001: soft-delete enabled so hard cascade from users no longer
     // destroys kegiatan/peserta_kkn/nilai/evaluasi. Requires migration
     // 2026_05_11_060000 to add the deleted_at column.
-    use HasFactory, SoftDeletes, \App\Traits\HasManuallyEditedFields, \App\Traits\HasBlindIndex;
+    use \App\Traits\HasBlindIndex, \App\Traits\HasManuallyEditedFields, HasFactory, SoftDeletes;
 
     protected $table = 'mahasiswa';
 

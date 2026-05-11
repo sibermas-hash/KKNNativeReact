@@ -60,7 +60,7 @@ class SendPasswordResetLinksCommand extends Command
             ->where('is_active', true)
             ->where(function ($q) {
                 $q->where('must_change_password', true)
-                  ->orWhereNull('password_changed_at');
+                    ->orWhereNull('password_changed_at');
             });
 
         if ($role !== 'all') {
@@ -73,11 +73,13 @@ class SendPasswordResetLinksCommand extends Command
 
         if ($total === 0) {
             $this->info('Nothing to do.');
+
             return self::SUCCESS;
         }
 
         if ($dryRun) {
             $this->comment('[DRY RUN] No emails will be sent.');
+
             return self::SUCCESS;
         }
 
@@ -86,6 +88,7 @@ class SendPasswordResetLinksCommand extends Command
             false
         )) {
             $this->info('Aborted.');
+
             return self::FAILURE;
         }
 
@@ -118,6 +121,7 @@ class SendPasswordResetLinksCommand extends Command
 
         $this->line('');
         $this->info("Done. sent={$sent} failed={$failed}");
+
         return $failed > 0 ? self::FAILURE : self::SUCCESS;
     }
 }

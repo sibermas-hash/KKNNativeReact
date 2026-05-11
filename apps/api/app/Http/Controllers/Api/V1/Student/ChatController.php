@@ -11,7 +11,6 @@ use App\Models\KKN\ChatMessage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * Student/Dosen chat dengan Superadmin (PRD_CHAT_SYSTEM.md).
@@ -133,7 +132,7 @@ class ChatController extends Controller
                     'is_self' => $m->sender_id === $request->user()->id,
                 ],
                 'body' => $m->body,
-                'attachment_url' => $m->attachment_path ? asset('storage/' . $m->attachment_path) : null,
+                'attachment_url' => $m->attachment_path ? asset('storage/'.$m->attachment_path) : null,
                 'attachment_name' => $m->attachment_name,
                 'is_read' => $m->is_read,
                 'created_at' => $m->created_at?->toIso8601String(),
@@ -195,7 +194,7 @@ class ChatController extends Controller
         return $this->created([
             'id' => $message->id,
             'body' => $message->body,
-            'attachment_url' => $attachmentPath ? asset('storage/' . $attachmentPath) : null,
+            'attachment_url' => $attachmentPath ? asset('storage/'.$attachmentPath) : null,
             'created_at' => $message->created_at?->toIso8601String(),
         ], 'Pesan terkirim.');
     }

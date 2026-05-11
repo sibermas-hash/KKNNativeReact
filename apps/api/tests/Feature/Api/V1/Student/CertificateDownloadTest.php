@@ -2,16 +2,15 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Api\V1\Student\CertificateController;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\KelompokKkn;
-use App\Models\KKN\LaporanAkhir;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\NilaiKkn;
-use App\Models\KKN\Periode;
+use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\SertifikatKkn;
+use App\Models\User;
 use App\Services\CertificateService;
-use Illuminate\Support\Facades\Hash;
+use Barryvdh\DomPDF\PDF;
 
 /**
  * Regression tests untuk fix R11-API-003 / R9-007 / F-04.
@@ -21,7 +20,6 @@ use Illuminate\Support\Facades\Hash;
  *   - Authorization layers (student own, DPL group-scoped, revoked blocked).
  *   - Error paths mengembalikan JSON envelope (bukan masked PDF).
  */
-
 beforeEach(function () {
     $this->periode = createActivePeriod('finished');
 
@@ -30,7 +28,7 @@ beforeEach(function () {
 
     $this->kelompok = KelompokKkn::factory()->create(['periode_id' => $this->periode->id]);
 
-    \App\Models\KKN\PesertaKkn::factory()
+    PesertaKkn::factory()
         ->approved()
         ->create([
             'mahasiswa_id' => $this->student->id,
@@ -71,7 +69,7 @@ afterEach(function () {
  * Helper: create student user + mahasiswa lengkap sehingga lolos
  * EnsureProfileCompleted middleware. Reusable di test-test lain.
  */
-function createCompleteStudent(): \App\Models\User
+function createCompleteStudent(): User
 {
     $user = createUserWithRole('student');
     $user->update([
@@ -109,13 +107,14 @@ function mockCertificatePdf(): void
 {
     $mock = Mockery::mock(CertificateService::class);
     $mock->shouldReceive('generateForStudent')->andReturnUsing(function () {
-        $pdf = Mockery::mock(\Barryvdh\DomPDF\PDF::class);
+        $pdf = Mockery::mock(PDF::class);
         $pdf->shouldReceive('download')->andReturnUsing(
             fn ($name) => response('%PDF-1.4 fake pdf content', 200, [
                 'Content-Type' => 'application/pdf',
                 'Content-Disposition' => "attachment; filename=\"$name\"",
             ])
         );
+
         return $pdf;
     });
     app()->instance(CertificateService::class, $mock);

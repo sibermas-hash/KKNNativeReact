@@ -6,13 +6,16 @@ namespace App\Http\Controllers\Api\V1\Dpl;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\NilaiKknResource;
-use App\Http\Resources\Api\V1\MahasiswaResource;
 use App\Http\Traits\ApiResponse;
+use App\Imports\EvaluationImport;
 use App\Models\KKN\KonfigurasiPenilaian;
 use App\Models\KKN\NilaiKkn;
+use App\Models\KKN\PesertaKkn;
 use App\Services\DplScopeService;
+use App\Services\GradingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class EvaluationController extends Controller
@@ -38,7 +41,7 @@ class EvaluationController extends Controller
             ->with(['user:id,name,username', 'kelompok:id,code,nama_kelompok'])
             ->paginate($request->input('per_page', 25));
 
-        $students = \App\Models\KKN\PesertaKkn::whereIn('kelompok_id', $groupIds)
+        $students = PesertaKkn::whereIn('kelompok_id', $groupIds)
             ->where('status', 'approved')
             ->with(['mahasiswa:id,user_id,nama,nim', 'kelompok:id,nama_kelompok'])
             ->limit(100)
@@ -68,14 +71,14 @@ class EvaluationController extends Controller
     public function store(Request $request): JsonResponse
     {
         $request->validate([
-            'student_id'  => ['required', 'integer'],
+            'student_id' => ['required', 'integer'],
             'kelompok_id' => ['required', 'integer'],
-            'scores'      => ['required', 'array'],
-            'scores.relevansi'      => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'scores.ketercapaian'   => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'scores.inovasi'        => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'scores.administrasi'   => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'scores.artikel'        => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'scores' => ['required', 'array'],
+            'scores.relevansi' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'scores.ketercapaian' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'scores.inovasi' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'scores.administrasi' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'scores.artikel' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
 
         $dosen = auth()->user()->dosen;
@@ -86,7 +89,7 @@ class EvaluationController extends Controller
         }
 
         // Verify student is registered in the specified group with approved status
-        $studentInGroup = \App\Models\KKN\PesertaKkn::where('kelompok_id', $request->input('kelompok_id'))
+        $studentInGroup = PesertaKkn::where('kelompok_id', $request->input('kelompok_id'))
             ->whereHas('mahasiswa', fn ($q) => $q->where('user_id', $request->input('student_id')))
             ->where('status', 'approved')
             ->exists();
@@ -96,7 +99,7 @@ class EvaluationController extends Controller
         }
 
         try {
-            $nilai = app(\App\Services\GradingService::class)->submitDPLScores(
+            $nilai = app(GradingService::class)->submitDPLScores(
                 userId: $request->input('student_id'),
                 groupId: $request->input('kelompok_id'),
                 scores: $request->input('scores'),
@@ -115,7 +118,7 @@ class EvaluationController extends Controller
 
         try {
             $file = $request->file('file');
-            $import = new \App\Imports\EvaluationImport();
+            $import = new EvaluationImport;
             Excel::import($import, $file);
 
             return $this->success([
@@ -125,7 +128,7 @@ class EvaluationController extends Controller
                 'errors' => $import->errors,
             ]);
         } catch (\Exception $e) {
-            return $this->error('VALIDATION_ERROR', 'Gagal memproses file: ' . $e->getMessage(), 422);
+            return $this->error('VALIDATION_ERROR', 'Gagal memproses file: '.$e->getMessage(), 422);
         }
     }
 
@@ -152,17 +155,19 @@ class EvaluationController extends Controller
         foreach ($request->input('data') as $index => $row) {
             if (! $groupIds->contains($row['kelompok_id'])) {
                 $errors[] = "Baris {$index}: Kelompok tidak dalam binaan Anda.";
+
                 continue;
             }
 
             // BC-03: verify student is in the group
-            $inGroup = \App\Models\KKN\PesertaKkn::where('kelompok_id', $row['kelompok_id'])
+            $inGroup = PesertaKkn::where('kelompok_id', $row['kelompok_id'])
                 ->whereHas('mahasiswa', fn ($q) => $q->where('user_id', $row['user_id']))
                 ->where('status', 'approved')
                 ->exists();
 
             if (! $inGroup) {
                 $errors[] = "Baris {$index}: Mahasiswa tidak terdaftar di kelompok tersebut.";
+
                 continue;
             }
 
@@ -171,7 +176,7 @@ class EvaluationController extends Controller
 
         $imported = 0;
         if (! empty($validRows)) {
-            \Illuminate\Support\Facades\DB::transaction(function () use ($validRows, &$imported) {
+            DB::transaction(function () use ($validRows, &$imported) {
                 foreach ($validRows as $row) {
                     NilaiKkn::updateOrCreate(
                         ['user_id' => $row['user_id'], 'kelompok_id' => $row['kelompok_id']],
@@ -198,13 +203,13 @@ class EvaluationController extends Controller
 
     private function parseImportFile($file): array
     {
-        $import = new \App\Imports\EvaluationImport();
+        $import = new EvaluationImport;
         Excel::import($import, $file);
 
         return [
-            'rows'   => $import->rows ?? [],
-            'total'  => $import->totalRows ?? 0,
-            'valid'  => $import->validRows ?? 0,
+            'rows' => $import->rows ?? [],
+            'total' => $import->totalRows ?? 0,
+            'valid' => $import->validRows ?? 0,
             'errors' => $import->errors ?? [],
         ];
     }

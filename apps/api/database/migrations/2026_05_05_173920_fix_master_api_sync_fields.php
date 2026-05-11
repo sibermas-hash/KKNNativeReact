@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -24,21 +24,21 @@ return new class extends Migration
             Schema::table('prodi', function (Blueprint $table) {
                 $table->string('organization_id', 20)->nullable()->after('code');
             });
-            
+
             // Index for faster lookups during sync
             Schema::table('prodi', function (Blueprint $table) {
                 $table->index('organization_id', 'idx_prodi_organization_id');
             });
-            
+
             // Populate organization_id from existing data if possible
             // This helps mapping prodi back to their master faculty codes
-            DB::statement("
+            DB::statement('
                 UPDATE prodi p
                 SET organization_id = f.master_id
                 FROM fakultas f
                 WHERE p.fakultas_id = f.id
                 AND f.master_id IS NOT NULL
-            ");
+            ');
         }
 
         // Fix 2: Add level to fakultas table
@@ -56,11 +56,11 @@ return new class extends Migration
             ");
 
             // Level 1 for other organizations (universitas level)
-            DB::statement("
+            DB::statement('
                 UPDATE fakultas 
                 SET level = 1 
                 WHERE level IS NULL
-            ");
+            ');
         }
 
         // Fix 3: Drop redundant total_sks from mahasiswa
@@ -111,11 +111,11 @@ return new class extends Migration
             });
 
             // Restore data from sks_completed
-            DB::statement("
+            DB::statement('
                 UPDATE mahasiswa 
                 SET total_sks = sks_completed 
                 WHERE total_sks = 0 AND sks_completed > 0
-            ");
+            ');
         }
 
         // Reverse Fix 4: Restore is_bta_ppi_passed to mahasiswa

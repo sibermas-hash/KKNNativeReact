@@ -54,14 +54,16 @@ class PiiDecryptTable extends Command
         if ($apply && app()->environment('production')) {
             if (! $this->option('allow-production')) {
                 $this->error('Refusing to run pii:decrypt --apply di production tanpa --allow-production.');
+
                 return self::FAILURE;
             }
             $confirmed = $this->confirm(
-                "ANDA akan DECRYPT kolom [".implode(', ', $fields)."] di tabel `{$table}` ke plaintext. Ini tidak bisa dibatalkan. Lanjutkan?",
+                'ANDA akan DECRYPT kolom ['.implode(', ', $fields)."] di tabel `{$table}` ke plaintext. Ini tidak bisa dibatalkan. Lanjutkan?",
                 false,
             );
             if (! $confirmed) {
                 $this->warn('Dibatalkan operator.');
+
                 return self::FAILURE;
             }
         }

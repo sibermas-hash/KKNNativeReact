@@ -10,7 +10,7 @@
  */
 
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 // ─── AUTH ENDPOINTS ───────────────────────────────────────────────────────────
 
@@ -103,8 +103,8 @@ test('POST /api/log-error returns 422 on empty body when authenticated', functio
     // middleware (both exempt superadmin) — we only care about the validation
     // layer here, not the profile-completion flow. is_active is set explicitly
     // to satisfy EnsureUserIsActive.
-    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'superadmin', 'guard_name' => 'web']);
-    $user = \App\Models\User::factory()->create(['is_active' => true]);
+    Role::firstOrCreate(['name' => 'superadmin', 'guard_name' => 'web']);
+    $user = User::factory()->create(['is_active' => true]);
     $user->assignRole('superadmin');
 
     $this->actingAs($user)

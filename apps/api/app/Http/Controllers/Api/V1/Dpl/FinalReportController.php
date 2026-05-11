@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\LaporanAkhirResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\LaporanAkhir;
+use App\Notifications\KknActivityNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -55,7 +56,7 @@ class FinalReportController extends Controller
         ]);
 
         // Send notification to student
-        $report->mahasiswa?->user?->notify(new \App\Notifications\KknActivityNotification([
+        $report->mahasiswa?->user?->notify(new KknActivityNotification([
             'type' => 'final_report_approved',
             'title' => 'Laporan Akhir Disetujui',
             'message' => "Laporan akhir Anda \"{$report->title}\" telah disetujui oleh DPL.",
@@ -81,7 +82,7 @@ class FinalReportController extends Controller
         ]);
 
         // Send notification to student
-        $report->mahasiswa?->user?->notify(new \App\Notifications\KknActivityNotification([
+        $report->mahasiswa?->user?->notify(new KknActivityNotification([
             'type' => 'final_report_revision',
             'title' => 'Laporan Akhir Perlu Revisi',
             'message' => "Laporan akhir Anda \"{$report->title}\" perlu direvisi: {$request->input('review_notes')}",
@@ -103,7 +104,7 @@ class FinalReportController extends Controller
 
         abort_if(! $report->file_path || ! Storage::exists($report->file_path), 404, 'File laporan tidak ditemukan.');
 
-        $filename = 'Laporan_Akhir_' . ($report->title ?? $report->id) . '.pdf';
+        $filename = 'Laporan_Akhir_'.($report->title ?? $report->id).'.pdf';
 
         return Storage::download($report->file_path, $filename);
     }

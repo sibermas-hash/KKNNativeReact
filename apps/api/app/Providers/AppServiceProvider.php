@@ -7,12 +7,14 @@ namespace App\Providers;
 use App\Models\KKN\Evaluasi;
 use App\Models\KKN\IzinMeninggalkan;
 use App\Models\KKN\KegiatanKkn;
+use App\Models\KKN\KonfigurasiPenilaian;
 use App\Models\KKN\KonfigurasiSertifikat;
 use App\Models\KKN\Laporan;
 use App\Models\KKN\LogAudit;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\Periode;
+use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\SystemSetting;
 use App\Observers\AuditObserver;
 use App\Policies\AdminOperationPolicy;
@@ -24,11 +26,12 @@ use App\Policies\KknScorePolicy;
 use App\Policies\PeriodPolicy;
 use App\Repositories\Contracts\RegistrationRepositoryInterface;
 use App\Repositories\Eloquent\RegistrationRepository;
-use App\Services\AuditService;
+use App\Services\AI\ErrorAlertService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Queue\Events\JobFailed;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -112,9 +115,9 @@ class AppServiceProvider extends ServiceProvider
         );
 
         // Queue failed job → AI Telegram alert
-        Event::listen(\Illuminate\Queue\Events\JobFailed::class, function ($event) {
+        Event::listen(JobFailed::class, function ($event) {
             try {
-                app(\App\Services\AI\ErrorAlertService::class)->alertJobFailed(
+                app(ErrorAlertService::class)->alertJobFailed(
                     $event->job->resolveName(),
                     $event->exception->getMessage(),
                     $event->job->getQueue(),
@@ -149,10 +152,10 @@ class AppServiceProvider extends ServiceProvider
         // tepat untuk data akademik daripada enkripsi kolom skor (yang akan
         // break semua SQL aggregate + grade distribution reports).
         if (class_exists('App\Models\KKN\KonfigurasiPenilaian')) {
-            \App\Models\KKN\KonfigurasiPenilaian::observe(AuditObserver::class);
+            KonfigurasiPenilaian::observe(AuditObserver::class);
         }
         if (class_exists('App\Models\KKN\PesertaKkn')) {
-            \App\Models\KKN\PesertaKkn::observe(AuditObserver::class);
+            PesertaKkn::observe(AuditObserver::class);
         }
 
         // 4. Global URL Scheme
@@ -287,7 +290,7 @@ class AppServiceProvider extends ServiceProvider
         if (! empty($bad)) {
             throw new \RuntimeException(
                 'Unsafe CORS configuration detected in production. '.
-                "Found forbidden origin(s) with supports_credentials=true: ".implode(', ', $bad).'. '.
+                'Found forbidden origin(s) with supports_credentials=true: '.implode(', ', $bad).'. '.
                 'Set CORS_ALLOWED_ORIGINS to an explicit list of production hosts only.'
             );
         }

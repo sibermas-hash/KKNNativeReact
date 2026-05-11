@@ -13,12 +13,14 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
-class SyncMahasiswaJob implements ShouldQueue, ShouldBeUnique
+class SyncMahasiswaJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
     public int $tries = 3;
+
     public int $backoff = 30;
+
     // M-004 fix: was 3600 (1 hour). A stuck/failed job would hold the lock
     // for the full hour, blocking operator retries. 600s roughly matches the
     // longest reasonable sync run time; failed() below also releases eagerly.

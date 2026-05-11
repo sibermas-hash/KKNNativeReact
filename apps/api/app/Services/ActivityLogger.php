@@ -40,7 +40,7 @@ class ActivityLogger
     /**
      * Log user activity. Non-throwing — errors swallowed + logged to Laravel log.
      *
-     * @param array<string, mixed> $metadata
+     * @param  array<string, mixed>  $metadata
      */
     public static function log(
         string $action,
@@ -52,10 +52,10 @@ class ActivityLogger
             $request = request();
 
             UserActivityLog::create([
-                'user_id'    => $userId ?? Auth::id(),
-                'action'     => $action,
-                'status'     => $status,
-                'metadata'   => $metadata ?: null,
+                'user_id' => $userId ?? Auth::id(),
+                'action' => $action,
+                'status' => $status,
+                'metadata' => $metadata ?: null,
                 'ip_address' => $request?->ip(),
                 'user_agent' => mb_substr((string) ($request?->userAgent() ?? ''), 0, 500) ?: null,
                 'created_at' => now(),

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\RekapitulasiKegiatan;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -17,7 +18,7 @@ class RekapitulasiController extends Controller
 
     public function index(): JsonResponse
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = auth()->user();
         $mahasiswa = $user?->mahasiswa;
         abort_if(! $mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
@@ -50,7 +51,7 @@ class RekapitulasiController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = auth()->user();
         $mahasiswa = $user?->mahasiswa;
         abort_if(! $mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
@@ -66,15 +67,15 @@ class RekapitulasiController extends Controller
         }
 
         $validated = $request->validate([
-            'uraian_kegiatan'    => ['required', 'string', 'max:500'],
-            'volume'             => ['nullable', 'integer', 'min:0'],
-            'satuan'             => ['nullable', 'string', 'max:50'],
-            'swadaya_mhs'        => ['nullable', 'integer', 'min:0'],
+            'uraian_kegiatan' => ['required', 'string', 'max:500'],
+            'volume' => ['nullable', 'integer', 'min:0'],
+            'satuan' => ['nullable', 'string', 'max:50'],
+            'swadaya_mhs' => ['nullable', 'integer', 'min:0'],
             'swadaya_masyarakat' => ['nullable', 'integer', 'min:0'],
             'bantuan_pemerintah' => ['nullable', 'integer', 'min:0'],
-            'donatur_lain'       => ['nullable', 'integer', 'min:0'],
-            'jumlah'             => ['nullable', 'integer', 'min:0'],
-            'keterangan'         => ['nullable', 'string'],
+            'donatur_lain' => ['nullable', 'integer', 'min:0'],
+            'jumlah' => ['nullable', 'integer', 'min:0'],
+            'keterangan' => ['nullable', 'string'],
         ]);
 
         $rekap = RekapitulasiKegiatan::updateOrCreate(

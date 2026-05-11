@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\KKN\Dosen;
+use App\Models\KKN\DplPeriod;
 
 class DplEligibilityService
 {
@@ -57,7 +58,7 @@ class DplEligibilityService
 
         // Check if Dosen is already active DPL for another KKN period (cannot have double job)
         if ($periodId) {
-            $activeOtherPeriods = \App\Models\KKN\DplPeriod::where('dosen_id', $dosen->id)
+            $activeOtherPeriods = DplPeriod::where('dosen_id', $dosen->id)
                 ->where('periode_id', '!=', $periodId)
                 ->where('is_active', true)
                 ->whereIn('status', ['approved', 'active'])

@@ -39,14 +39,14 @@ class TelegramAiService
         $aiSummary = $this->generateAiSummary('daily_digest', $stats);
 
         $message = "*DAILY DIGEST KKN*\n"
-            . "_" . now()->translatedFormat('l, d F Y') . "_\n\n"
-            . $aiSummary . "\n\n"
-            . "*Statistik Hari Ini:*\n"
-            . "• Laporan harian baru: {$stats['daily_reports_today']}\n"
-            . "• Pendaftaran baru: {$stats['registrations_today']}\n"
-            . "• Mahasiswa aktif: {$stats['active_students']}\n"
-            . "• Queue pending: {$stats['queue_pending']}\n"
-            . "• Failed jobs: {$stats['failed_jobs']}";
+            .'_'.now()->translatedFormat('l, d F Y')."_\n\n"
+            .$aiSummary."\n\n"
+            ."*Statistik Hari Ini:*\n"
+            ."• Laporan harian baru: {$stats['daily_reports_today']}\n"
+            ."• Pendaftaran baru: {$stats['registrations_today']}\n"
+            ."• Mahasiswa aktif: {$stats['active_students']}\n"
+            ."• Queue pending: {$stats['queue_pending']}\n"
+            ."• Failed jobs: {$stats['failed_jobs']}";
 
         return $this->telegram->send($message, TelegramAlertService::SEVERITY_INFO);
     }
@@ -67,7 +67,7 @@ class TelegramAiService
         }
 
         // Dedup: don't send same anomaly type within 2 hours
-        $dedupKey = self::CACHE_PREFIX . 'anomaly:' . md5(json_encode(array_keys($anomalies)));
+        $dedupKey = self::CACHE_PREFIX.'anomaly:'.md5(json_encode(array_keys($anomalies)));
         if (Cache::has($dedupKey)) {
             return false;
         }
@@ -75,8 +75,8 @@ class TelegramAiService
         $aiAnalysis = $this->generateAiSummary('anomaly_detection', $anomalies);
 
         $message = "*ANOMALY DETECTED*\n\n"
-            . $aiAnalysis . "\n\n"
-            . "*Detail:*\n";
+            .$aiAnalysis."\n\n"
+            ."*Detail:*\n";
 
         foreach ($anomalies as $type => $detail) {
             $message .= "• *{$type}*: {$detail}\n";
@@ -104,14 +104,14 @@ class TelegramAiService
         $aiSummary = $this->generateAiSummary('weekly_report', $stats);
 
         $message = "*LAPORAN MINGGUAN KKN*\n"
-            . "_Periode: " . now()->subWeek()->format('d M') . " - " . now()->format('d M Y') . "_\n\n"
-            . $aiSummary . "\n\n"
-            . "*Ringkasan Angka:*\n"
-            . "• Total laporan harian: {$stats['total_reports']}\n"
-            . "• Rata-rata kualitas AI: {$stats['avg_quality_score']}/10\n"
-            . "• Laporan di-flag: {$stats['flagged_reports']}\n"
-            . "• Kehadiran rata-rata: {$stats['avg_attendance']}%\n"
-            . "• Kelompok paling aktif: {$stats['most_active_group']}";
+            .'_Periode: '.now()->subWeek()->format('d M').' - '.now()->format('d M Y')."_\n\n"
+            .$aiSummary."\n\n"
+            ."*Ringkasan Angka:*\n"
+            ."• Total laporan harian: {$stats['total_reports']}\n"
+            ."• Rata-rata kualitas AI: {$stats['avg_quality_score']}/10\n"
+            ."• Laporan di-flag: {$stats['flagged_reports']}\n"
+            ."• Kehadiran rata-rata: {$stats['avg_attendance']}%\n"
+            ."• Kelompok paling aktif: {$stats['most_active_group']}";
 
         return $this->telegram->send($message, TelegramAlertService::SEVERITY_INFO);
     }
@@ -126,10 +126,10 @@ class TelegramAiService
         }
 
         $message = "*LOGBOOK FLAGGED*\n\n"
-            . "Mahasiswa: *{$studentName}*\n"
-            . "Activity ID: `{$activityId}`\n"
-            . "Alasan: _{$reason}_\n\n"
-            . "Tindakan: Review manual diperlukan oleh DPL/Admin.";
+            ."Mahasiswa: *{$studentName}*\n"
+            ."Activity ID: `{$activityId}`\n"
+            ."Alasan: _{$reason}_\n\n"
+            .'Tindakan: Review manual diperlukan oleh DPL/Admin.';
 
         return $this->telegram->send($message, TelegramAlertService::SEVERITY_WARNING);
     }
@@ -150,7 +150,7 @@ class TelegramAiService
             try {
                 $response = Http::withToken($tier['key'])
                     ->timeout(30)
-                    ->post(rtrim($tier['url'], '/') . '/chat/completions', [
+                    ->post(rtrim($tier['url'], '/').'/chat/completions', [
                         'model' => $tier['model'],
                         'messages' => [
                             ['role' => 'system', 'content' => 'Anda adalah asisten monitoring KKN. Berikan analisis singkat, actionable, dalam Bahasa Indonesia. Maksimal 3-4 kalimat. Fokus pada insight dan rekomendasi.'],
@@ -167,7 +167,7 @@ class TelegramAiService
                     }
                 }
             } catch (\Throwable $e) {
-                Log::debug("TelegramAiService: tier {$tier['label']} failed: " . $e->getMessage());
+                Log::debug("TelegramAiService: tier {$tier['label']} failed: ".$e->getMessage());
             }
         }
 
@@ -241,7 +241,9 @@ class TelegramAiService
     {
         try {
             $total = DB::table('peserta_kkn')->where('status', 'approved')->count();
-            if ($total === 0) return 0;
+            if ($total === 0) {
+                return 0;
+            }
 
             $daysInWeek = 7;
             $expectedEntries = $total * $daysInWeek;

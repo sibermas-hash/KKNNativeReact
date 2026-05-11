@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Student;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Api\V1\PesertaKknResource;
 use App\Http\Resources\Api\V1\PeriodeResource;
+use App\Http\Resources\Api\V1\PesertaKknResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\JenisKkn;
 use App\Models\KKN\Periode;
@@ -14,10 +14,12 @@ use App\Models\KKN\PesertaKkn;
 use App\Models\User;
 use App\Notifications\KKN\NewRegistrationForAdminNotification;
 use App\Notifications\KKN\RegistrationSubmittedNotification;
+use App\Services\ActivityLogger;
 use App\Services\EligibilityService;
 use App\Services\KKN\RegistrationDocumentService;
 use App\Services\PeriodContextService;
 use App\Services\RegistrationService;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -134,11 +136,11 @@ class RegistrationController extends Controller
                     }
                 });
             } catch (\Throwable $e) {
-                Log::warning('Registration notification failed: ' . $e->getMessage());
+                Log::warning('Registration notification failed: '.$e->getMessage());
             }
 
             \DB::afterCommit(function () use ($user, $validated, $periode) {
-                \App\Services\ActivityLogger::log('registration', 'success', $user->id, [
+                ActivityLogger::log('registration', 'success', $user->id, [
                     'periode_id' => (int) $validated['periode_id'],
                     'periode_name' => $periode->name,
                 ]);
@@ -149,12 +151,13 @@ class RegistrationController extends Controller
                 'Pendaftaran KKN berhasil dikirim.'
             );
         } catch (ValidationException $e) {
-            \App\Services\ActivityLogger::log('registration', 'failed', $user->id, [
+            ActivityLogger::log('registration', 'failed', $user->id, [
                 'periode_id' => $validated['periode_id'] ?? null,
                 'errors' => $e->errors(),
             ]);
+
             return $this->validationError($e->errors(), $e->getMessage());
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+        } catch (AuthorizationException $e) {
             return $this->forbidden($e->getMessage());
         } catch (\Exception $e) {
             return $this->serverError('Terjadi kesalahan saat memproses pendaftaran.');
@@ -217,7 +220,7 @@ class RegistrationController extends Controller
         $registration->delete();
 
         \DB::afterCommit(function () use ($user, $registration, $periode, $previousStatus) {
-            \App\Services\ActivityLogger::log('registration', 'cancelled', $user->id, [
+            ActivityLogger::log('registration', 'cancelled', $user->id, [
                 'registration_id' => $registration->id,
                 'periode_id' => $periode->id,
                 'periode_name' => $periode->name,

@@ -1,8 +1,6 @@
 <?php
 
 use App\Models\User;
-use App\Services\CaptchaService;
-use Illuminate\Support\Facades\Hash;
 
 describe('Auth API', function () {
 

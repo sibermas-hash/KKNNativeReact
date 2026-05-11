@@ -20,9 +20,10 @@ class VerifyWebhookSignature
         }
 
         $secret = config('services.master_api.webhook_secret');
-        
+
         if (! $secret) {
             Log::critical('Webhook secret not configured. Set MASTER_WEBHOOK_SECRET in .env');
+
             return response()->json(['error' => 'Server configuration error'], 500);
         }
 
@@ -42,9 +43,9 @@ class VerifyWebhookSignature
             return response()->json(['error' => 'Request expired'], 401);
         }
 
-        $payload = $timestamp . '.' . $request->getContent();
-        
-        $expected = 'sha256=' . hash_hmac('sha256', $payload, $secret);
+        $payload = $timestamp.'.'.$request->getContent();
+
+        $expected = 'sha256='.hash_hmac('sha256', $payload, $secret);
 
         if (! hash_equals($expected, $signature)) {
             return response()->json(['error' => 'Invalid signature'], 401);

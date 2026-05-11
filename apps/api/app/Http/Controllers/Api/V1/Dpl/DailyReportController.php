@@ -9,7 +9,8 @@ use App\Http\Resources\Api\V1\KegiatanKknResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\FileKegiatanKkn;
 use App\Models\KKN\KegiatanKkn;
-use App\Models\KKN\KelompokKkn;
+use App\Notifications\KknActivityNotification;
+use App\Services\GeoService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -38,7 +39,7 @@ class DailyReportController extends Controller
             ->paginate($request->input('per_page', 25));
 
         // Add distance calculation using GeoService
-        $geoService = app(\App\Services\GeoService::class);
+        $geoService = app(GeoService::class);
         $reports->getCollection()->transform(function ($report) use ($geoService) {
             if ($report->kelompok?->lokasi) {
                 $report->distance_meters = $geoService->calculateDistanceMeters(
@@ -50,6 +51,7 @@ class DailyReportController extends Controller
             } else {
                 $report->distance_meters = null;
             }
+
             return $report;
         });
 
@@ -75,7 +77,7 @@ class DailyReportController extends Controller
         ]);
 
         // Send notification to student
-        $dailyReport->mahasiswa?->user?->notify(new \App\Notifications\KknActivityNotification([
+        $dailyReport->mahasiswa?->user?->notify(new KknActivityNotification([
             'type' => 'daily_report_approved',
             'title' => 'Laporan Harian Disetujui',
             'message' => "Laporan harian Anda pada tanggal {$dailyReport->date} telah disetujui oleh DPL.",
@@ -102,7 +104,7 @@ class DailyReportController extends Controller
         ]);
 
         // Send notification to student
-        $dailyReport->mahasiswa?->user?->notify(new \App\Notifications\KknActivityNotification([
+        $dailyReport->mahasiswa?->user?->notify(new KknActivityNotification([
             'type' => 'daily_report_revision',
             'title' => 'Laporan Harian Perlu Revisi',
             'message' => "Laporan harian Anda pada tanggal {$dailyReport->date} perlu direvisi: {$request->input('review_notes')}",
@@ -160,7 +162,7 @@ class DailyReportController extends Controller
 
         return response()->file(
             Storage::path($fileKegiatan->file_path),
-            ['Content-Disposition' => 'inline; filename="' . ($fileKegiatan->original_name ?? basename($fileKegiatan->file_path)) . '"']
+            ['Content-Disposition' => 'inline; filename="'.($fileKegiatan->original_name ?? basename($fileKegiatan->file_path)).'"']
         );
     }
 

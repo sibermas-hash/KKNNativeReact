@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Illuminate\Support\Facades\RateLimiter;
 
 /*
  * Roadmap §3.4 — Tiered rate limiting.
@@ -22,9 +23,9 @@ use App\Models\User;
 beforeEach(function () {
     // Each test gets a fresh rate-limit bucket. Without this, tests leak
     // their hit-count into the next test's bucket and cause flakiness.
-    \Illuminate\Support\Facades\RateLimiter::clear('public');
-    \Illuminate\Support\Facades\RateLimiter::clear('auth_challenge');
-    \Illuminate\Support\Facades\RateLimiter::clear('authenticated');
+    RateLimiter::clear('public');
+    RateLimiter::clear('auth_challenge');
+    RateLimiter::clear('authenticated');
 });
 
 it('emits X-RateLimit headers on public endpoint', function () {

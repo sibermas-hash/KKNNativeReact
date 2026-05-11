@@ -29,7 +29,7 @@ class DataImportController extends Controller
         $file = $request->file('file');
         $tempPath = $file->getRealPath();
 
-        $import = new DosenDataImport();
+        $import = new DosenDataImport;
         $import->import($tempPath);
 
         $response = [

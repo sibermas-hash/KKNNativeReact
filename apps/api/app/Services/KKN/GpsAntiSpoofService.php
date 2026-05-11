@@ -35,7 +35,9 @@ use Carbon\Carbon;
 class GpsAntiSpoofService
 {
     public const ACTION_ALLOW = 'allow';
+
     public const ACTION_FLAG = 'flag';
+
     public const ACTION_REJECT = 'reject';
 
     /**

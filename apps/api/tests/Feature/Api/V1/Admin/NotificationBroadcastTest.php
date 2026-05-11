@@ -26,9 +26,9 @@ it('rejects non-superadmin callers (admin role gets 403 via PERMISSION_MAP)', fu
 
     $this->actingAs($admin)
         ->postJson('/api/v1/admin/notifications/broadcast', [
-            'title'   => 'T',
+            'title' => 'T',
             'message' => 'M',
-            'target'  => 'all',
+            'target' => 'all',
         ])
         ->assertStatus(403);
 });
@@ -46,9 +46,9 @@ it('rejects invalid target string', function () {
 
     $this->actingAs($sa)
         ->postJson('/api/v1/admin/notifications/broadcast', [
-            'title'   => 'T',
+            'title' => 'T',
             'message' => 'M',
-            'target'  => 'nonsense:42',
+            'target' => 'nonsense:42',
         ])
         ->assertStatus(400);
 });
@@ -64,9 +64,9 @@ it('dispatches to all active users when target=all', function () {
 
     $response = $this->actingAs($sa)
         ->postJson('/api/v1/admin/notifications/broadcast', [
-            'title'   => 'Pengumuman',
+            'title' => 'Pengumuman',
             'message' => 'Body.',
-            'target'  => 'all',
+            'target' => 'all',
         ]);
 
     $response->assertOk();
@@ -83,14 +83,14 @@ it('dispatches only to users with target role when target=role:student', functio
 
     $sa = createUserWithRole('superadmin');
     $alice = createUserWithRole('student');
-    $bob   = createUserWithRole('student');
+    $bob = createUserWithRole('student');
     $dosen = createUserWithRole('dosen');
 
     $this->actingAs($sa)
         ->postJson('/api/v1/admin/notifications/broadcast', [
-            'title'   => 'T',
+            'title' => 'T',
             'message' => 'M',
-            'target'  => 'role:student',
+            'target' => 'role:student',
         ])
         ->assertOk();
 
@@ -109,7 +109,7 @@ it('dispatches to fakultas members when target=fakultas:{id}', function () {
     // A student whose Mahasiswa.fakultas_id matches
     $student = createUserWithRole('student');
     Mahasiswa::factory()->create([
-        'user_id'     => $student->id,
+        'user_id' => $student->id,
         'fakultas_id' => $fakultas->id,
     ]);
 
@@ -117,15 +117,15 @@ it('dispatches to fakultas members when target=fakultas:{id}', function () {
     $otherFakultas = Fakultas::factory()->create();
     $otherStudent = createUserWithRole('student');
     Mahasiswa::factory()->create([
-        'user_id'     => $otherStudent->id,
+        'user_id' => $otherStudent->id,
         'fakultas_id' => $otherFakultas->id,
     ]);
 
     $this->actingAs($sa)
         ->postJson('/api/v1/admin/notifications/broadcast', [
-            'title'   => 'T',
+            'title' => 'T',
             'message' => 'M',
-            'target'  => 'fakultas:' . $fakultas->id,
+            'target' => 'fakultas:'.$fakultas->id,
         ])
         ->assertOk();
 
@@ -143,9 +143,9 @@ it('dispatches to specific user_ids', function () {
 
     $this->actingAs($sa)
         ->postJson('/api/v1/admin/notifications/broadcast', [
-            'title'    => 'T',
-            'message'  => 'M',
-            'target'   => 'user_ids',
+            'title' => 'T',
+            'message' => 'M',
+            'target' => 'user_ids',
             'user_ids' => [$u1->id, $u3->id],
         ])
         ->assertOk();
@@ -160,9 +160,9 @@ it('rejects user_ids target with empty array', function () {
 
     $this->actingAs($sa)
         ->postJson('/api/v1/admin/notifications/broadcast', [
-            'title'    => 'T',
-            'message'  => 'M',
-            'target'   => 'user_ids',
+            'title' => 'T',
+            'message' => 'M',
+            'target' => 'user_ids',
             'user_ids' => [],
         ])
         ->assertStatus(400);
@@ -176,9 +176,9 @@ it('returns helpful error when no recipients match', function () {
     // No users with a 'nonexistent_role' role — should trigger "no recipients"
     $response = $this->actingAs($sa)
         ->postJson('/api/v1/admin/notifications/broadcast', [
-            'title'   => 'T',
+            'title' => 'T',
             'message' => 'M',
-            'target'  => 'role:nonexistent_role',
+            'target' => 'role:nonexistent_role',
         ]);
 
     $response->assertStatus(400);
@@ -196,9 +196,9 @@ it('reports total_sent in success response', function () {
     // Use user_ids so the count isn't polluted by seeded users.
     $response = $this->actingAs($sa)
         ->postJson('/api/v1/admin/notifications/broadcast', [
-            'title'    => 'T',
-            'message'  => 'M',
-            'target'   => 'user_ids',
+            'title' => 'T',
+            'message' => 'M',
+            'target' => 'user_ids',
             'user_ids' => [$u1->id, $u2->id],
         ]);
 

@@ -11,7 +11,9 @@ use App\Models\KKN\Fakultas;
 use App\Models\KKN\Mahasiswa;
 use App\Models\User;
 use App\Models\WebhookEvent;
+use App\Services\MasterApi\SiakadRecordFilter;
 use App\Services\StudentSyncService;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -60,7 +62,7 @@ class WebhookController extends Controller
                     'event' => $event,
                     'state' => WebhookEvent::STATE_PROCESSING,
                 ]);
-            } catch (\Illuminate\Database\UniqueConstraintViolationException $e) {
+            } catch (UniqueConstraintViolationException $e) {
                 // R-010 fix: concurrent delivery raced us to the insert. Treat
                 // it as an existing row so we emit the correct 200/503 response
                 // instead of bubbling a 500.
@@ -76,6 +78,7 @@ class WebhookController extends Controller
                 Log::info('Webhook duplicate ignored (already processed)', [
                     'webhook_id' => $webhookId, 'event' => $event,
                 ]);
+
                 return response()->json(['status' => 'duplicate_ignored', 'webhook_id' => $webhookId]);
             }
 
@@ -85,6 +88,7 @@ class WebhookController extends Controller
                 Log::info('Webhook retry arrived mid-processing', [
                     'webhook_id' => $webhookId, 'event' => $event,
                 ]);
+
                 return response()
                     ->json(['status' => 'processing', 'webhook_id' => $webhookId], 503)
                     ->header('Retry-After', '30');
@@ -191,13 +195,14 @@ class WebhookController extends Controller
 
         // Pre-DB filter (config/siakad_filters.php) — delete events still go
         // through so we can deactivate rows that later become ineligible.
-        $decision = app(\App\Services\MasterApi\SiakadRecordFilter::class)->shouldSyncLecturer($data);
-        if ($decision['action'] !== \App\Services\MasterApi\SiakadRecordFilter::SYNC) {
+        $decision = app(SiakadRecordFilter::class)->shouldSyncLecturer($data);
+        if ($decision['action'] !== SiakadRecordFilter::SYNC) {
             Log::info('SIAKAD dosen webhook filtered out', [
                 'nip' => $data['nip'],
                 'reason' => $decision['reason'],
                 'detail' => $decision['details'],
             ]);
+
             return;
         }
 

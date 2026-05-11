@@ -116,6 +116,7 @@ class PiiEncryptTable extends Command
                             if ($apply) {
                                 DB::table($table)->where('id', $row->id)->update([$field => null]);
                             }
+
                             continue;
                         }
 

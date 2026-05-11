@@ -46,7 +46,7 @@ return new class extends Migration
                 // Drop prior FK (if any), widen to nullable, then re-add with nullOnDelete.
                 try {
                     $t->dropForeign(['sender_id']);
-                } catch (\Throwable) {
+                } catch (Throwable) {
                     // no prior FK — ok
                 }
                 $t->foreignId('sender_id')->nullable()->change();
@@ -87,7 +87,7 @@ return new class extends Migration
             Schema::table('chat_messages', function (Blueprint $t): void {
                 try {
                     $t->dropForeign(['sender_id']);
-                } catch (\Throwable) {
+                } catch (Throwable) {
                 }
                 // Revert to NOT NULL + cascadeOnDelete to match the original migration.
                 $t->foreignId('sender_id')->nullable(false)->change();
@@ -99,7 +99,7 @@ return new class extends Migration
             Schema::table('dispensasi_kkn', function (Blueprint $t): void {
                 try {
                     $t->dropForeign(['granted_by']);
-                } catch (\Throwable) {
+                } catch (Throwable) {
                 }
             });
         }

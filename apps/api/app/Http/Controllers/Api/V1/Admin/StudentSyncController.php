@@ -21,9 +21,9 @@ class StudentSyncController extends Controller
     public function index(): JsonResponse
     {
         return $this->success([
-            'local_students'    => Mahasiswa::count(),
-            'with_master_link'  => Mahasiswa::whereNotNull('master_id')->count(),
-            'last_synced_at'    => Mahasiswa::whereNotNull('master_synced_at')->max('master_synced_at'),
+            'local_students' => Mahasiswa::count(),
+            'with_master_link' => Mahasiswa::whereNotNull('master_id')->count(),
+            'last_synced_at' => Mahasiswa::whereNotNull('master_synced_at')->max('master_synced_at'),
         ]);
     }
 
@@ -40,7 +40,7 @@ class StudentSyncController extends Controller
             ->values()
             ->all();
 
-        $isFullSync  = empty($nimList);
+        $isFullSync = empty($nimList);
         $isLargeSync = count($nimList) > 50;
 
         if ($isFullSync || $isLargeSync) {

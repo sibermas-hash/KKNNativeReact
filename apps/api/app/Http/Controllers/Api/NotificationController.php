@@ -7,12 +7,14 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\DeviceToken;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class NotificationController extends Controller
 {
     use ApiResponse;
+
     /**
      * GET /notifications
      *
@@ -26,12 +28,12 @@ class NotificationController extends Controller
     public function index(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'status'    => ['nullable', 'in:all,read,unread'],
-            'priority'  => ['nullable', 'in:info,success,warning,danger'],
-            'type'      => ['nullable', 'string', 'max:50'],
+            'status' => ['nullable', 'in:all,read,unread'],
+            'priority' => ['nullable', 'in:info,success,warning,danger'],
+            'type' => ['nullable', 'string', 'max:50'],
             'date_from' => ['nullable', 'date'],
-            'date_to'   => ['nullable', 'date'],
-            'per_page'  => ['nullable', 'integer', 'min:10', 'max:50'],
+            'date_to' => ['nullable', 'date'],
+            'per_page' => ['nullable', 'integer', 'min:10', 'max:50'],
         ]);
 
         $perPage = (int) ($validated['per_page'] ?? 20);
@@ -53,10 +55,10 @@ class NotificationController extends Controller
 
         if (! empty($validated['priority'])) {
             // Exact match on the quoted string value in the serialized JSON.
-            $query->where('data', 'LIKE', '%"priority":"' . $validated['priority'] . '"%');
+            $query->where('data', 'LIKE', '%"priority":"'.$validated['priority'].'"%');
         }
         if (! empty($validated['type'])) {
-            $needle = '%"type":"' . str_replace('%', '\\%', $validated['type']) . '%';
+            $needle = '%"type":"'.str_replace('%', '\\%', $validated['type']).'%';
             // Partial match on type — case-insensitive where supported.
             $query->where('data', $ciOp, $needle);
         }
@@ -64,33 +66,33 @@ class NotificationController extends Controller
             $query->where('created_at', '>=', $validated['date_from']);
         }
         if (! empty($validated['date_to'])) {
-            $query->where('created_at', '<=', \Carbon\Carbon::parse($validated['date_to'])->endOfDay());
+            $query->where('created_at', '<=', Carbon::parse($validated['date_to'])->endOfDay());
         }
 
         $paginator = $query->paginate($perPage);
 
         $notifications = $paginator->getCollection()->map(fn ($n) => [
-            'id'         => $n->id,
-            'type'       => $n->data['type'] ?? 'info',
-            'title'      => $n->data['title'] ?? 'Notification',
-            'message'    => $n->data['message'] ?? '',
-            'action'     => $n->data['action'] ?? null,
-            'icon'       => $n->data['icon'] ?? 'bell',
-            'priority'   => $n->data['priority'] ?? 'info',
-            'read_at'    => $n->read_at?->toIso8601String(),
-            'is_read'    => $n->read_at !== null,
+            'id' => $n->id,
+            'type' => $n->data['type'] ?? 'info',
+            'title' => $n->data['title'] ?? 'Notification',
+            'message' => $n->data['message'] ?? '',
+            'action' => $n->data['action'] ?? null,
+            'icon' => $n->data['icon'] ?? 'bell',
+            'priority' => $n->data['priority'] ?? 'info',
+            'read_at' => $n->read_at?->toIso8601String(),
+            'is_read' => $n->read_at !== null,
             'created_at_human' => $n->created_at->diffForHumans(),
             'created_at' => $n->created_at->toIso8601String(),
         ]);
 
         return $this->success([
             'notifications' => $notifications,
-            'unread_count'  => $request->user()->unreadNotifications()->count(),
+            'unread_count' => $request->user()->unreadNotifications()->count(),
             'meta' => [
                 'current_page' => $paginator->currentPage(),
-                'last_page'    => $paginator->lastPage(),
-                'per_page'     => $paginator->perPage(),
-                'total'        => $paginator->total(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
             ],
         ]);
     }

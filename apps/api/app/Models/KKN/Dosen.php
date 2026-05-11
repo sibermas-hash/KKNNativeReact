@@ -16,11 +16,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Dosen extends Model
 {
     // R13-DB-001: soft-delete enabled (migration 2026_05_11_060000 adds the column).
-    use SoftDeletes, \App\Traits\HasManuallyEditedFields, \App\Traits\HasBlindIndex;
+    use \App\Traits\HasBlindIndex, \App\Traits\HasManuallyEditedFields, SoftDeletes;
 
     protected $table = 'dosen';
 
-protected $fillable = [
+    protected $fillable = [
         'user_id',
         'nip',
         'nip_bidx',

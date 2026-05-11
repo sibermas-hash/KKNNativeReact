@@ -14,6 +14,7 @@ use App\Models\KKN\NilaiKkn;
 use App\Services\KKN\GradeConversionService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class GradingService
 {
@@ -100,7 +101,7 @@ class GradingService
                 return KonfigurasiPenilaian::getForType($kknType)->pluck('percentage', 'config_key');
             });
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('GradingService: failed to load KonfigurasiPenilaian, aborting grade calculation', [
+            Log::error('GradingService: failed to load KonfigurasiPenilaian, aborting grade calculation', [
                 'kkn_type' => $kknType->value,
                 'score_id' => $score->id,
                 'error' => $e->getMessage(),

@@ -23,8 +23,8 @@ return new class extends Migration
             DB::table('prodi')
                 ->whereNotExists(function ($q) {
                     $q->select(DB::raw(1))
-                      ->from('fakultas')
-                      ->whereColumn('fakultas.id', 'prodi.fakultas_id');
+                        ->from('fakultas')
+                        ->whereColumn('fakultas.id', 'prodi.fakultas_id');
                 })
                 ->update(['fakultas_id' => $defaultFacultyId]);
         }

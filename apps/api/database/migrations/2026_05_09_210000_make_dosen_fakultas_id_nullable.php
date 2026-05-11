@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -23,7 +24,7 @@ return new class extends Migration
         });
 
         // Postgres-safe ALTER — keeps the FK but relaxes NOT NULL.
-        \Illuminate\Support\Facades\DB::statement(
+        DB::statement(
             'ALTER TABLE dosen ALTER COLUMN fakultas_id DROP NOT NULL'
         );
     }
@@ -32,11 +33,11 @@ return new class extends Migration
     {
         // Backfill any NULLs with the first fakultas before reinstating NOT NULL,
         // otherwise the rollback would fail.
-        \Illuminate\Support\Facades\DB::statement(
+        DB::statement(
             'UPDATE dosen SET fakultas_id = (SELECT id FROM fakultas ORDER BY id ASC LIMIT 1) WHERE fakultas_id IS NULL'
         );
 
-        \Illuminate\Support\Facades\DB::statement(
+        DB::statement(
             'ALTER TABLE dosen ALTER COLUMN fakultas_id SET NOT NULL'
         );
     }

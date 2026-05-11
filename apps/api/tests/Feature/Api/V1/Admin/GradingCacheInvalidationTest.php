@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Cache;
  * Cache `grading_configs_{kkn_type}` harus di-invalidate saat admin update
  * bobot di KonfigurasiPenilaianController.
  */
-
 beforeEach(function () {
     $this->admin = createUserWithRole('superadmin');
     KonfigurasiPenilaian::ensureDefaults();

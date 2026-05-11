@@ -100,9 +100,10 @@ class StudentSyncService
         if ($decision['action'] !== SiakadRecordFilter::SYNC) {
             Log::info('SIAKAD student filtered out before DB write', [
                 'reason' => $decision['reason'],
-                'label'  => SiakadRecordFilter::reasonLabel($decision['reason'] ?? ''),
+                'label' => SiakadRecordFilter::reasonLabel($decision['reason'] ?? ''),
                 'detail' => $decision['details'],
             ]);
+
             return false;
         }
 
@@ -113,6 +114,7 @@ class StudentSyncService
         $existingMhs = Mahasiswa::whereBlind('nim', (string) $data['nim'])->first();
         if ($existingMhs && $existingMhs->hasEverBeenInKkn()) {
             Log::info('SIAKAD sync skipped — mahasiswa already in KKN', ['nim' => $data['nim']]);
+
             return false;
         }
 

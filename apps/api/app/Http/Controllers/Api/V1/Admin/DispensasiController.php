@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
+use App\Helpers\QueryHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\DispensasiKkn;
@@ -23,7 +24,7 @@ class DispensasiController extends Controller
                 // R13-SEC-007 + R13-SEC-010: use QueryHelper for consistency and drop
                 // the orWhere('alasan', 'ilike', ...) — `alasan` is encrypted-at-rest
                 // so LIKE on ciphertext never matches (dead code path).
-                $s = \App\Helpers\QueryHelper::escapeLike($search);
+                $s = QueryHelper::escapeLike($search);
                 $q->where('nim', 'ilike', "%{$s}%");
             })
             ->latest()
@@ -38,23 +39,23 @@ class DispensasiController extends Controller
 
         return $this->success([
             'dispensasi' => $dispensasi,
-            'izins'      => $izins,
-            'periods'    => $periods,
+            'izins' => $izins,
+            'periods' => $periods,
         ]);
     }
 
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'nim'                    => ['required', 'string', 'max:20'],
-            'periode_id'             => ['nullable', 'exists:periode,id'],
-            'alasan'                 => ['required', 'string', 'max:500'],
-            'bypassed_requirements'  => ['nullable', 'array'],
+            'nim' => ['required', 'string', 'max:20'],
+            'periode_id' => ['nullable', 'exists:periode,id'],
+            'alasan' => ['required', 'string', 'max:500'],
+            'bypassed_requirements' => ['nullable', 'array'],
             'bypassed_requirements.*' => ['string', 'in:min_sks,min_gpa,bta_ppi,documents,personal_status,program_prodi'],
         ]);
 
         $validated['granted_by'] = auth()->id();
-        $validated['is_active']  = true;
+        $validated['is_active'] = true;
 
         $dispensasi = DispensasiKkn::create($validated);
 

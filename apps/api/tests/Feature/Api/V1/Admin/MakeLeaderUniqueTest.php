@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\DB;
  * ketua existing di kelompok yang sama. Plus verifikasi partial unique index
  * di PostgreSQL.
  */
-
 beforeEach(function () {
     // Use superadmin: permission map mendefinisikan 'view-participants' untuk
     // PesertaKknController, tapi PermissionSeeder belum memiliki permission
@@ -142,7 +141,7 @@ it('postgresql partial unique index prevents manual duplicate Ketua', function (
             [$this->memberB->id]
         );
         expect(true)->toBeFalse('Expected unique violation');
-    } catch (\Throwable $e) {
+    } catch (Throwable $e) {
         expect($e->getMessage())->toContain('peserta_kkn_kelompok_ketua_unique');
     }
 });

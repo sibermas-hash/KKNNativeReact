@@ -19,6 +19,7 @@ class DownloadController extends Controller
     public function index(Request $request): JsonResponse
     {
         $downloads = Download::orderByDesc('created_at')->paginate($request->input('per_page', 25));
+
         return $this->successCollection(DownloadResource::collection($downloads));
     }
 
@@ -61,13 +62,17 @@ class DownloadController extends Controller
     public function update(Request $request, Download $download): JsonResponse
     {
         $download->update($request->validate(['title' => ['sometimes', 'string', 'max:255'], 'external_url' => ['nullable', 'url'], 'is_active' => ['nullable', 'boolean']]));
+
         return $this->success(new DownloadResource($download->refresh()), 'Unduhan berhasil diperbarui.');
     }
 
     public function destroy(Download $download): JsonResponse
     {
-        if ($download->file_path) Storage::disk(config('filesystems.default'))->delete($download->file_path);
+        if ($download->file_path) {
+            Storage::disk(config('filesystems.default'))->delete($download->file_path);
+        }
         $download->delete();
+
         return $this->noContent('Unduhan berhasil dihapus.');
     }
 }

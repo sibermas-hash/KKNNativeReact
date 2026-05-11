@@ -14,6 +14,8 @@ use App\Models\KKN\SystemSetting;
 use App\Models\Master\Dosen as MasterLecturer;
 use App\Models\Master\Mahasiswa as MasterStudent;
 use App\Models\User;
+use App\Services\MasterApi\MasterDataSanitizer;
+use App\Services\MasterApi\SiakadRecordFilter;
 use App\Services\MasterApiService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -157,20 +159,20 @@ class SyncMasterData extends Command
         ];
         $errorDetails = [];
         $now = now();
-        $this->info("Fetched " . count($orgs) . " organizations from API.");
+        $this->info('Fetched '.count($orgs).' organizations from API.');
         if (count($orgs) > 0) {
-            $this->info("Sample data: " . json_encode($orgs[0]));
+            $this->info('Sample data: '.json_encode($orgs[0]));
         }
 
         foreach ($orgs as $orgData) {
             try {
                 $name = trim((string) ($orgData['name'] ?? $orgData['nama'] ?? ''));
                 $apiId = $this->normalizeMasterId($orgData['id'] ?? null);
-                
+
                 // Use short_name as the primary code (most consistent field from API)
                 // Fallback to code field, then to id field
                 $shortName = trim((string) ($orgData['short_name'] ?? ''));
-                $code = !empty($shortName) ? $shortName : trim((string) ($orgData['code'] ?? $apiId ?? ''));
+                $code = ! empty($shortName) ? $shortName : trim((string) ($orgData['code'] ?? $apiId ?? ''));
 
                 if ($name === '' || $code === '') {
                     $stats['total_skipped']++;
@@ -181,11 +183,11 @@ class SyncMasterData extends Command
                 // Sync ALL organizations from the API as fakultas.
                 // Use 'api_id' as the master_id and 'code' as the unique key.
                 $normalizedMasterId = $apiId ?? $code;
-                
+
                 // Check if faculty with same name already exists to handle API inconsistencies
                 // The API may return same faculty with different IDs but same name
                 $existingFaculty = Fakultas::where('nama', $name)->where('deleted_at', null)->first();
-                
+
                 if ($existingFaculty) {
                     // Faculty exists - update it with the most consistent data
                     $existingFaculty->update([
@@ -299,8 +301,9 @@ class SyncMasterData extends Command
                     Log::info('Skipping non-KKN-eligible program', [
                         'name' => $name,
                         'jenjang' => $jenjang,
-                        'reason' => 'Only S1 programs eligible for KKN'
+                        'reason' => 'Only S1 programs eligible for KKN',
                     ]);
+
                     continue;
                 }
 
@@ -428,7 +431,7 @@ class SyncMasterData extends Command
                         'has_organization_id' => ! empty($empData['organization_id'] ?? null),
                         'has_email' => ! empty($empData['email'] ?? null),
                     ]);
-                    $this->info('  First dosen raw keys: ' . implode(', ', array_keys($empData)));
+                    $this->info('  First dosen raw keys: '.implode(', ', array_keys($empData)));
                 }
 
                 if (! $nip) {
@@ -438,14 +441,15 @@ class SyncMasterData extends Command
                 }
 
                 // Pre-DB filter for lecturers (config/siakad_filters.php).
-                $decision = app(\App\Services\MasterApi\SiakadRecordFilter::class)->shouldSyncLecturer($empData);
-                if ($decision['action'] !== \App\Services\MasterApi\SiakadRecordFilter::SYNC) {
+                $decision = app(SiakadRecordFilter::class)->shouldSyncLecturer($empData);
+                if ($decision['action'] !== SiakadRecordFilter::SYNC) {
                     $stats['total_skipped']++;
                     Log::info('SIAKAD lecturer filtered out before DB write', [
                         'nip' => $nip,
                         'reason' => $decision['reason'],
                         'detail' => $decision['details'],
                     ]);
+
                     continue;
                 }
 
@@ -666,15 +670,15 @@ class SyncMasterData extends Command
         $now = now();
         $prodiMap = Prodi::pluck('id', 'master_id')->all();
 
-        $this->info("Starting to process " . (is_countable($students) ? count($students) : "generator") . " students...");
+        $this->info('Starting to process '.(is_countable($students) ? count($students) : 'generator').' students...');
         $processedCount = 0;
 
         foreach ($students as $stud) {
             $stats['total_fetched']++;
             $processedCount++;
-            
+
             if ($processedCount <= 1) {
-                $this->info("First student raw data: " . json_encode($stud));
+                $this->info('First student raw data: '.json_encode($stud));
             }
 
             try {
@@ -704,7 +708,7 @@ class SyncMasterData extends Command
                         'has_nim' => ! empty($studData['nim'] ?? null),
                         'has_prodi_id' => ! empty($studData['prodi_id'] ?? null),
                     ]);
-                    $this->info('  First mahasiswa raw keys: ' . implode(', ', array_keys($studData)));
+                    $this->info('  First mahasiswa raw keys: '.implode(', ', array_keys($studData)));
                 }
 
                 if (! $nim) {
@@ -714,14 +718,15 @@ class SyncMasterData extends Command
                 }
 
                 // Pre-DB filter for students (config/siakad_filters.php).
-                $decision = app(\App\Services\MasterApi\SiakadRecordFilter::class)->shouldSyncStudent($studData);
-                if ($decision['action'] !== \App\Services\MasterApi\SiakadRecordFilter::SYNC) {
+                $decision = app(SiakadRecordFilter::class)->shouldSyncStudent($studData);
+                if ($decision['action'] !== SiakadRecordFilter::SYNC) {
                     $stats['total_skipped']++;
                     Log::info('SIAKAD mahasiswa filtered out before DB write', [
                         'nim' => $nim,
                         'reason' => $decision['reason'],
                         'detail' => $decision['details'],
                     ]);
+
                     continue;
                 }
 
@@ -732,6 +737,7 @@ class SyncMasterData extends Command
                 if ($existingMhs && $existingMhs->hasEverBeenInKkn()) {
                     $stats['total_skipped']++;
                     Log::info('SIAKAD mahasiswa sync skipped — already in KKN', ['nim' => $nim]);
+
                     continue;
                 }
 
@@ -741,7 +747,7 @@ class SyncMasterData extends Command
                     $prodiId = $programMasterId !== null ? ($prodiMap[$programMasterId] ?? null) : null;
 
                     if ($stats['total_fetched'] <= 1) {
-                        Log::debug("Processing first student", [
+                        Log::debug('Processing first student', [
                             'nim' => $nim,
                             'prodi_id_from_api' => $programMasterId,
                             'prodi_id_mapped' => $prodiId,
@@ -762,6 +768,7 @@ class SyncMasterData extends Command
                                 'prodi_master_id' => $programMasterId,
                             ]);
                             $stats['total_skipped']++;
+
                             return;
                         }
 
@@ -776,9 +783,10 @@ class SyncMasterData extends Command
                             'nama' => $studData['nama'] ?? 'Unknown',
                             'prodi' => $prodiRecord->nama,
                             'jenjang' => $prodiRecord->jenjang,
-                            'reason' => 'Only S1 students eligible for KKN'
+                            'reason' => 'Only S1 students eligible for KKN',
                         ]);
                         $stats['total_skipped']++;
+
                         return; // Skip this transaction
                     }
 
@@ -834,7 +842,7 @@ class SyncMasterData extends Command
                         'master_id' => (string) $studData['id'],
                         'user_id' => $user->id,
                         'nim' => $nim,
-                        'nik' => \App\Services\MasterApi\MasterDataSanitizer::nik($studData['nik'] ?? null, $nim),
+                        'nik' => MasterDataSanitizer::nik($studData['nik'] ?? null, $nim),
                         'nama' => $studData['nama'] ?? $studData['name'] ?? 'Unknown',
                         'mother_name' => $studData['nama_ibu'] ?? $studData['mother_name'] ?? null,
                         'fakultas_id' => $facultyId,
@@ -847,7 +855,7 @@ class SyncMasterData extends Command
                         'phone' => $studData['phone'] ?? $studData['telepon'] ?? null,
 
                         'sks_completed' => (int) ($studData['total_sks'] ?? $studData['sks_lulus'] ?? $studData['sks_completed'] ?? 0),
-                        'gpa' => \App\Services\MasterApi\MasterDataSanitizer::gpa($studData['ipk'] ?? $studData['gpa'] ?? null, $nim),
+                        'gpa' => MasterDataSanitizer::gpa($studData['ipk'] ?? $studData['gpa'] ?? null, $nim),
 
                         'status_bta_ppi' => $studData['status_bta_ppi'] ?? 'BELUM_LULUS',
                         'status_aktif' => $studData['status_aktif'] ?? null,
@@ -865,7 +873,7 @@ class SyncMasterData extends Command
                         ['nim' => $nim],
                         $mahasiswaPayload
                     );
-                    
+
                     if ($mahasiswa->wasRecentlyCreated) {
                         $stats['total_created']++;
                     } else {
@@ -977,7 +985,7 @@ class SyncMasterData extends Command
         $cleanName = Str::upper((string) Str::of($programName)->ascii()->replaceMatches('/[^A-Za-z0-9]/', '')->substr(0, 10));
 
         if ($cleanName === '' || $cleanName === 'UNKNOWNPRO') {
-            return $masterId ? 'PR-' . $masterId : 'PRODI-' . Str::random(4);
+            return $masterId ? 'PR-'.$masterId : 'PRODI-'.Str::random(4);
         }
 
         return $cleanName;
@@ -1013,14 +1021,14 @@ class SyncMasterData extends Command
         // Programs that are NOT eligible for KKN
         $nonEligibleJenjangs = ['S2', 'S3', 'Magister', 'Doktor', 'Pasca', 'Pascasarjana'];
         $jenjang = trim(strtoupper($jenjang));
-        
+
         // Check if jenjang is in non-eligible list
         foreach ($nonEligibleJenjangs as $nonEligible) {
             if (str_contains($jenjang, strtoupper($nonEligible))) {
                 return true;
             }
         }
-        
+
         return false;
     }
 }

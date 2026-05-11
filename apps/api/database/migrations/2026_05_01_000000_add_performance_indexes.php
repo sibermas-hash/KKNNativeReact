@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -134,28 +135,33 @@ return new class extends Migration
     private function indexExists(string $table, string $column): bool
     {
         try {
-            $driver = \Illuminate\Support\Facades\DB::getDriverName();
+            $driver = DB::getDriverName();
             if ($driver === 'sqlite') {
-                $indexes = \Illuminate\Support\Facades\DB::select("PRAGMA index_list({$table})");
+                $indexes = DB::select("PRAGMA index_list({$table})");
                 foreach ($indexes as $index) {
-                    $info = \Illuminate\Support\Facades\DB::select("PRAGMA index_info({$index->name})");
+                    $info = DB::select("PRAGMA index_info({$index->name})");
                     foreach ($info as $col) {
-                        if ($col->name === $column) return true;
+                        if ($col->name === $column) {
+                            return true;
+                        }
                     }
                 }
+
                 return false;
             }
             if ($driver === 'pgsql') {
-                $result = \Illuminate\Support\Facades\DB::select(
-                    "SELECT 1 FROM pg_indexes WHERE tablename = ? AND indexdef LIKE ? LIMIT 1",
+                $result = DB::select(
+                    'SELECT 1 FROM pg_indexes WHERE tablename = ? AND indexdef LIKE ? LIMIT 1',
                     [$table, "%({$column})%"]
                 );
+
                 return count($result) > 0;
             }
             // MySQL fallback
-            $indexes = \Illuminate\Support\Facades\DB::select("SHOW INDEX FROM {$table} WHERE Column_name = ?", [$column]);
+            $indexes = DB::select("SHOW INDEX FROM {$table} WHERE Column_name = ?", [$column]);
+
             return count($indexes) > 0;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return false;
         }
     }

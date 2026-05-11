@@ -42,7 +42,7 @@ class UsersReportCommand extends Command
 
         $unrotatedPasswords = User::where(function ($q) {
             $q->where('must_change_password', true)
-              ->orWhereNull('password_changed_at');
+                ->orWhereNull('password_changed_at');
         })->count();
 
         $roles = Role::withCount('users')->get()
@@ -74,7 +74,7 @@ class UsersReportCommand extends Command
                 'active' => $activeUsers,
                 'inactive' => $inactiveUsers,
                 'unrotated_passwords' => $unrotatedPasswords,
-                'stale_users_last_' . $staleDays . '_days' => $staleUsers,
+                'stale_users_last_'.$staleDays.'_days' => $staleUsers,
             ],
             'roles' => $roles,
             'mahasiswa' => [
@@ -92,10 +92,12 @@ class UsersReportCommand extends Command
 
         if ($this->option('json')) {
             $this->line(json_encode($report, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+
             return self::SUCCESS;
         }
 
         $this->renderHuman($report, $staleDays);
+
         return self::SUCCESS;
     }
 
@@ -118,7 +120,7 @@ class UsersReportCommand extends Command
             $this->line('  Unrotated defaults: 0');
         }
 
-        $staleKey = 'stale_users_last_' . $staleDays . '_days';
+        $staleKey = 'stale_users_last_'.$staleDays.'_days';
         if ($totals[$staleKey] > 0) {
             $this->warn(sprintf("  Stale > {$staleDays}d     : %d   ← no updated_at change in {$staleDays}d", $totals[$staleKey]));
         }
@@ -133,21 +135,26 @@ class UsersReportCommand extends Command
         $m = $report['mahasiswa'];
         $this->info('  Mahasiswa');
         $this->line(sprintf('    total                    : <options=bold>%d</>', $m['total']));
-        if ($m['missing_nik'] > 0)
+        if ($m['missing_nik'] > 0) {
             $this->warn(sprintf('    missing NIK              : %d', $m['missing_nik']));
-        if ($m['missing_email'] > 0)
+        }
+        if ($m['missing_email'] > 0) {
             $this->warn(sprintf('    missing email (user)     : %d', $m['missing_email']));
-        if ($m['never_synced_from_siakad'] > 0)
+        }
+        if ($m['never_synced_from_siakad'] > 0) {
             $this->warn(sprintf('    never synced from SIAKAD : %d', $m['never_synced_from_siakad']));
+        }
 
         $d = $report['dosen'];
         $this->line('');
         $this->info('  Dosen');
         $this->line(sprintf('    total                    : <options=bold>%d</>', $d['total']));
-        if ($d['missing_email'] > 0)
+        if ($d['missing_email'] > 0) {
             $this->warn(sprintf('    missing email (user)     : %d', $d['missing_email']));
-        if ($d['never_synced_from_siakad'] > 0)
+        }
+        if ($d['never_synced_from_siakad'] > 0) {
             $this->warn(sprintf('    never synced from SIAKAD : %d', $d['never_synced_from_siakad']));
+        }
 
         $this->line('');
     }

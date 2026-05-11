@@ -1,8 +1,5 @@
 <?php
 
-use App\Models\KKN\Dosen;
-use App\Models\User;
-
 describe('API Response Envelope (E2E)', function () {
 
     it('all successful admin responses have success=true and data key', function () {

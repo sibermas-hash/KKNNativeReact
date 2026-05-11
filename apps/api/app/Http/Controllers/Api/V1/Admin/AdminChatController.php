@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\DB;
 class AdminChatController extends Controller
 {
     use ApiResponse;
+
     /**
      * GET /admin/chat — daftar semua percakapan dengan filter
      */
@@ -59,6 +60,7 @@ class AdminChatController extends Controller
 
         $conversations->getCollection()->transform(function (ChatConversation $c) {
             $lastMsg = $c->messages->first(); // eager-loaded via with() — no query
+
             return [
                 'id' => $c->id,
                 'subject' => $c->subject,
@@ -118,7 +120,7 @@ class AdminChatController extends Controller
                     'is_admin' => $m->sender_id !== $conversation->user_id,
                 ],
                 'body' => $m->body,
-                'attachment_url' => $m->attachment_path ? asset('storage/' . $m->attachment_path) : null,
+                'attachment_url' => $m->attachment_path ? asset('storage/'.$m->attachment_path) : null,
                 'attachment_name' => $m->attachment_name,
                 'is_read' => $m->is_read,
                 'created_at' => $m->created_at?->toIso8601String(),

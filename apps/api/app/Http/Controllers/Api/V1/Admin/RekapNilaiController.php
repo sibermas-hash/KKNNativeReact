@@ -4,12 +4,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
+use App\Exports\RekapNilaiExport;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\NilaiKknResource;
 use App\Http\Traits\ApiResponse;
+use App\Jobs\GenerateMassCertificatesJob;
+use App\Models\KKN\BimbinganSession;
 use App\Models\KKN\NilaiKkn;
+use App\Models\KKN\Periode;
+use App\Services\CertificateService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class RekapNilaiController extends Controller
 {
@@ -18,6 +24,7 @@ class RekapNilaiController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = NilaiKkn::with(['user', 'kelompok.periode'])->when($request->input('periode_id'), fn ($q, $id) => $q->whereHas('kelompok', fn ($q2) => $q2->where('periode_id', $id)))->when($request->input('kelompok_id'), fn ($q, $id) => $q->where('kelompok_id', $id))->orderByDesc('created_at');
+
         return $this->successCollection(NilaiKknResource::collection($query->paginate(25)));
     }
 
@@ -31,6 +38,7 @@ class RekapNilaiController extends Controller
         }
 
         $score->update(['is_finalized' => true, 'admin_graded_by' => auth()->id(), 'admin_graded_at' => now()]);
+
         return $this->success(new NilaiKknResource($score->refresh()), 'Nilai berhasil difinalisasi.');
     }
 
@@ -60,6 +68,7 @@ class RekapNilaiController extends Controller
                         'id' => $score->id,
                         'reason' => 'Bimbingan minimum belum terpenuhi',
                     ];
+
                     continue;
                 }
             }
@@ -69,7 +78,7 @@ class RekapNilaiController extends Controller
 
         return $this->success(
             ['finalized_count' => $finalized, 'skipped_count' => count($skipped), 'skipped' => $skipped],
-            "{$finalized} nilai berhasil difinalisasi." . (count($skipped) ? ' ' . count($skipped) . ' dilewati (bimbingan kurang).' : ''),
+            "{$finalized} nilai berhasil difinalisasi.".(count($skipped) ? ' '.count($skipped).' dilewati (bimbingan kurang).' : ''),
         );
     }
 
@@ -84,11 +93,11 @@ class RekapNilaiController extends Controller
             return null; // no kelompok → grading scenario edge, skip guard
         }
 
-        $completedCount = \App\Models\KKN\BimbinganSession::where('kelompok_id', $kelompokId)
+        $completedCount = BimbinganSession::where('kelompok_id', $kelompokId)
             ->where('status', 'completed')
             ->count();
 
-        $required = \App\Models\KKN\BimbinganSession::MIN_SESSIONS_REQUIRED;
+        $required = BimbinganSession::MIN_SESSIONS_REQUIRED;
 
         if ($completedCount < $required) {
             return $this->error(
@@ -111,11 +120,11 @@ class RekapNilaiController extends Controller
             ->orderBy('created_at')
             ->get();
 
-        $periode = $periodeId ? \App\Models\KKN\Periode::find($periodeId) : null;
+        $periode = $periodeId ? Periode::find($periodeId) : null;
 
-        return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\RekapNilaiExport($scores, $periode),
-            'Rekap_Nilai_KKN_' . now()->format('Ymd') . '.xlsx'
+        return Excel::download(
+            new RekapNilaiExport($scores, $periode),
+            'Rekap_Nilai_KKN_'.now()->format('Ymd').'.xlsx'
         );
     }
 
@@ -134,8 +143,8 @@ class RekapNilaiController extends Controller
         $progress = $total > 0 ? round(($withCert / $total) * 100, 1) : 0;
 
         return $this->success([
-            'total'        => $total,
-            'with_cert'    => $withCert,
+            'total' => $total,
+            'with_cert' => $withCert,
             'progress_pct' => $progress,
         ]);
     }
@@ -144,7 +153,7 @@ class RekapNilaiController extends Controller
     {
         abort_unless($score->is_finalized, 422, 'Nilai belum difinalisasi. Sertifikat belum dapat diterbitkan.');
 
-        return app(\App\Services\CertificateService::class)->generateWordForStudent($score);
+        return app(CertificateService::class)->generateWordForStudent($score);
     }
 
     /**
@@ -165,8 +174,8 @@ class RekapNilaiController extends Controller
             abort_if(! $groupIds->contains($score->kelompok_id), 403, 'Anda tidak memiliki akses ke sertifikat ini.');
         }
 
-        $pdf = app(\App\Services\CertificateService::class)->generateForStudent($score);
-        $name = 'Sertifikat_KKN_' . ($score->user?->name ?? $score->user_id) . '.pdf';
+        $pdf = app(CertificateService::class)->generateForStudent($score);
+        $name = 'Sertifikat_KKN_'.($score->user?->name ?? $score->user_id).'.pdf';
 
         return $pdf->download($name);
     }
@@ -190,14 +199,14 @@ class RekapNilaiController extends Controller
 
         abort_if($scores->isEmpty(), 404, 'Tidak ada sertifikat yang sudah difinalisasi.');
 
-        return app(\App\Services\CertificateService::class)->generateZip($scores);
+        return app(CertificateService::class)->generateZip($scores);
     }
 
     public function previewCertificate(NilaiKkn $score)
     {
         abort_unless($score->is_finalized, 422, 'Nilai belum difinalisasi.');
 
-        return app(\App\Services\CertificateService::class)->preview($score);
+        return app(CertificateService::class)->preview($score);
     }
 
     /**
@@ -217,7 +226,7 @@ class RekapNilaiController extends Controller
 
         abort_if($scores->isEmpty(), 404, 'Tidak ada sertifikat yang sudah difinalisasi.');
 
-        return app(\App\Services\CertificateService::class)->generateZip($scores);
+        return app(CertificateService::class)->generateZip($scores);
     }
 
     public function getFinalizeProgress(Request $request): JsonResponse
@@ -232,9 +241,9 @@ class RekapNilaiController extends Controller
             ->count();
 
         return $this->success([
-            'total'      => $total,
-            'finalized'  => $finalized,
-            'remaining'  => $total - $finalized,
+            'total' => $total,
+            'finalized' => $finalized,
+            'remaining' => $total - $finalized,
             'percentage' => $total > 0 ? round(($finalized / $total) * 100, 1) : 0,
         ]);
     }
@@ -263,7 +272,7 @@ class RekapNilaiController extends Controller
             return $this->error('VALIDATION_ERROR', 'Tidak ada nilai yang sudah difinalisasi.', 422);
         }
 
-        \App\Jobs\GenerateMassCertificatesJob::dispatch(
+        GenerateMassCertificatesJob::dispatch(
             (int) $validated['periode_id'],
             ['ids' => $validated['ids'] ?? []],
             auth()->id()
@@ -286,12 +295,12 @@ class RekapNilaiController extends Controller
             ->get();
 
         $periode = $periodeId
-            ? \App\Models\KKN\Periode::find($periodeId)
+            ? Periode::find($periodeId)
             : null;
 
-        return \Maatwebsite\Excel\Facades\Excel::download(
-            new \App\Exports\RekapNilaiExport($scores, $periode),
-            'Ledger_Nilai_KKN_' . now()->format('Ymd') . '.xlsx'
+        return Excel::download(
+            new RekapNilaiExport($scores, $periode),
+            'Ledger_Nilai_KKN_'.now()->format('Ymd').'.xlsx'
         );
     }
 }

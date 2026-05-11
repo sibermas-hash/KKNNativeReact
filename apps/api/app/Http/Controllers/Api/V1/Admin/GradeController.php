@@ -27,6 +27,7 @@ class GradeController extends Controller
         if ($user?->hasRole('faculty_admin') && $user->fakultas_id) {
             return (int) $user->fakultas_id;
         }
+
         return null;
     }
 

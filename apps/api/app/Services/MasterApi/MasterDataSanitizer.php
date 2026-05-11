@@ -38,6 +38,7 @@ class MasterDataSanitizer
                 'raw_gpa' => $raw,
                 'clamped_to' => max(0.0, min(4.0, $value)),
             ]);
+
             return max(0.0, min(4.0, $value));
         }
 
@@ -66,6 +67,7 @@ class MasterDataSanitizer
                 'raw_len' => strlen($value),
                 'raw_prefix' => substr($value, 0, 4).'…',
             ]);
+
             return null;
         }
 

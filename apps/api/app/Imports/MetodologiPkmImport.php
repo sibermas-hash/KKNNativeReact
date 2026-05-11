@@ -14,11 +14,17 @@ use Maatwebsite\Excel\Concerns\WithStartRow;
 class MetodologiPkmImport implements ToCollection, WithStartRow
 {
     public int $matchedCount = 0;
+
     public int $unmatchedCount = 0;
+
     public int $createdWorkshopCount = 0;
+
     public int $skippedCount = 0;
+
     public array $errors = [];
+
     public array $unmatchedDetails = [];
+
     public array $matchedDetails = [];
 
     private const THRESHOLD = 50;
@@ -37,6 +43,7 @@ class MetodologiPkmImport implements ToCollection, WithStartRow
 
             if (count($rowArray) < 6) {
                 $this->skippedCount++;
+
                 continue;
             }
 
@@ -45,6 +52,7 @@ class MetodologiPkmImport implements ToCollection, WithStartRow
 
             if (empty($no) || empty($nama)) {
                 $this->skippedCount++;
+
                 continue;
             }
 
@@ -56,12 +64,14 @@ class MetodologiPkmImport implements ToCollection, WithStartRow
 
             if ($tahun < 2020 || $tahun > 2030) {
                 $this->skippedCount++;
+
                 continue;
             }
 
             $workshop = $this->findOrCreateWorkshop($jenis_kegiatAN, $tahun);
             if (! $workshop) {
                 $this->errors[] = "Gagal membuat workshop untuk {$jenis_kegiatAN} {$tahun}";
+
                 continue;
             }
 
@@ -76,6 +86,7 @@ class MetodologiPkmImport implements ToCollection, WithStartRow
                     'jenis' => $jenis_kegiatAN,
                     'tahun' => $tahun,
                 ];
+
                 continue;
             }
 
@@ -83,6 +94,7 @@ class MetodologiPkmImport implements ToCollection, WithStartRow
             if ($dosen->has_workshop) {
                 $this->skippedCount++;
                 $this->errors[] = "{$nama} sudah pernah mengikuti workshop sebelumnya";
+
                 continue;
             }
 
@@ -161,6 +173,7 @@ class MetodologiPkmImport implements ToCollection, WithStartRow
         }
 
         $cache[$key] = $workshop;
+
         return $workshop;
     }
 

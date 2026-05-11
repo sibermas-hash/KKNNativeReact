@@ -15,6 +15,7 @@ use Illuminate\Console\Command;
 class TelegramAnomalyCheck extends Command
 {
     protected $signature = 'telegram:anomaly-check';
+
     protected $description = 'Deteksi anomali KKN dengan AI dan kirim alert ke Telegram';
 
     public function handle(TelegramAiService $service): int

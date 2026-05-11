@@ -37,9 +37,9 @@ class ProfileChangeRequestController extends Controller
             $user = $profileChangeRequest->user;
             $changes = $profileChangeRequest->requested_changes;
 
-            $userFields      = ['name', 'phone', 'address', 'address_village_name', 'address_district_name', 'address_regency_name', 'address_postal_code', 'address_lat', 'address_lng', 'address_registered_at', 'address_verified_at'];
+            $userFields = ['name', 'phone', 'address', 'address_village_name', 'address_district_name', 'address_regency_name', 'address_postal_code', 'address_lat', 'address_lng', 'address_registered_at', 'address_verified_at'];
             $mahasiswaFields = ['nik', 'mother_name', 'gender', 'shirt_size', 'birth_place', 'birth_date', 'nama'];
-            $dosenFields     = ['nama_gelar', 'nidn', 'dosen_nik', 'jabatan', 'kelas_jabatan', 'tugas_tambahan', 'golongan', 'pangkat', 'no_rekening', 'nama_bank', 'npwp', 'gender', 'birth_date', 'dosen_alamat', 'nama'];
+            $dosenFields = ['nama_gelar', 'nidn', 'dosen_nik', 'jabatan', 'kelas_jabatan', 'tugas_tambahan', 'golongan', 'pangkat', 'no_rekening', 'nama_bank', 'npwp', 'gender', 'birth_date', 'dosen_alamat', 'nama'];
 
             $userUpdate = [];
             $mahasiswaUpdate = [];
@@ -78,7 +78,7 @@ class ProfileChangeRequestController extends Controller
             }
 
             $profileChangeRequest->update([
-                'status'      => 'approved',
+                'status' => 'approved',
                 'reviewed_by' => $request->user()->id,
                 'reviewed_at' => now(),
             ]);
@@ -99,9 +99,9 @@ class ProfileChangeRequestController extends Controller
         ]);
 
         $profileChangeRequest->update([
-            'status'           => 'rejected',
-            'reviewed_by'      => $request->user()->id,
-            'reviewed_at'      => now(),
+            'status' => 'rejected',
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
             'rejection_reason' => $request->input('rejection_reason'),
         ]);
 

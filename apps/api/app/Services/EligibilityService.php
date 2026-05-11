@@ -401,8 +401,13 @@ class EligibilityService
 
         if ($failures === []) {
             $notices = [];
-            if ($jkkn->require_not_married) $notices[] = 'Belum Menikah';
-            if ($jkkn->require_parent_permission) $notices[] = 'Izin Orang Tua';
+            if ($jkkn->require_not_married) {
+                $notices[] = 'Belum Menikah';
+            }
+            if ($jkkn->require_parent_permission) {
+                $notices[] = 'Izin Orang Tua';
+            }
+
             return [
                 'passed' => true,
                 'key' => 'personal_status',

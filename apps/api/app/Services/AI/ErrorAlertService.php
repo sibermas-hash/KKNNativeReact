@@ -28,8 +28,11 @@ class ErrorAlertService
     use HasAiFailover;
 
     private const DEDUP_TTL_MINUTES = 15;
+
     private const DEDUP_PREFIX = 'error_alert:';
+
     private const MAX_ALERTS_PER_HOUR = 20;
+
     private const HOUR_COUNTER_KEY = 'error_alert:hour_count';
 
     public function __construct(
@@ -54,7 +57,7 @@ class ErrorAlertService
             'source' => 'Backend',
             'type' => class_basename($e),
             'message' => mb_substr($e->getMessage(), 0, 500),
-            'file' => str_replace(base_path() . '/', '', $e->getFile()) . ':' . $e->getLine(),
+            'file' => str_replace(base_path().'/', '', $e->getFile()).':'.$e->getLine(),
             'url' => $url,
             'user_id' => $userId,
             'trace_snippet' => $this->getTraceSnippet($e),
@@ -130,13 +133,13 @@ class ErrorAlertService
         };
 
         $message = "{$emoji} *ERROR — {$context['source']}*\n\n"
-            . "*Type:* `{$context['type']}`\n"
-            . "*Message:* _{$this->escapeMarkdown(mb_substr($context['message'], 0, 200))}_\n"
-            . "*File:* `{$context['file']}`\n"
-            . ($context['url'] ? "*URL:* `{$context['url']}`\n" : '')
-            . ($context['user_id'] ? "*User:* `{$context['user_id']}`\n" : '')
-            . "\n*AI Analysis:*\n{$aiAnalysis}\n"
-            . "\n_" . now()->format('H:i:s d/m/Y') . " · " . gethostname() . "_";
+            ."*Type:* `{$context['type']}`\n"
+            ."*Message:* _{$this->escapeMarkdown(mb_substr($context['message'], 0, 200))}_\n"
+            ."*File:* `{$context['file']}`\n"
+            .($context['url'] ? "*URL:* `{$context['url']}`\n" : '')
+            .($context['user_id'] ? "*User:* `{$context['user_id']}`\n" : '')
+            ."\n*AI Analysis:*\n{$aiAnalysis}\n"
+            ."\n_".now()->format('H:i:s d/m/Y').' · '.gethostname().'_';
 
         $telegramSeverity = match ($severity) {
             'critical' => TelegramAlertService::SEVERITY_CRITICAL,
@@ -158,13 +161,13 @@ class ErrorAlertService
     {
         $tiers = $this->loadAiTiers();
 
-        $prompt = "Analisis error berikut dari sistem KKN (SIBERMAS). "
-            . "Berikan dalam 2-3 kalimat: (1) kemungkinan root cause, (2) dampak ke user, (3) saran fix cepat.\n\n"
-            . "Source: {$context['source']}\n"
-            . "Type: {$context['type']}\n"
-            . "Message: {$context['message']}\n"
-            . "File: {$context['file']}\n"
-            . ($context['trace_snippet'] ? "Trace: {$context['trace_snippet']}\n" : '');
+        $prompt = 'Analisis error berikut dari sistem KKN (SIBERMAS). '
+            ."Berikan dalam 2-3 kalimat: (1) kemungkinan root cause, (2) dampak ke user, (3) saran fix cepat.\n\n"
+            ."Source: {$context['source']}\n"
+            ."Type: {$context['type']}\n"
+            ."Message: {$context['message']}\n"
+            ."File: {$context['file']}\n"
+            .($context['trace_snippet'] ? "Trace: {$context['trace_snippet']}\n" : '');
 
         foreach ($tiers as $tier) {
             if (empty($tier['key'])) {
@@ -174,7 +177,7 @@ class ErrorAlertService
             try {
                 $response = Http::withToken($tier['key'])
                     ->timeout(15)
-                    ->post(rtrim($tier['url'], '/') . '/chat/completions', [
+                    ->post(rtrim($tier['url'], '/').'/chat/completions', [
                         'model' => $tier['model'],
                         'messages' => [
                             ['role' => 'system', 'content' => 'Anda adalah DevOps engineer untuk sistem KKN universitas. Analisis error singkat dan actionable dalam Bahasa Indonesia. Max 3 kalimat.'],
@@ -191,7 +194,7 @@ class ErrorAlertService
                     }
                 }
             } catch (\Throwable $e) {
-                Log::debug("ErrorAlertService AI tier failed: " . $e->getMessage());
+                Log::debug('ErrorAlertService AI tier failed: '.$e->getMessage());
             }
         }
 
@@ -241,22 +244,23 @@ class ErrorAlertService
 
         // Rate limit: max N alerts per hour
         $count = (int) Cache::get(self::HOUR_COUNTER_KEY, 0);
+
         return $count < self::MAX_ALERTS_PER_HOUR;
     }
 
     private function fingerprint(string $source, string $message, string $file, int $line): string
     {
-        return md5("{$source}:{$file}:{$line}:" . mb_substr($message, 0, 100));
+        return md5("{$source}:{$file}:{$line}:".mb_substr($message, 0, 100));
     }
 
     private function isDuplicate(string $fingerprint): bool
     {
-        return Cache::has(self::DEDUP_PREFIX . $fingerprint);
+        return Cache::has(self::DEDUP_PREFIX.$fingerprint);
     }
 
     private function markSent(string $fingerprint): void
     {
-        Cache::put(self::DEDUP_PREFIX . $fingerprint, true, now()->addMinutes(self::DEDUP_TTL_MINUTES));
+        Cache::put(self::DEDUP_PREFIX.$fingerprint, true, now()->addMinutes(self::DEDUP_TTL_MINUTES));
     }
 
     private function incrementHourCounter(): void
@@ -275,6 +279,7 @@ class ErrorAlertService
         // Get first 3 non-vendor frames
         $lines = explode("\n", $trace);
         $relevant = array_filter($lines, fn ($l) => ! str_contains($l, '/vendor/'));
+
         return mb_substr(implode("\n", array_slice(array_values($relevant), 0, 3)), 0, 300);
     }
 

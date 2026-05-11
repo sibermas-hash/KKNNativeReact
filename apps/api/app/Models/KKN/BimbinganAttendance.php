@@ -16,7 +16,9 @@ class BimbinganAttendance extends Model
     use HasFactory;
 
     public const STATUS_HADIR = 'hadir';
+
     public const STATUS_TIDAK_HADIR = 'tidak_hadir';
+
     public const STATUS_IZIN = 'izin';
 
     protected $table = 'bimbingan_attendances';

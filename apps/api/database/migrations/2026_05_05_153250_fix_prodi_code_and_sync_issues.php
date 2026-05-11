@@ -16,7 +16,7 @@ return new class extends Migration
         });
 
         // 2. Set code = master_id for all prodi (master_id is already unique)
-        DB::statement("UPDATE prodi SET code = master_id WHERE master_id IS NOT NULL");
+        DB::statement('UPDATE prodi SET code = master_id WHERE master_id IS NOT NULL');
 
         // 3. Add unique constraint on master_id instead
         Schema::table('prodi', function (Blueprint $table) {
@@ -25,22 +25,22 @@ return new class extends Migration
         });
 
         // 4. Fix user-mahasiswa gap: link users to their mahasiswa records by NIM=username
-        DB::statement("
+        DB::statement('
             UPDATE mahasiswa m
             SET user_id = u.id
             FROM users u
             WHERE u.username = m.nim
               AND m.user_id IS NULL
-        ");
+        ');
 
         // Also fix cases where user exists but mahasiswa.user_id points to wrong user
-        DB::statement("
+        DB::statement('
             UPDATE mahasiswa m
             SET user_id = u.id
             FROM users u
             WHERE u.username = m.nim
               AND m.user_id != u.id
-        ");
+        ');
     }
 
     public function down(): void

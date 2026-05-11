@@ -33,7 +33,7 @@ class TelegramChatIdCommand extends Command
             return self::FAILURE;
         }
 
-        $this->info("Querying updates untuk bot...");
+        $this->info('Querying updates untuk bot...');
 
         $response = Http::timeout(10)->get("https://api.telegram.org/bot{$token}/getUpdates");
 
@@ -78,7 +78,7 @@ class TelegramChatIdCommand extends Command
             $chats[$id] = [
                 'id' => $id,
                 'type' => $chat['type'] ?? 'unknown',
-                'title' => $chat['title'] ?? ($chat['first_name'] ?? '') . ' ' . ($chat['last_name'] ?? ''),
+                'title' => $chat['title'] ?? ($chat['first_name'] ?? '').' '.($chat['last_name'] ?? ''),
                 'username' => $chat['username'] ?? null,
             ];
         }

@@ -1,7 +1,5 @@
 <?php
 
-use App\Models\User;
-
 describe('Admin Flow (E2E)', function () {
 
     beforeEach(function () {

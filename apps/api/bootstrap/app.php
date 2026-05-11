@@ -16,6 +16,7 @@ use App\Http\Middleware\RestrictDebugbarAccess;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\TestAutoLogin;
 use App\Http\Middleware\ValidateApiKey;
+use App\Services\AI\ErrorAlertService;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
@@ -229,12 +230,12 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->is('api/*') || $request->expectsJson()) {
                 // AI-powered Telegram alert for server errors
                 try {
-                    app(\App\Services\AI\ErrorAlertService::class)->alertBackendError(
+                    app(ErrorAlertService::class)->alertBackendError(
                         $e,
                         $request->fullUrl(),
                         $request->user()?->id,
                     );
-                } catch (\Throwable) {
+                } catch (Throwable) {
                     // Alert failure must never break the response
                 }
 

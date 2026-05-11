@@ -105,6 +105,7 @@ class PiiEncryptMahasiswa extends Command
                             if ($apply) {
                                 DB::table('mahasiswa')->where('id', $row->id)->update([$field => null]);
                             }
+
                             continue;
                         }
 

@@ -70,12 +70,12 @@ class GenericNotification extends Notification
     public function toDatabase(mixed $notifiable): array
     {
         return [
-            'type'     => $this->type ?? 'info',
-            'title'    => $this->title,
-            'message'  => $this->message,
+            'type' => $this->type ?? 'info',
+            'title' => $this->title,
+            'message' => $this->message,
             'priority' => $this->priority,
-            'action'   => $this->action,
-            'icon'     => 'bell',
+            'action' => $this->action,
+            'icon' => 'bell',
         ];
     }
 
@@ -96,11 +96,11 @@ class GenericNotification extends Notification
     {
         return [
             'title' => $this->title,
-            'body'  => $this->message,
+            'body' => $this->message,
             'click_action' => $this->action,
-            'data'  => [
+            'data' => [
                 'priority' => $this->priority,
-                'type'     => $this->type ?? 'info',
+                'type' => $this->type ?? 'info',
             ],
         ];
     }

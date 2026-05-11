@@ -55,6 +55,7 @@ class FcmChannel
         $serverKey = (string) config('services.fcm.server_key', '');
         if ($serverKey === '') {
             Log::debug('[FcmChannel] Skipping — FCM_SERVER_KEY not configured');
+
             return;
         }
 
@@ -62,6 +63,7 @@ class FcmChannel
             Log::warning('[FcmChannel] Notification class has no toFcm() method', [
                 'notification' => $notification::class,
             ]);
+
             return;
         }
 
@@ -70,6 +72,7 @@ class FcmChannel
             Log::warning('[FcmChannel] toFcm() returned invalid payload', [
                 'notification' => $notification::class,
             ]);
+
             return;
         }
 
@@ -86,13 +89,13 @@ class FcmChannel
         // For SIBERMAS users this is always <10.
         try {
             $response = Http::withHeaders([
-                'Authorization' => 'key=' . $serverKey,
-                'Content-Type'  => 'application/json',
+                'Authorization' => 'key='.$serverKey,
+                'Content-Type' => 'application/json',
             ])->timeout(10)->post(self::FCM_LEGACY_ENDPOINT, [
                 'registration_ids' => $tokens,
                 'notification' => [
                     'title' => $payload['title'],
-                    'body'  => $payload['body'] ?? '',
+                    'body' => $payload['body'] ?? '',
                     'click_action' => $payload['click_action'] ?? null,
                 ],
                 'data' => $payload['data'] ?? [],
@@ -101,8 +104,9 @@ class FcmChannel
             if (! $response->successful()) {
                 Log::warning('[FcmChannel] FCM returned non-2xx', [
                     'status' => $response->status(),
-                    'body'   => substr($response->body(), 0, 500),
+                    'body' => substr($response->body(), 0, 500),
                 ]);
+
                 return;
             }
 

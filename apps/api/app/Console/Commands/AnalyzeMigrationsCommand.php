@@ -47,10 +47,12 @@ class AnalyzeMigrationsCommand extends Command
 
         if ($this->option('json')) {
             $this->line(json_encode($report, JSON_PRETTY_PRINT));
+
             return self::SUCCESS;
         }
 
         $this->renderHuman($report);
+
         return self::SUCCESS;
     }
 
@@ -79,6 +81,7 @@ class AnalyzeMigrationsCommand extends Command
         }
 
         usort($rows, static fn ($a, $b) => strcmp($a['date'], $b['date']));
+
         return $rows;
     }
 
@@ -91,6 +94,7 @@ class AnalyzeMigrationsCommand extends Command
         foreach ($migrations as $row) {
             $bySlug[$row['slug']][] = $row['name'];
         }
+
         return array_filter($bySlug, fn ($names) => count($names) > 1);
     }
 
@@ -99,8 +103,7 @@ class AnalyzeMigrationsCommand extends Command
      */
     private function findPerformanceIndexes(array $migrations): array
     {
-        return array_values(array_filter($migrations, fn ($row) =>
-            str_contains($row['slug'], 'performance_index') ||
+        return array_values(array_filter($migrations, fn ($row) => str_contains($row['slug'], 'performance_index') ||
             str_contains($row['slug'], 'performance_indexes')
         ));
     }
@@ -112,10 +115,14 @@ class AnalyzeMigrationsCommand extends Command
     private function findFixMigrations(array $migrations): array
     {
         $prefixes = ['fix_', 'patch_', 'cleanup_', 'consolidate_', 'repair_', 'correct_'];
+
         return array_values(array_filter($migrations, function ($row) use ($prefixes) {
             foreach ($prefixes as $prefix) {
-                if (str_starts_with($row['slug'], $prefix)) return true;
+                if (str_starts_with($row['slug'], $prefix)) {
+                    return true;
+                }
             }
+
             return false;
         }));
     }
@@ -172,8 +179,8 @@ class AnalyzeMigrationsCommand extends Command
     private function findFutureDated(array $migrations): array
     {
         $today = now()->format('Y_m_d');
-        return array_values(array_filter($migrations, fn ($row) =>
-            str_starts_with($row['date'], '2026') ||
+
+        return array_values(array_filter($migrations, fn ($row) => str_starts_with($row['date'], '2026') ||
             $row['date'] > $today
         ));
     }
@@ -195,7 +202,9 @@ class AnalyzeMigrationsCommand extends Command
             $this->warn('  ⚠ Duplicate slug names ('.count($report['duplicate_names']).' groups):');
             foreach ($report['duplicate_names'] as $slug => $names) {
                 $this->line('    '.Str::padRight($slug, 50).' ['.count($names).' files]');
-                foreach ($names as $n) $this->line('        '.$n);
+                foreach ($names as $n) {
+                    $this->line('        '.$n);
+                }
             }
             $this->line('');
         }

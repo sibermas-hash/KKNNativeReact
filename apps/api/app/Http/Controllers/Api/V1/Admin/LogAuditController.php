@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\LogAuditResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\LogAudit;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -34,18 +35,18 @@ class LogAuditController extends Controller
     public function index(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'user_id'    => ['nullable', 'integer', 'exists:users,id'],
-            'action'     => ['nullable', 'string', 'max:100'],
-            'search'     => ['nullable', 'string', 'max:100'],
+            'user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'action' => ['nullable', 'string', 'max:100'],
+            'search' => ['nullable', 'string', 'max:100'],
             'model_type' => ['nullable', 'string', 'max:255'],
-            'severity'   => ['nullable', 'in:low,medium,high'],
-            'date_from'  => ['nullable', 'date'],
-            'date_to'    => ['nullable', 'date'],
-            'per_page'   => ['nullable', 'integer', 'min:10', 'max:100'],
+            'severity' => ['nullable', 'in:low,medium,high'],
+            'date_from' => ['nullable', 'date'],
+            'date_to' => ['nullable', 'date'],
+            'per_page' => ['nullable', 'integer', 'min:10', 'max:100'],
         ]);
 
         $perPage = (int) ($validated['per_page'] ?? 25);
-        $action  = $validated['action'] ?? $validated['search'] ?? null;
+        $action = $validated['action'] ?? $validated['search'] ?? null;
 
         $query = LogAudit::with('user')
             ->when($validated['user_id'] ?? null, fn ($q, $userId) => $q->where('user_id', $userId))
@@ -56,6 +57,7 @@ class LogAuditController extends Controller
                 if (str_contains($modelType, '\\')) {
                     return $q->where('model_type', $modelType);
                 }
+
                 return $q->where('model_type', 'like', '%'.str_replace('%', '\\%', $modelType));
             })
             ->when($validated['severity'] ?? null, fn ($q, $s) => $q->where('severity', $s))
@@ -63,7 +65,7 @@ class LogAuditController extends Controller
             ->when($validated['date_to'] ?? null, function ($q, $d) {
                 // Inclusive of end day — so date_to=2026-05-10 catches events
                 // all the way up to 23:59:59 on that date.
-                return $q->where('created_at', '<=', \Carbon\Carbon::parse($d)->endOfDay());
+                return $q->where('created_at', '<=', Carbon::parse($d)->endOfDay());
             })
             ->orderByDesc('created_at');
 
@@ -75,6 +77,7 @@ class LogAuditController extends Controller
     public function show(LogAudit $auditLog): JsonResponse
     {
         $auditLog->load('user');
+
         return $this->success(new LogAuditResource($auditLog));
     }
 }

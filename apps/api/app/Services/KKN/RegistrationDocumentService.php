@@ -491,7 +491,7 @@ class RegistrationDocumentService
             $ext = pathinfo($name, PATHINFO_EXTENSION);
             $base = pathinfo($name, PATHINFO_FILENAME);
             $keep = 100 - (strlen($ext) ? strlen($ext) + 1 : 0);
-            $name = mb_substr($base, 0, max(1, $keep)) . ($ext ? '.' . $ext : '');
+            $name = mb_substr($base, 0, max(1, $keep)).($ext ? '.'.$ext : '');
         }
 
         return $name;

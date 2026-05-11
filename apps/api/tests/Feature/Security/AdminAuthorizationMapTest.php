@@ -20,14 +20,16 @@ it('maps every V1 admin controller to a permission', function () {
 
     // R-007 fix: recurse into subdirectories so nested namespaces are also
     // validated (e.g., Api/V1/Admin/Reports/FooController.php).
-    $iterator = new \RecursiveIteratorIterator(
-        new \RecursiveDirectoryIterator($adminDir, \RecursiveDirectoryIterator::SKIP_DOTS)
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($adminDir, RecursiveDirectoryIterator::SKIP_DOTS)
     );
 
     $classes = [];
     foreach ($iterator as $file) {
-        /** @var \SplFileInfo $file */
-        if (! $file->isFile() || $file->getExtension() !== 'php') continue;
+        /** @var SplFileInfo $file */
+        if (! $file->isFile() || $file->getExtension() !== 'php') {
+            continue;
+        }
         $relative = str_replace($adminDir.DIRECTORY_SEPARATOR, '', $file->getPathname());
         $fqn = 'App\\Http\\Controllers\\Api\\V1\\Admin\\'
             .str_replace([DIRECTORY_SEPARATOR, '.php'], ['\\', ''], $relative);

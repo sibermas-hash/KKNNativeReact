@@ -1,6 +1,7 @@
 <?php
 
 declare(strict_types=1);
+use App\Sentry\BeforeSendScrub;
 
 return [
     /*
@@ -122,7 +123,7 @@ return [
     |
     */
 
-    'before_send' => \App\Sentry\BeforeSendScrub::class,
+    'before_send' => BeforeSendScrub::class,
 
     /*
     |--------------------------------------------------------------------------

@@ -19,7 +19,6 @@ use Tests\TestCase;
  */
 class SecurityRegressionTest extends TestCase
 {
-
     /**
      * C-001: TestAutoLogin must NOT activate just because APP_ENV=local.
      * Bypass requires BOTH config flag enabled AND X-Test-Mode header.

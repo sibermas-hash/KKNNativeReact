@@ -5,13 +5,17 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Api\V1\DosenResource;
+use App\Http\Resources\Api\V1\MahasiswaResource;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\SystemSetting;
 use App\Models\ProfileChangeRequest;
 use App\Models\User;
-use App\Services\ProfileSnapshotService;
+use App\Services\ActivityLogger;
+use App\Services\AvatarValidationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -77,8 +81,8 @@ class ProfileController extends Controller
         ])->filter(fn ($value) => blank($value))->keys()->values()->all();
 
         return $this->success([
-            'user'                  => new UserResource($user),
-            'student'               => $mahasiswa ? array_merge((new \App\Http\Resources\Api\V1\MahasiswaResource($mahasiswa))->resolve($request), [
+            'user' => new UserResource($user),
+            'student' => $mahasiswa ? array_merge((new MahasiswaResource($mahasiswa))->resolve($request), [
                 'biodata_complete' => $studentMissing === [],
                 'missing_biodata_fields' => $studentMissing,
                 'address_complete' => $addressMissing === [] && filled($user->address_verified_at),
@@ -86,15 +90,15 @@ class ProfileController extends Controller
                 'address_verified_at' => $user->address_verified_at?->toIso8601String(),
                 'missing_address_fields' => $addressMissing,
             ]) : null,
-            'lecturer'              => $dosen ? array_merge((new \App\Http\Resources\Api\V1\DosenResource($dosen))->resolve($request), [
+            'lecturer' => $dosen ? array_merge((new DosenResource($dosen))->resolve($request), [
                 'biodata_complete' => $lecturerMissing === [],
                 'missing_biodata_fields' => $lecturerMissing,
             ]) : null,
-            'is_onboarding'         => blank($user->address_verified_at) || $user->must_change_password,
+            'is_onboarding' => blank($user->address_verified_at) || $user->must_change_password,
             'pending_change_request' => $pending ? [
-                'id'                => $pending->id,
+                'id' => $pending->id,
                 'requested_changes' => $pending->requested_changes,
-                'created_at'        => $pending->created_at,
+                'created_at' => $pending->created_at,
             ] : null,
         ]);
     }
@@ -105,80 +109,80 @@ class ProfileController extends Controller
         $user->load(['mahasiswa', 'dosen']);
 
         $validated = $request->validate([
-            'name'                   => ['sometimes', 'string', 'max:255'],
-            'phone'                  => ['nullable', 'string', 'max:20'],
-            'address'                => ['nullable', 'string', 'max:500'],
-            'address_village_name'   => ['nullable', 'string', 'max:150'],
-            'address_district_name'  => ['nullable', 'string', 'max:150'],
-            'address_regency_name'   => ['nullable', 'string', 'max:150'],
-            'address_postal_code'    => ['nullable', 'string', 'max:10'],
-            'address_lat'            => ['nullable', 'numeric', 'between:-90,90'],
-            'address_lng'            => ['nullable', 'numeric', 'between:-180,180'],
-            'address_verified'       => ['nullable', 'boolean'],
-            'address_verified_at'    => ['nullable'],
+            'name' => ['sometimes', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'address_village_name' => ['nullable', 'string', 'max:150'],
+            'address_district_name' => ['nullable', 'string', 'max:150'],
+            'address_regency_name' => ['nullable', 'string', 'max:150'],
+            'address_postal_code' => ['nullable', 'string', 'max:10'],
+            'address_lat' => ['nullable', 'numeric', 'between:-90,90'],
+            'address_lng' => ['nullable', 'numeric', 'between:-180,180'],
+            'address_verified' => ['nullable', 'boolean'],
+            'address_verified_at' => ['nullable'],
             // Mahasiswa biodata
-            'nik'                    => ['nullable', 'regex:/^\d{16}$/'],
-            'mother_name'            => ['nullable', 'string', 'max:150'],
-            'gender'                 => ['nullable', 'in:L,P'],
-            'shirt_size'             => ['nullable', 'string', 'in:S,M,L,XL,XXL,3XL,4XL,5XL'],
-            'birth_place'            => ['nullable', 'string', 'max:100'],
-            'birth_date'             => ['nullable', 'date'],
+            'nik' => ['nullable', 'regex:/^\d{16}$/'],
+            'mother_name' => ['nullable', 'string', 'max:150'],
+            'gender' => ['nullable', 'in:L,P'],
+            'shirt_size' => ['nullable', 'string', 'in:S,M,L,XL,XXL,3XL,4XL,5XL'],
+            'birth_place' => ['nullable', 'string', 'max:100'],
+            'birth_date' => ['nullable', 'date'],
             // Dosen fields
-            'nama_gelar'             => ['nullable', 'string', 'max:255'],
-            'nidn'                   => ['nullable', 'string', 'max:50'],
-            'dosen_nik'              => ['nullable', 'string', 'max:50'],
-            'jabatan'                => ['nullable', 'string', 'max:100'],
-            'kelas_jabatan'          => ['nullable', 'string', 'max:50'],
-            'tugas_tambahan'         => ['nullable', 'string', 'max:150'],
-            'golongan'               => ['nullable', 'string', 'max:50'],
-            'pangkat'                => ['nullable', 'string', 'max:100'],
-            'no_rekening'            => ['nullable', 'string', 'max:50'],
-            'nama_bank'              => ['nullable', 'string', 'max:100'],
-            'npwp'                   => ['nullable', 'string', 'max:50'],
-            'dosen_alamat'           => ['nullable', 'string', 'max:500'],
+            'nama_gelar' => ['nullable', 'string', 'max:255'],
+            'nidn' => ['nullable', 'string', 'max:50'],
+            'dosen_nik' => ['nullable', 'string', 'max:50'],
+            'jabatan' => ['nullable', 'string', 'max:100'],
+            'kelas_jabatan' => ['nullable', 'string', 'max:50'],
+            'tugas_tambahan' => ['nullable', 'string', 'max:150'],
+            'golongan' => ['nullable', 'string', 'max:50'],
+            'pangkat' => ['nullable', 'string', 'max:100'],
+            'no_rekening' => ['nullable', 'string', 'max:50'],
+            'nama_bank' => ['nullable', 'string', 'max:100'],
+            'npwp' => ['nullable', 'string', 'max:50'],
+            'dosen_alamat' => ['nullable', 'string', 'max:500'],
         ]);
 
         // Build diff: only include fields that actually changed
         $mahasiswa = $user->mahasiswa;
-        $dosen     = $user->dosen;
+        $dosen = $user->dosen;
 
         $changes = [];
 
         $userMap = [
-            'name'                   => $user->name,
-            'phone'                  => $user->phone,
-            'address'                => $user->address,
-            'address_village_name'   => $user->address_village_name,
-            'address_district_name'  => $user->address_district_name,
-            'address_regency_name'   => $user->address_regency_name,
-            'address_postal_code'    => $user->address_postal_code,
-            'address_lat'            => $user->address_lat,
-            'address_lng'            => $user->address_lng,
+            'name' => $user->name,
+            'phone' => $user->phone,
+            'address' => $user->address,
+            'address_village_name' => $user->address_village_name,
+            'address_district_name' => $user->address_district_name,
+            'address_regency_name' => $user->address_regency_name,
+            'address_postal_code' => $user->address_postal_code,
+            'address_lat' => $user->address_lat,
+            'address_lng' => $user->address_lng,
         ];
 
         $mahasiswaMap = $mahasiswa ? [
-            'nik'         => $mahasiswa->nik,
+            'nik' => $mahasiswa->nik,
             'mother_name' => $mahasiswa->mother_name,
-            'gender'      => $mahasiswa->gender,
-            'shirt_size'  => $mahasiswa->shirt_size,
+            'gender' => $mahasiswa->gender,
+            'shirt_size' => $mahasiswa->shirt_size,
             'birth_place' => $mahasiswa->birth_place,
-            'birth_date'  => $mahasiswa->birth_date?->toDateString(),
+            'birth_date' => $mahasiswa->birth_date?->toDateString(),
         ] : [];
 
         $dosenMap = $dosen ? [
-            'nama_gelar'  => $dosen->nama_gelar,
-            'nidn'        => $dosen->nidn,
-            'dosen_nik'   => $dosen->nik,
-            'jabatan'     => $dosen->jabatan,
+            'nama_gelar' => $dosen->nama_gelar,
+            'nidn' => $dosen->nidn,
+            'dosen_nik' => $dosen->nik,
+            'jabatan' => $dosen->jabatan,
             'kelas_jabatan' => $dosen->kelas_jabatan,
             'tugas_tambahan' => $dosen->tugas_tambahan,
-            'golongan'    => $dosen->golongan,
-            'pangkat'     => $dosen->pangkat,
+            'golongan' => $dosen->golongan,
+            'pangkat' => $dosen->pangkat,
             'no_rekening' => $dosen->no_rekening,
-            'nama_bank'   => $dosen->nama_bank,
-            'npwp'        => $dosen->npwp,
-            'gender'      => $dosen->gender,
-            'birth_date'  => $dosen->birth_date?->toDateString(),
+            'nama_bank' => $dosen->nama_bank,
+            'npwp' => $dosen->npwp,
+            'gender' => $dosen->gender,
+            'birth_date' => $dosen->birth_date?->toDateString(),
             'dosen_alamat' => $dosen->alamat,
         ] : [];
 
@@ -191,6 +195,7 @@ class ProfileController extends Controller
                 if ($oldVerified !== $newVerified) {
                     $changes['address_verified_at'] = ['old' => $user->address_verified_at?->toIso8601String(), 'new' => $newVerified ? now()->toIso8601String() : null];
                 }
+
                 continue;
             }
             $old = $currentValues[$field] ?? null;
@@ -212,7 +217,7 @@ class ProfileController extends Controller
                 $this->applyProfileChanges($user, $changes, $mahasiswa, $dosen);
             });
 
-            \App\Services\ActivityLogger::log('profile_update', 'success', $user->id, [
+            ActivityLogger::log('profile_update', 'success', $user->id, [
                 'first_onboarding' => true,
                 'fields_changed' => array_keys($changes),
             ]);
@@ -230,12 +235,12 @@ class ProfileController extends Controller
         }
 
         ProfileChangeRequest::create([
-            'user_id'           => $user->id,
+            'user_id' => $user->id,
             'requested_changes' => $changes,
-            'status'            => 'pending',
+            'status' => 'pending',
         ]);
 
-        \App\Services\ActivityLogger::log('profile_update', 'success', $user->id, [
+        ActivityLogger::log('profile_update', 'success', $user->id, [
             'pending_approval' => true,
             'fields_changed' => array_keys($changes),
         ]);
@@ -328,7 +333,7 @@ class ProfileController extends Controller
         }
     }
 
-    public function updateAvatar(Request $request, \App\Services\AvatarValidationService $validator): JsonResponse
+    public function updateAvatar(Request $request, AvatarValidationService $validator): JsonResponse
     {
         $user = $request->user();
 
@@ -342,15 +347,15 @@ class ProfileController extends Controller
         $aiResult = $validator->validateAvatar($path);
 
         // Layer 3 AI tegas menolak (tidak butuh manual review) — tolak instan
-        if (!$aiResult['is_valid'] && !$aiResult['requires_manual_review']) {
+        if (! $aiResult['is_valid'] && ! $aiResult['requires_manual_review']) {
             Storage::disk(config('filesystems.default'))->delete($path);
 
-            \App\Services\ActivityLogger::log('avatar_rejected', 'failed', $user->id, [
+            ActivityLogger::log('avatar_rejected', 'failed', $user->id, [
                 'reason' => $aiResult['reason'],
             ]);
 
             return $this->error('VALIDATION_ERROR', $aiResult['reason'] ?? 'Foto ditolak oleh sistem AI.', 422, [
-                'avatar' => [$aiResult['reason']]
+                'avatar' => [$aiResult['reason']],
             ]);
         }
 
@@ -374,7 +379,7 @@ class ProfileController extends Controller
             'avatar_moderation_reviewed_by' => null,
         ]);
 
-        \App\Services\ActivityLogger::log('avatar_upload', 'success', $user->id, [
+        ActivityLogger::log('avatar_upload', 'success', $user->id, [
             'moderation_status' => $status,
         ]);
 
@@ -383,7 +388,7 @@ class ProfileController extends Controller
             : 'Foto profil berhasil diperbarui.';
 
         return $this->success([
-            'avatar_url' => asset('storage/' . $path),
+            'avatar_url' => asset('storage/'.$path),
             'moderation_status' => $status,
             'moderation_reason' => $reason,
         ], $msg);
@@ -397,16 +402,16 @@ class ProfileController extends Controller
 
         if ($isFirstPasswordChange) {
             $request->validate([
-                'password'         => ['required', 'confirmed', Password::defaults()],
+                'password' => ['required', 'confirmed', Password::defaults()],
             ]);
         } else {
             $request->validate([
                 'current_password' => ['required', 'string'],
-                'password'         => ['required', 'confirmed', Password::defaults()],
+                'password' => ['required', 'confirmed', Password::defaults()],
             ]);
 
             if (! Hash::check($request->input('current_password'), $user->password)) {
-                \App\Services\ActivityLogger::log('password_change', 'failed', $user->id, [
+                ActivityLogger::log('password_change', 'failed', $user->id, [
                     'reason' => 'invalid_current_password',
                 ]);
 
@@ -417,12 +422,12 @@ class ProfileController extends Controller
         }
 
         $user->update([
-            'password'             => Hash::make($request->input('password')),
-            'password_changed_at'  => now(),
+            'password' => Hash::make($request->input('password')),
+            'password_changed_at' => now(),
             'must_change_password' => false,
         ]);
 
-        \App\Services\ActivityLogger::log('password_change', 'success', $user->id, [
+        ActivityLogger::log('password_change', 'success', $user->id, [
             'first_time' => $isFirstPasswordChange,
         ]);
 
@@ -450,9 +455,9 @@ class ProfileController extends Controller
             'preferences' => $user->notificationPreferences(),
             'raw' => $user->notification_preferences,
             'defaults' => [
-                'in_app' => \App\Models\KKN\SystemSetting::get('notification_default_in_app', '1') !== '0',
-                'email'  => \App\Models\KKN\SystemSetting::get('notification_default_email', '1') !== '0',
-                'push'   => \App\Models\KKN\SystemSetting::get('notification_default_push', '1') !== '0',
+                'in_app' => SystemSetting::get('notification_default_in_app', '1') !== '0',
+                'email' => SystemSetting::get('notification_default_email', '1') !== '0',
+                'push' => SystemSetting::get('notification_default_push', '1') !== '0',
             ],
         ]);
     }
@@ -467,9 +472,9 @@ class ProfileController extends Controller
     {
         $validated = $request->validate([
             'in_app' => ['sometimes', 'boolean'],
-            'email'  => ['sometimes', 'boolean'],
-            'push'   => ['sometimes', 'boolean'],
-            'reset'  => ['sometimes', 'boolean'],
+            'email' => ['sometimes', 'boolean'],
+            'push' => ['sometimes', 'boolean'],
+            'reset' => ['sometimes', 'boolean'],
         ]);
 
         $user = $request->user();

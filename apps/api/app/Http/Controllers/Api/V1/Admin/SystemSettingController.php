@@ -21,7 +21,10 @@ class SystemSettingController extends Controller
 
     public function update(Request $request): JsonResponse
     {
-        foreach ($request->validate(['settings' => ['required', 'array']])['settings'] as $key => $value) SystemSetting::set($key, $value);
+        foreach ($request->validate(['settings' => ['required', 'array']])['settings'] as $key => $value) {
+            SystemSetting::set($key, $value);
+        }
+
         return $this->noContent('Pengaturan berhasil diperbarui.');
     }
 
@@ -38,14 +41,18 @@ class SystemSettingController extends Controller
     public function updateAiSettings(Request $request): JsonResponse
     {
         foreach ($request->only(['ai_provider', 'gemini_api_key', 'ai_model']) as $key => $value) {
-            if ($value !== null) SystemSetting::set($key, $value);
+            if ($value !== null) {
+                SystemSetting::set($key, $value);
+            }
         }
+
         return $this->noContent('Pengaturan AI berhasil diperbarui.');
     }
 
     public function removeAiKey(): JsonResponse
     {
         SystemSetting::set('gemini_api_key', null);
+
         return $this->noContent('API key AI berhasil dihapus.');
     }
 }

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\File;
 class ReadExcelCommand extends Command
 {
     protected $signature = 'debug:workshop-check';
+
     protected $description = 'Cross-check nama workshop yang gagal cocok dengan database dosen';
 
     public function handle()
@@ -57,11 +58,11 @@ class ReadExcelCommand extends Command
             $lastWord = end($words);
 
             // Cari di database
-            $candidates = Dosen::where(function ($q) use ($clean, $firstWord, $lastWord, $words) {
+            $candidates = Dosen::where(function ($q) use ($clean, $lastWord, $words) {
                 // LIKE search dengan kata pertama + terakhir
                 $q->where('nama', 'ILIKE', "%{$clean}%")
-                  ->orWhere('nama_gelar', 'ILIKE', "%{$clean}%");
-                
+                    ->orWhere('nama_gelar', 'ILIKE', "%{$clean}%");
+
                 // Jika nama lebih dari 1 kata, coba gabungan
                 if (count($words) >= 2) {
                     $q->orWhere('nama', 'ILIKE', "%{$lastWord}%");
@@ -70,14 +71,14 @@ class ReadExcelCommand extends Command
 
             $status = $candidates->isEmpty() ? '❌ TIDAK ADA DI DB' : '⚠️ MUNGKIN COCOK';
             $line = "{$status} | HTM: [{$name}] Cari: [{$clean}]";
-            
+
             if ($candidates->isNotEmpty()) {
                 foreach ($candidates as $c) {
                     $ws = $c->has_workshop ? '✅WS' : '❌WS';
                     $line .= "\n     → DB: [{$c->nama}] Gelar: [{$c->nama_gelar}] NIP: [{$c->nip}] {$ws}";
                 }
             }
-            
+
             $results[] = $line;
         }
 

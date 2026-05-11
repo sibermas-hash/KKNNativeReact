@@ -26,7 +26,7 @@ class IzinMeninggalkanResource extends JsonResource
             'status' => $this->status,
             'rejection_reason' => $this->catatan_dpl,
             'catatan_dpl' => $this->catatan_dpl,
-            'file_url' => $this->file_bukti ? asset('storage/' . $this->file_bukti) : null,
+            'file_url' => $this->file_bukti ? asset('storage/'.$this->file_bukti) : null,
             'mahasiswa' => new MahasiswaResource($this->whenLoaded('mahasiswa')),
             'created_at' => $this->created_at?->toIso8601String(),
         ];

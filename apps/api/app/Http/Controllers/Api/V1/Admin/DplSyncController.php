@@ -27,10 +27,10 @@ class DplSyncController extends Controller
     public function index(): JsonResponse
     {
         return $this->success([
-            'local_lecturers'   => Dosen::count(),
-            'with_master_link'  => Dosen::whereNotNull('master_id')->count(),
+            'local_lecturers' => Dosen::count(),
+            'with_master_link' => Dosen::whereNotNull('master_id')->count(),
             'with_user_account' => Dosen::whereNotNull('user_id')->count(),
-            'last_synced_at'    => Dosen::whereNotNull('master_synced_at')->max('master_synced_at'),
+            'last_synced_at' => Dosen::whereNotNull('master_synced_at')->max('master_synced_at'),
         ]);
     }
 
@@ -64,27 +64,28 @@ class DplSyncController extends Controller
 
     private function syncDosenRecords(iterable $externalDosen): array
     {
-        $synced  = 0;
-        $errors  = 0;
-        $total   = 0;
+        $synced = 0;
+        $errors = 0;
+        $total = 0;
 
-        $facultyMap      = Fakultas::query()->pluck('id', 'master_id');
+        $facultyMap = Fakultas::query()->pluck('id', 'master_id');
         $defaultFacultyId = Fakultas::query()->orderBy('id')->value('id');
 
         foreach ($externalDosen as $dosen) {
             $total++;
-            $nip  = trim((string) ($dosen['nip'] ?? ''));
+            $nip = trim((string) ($dosen['nip'] ?? ''));
             $name = trim((string) ($dosen['name'] ?? $dosen['nama'] ?? ''));
 
             if ($nip === '' || $name === '') {
                 $errors++;
+
                 continue;
             }
 
             try {
                 DB::transaction(function () use ($dosen, $nip, $name, $facultyMap, $defaultFacultyId, &$synced) {
-                    $masterId   = $this->normalizeMasterId($dosen['organization_id'] ?? null);
-                    $facultyId  = $masterId ? ($facultyMap[$masterId] ?? null) : null;
+                    $masterId = $this->normalizeMasterId($dosen['organization_id'] ?? null);
+                    $facultyId = $masterId ? ($facultyMap[$masterId] ?? null) : null;
 
                     // Audit fix: fakultas_id may legitimately be null for
                     // external (LB-*) lecturers. Fall back to the default only
@@ -97,7 +98,7 @@ class DplSyncController extends Controller
                     $user = User::firstOrNew(['username' => $nip]);
                     $isNewUser = ! $user->exists;
                     if ($isNewUser) {
-                        $user->email    = $this->normalizeMasterEmail($dosen['email'] ?? null);
+                        $user->email = $this->normalizeMasterEmail($dosen['email'] ?? null);
                         // C-002 fix: secure random password; reset link below.
                         $user->password = Hash::make(PasswordHelper::generateSecureDefault());
                         $user->must_change_password = true;
@@ -114,13 +115,13 @@ class DplSyncController extends Controller
                     Dosen::updateOrCreate(
                         ['nip' => $nip],
                         [
-                            'user_id'          => $user->id,
-                            'nama'             => $name,
-                            'birth_date'       => $dosen['birth_date'] ?? $dosen['tanggal_lahir'] ?? null,
-                            'gender'           => $dosen['gender'] ?? $dosen['jenis_kelamin'] ?? null,
-                            'fakultas_id'      => $facultyId,
-                            'phone'            => $dosen['phone'] ?? $dosen['no_hp'] ?? null,
-                            'master_id'        => $this->normalizeMasterId($dosen['id'] ?? null),
+                            'user_id' => $user->id,
+                            'nama' => $name,
+                            'birth_date' => $dosen['birth_date'] ?? $dosen['tanggal_lahir'] ?? null,
+                            'gender' => $dosen['gender'] ?? $dosen['jenis_kelamin'] ?? null,
+                            'fakultas_id' => $facultyId,
+                            'phone' => $dosen['phone'] ?? $dosen['no_hp'] ?? null,
+                            'master_id' => $this->normalizeMasterId($dosen['id'] ?? null),
                             'master_synced_at' => now(),
                         ]
                     );

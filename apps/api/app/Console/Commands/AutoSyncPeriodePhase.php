@@ -31,7 +31,7 @@ class AutoSyncPeriodePhase extends Command
         if ($periods->isEmpty()) {
             $totalPeriods = Periode::count();
             $activePeriods = Periode::where('is_active', true)->count();
-            $this->warn("No active periods found with valid phase.");
+            $this->warn('No active periods found with valid phase.');
             $this->info("Total periods: {$totalPeriods}, Active periods: {$activePeriods}");
             $this->info("Make sure periods have 'is_active=true' AND 'current_phase' is not null.");
 

@@ -11,7 +11,9 @@ use App\Http\Resources\Api\V1\LokasiResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\Announcement;
 use App\Models\KKN\Download;
+use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
+use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\SertifikatKkn;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -153,8 +155,8 @@ class PublicController extends Controller
             ->get();
 
         // Count students via peserta_kkn, groups via kelompok_kkn
-        $studentCount = \App\Models\KKN\PesertaKkn::where('status', 'approved')->count();
-        $groupCount = \App\Models\KKN\KelompokKkn::count();
+        $studentCount = PesertaKkn::where('status', 'approved')->count();
+        $groupCount = KelompokKkn::count();
         $locationCount = Lokasi::count();
 
         return $this->success([
@@ -196,18 +198,18 @@ class PublicController extends Controller
         }
 
         return $this->success([
-            'id'                => $announcement->id,
-            'title'             => $announcement->title,
-            'slug'              => $announcement->slug,
-            'excerpt'           => $announcement->excerpt_text,
-            'category'          => $announcement->category,
-            'image_url'         => $announcement->image
-                ? asset('storage/' . $announcement->image)
+            'id' => $announcement->id,
+            'title' => $announcement->title,
+            'slug' => $announcement->slug,
+            'excerpt' => $announcement->excerpt_text,
+            'category' => $announcement->category,
+            'image_url' => $announcement->image
+                ? asset('storage/'.$announcement->image)
                 : null,
-            'published_at'      => $announcement->published_at?->toIso8601String(),
-            'popup_until'       => $announcement->popup_until?->toIso8601String(),
+            'published_at' => $announcement->published_at?->toIso8601String(),
+            'popup_until' => $announcement->popup_until?->toIso8601String(),
             'popup_dismissable' => (bool) $announcement->popup_dismissable,
-            'read_more_url'     => '/berita/' . $announcement->slug,
+            'read_more_url' => '/berita/'.$announcement->slug,
         ]);
     }
 }

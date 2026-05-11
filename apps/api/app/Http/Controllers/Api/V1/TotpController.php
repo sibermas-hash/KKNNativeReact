@@ -7,8 +7,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
 use App\Services\ActivityLogger;
-use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use Illuminate\Http\JsonResponse;
@@ -39,7 +39,7 @@ class TotpController extends Controller
 
     public function __construct()
     {
-        $this->google2fa = new Google2FA();
+        $this->google2fa = new Google2FA;
     }
 
     /**
@@ -81,7 +81,7 @@ class TotpController extends Controller
         // Generate SVG QR code
         $renderer = new ImageRenderer(
             new RendererStyle(280),
-            new SvgImageBackEnd()
+            new SvgImageBackEnd
         );
         $writer = new Writer($renderer);
         $qrSvg = $writer->writeString($otpauthUrl);
@@ -94,7 +94,7 @@ class TotpController extends Controller
 
         return $this->success([
             'secret' => $secret, // displayed for manual entry
-            'qr_svg' => 'data:image/svg+xml;base64,' . base64_encode($qrSvg),
+            'qr_svg' => 'data:image/svg+xml;base64,'.base64_encode($qrSvg),
             'otpauth_url' => $otpauthUrl,
             'issuer' => $issuer,
             'account' => $label,
@@ -113,7 +113,7 @@ class TotpController extends Controller
 
         $user = $request->user();
 
-        if (!$user->two_factor_secret) {
+        if (! $user->two_factor_secret) {
             return $this->badRequest('Setup 2FA belum dimulai.');
         }
 
@@ -121,7 +121,7 @@ class TotpController extends Controller
             return $this->badRequest('2FA sudah aktif.');
         }
 
-        if (!$this->google2fa->verifyKey($user->two_factor_secret, $data['code'])) {
+        if (! $this->google2fa->verifyKey($user->two_factor_secret, $data['code'])) {
             return $this->error('INVALID_CODE', 'Kode TOTP tidak valid.', 422);
         }
 
@@ -129,7 +129,7 @@ class TotpController extends Controller
         $plainCodes = [];
         $hashedCodes = [];
         for ($i = 0; $i < 8; $i++) {
-            $c = strtoupper(Str::random(4) . '-' . Str::random(4));
+            $c = strtoupper(Str::random(4).'-'.Str::random(4));
             $plainCodes[] = $c;
             $hashedCodes[] = Hash::make($c);
         }
@@ -160,7 +160,7 @@ class TotpController extends Controller
 
         $user = $request->user();
 
-        if (!$user->hasTwoFactorEnabled()) {
+        if (! $user->hasTwoFactorEnabled()) {
             return $this->badRequest('2FA tidak aktif.');
         }
 
@@ -168,11 +168,11 @@ class TotpController extends Controller
             return $this->forbidden('2FA wajib untuk role Anda (admin/DPL). Tidak bisa disable.');
         }
 
-        if (!Hash::check($data['password'], $user->password)) {
+        if (! Hash::check($data['password'], $user->password)) {
             return $this->error('INVALID_PASSWORD', 'Password salah.', 422);
         }
 
-        if (!$this->google2fa->verifyKey($user->two_factor_secret, $data['code'])) {
+        if (! $this->google2fa->verifyKey($user->two_factor_secret, $data['code'])) {
             return $this->error('INVALID_CODE', 'Kode TOTP tidak valid.', 422);
         }
 
@@ -199,18 +199,18 @@ class TotpController extends Controller
 
         $user = $request->user();
 
-        if (!$user->hasTwoFactorEnabled()) {
+        if (! $user->hasTwoFactorEnabled()) {
             return $this->badRequest('2FA tidak aktif.');
         }
 
-        if (!$this->google2fa->verifyKey($user->two_factor_secret, $data['code'])) {
+        if (! $this->google2fa->verifyKey($user->two_factor_secret, $data['code'])) {
             return $this->error('INVALID_CODE', 'Kode TOTP tidak valid.', 422);
         }
 
         $plainCodes = [];
         $hashedCodes = [];
         for ($i = 0; $i < 8; $i++) {
-            $c = strtoupper(Str::random(4) . '-' . Str::random(4));
+            $c = strtoupper(Str::random(4).'-'.Str::random(4));
             $plainCodes[] = $c;
             $hashedCodes[] = Hash::make($c);
         }

@@ -6,7 +6,6 @@ namespace App\Imports;
 
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
-use App\Models\KKN\Periode;
 use DOMDocument;
 
 /**
@@ -19,20 +18,33 @@ use DOMDocument;
 class NilaiKknHistorisImport
 {
     public int $importedCount = 0;
+
     public int $skippedCount = 0;
+
     public int $notFoundCount = 0;
+
     public array $notFoundDetails = [];
 
     private const COL_NAMA_DPL = 1;
+
     private const COL_NIM = 2;
+
     private const COL_NAMA = 3;
+
     private const COL_LAPORAN = 4;
+
     private const COL_ARTIKEL = 5;
+
     private const COL_PELAKSANAAN = 6;
+
     private const COL_KEDISIPLINAN = 7;
+
     private const COL_SIKAP = 8;
+
     private const COL_LPPM = 9;
+
     private const COL_TOTAL = 10;
+
     private const COL_HURUF = 11;
 
     public function __construct(
@@ -47,7 +59,7 @@ class NilaiKknHistorisImport
             return;
         }
 
-        $dom = new DOMDocument();
+        $dom = new DOMDocument;
         @$dom->loadHTML($html);
         $rows = $dom->getElementsByTagName('tr');
 
@@ -64,6 +76,7 @@ class NilaiKknHistorisImport
                         break;
                     }
                 }
+
                 continue;
             }
 
@@ -75,6 +88,7 @@ class NilaiKknHistorisImport
             $nim = $this->cleanNim(trim($cells->item(self::COL_NIM)->textContent ?? ''));
             if (empty($nim)) {
                 $this->skippedCount++;
+
                 continue;
             }
 
@@ -85,6 +99,7 @@ class NilaiKknHistorisImport
                     'nim' => $nim,
                     'nama' => trim($cells->item(self::COL_NAMA)->textContent ?? ''),
                 ];
+
                 continue;
             }
 
@@ -95,6 +110,7 @@ class NilaiKknHistorisImport
 
             if ($alreadyCompleted) {
                 $this->skippedCount++;
+
                 continue;
             }
 
@@ -109,7 +125,7 @@ class NilaiKknHistorisImport
                     'role' => 'anggota',
                     'registration_date' => now(),
                     'approved_at' => now(),
-                    'notes' => "Import historis KKN {$this->angkatan}. Nilai: " . $this->cellValue($cells, self::COL_TOTAL) . ' (' . $this->cellValue($cells, self::COL_HURUF) . ')',
+                    'notes' => "Import historis KKN {$this->angkatan}. Nilai: ".$this->cellValue($cells, self::COL_TOTAL).' ('.$this->cellValue($cells, self::COL_HURUF).')',
                 ]
             );
 
@@ -121,6 +137,7 @@ class NilaiKknHistorisImport
     {
         // Remove backtick prefix and spaces
         $nim = ltrim($nim, '`\'');
+
         return preg_replace('/\s+/', '', $nim) ?? '';
     }
 
@@ -129,6 +146,7 @@ class NilaiKknHistorisImport
         if ($index >= $cells->length) {
             return null;
         }
+
         return trim($cells->item($index)->textContent ?? '') ?: null;
     }
 }

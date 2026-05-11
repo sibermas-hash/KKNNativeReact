@@ -10,6 +10,7 @@ use App\Http\Resources\Api\V1\ProposalProgramKerjaResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\ProgramKerja;
 use App\Models\KKN\ProposalProgramKerja;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -21,7 +22,7 @@ class WorkProgramController extends Controller
 
     public function index(): JsonResponse
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = auth()->user();
         $mahasiswa = $user?->mahasiswa;
         $registration = $mahasiswa?->peserta()->where('status', 'approved')->first();
@@ -50,7 +51,7 @@ class WorkProgramController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = auth()->user();
         $mahasiswa = $user?->mahasiswa;
         $registration = $mahasiswa?->peserta()->where('status', 'approved')->first();
@@ -96,7 +97,7 @@ class WorkProgramController extends Controller
     {
         Gate::authorize('update', $programKerja);
 
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = auth()->user();
         $mahasiswa = $user?->mahasiswa;
         $registration = $mahasiswa?->peserta()->where('status', 'approved')->first();

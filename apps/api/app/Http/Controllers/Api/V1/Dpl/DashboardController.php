@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Dpl;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\Api\V1\KelompokKknResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\KelompokKkn;

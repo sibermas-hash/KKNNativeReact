@@ -14,7 +14,7 @@ return new class extends Migration
     public function up(): void
     {
         // Ensure mother_name column exists on mahasiswa (needed for API sync)
-        if (Schema::hasTable('mahasiswa') && !Schema::hasColumn('mahasiswa', 'mother_name')) {
+        if (Schema::hasTable('mahasiswa') && ! Schema::hasColumn('mahasiswa', 'mother_name')) {
             Schema::table('mahasiswa', function (Blueprint $table) {
                 $table->string('mother_name', 100)->nullable()->after('nama');
             });

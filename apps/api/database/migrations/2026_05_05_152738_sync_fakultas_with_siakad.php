@@ -25,9 +25,9 @@ return new class extends Migration
 
         // 2. Tambah Pascasarjana yang ada di API tapi belum di DB
         DB::table('fakultas')->insertOrIgnore([
-            'master_id'  => 'Pasca',
-            'code'       => 'Pasca',
-            'nama'       => 'Pascasarjana',
+            'master_id' => 'Pasca',
+            'code' => 'Pasca',
+            'nama' => 'Pascasarjana',
             'created_at' => now(),
             'updated_at' => now(),
         ]);

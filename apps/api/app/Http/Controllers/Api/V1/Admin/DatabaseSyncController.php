@@ -5,15 +5,20 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Api\V1\DatabaseSyncLogResource;
 use App\Http\Traits\ApiResponse;
 use App\Jobs\SyncAllDosenJob;
 use App\Jobs\SyncAllMahasiswaJob;
+use App\Jobs\SyncDosenJob;
 use App\Jobs\SyncFacultyJob;
+use App\Jobs\SyncMahasiswaJob;
 use App\Jobs\SyncProgramJob;
 use App\Models\KKN\DatabaseSyncLog;
 use App\Services\DatabaseSyncMonitoringService;
+use App\Services\MasterApiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DatabaseSyncController extends Controller
 {
@@ -30,7 +35,7 @@ class DatabaseSyncController extends Controller
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
             ->paginate($request->input('per_page', 25));
 
-        return $this->successCollection(\App\Http\Resources\Api\V1\DatabaseSyncLogResource::collection($logs));
+        return $this->successCollection(DatabaseSyncLogResource::collection($logs));
     }
 
     public function show(DatabaseSyncLog $log): JsonResponse
@@ -54,9 +59,9 @@ class DatabaseSyncController extends Controller
 
         match ($type) {
             'mahasiswa' => SyncAllMahasiswaJob::dispatch(),
-            'dosen'     => SyncAllDosenJob::dispatch(),
-            'faculty'   => SyncFacultyJob::dispatch(),
-            'program'   => SyncProgramJob::dispatch(),
+            'dosen' => SyncAllDosenJob::dispatch(),
+            'faculty' => SyncFacultyJob::dispatch(),
+            'program' => SyncProgramJob::dispatch(),
         };
 
         return $this->success(null, "Sinkronisasi {$type} dijadwalkan ulang.");
@@ -83,9 +88,9 @@ class DatabaseSyncController extends Controller
 
         // Test local database connection
         try {
-            $dbResult = \Illuminate\Support\Facades\DB::connection()->select('SELECT 1 as test');
-            $database = \Illuminate\Support\Facades\DB::connection()->getDatabaseName();
-            $host = \Illuminate\Support\Facades\DB::connection()->getConfig('host');
+            $dbResult = DB::connection()->select('SELECT 1 as test');
+            $database = DB::connection()->getDatabaseName();
+            $host = DB::connection()->getConfig('host');
             $results['database'] = [
                 'status' => 'success',
                 'message' => 'Koneksi database berhasil',
@@ -102,7 +107,7 @@ class DatabaseSyncController extends Controller
 
         // Test Master API connection
         try {
-            $apiResult = app(\App\Services\MasterApiService::class)->healthCheck();
+            $apiResult = app(MasterApiService::class)->healthCheck();
             $results['master_api'] = $apiResult;
         } catch (\Exception $e) {
             $results['master_api'] = [
@@ -148,9 +153,9 @@ class DatabaseSyncController extends Controller
             SyncProgramJob::dispatch();
         } else {
             if ($type === 'mahasiswa') {
-                $syncMode === 'full' ? SyncAllMahasiswaJob::dispatch() : \App\Jobs\SyncMahasiswaJob::dispatch($entityId);
+                $syncMode === 'full' ? SyncAllMahasiswaJob::dispatch() : SyncMahasiswaJob::dispatch($entityId);
             } elseif ($type === 'dosen') {
-                $syncMode === 'full' ? SyncAllDosenJob::dispatch() : \App\Jobs\SyncDosenJob::dispatch($entityId);
+                $syncMode === 'full' ? SyncAllDosenJob::dispatch() : SyncDosenJob::dispatch($entityId);
             } elseif ($type === 'fakultas') {
                 SyncFacultyJob::dispatch();
             } elseif ($type === 'program') {

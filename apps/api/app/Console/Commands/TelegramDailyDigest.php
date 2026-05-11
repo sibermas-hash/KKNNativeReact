@@ -15,6 +15,7 @@ use Illuminate\Console\Command;
 class TelegramDailyDigest extends Command
 {
     protected $signature = 'telegram:daily-digest';
+
     protected $description = 'Kirim ringkasan harian KKN dengan analisis AI ke Telegram';
 
     public function handle(TelegramAiService $service): int
@@ -23,10 +24,12 @@ class TelegramDailyDigest extends Command
 
         if ($sent) {
             $this->info('Daily digest sent to Telegram.');
+
             return self::SUCCESS;
         }
 
         $this->warn('Daily digest not sent (Telegram not configured or AI failed).');
+
         return self::SUCCESS;
     }
 }

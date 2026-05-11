@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
+use App\Helpers\QueryHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\LokasiResource;
 use App\Http\Traits\ApiResponse;
+use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -18,9 +20,10 @@ class LokasiController extends Controller
     public function index(Request $request): JsonResponse
     {
         $lokasi = Lokasi::with('fakultas')
-            ->when($request->input('search'), fn ($q, $s) => $q->where('village_name', 'like', '%'.\App\Helpers\QueryHelper::escapeLike($s).'%'))
+            ->when($request->input('search'), fn ($q, $s) => $q->where('village_name', 'like', '%'.QueryHelper::escapeLike($s).'%'))
             ->orderBy('village_name')
             ->paginate($request->input('per_page', 25));
+
         return $this->successCollection(LokasiResource::collection($lokasi));
     }
 
@@ -36,6 +39,7 @@ class LokasiController extends Controller
             'capacity' => ['nullable', 'integer', 'min:0'],
             'fakultas_id' => ['nullable', 'exists:fakultas,id'],
         ]);
+
         return $this->created(new LokasiResource(Lokasi::create($validated)), 'Lokasi berhasil dibuat.');
     }
 
@@ -51,6 +55,7 @@ class LokasiController extends Controller
             'capacity' => ['nullable', 'integer', 'min:0'],
             'fakultas_id' => ['nullable', 'exists:fakultas,id'],
         ]));
+
         return $this->success(new LokasiResource($lokasi->refresh()), 'Lokasi berhasil diperbarui.');
     }
 
@@ -61,7 +66,7 @@ class LokasiController extends Controller
         // (dan FK cascadeOnDelete akan menghapus kelompok + peserta terkait
         // — data loss silent). Sekarang return 422 dengan info berapa
         // kelompok terkait supaya admin pindahkan dulu.
-        $groupsUsing = \App\Models\KKN\KelompokKkn::where('location_id', $lokasi->id)->count();
+        $groupsUsing = KelompokKkn::where('location_id', $lokasi->id)->count();
         if ($groupsUsing > 0) {
             return $this->error(
                 'VALIDATION_ERROR',
@@ -72,6 +77,7 @@ class LokasiController extends Controller
 
         try {
             $lokasi->delete();
+
             return $this->noContent('Lokasi berhasil dihapus.');
         } catch (\Throwable $e) {
             return $this->error('VALIDATION_ERROR', 'Gagal menghapus: '.$e->getMessage(), 422);
@@ -81,6 +87,7 @@ class LokasiController extends Controller
     public function import(Request $request): JsonResponse
     {
         $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240']]);
+
         return $this->success(['imported' => 0], 'Import lokasi selesai.');
     }
 

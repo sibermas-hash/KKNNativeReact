@@ -23,42 +23,41 @@ class EligibilityController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $user          = auth()->user();
-        $periodeId     = $request->integer('period_id') ?: null;
-        $facultyId     = $user->hasRole('faculty_admin') ? $user->fakultas_id : ($request->integer('faculty_id') ?: null);
-        $showEligible  = $request->boolean('show_eligible', true);
-        $search        = $request->string('search')->trim()->toString();
+        $user = auth()->user();
+        $periodeId = $request->integer('period_id') ?: null;
+        $facultyId = $user->hasRole('faculty_admin') ? $user->fakultas_id : ($request->integer('faculty_id') ?: null);
+        $showEligible = $request->boolean('show_eligible', true);
+        $search = $request->string('search')->trim()->toString();
 
-        $result        = $this->eligibilityService->getEligibleStudents($periodeId, $facultyId);
+        $result = $this->eligibilityService->getEligibleStudents($periodeId, $facultyId);
 
         $studentsToShow = $showEligible ? $result['eligible'] : $result['not_eligible'];
 
         if ($search !== '') {
-            $lower          = strtolower($search);
-            $studentsToShow = $studentsToShow->filter(fn ($s) =>
-                str_contains(strtolower($s['nim'] ?? ''), $lower) ||
+            $lower = strtolower($search);
+            $studentsToShow = $studentsToShow->filter(fn ($s) => str_contains(strtolower($s['nim'] ?? ''), $lower) ||
                 str_contains(strtolower($s['nama'] ?? ''), $lower)
             )->values();
         }
 
-        $perPage  = 20;
-        $page     = $request->integer('page', 1);
-        $total    = $studentsToShow->count();
+        $perPage = 20;
+        $page = $request->integer('page', 1);
+        $total = $studentsToShow->count();
         $students = $studentsToShow->slice(($page - 1) * $perPage, $perPage)->values();
 
         return $this->success([
-            'students'   => $students,
+            'students' => $students,
             'pagination' => [
                 'current_page' => $page,
-                'per_page'     => $perPage,
-                'total'        => $total,
-                'last_page'    => max(1, (int) ceil($total / $perPage)),
+                'per_page' => $perPage,
+                'total' => $total,
+                'last_page' => max(1, (int) ceil($total / $perPage)),
             ],
             'stats' => [
-                'total'              => $result['total'],
-                'eligible_count'     => $result['eligible_count'],
+                'total' => $result['total'],
+                'eligible_count' => $result['eligible_count'],
                 'not_eligible_count' => $result['not_eligible_count'],
-                'eligibility_rate'   => $result['eligibility_rate'],
+                'eligibility_rate' => $result['eligibility_rate'],
             ],
         ]);
     }
@@ -66,24 +65,24 @@ class EligibilityController extends Controller
     public function checkStudent(Mahasiswa $mahasiswa, Request $request): JsonResponse
     {
         $periodeId = $request->integer('periode_id') ?: null;
-        $result    = $this->eligibilityService->checkEligibility($mahasiswa, $periodeId);
+        $result = $this->eligibilityService->checkEligibility($mahasiswa, $periodeId);
 
         return $this->success($result);
     }
 
     public function export(Request $request)
     {
-        $user      = auth()->user();
+        $user = auth()->user();
         $periodeId = $request->integer('periode_id') ?: null;
         $facultyId = $user->hasRole('faculty_admin') ? $user->fakultas_id : ($request->integer('fakultas_id') ?: null);
 
-        $result      = $this->eligibilityService->getEligibleStudents($periodeId, $facultyId);
+        $result = $this->eligibilityService->getEligibleStudents($periodeId, $facultyId);
         $spreadsheet = new Spreadsheet;
 
         // Sheet 1: Eligible
-        $sheet1  = $spreadsheet->getActiveSheet()->setTitle('Mahasiswa Eligible');
+        $sheet1 = $spreadsheet->getActiveSheet()->setTitle('Mahasiswa Eligible');
         $headers = ['No', 'NIM', 'Nama', 'Fakultas', 'Prodi', 'SKS', 'IPK', 'BTA-PPI', 'Surat Sehat', 'Izin Ortu'];
-        $col     = 'A';
+        $col = 'A';
         foreach ($headers as $h) {
             $sheet1->setCellValue("{$col}1", $h);
             $col++;

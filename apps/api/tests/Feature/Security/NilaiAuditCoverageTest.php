@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Enums\KknType;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\KonfigurasiPenilaian;
 use App\Models\KKN\LogAudit;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\PesertaKkn;
-use App\Enums\KknType;
 
 /**
  * Regression test R11-DB-013 alternative (ADR-001):
@@ -15,7 +15,6 @@ use App\Enums\KknType;
  * konfigurasi penilaian. Menguji bahwa observer terdaftar dengan severity
  * yang tepat.
  */
-
 beforeEach(function () {
     LogAudit::query()->delete();
 });

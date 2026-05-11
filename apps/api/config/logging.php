@@ -1,5 +1,6 @@
 <?php
 
+use App\Logging\PiiScrubber;
 use Monolog\Handler\NullHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
@@ -64,7 +65,7 @@ return [
             'level' => env('LOG_LEVEL', 'debug'),
             'replace_placeholders' => true,
             // R13-OPS-015: redact passwords/tokens/NIK/NIM from log file entries.
-            'processors' => [\App\Logging\PiiScrubber::class],
+            'processors' => [PiiScrubber::class],
         ],
 
         'daily' => [
@@ -74,7 +75,7 @@ return [
             'days' => env('LOG_DAILY_DAYS', 14),
             'replace_placeholders' => true,
             // R13-OPS-015: redact passwords/tokens/NIK/NIM from daily log files.
-            'processors' => [\App\Logging\PiiScrubber::class],
+            'processors' => [PiiScrubber::class],
         ],
 
         'slack' => [

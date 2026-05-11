@@ -6,6 +6,7 @@ use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 describe('Sistem Bimbingan Online (R6)', function () {
 
@@ -85,7 +86,7 @@ describe('Sistem Bimbingan Online (R6)', function () {
                     'topik' => 'Test',
                 ]);
             $this->fail('Expected 403 HttpException but got success');
-        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+        } catch (HttpException $e) {
             expect($e->getStatusCode())->toBe(403);
         }
     });

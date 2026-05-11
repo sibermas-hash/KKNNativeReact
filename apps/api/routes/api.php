@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\PublicController;
 use App\Http\Controllers\Api\V1\Student\ChatController;
 use App\Http\Controllers\Api\V1\TotpController;
 use App\Http\Controllers\HealthController;
+use App\Services\AI\ErrorAlertService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
@@ -216,13 +217,13 @@ Route::post('log-error', function (Request $request) {
 
     // AI-powered Telegram alert for frontend errors
     try {
-        app(\App\Services\AI\ErrorAlertService::class)->alertFrontendError(
+        app(ErrorAlertService::class)->alertFrontendError(
             $payload['message'],
             $payload['url'],
             $payload['stack'],
             $payload['user_id'],
         );
-    } catch (\Throwable) {
+    } catch (Throwable) {
         // Alert failure must never break the response
     }
 

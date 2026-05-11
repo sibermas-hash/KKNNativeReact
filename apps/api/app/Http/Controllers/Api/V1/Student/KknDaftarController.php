@@ -10,6 +10,7 @@ use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
+use App\Models\KKN\SystemSetting;
 use App\Services\EligibilityService;
 use App\Services\KKN\RegistrationDocumentService;
 use Illuminate\Http\JsonResponse;
@@ -55,38 +56,38 @@ class KknDaftarController extends Controller
                 }
 
                 return [
-                    'id'                 => $p->id,
-                    'name'               => $p->name,
-                    'jenis'              => [
-                        'id'          => $p->jenisKkn?->id,
-                        'name'        => $p->jenisKkn?->name,
-                        'code'        => $p->jenisKkn?->code,
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'jenis' => [
+                        'id' => $p->jenisKkn?->id,
+                        'name' => $p->jenisKkn?->name,
+                        'code' => $p->jenisKkn?->code,
                         'description' => $p->jenisKkn?->description,
                     ],
-                    'requirements'       => [
-                        'config'    => $p->jenisKkn?->requirements_config ?? [],
+                    'requirements' => [
+                        'config' => $p->jenisKkn?->requirements_config ?? [],
                         'documents' => collect($documentRequirements)->pluck('label')->values()->all(),
                     ],
                     'registration_start' => $p->registration_start?->format('d/m/Y'),
-                    'registration_end'   => $p->registration_end?->format('d/m/Y'),
-                    'start_date'         => $p->start_date?->format('d/m/Y'),
-                    'end_date'           => $p->end_date?->format('d/m/Y'),
-                    'kuota'              => $p->kuota,
-                    'current_phase'      => $p->current_phase,
-                    'can_register'       => $canRegister && $eligibility['is_eligible'],
+                    'registration_end' => $p->registration_end?->format('d/m/Y'),
+                    'start_date' => $p->start_date?->format('d/m/Y'),
+                    'end_date' => $p->end_date?->format('d/m/Y'),
+                    'kuota' => $p->kuota,
+                    'current_phase' => $p->current_phase,
+                    'can_register' => $canRegister && $eligibility['is_eligible'],
                     'ineligible_reasons' => $hasRegistered ? [] : $eligibility['reasons'],
                 ];
             });
 
         return $this->success([
-            'periods'             => $periods,
-            'user_eligibility'    => $this->getUserEligibility($mahasiswa),
+            'periods' => $periods,
+            'user_eligibility' => $this->getUserEligibility($mahasiswa),
             'registration_status' => $existingRegistration ? [
                 'has_registered' => true,
-                'status'         => $existingRegistration->status,
-                'period_name'    => $existingRegistration->periode?->name ?? '-',
-                'jenis_name'     => $existingRegistration->periode?->jenisKkn?->name ?? '-',
-                'registered_at'  => $existingRegistration->created_at?->format('d/m/Y'),
+                'status' => $existingRegistration->status,
+                'period_name' => $existingRegistration->periode?->name ?? '-',
+                'jenis_name' => $existingRegistration->periode?->jenisKkn?->name ?? '-',
+                'registered_at' => $existingRegistration->created_at?->format('d/m/Y'),
             ] : ['has_registered' => false],
         ]);
     }
@@ -129,22 +130,22 @@ class KknDaftarController extends Controller
                 $maleTargetMax = (int) ceil($group->capacity * 0.3);
 
                 return [
-                    'id'               => $group->id,
-                    'nama_kelompok'    => $group->nama_kelompok,
-                    'code'             => $group->code,
-                    'capacity'         => $group->capacity,
-                    'peserta_count'    => $group->peserta_count,
-                    'remaining_seats'  => $remaining,
-                    'male_count'       => $group->male_count,
-                    'female_count'     => $group->female_count,
+                    'id' => $group->id,
+                    'nama_kelompok' => $group->nama_kelompok,
+                    'code' => $group->code,
+                    'capacity' => $group->capacity,
+                    'peserta_count' => $group->peserta_count,
+                    'remaining_seats' => $remaining,
+                    'male_count' => $group->male_count,
+                    'female_count' => $group->female_count,
                     'male_min_required' => $maleMinRequired,
-                    'male_target_max'  => $maleTargetMax,
-                    'lokasi'           => $group->lokasi ? [
-                        'id'            => $group->lokasi->id,
-                        'village_name'  => $group->lokasi->village_name,
+                    'male_target_max' => $maleTargetMax,
+                    'lokasi' => $group->lokasi ? [
+                        'id' => $group->lokasi->id,
+                        'village_name' => $group->lokasi->village_name,
                         'district_name' => $group->lokasi->district_name,
-                        'regency_name'  => $group->lokasi->regency_name,
-                        'full_name'     => $group->lokasi->full_name ?? implode(', ', array_filter([
+                        'regency_name' => $group->lokasi->regency_name,
+                        'full_name' => $group->lokasi->full_name ?? implode(', ', array_filter([
                             $group->lokasi->village_name,
                             $group->lokasi->district_name,
                             $group->lokasi->regency_name,
@@ -155,7 +156,7 @@ class KknDaftarController extends Controller
 
         return $this->success([
             'periode' => [
-                'id'   => $periodeModel->id,
+                'id' => $periodeModel->id,
                 'name' => $periodeModel->name,
                 'self_service_enabled' => $periodeModel->usesSelfServiceRegistration(),
             ],
@@ -175,7 +176,7 @@ class KknDaftarController extends Controller
 
         return [
             'is_eligible' => $eligibility['is_eligible'],
-            'reasons'     => array_column($eligibility['issues'] ?? [], 'message'),
+            'reasons' => array_column($eligibility['issues'] ?? [], 'message'),
         ];
     }
 
@@ -193,13 +194,13 @@ class KknDaftarController extends Controller
         }
 
         return [
-            'sks_completed'          => $mahasiswa->sks_completed,
-            'gpa'                    => $mahasiswa->gpa,
-            'bta_ppi_passed'         => in_array(strtoupper(trim($mahasiswa->status_bta_ppi ?? '')), ['LULUS', 'PASSED', 'SUCCESS']),
+            'sks_completed' => $mahasiswa->sks_completed,
+            'gpa' => $mahasiswa->gpa,
+            'bta_ppi_passed' => in_array(strtoupper(trim($mahasiswa->status_bta_ppi ?? '')), ['LULUS', 'PASSED', 'SUCCESS']),
             'has_health_certificate' => ! empty($mahasiswa->health_certificate_path),
-            'has_parent_permission'  => ! empty($mahasiswa->parent_permission_path),
+            'has_parent_permission' => ! empty($mahasiswa->parent_permission_path),
             // R11 audit fix: kirim threshold ke frontend supaya tidak hardcoded.
-            'thresholds'             => $this->globalEligibilityThresholds(),
+            'thresholds' => $this->globalEligibilityThresholds(),
         ];
     }
 
@@ -212,8 +213,8 @@ class KknDaftarController extends Controller
     private function globalEligibilityThresholds(): array
     {
         return [
-            'min_sks' => (int) \App\Models\KKN\SystemSetting::get('eligibility_min_sks', '100'),
-            'min_gpa' => (float) \App\Models\KKN\SystemSetting::get('eligibility_min_gpa', '2.0'),
+            'min_sks' => (int) SystemSetting::get('eligibility_min_sks', '100'),
+            'min_gpa' => (float) SystemSetting::get('eligibility_min_gpa', '2.0'),
         ];
     }
 }

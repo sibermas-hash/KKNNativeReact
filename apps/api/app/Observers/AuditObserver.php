@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace App\Observers;
 
 use App\Models\KKN\LogAudit;
+use App\Providers\AppServiceProvider;
 use Illuminate\Database\Eloquent\Model;
 
 /**
  * Model-level audit trail writer.
  *
- * Registered per-model via {@see \App\Providers\AppServiceProvider::boot()}.
+ * Registered per-model via {@see AppServiceProvider::boot()}.
  * Writes `log_audit` rows synchronously (cheap — single insert). The more
  * expensive diff computation is kept in pure PHP.
  *
@@ -159,6 +160,7 @@ class AuditObserver
                 $attrs[$key] = self::MASK;
             }
         }
+
         return $attrs;
     }
 
@@ -169,9 +171,9 @@ class AuditObserver
 
         return match ($action) {
             'CREATE' => "Membuat {$name} #{$id}",
-            'UPDATE' => "Mengubah {$name} #{$id} (" . implode(', ', array_keys($new)) . ')',
+            'UPDATE' => "Mengubah {$name} #{$id} (".implode(', ', array_keys($new)).')',
             'DELETE' => "Menghapus {$name} #{$id}",
-            default  => "{$action} {$name} #{$id}",
+            default => "{$action} {$name} #{$id}",
         };
     }
 

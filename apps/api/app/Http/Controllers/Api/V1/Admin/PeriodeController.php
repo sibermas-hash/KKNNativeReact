@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\PeriodeResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\Periode;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -28,6 +29,7 @@ class PeriodeController extends Controller
     public function show(Periode $periode): JsonResponse
     {
         $periode->load(['tahunAkademik', 'jenisKkn.documentRequirements.defaultTemplate', 'kelompok', 'documentTemplates']);
+
         return $this->success(new PeriodeResource($periode));
     }
 
@@ -48,6 +50,7 @@ class PeriodeController extends Controller
         }
 
         $period = Periode::create($validated);
+
         return $this->created(new PeriodeResource($period->load(['tahunAkademik', 'jenisKkn'])), 'Periode KKN berhasil dibuat.');
     }
 
@@ -66,6 +69,7 @@ class PeriodeController extends Controller
         }
 
         $periode->update($validated);
+
         return $this->success(new PeriodeResource($periode->refresh()->load(['tahunAkademik', 'jenisKkn'])), 'Periode berhasil diperbarui.');
     }
 
@@ -73,6 +77,7 @@ class PeriodeController extends Controller
     {
         try {
             $periode->delete();
+
             return $this->noContent('Periode berhasil dihapus.');
         } catch (\Throwable $e) {
             return $this->error('VALIDATION_ERROR', 'Gagal menghapus periode: '.$e->getMessage(), 422);
@@ -86,6 +91,7 @@ class PeriodeController extends Controller
             $new->name = $periode->name.' (Copy)';
             $new->is_active = false;
             $new->save();
+
             return $this->created(new PeriodeResource($new->load(['tahunAkademik', 'jenisKkn'])), 'Periode berhasil diduplikasi.');
         } catch (\Throwable $e) {
             return $this->error('SERVER_ERROR', 'Gagal menduplikasi: '.$e->getMessage(), 500);
@@ -95,6 +101,7 @@ class PeriodeController extends Controller
     public function export(): JsonResponse
     {
         $periods = Periode::with(['tahunAkademik', 'jenisKkn'])->orderByDesc('periode')->get();
+
         return $this->success(PeriodeResource::collection($periods));
     }
 
@@ -105,28 +112,28 @@ class PeriodeController extends Controller
         $periodeId = $existing?->id;
 
         return [
-            'academic_year_id'   => [$req, 'exists:tahun_akademik,id'],
-            'jenis_kkn_id'       => [$req, 'exists:jenis_kkn,id'],
-            'periode'            => [$req, 'integer', 'min:1'],
-            'name'               => [$req, 'string', 'max:255'],
-            'theme'              => ['nullable', 'string', 'max:255'],
-            'start_date'         => [$req, 'date', function ($attr, $value, $fail) use ($request) {
+            'academic_year_id' => [$req, 'exists:tahun_akademik,id'],
+            'jenis_kkn_id' => [$req, 'exists:jenis_kkn,id'],
+            'periode' => [$req, 'integer', 'min:1'],
+            'name' => [$req, 'string', 'max:255'],
+            'theme' => ['nullable', 'string', 'max:255'],
+            'start_date' => [$req, 'date', function ($attr, $value, $fail) use ($request) {
                 $regEnd = $request->input('registration_end');
                 if ($regEnd && $value) {
-                    $gap = \Carbon\Carbon::parse($regEnd)->diffInDays(\Carbon\Carbon::parse($value));
+                    $gap = Carbon::parse($regEnd)->diffInDays(Carbon::parse($value));
                     if ($gap < 7) {
                         $fail("Jarak minimal antara penutupan pendaftaran dan mulai pelaksanaan adalah 7 hari. Saat ini hanya {$gap} hari.");
                     }
                 }
             }],
-            'end_date'           => [$req, 'date', 'after:start_date'],
+            'end_date' => [$req, 'date', 'after:start_date'],
             'registration_start' => [$req, 'date'],
-            'registration_end'   => [$req, 'date', 'after:registration_start'],
-            'grading_start'      => ['nullable', 'date'],
-            'grading_end'        => ['nullable', 'date', 'after_or_equal:grading_start'],
-            'kuota'              => [$req, 'integer', 'min:1'],
-            'current_phase'      => ['nullable', 'string', 'in:upcoming,registration,placement,execution,grading,finished'],
-            'is_active'          => ['nullable', 'boolean'],
+            'registration_end' => [$req, 'date', 'after:registration_start'],
+            'grading_start' => ['nullable', 'date'],
+            'grading_end' => ['nullable', 'date', 'after_or_equal:grading_start'],
+            'kuota' => [$req, 'integer', 'min:1'],
+            'current_phase' => ['nullable', 'string', 'in:upcoming,registration,placement,execution,grading,finished'],
+            'is_active' => ['nullable', 'boolean'],
         ];
     }
 }

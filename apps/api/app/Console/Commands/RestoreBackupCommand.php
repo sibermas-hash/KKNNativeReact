@@ -50,6 +50,7 @@ class RestoreBackupCommand extends Command
         $disk = $this->option('disk') ?: ($this->resolveDefaultDisk());
         if (! $disk) {
             $this->error('No backup disks configured. Check config/backup.php.');
+
             return self::FAILURE;
         }
 
@@ -60,19 +61,22 @@ class RestoreBackupCommand extends Command
         // List mode (no archive chosen)
         if (! $this->option('archive') && ! $this->option('latest')) {
             $this->listArchives($backupDisk, $directory);
+
             return self::SUCCESS;
         }
 
         // Guardrails
         if (app()->environment('production') && ! $this->option('allow-production')) {
             $this->error('Refusing to run in production without --allow-production.');
+
             return self::FAILURE;
         }
         if (! $this->option('force') && ! $this->confirm(
-            "This will OVERWRITE your database and storage files. Continue?",
+            'This will OVERWRITE your database and storage files. Continue?',
             false
         )) {
             $this->info('Aborted.');
+
             return self::FAILURE;
         }
 
@@ -81,12 +85,14 @@ class RestoreBackupCommand extends Command
             ?: $this->findLatestArchive($backupDisk, $directory);
         if (! $archive) {
             $this->error('No archive found.');
+
             return self::FAILURE;
         }
 
         $remotePath = $directory.'/'.ltrim($archive, '/');
         if (! $backupDisk->exists($remotePath)) {
             $this->error("Archive not found on disk '{$disk}': {$remotePath}");
+
             return self::FAILURE;
         }
 
@@ -96,6 +102,7 @@ class RestoreBackupCommand extends Command
         $tempRoot = storage_path('app/backup-restore/'.uniqid('restore_', true));
         if (! mkdir($tempRoot, 0700, true) && ! is_dir($tempRoot)) {
             $this->error("Cannot create temp dir {$tempRoot}");
+
             return self::FAILURE;
         }
 
@@ -110,6 +117,7 @@ class RestoreBackupCommand extends Command
             $openResult = $zip->open($localArchive, ZipArchive::RDONLY);
             if ($openResult !== true) {
                 $this->error("Failed to open archive (code {$openResult}).");
+
                 return self::FAILURE;
             }
 
@@ -120,6 +128,7 @@ class RestoreBackupCommand extends Command
 
             if (! $zip->extractTo($extractDir)) {
                 $this->error('Failed to extract archive. Wrong BACKUP_ARCHIVE_PASSWORD?');
+
                 return self::FAILURE;
             }
             $zip->close();
@@ -133,6 +142,7 @@ class RestoreBackupCommand extends Command
             }
 
             $this->info('Restore complete.');
+
             return self::SUCCESS;
         } finally {
             $this->cleanup($tempRoot);
@@ -142,6 +152,7 @@ class RestoreBackupCommand extends Command
     private function resolveDefaultDisk(): ?string
     {
         $disks = config('backup.backup.destination.disks', []);
+
         return $disks[0] ?? null;
     }
 
@@ -149,6 +160,7 @@ class RestoreBackupCommand extends Command
     {
         if (! $disk->exists($directory)) {
             $this->warn("Directory '{$directory}' not found on disk.");
+
             return;
         }
 
@@ -165,6 +177,7 @@ class RestoreBackupCommand extends Command
 
         if (empty($files)) {
             $this->warn("No .zip archives found in '{$directory}'.");
+
             return;
         }
 
@@ -223,6 +236,7 @@ class RestoreBackupCommand extends Command
         $dump = $dumps[0] ?? null;
         if (! $dump) {
             $this->warn('No db-dump found in archive; skipping DB restore.');
+
             return;
         }
 
@@ -231,6 +245,7 @@ class RestoreBackupCommand extends Command
 
         if (($cfg['driver'] ?? null) !== 'pgsql') {
             $this->error("Only pgsql connections are supported by this command (saw '{$cfg['driver']}').");
+
             return;
         }
 
@@ -259,6 +274,7 @@ class RestoreBackupCommand extends Command
 
         if (! $process->isSuccessful()) {
             $this->error('psql exited non-zero. Restore failed.');
+
             return;
         }
 

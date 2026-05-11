@@ -24,10 +24,13 @@ use Illuminate\Support\Facades\Log;
 class TelegramAlertService
 {
     public const SEVERITY_INFO = 'info';
+
     public const SEVERITY_WARNING = 'warning';
+
     public const SEVERITY_CRITICAL = 'critical';
 
     private string $botToken;
+
     private string $chatId;
 
     public function __construct()

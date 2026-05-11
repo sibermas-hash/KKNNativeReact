@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\UserActivityLog;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -23,38 +24,39 @@ use Illuminate\Support\Facades\DB;
 class UserActivityController extends Controller
 {
     use ApiResponse;
+
     public function index(Request $request): JsonResponse
     {
         $filters = $request->validate([
-            'user_id'   => ['nullable', 'integer', 'exists:users,id'],
-            'action'    => ['nullable', 'string', 'max:50'],
-            'status'    => ['nullable', 'in:success,failed'],
-            'ip'        => ['nullable', 'string', 'max:45'],
+            'user_id' => ['nullable', 'integer', 'exists:users,id'],
+            'action' => ['nullable', 'string', 'max:50'],
+            'status' => ['nullable', 'in:success,failed'],
+            'ip' => ['nullable', 'string', 'max:45'],
             'date_from' => ['nullable', 'date'],
-            'date_to'   => ['nullable', 'date'],
-            'per_page'  => ['nullable', 'integer', 'min:10', 'max:100'],
+            'date_to' => ['nullable', 'date'],
+            'per_page' => ['nullable', 'integer', 'min:10', 'max:100'],
         ]);
 
         $query = UserActivityLog::query()->with('user:id,name,username,email');
 
-        if (!empty($filters['user_id'])) {
+        if (! empty($filters['user_id'])) {
             $query->where('user_id', $filters['user_id']);
         }
-        if (!empty($filters['action'])) {
+        if (! empty($filters['action'])) {
             $query->where('action', $filters['action']);
         }
-        if (!empty($filters['status'])) {
+        if (! empty($filters['status'])) {
             $query->where('status', $filters['status']);
         }
-        if (!empty($filters['ip'])) {
+        if (! empty($filters['ip'])) {
             $query->where('ip_address', $filters['ip']);
         }
-        if (!empty($filters['date_from'])) {
+        if (! empty($filters['date_from'])) {
             // Gunakan range comparison, bukan whereDate() yang bypass B-tree index.
-            $query->where('created_at', '>=', \Carbon\Carbon::parse($filters['date_from'])->startOfDay());
+            $query->where('created_at', '>=', Carbon::parse($filters['date_from'])->startOfDay());
         }
-        if (!empty($filters['date_to'])) {
-            $query->where('created_at', '<=', \Carbon\Carbon::parse($filters['date_to'])->endOfDay());
+        if (! empty($filters['date_to'])) {
+            $query->where('created_at', '<=', Carbon::parse($filters['date_to'])->endOfDay());
         }
 
         $perPage = (int) ($filters['per_page'] ?? 25);

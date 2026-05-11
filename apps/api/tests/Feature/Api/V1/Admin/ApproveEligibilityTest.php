@@ -6,13 +6,13 @@ use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use App\Services\EligibilityService;
+use Mockery\MockInterface;
 
 /**
  * Regression test untuk audit R9-008 fix:
  * `PesertaKknController::approve` dan `bulkApprove` sekarang re-run eligibility
  * sebelum mengubah status ke approved. Superadmin dengan `?force=1` boleh bypass.
  */
-
 beforeEach(function () {
     $this->admin = createUserWithRole('superadmin'); // bypass permission check
     $periode = createActivePeriod('placement');
@@ -42,7 +42,7 @@ function makePendingPeserta(KelompokKkn $kelompok, int $periodeId): PesertaKkn
  * Mock EligibilityService::checkEligibility. Returns helper to stub per-call
  * result and configures the container binding.
  */
-function stubEligibility(bool $eligible, string $failingKey = 'min_sks', string $failingMessage = 'SKS tidak mencukupi (90/100)'): Mockery\MockInterface
+function stubEligibility(bool $eligible, string $failingKey = 'min_sks', string $failingMessage = 'SKS tidak mencukupi (90/100)'): MockInterface
 {
     $mock = Mockery::mock(EligibilityService::class);
     $mock->shouldReceive('checkEligibility')->andReturnUsing(function () use ($eligible, $failingKey, $failingMessage) {
@@ -132,6 +132,7 @@ it('bulkApprove returns skipped list with reason for failing peserta', function 
     $mock->shouldReceive('checkEligibility')->andReturnUsing(function ($mahasiswa) {
         // Genap → lolos, ganjil → gagal. Simulasi partial success.
         $eligible = $mahasiswa->id % 2 === 0;
+
         return [
             'checks' => $eligible ? [] : [
                 'min_sks' => ['passed' => false, 'key' => 'min_sks', 'message' => 'SKS kurang'],

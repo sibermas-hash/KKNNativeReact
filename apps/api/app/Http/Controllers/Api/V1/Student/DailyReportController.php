@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Student;
 
+use App\Helpers\QueryHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Student\StoreDailyReportRequest;
 use App\Http\Resources\Api\V1\KegiatanKknResource;
 use App\Http\Traits\ApiResponse;
+use App\Jobs\ApplyPhotoWatermarkJob;
 use App\Models\KKN\FileKegiatanKkn;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\SystemSetting;
 use App\Services\GeofenceService;
 use App\Services\KKN\GpsAntiSpoofService;
-use App\Services\PhotoWatermarkService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -44,7 +44,7 @@ class DailyReportController extends Controller
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
             ->when($request->input('search'), fn ($q, $s) => $q->where(function ($q) use ($s) {
                 // R13-SEC-007: escape LIKE wildcards (%, _) to prevent pattern injection
-                $safe = \App\Helpers\QueryHelper::escapeLike($s);
+                $safe = QueryHelper::escapeLike($s);
                 $q->where('title', 'like', "%{$safe}%")->orWhere('activity', 'like', "%{$safe}%");
             }))
             ->with(['kelompok', 'fileKegiatan'])
@@ -207,7 +207,7 @@ class DailyReportController extends Controller
                 // untuk menghindari blocking HTTP response (foto besar bisa
                 // 3-5 detik render). Kalau queue belum setup (sync driver),
                 // behavior sama dengan sync lama.
-                \App\Jobs\ApplyPhotoWatermarkJob::dispatch($path, [
+                ApplyPhotoWatermarkJob::dispatch($path, [
                     'nim' => $nim,
                     'captured_at' => (string) $validated['captured_at'],
                     'latitude' => (float) $validated['latitude'],
@@ -291,7 +291,7 @@ class DailyReportController extends Controller
     private function buildSpoofReviewNote(array $result): string
     {
         $lines = [
-            "🛰️ [GPS Anti-Spoof Auto-Flag]",
+            '🛰️ [GPS Anti-Spoof Auto-Flag]',
             "Risk score: {$result['score']}/100",
             '',
             'Suspicions:',

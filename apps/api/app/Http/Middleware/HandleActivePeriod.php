@@ -7,6 +7,7 @@ namespace App\Http\Middleware;
 use App\Services\PeriodContextService;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -41,7 +42,7 @@ class HandleActivePeriod
 
         if (! $this->contextService->getActivePeriodId()) {
             $userId = auth()->id();
-            $defaultId = \Illuminate\Support\Facades\Cache::remember(
+            $defaultId = Cache::remember(
                 "default_period_id_{$userId}", 60,
                 fn () => $this->contextService->getDefaultPeriodId()
             );

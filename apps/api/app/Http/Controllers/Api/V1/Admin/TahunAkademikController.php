@@ -23,16 +23,17 @@ class TahunAkademikController extends Controller
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'year'      => ['required', 'string', 'max:20', 'unique:tahun_akademik,year'],
+            'year' => ['required', 'string', 'max:20', 'unique:tahun_akademik,year'],
             'is_active' => ['nullable', 'boolean'],
         ]);
+
         return $this->created(new TahunAkademikResource(TahunAkademik::create($validated)), 'Tahun akademik berhasil dibuat.');
     }
 
     public function update(Request $request, TahunAkademik $tahunAkademik): JsonResponse
     {
         $validated = $request->validate([
-            'year'      => ['sometimes', 'string', 'max:20', 'unique:tahun_akademik,year,'.$tahunAkademik->id],
+            'year' => ['sometimes', 'string', 'max:20', 'unique:tahun_akademik,year,'.$tahunAkademik->id],
             'is_active' => ['nullable', 'boolean'],
         ]);
 
@@ -44,6 +45,7 @@ class TahunAkademikController extends Controller
         }
 
         $tahunAkademik->update($validated);
+
         return $this->success(new TahunAkademikResource($tahunAkademik->refresh()), 'Tahun akademik berhasil diperbarui.');
     }
 
@@ -60,6 +62,7 @@ class TahunAkademikController extends Controller
         }
 
         $tahunAkademik->delete();
+
         return $this->noContent('Tahun akademik berhasil dihapus.');
     }
 }

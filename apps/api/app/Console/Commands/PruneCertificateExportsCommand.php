@@ -34,6 +34,7 @@ class PruneCertificateExportsCommand extends Command
 
         if (! $disk->exists($directory)) {
             $this->info("Nothing to prune (directory {$directory} doesn't exist).");
+
             return self::SUCCESS;
         }
 
@@ -52,6 +53,7 @@ class PruneCertificateExportsCommand extends Command
         }
 
         $this->info("Pruned {$deleted} export(s) older than {$hours}h.");
+
         return self::SUCCESS;
     }
 }

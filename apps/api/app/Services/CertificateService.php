@@ -7,12 +7,13 @@ namespace App\Services;
 use App\Models\KKN\LaporanAkhir;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\SertifikatKkn;
+use App\Models\KKN\SystemSetting;
 use App\Services\KKN\KonfigurasiSertifikatService;
-use Barryvdh\DomPDF\Facade\Pdf;
-use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer as QrWriter;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpWord\TemplateProcessor;
@@ -105,7 +106,7 @@ class CertificateService
         // sertifikat karena FP precision). total_score di-store decimal:2
         // di DB, tapi cast (float) di PHP bisa munculkan drift kalau
         // upstream computation belum di-round.
-        $minScore = (float) \App\Models\KKN\SystemSetting::get('certificate_min_score', '70');
+        $minScore = (float) SystemSetting::get('certificate_min_score', '70');
         $normalizedScore = round((float) $score->total_score, 2);
         if ($normalizedScore < $minScore) {
             throw new RuntimeException("Sertifikat hanya diterbitkan untuk nilai minimal {$minScore}");
@@ -197,7 +198,7 @@ class CertificateService
         // pakai bacon/bacon-qr-code (SVG) + encode ke data URI.
         // DomPDF 3+ render SVG via data URI dengan baik.
         try {
-            $renderer = new ImageRenderer(new RendererStyle(150), new SvgImageBackEnd());
+            $renderer = new ImageRenderer(new RendererStyle(150), new SvgImageBackEnd);
             $qrSvg = (new QrWriter($renderer))->writeString($verificationUrl);
             $qrBase64 = 'data:image/svg+xml;base64,'.base64_encode($qrSvg);
         } catch (\Throwable $e) {

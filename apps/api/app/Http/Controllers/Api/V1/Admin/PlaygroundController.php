@@ -6,7 +6,9 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
+use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
+use App\Models\KKN\PesertaKkn;
 use App\Services\ActivityLogger;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -24,6 +26,7 @@ use Illuminate\Support\Facades\Log;
 class PlaygroundController extends Controller
 {
     use ApiResponse;
+
     /**
      * GET /admin/playground/models
      *
@@ -38,7 +41,7 @@ class PlaygroundController extends Controller
         // dengan daftar model dari SumoPod yang cocok untuk general chat + vision.
         $hasAnyKey = false;
         foreach (['primary', 'fallback', 'tertiary'] as $key) {
-            if (!empty($tiers[$key]['key'] ?? null)) {
+            if (! empty($tiers[$key]['key'] ?? null)) {
                 $hasAnyKey = true;
                 break;
             }
@@ -124,16 +127,16 @@ class PlaygroundController extends Controller
         $providerKey = $data['provider'] ?? 'primary';
         $tier = $tiers[$providerKey] ?? null;
 
-        if (!$tier || empty($tier['key'])) {
+        if (! $tier || empty($tier['key'])) {
             // Fallback ke tier lain yang ada key-nya
             foreach (['primary', 'fallback', 'tertiary'] as $k) {
-                if (!empty($tiers[$k]['key'])) {
+                if (! empty($tiers[$k]['key'])) {
                     $tier = $tiers[$k];
                     $providerKey = $k;
                     break;
                 }
             }
-            if (!$tier || empty($tier['key'])) {
+            if (! $tier || empty($tier['key'])) {
                 return $this->error('AI_UNAVAILABLE', 'Tidak ada API key AI yang terkonfigurasi.', 503);
             }
         }
@@ -141,7 +144,7 @@ class PlaygroundController extends Controller
         $model = $data['model'] ?? $tier['model'];
         $systemPrompt = $data['system_prompt'] ?? $this->defaultSystemPrompt();
         if (($data['inject_context'] ?? true)) {
-            $systemPrompt = $this->injectContext() . "\n\n" . $systemPrompt;
+            $systemPrompt = $this->injectContext()."\n\n".$systemPrompt;
         }
 
         $messages = [['role' => 'system', 'content' => $systemPrompt]];
@@ -161,7 +164,8 @@ class PlaygroundController extends Controller
             );
         } catch (Exception $e) {
             Log::warning('Playground AI call failed', ['tier' => $providerKey, 'error' => $e->getMessage()]);
-            return $this->error('AI_ERROR', 'AI gagal merespons: ' . $e->getMessage(), 502);
+
+            return $this->error('AI_ERROR', 'AI gagal merespons: '.$e->getMessage(), 502);
         }
 
         ActivityLogger::log('ai_playground', 'success', $request->user()?->id, [
@@ -180,12 +184,12 @@ class PlaygroundController extends Controller
     }
 
     /**
-     * @param array<int, array{role: string, content: string}> $messages
+     * @param  array<int, array{role: string, content: string}>  $messages
      * @return array{content: string, usage: array<string, int>}
      */
     private function callAi(string $baseUrl, string $apiKey, string $model, array $messages, float $temperature, int $maxTokens): array
     {
-        $endpoint = rtrim($baseUrl, '/') . '/chat/completions';
+        $endpoint = rtrim($baseUrl, '/').'/chat/completions';
 
         $response = Http::withToken($apiKey)->timeout(30)->post($endpoint, [
             'model' => $model,
@@ -194,8 +198,8 @@ class PlaygroundController extends Controller
             'max_tokens' => $maxTokens,
         ]);
 
-        if (!$response->successful()) {
-            throw new Exception("HTTP {$response->status()}: " . $response->body());
+        if (! $response->successful()) {
+            throw new Exception("HTTP {$response->status()}: ".$response->body());
         }
 
         $json = $response->json();
@@ -214,28 +218,28 @@ class PlaygroundController extends Controller
 
     private function defaultSystemPrompt(): string
     {
-        return "Anda adalah asisten AI untuk Superadmin SIBERMAS KKN UIN Prof. K.H. Saifuddin Zuhri Purwokerto. "
-            . "Jawab dalam Bahasa Indonesia yang formal dan profesional. "
-            . "Jika pertanyaan terkait data sistem, gunakan konteks yang disediakan. "
-            . "Jika Anda tidak yakin, katakan tidak tahu — jangan mengarang.";
+        return 'Anda adalah asisten AI untuk Superadmin SIBERMAS KKN UIN Prof. K.H. Saifuddin Zuhri Purwokerto. '
+            .'Jawab dalam Bahasa Indonesia yang formal dan profesional. '
+            .'Jika pertanyaan terkait data sistem, gunakan konteks yang disediakan. '
+            .'Jika Anda tidak yakin, katakan tidak tahu — jangan mengarang.';
     }
 
     private function injectContext(): string
     {
         try {
             $activePeriod = Periode::where('is_active', true)->first();
-            $totalMahasiswa = \App\Models\KKN\Mahasiswa::count();
-            $pesertaAktif = \App\Models\KKN\PesertaKkn::where('periode_id', $activePeriod?->id)
+            $totalMahasiswa = Mahasiswa::count();
+            $pesertaAktif = PesertaKkn::where('periode_id', $activePeriod?->id)
                 ->whereNotNull('kelompok_id')->count();
 
             return "[KONTEKS SISTEM SIBERMAS — Data Real-Time]\n"
-                . "- Periode Aktif: " . ($activePeriod?->name ?? 'Belum ada') . "\n"
-                . "- Fase Saat Ini: " . ($activePeriod?->current_phase ?? '-') . "\n"
-                . "- Total Mahasiswa Terdaftar: {$totalMahasiswa}\n"
-                . "- Mahasiswa Sudah Ditempatkan: {$pesertaAktif}\n"
-                . "[/KONTEKS]";
+                .'- Periode Aktif: '.($activePeriod?->name ?? 'Belum ada')."\n"
+                .'- Fase Saat Ini: '.($activePeriod?->current_phase ?? '-')."\n"
+                ."- Total Mahasiswa Terdaftar: {$totalMahasiswa}\n"
+                ."- Mahasiswa Sudah Ditempatkan: {$pesertaAktif}\n"
+                .'[/KONTEKS]';
         } catch (\Throwable $e) {
-            return "[KONTEKS SISTEM SIBERMAS — Tidak tersedia]";
+            return '[KONTEKS SISTEM SIBERMAS — Tidak tersedia]';
         }
     }
 

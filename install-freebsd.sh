@@ -58,7 +58,8 @@ pkg install -y \
     npm-node22 \
     py311-supervisor \
     git \
-    curl
+    curl \
+    bash
 
 echo "==> Mengaktifkan layanan di /etc/rc.conf..."
 sysrc nginx_enable="YES"

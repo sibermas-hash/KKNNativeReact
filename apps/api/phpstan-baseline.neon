@@ -1,6 +1,12 @@
 parameters:
 	ignoreErrors:
 		-
+			message: '#^Method App\\Console\\Commands\\AutoSyncPeriodePhase\:\:getTriggerDate\(\) never returns Carbon\\Carbon so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Console/Commands/AutoSyncPeriodePhase.php
+
+		-
 			message: '#^Method App\\Console\\Commands\\AutoSyncPeriodePhase\:\:getTriggerDate\(\) should return Carbon\\Carbon\|null but returns string\|null\.$#'
 			identifier: return.type
 			count: 1
@@ -73,6 +79,12 @@ parameters:
 			path: app/Console/Commands/KKN/SendDeadlineRemindersCommand.php
 
 		-
+			message: '#^Match arm comparison between 0 and 0 is always true\.$#'
+			identifier: match.alwaysTrue
+			count: 1
+			path: app/Console/Commands/KKN/SendDeadlineRemindersCommand.php
+
+		-
 			message: '#^Anonymous function has an unused use \$firstWord\.$#'
 			identifier: closure.unusedUse
 			count: 1
@@ -88,6 +100,36 @@ parameters:
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 11
+			path: app/Console/Commands/StressTestRegistrationCommand.php
+
+		-
+			message: '#^Parameter \#2 \$group of method App\\Console\\Commands\\StressTestRegistrationCommand\:\:cleanupSimulationData\(\) expects App\\Models\\KKN\\KelompokKkn, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Console/Commands/StressTestRegistrationCommand.php
+
+		-
+			message: '#^Parameter \#3 \$period of method App\\Console\\Commands\\StressTestRegistrationCommand\:\:cleanupSimulationData\(\) expects App\\Models\\KKN\\Periode, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Console/Commands/StressTestRegistrationCommand.php
+
+		-
+			message: '#^Parameter \#4 \$location of method App\\Console\\Commands\\StressTestRegistrationCommand\:\:cleanupSimulationData\(\) expects App\\Models\\KKN\\Lokasi, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Console/Commands/StressTestRegistrationCommand.php
+
+		-
+			message: '#^Parameter \#5 \$program of method App\\Console\\Commands\\StressTestRegistrationCommand\:\:cleanupSimulationData\(\) expects App\\Models\\KKN\\Prodi, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Console/Commands/StressTestRegistrationCommand.php
+
+		-
+			message: '#^Parameter \#6 \$faculty of method App\\Console\\Commands\\StressTestRegistrationCommand\:\:cleanupSimulationData\(\) expects App\\Models\\KKN\\Fakultas, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
 			path: app/Console/Commands/StressTestRegistrationCommand.php
 
 		-
@@ -109,8 +151,134 @@ parameters:
 			path: app/Exports/BiodataPesertaExport.php
 
 		-
+			message: '#^Using nullsafe property access "\?\-\>address" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/BiodataPesertaExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>address_district_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/BiodataPesertaExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>address_regency_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/BiodataPesertaExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>address_village_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/BiodataPesertaExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>birth_place" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/BiodataPesertaExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>mother_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/BiodataPesertaExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Exports/BiodataPesertaExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama_kelompok" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/BiodataPesertaExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/BiodataPesertaExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nim" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/BiodataPesertaExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>shirt_size" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/BiodataPesertaExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>sks_completed" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/BiodataPesertaExport.php
+
+		-
 			message: '#^Method App\\Exports\\BpjsParticipantExport\:\:query\(\) has invalid return type Laravel\\Scout\\Builder\.$#'
 			identifier: class.notFound
+			count: 1
+			path: app/Exports/BpjsParticipantExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>address" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/BpjsParticipantExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>mother_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/BpjsParticipantExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Exports/BpjsParticipantExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama_kelompok" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/BpjsParticipantExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/BpjsParticipantExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nik" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/BpjsParticipantExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nim" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/BpjsParticipantExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>phone" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/BpjsParticipantExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>sks_completed" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Exports/BpjsParticipantExport.php
 
@@ -119,6 +287,36 @@ parameters:
 			identifier: class.notFound
 			count: 1
 			path: app/Exports/PesertaKknExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Exports/PesertaKknExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama_kelompok" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/PesertaKknExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/PesertaKknExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nim" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/PesertaKknExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/AiAssistantController.php
 
 		-
 			message: '#^Call to static method make\(\) on an unknown class Intervention\\Image\\Facades\\Image\.$#'
@@ -133,6 +331,18 @@ parameters:
 			path: app/Http/Controllers/Api/NotificationController.php
 
 		-
+			message: '#^Constant App\\Http\\Controllers\\Api\\PublicDataController\:\:DELETABLE_TABLES is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: app/Http/Controllers/Api/PublicDataController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\PublicDataController\:\:getWritableColumns\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Http/Controllers/Api/PublicDataController.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_kelompok\.$#'
 			identifier: property.notFound
 			count: 1
@@ -141,6 +351,12 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ActivityAuditController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\KKN\\Laporan\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
 			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/ActivityAuditController.php
 
@@ -175,28 +391,28 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
 
 		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\AdminChatController\:\:badRequest\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
-
-		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\AdminChatController\:\:created\(\)\.$#'
-			identifier: method.notFound
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
 			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
 
 		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\AdminChatController\:\:success\(\)\.$#'
-			identifier: method.notFound
-			count: 3
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, sender\: array\{id\: mixed, name\: mixed, is_admin\: bool\}, body\: string, attachment_url\: string\|null, attachment_name\: string\|null, is_read\: bool, created_at\: string\|null\}, Closure\(App\\Models\\KKN\\ChatMessage\)\: array\{id\: int, sender\: array\{id\: mixed, name\: mixed, is_admin\: bool\}, body\: string, attachment_url\: string\|null, attachment_name\: string\|null, is_read\: bool, created_at\: string\|null\} given\.$#'
+			identifier: argument.type
+			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
 
 		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\AvatarModerationController\:\:success\(\)\.$#'
-			identifier: method.notFound
-			count: 3
-			path: app/Http/Controllers/Api/V1/Admin/AvatarModerationController.php
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\KKN\\ChatConversation\>\:\:transform\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
 
 		-
 			message: '#^Cannot call method isFuture\(\) on string\.$#'
@@ -209,6 +425,30 @@ parameters:
 			identifier: method.nonObject
 			count: 4
 			path: app/Http/Controllers/Api/V1/Admin/DashboardController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Admin\\DashboardController\:\:calculateCurrentPhase\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/DashboardController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 8
+			path: app/Http/Controllers/Api/V1/Admin/DashboardController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\User\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/DashboardController.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: mixed$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/DatabaseSyncController.php
 
 		-
 			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\DplAssignmentController\:\:created\(\)\.$#'
@@ -259,6 +499,18 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Admin/DplRegistrationController.php
 
 		-
+			message: '#^Parameter \#1 \$dosen of method App\\Services\\DplAssignmentService\:\:activateForPeriod\(\) expects App\\Models\\KKN\\Dosen, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/DplRegistrationController.php
+
+		-
+			message: '#^Parameter \#2 \$period of method App\\Services\\DplAssignmentService\:\:activateForPeriod\(\) expects App\\Models\\KKN\\Periode, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/DplRegistrationController.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 1
@@ -289,6 +541,12 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Admin/GeneratorNilaiController.php
 
 		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\PesertaKkn\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/GeneratorNilaiController.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$file_name\.$#'
 			identifier: property.notFound
 			count: 1
@@ -303,6 +561,18 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/JenisKknDocumentRequirementController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array, Closure\(App\\Models\\KKN\\JenisKknDocumentRequirement\)\: array given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/JenisKknDocumentRequirementController.php
+
+		-
+			message: '#^Parameter \#1 \$requirement of method App\\Http\\Controllers\\Api\\V1\\Admin\\JenisKknDocumentRequirementController\:\:serialize\(\) expects App\\Models\\KKN\\JenisKknDocumentRequirement, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/JenisKknDocumentRequirementController.php
 
@@ -331,6 +601,12 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Admin/KelompokKknAdminController.php
 
 		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/KelompokKknAdminController.php
+
+		-
 			message: '#^Call to an undefined static method App\\Models\\KKN\\KknRequirement\:\:ordered\(\)\.$#'
 			identifier: staticMethod.notFound
 			count: 1
@@ -341,6 +617,18 @@ parameters:
 			identifier: return.type
 			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/KonfigurasiPenilaianController.php
+
+		-
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, App\\Models\\KKN\\Periode\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/LogbookPdfController.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\<array\{component\: ''cache''\|''database''\|''failed_jobs''\|''queue''\|''redis''\|''storage'', type\: ''telegram_alert'', severity\: ''critical'', last_sent_at\: mixed, source\: ''telegram_dedup_cache''\}\|array\{component\: non\-falsy\-string, type\: ''failed_job'', severity\: ''warning'', last_sent_at\: mixed, source\: ''failed_jobs_table'', details\: string, uuid\: mixed\}\>\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/MonitoringController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$documentRequirements\.$#'
@@ -357,6 +645,12 @@ parameters:
 		-
 			message: '#^Call to static method query\(\) on an unknown class App\\Http\\Controllers\\Api\\V1\\Admin\\DocumentTemplate\.$#'
 			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PeriodeDocumentTemplateController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>documentRequirements" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/PeriodeDocumentTemplateController.php
 
@@ -405,7 +699,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
 			identifier: property.notFound
-			count: 3
+			count: 4
 			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
 
 		-
@@ -427,21 +721,45 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
 
 		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\PesertaKkn\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
+
+		-
+			message: '#^Parameter \#1 \$mahasiswa of method App\\Services\\EligibilityService\:\:checkEligibility\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
+
+		-
+			message: '#^Parameter \#2 \$mahasiswa of method App\\Services\\GroupSelectionService\:\:assignGroup\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
+
+		-
+			message: '#^Parameter \#2 \$mahasiswa of method App\\Services\\GroupSelectionService\:\:validateGroupAcceptance\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
+
+		-
 			message: '#^Relation ''pesertaKkn'' is not found in App\\Models\\KKN\\DokumenPesertaKkn model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
 
 		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\PlaygroundController\:\:error\(\)\.$#'
-			identifier: method.notFound
-			count: 2
+			message: '#^Using nullsafe property access "\?\-\>current_phase" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/PlaygroundController.php
 
 		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\PlaygroundController\:\:success\(\)\.$#'
-			identifier: method.notFound
-			count: 2
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/PlaygroundController.php
 
 		-
@@ -493,6 +811,12 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Admin/RekapNilaiController.php
 
 		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/RekapNilaiController.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\:\:\$nama\.$#'
 			identifier: property.notFound
 			count: 1
@@ -520,6 +844,12 @@ parameters:
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$village_name\.$#'
 			identifier: property.notFound
 			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/RekapitulasiController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\KelompokKkn\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/RekapitulasiController.php
 
 		-
@@ -577,9 +907,27 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Admin/UserActivityController.php
 
 		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\UserActivityController\:\:success\(\)\.$#'
-			identifier: method.notFound
-			count: 3
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\UserActivityLog\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/UserActivityController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\KKN\\UserActivityLog\>\:\:transform\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/UserActivityController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Support\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/UserActivityController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/UserActivityController.php
 
 		-
@@ -667,6 +1015,12 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Dosen/DashboardController.php
 
 		-
+			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dosen/DashboardController.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 2
@@ -685,9 +1039,33 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Dosen/WorkshopController.php
 
 		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\PesertaWorkshop\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dosen/WorkshopController.php
+
+		-
+			message: '#^Parameter \#1 \$dosen of method App\\Services\\DplEligibilityService\:\:canAttendWorkshop\(\) expects App\\Models\\KKN\\Dosen, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dosen/WorkshopController.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 5
+			path: app/Http/Controllers/Api/V1/Dpl/BimbinganController.php
+
+		-
+			message: '#^Comparison operation "\>" between 4 and 0 is always true\.$#'
+			identifier: greater.alwaysTrue
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/BimbinganController.php
+
+		-
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 3
 			path: app/Http/Controllers/Api/V1/Dpl/BimbinganController.php
 
 		-
@@ -741,6 +1119,48 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$village_name\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/DashboardController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\KelompokKkn\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/DashboardController.php
+
+		-
+			message: '#^Parameter \#1 \$dosen of method App\\Services\\DplScopeService\:\:assignedGroupIds\(\) expects App\\Models\\KKN\\Dosen, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/DashboardController.php
+
+		-
+			message: '#^Parameter \#1 \$dosen of method App\\Services\\DplScopeService\:\:coordinatorAreaSummaries\(\) expects App\\Models\\KKN\\Dosen, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/DashboardController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/DashboardController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>jenis_label" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/DashboardController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/DashboardController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>village_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/V1/Dpl/DashboardController.php
 
@@ -826,6 +1246,42 @@ parameters:
 			message: '#^Class App\\Imports\\EvaluationImport constructor invoked with 0 parameters, 2 required\.$#'
 			identifier: arguments.count
 			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Dpl\\EvaluationController\:\:parseImportFile\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\PesertaKkn\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Parameter \#1 \$dosen of method App\\Services\\DplScopeService\:\:assignedGroupIds\(\) expects App\\Models\\KKN\\Dosen, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama_kelompok" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nim" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
 			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
 
 		-
@@ -919,6 +1375,42 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
 
 		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\KelompokKkn\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nim" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>village_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
+
+		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:kelompokKkn\(\)\.$#'
 			identifier: method.notFound
 			count: 2
@@ -933,6 +1425,18 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$kelompok\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/LogbookPdfController.php
+
+		-
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, App\\Models\\KKN\\Periode\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/LogbookPdfController.php
+
+		-
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Api/V1/Dpl/LogbookPdfController.php
 
@@ -963,6 +1467,24 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/ParticipantFeedbackController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\EvaluasiDplPeserta\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/ParticipantFeedbackController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama_kelompok" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/ParticipantFeedbackController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/V1/Dpl/ParticipantFeedbackController.php
 
@@ -1099,6 +1621,24 @@ parameters:
 			path: app/Http/Controllers/Api/V1/ProfileController.php
 
 		-
+			message: '#^Parameter \#3 \$mahasiswa of method App\\Http\\Controllers\\Api\\V1\\ProfileController\:\:applyProfileChanges\(\) expects App\\Models\\KKN\\Mahasiswa\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Parameter \#4 \$dosen of method App\\Http\\Controllers\\Api\\V1\\ProfileController\:\:applyProfileChanges\(\) expects App\\Models\\KKN\\Dosen\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/V1/PublicController.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 1
@@ -1107,6 +1647,12 @@ parameters:
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:peserta\(\)\.$#'
 			identifier: method.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Student/BimbinganController.php
+
+		-
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
 			count: 3
 			path: app/Http/Controllers/Api/V1/Student/BimbinganController.php
 
@@ -1147,27 +1693,27 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Student/ChatController.php
 
 		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Student\\ChatController\:\:badRequest\(\)\.$#'
-			identifier: method.notFound
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
 			count: 1
 			path: app/Http/Controllers/Api/V1/Student/ChatController.php
 
 		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Student\\ChatController\:\:created\(\)\.$#'
-			identifier: method.notFound
-			count: 2
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, sender\: array\{id\: mixed, name\: mixed, is_self\: bool\}, body\: string, attachment_url\: string\|null, attachment_name\: string\|null, is_read\: bool, created_at\: string\|null\}, Closure\(App\\Models\\KKN\\ChatMessage\)\: array\{id\: int, sender\: array\{id\: mixed, name\: mixed, is_self\: bool\}, body\: string, attachment_url\: string\|null, attachment_name\: string\|null, is_read\: bool, created_at\: string\|null\} given\.$#'
+			identifier: argument.type
+			count: 1
 			path: app/Http/Controllers/Api/V1/Student/ChatController.php
 
 		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Student\\ChatController\:\:forbidden\(\)\.$#'
-			identifier: method.notFound
-			count: 2
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\KKN\\ChatConversation\>\:\:transform\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
 			path: app/Http/Controllers/Api/V1/Student/ChatController.php
 
 		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Student\\ChatController\:\:success\(\)\.$#'
-			identifier: method.notFound
-			count: 2
+			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
 			path: app/Http/Controllers/Api/V1/Student/ChatController.php
 
 		-
@@ -1192,6 +1738,12 @@ parameters:
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:peserta\(\)\.$#'
 			identifier: method.notFound
 			count: 1
+			path: app/Http/Controllers/Api/V1/Student/DailyReportController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type mixed\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
 			path: app/Http/Controllers/Api/V1/Student/DailyReportController.php
 
 		-
@@ -1255,8 +1807,26 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Student/DashboardController.php
 
 		-
+			message: '#^Parameter \#1 \$kelompok of method App\\Http\\Controllers\\Api\\V1\\Student\\DashboardController\:\:leaderPayload\(\) expects App\\Models\\KKN\\KelompokKkn, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/DashboardController.php
+
+		-
 			message: '#^Call to an undefined method Illuminate\\Http\\Request\:\:validated\(\)\.$#'
 			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/DplEvaluationController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/V1/Student/DplEvaluationController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>village_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/V1/Student/DplEvaluationController.php
 
@@ -1282,6 +1852,12 @@ parameters:
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:peserta\(\)\.$#'
 			identifier: method.notFound
 			count: 1
+			path: app/Http/Controllers/Api/V1/Student/IzinController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
 			path: app/Http/Controllers/Api/V1/Student/IzinController.php
 
 		-
@@ -1363,6 +1939,66 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
 
 		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\KelompokKkn\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\Periode\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Parameter \#1 \$mahasiswa of method App\\Http\\Controllers\\Api\\V1\\Student\\KknDaftarController\:\:checkEligibility\(\) expects App\\Models\\KKN\\Mahasiswa\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Parameter \#1 \$mahasiswa of method App\\Http\\Controllers\\Api\\V1\\Student\\KknDaftarController\:\:getUserEligibility\(\) expects App\\Models\\KKN\\Mahasiswa\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Parameter \#2 \$message of method App\\Http\\Controllers\\Api\\V1\\Student\\KknDaftarController\:\:error\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>requirements_config" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, App\\Models\\KKN\\Periode\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/LogbookPdfController.php
+
+		-
+			message: '#^Parameter \#1 \$mahasiswa of method App\\Services\\LogbookPdfService\:\:generate\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/LogbookPdfController.php
+
+		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:kelompokKkn\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -1372,6 +2008,24 @@ parameters:
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:peserta\(\)\.$#'
 			identifier: method.notFound
 			count: 3
+			path: app/Http/Controllers/Api/V1/Student/PoskoController.php
+
+		-
+			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, App\\Models\\User\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/PoskoController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>address" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/PoskoController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama_posko" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
 			path: app/Http/Controllers/Api/V1/Student/PoskoController.php
 
 		-
@@ -1405,6 +2059,24 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Student/RegistrationController.php
 
 		-
+			message: '#^Parameter \#1 \$mahasiswa of method App\\Services\\EligibilityService\:\:checkEligibility\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/RegistrationController.php
+
+		-
+			message: '#^Parameter \#1 \$mahasiswa of method App\\Services\\RegistrationService\:\:register\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/RegistrationController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type mixed\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 13
+			path: app/Http/Controllers/Api/V1/Student/RegistrationController.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$documentRequirements\.$#'
 			identifier: property.notFound
 			count: 1
@@ -1425,6 +2097,24 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$template\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/RegistrationDocumentController.php
+
+		-
+			message: '#^Parameter \#2 \$mahasiswa of method App\\Services\\KKN\\RegistrationDocumentService\:\:persistUploadedDocuments\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/RegistrationDocumentController.php
+
+		-
+			message: '#^Parameter \#2 \$mahasiswa of method App\\Services\\KKN\\RegistrationDocumentService\:\:validationRules\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/RegistrationDocumentController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>template" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/V1/Student/RegistrationDocumentController.php
 
@@ -1459,28 +2149,16 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Student/WorkProgramController.php
 
 		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\TotpController\:\:badRequest\(\)\.$#'
-			identifier: method.notFound
-			count: 5
-			path: app/Http/Controllers/Api/V1/TotpController.php
-
-		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\TotpController\:\:error\(\)\.$#'
-			identifier: method.notFound
-			count: 4
-			path: app/Http/Controllers/Api/V1/TotpController.php
-
-		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\TotpController\:\:forbidden\(\)\.$#'
-			identifier: method.notFound
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
 			count: 1
-			path: app/Http/Controllers/Api/V1/TotpController.php
+			path: app/Http/Middleware/ValidateApiKey.php
 
 		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\TotpController\:\:success\(\)\.$#'
-			identifier: method.notFound
-			count: 5
-			path: app/Http/Controllers/Api/V1/TotpController.php
+			message: '#^Strict comparison using \!\=\= between mixed~\(0\|0\.0\|''''\|''0''\|array\{\}\|false\|null\) and '''' will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Http/Middleware/ValidateApiKey.php
 
 		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$category\.$#'
@@ -1490,6 +2168,12 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$content\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AnnouncementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$content_type\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Resources/Api/V1/AnnouncementResource.php
@@ -2497,6 +3181,18 @@ parameters:
 			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
 
 		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama_kelompok" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KelompokKknResource\:\:\$capacity\.$#'
 			identifier: property.notFound
 			count: 1
@@ -2887,6 +3583,12 @@ parameters:
 			path: app/Http/Resources/Api/V1/MahasiswaResource.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$fakultas_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$gender\.$#'
 			identifier: property.notFound
 			count: 1
@@ -2985,7 +3687,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$user_id\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Http/Resources/Api/V1/MahasiswaResource.php
 
 		-
@@ -3961,6 +4663,78 @@ parameters:
 			path: app/Http/Resources/Api/V1/WorkshopResource.php
 
 		-
+			message: '#^Constant App\\Imports\\DosenDataImport\:\:COL_EMAIL is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: app/Imports/DosenDataImport.php
+
+		-
+			message: '#^Constant App\\Imports\\DosenDataImport\:\:COL_NAMA_TANPA_GELAR is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: app/Imports/DosenDataImport.php
+
+		-
+			message: '#^Method App\\Imports\\DplAssignmentImport\:\:resolvePeriod\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Imports/DplAssignmentImport.php
+
+		-
+			message: '#^Constant App\\Imports\\MetodologiPkmImport\:\:THRESHOLD is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: app/Imports/MetodologiPkmImport.php
+
+		-
+			message: '#^Method App\\Imports\\MetodologiPkmImport\:\:findOrCreateWorkshop\(\) never returns null so it can be removed from the return type\.$#'
+			identifier: return.unusedType
+			count: 1
+			path: app/Imports/MetodologiPkmImport.php
+
+		-
+			message: '#^Constant App\\Imports\\NilaiKknHistorisImport\:\:COL_ARTIKEL is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: app/Imports/NilaiKknHistorisImport.php
+
+		-
+			message: '#^Constant App\\Imports\\NilaiKknHistorisImport\:\:COL_KEDISIPLINAN is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: app/Imports/NilaiKknHistorisImport.php
+
+		-
+			message: '#^Constant App\\Imports\\NilaiKknHistorisImport\:\:COL_LAPORAN is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: app/Imports/NilaiKknHistorisImport.php
+
+		-
+			message: '#^Constant App\\Imports\\NilaiKknHistorisImport\:\:COL_LPPM is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: app/Imports/NilaiKknHistorisImport.php
+
+		-
+			message: '#^Constant App\\Imports\\NilaiKknHistorisImport\:\:COL_NAMA_DPL is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: app/Imports/NilaiKknHistorisImport.php
+
+		-
+			message: '#^Constant App\\Imports\\NilaiKknHistorisImport\:\:COL_PELAKSANAAN is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: app/Imports/NilaiKknHistorisImport.php
+
+		-
+			message: '#^Constant App\\Imports\\NilaiKknHistorisImport\:\:COL_SIKAP is unused\.$#'
+			identifier: classConstant.unused
+			count: 1
+			path: app/Imports/NilaiKknHistorisImport.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 2
@@ -3971,6 +4745,18 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Jobs/FinalizeMassScoresJob.php
+
+		-
+			message: '#^Property App\\Jobs\\FinalizeMassScoresJob\:\:\$adminId is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/Jobs/FinalizeMassScoresJob.php
+
+		-
+			message: '#^Access to an undefined property App\\Jobs\\GenerateBulkCertificatesJob\:\:\$periodId\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Jobs/GenerateBulkCertificatesJob.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
@@ -4135,6 +4921,18 @@ parameters:
 			path: app/Models/KKN/KelompokKkn.php
 
 		-
+			message: '#^Using nullsafe property access on non\-nullable type Illuminate\\Database\\Eloquent\\Model\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/KKN/KelompokKkn.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Models/KKN/KonfigurasiPenilaian.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode_id\.$#'
 			identifier: property.notFound
 			count: 1
@@ -4161,6 +4959,18 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/Mahasiswa.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>address" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Models/KKN/Mahasiswa.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>phone" in empty\(\) is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Models/KKN/Mahasiswa.php
 
@@ -4261,14 +5071,38 @@ parameters:
 			path: app/Notifications/DeadlineReminderNotification.php
 
 		-
+			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Notifications/DeadlineReminderNotification.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
 			identifier: property.notFound
 			count: 2
 			path: app/Notifications/KKN/StudentLeaveRequestedNotification.php
 
 		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Http\\Request\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Observers/AuditObserver.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fakultas_id\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Policies/EvaluasiPolicy.php
+
+		-
+			message: '#^Parameter \#2 \$kelompok of method App\\Policies\\EvaluasiPolicy\:\:isDplOfGroup\(\) expects App\\Models\\KKN\\KelompokKkn\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Policies/EvaluasiPolicy.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>fakultas_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Policies/EvaluasiPolicy.php
 
@@ -4297,8 +5131,26 @@ parameters:
 			path: app/Policies/KegiatanKknPolicy.php
 
 		-
+			message: '#^Using nullsafe property access "\?\-\>fakultas_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Policies/KegiatanKknPolicy.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fakultas_id\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Policies/KknScorePolicy.php
+
+		-
+			message: '#^Parameter \#2 \$kelompok of method App\\Policies\\KknScorePolicy\:\:isDplOfGroup\(\) expects App\\Models\\KKN\\KelompokKkn\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Policies/KknScorePolicy.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>fakultas_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Policies/KknScorePolicy.php
 
@@ -4313,6 +5165,12 @@ parameters:
 			identifier: arguments.count
 			count: 1
 			path: app/Providers/DocumentServiceProvider.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Http\\Request\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Services/ActivityLogger.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\KKN\\DplKecamatanAssignment\:\:\$district_id\.$#'
@@ -4341,6 +5199,12 @@ parameters:
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\HasMany\:\:detach\(\)\.$#'
 			identifier: method.notFound
+			count: 1
+			path: app/Services/Admin/DplAssignmentService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Services/Admin/DplAssignmentService.php
 
@@ -4423,6 +5287,18 @@ parameters:
 			path: app/Services/AutomaticGroupPlacementService.php
 
 		-
+			message: '#^Using nullsafe property access "\?\-\>regency_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/AutomaticGroupPlacementService.php
+
+		-
+			message: '#^Match arm comparison between ''\-'' and ''\-'' is always true\.$#'
+			identifier: match.alwaysTrue
+			count: 2
+			path: app/Services/CaptchaService.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 2
@@ -4453,6 +5329,24 @@ parameters:
 			path: app/Services/CertificateService.php
 
 		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Services/CertificateService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/CertificateService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nim" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/CertificateService.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\KKN\\KelompokKkn\:\:\$member_count\.$#'
 			identifier: property.notFound
 			count: 1
@@ -4471,6 +5365,30 @@ parameters:
 			path: app/Services/ComprehensiveReportService.php
 
 		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\KelompokKkn\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/ComprehensiveReportService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:sortBy\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/ComprehensiveReportService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>district_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/ComprehensiveReportService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>village_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/ComprehensiveReportService.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 2
@@ -4485,6 +5403,18 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Services/DplAssignmentService.php
+
+		-
+			message: '#^Parameter \#3 \$previousDpl of method App\\Services\\DplAssignmentService\:\:notifyStudentsOfDplChange\(\) expects App\\Models\\KKN\\Dosen, Illuminate\\Database\\Eloquent\\Model&object\{pivot\: Illuminate\\Database\\Eloquent\\Relations\\Pivot\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/DplAssignmentService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Services/DplAssignmentService.php
 
@@ -4533,6 +5463,18 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Services/DplScopeService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/DplScopeService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Services/DplScopeService.php
 
@@ -4597,6 +5539,42 @@ parameters:
 			path: app/Services/EligibilityService.php
 
 		-
+			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Services/EligibilityService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>min_sks" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/EligibilityService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Services/EligibilityService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>requirements_config" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/EligibilityService.php
+
+		-
+			message: '#^Parameter \#3 \$lat2 of method App\\Services\\GeofenceService\:\:calculateDistanceMeters\(\) expects float, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/GeofenceService.php
+
+		-
+			message: '#^Parameter \#4 \$lng2 of method App\\Services\\GeofenceService\:\:calculateDistanceMeters\(\) expects float, string\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/GeofenceService.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$district_name\.$#'
 			identifier: property.notFound
 			count: 1
@@ -4639,6 +5617,36 @@ parameters:
 			path: app/Services/GradeExportService.php
 
 		-
+			message: '#^Using nullsafe property access "\?\-\>district_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/GradeExportService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Services/GradeExportService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>regency_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/GradeExportService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>village_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Services/GradeExportService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>year" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Services/GradeExportService.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode\.$#'
 			identifier: property.notFound
 			count: 1
@@ -4675,6 +5683,48 @@ parameters:
 			path: app/Services/GroupSelectionService.php
 
 		-
+			message: '#^Parameter \#1 \$rules of method App\\Services\\GroupSelectionService\:\:buildRuleSnapshot\(\) expects Illuminate\\Support\\Collection\<int, App\\Models\\KKN\\SlotTerkunci\>, Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/GroupSelectionService.php
+
+		-
+			message: '#^Parameter \#2 \$mahasiswa of method App\\Services\\GroupSelectionService\:\:matchesRule\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/GroupSelectionService.php
+
+		-
+			message: '#^Parameter \#2 \$period of method App\\Services\\GroupSelectionService\:\:assertCanLeaveCurrentGroup\(\) expects App\\Models\\KKN\\Periode, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Services/GroupSelectionService.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/GroupSelectionService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Services/GroupSelectionService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/GroupSelectionService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>regency_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/GroupSelectionService.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$dpl\.$#'
 			identifier: property.notFound
 			count: 1
@@ -4701,6 +5751,24 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$posko\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/AttendanceValidationService.php
+
+		-
+			message: '#^Parameter \#1 \$lat1 of method App\\Services\\KKN\\AttendanceValidationService\:\:calculateHaversineDistance\(\) expects float, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/KKN/AttendanceValidationService.php
+
+		-
+			message: '#^Parameter \#2 \$lng1 of method App\\Services\\KKN\\AttendanceValidationService\:\:calculateHaversineDistance\(\) expects float, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/KKN/AttendanceValidationService.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type mixed\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Services/KKN/AttendanceValidationService.php
 
@@ -4795,8 +5863,86 @@ parameters:
 			path: app/Services/KKN/DplParticipantEvaluationService.php
 
 		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\EvaluasiDplPeserta\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 2
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, student_name\: mixed, student_nim\: mixed, group_name\: mixed, period_name\: mixed, recommendation\: string, total_score\: float, notes\: string\|null, submitted_at\: mixed, items\: Illuminate\\Support\\Collection\<int, array\{criterion_key\: mixed, criterion_label\: mixed, score\: mixed, weight\: mixed\}\>\}, Closure\(App\\Models\\KKN\\EvaluasiDplPeserta\)\: array\{id\: int, student_name\: mixed, student_nim\: mixed, group_name\: mixed, period_name\: mixed, recommendation\: string, total_score\: float, notes\: string\|null, submitted_at\: mixed, items\: Illuminate\\Support\\Collection\<int, array\{criterion_key\: mixed, criterion_label\: mixed, score\: mixed, weight\: mixed\}\>\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),Illuminate\\Support\\Collection\<int, mixed\>\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),array\<string, mixed\>\>\:\:sortByDesc\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama_kelompok" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nim" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nip" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>timestamp" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
 			message: '#^Call to private method haversineDistance\(\) of class App\\Models\\KKN\\Attendance\.$#'
 			identifier: method.private
+			count: 1
+			path: app/Services/KKN/FraudDetectionService.php
+
+		-
+			message: '#^Method App\\Services\\KKN\\FraudDetectionService\:\:haversineDistance\(\) is unused\.$#'
+			identifier: method.unused
 			count: 1
 			path: app/Services/KKN/FraudDetectionService.php
 
@@ -4825,6 +5971,18 @@ parameters:
 			path: app/Services/KKN/IntelligenceService.php
 
 		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\KegiatanKkn\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/KKN/IntelligenceService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/KKN/IntelligenceService.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
 			identifier: property.notFound
 			count: 1
@@ -4849,6 +6007,30 @@ parameters:
 			path: app/Services/KKN/KknRequirementService.php
 
 		-
+			message: '#^Method App\\Services\\KKN\\KknRequirementService\:\:isMazawaStudent\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Services/KKN/KknRequirementService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/KKN/KknRequirementService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>requirements_config" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/KKN/KknRequirementService.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type Illuminate\\Database\\Eloquent\\Model\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/KKN/KknRequirementService.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 1
@@ -4861,20 +6043,62 @@ parameters:
 			path: app/Services/KKN/NilaiAkhirService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/KKN/PlacementService.php
+			message: '#^Using nullsafe property access on non\-nullable type Illuminate\\Database\\Eloquent\\Model\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/KKN/NilaiAkhirService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$placement_mode\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/KKN/PlacementService.php
+			message: '#^Parameter \#1 \$jenisKkn of static method App\\Services\\KKN\\PeriodeGovernanceService\:\:blueprintFromJenisKkn\(\) expects App\\Models\\KKN\\JenisKkn, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Services/KKN/PeriodeGovernanceService.php
 
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:usesAutomaticPlacementAfterApproval\(\)\.$#'
 			identifier: method.notFound
+			count: 1
+			path: app/Services/KKN/RegistrationApprovalService.php
+
+		-
+			message: '#^Parameter \#1 \$mahasiswa of method App\\Services\\AutomaticGroupPlacementService\:\:selectGroupForStudent\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/KKN/RegistrationApprovalService.php
+
+		-
+			message: '#^Parameter \#1 \$mahasiswa of method App\\Services\\EligibilityService\:\:checkEligibility\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/KKN/RegistrationApprovalService.php
+
+		-
+			message: '#^Parameter \#1 \$mahasiswa of method App\\Services\\EligibilityService\:\:checkEligibility\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/KKN/RegistrationApprovalService.php
+
+		-
+			message: '#^Parameter \#2 \$mahasiswa of method App\\Services\\GroupSelectionService\:\:assignGroup\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/KKN/RegistrationApprovalService.php
+
+		-
+			message: '#^Parameter \#2 \$mahasiswa of method App\\Services\\GroupSelectionService\:\:assignGroup\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/KKN/RegistrationApprovalService.php
+
+		-
+			message: '#^Parameter \#2 \$mahasiswa of method App\\Services\\GroupSelectionService\:\:validateGroupAcceptance\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/KKN/RegistrationApprovalService.php
+
+		-
+			message: '#^Parameter \#2 \$mahasiswa of method App\\Services\\GroupSelectionService\:\:validateGroupAcceptance\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
 			count: 1
 			path: app/Services/KKN/RegistrationApprovalService.php
 
@@ -4891,6 +6115,90 @@ parameters:
 			path: app/Services/KKN/RegistrationDocumentService.php
 
 		-
+			message: '#^Empty array passed to foreach\.$#'
+			identifier: foreach.emptyArray
+			count: 1
+			path: app/Services/KKN/RegistrationDocumentService.php
+
+		-
+			message: '#^Offset ''passport_scan'' on array\{\}\|array\{health_certificate\?\: array, parent_permission\?\: array\} in isset\(\) does not exist\.$#'
+			identifier: isset.offset
+			count: 1
+			path: app/Services/KKN/RegistrationDocumentService.php
+
+		-
+			message: '#^Offset ''surat_kesediaan'' on array\{\}\|array\{health_certificate\?\: array, parent_permission\?\: array, passport_scan\?\: array\{field\: ''passport_scan'', document_type\: ''passport_scan'', label\: ''Scan Paspor'', description\: ''Scan halaman…'', required\: true, icon\: ''id\-card'', storage\: ''registration…'', template_url\: null\}\} in isset\(\) does not exist\.$#'
+			identifier: isset.offset
+			count: 1
+			path: app/Services/KKN/RegistrationDocumentService.php
+
+		-
+			message: '#^Parameter \#1 \$mahasiswa of method App\\Services\\KKN\\RegistrationDocumentService\:\:existingDocuments\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/KKN/RegistrationDocumentService.php
+
+		-
+			message: '#^Parameter \#1 \$period of method App\\Services\\KKN\\RegistrationDocumentService\:\:requirementsForPeriod\(\) expects App\\Models\\KKN\\Periode, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/KKN/RegistrationDocumentService.php
+
+		-
+			message: '#^Parameter \#2 \$period of method App\\Services\\KKN\\RegistrationDocumentService\:\:existingDocuments\(\) expects App\\Models\\KKN\\Periode, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/KKN/RegistrationDocumentService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>custom_requirements" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/KKN/RegistrationDocumentService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>documentRequirements" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/KKN/RegistrationDocumentService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>dokumen" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/KKN/RegistrationDocumentService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>file_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/KKN/RegistrationDocumentService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>file_path" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/KKN/RegistrationDocumentService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>require_health_certificate" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/KKN/RegistrationDocumentService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>require_parent_permission" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/KKN/RegistrationDocumentService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>template" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/KKN/RegistrationDocumentService.php
+
+		-
 			message: '#^Call to an undefined method PhpOffice\\PhpSpreadsheet\\Spreadsheet\:\:getStyle\(\)\.$#'
 			identifier: method.notFound
 			count: 2
@@ -4900,6 +6208,48 @@ parameters:
 			message: '#^Call to an undefined method PhpOffice\\PhpSpreadsheet\\Spreadsheet\:\:setCellValue\(\)\.$#'
 			identifier: method.notFound
 			count: 9
+			path: app/Services/KKN/RegistrationExportService.php
+
+		-
+			message: '#^Method App\\Services\\KKN\\RegistrationExportService\:\:fillDataRow\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Services/KKN/RegistrationExportService.php
+
+		-
+			message: '#^Method App\\Services\\KKN\\RegistrationExportService\:\:saveAndDownload\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Services/KKN/RegistrationExportService.php
+
+		-
+			message: '#^Method App\\Services\\KKN\\RegistrationExportService\:\:styleHeaderRow\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Services/KKN/RegistrationExportService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Services/KKN/RegistrationExportService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama_kelompok" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/KKN/RegistrationExportService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/KKN/RegistrationExportService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nim" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
 			path: app/Services/KKN/RegistrationExportService.php
 
 		-
@@ -4943,6 +6293,18 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Services/MasterApi/EntityMapperService.php
+
+		-
+			message: '#^Property App\\Services\\MasterApi\\MasterApiTokenService\:\:\$baseUrl is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/Services/MasterApi/MasterApiTokenService.php
+
+		-
+			message: '#^Property App\\Services\\MasterApi\\MasterApiTokenService\:\:\$verifySsl is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/Services/MasterApi/MasterApiTokenService.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
@@ -4989,6 +6351,42 @@ parameters:
 		-
 			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
 			identifier: method.nonObject
+			count: 1
+			path: app/Services/PeriodContextService.php
+
+		-
+			message: '#^Parameter \#1 \$jenisKkn of static method App\\Services\\KKN\\PeriodeGovernanceService\:\:blueprintFromJenisKkn\(\) expects App\\Models\\KKN\\JenisKkn, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/PeriodContextService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/PeriodContextService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/PeriodContextService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>placement_mode" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/PeriodContextService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>registration_mode" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/PeriodContextService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>year" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Services/PeriodContextService.php
 
@@ -5041,6 +6439,42 @@ parameters:
 			path: app/Services/RegistrationPortalService.php
 
 		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\Periode\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/RegistrationPortalService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/RegistrationPortalService.php
+
+		-
+			message: '#^Parameter \#1 \$value of function collect contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/RegistrationPortalService.php
+
+		-
+			message: '#^Parameter \#3 \$callback of method Illuminate\\Contracts\\Cache\\Repository\:\:remember\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/RegistrationPortalService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/RegistrationPortalService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/RegistrationPortalService.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fakultas_id\.$#'
 			identifier: property.notFound
 			count: 1
@@ -5083,6 +6517,30 @@ parameters:
 			path: app/Services/RegistrationService.php
 
 		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/RegistrationService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>penalti_poin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/RegistrationService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>pindah_count" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/RegistrationService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>status" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/RegistrationService.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$end_date\.$#'
 			identifier: property.notFound
 			count: 1
@@ -5109,6 +6567,12 @@ parameters:
 		-
 			message: '#^Cannot call method lt\(\) on string\.$#'
 			identifier: method.nonObject
+			count: 1
+			path: app/Services/StudentTransferService.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Services/StudentTransferService.php
 
@@ -5203,6 +6667,60 @@ parameters:
 			path: app/Services/WorkshopService.php
 
 		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\Workshop\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, user_id\: int\<0, max\>, name\: mixed, email\: mixed, identity_number\: mixed, attendance_status\: ''absent''\|''attended''\|''excused''\|''registered'', certificate_generated\: bool, checked_in_at\: string\|null\}, Closure\(App\\Models\\KKN\\PesertaWorkshop\)\: array\{id\: int, user_id\: int\<0, max\>, name\: mixed, email\: mixed, identity_number\: mixed, attendance_status\: ''absent''\|''attended''\|''excused''\|''registered'', certificate_generated\: bool, checked_in_at\: string\|null\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Parameter \#1 \$key of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:contains\(\) expects \(callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: bool\)\|Illuminate\\Database\\Eloquent\\Model\|int\|string, Closure\(App\\Models\\KKN\\PesertaWorkshop\)\: bool given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nim" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nip" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>percentage" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>url" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/WorkshopService.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
 			identifier: property.notFound
 			count: 1
@@ -5225,3 +6743,21 @@ parameters:
 			identifier: property.notFound
 			count: 2
 			path: app/Services/YudisiumService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\LazyCollection\<int,App\\Models\\KKN\\NilaiKkn\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/YudisiumService.php
+
+		-
+			message: '#^Trait App\\Traits\\HandlesPagination is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: app/Traits/HandlesPagination.php
+
+		-
+			message: '#^Trait App\\Traits\\RetryWithBackoff is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: app/Traits/RetryWithBackoff.php

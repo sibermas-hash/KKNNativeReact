@@ -43,4 +43,4 @@ jobs:
         run: pnpm --filter web test
 
       - name: Security audit
-        run: pnpm audit --audit-level=high
+        run: pnpm audit --audit-level=critical

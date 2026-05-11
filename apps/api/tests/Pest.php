@@ -23,7 +23,7 @@ pest()->extend(TestCase::class)
 // inside setUp(), which runs *after* this beforeAll hook.
 beforeAll(function () {
     \Illuminate\Support\Facades\Artisan::call('migrate:fresh');
-    \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'RoleSeeder', '--force' => true]);
+    \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'Database\\Seeders\\DatabaseSeeder', '--force' => true]);
 });
 
 /*

@@ -106,63 +106,23 @@ return [
     | This callback is called right before sending the event to Sentry.
     | Used to (a) drop health-check noise, (b) scrub PII from request data.
     |
-    | H-007 fix: signature now correctly uses \Sentry\Event, and adds scrubbing
-    | of sensitive request fields that could leak credentials or PII.
+    | IMPORTANT: value MUST be a class name (FQCN) of an invokable class,
+    | NOT a closure. Laravel's `php artisan config:cache` serializes via
+    | var_export() which cannot represent closures:
+    |
+    |   LogicException: Your configuration files could not be serialized
+    |   because the value at "sentry.before_send" is non-serializable.
+    |
+    | Sentry's Laravel integration accepts either a callable class instance or
+    | a class name that will be resolved from the container. We use the class
+    | name form so that config is cacheable in production.
+    |
+    | H-007 fix: scrubbing of sensitive headers/body/cookies/query lives in
+    | App\Sentry\BeforeSendScrub — keep any changes there.
     |
     */
 
-    'before_send' => function (\Sentry\Event $event, ?\Sentry\EventHint $hint = null): ?\Sentry\Event {
-        $request = $event->getRequest();
-
-        // (a) Drop health-check noise
-        $url = $request['url'] ?? '';
-        if (is_string($url) && (str_contains($url, '/health') || str_contains($url, '/ready') || str_contains($url, '/up'))) {
-            return null;
-        }
-
-        // (b) Scrub sensitive request fields (body, query, cookies, headers)
-        $sensitiveKeys = [
-            'password', 'password_confirmation', 'current_password', 'new_password',
-            'token', '_token', 'api_key', 'x-api-key', 'x-admin-secret',
-            'authorization', 'cookie', 'set-cookie',
-            'nik', 'nim', 'nip',
-            'birth_date', 'tanggal_lahir',
-            'sibermas_token', 'sibermas_session',
-            'captcha_answer', 'secret',
-        ];
-
-        $scrub = static function (array $data) use ($sensitiveKeys): array {
-            foreach ($data as $key => $value) {
-                $lower = is_string($key) ? strtolower($key) : $key;
-                if (in_array($lower, $sensitiveKeys, true)) {
-                    $data[$key] = '[Filtered]';
-                } elseif (is_array($value)) {
-                    $data[$key] = (function () use ($value, $sensitiveKeys) {
-                        // Recursive inline; Sentry only nests a couple of levels deep.
-                        foreach ($value as $k => $v) {
-                            $lk = is_string($k) ? strtolower($k) : $k;
-                            if (in_array($lk, $sensitiveKeys, true)) {
-                                $value[$k] = '[Filtered]';
-                            }
-                        }
-                        return $value;
-                    })();
-                }
-            }
-            return $data;
-        };
-
-        if (! empty($request)) {
-            foreach (['data', 'query_string', 'cookies', 'headers'] as $field) {
-                if (! empty($request[$field]) && is_array($request[$field])) {
-                    $request[$field] = $scrub($request[$field]);
-                }
-            }
-            $event->setRequest($request);
-        }
-
-        return $event;
-    },
+    'before_send' => \App\Sentry\BeforeSendScrub::class,
 
     /*
     |--------------------------------------------------------------------------

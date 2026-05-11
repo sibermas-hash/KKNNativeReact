@@ -16,10 +16,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Standardize Roles
-        $superadmin = Role::firstOrCreate(['name' => 'superadmin', 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => 'dpl', 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => 'student', 'guard_name' => 'web']);
+        // Create ALL roles needed by the system
+        $roles = ['superadmin', 'admin', 'faculty_admin', 'dosen', 'dpl', 'student'];
+        foreach ($roles as $roleName) {
+            Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
+        }
+        $superadmin = Role::where('name', 'superadmin')->first();
 
         // Merge existing 'admin' role users into 'superadmin'
         $adminRole = Role::where('name', 'admin')->first();

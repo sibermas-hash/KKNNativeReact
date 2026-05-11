@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models\KKN;
 
 use App\Models\User;
+use App\Traits\HasBlindIndex;
+use App\Traits\HasManuallyEditedFields;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,8 +17,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Dosen extends Model
 {
-    // R13-DB-001: soft-delete enabled (migration 2026_05_11_060000 adds the column).
-    use \App\Traits\HasBlindIndex, \App\Traits\HasManuallyEditedFields, SoftDeletes;
+    use HasBlindIndex;
+    use HasFactory;
+    use HasManuallyEditedFields;
+    use SoftDeletes;
 
     protected $table = 'dosen';
 

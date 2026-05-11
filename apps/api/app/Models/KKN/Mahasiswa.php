@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models\KKN;
 
 use App\Models\User;
+use App\Traits\HasBlindIndex;
+use App\Traits\HasManuallyEditedFields;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -14,10 +16,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Mahasiswa extends Model
 {
-    // R13-DB-001: soft-delete enabled so hard cascade from users no longer
-    // destroys kegiatan/peserta_kkn/nilai/evaluasi. Requires migration
-    // 2026_05_11_060000 to add the deleted_at column.
-    use \App\Traits\HasBlindIndex, \App\Traits\HasManuallyEditedFields, HasFactory, SoftDeletes;
+    use HasBlindIndex;
+    use HasFactory;
+    use HasManuallyEditedFields;
+    use SoftDeletes;
 
     protected $table = 'mahasiswa';
 

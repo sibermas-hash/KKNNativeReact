@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Sentry;
 
-use Sentry\Event;
-use Sentry\EventHint;
-
 /**
  * Invokable callback for Sentry `before_send`.
  *
@@ -19,8 +16,13 @@ use Sentry\EventHint;
  *   (b) Scrub sensitive request fields (body, query, cookies, headers) —
  *       ganti nilai dengan "[Filtered]" untuk key yang masuk daftar.
  *
- * H-007 fix: pakai \Sentry\Event secara benar, dan scrub credential/PII dari
- * semua channel request yang bisa bocor.
+ * NOTE: type hints pada __invoke sengaja dibuat lembut (tanpa reference ke
+ * \Sentry\Event / \Sentry\EventHint) supaya class ini dapat di-autoload
+ * walaupun package sentry/sentry-laravel belum terpasang (mis. di environment
+ * tanpa Sentry DSN). Sentry akan memanggil method ini dengan instance Event
+ * yang mengimplementasikan getRequest()/setRequest() — kita duck-type.
+ *
+ * H-007 fix: scrubbing of sensitive headers/body/cookies/query keys.
  */
 class BeforeSendScrub
 {
@@ -36,12 +38,22 @@ class BeforeSendScrub
 
     private const HEALTH_CHECK_PATHS = ['/health', '/ready', '/up'];
 
-    public function __invoke(Event $event, ?EventHint $hint = null): ?Event
+    /**
+     * @param  object  $event  Sentry\Event instance (duck-typed to avoid hard dep)
+     * @param  object|null  $hint   Sentry\EventHint instance
+     * @return object|null  null → event dropped
+     */
+    public function __invoke(object $event, ?object $hint = null): ?object
     {
+        // Guard: kalau event tidak punya getRequest(), biarkan lewat tanpa scrub.
+        if (! method_exists($event, 'getRequest') || ! method_exists($event, 'setRequest')) {
+            return $event;
+        }
+
         $request = $event->getRequest();
 
         // (a) Drop health-check noise
-        $url = $request['url'] ?? '';
+        $url = is_array($request) ? ($request['url'] ?? '') : '';
         if (is_string($url)) {
             foreach (self::HEALTH_CHECK_PATHS as $path) {
                 if (str_contains($url, $path)) {
@@ -51,7 +63,7 @@ class BeforeSendScrub
         }
 
         // (b) Scrub sensitive request fields
-        if (! empty($request)) {
+        if (is_array($request) && ! empty($request)) {
             foreach (['data', 'query_string', 'cookies', 'headers'] as $field) {
                 if (! empty($request[$field]) && is_array($request[$field])) {
                     $request[$field] = $this->scrub($request[$field]);
@@ -64,8 +76,8 @@ class BeforeSendScrub
     }
 
     /**
-     * Recursive scrub — Sentry payload hanya nested 1–2 level jadi iteratif
-     * cukup. Key dicocokkan case-insensitive.
+     * Recursive scrub — Sentry payload biasanya hanya nested 1–2 level. Key
+     * dicocokkan case-insensitive.
      *
      * @param  array<mixed, mixed>  $data
      * @return array<mixed, mixed>

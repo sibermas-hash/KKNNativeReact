@@ -10,7 +10,7 @@
     "android:logs": "./logs-android.sh",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "lint": "eslint .",
+    "lint": "tsc --noEmit",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {

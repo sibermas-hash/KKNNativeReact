@@ -327,7 +327,21 @@ return [
 
     'file_layout' => 'folded',
 
-    'filename_modifier' => function (string $filename) {
-        return str_replace(' ', '-', strtolower($filename));
-    },
+    /*
+    |--------------------------------------------------------------------------
+    | Filename Modifier
+    |--------------------------------------------------------------------------
+    |
+    | Setting this to `null` uses Scribe's default filename normalization
+    | (already produces slug-friendly names). Closures MUST NOT appear in
+    | config/ because `php artisan config:cache` fails to serialize them:
+    |
+    |   LogicException: Your configuration files could not be serialized
+    |   because the value at "scribe.filename_modifier" is non-serializable.
+    |
+    | If custom modification is ever needed again, implement a named invokable
+    | class (with `__invoke(string $filename): string`) and reference it here
+    | via its FQCN string — that survives the config cache.
+    */
+    'filename_modifier' => null,
 ];

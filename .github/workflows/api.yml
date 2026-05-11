@@ -68,6 +68,7 @@ jobs:
           echo "SESSION_DRIVER=array" >> .env
           echo "CACHE_STORE=array" >> .env
           echo "MAIL_MAILER=array" >> .env
+          echo "APP_BLIND_INDEX_KEY=base64:dGVzdGluZ2tleWZvcmNpcGlwZWxpbmVydW4xMjM0NTY=" >> .env
 
       - name: Run migrations
         run: php artisan migrate --force

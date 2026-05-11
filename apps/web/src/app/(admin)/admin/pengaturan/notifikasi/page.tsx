@@ -24,7 +24,7 @@ export default function NotificationSettingsPage() {
     queryKey: ['admin', 'settings'],
     queryFn: async () => {
       const res = await adminApi.settings.index();
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
   });
 

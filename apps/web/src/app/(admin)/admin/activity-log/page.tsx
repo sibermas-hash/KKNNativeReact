@@ -4,14 +4,14 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { PageHeader } from '@/components/ui/shared';
-import { CheckCircle2, XCircle, Search, Filter } from 'lucide-react';
+import { CheckCircle2, XCircle } from 'lucide-react';
 
 type ActivityLog = {
   id: number;
   user: { id: number; name: string; username: string } | null;
   action: string;
   status: 'success' | 'failed';
-  metadata: Record<string, any> | null;
+  metadata: Record<string, unknown> | null;
   ip_address: string | null;
   user_agent: string | null;
   created_at: string;
@@ -53,12 +53,15 @@ export default function ActivityLogPage() {
       if (filters.date_to) params.date_to = filters.date_to;
       if (filters.user_id) params.user_id = filters.user_id;
       const res = await api.get('/admin/activity-log', { params });
-      return (res as any)?.data ?? res;
+      const response = (res as unknown as { data?: Record<string, unknown>; meta?: Record<string, unknown> });
+      return (response.data ?? response) as Record<string, unknown>;
     },
   });
 
   const logs: ActivityLog[] = (data?.data ?? []) as ActivityLog[];
-  const meta = data?.meta;
+  const meta = data?.meta as
+    | { current_page: number; last_page: number; total: number }
+    | undefined;
 
   const updateFilter = (key: keyof Filters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));

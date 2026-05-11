@@ -18,7 +18,7 @@ export default function AdminGroupsPage(): React.JSX.Element {
     queryKey: ['admin', 'groups'],
     queryFn: async () => {
       const res = await adminApi.groups.index();
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
   });
 

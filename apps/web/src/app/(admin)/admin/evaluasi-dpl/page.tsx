@@ -7,13 +7,13 @@ import { PageHeader } from '@/components/ui/shared';
 import { MessageSquare } from 'lucide-react';
 
 export default function EvaluasiDplPage(): React.JSX.Element {
-  const [periodeId, setPeriodeId] = useState('');
+  const [periodeId, _setPeriodeId] = useState('');
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'evaluasi-dpl', { periode_id: periodeId }],
     queryFn: async () => {
       const res = await api.get('/admin/evaluasi-dpl', { params: { periode_id: periodeId || undefined } });
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
   });
 

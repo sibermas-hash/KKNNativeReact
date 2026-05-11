@@ -16,7 +16,7 @@ export default function DplAssignmentPage(): React.JSX.Element {
     queryKey: ['admin', 'dosen', 'penugasan'],
     queryFn: async () => {
       const res = await api.get('/admin/dosen/penugasan');
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
   });
 

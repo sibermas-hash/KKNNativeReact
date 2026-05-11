@@ -63,8 +63,6 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
       : 'text-white hover:text-white/80'
     : 'text-emerald-950 hover:text-emerald-700';
 
-  const linkClass = `group relative font-display text-[0.76rem] font-bold uppercase tracking-[0.16em] no-underline transition-colors cursor-pointer ${navTextClass}`;
-
   const overlayStyle = overlayNav
     ? { backgroundColor: bgColor, backdropFilter: backdropBlur, minHeight: navHeight, boxShadow }
     : {};

@@ -14,7 +14,7 @@ export default function RegistrationDetailPage(): React.JSX.Element {
     queryKey: ['admin', 'pendaftaran', Number(id)],
     queryFn: async () => {
       const res = await adminApi.registrations.show(Number(id));
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
     enabled: !!id,
   });

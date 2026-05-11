@@ -41,8 +41,8 @@ export default function FakultasPage(): React.JSX.Element {
       toast.success(editingId ? 'Fakultas diperbarui' : 'Fakultas ditambahkan');
       setOpen(false); setEditingId(null); setForm(EMPTY_FORM); setFieldErrors({});
     },
-    onError: (err: any) => {
-      const errors = err?.response?.data?.error?.errors as Record<string, string[]> | undefined;
+    onError: (err: unknown) => {
+      const errors = (err as { response?: { data?: { error?: { errors?: Record<string, string[]> } } } })?.response?.data?.error?.errors;
       if (errors) {
         const mapped: Record<string, string> = {};
         Object.entries(errors).forEach(([k, msgs]) => { mapped[k] = msgs[0]; });
@@ -57,7 +57,7 @@ export default function FakultasPage(): React.JSX.Element {
   const destroy = useMutation({
     mutationFn: (id: number) => adminApi.master.faculties.destroy(id),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'fakultas'] }); toast.success('Fakultas dihapus'); },
-    onError: (err: any) => toast.error(err?.response?.data?.error?.message || 'Gagal menghapus — masih digunakan'),
+    onError: (err: unknown) => toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal menghapus — masih digunakan'),
   });
 
   const list = data ?? [];

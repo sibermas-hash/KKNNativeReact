@@ -63,7 +63,7 @@ export function ActivityStatsWidget() {
     queryKey: ['admin', 'activity-stats'],
     queryFn: async () => {
       const res = await api.get('/admin/activity-log/stats');
-      return ((res as any)?.data ?? res) as ActivityStats;
+      return ((res as unknown as { data?: ActivityStats })?.data ?? res) as ActivityStats;
     },
     refetchInterval: 60_000, // 1 minute
     staleTime: 30_000,
@@ -74,8 +74,6 @@ export function ActivityStatsWidget() {
   }
 
   if (!data) return null;
-
-  const totalToday = data.login.successful_today + data.login.failed_today;
 
   return (
     <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 space-y-5">
@@ -153,7 +151,9 @@ export function ActivityStatsWidget() {
   );
 }
 
-function StatCard({ icon: Icon, color, label, value, warn }: { icon: any; color: string; label: string; value: number; warn?: boolean }) {
+import { ComponentType } from 'react';
+
+function StatCard({ icon: Icon, color, label, value, warn }: { icon: ComponentType; color: string; label: string; value: number; warn?: boolean }) {
   const colorMap: Record<string, string> = {
     emerald: 'bg-emerald-50 text-emerald-700',
     rose: 'bg-rose-50 text-rose-700',

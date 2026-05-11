@@ -1,27 +1,16 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api';
-import { toast } from 'sonner';
 import { Settings } from 'lucide-react';
 import { PageHeader, EmptyState } from '@/components/ui/shared';
 
 export default function SystemSettingsPage(): React.JSX.Element {
-  const queryClient = useQueryClient();
-
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'settings'],
     queryFn: async () => {
       const res = await adminApi.settings.index();
-      return (res as any)?.data ?? res;
-    },
-  });
-
-  const updateMutation = useMutation({
-    mutationFn: (settings: Record<string, string>) => adminApi.settings.update({ settings }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'settings'] });
-      toast.success('Pengaturan berhasil diperbarui');
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
   });
 

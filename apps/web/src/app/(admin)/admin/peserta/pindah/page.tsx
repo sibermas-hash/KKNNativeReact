@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 export default function StudentTransferPage(): React.JSX.Element {
-  const [search, setSearch] = useState('');
+  const [, _setSearch] = useState('');
   const [pesertaId, setPesertaId] = useState<number | null>(null);
   const [targetGroupId, setTargetGroupId] = useState<number | null>(null);
 

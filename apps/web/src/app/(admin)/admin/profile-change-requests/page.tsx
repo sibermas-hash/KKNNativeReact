@@ -43,7 +43,7 @@ export default function AdminProfileChangeRequestsPage(): React.JSX.Element {
       toast.success('Perubahan profil disetujui');
       queryClient.invalidateQueries({ queryKey: ['admin', 'profile-change-requests'] });
     },
-    onError: (err: any) => toast.error(err?.response?.data?.error?.message || 'Gagal menyetujui'),
+    onError: (err: unknown) => toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal menyetujui'),
   });
 
   const rejectMutation = useMutation({
@@ -55,10 +55,10 @@ export default function AdminProfileChangeRequestsPage(): React.JSX.Element {
       setRejectReason('');
       queryClient.invalidateQueries({ queryKey: ['admin', 'profile-change-requests'] });
     },
-    onError: (err: any) => toast.error(err?.response?.data?.error?.message || 'Gagal menolak'),
+    onError: (err: unknown) => toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal menolak'),
   });
 
-  const requests: ChangeRequest[] = Array.isArray((data as any)?.data) ? (data as any).data : Array.isArray(data) ? (data as any) : [];
+  const requests: ChangeRequest[] = Array.isArray((data as { data?: unknown })?.data) ? (data as { data: ChangeRequest[] }).data : Array.isArray(data) ? (data as ChangeRequest[]) : [];
 
   return (
     <div className="space-y-6">

@@ -70,7 +70,7 @@ export default function DocumentTemplateLibraryPage(): React.JSX.Element {
       toast.success('Template berhasil diunggah');
       setForm({ document_key: '', name: '', description: '', file: null });
     },
-    onError: (err: any) => toast.error(err?.response?.data?.error?.message || 'Gagal mengunggah template'),
+    onError: (err: unknown) => toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal mengunggah template'),
   });
 
   const destroy = useMutation({
@@ -80,7 +80,7 @@ export default function DocumentTemplateLibraryPage(): React.JSX.Element {
       qc.invalidateQueries({ queryKey: ['admin', 'document-templates', 'library'] });
       toast.success('Template berhasil dihapus');
     },
-    onError: (err: any) => toast.error(err?.response?.data?.error?.message || 'Gagal menghapus template'),
+    onError: (err: unknown) => toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal menghapus template'),
   });
 
   const allTemplates = data?.templates ?? [];

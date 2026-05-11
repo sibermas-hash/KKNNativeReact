@@ -4,14 +4,14 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { QUERY_KEYS, PHASE_LABELS } from '@sibermas/constants';
+import { QUERY_KEYS } from '@sibermas/constants';
 import { studentApi } from '@/lib/api';
 import { useAuthStore, usePeriodStore } from '@/stores';
 import {
-  Calendar, MapPin, ArrowRight, ClipboardList, CheckCircle2,
-  Presentation, AlertTriangle, BadgeCheck, Lock, Target,
+  MapPin, ArrowRight, ClipboardList, CheckCircle2,
+  Presentation, AlertTriangle, Target,
   ScrollText, LayoutGrid, UserCheck, Users, Lightbulb,
-  GraduationCap, ShieldCheck, Activity, X,
+  GraduationCap, ShieldCheck, Activity,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { StatusBadge } from '@/components/ui/shared';
@@ -28,7 +28,7 @@ function normalizeStatus(status?: string): string | undefined {
 
 export default function StudentDashboard(): React.JSX.Element {
   const { user } = useAuthStore();
-  const { activePeriod, currentPhase } = usePeriodStore();
+  const { activePeriod } = usePeriodStore();
   const queryClient = useQueryClient();
   const [showPopup, setShowPopup] = useState(false);
 

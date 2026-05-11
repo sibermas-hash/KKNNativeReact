@@ -9,7 +9,7 @@ export default function PoskoPage(): React.JSX.Element {
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'posko'],
-    queryFn: async () => { const res = await api.get('/student/posko'); return (res as any).data ?? res; },
+    queryFn: async () => { const res = await api.get('/student/posko'); return (res as unknown as { data?: unknown })?.data ?? res; },
   });
 
   const mutation = useMutation({

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
@@ -27,7 +27,7 @@ type Conversation = {
   messages: Message[];
 };
 
-const STATUS_INFO: Record<string, { label: string; icon: any; color: string }> = {
+const STATUS_INFO: Record<string, { label: string; icon: typeof Clock | typeof CheckCircle2 | typeof XCircle; color: string }> = {
   open: { label: 'Menunggu balasan admin', icon: Clock, color: 'text-amber-600' },
   replied: { label: 'Sudah dibalas admin', icon: CheckCircle2, color: 'text-emerald-600' },
   closed: { label: 'Percakapan ditutup', icon: XCircle, color: 'text-slate-500' },
@@ -35,7 +35,6 @@ const STATUS_INFO: Record<string, { label: string; icon: any; color: string }> =
 
 export default function ChatRoomPage() {
   const { id } = useParams();
-  const router = useRouter();
   const qc = useQueryClient();
   const [body, setBody] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -46,7 +45,7 @@ export default function ChatRoomPage() {
     queryKey: ['student', 'chat', 'conversation', id],
     queryFn: async () => {
       const res = await api.get(`/chat/${id}`);
-      return ((res as any)?.data ?? res) as Conversation;
+      return ((res as unknown as { data?: Conversation })?.data ?? res) as Conversation;
     },
     refetchInterval: 5000, // polling 5s
   });
@@ -59,14 +58,15 @@ export default function ChatRoomPage() {
       const res = await api.post(`/chat/${id}/messages`, fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
     onSuccess: () => {
       setBody(''); setFile(null);
       qc.invalidateQueries({ queryKey: ['student', 'chat', 'conversation', id] });
     },
-    onError: (err: any) => {
-      toast.error(err?.response?.data?.error?.message || 'Gagal mengirim pesan');
+    onError: (err: unknown) => {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      toast.error(e?.response?.data?.error?.message || 'Gagal mengirim pesan');
     },
   });
 

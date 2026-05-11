@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { dplApi } from '@/lib/api';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Upload, CheckCircle2, XCircle, AlertTriangle } from 'lucide-react';
 import { Suspense } from 'react';
@@ -32,7 +32,6 @@ const STATUS_CONFIG = {
 
 function ImportPreviewContent() {
   const router = useRouter();
-  const params = useSearchParams();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<PreviewData | null>(null);
 

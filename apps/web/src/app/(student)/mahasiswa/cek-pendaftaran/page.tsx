@@ -185,7 +185,7 @@ export default function RegistrationStatusPage(): React.JSX.Element {
     queryKey: QUERY_KEYS.student.registration.status,
     queryFn: async () => {
       const res = await studentApi.registration.status();
-      return (res as any).data ?? res;
+      return (res as unknown as { data?: unknown }).data ?? res;
     },
   });
 
@@ -196,12 +196,13 @@ export default function RegistrationStatusPage(): React.JSX.Element {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.registration.status });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.kknDaftar });
     },
-    onError: (err: any) => {
-      toast.error(err?.response?.data?.error?.message || 'Gagal membatalkan pendaftaran');
+    onError: (err: unknown) => {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      toast.error(e?.response?.data?.error?.message || 'Gagal membatalkan pendaftaran');
     },
   });
 
-  const registrations = ((data as any)?.registrations as Registration[]) || [];
+  const registrations = ((data as unknown as { registrations?: Registration[] })?.registrations as Registration[]) || [];
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">

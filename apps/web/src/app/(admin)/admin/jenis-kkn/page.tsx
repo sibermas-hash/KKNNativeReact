@@ -247,7 +247,7 @@ export default function JenisKknPage(): React.JSX.Element {
       toast.success('Requirement dokumen ditambahkan');
       setDocReqForm({ document_key: '', document_label: '', description: '', is_required: true, sort_order: 0, default_template_id: '', template_file: null });
     },
-    onError: (err: any) => toast.error(err?.response?.data?.error?.message || 'Gagal menambah requirement dokumen'),
+    onError: (err: unknown) => toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal menambah requirement dokumen'),
   });
 
 
@@ -271,7 +271,7 @@ export default function JenisKknPage(): React.JSX.Element {
       setEditingRequirementId(null);
       setDocReqForm({ document_key: '', document_label: '', description: '', is_required: true, sort_order: 0, default_template_id: '', template_file: null });
     },
-    onError: (err: any) => toast.error(err?.response?.data?.error?.message || 'Gagal memperbarui requirement dokumen'),
+    onError: (err: unknown) => toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal memperbarui requirement dokumen'),
   });
 
   const deleteDocumentRequirement = useMutation({
@@ -284,7 +284,7 @@ export default function JenisKknPage(): React.JSX.Element {
       toast.success('Requirement dokumen dihapus');
       setEditingRequirementId(null);
     },
-    onError: (err: any) => toast.error(err?.response?.data?.error?.message || 'Gagal menghapus requirement dokumen'),
+    onError: (err: unknown) => toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal menghapus requirement dokumen'),
   });
 
 

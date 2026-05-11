@@ -38,10 +38,10 @@ export default function DplDashboardPage(): React.JSX.Element {
     queryFn: async () => {
       const res = await dplApi.dashboard();
       // dplApi.dashboard() already returns the unwrapped data (interceptor handles this)
-      return res as any;
+      return res as unknown as Record<string, unknown>;
     },
   });
-  
+
   // API client interceptor unwraps to response.data.data, so data is already the inner object
   const dashboardData = data as Record<string, unknown> || {};
   

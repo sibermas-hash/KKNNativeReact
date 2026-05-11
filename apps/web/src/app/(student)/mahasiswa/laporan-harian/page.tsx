@@ -5,9 +5,8 @@ import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@sibermas/constants';
 import { studentApi } from '@/lib/api';
-import { Plus, Search, Filter, ClipboardList, Activity, List as ListIcon } from 'lucide-react';
-import clsx from 'clsx';
-import { StatusBadge, PageHeader, EmptyState } from '@/components/ui/shared';
+import { Plus, Search, ClipboardList, Activity } from 'lucide-react';
+import { StatusBadge, EmptyState } from '@/components/ui/shared';
 
 export default function DailyReportsPage(): React.JSX.Element {
   const [page, setPage] = useState(1);
@@ -22,12 +21,12 @@ export default function DailyReportsPage(): React.JSX.Element {
         status: statusFilter || undefined,
         search: searchQuery || undefined,
       });
-      return (res as any) as { success: boolean; data: unknown[]; meta?: { current_page: number; last_page: number; total: number } };
+      return (res as unknown) as { success: boolean; data: unknown[]; meta?: { current_page: number; last_page: number; total: number } };
     },
   });
 
-  const reports = (data as any)?.data || [];
-  const meta = (data as any)?.meta;
+  const reports = (data as unknown as { data?: unknown[] })?.data || [];
+  const meta = (data as unknown as { meta?: { current_page: number; last_page: number; total: number } })?.meta;
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
@@ -84,7 +83,7 @@ export default function DailyReportsPage(): React.JSX.Element {
         />
       ) : (
         <div className="space-y-4">
-          {reports.map((report: any) => (
+          {reports.map((report) => (
             <Link
               key={String(report.id)}
               href={`/mahasiswa/laporan-harian/${report.id}/edit`}

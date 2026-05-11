@@ -13,7 +13,6 @@ const ParticleBackground = dynamic(
   () => import('@/components/ui/particle-background').then((m) => ({ default: m.ParticleBackground })),
   { ssr: false }
 );
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
@@ -53,8 +52,8 @@ export default function ResetPasswordPage(): React.JSX.Element {
       await api.post('/auth/atur-ulang-kata-sandi', data);
       toast.success('Kata sandi berhasil diatur ulang!');
       router.replace('/login');
-    } catch (err: any) {
-      const errorData = err.response?.data?.error;
+    } catch (err: unknown) {
+      const errorData = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error;
       setServerErrors([errorData?.message || 'Gagal mengatur ulang kata sandi.']);
     } finally {
       setLoading(false);

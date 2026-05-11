@@ -56,7 +56,7 @@ export default function UploadDokumenPage(): React.JSX.Element {
     queryKey: [...QUERY_KEYS.student.registration.form, 'period-docs', Number(id)],
     queryFn: async () => {
       const res = await studentApi.registration.form();
-      return (res as any).data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
   });
 
@@ -65,7 +65,7 @@ export default function UploadDokumenPage(): React.JSX.Element {
     queryKey: [...QUERY_KEYS.student.registration.status],
     queryFn: async () => {
       const res = await studentApi.registration.status();
-      return (res as any).data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
   });
 
@@ -77,9 +77,10 @@ export default function UploadDokumenPage(): React.JSX.Element {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.registration.status });
       router.push('/mahasiswa/cek-pendaftaran');
     },
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       setUploadProgress(null);
-      const apiErrors = err?.response?.data?.errors as Record<string, string[]> | undefined;
+      const e = err as { response?: { data?: { errors?: Record<string, string[]>; message?: string } } };
+      const apiErrors = e?.response?.data?.errors;
       if (apiErrors) {
         const fieldErrors: Record<string, string> = {};
         Object.entries(apiErrors).forEach(([key, msgs]) => { fieldErrors[key] = msgs[0]; });
@@ -87,7 +88,7 @@ export default function UploadDokumenPage(): React.JSX.Element {
         const firstField = Object.keys(apiErrors)[0];
         toast.error(`Gagal: ${apiErrors[firstField]?.[0] || 'Dokumen tidak valid'}`);
       } else {
-        toast.error(err?.response?.data?.message || 'Gagal mengunggah dokumen. Periksa koneksi dan coba lagi.');
+        toast.error(e?.response?.data?.message || 'Gagal mengunggah dokumen. Periksa koneksi dan coba lagi.');
       }
     },
   });

@@ -15,7 +15,7 @@ export default function MonitoringPage(): React.JSX.Element {
     },
   });
 
-  const monitoring = ((data as any) || []) as Record<string, unknown>[];
+  const monitoring = ((data as unknown) || []) as Record<string, unknown>[];
 
   return (
     <div className="space-y-6">

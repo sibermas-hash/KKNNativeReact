@@ -38,7 +38,7 @@ export default function AvatarModerationPage() {
     queryKey: ['admin', 'avatar-moderation', filter],
     queryFn: async () => {
       const res = await api.get('/admin/avatar-moderation', { params: { status: filter } });
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
   });
 
@@ -60,14 +60,14 @@ export default function AvatarModerationPage() {
       setRejectingId(null);
       setRejectReason('');
     },
-    onError: (err: any) => {
-      const msg = err?.response?.data?.errors?.reason?.[0] || err?.response?.data?.message;
+    onError: (err: unknown) => {
+      const msg = (err as { response?: { data?: { errors?: { reason?: string[] }; message?: string } } })?.response?.data?.errors?.reason?.[0] || (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
       toast.error(msg || 'Gagal menolak foto');
     },
   });
 
-  const avatars: PendingAvatar[] = (data?.data ?? []) as PendingAvatar[];
-  const meta = data?.meta;
+  const avatars: PendingAvatar[] = ((data as { data?: unknown })?.data ?? []) as PendingAvatar[];
+  const meta = (data as { meta?: { current_page: number; last_page: number; total: number } })?.meta;
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">

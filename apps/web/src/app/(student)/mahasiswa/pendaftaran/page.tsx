@@ -12,7 +12,6 @@ import {
   Clock, FileText, GraduationCap, MapPin, Shield, Users, XCircle,
 } from 'lucide-react';
 
-type EligibilityCheck = { key: string; passed: boolean; message: string; [k: string]: unknown };
 type Period = {
   id: number; name: string; current_phase: string; kuota: number;
   registration_start: string; registration_end: string; start_date: string; end_date: string;
@@ -96,8 +95,8 @@ function PeriodCard({ period, onRegister, isRegistering, disabled }: { period: P
       setLoadingGroups(true);
       try {
         const res = await studentApi.kknDaftar.groups(period.id);
-        const data = (res as any).data ?? res;
-        setGroups(data.groups ?? []);
+        const data = (res as unknown as { data?: { groups?: unknown[] }; groups?: unknown[] })?.data ?? res;
+        setGroups((data.groups ?? data.data?.groups ?? []) as typeof groups);
       } catch { toast.error('Gagal memuat data kelompok'); }
       finally { setLoadingGroups(false); }
     }
@@ -194,7 +193,7 @@ export default function RegistrationFormPage(): React.JSX.Element {
     queryKey: QUERY_KEYS.student.kknDaftar,
     queryFn: async () => {
       const res = await studentApi.kknDaftar.index();
-      return (res as any).data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
   });
 
@@ -208,8 +207,9 @@ export default function RegistrationFormPage(): React.JSX.Element {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.registration.form });
       router.push(`/mahasiswa/pendaftaran/${periodeId}/dokumen`);
     },
-    onError: (err: any) => {
-      const msg = err?.response?.data?.error?.message || 'Gagal mendaftar. Periksa kelayakan Anda.';
+    onError: (err: unknown) => {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      const msg = e?.response?.data?.error?.message || 'Gagal mendaftar. Periksa kelayakan Anda.';
       toast.error(msg);
       setRegisteringPeriod(null);
     },

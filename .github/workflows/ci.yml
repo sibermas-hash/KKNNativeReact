@@ -147,7 +147,7 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: ${{ secrets.DEPLOY_PORT || 22 }}
           script: |
-            cd /usr/local/www/sibermas
+            cd /usr/local/www/apache24/data/Sibermas2026
             git pull origin main
 
             # Backend
@@ -159,7 +159,7 @@ jobs:
             php artisan event:cache
 
             # Frontend
-            cd /usr/local/www/sibermas
+            cd /usr/local/www/apache24/data/Sibermas2026
             pnpm install --frozen-lockfile
             pnpm build
             cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static

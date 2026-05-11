@@ -36,26 +36,29 @@ export function TwoFactorCard() {
     queryKey: ['2fa', 'status'],
     queryFn: async () => {
       const res = await api.get('/2fa/status');
-      return ((res as any)?.data ?? res) as Status;
+      return ((res as unknown as { data?: Status })?.data ?? res) as Status;
     },
   });
 
   const setupMut = useMutation({
     mutationFn: async () => {
       const res = await api.post('/2fa/setup');
-      return ((res as any)?.data ?? res) as SetupResponse;
+      return ((res as unknown as { data?: SetupResponse })?.data ?? res) as SetupResponse;
     },
     onSuccess: (data) => {
       setSetupData(data);
       toast.success('Scan QR code dengan aplikasi authenticator');
     },
-    onError: (err: any) => toast.error(err?.response?.data?.error?.message || 'Gagal memulai setup'),
+    onError: (err: unknown) => {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      toast.error(e?.response?.data?.error?.message || 'Gagal memulai setup');
+    },
   });
 
   const confirmMut = useMutation({
     mutationFn: async () => {
       const res = await api.post('/2fa/confirm', { code: confirmCode });
-      return ((res as any)?.data ?? res) as { enabled: boolean; recovery_codes: string[] };
+      return ((res as unknown as { data?: { enabled: boolean; recovery_codes: string[] } })?.data ?? res) as { enabled: boolean; recovery_codes: string[] };
     },
     onSuccess: (data) => {
       setRecoveryCodes(data.recovery_codes);
@@ -64,13 +67,16 @@ export function TwoFactorCard() {
       qc.invalidateQueries({ queryKey: ['2fa'] });
       toast.success('2FA aktif! Simpan backup codes di tempat aman.');
     },
-    onError: (err: any) => toast.error(err?.response?.data?.error?.message || 'Kode tidak valid'),
+    onError: (err: unknown) => {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      toast.error(e?.response?.data?.error?.message || 'Kode tidak valid');
+    },
   });
 
   const disableMut = useMutation({
     mutationFn: async () => {
       const res = await api.post('/2fa/disable', { password: disablePassword, code: disableCode });
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
     onSuccess: () => {
       setShowDisable(false);
@@ -79,7 +85,10 @@ export function TwoFactorCard() {
       qc.invalidateQueries({ queryKey: ['2fa'] });
       toast.success('2FA dinonaktifkan.');
     },
-    onError: (err: any) => toast.error(err?.response?.data?.error?.message || 'Gagal menonaktifkan 2FA'),
+    onError: (err: unknown) => {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      toast.error(e?.response?.data?.error?.message || 'Gagal menonaktifkan 2FA');
+    },
   });
 
   const regenMut = useMutation({
@@ -87,15 +96,16 @@ export function TwoFactorCard() {
       const code = prompt('Masukkan kode 6-digit TOTP saat ini untuk regenerate backup codes:');
       if (!code) throw new Error('cancelled');
       const res = await api.post('/2fa/regenerate-recovery', { code });
-      return ((res as any)?.data ?? res) as { recovery_codes: string[] };
+      return ((res as unknown as { data?: { recovery_codes: string[] } })?.data ?? res) as { recovery_codes: string[] };
     },
     onSuccess: (data) => {
       setRecoveryCodes(data.recovery_codes);
       toast.success('Backup codes diperbarui');
     },
-    onError: (err: any) => {
-      if (err?.message === 'cancelled') return;
-      toast.error(err?.response?.data?.error?.message || 'Gagal regenerate');
+    onError: (err: unknown) => {
+      if (err instanceof Error && err.message === 'cancelled') return;
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      toast.error(e?.response?.data?.error?.message || 'Gagal regenerate');
     },
   });
 

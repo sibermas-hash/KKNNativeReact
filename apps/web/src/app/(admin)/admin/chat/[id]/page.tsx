@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
-import { ArrowLeft, Send, Paperclip, XCircle, Clock, CheckCircle2, Lock } from 'lucide-react';
+import { ArrowLeft, Send, Paperclip, Lock } from 'lucide-react';
 
 type Message = {
   id: number;
@@ -41,7 +41,7 @@ export default function AdminChatRoomPage() {
     queryKey: ['admin', 'chat', 'conversation', id],
     queryFn: async () => {
       const res = await api.get(`/admin/chat/${id}`);
-      return ((res as any)?.data ?? res) as Conversation;
+      return ((res as unknown as { data?: Conversation })?.data ?? res) as Conversation;
     },
     refetchInterval: 5000,
   });
@@ -54,21 +54,21 @@ export default function AdminChatRoomPage() {
       const res = await api.post(`/admin/chat/${id}/reply`, fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
     onSuccess: () => {
       setBody(''); setFile(null);
       qc.invalidateQueries({ queryKey: ['admin', 'chat', 'conversation', id] });
     },
-    onError: (err: any) => {
-      toast.error(err?.response?.data?.error?.message || 'Gagal mengirim balasan');
+    onError: (err: unknown) => {
+      toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal mengirim balasan');
     },
   });
 
   const closeMut = useMutation({
     mutationFn: async () => {
       const res = await api.patch(`/admin/chat/${id}/close`);
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
     onSuccess: () => {
       toast.success('Percakapan ditutup');
@@ -76,8 +76,8 @@ export default function AdminChatRoomPage() {
       qc.invalidateQueries({ queryKey: ['admin', 'chat', 'conversations'] });
       setConfirmClose(false);
     },
-    onError: (err: any) => {
-      toast.error(err?.response?.data?.error?.message || 'Gagal menutup percakapan');
+    onError: (err: unknown) => {
+      toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal menutup percakapan');
     },
   });
 

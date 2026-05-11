@@ -1,20 +1,27 @@
 #!/bin/sh
-# install-freebsd.sh - Script instalasi KKN UIN SAIZU di FreeBSD
+# install-freebsd.sh - Script instalasi SIBERMAS di FreeBSD
 # Diuji pada FreeBSD 14.x
 # Jalankan sebagai root: sh install-freebsd.sh
+#
+# ASUMSI DEPLOY PROFILE (2026-05):
+#   - Single-domain path-based API (Laravel di /api/*, Next.js di /)
+#   - App root di /usr/local/www/apache24/data/Sibermas2026
+#     (path ini bukan karena server pakai Apache; hanya mengikuti layout
+#     folder yang sudah dipakai ops team. Nginx tetap entry point utama.)
+#   - Supervisor dengan path absolut /usr/local/bin/php + /usr/local/bin/node
+#   - Horizon belum dipakai — queue via `queue:work` standar (supervisord.conf)
 
 set -e
 
-APP_DIR="/usr/local/www/sibermas"
+APP_DIR="/usr/local/www/apache24/data/Sibermas2026"
 APP_USER="www"
 LOG_DIR="/var/log/sibermas"
 PHP_VERSION="84"  # php84
 
-# Production domain fallbacks. Override by exporting before running the script:
-#   WEB_DOMAIN=staging.example.com API_DOMAIN=api.staging.example.com \
-#   CERT_BASE=staging.example.com sh install-freebsd.sh
+# Production domain fallbacks. Override dengan export sebelum jalankan script:
+#   WEB_DOMAIN=staging.example.com CERT_BASE=staging.example.com sh install-freebsd.sh
+# Single-domain deploy — API_DOMAIN tidak lagi dipakai.
 : "${WEB_DOMAIN:=sibermas.uinsaizu.ac.id}"
-: "${API_DOMAIN:=api.sibermas.uinsaizu.ac.id}"
 : "${CERT_BASE:=sibermas.uinsaizu.ac.id}"
 
 echo "==> Memperbarui pkg repository..."
@@ -66,6 +73,7 @@ sysrc nginx_enable="YES"
 sysrc postgresql_enable="YES"
 sysrc redis_enable="YES"
 sysrc supervisord_enable="YES"
+sysrc php_fpm_enable="YES"
 
 echo "==> Menginisialisasi PostgreSQL..."
 if [ ! -f /var/db/postgres/data16/PG_VERSION ]; then
@@ -75,7 +83,7 @@ service postgresql start
 
 echo "==> Membuat database dan user PostgreSQL..."
 # Generate a strong random password. Only applies on first-run (CREATE USER
-# will fail silently via || true on re-run, which is fine — we don't
+# will fail silently via || true on re-run, yang memang yang kita mau — tidak
 # overwrite existing passwords).
 DB_PASS_FILE="${APP_DIR}/.db_password.initial"
 if [ ! -f "${DB_PASS_FILE}" ]; then
@@ -95,7 +103,10 @@ su -l postgres -c "psql -c \"CREATE DATABASE kkn_production OWNER kkn_app;\"" 2>
 echo "==> Memulai Redis..."
 service redis start
 
-echo "==> Membuat direktori aplikasi..."
+echo "==> Memulai PHP-FPM..."
+service php-fpm start 2>/dev/null || true
+
+echo "==> Membuat direktori aplikasi & log..."
 mkdir -p "${APP_DIR}"
 mkdir -p "${LOG_DIR}"
 chown -R ${APP_USER}:${APP_USER} "${LOG_DIR}"
@@ -110,16 +121,13 @@ cp "${APP_DIR}/apps/api/supervisord.conf" /usr/local/etc/supervisord.d/sibermas.
 
 echo "==> Menyalin konfigurasi nginx..."
 if [ -f "${APP_DIR}/nginx-freebsd.conf" ]; then
-    # C-006: substitute template placeholders from WEB_DOMAIN / API_DOMAIN /
-    # CERT_BASE env vars (defaults set at the top of this script). Template
-    # placeholders are __WEB_DOMAIN__, __API_DOMAIN__, __CERT_BASE__.
+    # Template placeholder: __WEB_DOMAIN__, __CERT_BASE__
+    # (API_DOMAIN tidak lagi dipakai — single-domain path-based deploy.)
     sed -e "s/__WEB_DOMAIN__/${WEB_DOMAIN}/g" \
-        -e "s/__API_DOMAIN__/${API_DOMAIN}/g" \
         -e "s/__CERT_BASE__/${CERT_BASE}/g" \
         "${APP_DIR}/nginx-freebsd.conf" > /usr/local/etc/nginx/nginx.conf
     echo "  [+] Rendered nginx config:"
     echo "      WEB=${WEB_DOMAIN}"
-    echo "      API=${API_DOMAIN}"
     echo "      CERT_BASE=${CERT_BASE}"
 else
     echo "  [!] nginx-freebsd.conf belum ada, salin manual setelah deploy."
@@ -146,8 +154,8 @@ echo "  7. php artisan migrate --force"
 echo "  8. KKN_SUPERADMIN_PASSWORD='<strong-pw>' php artisan db:seed --class=SuperAdminSeeder --force"
 echo "  9. php artisan storage:link"
 echo " 10. php artisan config:cache && php artisan route:cache"
-echo " 11. cd ${APP_DIR} && pnpm install && pnpm build"
-echo " 12. # Copy static files Next.js standalone:"
+echo " 11. cd ${APP_DIR} && pnpm install --frozen-lockfile && pnpm build"
+echo " 12. # Next.js standalone: salin static + public ke direktori standalone"
 echo "     cp -r ${APP_DIR}/apps/web/.next/static \\"
 echo "        ${APP_DIR}/apps/web/.next/standalone/apps/web/.next/static"
 echo "     cp -r ${APP_DIR}/apps/web/public \\"
@@ -156,15 +164,18 @@ echo " 13. chown -R ${APP_USER}:${APP_USER} ${APP_DIR}/apps/api/storage"
 echo " 14. chown -R ${APP_USER}:${APP_USER} ${APP_DIR}/apps/api/bootstrap/cache"
 echo " 15. chown -R ${APP_USER}:${APP_USER} ${APP_DIR}/apps/web/.next"
 echo ""
-echo " 16. Issue SSL cert covering BOTH web + api hostnames (SAN cert):"
+echo " 16. (Setelah app hidup di HTTP) issue SSL single-domain:"
 echo "       pkg install -y py311-certbot"
 echo "       certbot certonly --webroot \\"
 echo "         -w ${APP_DIR}/apps/api/public \\"
-echo "         -d ${WEB_DOMAIN} -d ${API_DOMAIN} \\"
+echo "         -d ${WEB_DOMAIN} \\"
 echo "         --cert-name ${CERT_BASE} \\"
 echo "         -m admin@uinsaizu.ac.id --agree-tos -n"
+echo "     Lalu aktifkan block HTTPS di nginx-freebsd.conf dan reload:"
+echo "       service nginx reload"
 echo ""
 echo " 17. service nginx start"
 echo " 18. service supervisord start"
 echo ""
-echo "Cek log: tail -f ${LOG_DIR}/horizon.log ${LOG_DIR}/web.log"
+echo "Cek log:"
+echo "  tail -f ${LOG_DIR}/worker-default.log ${LOG_DIR}/web.log"

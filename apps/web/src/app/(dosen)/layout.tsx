@@ -11,7 +11,7 @@ import { ThemeSwitcher, useTheme } from '@/components/ui/theme-provider';
 import { NotificationBell } from '@/components/ui/notification-bell';
 import {
   LayoutDashboard, Home, Users, ClipboardList, FileText,
-  Star, MapPin, Plane, MessageSquare, UserCircle,
+  Star, MapPin, Plane, UserCircle,
   Menu, Power, GraduationCap,
 } from 'lucide-react';
 

@@ -31,10 +31,6 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
 const PUBLIC_PATHS = ['/', '/login', '/lupa-kata-sandi', '/atur-ulang-kata-sandi', '/ganti-password', '/berita', '/lokasi', '/unduhan', '/verify-certificate', '/phase-blocked'];
 const PROTECTED_PREFIXES = ['/admin', '/mahasiswa', '/dosen', '/profil', '/ganti-password'];
 
-function hasCookie(name: string) {
-  return document.cookie.split(';').some((cookie) => cookie.trim().startsWith(`${name}=`));
-}
-
 export function Providers({ children }: { children: ReactNode }): React.JSX.Element {
   const initialized = useRef(false);
 

@@ -15,7 +15,7 @@ export default function DplFinalReportsPage(): React.JSX.Element {
     },
   });
 
-  const reports = ((data as any) || []) as Record<string, unknown>[];
+  const reports = ((data as unknown) || []) as Record<string, unknown>[];
 
   return (
     <div className="space-y-6">

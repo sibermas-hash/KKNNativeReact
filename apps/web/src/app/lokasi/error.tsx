@@ -1,6 +1,6 @@
 'use client';
 
-export default function LokasiError({ error, reset }: { error: Error; reset: () => void }) {
+export default function LokasiError({ error: _error, reset }: { error: Error; reset: () => void }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-8">
       <p className="text-4xl">📍</p>

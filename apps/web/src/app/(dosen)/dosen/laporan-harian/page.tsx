@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { dplApi } from '@/lib/api';
 import Link from 'next/link';
-import { FileText, CheckCircle2, XCircle } from 'lucide-react';
+import { FileText, CheckCircle2 } from 'lucide-react';
 import { StatusBadge, PageHeader, EmptyState } from '@/components/ui/shared';
 import { toast } from 'sonner';
 
@@ -23,7 +23,7 @@ export default function DplDailyReportsPage(): React.JSX.Element {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['dpl', 'daily-reports'] }); toast.success('Laporan disetujui'); },
   });
 
-  const reports = ((data as any) || []) as Record<string, unknown>[];
+  const reports = ((data as unknown) || []) as Record<string, unknown>[];
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">

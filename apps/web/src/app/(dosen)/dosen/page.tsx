@@ -16,7 +16,7 @@ export default function DosenDashboard(): React.JSX.Element {
     queryKey: QUERY_KEYS.dosen.dashboard,
     queryFn: async () => {
       const res = await dosenApi.dashboard();
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
   });
 
@@ -29,9 +29,9 @@ export default function DosenDashboard(): React.JSX.Element {
     </div>
   );
 
-  const isDpl = ((data as any)?.is_dpl as boolean) || false;
-  const periods = ((data as any)?.dpl_periods as Record<string, unknown>[]) || [];
-  const workshops = ((data as any)?.workshops as Record<string, unknown>[]) || [];
+  const isDpl = ((data as unknown as { is_dpl?: boolean })?.is_dpl as boolean) || false;
+  const periods = ((data as unknown as { dpl_periods?: Record<string, unknown>[] })?.dpl_periods as Record<string, unknown>[]) || [];
+  const workshops = ((data as unknown as { workshops?: Record<string, unknown>[] })?.workshops as Record<string, unknown>[]) || [];
 
   return (
     <div className="space-y-6">

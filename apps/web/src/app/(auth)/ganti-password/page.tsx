@@ -16,7 +16,6 @@ const ParticleBackground = dynamic(
   () => import('@/components/ui/particle-background').then((m) => ({ default: m.ParticleBackground })),
   { ssr: false }
 );
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 
 const firstLoginSchema = z.object({
@@ -32,10 +31,6 @@ const firstLoginSchema = z.object({
   message: 'Kata sandi tidak cocok',
   path: ['password_confirmation'],
 });
-
-interface UserData {
-  must_change_password: boolean;
-}
 
 function maskPassword(password: string) {
   if (password.length <= 4) return '•'.repeat(password.length);
@@ -78,7 +73,7 @@ export default function ChangePasswordPage(): React.JSX.Element {
     reset,
     formState: { errors },
   } = useForm<ChangePasswordFormData>({
-    resolver: zodResolver(isFirstLogin ? firstLoginSchema : changePasswordSchema) as any,
+    resolver: zodResolver(isFirstLogin ? firstLoginSchema : changePasswordSchema) as unknown as typeof zodResolver,
   });
 
   // Re-initialize form when isFirstLogin is determined so resolver updates
@@ -105,10 +100,11 @@ export default function ChangePasswordPage(): React.JSX.Element {
       }
 
       setSuccessPasswordMask(maskPassword(data.password));
-    } catch (err: any) {
-      const errorData = err.response?.data?.error;
-      if (err.response?.status === 422 && errorData?.errors) {
-        Object.entries(errorData.errors).forEach(([field, messages]: [string, any]) => {
+    } catch (err: unknown) {
+      const e = err as { response?: { status?: number; data?: { error?: { errors?: Record<string, string[]>; message?: string } } } };
+      const errorData = e.response?.data?.error;
+      if (e.response?.status === 422 && errorData?.errors) {
+        Object.entries(errorData.errors).forEach(([field, messages]) => {
           setError(field as keyof ChangePasswordFormData, { message: messages[0] });
         });
       } else {

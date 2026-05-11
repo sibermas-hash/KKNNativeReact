@@ -21,7 +21,7 @@ type Conversation = {
 
 type StatusFilter = 'all' | 'open' | 'replied' | 'closed';
 
-const STATUS_STYLES: Record<string, { bg: string; text: string; label: string; icon: any }> = {
+const STATUS_STYLES: Record<string, { bg: string; text: string; label: string; icon: typeof Clock | typeof CheckCircle2 | typeof XCircle }> = {
   open: { bg: 'bg-amber-100', text: 'text-amber-900', label: 'Menunggu', icon: Clock },
   replied: { bg: 'bg-emerald-100', text: 'text-emerald-900', label: 'Dibalas', icon: CheckCircle2 },
   closed: { bg: 'bg-slate-200', text: 'text-slate-600', label: 'Ditutup', icon: XCircle },
@@ -43,13 +43,14 @@ export default function AdminChatListPage() {
       if (filter !== 'all') params.status = filter;
       if (priorityFilter) params.priority = priorityFilter;
       const res = await api.get('/admin/chat', { params });
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
     refetchInterval: 30_000,
   });
 
-  const conversations: Conversation[] = data?.data ?? [];
-  const summary = data?.summary ?? { open: 0, replied: 0, closed: 0 };
+  const typed = data as { data?: Conversation[]; summary?: { open: number; replied: number; closed: number } } | undefined;
+  const conversations: Conversation[] = typed?.data ?? [];
+  const summary = typed?.summary ?? { open: 0, replied: 0, closed: 0 };
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">

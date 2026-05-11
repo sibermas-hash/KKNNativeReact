@@ -29,7 +29,7 @@ export default function DosenWorkshopsPage(): React.JSX.Element {
     queryKey: ['dosen', 'workshops'],
     queryFn: async () => {
       const res = await dosenApi.workshops.index();
-      return ((res as any)?.data ?? res) as Workshop[];
+      return ((res as unknown as { data?: Workshop[] })?.data ?? res) as Workshop[];
     },
   });
 
@@ -37,7 +37,7 @@ export default function DosenWorkshopsPage(): React.JSX.Element {
     queryKey: ['dosen', 'workshops', 'certificates'],
     queryFn: async () => {
       const res = await dosenApi.workshops.myCertificates();
-      return ((res as any)?.data ?? res) as Workshop[];
+      return ((res as unknown as { data?: Workshop[] })?.data ?? res) as Workshop[];
     },
     enabled: tab === 'certificates',
   });

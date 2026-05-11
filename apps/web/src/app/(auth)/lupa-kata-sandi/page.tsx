@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { forgotPasswordSchema, type ForgotPasswordFormData } from '@sibermas/schemas';
@@ -13,12 +13,10 @@ const ParticleBackground = dynamic(
   () => import('@/components/ui/particle-background').then((m) => ({ default: m.ParticleBackground })),
   { ssr: false }
 );
-import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 export default function ForgotPasswordPage(): React.JSX.Element {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -36,8 +34,9 @@ export default function ForgotPasswordPage(): React.JSX.Element {
       await api.post('/auth/lupa-kata-sandi', data);
       setSubmitted(true);
       toast.success('Instruksi pemulihan telah dikirim!');
-    } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || 'Gagal memproses permintaan');
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      toast.error(e?.response?.data?.error?.message || 'Gagal memproses permintaan');
     } finally {
       setLoading(false);
     }

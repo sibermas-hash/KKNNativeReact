@@ -19,7 +19,7 @@ export default function GroupDetailPage(): React.JSX.Element {
   if (isLoading) return <div className="h-32 animate-pulse rounded-2xl bg-slate-200" />;
   if (!data) return <div className="text-center text-slate-500">Kelompok tidak ditemukan</div>;
 
-  const d = data as any;
+  const d = data as unknown as Record<string, unknown>;
   const members = (d.members as Record<string, unknown>[]) || [];
   const workPrograms = (d.work_programs as Record<string, unknown>[]) || [];
 

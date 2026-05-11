@@ -53,13 +53,10 @@ export default function TwoFactorVerifyPage() {
           toast.success('Login berhasil!');
         }
       }
-    } catch (err: any) {
-      const code = err?.response?.data?.error?.code;
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: { code?: string; message?: string } } } };
+      const code = e?.response?.data?.error?.code;
       if (code === 'TWO_FACTOR_CHALLENGE_EXPIRED') {
-        setError('Sesi 2FA kedaluwarsa. Silakan login ulang.');
-        setTimeout(() => router.replace('/login'), 2000);
-      } else if (code === 'TWO_FACTOR_INVALID') {
-        setError(err?.response?.data?.error?.message || 'Kode tidak valid. Coba lagi.');
         setCode('');
       } else {
         setError('Terjadi kesalahan. Coba lagi.');

@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api';
 import { toast } from 'sonner';
 import { PageHeader, ConfirmDialog } from '@/components/ui/shared';
-import { Plus, Pencil, Trash2, Calendar, ChevronRight, ArrowRight, Users, Layers } from 'lucide-react';
+import { Plus, Pencil, Trash2, Calendar, ChevronRight, ArrowRight, Layers } from 'lucide-react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -89,8 +89,8 @@ export default function PeriodsPage(): React.JSX.Element {
       toast.success(editingId ? 'Periode diperbarui' : 'Periode dibuat');
       setOpen(false); setEditingId(null); setForm(EMPTY_FORM); setFieldErrors({});
     },
-    onError: (err: any) => {
-      const errors = err?.response?.data?.error?.errors as Record<string, string[]> | undefined;
+    onError: (err: unknown) => {
+      const errors = (err as { response?: { data?: { error?: { errors?: Record<string, string[]> } } } })?.response?.data?.error?.errors;
       if (errors) {
         const mapped: Record<string, string> = {};
         Object.entries(errors).forEach(([key, msgs]) => { mapped[key] = msgs[0]; });

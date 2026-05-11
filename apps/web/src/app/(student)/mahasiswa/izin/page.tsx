@@ -11,7 +11,7 @@ export default function IzinPage(): React.JSX.Element {
   
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.leaveRequests,
-    queryFn: async () => { const res = await studentApi.leaveRequests.index(); return (res as any).data ?? res; },
+    queryFn: async () => { const res = await studentApi.leaveRequests.index(); return (res as unknown as { data?: unknown })?.data ?? res; },
   });
 
   const izinList = data?.izin || [];

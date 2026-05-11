@@ -24,12 +24,6 @@ interface Download {
   file_size?: number;
 }
 
-function formatFileSize(bytes?: number): string {
-  if (!bytes) return '';
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
 function formatDate(iso?: string): string {
   if (!iso) return '';
   try {

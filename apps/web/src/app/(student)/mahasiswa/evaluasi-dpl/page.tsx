@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
 import { studentApi } from '@/lib/api';
-import { Star, MessageSquare, Send, CheckCircle2, ChevronRight, UserCircle, AlertCircle } from 'lucide-react';
+import { Star, MessageSquare, Send, CheckCircle2, UserCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 type Aspect = { id: string; label: string; description: string };
 
@@ -19,19 +19,20 @@ export default function DplEvaluationPage(): React.JSX.Element {
   const { data: formData, isLoading } = useQuery({
     queryKey: ['student', 'dpl-evaluation', 'form'],
     queryFn: async () => {
-      const res = await studentApi.dplEvaluation.form() as any;
-      return (res as any).data ?? res;
+      const res = await studentApi.dplEvaluation.form();
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
   });
 
   const mutation = useMutation({
-    mutationFn: (payload: any) => studentApi.dplEvaluation.store(payload),
+    mutationFn: (payload: Record<string, unknown>) => studentApi.dplEvaluation.store(payload),
     onSuccess: () => {
       setSubmitted(true);
       toast.success('Evaluasi berhasil dikirim!');
     },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.error?.message || 'Gagal mengirim evaluasi');
+    onError: (err: unknown) => {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      toast.error(e?.response?.data?.error?.message || 'Gagal mengirim evaluasi');
     },
   });
 

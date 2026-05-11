@@ -19,7 +19,7 @@ export default function DplFinalReportDetailPage(): React.JSX.Element {
     queryKey: [...QUERY_KEYS.dpl.finalReports, Number(id)],
     queryFn: async () => {
       const res = await dplApi.finalReports.show(Number(id));
-      return (res as any).data ?? res;
+      return (res as unknown as { data?: unknown }).data ?? res;
     },
     enabled: !!id,
   });

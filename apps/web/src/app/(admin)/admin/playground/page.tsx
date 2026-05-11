@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
-import { Send, Trash2, Sparkles, Zap, Megaphone, BarChart3, FileText, TrendingUp, FlaskConical, Loader2 } from 'lucide-react';
+import { Send, Trash2, Sparkles, Megaphone, BarChart3, FileText, TrendingUp, FlaskConical, Loader2 } from 'lucide-react';
 import { PageHeader } from '@/components/ui/shared';
 
 type Provider = {
@@ -27,7 +27,7 @@ type Message = {
   timestamp: number;
 };
 
-const ICON_MAP: Record<string, any> = {
+const ICON_MAP: Record<string, unknown> = {
   megaphone: Megaphone,
   'bar-chart': BarChart3,
   'file-text': FileText,
@@ -48,7 +48,7 @@ export default function PlaygroundPage() {
     queryKey: ['admin', 'playground', 'models'],
     queryFn: async () => {
       const res = await api.get('/admin/playground/models');
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
   });
 
@@ -78,9 +78,9 @@ export default function PlaygroundPage() {
         history: messages.slice(-10).map((m) => ({ role: m.role, content: m.content })),
       };
       const res = await api.post('/admin/playground/chat', payload);
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
-    onSuccess: (data: any, variables) => {
+    onSuccess: (data: unknown, _variables) => {
       setMessages((prev) => [
         ...prev,
         {
@@ -93,8 +93,8 @@ export default function PlaygroundPage() {
         },
       ]);
     },
-    onError: (err: any) => {
-      const msg = err?.response?.data?.error?.message || err?.response?.data?.message || 'AI error';
+    onError: (err: unknown) => {
+      const msg = (err as { response?: { data?: { error?: { message?: string }; message?: string } } })?.response?.data?.error?.message || (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'AI error';
       toast.error(msg);
     },
   });

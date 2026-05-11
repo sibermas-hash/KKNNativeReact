@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api';
 import Link from 'next/link';
-import { FileCheck, Search, Eye } from 'lucide-react';
+import { Search, Eye } from 'lucide-react';
 import { PageHeader, StatusBadge } from '@/components/ui/shared';
 
 export default function AdminLaporanAkhirPage(): React.JSX.Element {

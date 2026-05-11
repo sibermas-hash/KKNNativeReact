@@ -5,19 +5,18 @@ import { api, adminApi } from '@/lib/api';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { ClipboardList } from 'lucide-react';
-import { PageHeader, StatusBadge, EmptyState } from '@/components/ui/shared';
+import { PageHeader, EmptyState } from '@/components/ui/shared';
 
 export default function AdminGradesPage(): React.JSX.Element {
   const queryClient = useQueryClient();
-  const [page, setPage] = useState(1);
-  const [selectedPeriodId, setSelectedPeriodId] = useState<string>('');
-  const [search, setSearch] = useState('');
+  const [selectedPeriodId, _setSelectedPeriodId] = useState<string>('');
+  const [search, _setSearch] = useState('');
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'nilai', { periode_id: selectedPeriodId, search }],
     queryFn: async () => {
       const res = await api.get('/admin/nilai', { params: { periode_id: selectedPeriodId || undefined, search: search || undefined } });
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
   });
 

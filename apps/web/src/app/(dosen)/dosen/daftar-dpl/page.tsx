@@ -32,8 +32,9 @@ export default function DaftarDplPage(): React.JSX.Element {
       setFormData({ periode_id: '', max_kelompok: '', notes: '' });
       qc.invalidateQueries({ queryKey: ['dosen', 'dashboard'] });
     },
-    onError: (err: any) => {
-      toast.error(err?.response?.data?.message || 'Gagal mendaftar sebagai DPL');
+    onError: (err: unknown) => {
+      const e = err as { response?: { data?: { message?: string } } };
+      toast.error(e?.response?.data?.message || 'Gagal mendaftar sebagai DPL');
     },
   });
 

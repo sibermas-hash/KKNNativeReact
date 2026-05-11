@@ -1,5 +1,5 @@
 import React from 'react';
-import { HelpCircle, MessageCircle, AlertTriangle, Book, ExternalLink, ShieldAlert } from 'lucide-react';
+import { HelpCircle, MessageCircle, Book, ExternalLink, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 
 export default function SupportPage() {

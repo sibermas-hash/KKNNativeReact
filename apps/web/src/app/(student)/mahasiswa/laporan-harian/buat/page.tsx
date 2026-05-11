@@ -8,7 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { createDailyReportSchema, type CreateDailyReportFormData } from '@sibermas/schemas';
 import { useCreateDailyReport } from '@sibermas/hooks';
 import { api } from '@/lib/api';
-import { ChevronLeft, Navigation, Camera, CloudUpload } from 'lucide-react';
+import { ChevronLeft, Navigation, CloudUpload } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function CreateDailyReportPage(): React.JSX.Element {

@@ -5,7 +5,7 @@ import { api } from '@/lib/api';
 import { PageHeader } from '@/components/ui/shared';
 
 export default function GradeGeneratorPage(): React.JSX.Element {
-  const { data, isLoading } = useQuery({
+  const { data: _data, isLoading: _isLoading } = useQuery({
     queryKey: ['admin', 'grade-generator'],
     queryFn: async () => {
       return await api.get('/admin/generator-nilai');

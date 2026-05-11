@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { api, adminApi } from '@/lib/api';
+import { api } from '@/lib/api';
 import { useParams } from 'next/navigation';
 
 export default function GroupDetailPage(): React.JSX.Element {
@@ -12,7 +12,7 @@ export default function GroupDetailPage(): React.JSX.Element {
     queryKey: ['admin', 'kelompok', Number(id)],
     queryFn: async () => {
       const res = await api.get(`/admin/kelompok/${id}`);
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
     enabled: !!id,
   });

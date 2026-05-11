@@ -17,7 +17,7 @@ export default function DispensasiPage(): React.JSX.Element {
     queryKey: ['admin', 'dispensasi'],
     queryFn: async () => {
       const res = await api.get('/admin/dispensasi');
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
   });
 

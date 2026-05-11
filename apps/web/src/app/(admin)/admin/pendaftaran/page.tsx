@@ -30,7 +30,7 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
     queryKey: ['admin', 'registrations', { status, search }],
     queryFn: async () => { 
       const res = await adminApi.registrations.index({ status, search }); 
-      return (res as any).data as Registration[]; 
+      return (res as unknown as { data?: Registration[] }).data ?? []; 
     },
   });
 

@@ -34,7 +34,7 @@ export default function MahasiswaRekapitulasiPage(): React.JSX.Element {
     queryKey: QUERY_KEYS.student.rekapitulasi,
     queryFn: async () => {
       const res = await api.get('/student/rekapitulasi');
-      return (res as any).data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
   });
 
@@ -54,7 +54,10 @@ export default function MahasiswaRekapitulasiPage(): React.JSX.Element {
       setShowForm(false);
       setForm({ uraian_kegiatan: '', volume: '', satuan: '', swadaya_mhs: '', swadaya_masyarakat: '', bantuan_pemerintah: '', donatur_lain: '', jumlah: '', keterangan: '' });
     },
-    onError: (err: any) => toast.error(err?.response?.data?.error?.message || 'Gagal menyimpan'),
+    onError: (err: unknown) => {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      toast.error(e?.response?.data?.error?.message || 'Gagal menyimpan');
+    },
   });
 
   const kelompok = data?.kelompok as { nama_kelompok?: string; lokasi?: { village_name?: string; district_name?: string; regency_name?: string }; periode?: string } | null;

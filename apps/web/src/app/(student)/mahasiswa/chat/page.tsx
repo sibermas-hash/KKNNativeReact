@@ -18,7 +18,7 @@ type Conversation = {
   unread_count: number;
 };
 
-const STATUS_STYLES: Record<string, { bg: string; text: string; label: string; icon: any }> = {
+const STATUS_STYLES: Record<string, { bg: string; text: string; label: string; icon: typeof Clock | typeof CheckCircle2 | typeof XCircle }> = {
   open: { bg: 'bg-amber-100', text: 'text-amber-900', label: 'Menunggu', icon: Clock },
   replied: { bg: 'bg-emerald-100', text: 'text-emerald-900', label: 'Dibalas', icon: CheckCircle2 },
   closed: { bg: 'bg-slate-200', text: 'text-slate-600', label: 'Ditutup', icon: XCircle },
@@ -49,7 +49,7 @@ export default function ChatListPage() {
     queryKey: ['student', 'chat', 'conversations'],
     queryFn: async () => {
       const res = await api.get('/chat');
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
     refetchInterval: 30_000,
   });
@@ -57,21 +57,22 @@ export default function ChatListPage() {
   const createMut = useMutation({
     mutationFn: async () => {
       const res = await api.post('/chat', { subject, message, priority });
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: { id: number } })?.data ?? res;
     },
-    onSuccess: (conv: any) => {
+    onSuccess: (conv) => {
       qc.invalidateQueries({ queryKey: ['student', 'chat', 'conversations'] });
       toast.success('Percakapan berhasil dibuat');
       setShowForm(false);
       setSubject(''); setMessage(''); setPriority('normal');
       window.location.href = `/mahasiswa/chat/${conv.id}`;
     },
-    onError: (err: any) => {
-      toast.error(err?.response?.data?.error?.message || 'Gagal membuat percakapan');
+    onError: (err: unknown) => {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      toast.error(e?.response?.data?.error?.message || 'Gagal membuat percakapan');
     },
   });
 
-  const conversations: Conversation[] = data?.data ?? [];
+  const conversations: Conversation[] = (data as { data?: Conversation[] })?.data ?? [];
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
@@ -106,7 +107,7 @@ export default function ChatListPage() {
           </div>
           <div>
             <label className="text-[11px] font-bold uppercase text-slate-500">Prioritas</label>
-            <select value={priority} onChange={(e) => setPriority(e.target.value as any)}
+            <select value={priority} onChange={(e) => setPriority(e.target.value as 'normal' | 'urgent')}
               className="mt-1 h-9 w-full rounded-lg border border-slate-200 px-2 text-sm">
               <option value="normal">Normal</option>
               <option value="urgent">Urgent</option>
@@ -131,7 +132,7 @@ export default function ChatListPage() {
         <div className="rounded-2xl bg-white p-12 text-center shadow-sm ring-1 ring-slate-200">
           <MessageCircle size={40} className="mx-auto text-slate-300" />
           <p className="mt-3 text-sm font-semibold text-slate-700">Belum ada percakapan</p>
-          <p className="mt-1 text-xs text-slate-500">Klik tombol "Baru" untuk mulai konsultasi dengan admin.</p>
+          <p className="mt-1 text-xs text-slate-500">Klik tombol &quot;Baru&quot; untuk mulai konsultasi dengan admin.</p>
         </div>
       ) : (
         <ul className="space-y-2">

@@ -15,7 +15,7 @@ export default function CreateMonitoringPage(): React.JSX.Element {
   const { data: groupsData } = useQuery({
     queryKey: ['dpl', 'groups'],
     queryFn: async () => {
-      const res = await dplApi.groups.index() as any;
+      const res = await dplApi.groups.index() as unknown as { groups?: Group[]; data?: { groups?: Group[] } };
       return (res?.groups ?? res?.data?.groups ?? []) as Group[];
     },
   });

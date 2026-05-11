@@ -14,7 +14,7 @@
 #   - Write access to output dir
 #
 # Exits non-zero on any failure. Intended to be run via cron:
-#   0 2 * * *  /usr/local/www/sibermas/scripts/backup.sh
+#   0 2 * * *  /usr/local/www/apache24/data/Sibermas2026/scripts/backup.sh
 #
 
 set -euo pipefail

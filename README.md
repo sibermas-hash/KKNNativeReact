@@ -115,6 +115,9 @@ sh install-freebsd.sh
 
 ### Instalasi Manual
 
+> ℹ️ **Panduan lengkap:** lihat [`docs/DEPLOY_FREEBSD.md`](docs/DEPLOY_FREEBSD.md).
+> Ringkasan di sini hanya untuk quick-reference.
+
 ```bash
 # 1. Install dependensi
 pkg install -y php84 php84-extensions php84-pdo_pgsql php84-mbstring \
@@ -124,7 +127,7 @@ pkg install -y php84 php84-extensions php84-pdo_pgsql php84-mbstring \
 
 # 2. Aktifkan layanan
 sysrc nginx_enable="YES" postgresql_enable="YES" \
-      redis_enable="YES" supervisord_enable="YES"
+      redis_enable="YES" supervisord_enable="YES" php_fpm_enable="YES"
 
 # 3. Init & start PostgreSQL
 service postgresql initdb
@@ -134,9 +137,9 @@ service postgresql start
 su -l postgres -c "psql -c \"CREATE USER kkn_app WITH PASSWORD 'password';\""
 su -l postgres -c "psql -c \"CREATE DATABASE kkn_production OWNER kkn_app;\""
 
-# 5. Deploy aplikasi ke /usr/local/www/sibermas
-git clone <repository-url> /usr/local/www/sibermas
-cd /usr/local/www/sibermas/apps/api
+# 5. Deploy aplikasi ke /usr/local/www/apache24/data/Sibermas2026
+git clone <repository-url> /usr/local/www/apache24/data/Sibermas2026
+cd /usr/local/www/apache24/data/Sibermas2026/apps/api
 
 # 6. Setup environment
 cp .env.production.example .env
@@ -149,20 +152,26 @@ php artisan migrate --force
 php artisan storage:link
 php artisan config:cache && php artisan route:cache
 
-cd /usr/local/www/sibermas
-pnpm install && pnpm build
+cd /usr/local/www/apache24/data/Sibermas2026
+pnpm install --frozen-lockfile && pnpm build
+
+# Next.js standalone output: static/public tidak ikut otomatis — copy manual:
+cp -r apps/web/.next/static  apps/web/.next/standalone/apps/web/.next/static
+cp -r apps/web/public        apps/web/.next/standalone/apps/web/public
 
 # 8. Set permissions (user www = FreeBSD web user)
-chown -R www:www /usr/local/www/sibermas/apps/api/storage
-chown -R www:www /usr/local/www/sibermas/apps/api/bootstrap/cache
+chown -R www:www /usr/local/www/apache24/data/Sibermas2026/apps/api/storage
+chown -R www:www /usr/local/www/apache24/data/Sibermas2026/apps/api/bootstrap/cache
+chown -R www:www /usr/local/www/apache24/data/Sibermas2026/apps/web/.next
 
-# 9. Konfigurasi nginx & supervisor
+# 9. Konfigurasi nginx & supervisor (template di-sed oleh install-freebsd.sh)
 cp nginx-freebsd.conf /usr/local/etc/nginx/nginx.conf
 cp apps/api/supervisord.conf /usr/local/etc/supervisord.d/sibermas.conf
 
 # 10. Start semua layanan
 service nginx start
 service redis start
+service php-fpm start
 service supervisord start
 ```
 
@@ -170,7 +179,7 @@ service supervisord start
 
 | Komponen | Path |
 |---|---|
-| Web root | `/usr/local/www/sibermas` |
+| Web root (app) | `/usr/local/www/apache24/data/Sibermas2026` |
 | Nginx config | `/usr/local/etc/nginx/nginx.conf` |
 | PHP binary | `/usr/local/bin/php` |
 | Supervisor config | `/usr/local/etc/supervisord.d/` |

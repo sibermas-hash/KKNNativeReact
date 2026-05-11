@@ -27,7 +27,7 @@ import { toast } from 'sonner';
 import { CountUp } from '@/components/ui/motion-effects';
 
 /* ─── Counter using motion-effects CountUp ── */
-function Counter({ to, delay = 0 }: { to: number; delay?: number }) {
+function Counter({ to, delay: _delay = 0 }: { to: number; delay?: number }) {
   const ref = useRef<HTMLSpanElement>(null);
   const inView = useInView(ref, { once: true, margin: '-20px' });
   return (

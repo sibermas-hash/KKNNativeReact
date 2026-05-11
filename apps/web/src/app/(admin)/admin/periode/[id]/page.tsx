@@ -5,7 +5,7 @@ import { adminApi } from '@/lib/api';
 import { useParams } from 'next/navigation';
 import { PHASE_LABELS } from '@sibermas/constants';
 import Link from 'next/link';
-import { ArrowLeft, Calendar, Users, Layers, MapPin } from 'lucide-react';
+import { ArrowLeft, Users, Layers, MapPin } from 'lucide-react';
 
 export default function PeriodDetailPage(): React.JSX.Element {
   const { id } = useParams();
@@ -14,7 +14,7 @@ export default function PeriodDetailPage(): React.JSX.Element {
     queryKey: ['admin', 'period', Number(id)],
     queryFn: async () => {
       const res = await adminApi.periods.show(Number(id));
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
     enabled: !!id,
   });
@@ -52,11 +52,11 @@ export default function PeriodDetailPage(): React.JSX.Element {
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Jenis KKN</p>
-            <p className="mt-1 font-semibold text-slate-700">{String(((data.jenis_kkn as any)?.name) || '-')}</p>
+            <p className="mt-1 font-semibold text-slate-700">{String(((data.jenis_kkn as { name?: string })?.name) || '-')}</p>
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tahun Akademik</p>
-            <p className="mt-1 font-semibold text-slate-700">{String(((data.academic_year as any)?.year) || '-')}</p>
+            <p className="mt-1 font-semibold text-slate-700">{String(((data.academic_year as { year?: string })?.year) || '-')}</p>
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Pendaftaran</p>

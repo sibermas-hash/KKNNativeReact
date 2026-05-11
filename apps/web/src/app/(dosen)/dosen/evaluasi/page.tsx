@@ -5,7 +5,7 @@ import { QUERY_KEYS } from '@sibermas/constants';
 import { dplApi } from '@/lib/api';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { CheckCircle2, FileText, Upload } from 'lucide-react';
+import { FileText, Upload } from 'lucide-react';
 import { PageHeader, EmptyState } from '@/components/ui/shared';
 import Link from 'next/link';
 
@@ -19,12 +19,12 @@ export default function DplEvaluationsPage(): React.JSX.Element {
     queryFn: async () => {
       const res = await dplApi.evaluations.index();
       // API client interceptor unwraps to res.data.data, so res is already the inner object
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
   });
 
   // Handle both cases: direct API call vs interceptor-unwrapped
-  const responseData = (data as any)?.data ?? data;
+  const responseData = (data as unknown as { data?: unknown })?.data ?? data;
   const students = (responseData?.students as Record<string, unknown>[]) || [];
   const aspects = ['dpl_relevansi_score', 'dpl_ketercapaian_score', 'dpl_inovasi_score', 'dpl_administrasi_score', 'dpl_artikel_score'];
   const aspectLabels: Record<string, string> = { dpl_relevansi_score: 'Relevansi', dpl_ketercapaian_score: 'Ketercapaian', dpl_inovasi_score: 'Inovasi', dpl_administrasi_score: 'Administrasi', dpl_artikel_score: 'Artikel' };
@@ -70,7 +70,7 @@ export default function DplEvaluationsPage(): React.JSX.Element {
                 {aspects.map((aspect) => (
                   <div key={aspect}>
                     <label className="text-[10px] font-black text-slate-400 uppercase">{aspectLabels[aspect]}</label>
-                    <input type="number" min={0} max={100} value={scores[s.id as number]?.[aspect] ?? (s as any)[aspect] ?? ''} onChange={(e) => updateScore(s.id as number, aspect, Number(e.target.value))} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm font-bold mt-1" placeholder="0-100" />
+                    <input type="number" min={0} max={100} value={scores[s.id as number]?.[aspect] ?? (s as Record<string, unknown>)[aspect] ?? ''} onChange={(e) => updateScore(s.id as number, aspect, Number(e.target.value))} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm font-bold mt-1" placeholder="0-100" />
                   </div>
                 ))}
               </div>

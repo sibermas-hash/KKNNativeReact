@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { editDailyReportSchema, type EditDailyReportFormData } from '@sibermas/schemas';
-import { ChevronLeft, Navigation } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function EditDailyReportPage(): React.JSX.Element {
@@ -19,7 +19,7 @@ export default function EditDailyReportPage(): React.JSX.Element {
     queryKey: ['student', 'daily-reports', Number(id)],
     queryFn: async () => {
       const res = await studentApi.dailyReports.show(Number(id));
-      return (res as any).data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
     enabled: !!id,
   });
@@ -34,11 +34,9 @@ export default function EditDailyReportPage(): React.JSX.Element {
     onError: () => toast.error('Gagal memperbarui laporan'),
   });
 
-  const { register, handleSubmit, formState: { errors } } = useForm<EditDailyReportFormData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(editDailyReportSchema) as any,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    values: data ? { date: String(data.date || ''), title: String(data.title || ''), activity: String(data.activity || ''), reflection: String(data.reflection || ''), latitude: Number(data.latitude || 0), longitude: Number(data.longitude || 0), captured_at: String(data.captured_at || '') } as any : undefined,
+  const { register, handleSubmit } = useForm<EditDailyReportFormData>({
+    resolver: zodResolver(editDailyReportSchema) as unknown as typeof zodResolver,
+    values: data ? { date: String(data.date || ''), title: String(data.title || ''), activity: String(data.activity || ''), reflection: String(data.reflection || ''), latitude: Number(data.latitude || 0), longitude: Number(data.longitude || 0), captured_at: String(data.captured_at || '') } as unknown as EditDailyReportFormData : undefined,
   });
 
   if (isLoading) return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" /></div>;

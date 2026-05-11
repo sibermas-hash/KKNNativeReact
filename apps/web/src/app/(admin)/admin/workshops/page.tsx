@@ -6,8 +6,8 @@ import { adminApi } from '@/lib/api';
 import { toast } from 'sonner';
 import { PageHeader } from '@/components/ui/shared';
 import {
-  Calendar, Check, Download, GraduationCap, MapPin, Plus, Upload, Users,
-  X, Pencil, Ban, UserCheck, Clock, ChevronDown, FileUp,
+  Calendar, Download, GraduationCap, MapPin, Plus, Upload, Users,
+  X, Pencil, Ban, UserCheck, Clock, FileUp,
 } from 'lucide-react';
 
 interface Participant {
@@ -77,14 +77,14 @@ function WorkshopFormModal({ workshop, onClose, onSaved }: { workshop?: Workshop
       onSaved();
       onClose();
     },
-    onError: (err: any) => toast.error(err?.response?.data?.error?.message || 'Gagal menyimpan workshop'),
+    onError: (err: unknown) => toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal menyimpan workshop'),
   });
 
   const { data: periods } = useQuery({
     queryKey: ['admin', 'periods-dropdown'],
     queryFn: async () => {
       const res = await adminApi.periods.index();
-      return ((res as any)?.data ?? res) as Array<{ id: number; name: string }>;
+      return (res as unknown as { data?: Array<{ id: number; name: string }> })?.data ?? res;
     },
   });
 
@@ -267,8 +267,8 @@ export default function WorkshopsPage(): React.JSX.Element {
       fd.append('file', file);
       return adminApi.workshops.importPeserta(workshopId, fd);
     },
-    onSuccess: (res: any) => {
-      const data = res?.data ?? res;
+    onSuccess: (res: unknown) => {
+      const data = (res as { data?: { success?: number; not_found?: number; skipped?: number } })?.data ?? res;
       const msg = `Import selesai: ${data.success ?? 0} berhasil, ${data.not_found ?? 0} tidak ditemukan, ${data.skipped ?? 0} dilewati.`;
       toast.success(msg);
       qc.invalidateQueries({ queryKey: ['admin', 'workshops'] });
@@ -283,7 +283,7 @@ export default function WorkshopsPage(): React.JSX.Element {
       toast.success('Workshop dibatalkan');
       qc.invalidateQueries({ queryKey: ['admin', 'workshops'] });
     },
-    onError: (err: any) => toast.error(err?.response?.data?.error?.message || 'Gagal membatalkan workshop'),
+    onError: (err: unknown) => toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal membatalkan workshop'),
   });
 
   const workshops = data ?? [];

@@ -18,7 +18,7 @@ import {
   LayoutDashboard, Calendar, MapPin, Users, ClipboardList, FileText,
   Layers, BarChart3, ShieldCheck, Award, RefreshCw, Shuffle, BookOpen,
   Activity, History, Cpu, UserCheck, FileCheck, GraduationCap, Settings,
-  UserCog, Globe, Terminal, Newspaper, Download, Menu, Power, FolderKanban, Building2,
+  UserCog, Globe, Terminal, Newspaper, Download, Menu, Power, Building2,
   Play, Megaphone, Bell, Camera, Sparkles, MessageCircle,
 } from 'lucide-react';
 
@@ -102,8 +102,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const { user, isAuthenticated, isLoading, clearUser } = useAuthStore();
-  const { currentPhase, activePeriod } = usePeriodStore();
-  const { config: themeConfig, typography: themeTypo } = useTheme();
+  const { activePeriod } = usePeriodStore();
+  const { config: themeConfig } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Must be before any early returns — Rules of Hooks

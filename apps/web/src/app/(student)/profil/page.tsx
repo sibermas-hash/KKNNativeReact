@@ -45,8 +45,8 @@ const AddressMapPicker = dynamic(() => import('@/components/profile/address-map-
 });
 
 type ChangeRequest = { id: number; requested_changes: Record<string, { old: unknown; new: unknown }>; created_at: string };
-type StudentProfile = Record<string, any> & { faculty?: { nama?: string }; prodi?: { nama?: string }; missing_biodata_fields?: string[]; missing_address_fields?: string[]; biodata_complete?: boolean; address_verified?: boolean; address_verified_at?: string | null };
-type LecturerProfile = Record<string, any> & { faculty?: { nama?: string }; missing_biodata_fields?: string[]; biodata_complete?: boolean };
+type StudentProfile = Record<string, unknown> & { faculty?: { nama?: string }; prodi?: { nama?: string }; missing_biodata_fields?: string[]; missing_address_fields?: string[]; biodata_complete?: boolean; address_verified?: boolean; address_verified_at?: string | null };
+type LecturerProfile = Record<string, unknown> & { faculty?: { nama?: string }; missing_biodata_fields?: string[]; biodata_complete?: boolean };
 
 const FIELD_LABELS: Record<string, string> = {
   nik: 'NIK (KTP)',
@@ -205,7 +205,7 @@ function StatusRow({ label, complete, subtitle, typography }: { label: string; c
   );
 }
 
-function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, surfaceClass, isLecturer, profileComplete, isEditing, pendingRequest, onThemeChange, onDashboard, onToggleEdit, onLogout }: any) {
+function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, surfaceClass, isLecturer, profileComplete, isEditing, pendingRequest, onThemeChange, onDashboard, onToggleEdit, onLogout }: Record<string, unknown>) {
   return (
     <div ref={refTarget} className={cx('flex flex-col gap-4 rounded-2xl p-5 sm:flex-row sm:items-end sm:justify-between', themeConfig.frame, surfaceClass, themeConfig.shadow)}>
       <div className="space-y-1">
@@ -230,7 +230,7 @@ function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, su
   );
 }
 
-function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, lecturer, isStudent, isLecturer, avatarLoading, typography, themeConfig, surfaceStrongClass, onAvatarChange }: any) {
+function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, lecturer, isStudent, isLecturer, avatarLoading, typography, themeConfig, surfaceStrongClass, onAvatarChange }: Record<string, unknown>) {
   return (
     <div className="space-y-5">
       <div ref={avatarRef} className={cx('flex flex-col items-center gap-4 rounded-xl p-5 text-center', themeConfig.frame, surfaceStrongClass, themeConfig.shadow)}>
@@ -242,14 +242,14 @@ function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, l
         <div className="space-y-2">
           <button type="button" onClick={() => avatarInputRef.current?.click()} className={cx('inline-flex items-center gap-2 rounded-lg px-3 py-2', typography.meta, themeConfig.frame, softClass)}><Camera size={14} /> Upload Foto Formal HD</button>
           <p className={`${typography.meta} max-w-64 text-[color:var(--profile-muted)]`}>Foto ini akan dicetak di sertifikat. Gunakan pas foto formal HD dengan <strong>latar merah polos</strong> dan <strong>jas almamater</strong>. Sistem memvalidasi otomatis via AI.</p>
-          {(user as any).avatar_moderation_status === 'pending' && (
+          {(user as unknown as { avatar_moderation_status?: string }).avatar_moderation_status === 'pending' && (
             <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900">
               ⏳ Foto menunggu verifikasi admin (server AI sedang sibuk)
             </div>
           )}
-          {(user as any).avatar_moderation_status === 'rejected' && (
+          {(user as unknown as { avatar_moderation_status?: string; avatar_moderation_reason?: string }).avatar_moderation_status === 'rejected' && (
             <div className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-[11px] font-semibold text-rose-900">
-              ✗ Foto ditolak: {(user as any).avatar_moderation_reason || 'silakan upload ulang'}
+              ✗ Foto ditolak: {(user as unknown as { avatar_moderation_reason?: string }).avatar_moderation_reason || 'silakan upload ulang'}
             </div>
           )}
         </div>
@@ -267,7 +267,7 @@ function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, l
   );
 }
 
-function StudentAddressSection({ register, errors, isEditing, typography, addressLat, addressLng, reverseGeocoding, forwardGeocoding, onMapChange, onSyncMap }: any) {
+function StudentAddressSection({ register, errors, isEditing, typography, addressLat, addressLng, reverseGeocoding, forwardGeocoding, onMapChange, onSyncMap }: Record<string, unknown>) {
   return (
     <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5">
       <div className="space-y-1">
@@ -307,7 +307,7 @@ export default function ProfilePage(): React.JSX.Element {
   }, [themeConfig]);
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting, isDirty } } = useForm<UpdateProfileFormData>({
-    resolver: zodResolver(updateProfileSchema) as any,
+    resolver: zodResolver(updateProfileSchema) as unknown as typeof zodResolver,
   });
 
   const student = profileData?.student ?? null;
@@ -318,11 +318,9 @@ export default function ProfilePage(): React.JSX.Element {
   const isLecturer = !!lecturer;
   const addressLat = watch('address_lat');
   const addressLng = watch('address_lng');
-  const addressValue = watch('address');
   const villageValue = watch('address_village_name');
   const districtValue = watch('address_district_name');
   const regencyValue = watch('address_regency_name');
-  const postalCodeValue = watch('address_postal_code');
 
   const setTutorialTargetRef = (target: TutorialTarget) => (node: HTMLElement | null) => {
     tutorialTargets.current[target] = node;
@@ -380,7 +378,7 @@ export default function ProfilePage(): React.JSX.Element {
     }
   };
 
-  const closeTutorial = () => {
+  const _closeTutorial = () => {
     window.localStorage.setItem(profileTutorialKey(user), '1');
     setShowTutorial(false);
   };
@@ -425,18 +423,19 @@ export default function ProfilePage(): React.JSX.Element {
 
   useEffect(() => {
     if (!user) return;
-    profileApi.get().then((res: any) => {
-      const nextStudent = res?.student ?? res?.user?.mahasiswa ?? null;
-      const nextLecturer = res?.lecturer ?? res?.user?.dosen ?? null;
-      setProfileData({ student: nextStudent, lecturer: nextLecturer, pending: res?.pending_change_request ?? null });
+    profileApi.get().then((res: unknown) => {
+      const r = res as { student?: StudentProfile; lecturer?: LecturerProfile; user?: { phone?: string; address?: string; address_village_name?: string; address_district_name?: string; address_regency_name?: string; address_postal_code?: string; address_verified_at?: string; address_lat?: number; address_lng?: number; mahasiswa?: StudentProfile; dosen?: LecturerProfile }; pending_change_request?: ChangeRequest };
+      const nextStudent = r?.student ?? r?.user?.mahasiswa ?? null;
+      const nextLecturer = r?.lecturer ?? r?.user?.dosen ?? null;
+      setProfileData({ student: nextStudent, lecturer: nextLecturer, pending: r?.pending_change_request ?? null });
       reset({
         name: user.name ?? '',
-        phone: (res?.user?.phone ?? (user as any).phone ?? '') as string,
-        address: (res?.user?.address ?? (user as any).address ?? '') as string,
-        address_village_name: (res?.user?.address_village_name ?? (user as any).address_village_name ?? '') as string,
-        address_district_name: (res?.user?.address_district_name ?? (user as any).address_district_name ?? '') as string,
-        address_regency_name: (res?.user?.address_regency_name ?? (user as any).address_regency_name ?? '') as string,
-        address_postal_code: (res?.user?.address_postal_code ?? (user as any).address_postal_code ?? '') as string,
+        phone: (r?.user?.phone ?? (user as unknown as { phone?: string }).phone ?? '') as string,
+        address: (r?.user?.address ?? (user as unknown as { address?: string }).address ?? '') as string,
+        address_village_name: (r?.user?.address_village_name ?? (user as unknown as { address_village_name?: string }).address_village_name ?? '') as string,
+        address_district_name: (r?.user?.address_district_name ?? (user as unknown as { address_district_name?: string }).address_district_name ?? '') as string,
+        address_regency_name: (r?.user?.address_regency_name ?? (user as unknown as { address_regency_name?: string }).address_regency_name ?? '') as string,
+        address_postal_code: (r?.user?.address_postal_code ?? (user as unknown as { address_postal_code?: string }).address_postal_code ?? '') as string,
         address_verified: !!res?.user?.address_verified_at,
         address_lat: res?.user?.address_lat != null ? Number(res.user.address_lat) : null,
         address_lng: res?.user?.address_lng != null ? Number(res.user.address_lng) : null,
@@ -486,20 +485,21 @@ export default function ProfilePage(): React.JSX.Element {
       await profileApi.update(payload);
       toast.success(profileComplete ? 'Permintaan perubahan profil dikirim. Menunggu persetujuan superadmin.' : 'Profil berhasil disimpan. Pastikan semua data sudah valid.');
       setIsEditing(false);
-      const res: any = await profileApi.get();
+      const res = await profileApi.get() as unknown as { student?: StudentProfile; lecturer?: LecturerProfile; pending_change_request?: ChangeRequest; user?: { biodata_complete?: boolean; address_complete?: boolean } };
       setProfileData({ student: res?.student ?? null, lecturer: res?.lecturer ?? null, pending: res?.pending_change_request ?? null });
       await fetchUser();
-      const complete = !!(res?.student?.biodata_complete && res?.student?.address_complete) || !!res?.lecturer?.biodata_complete;
+      const complete = !!(res?.student?.biodata_complete && res?.user?.address_complete) || !!res?.lecturer?.biodata_complete;
       setProfileCompleteCookie(complete);
-    } catch (err: any) {
-      const apiErrors = err.response?.data?.error?.errors as Record<string, string[]> | undefined;
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: { errors?: Record<string, string[]>; message?: string } } } };
+      const apiErrors = e?.response?.data?.error?.errors;
       const firstField = apiErrors ? Object.keys(apiErrors)[0] : null;
-      toast.error(firstField ? (apiErrors?.[firstField]?.[0] ?? 'Data belum valid.') : (err.response?.data?.error?.message || 'Gagal mengirim permintaan'));
+      toast.error(firstField ? (apiErrors?.[firstField]?.[0] ?? 'Data belum valid.') : (e?.response?.data?.error?.message || 'Gagal mengirim permintaan'));
       if (firstField) focusProfileField(firstField);
     }
   };
 
-  const onSubmitInvalid = (formErrors: Record<string, any>) => {
+  const onSubmitInvalid = (formErrors: Record<string, unknown>) => {
     const firstField = Object.keys(formErrors)[0];
     toast.error(firstField ? `Data belum valid: ${FIELD_LABELS[firstField] ?? firstField}` : 'Masih ada data yang belum valid.');
     if (firstField) focusProfileField(firstField);
@@ -540,15 +540,16 @@ export default function ProfilePage(): React.JSX.Element {
 
     try {
       // Step 1: the actual upload. Only a throw HERE means the upload failed.
-      const uploadRes: any = await profileApi.updateAvatar(formData);
+      const uploadRes: unknown = await profileApi.updateAvatar(formData);
       uploadSucceeded = true;
       moderationStatus = (uploadRes?.data?.moderation_status ?? uploadRes?.moderation_status) ?? null;
-    } catch (error: any) {
+    } catch (error: unknown) {
       // R-008 fix: only rollback the preview when the UPLOAD itself failed.
       if (user) {
         setUser({ ...user, avatar_url: prevAvatarUrl });
       }
-      const apiMessage = error?.response?.data?.errors?.avatar?.[0] || error?.response?.data?.message;
+      const e = error as { response?: { data?: { errors?: { avatar?: string[]; message?: string }; message?: string } } };
+      const apiMessage = e?.response?.data?.errors?.avatar?.[0] || e?.response?.data?.message;
       toast.error(apiMessage || 'Gagal mengunggah foto profil');
       window.setTimeout(() => URL.revokeObjectURL(previewUrl), 2000);
       setAvatarLoading(false);
@@ -566,7 +567,7 @@ export default function ProfilePage(): React.JSX.Element {
         setUser({ ...freshUser, avatar_url: `${base}?v=${Date.now()}` });
       }
 
-      const res: any = await profileApi.get();
+      const res: Record<string, unknown> = await profileApi.get();
       setProfileData({ student: res?.student ?? null, lecturer: res?.lecturer ?? null, pending: res?.pending_change_request ?? null });
     } catch {
       // Don't revert — the file is saved server-side. Just warn.
@@ -695,14 +696,14 @@ export default function ProfilePage(): React.JSX.Element {
   );
 }
 
-function TextInput({ label, registration, value, type = 'text', step, disabled, error }: { label: string; registration?: any; value?: string; type?: string; step?: string; disabled?: boolean; error?: string }) {
+function TextInput({ label, registration, value, type = 'text', step, disabled, error }: { label: string; registration?: Record<string, unknown>; value?: string; type?: string; step?: string; disabled?: boolean; error?: string }) {
   return <div className="space-y-1.5"><label className="text-sm font-medium text-[color:var(--profile-text)]">{label}</label><input type={type} step={step} {...registration} value={registration ? undefined : value} disabled={disabled} className={cx('h-10 w-full rounded-lg border px-3 text-sm tracking-[-0.01em]', fieldClass)} />{error && <p className="text-xs text-rose-600">{error}</p>}</div>;
 }
 
-function TextArea({ label, registration, disabled, error }: { label: string; registration?: any; disabled?: boolean; error?: string }) {
+function TextArea({ label, registration, disabled, error }: { label: string; registration?: Record<string, unknown>; disabled?: boolean; error?: string }) {
   return <div className="space-y-1.5"><label className="text-sm font-medium text-[color:var(--profile-text)]">{label}</label><textarea {...registration} disabled={disabled} rows={3} className={cx('w-full rounded-lg border px-3 py-2 text-sm leading-6 tracking-[-0.01em]', fieldClass)} />{error && <p className="text-xs text-rose-600">{error}</p>}</div>;
 }
 
-function SelectInput({ label, registration, disabled, options, error }: { label: string; registration?: any; disabled?: boolean; options: string[][]; error?: string }) {
+function SelectInput({ label, registration, disabled, options, error }: { label: string; registration?: Record<string, unknown>; disabled?: boolean; options: string[][]; error?: string }) {
   return <div className="space-y-1.5"><label className="text-sm font-medium text-[color:var(--profile-text)]">{label}</label><select {...registration} disabled={disabled} className={cx('h-10 w-full rounded-lg border px-3 text-sm tracking-[-0.01em]', fieldClass)}>{options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>{error && <p className="text-xs text-rose-600">{error}</p>}</div>;
 }

@@ -11,7 +11,7 @@ export default function WorkProgramDetailPage(): React.JSX.Element {
   
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'work-program', Number(id)],
-    queryFn: async () => { const res = await studentApi.workPrograms.show(Number(id)); return (res as any).data ?? res; },
+    queryFn: async () => { const res = await studentApi.workPrograms.show(Number(id)); return (res as unknown as { data?: unknown })?.data ?? res; },
     enabled: !!id,
   });
 

@@ -12,7 +12,7 @@ import { NotificationBell } from '@/components/ui/notification-bell';
 import {
   LayoutDashboard, ClipboardList, Target, FileText, FileCheck,
   Star, BookOpen, Plane, Home, UserCircle, Image as ImageIcon,
-  Menu, Power, Award, GraduationCap, MessageCircle, HelpCircle,
+  Menu, Power, Award, GraduationCap, MessageCircle,
 } from 'lucide-react';
 
 type NavItem = {

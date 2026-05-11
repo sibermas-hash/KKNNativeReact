@@ -1,6 +1,6 @@
 'use client';
 
-export default function VerifyCertificateError({ error, reset }: { error: Error; reset: () => void }) {
+export default function VerifyCertificateError({ error: _error, reset }: { error: Error; reset: () => void }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center p-8">
       <p className="text-4xl">🎓</p>

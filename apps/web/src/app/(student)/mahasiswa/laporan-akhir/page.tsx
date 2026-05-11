@@ -16,8 +16,8 @@ export default function FinalReportPage(): React.JSX.Element {
   const { data: reportData, isLoading } = useQuery({
     queryKey: ['student', 'final-report'],
     queryFn: async () => {
-      const res = await studentApi.finalReport.index() as any;
-      return (res as any).data ?? res;
+      const res = await studentApi.finalReport.index();
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
   });
 
@@ -28,8 +28,9 @@ export default function FinalReportPage(): React.JSX.Element {
       toast.success('Laporan akhir berhasil diunggah!');
       setFile(null);
     },
-    onError: (err: any) => {
-      toast.error(err.response?.data?.error?.message || 'Gagal mengunggah laporan');
+    onError: (err: unknown) => {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      toast.error(e?.response?.data?.error?.message || 'Gagal mengunggah laporan');
     },
   });
 

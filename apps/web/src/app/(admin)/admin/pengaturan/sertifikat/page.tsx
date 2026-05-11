@@ -10,7 +10,7 @@ export default function CertificateConfigPage(): React.JSX.Element {
     queryKey: ['admin', 'certificate-config'],
     queryFn: async () => {
       const res = await api.get('/admin/pengaturan/sertifikat');
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
   });
 

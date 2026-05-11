@@ -12,11 +12,11 @@ export default function MahasiswaIndexPage(): React.JSX.Element {
   const [fakultasId, setFakultasId] = useState('');
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery<any[]>({
+  const { data, isLoading } = useQuery<Record<string, unknown>[]>({
     queryKey: ['admin', 'mahasiswa', { search, fakultas_id: fakultasId, page }],
     queryFn: async () => {
       const res = await adminApi.users.index({ search, fakultas_id: fakultasId, page, role: 'student' });
-      return (res as any).data;
+      return (res as unknown as { data?: Record<string, unknown>[] }).data ?? [];
     },
   });
 

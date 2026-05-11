@@ -16,7 +16,7 @@ export default function DplReportDetailPage(): React.JSX.Element {
 
   const { data, isLoading } = useQuery({
     queryKey: ['dpl', 'daily-report', Number(id)],
-    queryFn: async () => { const res = await dplApi.dailyReports.show(Number(id)); return (res as any).data ?? res; },
+    queryFn: async () => { const res = await dplApi.dailyReports.show(Number(id)); return (res as unknown as { data?: unknown }).data ?? res; },
     enabled: !!id,
   });
 

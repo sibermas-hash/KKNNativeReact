@@ -21,8 +21,8 @@ function ImportSection() {
       fd.append('file', file);
       return adminApi.dataImport.dosenData(fd);
     },
-    onSuccess: (res: any) => {
-      const d = res?.data ?? res;
+    onSuccess: (res: unknown) => {
+      const d = (res as { data?: { updated?: number; not_found?: number; skipped?: number } })?.data ?? res;
       toast.success(`Import dosen: ${d.updated ?? 0} diperbarui, ${d.not_found ?? 0} tidak ditemukan, ${d.skipped ?? 0} dilewati.`);
     },
     onError: () => toast.error('Gagal import data dosen'),
@@ -35,8 +35,8 @@ function ImportSection() {
       if (nilaiAngkatan) fd.append('angkatan', nilaiAngkatan);
       return adminApi.dataImport.nilaiKknHistoris(fd);
     },
-    onSuccess: (res: any) => {
-      const d = res?.data ?? res;
+    onSuccess: (res: unknown) => {
+      const d = (res as { data?: { imported?: number; not_found?: number } })?.data ?? res;
       toast.success(`Import nilai: ${d.imported ?? 0} mahasiswa ditandai sudah KKN, ${d.not_found ?? 0} NIM tidak ditemukan.`);
     },
     onError: () => toast.error('Gagal import nilai KKN'),

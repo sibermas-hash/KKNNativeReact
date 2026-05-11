@@ -31,7 +31,7 @@ export default function AdminUsersPage(): React.JSX.Element {
     queryKey: ['admin', 'users', { search }],
     queryFn: async () => {
       const res = await adminApi.users.index({ search });
-      return (res as any)?.data ?? res;
+      return (res as unknown as { data?: unknown })?.data ?? res;
     },
   });
 
@@ -59,7 +59,7 @@ export default function AdminUsersPage(): React.JSX.Element {
       setEditingUser(null);
       toast.success('Role berhasil diubah');
     },
-    onError: (error: any) => toast.error(error?.response?.data?.message || 'Gagal mengubah role'),
+    onError: (error: unknown) => toast.error((error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Gagal mengubah role'),
   });
 
   const profileMutation = useMutation({
@@ -69,7 +69,7 @@ export default function AdminUsersPage(): React.JSX.Element {
       setEditingProfile(null);
       toast.success('Data pengguna berhasil diubah');
     },
-    onError: (error: any) => toast.error(error?.response?.data?.error?.message || 'Gagal mengubah data pengguna'),
+    onError: (error: unknown) => toast.error((error as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal mengubah data pengguna'),
   });
 
   const users = (data as User[]) || [];

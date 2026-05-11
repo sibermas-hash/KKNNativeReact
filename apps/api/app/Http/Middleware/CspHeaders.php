@@ -56,6 +56,10 @@ class CspHeaders
                 // Keep list explicit so rogue tile origins aren't accidentally allowed.
                 "img-src 'self' https://*.tile.openstreetmap.org https://*.basemaps.cartocdn.com https://server.arcgisonline.com data: blob:",
                 "connect-src 'self' https://{$appHost} wss://{$appHost}",
+                // MapLibre GL JS spawns web workers; some bundlers emit them as Blob URLs.
+                // Explicit worker-src/child-src avoids reliance on default-src fallback.
+                "worker-src 'self' blob:",
+                "child-src 'self' blob:",
                 "object-src 'none'",
                 "frame-ancestors 'none'",
                 "base-uri 'self'",

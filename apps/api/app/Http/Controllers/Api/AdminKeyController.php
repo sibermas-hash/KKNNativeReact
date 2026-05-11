@@ -59,9 +59,13 @@ class AdminKeyController extends Controller
             'owner' => 'required|email|max:255',
             'permissions' => 'sometimes|array',
             'permissions.*' => 'string|in:read,write,delete',
+            'expires_in_days' => 'sometimes|integer|min:1|max:365',
         ]);
 
         $permissions = $validated['permissions'] ?? ['read'];
+        $expiresAt = isset($validated['expires_in_days'])
+            ? now()->addDays((int) $validated['expires_in_days'])
+            : null;
         $apiKey = 'sk_'.Str::replace('-', '', Str::uuid()->toString());
 
         // X-001 fix (audit follow-up): was echoing the plaintext API key in
@@ -70,7 +74,7 @@ class AdminKeyController extends Controller
         // via email and the whole thing is transactional so mail failure
         // rolls back the project + key creation (mirrors RegistrationController).
         try {
-            DB::transaction(function () use ($validated, $permissions, $apiKey) {
+            DB::transaction(function () use ($validated, $permissions, $apiKey, $expiresAt) {
                 $project = Project::updateOrCreate(
                     ['email' => $validated['owner']],
                     ['project_name' => $validated['name']]
@@ -90,6 +94,7 @@ class AdminKeyController extends Controller
                     'permissions' => $permissions,
                     'email' => $validated['owner'],
                     'is_active' => false,
+                    'expires_at' => $expiresAt,
                 ]);
 
                 $serverUrl = rtrim(config('app.url'), '/');

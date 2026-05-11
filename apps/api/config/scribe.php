@@ -168,7 +168,7 @@ return [
 
     'try_it_out' => [
         'enabled' => true,
-        'include_csrf_token' => true,
+        'include_csrf_token' => false,
         'base_url' => env('APP_URL'),
     ],
 

@@ -89,7 +89,6 @@ const nextConfig: NextConfig = {
     // - 'unsafe-inline' on style-src is needed by framer-motion and some
     //   Radix primitives that inject inline styles.
     // - connect-src allows the API URL and Sentry.
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
     const sentryOrigin = (() => {
       try {
         return process.env.NEXT_PUBLIC_SENTRY_DSN

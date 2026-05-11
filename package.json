@@ -8,15 +8,25 @@
     "lint": "turbo lint",
     "test": "turbo test",
     "type-check": "turbo type-check",
+    "ci:guard": "node scripts/ci-guard.mjs",
     "dev:web": "pnpm --filter web dev",
     "dev:api": "cd apps/api && php artisan serve",
     "build:web": "pnpm --filter web build",
     "build:packages": "turbo build --filter='./packages/*'"
   },
+  "engines": {
+    "node": ">=22 <25"
+  },
   "devDependencies": {
     "turbo": "^2.5.0"
   },
   "pnpm": {
+    "onlyBuiltDependencies": [
+      "@sentry/cli",
+      "canvas",
+      "sharp",
+      "unrs-resolver"
+    ],
     "overrides": {
       "@types/react": "^19.1.0",
       "@types/react-dom": "^19.1.0"

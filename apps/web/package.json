@@ -3,11 +3,11 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "NODE_OPTIONS='--no-experimental-webstorage' next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "type-check": "tsc --noEmit",
+    "dev": "NODE_OPTIONS='--no-experimental-webstorage' ../../node_modules/.bin/next dev",
+    "build": "rm -rf node_modules/next && ../../node_modules/.bin/next build",
+    "start": "../../node_modules/.bin/next start",
+    "lint": "../../node_modules/.bin/eslint src next.config.ts sentry.client.config.ts sentry.edge.config.ts sentry.server.config.ts vitest.config.ts vitest.setup.ts --config eslint.config.mjs",
+    "type-check": "pnpm -w exec tsc -p apps/web/tsconfig.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:cov": "vitest run --coverage"
@@ -66,7 +66,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
-    "@next/bundle-analyzer": "^16.2.6",
+    "@next/bundle-analyzer": "^15.5.0",
     "@tailwindcss/postcss": "^4.1.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

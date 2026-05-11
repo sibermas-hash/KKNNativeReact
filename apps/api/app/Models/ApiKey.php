@@ -21,6 +21,7 @@ class ApiKey extends Model
         'email',
         'is_active',
         'last_used_at',
+        'expires_at',
     ];
 
     protected $hidden = [
@@ -31,6 +32,7 @@ class ApiKey extends Model
         'permissions' => 'array',
         'is_active' => 'boolean',
         'last_used_at' => 'datetime',
+        'expires_at' => 'datetime',
     ];
 
     /**
@@ -74,6 +76,29 @@ class ApiKey extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope to only non-expired keys (or keys with no expiry set).
+     */
+    public function scopeValid(Builder $query): Builder
+    {
+        return $query->where(function (Builder $q): Builder {
+            return $q->whereNull('expires_at')
+                ->orWhere('expires_at', '>', now());
+        });
+    }
+
+    /**
+     * Check if this key is expired.
+     */
+    public function isExpired(): bool
+    {
+        if ($this->expires_at === null) {
+            return false;
+        }
+
+        return $this->expires_at->isPast();
     }
 
     /**

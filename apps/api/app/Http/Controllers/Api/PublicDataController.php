@@ -49,13 +49,12 @@ class PublicDataController extends Controller
         'lokasi' => ['village_name', 'district_name', 'regency_name', 'village_code', 'capacity', 'address', 'latitude', 'longitude', 'fakultas_id', 'province_id', 'regency_id', 'district_id'],
         'periode' => [],
         'tahun_akademik' => [],
-        '_projects' => ['project_name', 'email', 'description'],
     ];
 
     /**
-     * Tables that can be deleted via public API (None allowed for public).
+     * Tables that can be deleted via public API (None — all write operations disabled).
      */
-    private const DELETABLE_TABLES = ['_projects'];
+    private const DELETABLE_TABLES = [];
 
     /**
      * Standard API response wrapper untuk consistency across all endpoints.
@@ -138,7 +137,6 @@ class PublicDataController extends Controller
             $paginated->items(),
             200,
             [
-                $table => $paginated->items(),
                 'metadata' => [
                     'current_page' => $paginated->currentPage(),
                     'per_page' => $paginated->perPage(),

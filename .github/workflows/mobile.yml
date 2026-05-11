@@ -31,5 +31,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: CI guard
+        run: pnpm run ci:guard
+
       - name: Type check
         run: pnpm --filter mobile type-check

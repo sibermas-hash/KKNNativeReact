@@ -55,6 +55,9 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
+      - name: CI guard
+        run: node ../../scripts/ci-guard.mjs
+
       - name: Prepare environment
         run: |
           cp .env.example .env
@@ -100,6 +103,9 @@ jobs:
 
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: CI guard
+        run: node ../../scripts/ci-guard.mjs
 
       - name: Pint (code style)
         run: vendor/bin/pint --test

@@ -53,6 +53,12 @@ class ValidateApiKey
             ], 403);
         }
 
+        if ($apiKey->isExpired()) {
+            return response()->json([
+                'error' => 'API key sudah kadaluarsa. Hubungi admin untuk renouvellement.',
+            ], 403);
+        }
+
         // Record usage asynchronously (fire-and-forget)
         // ISSUE-MIDDLEWARE-003 Fix: Use queue to prevent blocking
         dispatch(function () use ($apiKey) {

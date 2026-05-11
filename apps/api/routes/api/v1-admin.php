@@ -254,7 +254,7 @@ Route::prefix('admin')
         Route::middleware('role:superadmin')->prefix('playground')->group(function () {
             Route::get('/models', [PlaygroundController::class, 'models']);
             Route::post('/chat', [PlaygroundController::class, 'chat'])
-                ->middleware('throttle:20,1');
+                ->middleware('throttle:10,1');
         });
 
         // Chat Konsultasi — admin side (PRD_CHAT_SYSTEM.md)
@@ -365,7 +365,8 @@ Route::prefix('admin')
 
             // Broadcast notifications across all 3 channels (database, mail, fcm)
             // using per-user preferences. See NotificationBroadcastController.
-            Route::post('/notifications/broadcast', [NotificationBroadcastController::class, 'broadcast']);
+            Route::post('/notifications/broadcast', [NotificationBroadcastController::class, 'broadcast'])
+                ->middleware('throttle:5,1');
         });
     });
 

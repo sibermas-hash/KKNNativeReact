@@ -9,6 +9,7 @@ const compat = new FlatCompat({ baseDirectory: __dirname });
 
 const config = [
   { linterOptions: { reportUnusedDisableDirectives: 'off' } },
+  { settings: { next: { rootDir: __dirname } } },
   ...compat.extends('next/core-web-vitals', 'next/typescript'),
   {
     rules: {

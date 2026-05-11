@@ -289,8 +289,6 @@ return [
             'endpoints' => [
                 'GET /api/v1/student/dashboard',
                 'POST /api/v1/student/registration',
-                'GET /api/v1/student/domisili',
-                'POST /api/v1/student/workshop',
             ],
         ],
         [

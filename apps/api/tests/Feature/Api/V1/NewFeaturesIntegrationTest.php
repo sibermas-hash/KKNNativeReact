@@ -25,9 +25,12 @@ function createStudentWithProfile(): User
     $user->update([
         'phone' => '081234567890',
         'address' => 'Jl. Test No. 1',
-        'domicile_village_name' => 'Desa Test',
-        'domicile_district_name' => 'Kecamatan Test',
-        'domicile_regency_name' => 'Banyumas',
+        'address_village_name' => 'Desa Test',
+        'address_district_name' => 'Kecamatan Test',
+        'address_regency_name' => 'Banyumas',
+        'address_postal_code' => '53100',
+        'address_lat' => -7.4246,
+        'address_lng' => 109.2342,
         'address_verified_at' => now(),
         'avatar' => 'avatars/test.jpg',
     ]);

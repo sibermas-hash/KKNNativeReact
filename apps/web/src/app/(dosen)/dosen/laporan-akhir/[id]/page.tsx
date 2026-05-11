@@ -1,14 +1,13 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { dplEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api, dplApi } from '@/lib/api';
+import { dplApi } from '@/lib/api';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
-export default function DplFinalReportDetailPage() {
+export default function DplFinalReportDetailPage(): React.JSX.Element {
   const { id } = useParams();
   const router = useRouter();
   
@@ -17,7 +16,7 @@ export default function DplFinalReportDetailPage() {
   const [score, setScore] = useState<number | undefined>();
 
   const { data, isLoading } = useQuery({
-    queryKey: QUERY_KEYS.dpl.finalReports,
+    queryKey: [...QUERY_KEYS.dpl.finalReports, Number(id)],
     queryFn: async () => {
       const res = await dplApi.finalReports.show(Number(id));
       return (res as any).data ?? res;

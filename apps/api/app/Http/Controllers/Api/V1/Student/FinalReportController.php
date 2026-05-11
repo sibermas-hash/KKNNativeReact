@@ -24,7 +24,7 @@ class FinalReportController extends Controller
         $registration = $mahasiswa?->peserta()->where('status', 'approved')->first();
 
         if (! $registration?->kelompok_id) {
-            return $this->success(['report' => null]);
+            return $this->success(['report' => null, 'is_leader' => false]);
         }
 
         $report = LaporanAkhir::where('kelompok_id', $registration->kelompok_id)
@@ -32,6 +32,9 @@ class FinalReportController extends Controller
 
         return $this->success([
             'report' => $report ? new LaporanAkhirResource($report) : null,
+            // UX hint: FE hides submit form for non-leaders (audit F-02).
+            // Backend still enforces the check below — this is display-only.
+            'is_leader' => strtolower((string) $registration->role) === 'ketua',
         ]);
     }
 
@@ -42,6 +45,16 @@ class FinalReportController extends Controller
 
         if (! $registration?->kelompok_id) {
             return $this->forbidden('Anda belum ditempatkan di kelompok.');
+        }
+
+        // Audit F-02 fix: laporan akhir adalah output kolektif kelompok.
+        // Sebelumnya anggota manapun bisa overwrite submission anggota lain
+        // karena query hanya by kelompok_id. Sekarang restrict ke ketua
+        // kelompok (peserta_kkn.role = 'Ketua') — pola yang sama dengan
+        // PoskoController::store. Anggota non-ketua harus meminta ketua
+        // mengunggah via satu pintu.
+        if (strtolower((string) $registration->role) !== 'ketua') {
+            return $this->forbidden('Hanya ketua kelompok yang dapat mengunggah laporan akhir. Silakan koordinasikan dengan ketua kelompok Anda.');
         }
 
         $validated = $request->validate([

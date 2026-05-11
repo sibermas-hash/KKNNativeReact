@@ -17,11 +17,6 @@ export const ERROR_MESSAGES = {
   POSKO_VALIDATION_ERROR: 'Mohon lengkapi semua field wajib.',
   POSKO_SAVE_FAILED: 'Gagal menyimpan data posko.',
 
-  // Domisili errors
-  DOMISILI_NOT_FOUND: 'Data domisili tidak ditemukan.',
-  DOMISILI_VALIDATION_ERROR: 'Mohon lengkapi alamat domisili dan kabupaten/kota.',
-  DOMISILI_SAVE_FAILED: 'Gagal menyimpan data domisili.',
-
   // Registration errors
   REGISTRATION_NOT_FOUND: 'Data pendaftaran tidak ditemukan.',
   REGISTRATION_STATUS_LOCKED: 'Status pendaftaran sudah terkunci. Tidak dapat mengedit dokumen.',

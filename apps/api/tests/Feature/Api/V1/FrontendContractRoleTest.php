@@ -18,14 +18,12 @@ dataset('student_get_routes', [
     '/api/v1/student/registration/status',
     '/api/v1/student/registration/form',
     '/api/v1/student/posko',
-    '/api/v1/student/domisili',
     '/api/v1/student/daily-reports',
     '/api/v1/student/work-programs',
     '/api/v1/student/leave-requests',
     '/api/v1/student/final-report',
     '/api/v1/student/certificates',
     '/api/v1/student/dpl-evaluation/form',
-    '/api/v1/student/workshops',
 ]);
 
 test('student GET route exists (returns 401 not 404): {0}', function (string $route) {
@@ -35,7 +33,6 @@ test('student GET route exists (returns 401 not 404): {0}', function (string $ro
 dataset('student_post_routes', [
     '/api/v1/student/registration',
     '/api/v1/student/posko',
-    '/api/v1/student/domisili',
     '/api/v1/student/daily-reports',
     '/api/v1/student/work-programs',
     '/api/v1/student/leave-requests',
@@ -65,14 +62,6 @@ test('GET /api/v1/student/work-programs/{id} exists', function () {
 
 test('POST /api/v1/student/work-programs/{id}/proposal exists', function () {
     $this->postJson('/api/v1/student/work-programs/1/proposal', [])->assertStatus(401);
-});
-
-test('POST /api/v1/student/workshops/{id}/attend exists', function () {
-    $this->postJson('/api/v1/student/workshops/1/attend', [])->assertStatus(401);
-});
-
-test('GET /api/v1/student/workshops/{id} exists', function () {
-    $this->getJson('/api/v1/student/workshops/1')->assertStatus(401);
 });
 
 test('POST /api/v1/student/registration/{id}/documents exists', function () {

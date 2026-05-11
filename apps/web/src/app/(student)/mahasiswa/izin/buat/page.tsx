@@ -1,17 +1,16 @@
 'use client';
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { studentEndpoints } from '@sibermas/api-client';
-import { api, studentApi } from '@/lib/api';
+import { studentApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createLeaveRequestSchema, type CreateLeaveRequestFormData } from '@sibermas/schemas';
 import { ChevronLeft, Plane } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { useState } from 'react';
 
-export default function CreateIzinPage() {
+export default function CreateIzinPage(): React.JSX.Element {
   const router = useRouter();
   
   const queryClient = useQueryClient();

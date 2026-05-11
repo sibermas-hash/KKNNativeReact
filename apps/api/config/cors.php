@@ -22,11 +22,11 @@ return [
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['Authorization', 'Content-Type', 'Accept', 'X-Requested-With', 'X-App-Type', 'X-Test-Mode', 'X-Test-Login'],
+    'allowed_headers' => ['Authorization', 'Content-Type', 'Accept', 'X-Requested-With', 'X-App-Type', 'X-XSRF-TOKEN', 'x-xsrf-token'],
 
     'exposed_headers' => [],
 
-    'max_age' => 0,
+    'max_age' => 7200,
 
     'supports_credentials' => true,
 ];

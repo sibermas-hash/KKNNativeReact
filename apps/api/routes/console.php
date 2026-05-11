@@ -10,6 +10,7 @@ Artisan::command('inspire', function () {
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('audit:prune')->daily();
+Schedule::command('activity-logs:prune --days=180')->daily();
 
 // Daily Attendance Check (at 23:45 WIB)
 Schedule::command('kkn:cek-absensi')->dailyAt('23:45');
@@ -29,9 +30,25 @@ Schedule::command('kkn:send-deadline-reminders')->dailyAt('08:00');
 // Daily Logbook Reminder at 20:00 WIB
 Schedule::command('kkn:send-logbook-reminders')->dailyAt('20:00');
 
+// Ops Monitoring — probe infra setiap 5 menit, Telegram alert on issue
+Schedule::command('monitoring:health-check')->everyFiveMinutes()->withoutOverlapping();
+
+// Daily heartbeat di Telegram jam 08:00 WIB (1×/hari via dedup 12h di command)
+Schedule::command('monitoring:health-check --heartbeat')->dailyAt('08:00');
+
 // PRD 9.1: Campus Data Integration Schedules
+// DISABLED 2026-05: Per ops decision, SIAKAD sync is now run manually
+// from the superadmin dashboard (POST /api/v1/admin/sync/run-with-backup)
+// with a pg_dump backup in front. The scheduled runs below would silently
+// bypass the backup step and could overwrite admin-locked fields in the
+// rare case of a SIAKAD data regression — unacceptable once the overlay /
+// manual-edit model was introduced.
+//
+// Re-enable ONLY when (a) the backup step is folded into the command itself,
+// and (b) the field-lock registry is battle-tested in production.
+//
 // Delta Sync (Perubahan minor) setiap hari pukul 02:00 WIB
-Schedule::command('sync:master-data --type=all --source=api --delta')->dailyAt('02:00');
+// Schedule::command('sync:master-data --type=all --source=api --delta')->dailyAt('02:00');
 
 // Full Sync (Safety net) setiap Sabtu pukul 03:00 WIB
-Schedule::command('sync:master-data --type=all --source=api')->saturdays()->at('03:00');
+// Schedule::command('sync:master-data --type=all --source=api')->saturdays()->at('03:00');

@@ -1,16 +1,18 @@
 import { useEffect } from 'react';
 import { useRouter, Stack } from 'expo-router';
-import { useAuthStore } from '@/stores';
+import { getMobileHomeRoute, useAuthIsLoading, useAuthUser, useIsAuthenticated } from '@/stores';
 
 export default function AuthLayout() {
   const router = useRouter();
-  const { isAuthenticated, isLoading } = useAuthStore();
+  const isAuthenticated = useIsAuthenticated();
+  const isLoading = useAuthIsLoading();
+  const user = useAuthUser();
 
   useEffect(() => {
     if (!isLoading && isAuthenticated) {
-      router.replace('/(tabs)');
+      router.replace(getMobileHomeRoute(user));
     }
-  }, [isAuthenticated, isLoading]);
+  }, [isAuthenticated, isLoading, router, user]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

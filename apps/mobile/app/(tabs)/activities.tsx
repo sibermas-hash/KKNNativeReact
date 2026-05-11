@@ -1,55 +1,88 @@
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl } from 'react-native';
+import { View, Text, FlatList, StyleSheet, RefreshControl } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
+import { colors, EmptyState, HeroCard, LoadingState, SectionTitle, StatusPill, SurfaceCard } from '@/components/ui/primitives';
+
+type WorkProgramsResponse = {
+  programs?: Record<string, unknown>[];
+};
+
+function isWorkProgramsResponse(value: unknown): value is WorkProgramsResponse {
+  return typeof value === 'object' && value !== null && 'programs' in value;
+}
+
+function statusTone(status: string) {
+  if (status === 'approved') return 'teal' as const;
+  if (status === 'submitted' || status === 'pending') return 'amber' as const;
+  if (status === 'revision' || status === 'rejected') return 'rose' as const;
+  return 'slate' as const;
+}
 
 export default function ActivitiesScreen() {
   const endpoints = studentEndpoints(api);
 
-  const { data, refetch, isRefetching } = useQuery({
+  const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['student', 'work-programs'],
     queryFn: async () => {
-      const res = await endpoints.workPrograms.index();
-      return res.data;
+      const result = await endpoints.workPrograms.index();
+      return isWorkProgramsResponse(result) ? result : { programs: [] };
     },
   });
 
-  const programs = data?.data || [];
+  const programs = Array.isArray(data?.programs) ? data.programs : [];
+
+  if (isLoading) {
+    return <LoadingState label="Memuat kegiatan..." />;
+  }
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={programs}
-        keyExtractor={(item) => String(item.id)}
-        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
-        ListEmptyComponent={
-          <View style={styles.empty}>
-            <Text style={styles.emptyIcon}>🎯</Text>
-            <Text style={styles.emptyText}>Belum ada program kerja</Text>
-          </View>
-        }
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>{String(item.title || '')}</Text>
-            <Text style={styles.cardBody} numberOfLines={2}>{String(item.description || '-')}</Text>
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{String(item.status || 'draft')}</Text>
+    <FlatList
+      style={styles.container}
+      contentInsetAdjustmentBehavior="automatic"
+      data={programs}
+      keyExtractor={(item) => String(item.id)}
+      refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+      contentContainerStyle={styles.content}
+      ListHeaderComponent={
+        <>
+          <HeroCard
+            eyebrow="Kegiatan"
+            title="Aktivitas Kelompok"
+            subtitle="Daftar program dan aktivitas yang sedang berjalan selama KKN."
+            right={<Text style={styles.heroCount}>{programs.length}</Text>}
+          />
+          <SectionTitle title="Daftar Kegiatan" subtitle="Status ringkas dari program kerja kelompok." />
+        </>
+      }
+      ListEmptyComponent={
+        <EmptyState
+          title="Belum ada kegiatan"
+          description="Kegiatan akan tampil setelah program kerja kelompok dibuat atau disetujui."
+        />
+      }
+      renderItem={({ item }) => {
+        const status = String(item.status || 'draft');
+        return (
+          <SurfaceCard style={styles.card}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>{String(item.title || '-')}</Text>
+              <StatusPill label={status} tone={statusTone(status)} />
             </View>
-          </View>
-        )}
-      />
-    </View>
+            <Text style={styles.cardBody} numberOfLines={3}>{String(item.description || '-')}</Text>
+          </SurfaceCard>
+        );
+      }}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' },
-  empty: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 100 },
-  emptyIcon: { fontSize: 48 },
-  emptyText: { fontSize: 16, color: '#64748b', marginTop: 12 },
-  card: { backgroundColor: '#fff', marginHorizontal: 16, marginTop: 12, borderRadius: 16, padding: 16, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 8 },
-  cardTitle: { fontSize: 16, fontWeight: '600', color: '#0f172a' },
-  cardBody: { fontSize: 14, color: '#475569', marginTop: 4 },
-  badge: { alignSelf: 'flex-start', backgroundColor: '#e0f2fe', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, marginTop: 8 },
-  badgeText: { fontSize: 11, color: '#0369a1', fontWeight: '600' },
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { padding: 16, gap: 16, paddingBottom: 32 },
+  heroCount: { color: colors.text, fontSize: 28, fontWeight: '900', fontVariant: ['tabular-nums'] },
+  card: { gap: 10 },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
+  cardTitle: { flex: 1, fontSize: 16, fontWeight: '800', color: colors.text, lineHeight: 21 },
+  cardBody: { fontSize: 13, color: colors.textMuted, lineHeight: 19 },
 });

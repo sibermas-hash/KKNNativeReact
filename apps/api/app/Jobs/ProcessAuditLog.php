@@ -15,6 +15,14 @@ class ProcessAuditLog implements ShouldQueue
     protected $data;
 
     /**
+     * Transient DB/Redis errors must not lose audit events.
+     * Re-audit 2026-05-10 H-004: default tries=0 silently dropped failures.
+     */
+    public int $tries = 3;
+
+    public array $backoff = [10, 60, 300];
+
+    /**
      * Create a new job instance.
      */
     public function __construct(array $data)

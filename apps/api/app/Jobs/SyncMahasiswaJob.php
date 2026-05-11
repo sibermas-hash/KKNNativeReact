@@ -7,17 +7,27 @@ namespace App\Jobs;
 use App\Models\KKN\Mahasiswa;
 use App\Services\MasterApiService;
 use App\Services\StudentSyncService;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
-class SyncMahasiswaJob implements ShouldQueue
+class SyncMahasiswaJob implements ShouldQueue, ShouldBeUnique
 {
     use Queueable;
 
     public int $tries = 3;
-
     public int $backoff = 30;
+    // M-004 fix: was 3600 (1 hour). A stuck/failed job would hold the lock
+    // for the full hour, blocking operator retries. 600s roughly matches the
+    // longest reasonable sync run time; failed() below also releases eagerly.
+    public int $uniqueFor = 600;
+
+    public function uniqueId(): string
+    {
+        return $this->mahasiswaId ?? 'all';
+    }
 
     public function __construct(
         protected ?string $mahasiswaId = null,
@@ -47,7 +57,7 @@ class SyncMahasiswaJob implements ShouldQueue
 
     protected function syncSingleMahasiswa(MasterApiService $masterApi, StudentSyncService $studentSync): void
     {
-        $mahasiswa = Mahasiswa::where('nim', $this->mahasiswaId)
+        $mahasiswa = Mahasiswa::whereBlind('nim', (string) $this->mahasiswaId)
             ->first();
 
         if (! $mahasiswa) {
@@ -89,6 +99,20 @@ class SyncMahasiswaJob implements ShouldQueue
             'synced' => $results['synced'],
             'errors' => $results['errors'],
             'mode' => $this->since ? 'delta' : 'full',
+        ]);
+    }
+
+    /**
+     * M-004 fix: release the ShouldBeUnique lock eagerly on failure so the
+     * operator's retry isn't blocked by the remainder of the uniqueFor window.
+     */
+    public function failed(\Throwable $e): void
+    {
+        Cache::forget('laravel_unique_job:'.$this->uniqueId());
+
+        Log::warning('SyncMahasiswaJob failed — released unique lock', [
+            'id' => $this->mahasiswaId,
+            'error' => $e->getMessage(),
         ]);
     }
 }

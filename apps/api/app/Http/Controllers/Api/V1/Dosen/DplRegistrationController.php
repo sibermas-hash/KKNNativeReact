@@ -17,6 +17,21 @@ class DplRegistrationController extends Controller
     use ApiResponse;
 
     /**
+     * GET /dosen/available-periods
+     * Return active periods that dosen can register as DPL for.
+     */
+    public function availablePeriods(): JsonResponse
+    {
+        $periods = Periode::where('is_active', true)
+            ->whereIn('current_phase', ['upcoming', 'registration', 'placement'])
+            ->select('id', 'name', 'current_phase', 'start_date', 'end_date')
+            ->orderByDesc('id')
+            ->get();
+
+        return $this->success($periods);
+    }
+
+    /**
      * Dosen mendaftar sebagai DPL untuk periode tertentu.
      * Syarat: sudah lulus workshop pembekalan.
      */
@@ -26,7 +41,7 @@ class DplRegistrationController extends Controller
         $dosen = $user->dosen;
 
         if (! $dosen) {
-            return $this->error('Data dosen Anda tidak ditemukan dalam sistem.', 422);
+            return $this->error('VALIDATION_ERROR', 'Data dosen Anda tidak ditemukan dalam sistem.', 422);
         }
 
         $hasPassedWorkshop = PesertaWorkshop::where('user_id', $user->id)
@@ -34,11 +49,13 @@ class DplRegistrationController extends Controller
             ->exists();
 
         if (! $hasPassedWorkshop) {
-            return $this->error('Anda harus lulus Workshop Pembekalan DPL terlebih dahulu.', 422);
+            return $this->error('VALIDATION_ERROR', 'Anda harus lulus Workshop Pembekalan DPL terlebih dahulu.', 422);
         }
 
         $validated = $request->validate([
             'periode_id' => 'required|exists:periode,id',
+            'max_kelompok_kkn' => ['nullable', 'integer', 'min:1', 'max:10'],
+            'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $existing = DplPeriod::where('dosen_id', $dosen->id)
@@ -49,7 +66,7 @@ class DplRegistrationController extends Controller
         if ($existing) {
             $label = $existing->status === 'pending' ? 'menunggu verifikasi' : 'sudah disetujui';
 
-            return $this->error("Anda sudah memiliki pendaftaran DPL yang {$label} untuk periode ini.", 409);
+            return $this->error('DPL_REGISTRATION_EXISTS', "Anda sudah memiliki pendaftaran DPL yang {$label} untuk periode ini.", 409);
         }
 
         $periode = Periode::findOrFail($validated['periode_id']);
@@ -57,7 +74,7 @@ class DplRegistrationController extends Controller
         $registration = DplPeriod::create([
             'dosen_id'        => $dosen->id,
             'periode_id'      => $periode->id,
-            'max_kelompok_kkn' => 5,
+            'max_kelompok_kkn' => $validated['max_kelompok_kkn'] ?? 5,
             'is_active'       => false,
             'status'          => 'pending',
         ]);

@@ -16,12 +16,18 @@ class AnnouncementResource extends JsonResource
             'title' => $this->title,
             'slug' => $this->slug,
             'category' => $this->category,
+            // Derivative enum 'berita'|'pengumuman' yang mengkapsulasi mapping
+            // kategori. Frontend list/detail pakai nilai ini untuk tab & route.
+            'content_type' => $this->content_type,
             'excerpt' => $this->excerpt,
             'content' => $this->content,
             'image_url' => $this->image ? asset('storage/'.$this->image) : null,
             'file_url' => $this->file_path ? asset('storage/'.$this->file_path) : null,
             'file_name' => $this->file_name,
             'is_active' => $this->is_active,
+            'show_as_popup' => (bool) $this->show_as_popup,
+            'popup_until' => $this->popup_until?->toIso8601String(),
+            'popup_dismissable' => (bool) $this->popup_dismissable,
             'published_at' => $this->published_at?->toIso8601String(),
             'meta_title' => $this->meta_title,
             'meta_description' => $this->meta_description,

@@ -27,13 +27,25 @@ class PeriodeController extends Controller
 
     public function show(Periode $periode): JsonResponse
     {
-        $periode->load(['tahunAkademik', 'jenisKkn', 'kelompok']);
+        $periode->load(['tahunAkademik', 'jenisKkn.documentRequirements.defaultTemplate', 'kelompok', 'documentTemplates']);
         return $this->success(new PeriodeResource($periode));
     }
 
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate($this->validationRules($request));
+
+        // Default current_phase to 'upcoming' if not provided
+        if (empty($validated['current_phase'])) {
+            $validated['current_phase'] = 'upcoming';
+        }
+
+        // Auto-deactivate other periods of same jenis_kkn if this one is being activated
+        if (! empty($validated['is_active']) && ! empty($validated['jenis_kkn_id'])) {
+            Periode::where('jenis_kkn_id', $validated['jenis_kkn_id'])
+                ->where('is_active', true)
+                ->update(['is_active' => false]);
+        }
 
         $period = Periode::create($validated);
         return $this->created(new PeriodeResource($period->load(['tahunAkademik', 'jenisKkn'])), 'Periode KKN berhasil dibuat.');
@@ -42,6 +54,16 @@ class PeriodeController extends Controller
     public function update(Request $request, Periode $periode): JsonResponse
     {
         $validated = $request->validate($this->validationRules($request, $periode));
+
+        // Auto-deactivate other periods of same jenis_kkn if this one is being activated
+        $jenisKknId = $validated['jenis_kkn_id'] ?? $periode->jenis_kkn_id;
+        $isBeingActivated = isset($validated['is_active']) && $validated['is_active'] && ! $periode->is_active;
+        if ($isBeingActivated && $jenisKknId) {
+            Periode::where('jenis_kkn_id', $jenisKknId)
+                ->where('is_active', true)
+                ->where('id', '!=', $periode->id)
+                ->update(['is_active' => false]);
+        }
 
         $periode->update($validated);
         return $this->success(new PeriodeResource($periode->refresh()->load(['tahunAkademik', 'jenisKkn'])), 'Periode berhasil diperbarui.');
@@ -104,17 +126,7 @@ class PeriodeController extends Controller
             'grading_end'        => ['nullable', 'date', 'after_or_equal:grading_start'],
             'kuota'              => [$req, 'integer', 'min:1'],
             'current_phase'      => ['nullable', 'string', 'in:upcoming,registration,placement,execution,grading,finished'],
-            'is_active'          => ['nullable', 'boolean', function ($attr, $value, $fail) use ($request, $periodeId) {
-                if ($value && $request->input('jenis_kkn_id')) {
-                    $q = Periode::where('jenis_kkn_id', $request->input('jenis_kkn_id'))->where('is_active', true);
-                    if ($periodeId) {
-                        $q->where('id', '!=', $periodeId);
-                    }
-                    if ($q->exists()) {
-                        $fail('Hanya boleh ada 1 periode aktif untuk setiap Jenis KKN.');
-                    }
-                }
-            }],
+            'is_active'          => ['nullable', 'boolean'],
         ];
     }
 }

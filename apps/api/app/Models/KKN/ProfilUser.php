@@ -25,6 +25,15 @@ class ProfilUser extends Model
 
     use HasFactory;
 
+    /**
+     * PII encryption (Phase 3b). Columns widened to TEXT in migration
+     * 2026_05_10_055000. No lookups by phone/address across the codebase.
+     */
+    protected $casts = [
+        'phone' => 'encrypted',
+        'address' => 'encrypted',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');

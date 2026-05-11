@@ -3,14 +3,13 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { studentEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api, studentApi } from '@/lib/api';
+import { studentApi } from '@/lib/api';
 import { Plus, Search, Filter, ClipboardList, Activity, List as ListIcon } from 'lucide-react';
 import clsx from 'clsx';
 import { StatusBadge, PageHeader, EmptyState } from '@/components/ui/shared';
 
-export default function DailyReportsPage() {
+export default function DailyReportsPage(): React.JSX.Element {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState('');
   const [searchQuery, setSearchQuery] = useState('');

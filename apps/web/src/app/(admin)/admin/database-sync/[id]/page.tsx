@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api';
 import { useParams, useRouter } from 'next/navigation';
@@ -15,7 +17,7 @@ const ENTITY_LABELS: Record<string, string> = {
   all: 'Semua Data',
 };
 
-export default function DatabaseSyncDetailPage() {
+export default function DatabaseSyncDetailPage(): React.JSX.Element {
   const { id } = useParams();
   const router = useRouter();
 
@@ -36,7 +38,7 @@ export default function DatabaseSyncDetailPage() {
         databaseSync: { retry: (id: number) => Promise<unknown> };
       }).databaseSync.retry(Number(id));
     },
-    onSuccess: () => router.push('/admin/mahasiswa/sinkronisasi'),
+    onSuccess: () => router.push('/admin/database-sync'),
   });
 
   const log = data as {
@@ -70,7 +72,7 @@ export default function DatabaseSyncDetailPage() {
     <div className="max-w-4xl mx-auto px-4 py-10 space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/admin/mahasiswa/sinkronisasi" className="p-2 rounded-xl hover:bg-slate-100 transition-colors" aria-label="Kembali">
+        <Link href="/admin/database-sync" className="p-2 rounded-xl hover:bg-slate-100 transition-colors" aria-label="Kembali">
           <ArrowLeft size={20} className="text-slate-600" />
         </Link>
         <div className="flex items-center gap-3">

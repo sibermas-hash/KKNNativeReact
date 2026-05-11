@@ -35,10 +35,22 @@ class LaporanAkhirAdminController extends Controller
         return $this->success(new LaporanAkhirResource($report->refresh()), 'Status laporan diperbarui.');
     }
 
-    public function download(LaporanAkhir $report)
+    public function download(Request $request, LaporanAkhir $report)
     {
-        abort_if(! $report->file_path || ! Storage::exists($report->file_path), 404, 'File laporan tidak ditemukan.');
+        $asset = $request->input('asset');
+        $allowedPaths = collect([
+            $report->file_path,
+            $report->article_1_path,
+            $report->article_2_path,
+            $report->poster_1_path,
+            $report->poster_2_path,
+            $report->poster_3_path,
+        ])->filter()->values();
 
-        return Storage::download($report->file_path, 'Laporan_Akhir_' . ($report->title ?? $report->id) . '.pdf');
+        $path = $asset && $allowedPaths->contains($asset) ? $asset : $report->file_path;
+
+        abort_if(! $path || ! Storage::exists($path), 404, 'File laporan tidak ditemukan.');
+
+        return Storage::download($path, basename($path));
     }
 }

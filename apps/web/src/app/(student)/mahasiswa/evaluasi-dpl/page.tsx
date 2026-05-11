@@ -2,15 +2,15 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { studentEndpoints } from '@sibermas/api-client';
-import { api, studentApi } from '@/lib/api';
+import Link from 'next/link';
+import { studentApi } from '@/lib/api';
 import { Star, MessageSquare, Send, CheckCircle2, ChevronRight, UserCircle, AlertCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type Aspect = { id: string; label: string; description: string };
 
-export default function DplEvaluationPage() {
+export default function DplEvaluationPage(): React.JSX.Element {
   
   const [ratings, setRatings] = useState<Record<string, number>>({});
   const [comment, setComment] = useState('');
@@ -71,9 +71,9 @@ export default function DplEvaluationPage() {
             <h1 className="text-3xl font-black text-emerald-950 uppercase tracking-tight">Evaluasi Terkirim</h1>
             <p className="text-slate-500 font-medium">Terima kasih telah memberikan masukan untuk peningkatan kualitas bimbingan KKN.</p>
           </div>
-          <button onClick={() => window.location.href = '/mahasiswa'} className="px-8 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all">
+          <Link href="/mahasiswa" className="inline-flex px-8 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all">
             Kembali ke Dashboard
-          </button>
+          </Link>
         </motion.div>
       </div>
     );

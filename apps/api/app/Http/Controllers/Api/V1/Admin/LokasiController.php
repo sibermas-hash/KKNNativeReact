@@ -18,7 +18,7 @@ class LokasiController extends Controller
     public function index(Request $request): JsonResponse
     {
         $lokasi = Lokasi::with('fakultas')
-            ->when($request->input('search'), fn ($q, $s) => $q->where('village_name', 'like', "%{$s}%"))
+            ->when($request->input('search'), fn ($q, $s) => $q->where('village_name', 'like', '%'.\App\Helpers\QueryHelper::escapeLike($s).'%'))
             ->orderBy('village_name')
             ->paginate($request->input('per_page', 25));
         return $this->successCollection(LokasiResource::collection($lokasi));
@@ -56,11 +56,25 @@ class LokasiController extends Controller
 
     public function destroy(Lokasi $lokasi): JsonResponse
     {
+        // Audit R11-GROUP-018 fix: block delete kalau ada kelompok yang
+        // masih mereferensikan lokasi ini. Sebelumnya delete langsung
+        // (dan FK cascadeOnDelete akan menghapus kelompok + peserta terkait
+        // — data loss silent). Sekarang return 422 dengan info berapa
+        // kelompok terkait supaya admin pindahkan dulu.
+        $groupsUsing = \App\Models\KKN\KelompokKkn::where('location_id', $lokasi->id)->count();
+        if ($groupsUsing > 0) {
+            return $this->error(
+                'VALIDATION_ERROR',
+                "Lokasi tidak dapat dihapus: masih digunakan oleh {$groupsUsing} kelompok KKN. Pindahkan kelompok ke lokasi lain terlebih dahulu.",
+                422,
+            );
+        }
+
         try {
             $lokasi->delete();
             return $this->noContent('Lokasi berhasil dihapus.');
         } catch (\Throwable $e) {
-            return $this->error('VALIDATION_ERROR', 'Gagal menghapus: masih digunakan.', 422);
+            return $this->error('VALIDATION_ERROR', 'Gagal menghapus: '.$e->getMessage(), 422);
         }
     }
 

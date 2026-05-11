@@ -11,9 +11,15 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class KegiatanKkn extends Model
 {
+    // R13-DB-005: deleted_at column exists (migration 2026_04_12_100002)
+    // but trait was missing — every delete() was a hard delete,
+    // destroying audit-critical logbook entries.
+    use SoftDeletes;
+
     public const STATUS_DRAFT = 'draft';
 
     public const STATUS_SUBMITTED = 'submitted';
@@ -36,13 +42,16 @@ class KegiatanKkn extends Model
         'latitude',
         'longitude',
         'gps_accuracy',
+        'gps_is_mock',
+        'gps_spoof_score',
+        'gps_spoof_details',
         'captured_at',
         'location_source',
         'location_name',
         'status',
-        'reviewed_at',
-        'reviewed_by',
         'review_notes',
+        'reviewed_by',
+        'reviewed_at',
         'ai_summary',
         'ai_analysis',
     ];
@@ -51,6 +60,9 @@ class KegiatanKkn extends Model
         'date' => 'date',
         'captured_at' => 'datetime',
         'gps_accuracy' => 'float',
+        'gps_is_mock' => 'boolean',
+        'gps_spoof_score' => 'integer',
+        'gps_spoof_details' => 'array',
         'reviewed_at' => 'datetime',
         'ai_analysis' => 'array',
     ];
@@ -157,7 +169,7 @@ class KegiatanKkn extends Model
 
         static::deleting(function (KegiatanKkn $kegiatan) {
             $kegiatan->fileKegiatan()
-                ->cursorPaginate(200)
+                ->cursor()
                 ->each(fn ($f) => $f->delete());
         });
     }

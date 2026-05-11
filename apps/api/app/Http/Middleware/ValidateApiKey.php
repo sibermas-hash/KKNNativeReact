@@ -26,7 +26,7 @@ class ValidateApiKey
         }
 
         // Only allow headless bypass in automated testing environment (not local/dev)
-        $isTesting = app()->environment('testing') || config('app.env') === 'testing';
+        $isTesting = app()->environment('testing');
 
         // Headless testing bypass - accept any non-empty token only in testing environment to avoid accidental production exposure
         if ($isTesting && $key !== null && $key !== '') {

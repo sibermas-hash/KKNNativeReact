@@ -20,7 +20,6 @@ describe('Role Isolation (Integration)', function () {
         '/api/v1/student/certificates',
         '/api/v1/student/leave-requests',
         '/api/v1/student/final-report',
-        '/api/v1/student/workshops',
     ]);
 
     dataset('protected_dpl_routes', [

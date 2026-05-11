@@ -1,308 +1,708 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { updateProfileSchema, type UpdateProfileFormData } from '@sibermas/schemas';
-import { useAuthStore } from '@/stores';
-import { profileEndpoints } from '@sibermas/api-client';
-import { api, profileApi } from '@/lib/api';
-import toast from 'react-hot-toast';
-import { 
-  User, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Home, 
-  Shield, 
-  Camera, 
-  ChevronRight, 
-  Save, 
-  RefreshCw,
-  LogOut,
-  Settings,
-  Lock
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { setProfileCompleteCookie, useAuthStore } from '@/stores';
+import { profileApi } from '@/lib/api';
+import { toast } from 'sonner';
+import * as TooltipPrimitive from '@radix-ui/react-tooltip';
+import { driver } from 'driver.js';
+import 'driver.js/dist/driver.css';
+import { AlertCircle, BadgeCheck, Camera, GraduationCap, IdCard, Info, LogOut, Medal, RefreshCw, Save, User } from 'lucide-react';
+import { useTheme } from '@/components/ui/theme-provider';
+import { THEMES, THEME_KEYS, THEME_TYPOGRAPHY, SOFT_CLASS, PRIMARY_CLASS, MUTED_TEXT_CLASS, ACCENT_TEXT_CLASS, FIELD_CLASS, type ThemeKey } from '@/lib/theme-config';
 
-export default function ProfilePage() {
+const ParticleBackground = dynamic(
+  () => import('@/components/ui/particle-background').then((m) => ({ default: m.ParticleBackground })),
+  { ssr: false }
+);
+
+// NotificationPreferencesCard — hidden from student profile, managed via admin dashboard
+// import { NotificationPreferencesCard } from '@/components/profile/notification-preferences-card';
+import { TwoFactorCard } from '@/components/profile/two-factor-card';
+
+type ReverseGeocodeAddress = {
+  road?: string;
+  neighbourhood?: string;
+  suburb?: string;
+  village?: string;
+  town?: string;
+  city?: string;
+  municipality?: string;
+  county?: string;
+  state_district?: string;
+  state?: string;
+  postcode?: string;
+};
+
+const AddressMapPicker = dynamic(() => import('@/components/profile/address-map-picker'), {
+  ssr: false,
+  loading: () => <div className="flex h-72 items-center justify-center rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-input)] text-sm font-semibold text-[color:var(--profile-muted)]">Memuat peta alamat KTP...</div>,
+});
+
+type ChangeRequest = { id: number; requested_changes: Record<string, { old: unknown; new: unknown }>; created_at: string };
+type StudentProfile = Record<string, any> & { faculty?: { nama?: string }; prodi?: { nama?: string }; missing_biodata_fields?: string[]; missing_address_fields?: string[]; biodata_complete?: boolean; address_verified?: boolean; address_verified_at?: string | null };
+type LecturerProfile = Record<string, any> & { faculty?: { nama?: string }; missing_biodata_fields?: string[]; biodata_complete?: boolean };
+
+const FIELD_LABELS: Record<string, string> = {
+  nik: 'NIK (KTP)',
+  mother_name: 'Nama Ibu Kandung',
+  birth_place: 'Tempat Lahir',
+  birth_date: 'Tanggal Lahir',
+  phone: 'Nomor HP',
+  gender: 'Jenis Kelamin',
+  shirt_size: 'Ukuran Baju/Jaket',
+  nip: 'NIP/NIDN',
+  nama: 'Nama Lengkap',
+  jabatan: 'Jabatan Fungsional',
+  golongan: 'Golongan',
+  no_rekening: 'No. Rekening',
+  nama_bank: 'Nama Bank',
+  npwp: 'NPWP',
+  address: 'Alamat Asli sesuai KTP',
+  address_village_name: 'Desa/Kelurahan KTP',
+  address_district_name: 'Kecamatan KTP',
+  address_regency_name: 'Kabupaten/Kota KTP',
+  address_postal_code: 'Kode Pos KTP',
+  address_lat: 'Latitude Alamat KTP',
+  address_lng: 'Longitude Alamat KTP',
+  address_verified_at: 'Verifikasi Alamat',
+  avatar: 'Foto Profil Formal',
+};
+
+function dashboardPathFor(roles: string[]) {
+  if (roles.some((role) => ['superadmin', 'admin', 'faculty_admin'].includes(role))) return '/admin';
+  if (roles.some((role) => ['dosen', 'dpl'].includes(role))) return '/dosen';
+  if (roles.includes('student')) return '/mahasiswa';
+  return '/';
+}
+
+function cx(...classes: Array<string | false | null | undefined>) {
+  return classes.filter(Boolean).join(' ');
+}
+
+// Aliases from global theme system for backward compatibility within this page
+const softClass = SOFT_CLASS;
+const primaryClass = PRIMARY_CLASS;
+const mutedTextClass = MUTED_TEXT_CLASS;
+const accentTextClass = ACCENT_TEXT_CLASS;
+const fieldClass = FIELD_CLASS;
+
+const PROFILE_TUTORIAL_KEY = 'sibermas_profile_tutorial_seen';
+const PROFILE_TUTORIAL_STEPS = [
+  {
+    target: 'intro',
+    placement: 'center',
+    title: 'Selamat datang di Pusat Data Profil',
+    body: 'Halaman ini menjadi Pusat Informasi KKN. Pastikan data pribadi, kontak, alamat asli sesuai KTP, peta alamat KTP, dan foto formal sudah benar sebelum lanjut.',
+  },
+  {
+    target: 'theme',
+    placement: 'bottom-right',
+    title: 'Pilih tema sesuai kebutuhan',
+    body: 'Gunakan tombol bulat di kanan atas untuk memilih tampilan. Ada tema yang fokus keterbacaan, kenyamanan, atau tampilan modern.',
+  },
+  {
+    target: 'avatar',
+    placement: 'right',
+    title: 'Unggah Foto Formal',
+    body: 'Foto formal wajib diisi dan akan digunakan untuk cetak sertifikat. Gunakan foto HD, wajah jelas, pencahayaan baik, latar rapi/polos, dan bukan selfie atau foto kasual.',
+  },
+  {
+    target: 'status',
+    placement: 'right',
+    title: 'Cek status kelengkapan',
+    body: 'Panel status menunjukkan bagian mana yang sudah lengkap. Jika masih ada data wajib yang kosong, sistem akan menampilkan daftar field yang perlu dilengkapi.',
+  },
+  {
+    target: 'form',
+    placement: 'left',
+    title: 'Isi dan simpan data',
+    body: 'Klik Lengkapi Profil atau Edit Profil, isi data yang diperlukan, lalu tekan Simpan & Lanjutkan. Pengisian awal langsung tersimpan, perubahan setelah lengkap menunggu persetujuan superadmin.',
+  },
+] as const;
+
+type TutorialTarget = typeof PROFILE_TUTORIAL_STEPS[number]['target'];
+
+const TOUR_CSS = `
+  .sibermas-profile-tour {
+    max-width: min(360px, calc(100vw - 32px));
+    border: 1px solid rgba(255,255,255,.6);
+    border-radius: 22px;
+    background: rgba(255,255,255,.94);
+    color: #03110d;
+    box-shadow: 0 24px 80px -34px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.75);
+    backdrop-filter: blur(24px) saturate(180%);
+  }
+  .sibermas-profile-tour .driver-popover-title { font: 700 18px/1.25 var(--font-glass), system-ui, sans-serif; color: #03110d; }
+  .sibermas-profile-tour .driver-popover-description { font: 500 13px/1.65 var(--font-glass), system-ui, sans-serif; color: #31534a; }
+  .sibermas-profile-tour .driver-popover-progress-text { color: #31534a; font-weight: 700; }
+  .sibermas-profile-tour button { border-radius: 10px !important; font-weight: 700 !important; text-shadow: none !important; }
+  .sibermas-profile-tour .driver-popover-next-btn,
+  .sibermas-profile-tour .driver-popover-done-btn { background: #047857 !important; border-color: #047857 !important; color: #fff !important; }
+  .sibermas-profile-tour .driver-popover-prev-btn { background: #ecfdf5 !important; border-color: rgba(4,120,87,.25) !important; color: #064e3b !important; }
+  .driver-active-element { transform: scale(1.025); transition: transform .24s ease; }
+`;
+
+function profileTutorialKey(user: { id?: number | string; username?: string } | null) {
+  return `${PROFILE_TUTORIAL_KEY}:${user?.id ?? user?.username ?? 'anonymous'}`;
+}
+
+function cleanAdminName(value?: string | null) {
+  return (value ?? '').replace(/^(Kabupaten|Kab\.|Kota|Kecamatan)\s+/i, '').trim();
+}
+
+function composeAddress(displayName?: string, address?: ReverseGeocodeAddress) {
+  const parts = [address?.road, address?.neighbourhood || address?.suburb, address?.village || address?.town].filter(Boolean);
+  return parts.length > 0 ? parts.join(', ') : displayName ?? '';
+}
+
+function composeAddressQuery(village?: string, district?: string, regency?: string) {
+  return [village, district, regency, 'Jawa Tengah', 'Indonesia']
+    .map((value) => (value ?? '').trim())
+    .filter(Boolean)
+    .join(', ');
+}
+
+function focusProfileField(field: string) {
+  const selector = `[name="${field}"]`;
+  const element = document.querySelector<HTMLElement>(selector);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    window.setTimeout(() => element.focus(), 350);
+    return true;
+  }
+  return false;
+}
+
+const SHIRT_SIZE_OPTIONS = [
+  ['', 'Pilih ukuran baju/jaket'],
+  ['S', 'S - Small'],
+  ['M', 'M - Medium'],
+  ['L', 'L - Large'],
+  ['XL', 'XL - Extra Large'],
+  ['XXL', 'XXL - Double Extra Large'],
+  ['3XL', '3XL - Triple Extra Large'],
+  ['4XL', '4XL'],
+  ['5XL', '5XL'],
+];
+
+function StatusRow({ label, complete, subtitle, typography }: { label: string; complete: boolean; subtitle?: string; typography: typeof THEME_TYPOGRAPHY[ThemeKey] }) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <div>
+        <p className={`${typography.meta} text-[color:var(--profile-text)]`}>{label}</p>
+        {subtitle && <p className={`${typography.meta} text-[color:var(--profile-muted)]`}>{subtitle}</p>}
+      </div>
+      <span className={cx('inline-flex shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold transition-colors', complete ? 'bg-emerald-100 text-emerald-950' : 'bg-[color:var(--profile-warning)] text-[color:var(--profile-warning-text)]')}>
+        {complete ? 'Lengkap' : 'Belum Lengkap'}
+      </span>
+    </div>
+  );
+}
+
+function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, surfaceClass, isLecturer, profileComplete, isEditing, pendingRequest, onThemeChange, onDashboard, onToggleEdit, onLogout }: any) {
+  return (
+    <div ref={refTarget} className={cx('flex flex-col gap-4 rounded-2xl p-5 sm:flex-row sm:items-end sm:justify-between', themeConfig.frame, surfaceClass, themeConfig.shadow)}>
+      <div className="space-y-1">
+        <div className="flex items-center gap-2"><User size={16} className={accentTextClass} /><span className={`${typography.eyebrow} ${accentTextClass}`}>Pengaturan Akun</span></div>
+        <h1 className={`${typography.heading} drop-shadow-sm`}>Pusat Data Profil</h1>
+        <p className={`max-w-xl ${typography.body} ${mutedTextClass} drop-shadow-sm`}>{isLecturer ? 'Pastikan data kepegawaian dan kontak Anda valid untuk keperluan pembimbingan KKN.' : 'Lengkapi data pribadi, alamat asli sesuai KTP, peta alamat KTP, dan foto formal HD untuk kelancaran proses KKN.'}</p>
+      </div>
+      <div className="flex flex-wrap items-center justify-end gap-2">
+        <div ref={themeRef} className={cx('flex rounded-xl p-1 shadow-inner', themeConfig.frame, softClass)} aria-label="Pilihan tema profil">
+          {THEME_KEYS.map((key) => (
+            <TooltipPrimitive.Root key={key}>
+              <TooltipPrimitive.Trigger asChild><button type="button" onClick={() => onThemeChange(key)} aria-label={`Pilih tema ${THEMES[key].label} - ${THEMES[key].strength}`} aria-pressed={theme === key} className={cx('group relative flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-300', theme === key ? primaryClass : 'opacity-70 hover:bg-white/25 hover:opacity-100')}><span className={`h-5 w-5 rounded-full bg-gradient-to-br ${THEMES[key].preview} ring-1 ring-white/60 transition-transform group-hover:scale-125`} />{theme === key && <span className="absolute -bottom-0.5 h-1 w-4 rounded-full bg-white/80 shadow-[0_0_14px_rgba(255,255,255,0.8)]" />}</button></TooltipPrimitive.Trigger>
+              <TooltipPrimitive.Portal><TooltipPrimitive.Content side="bottom" align="center" sideOffset={10} className="z-50 max-w-56 rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-surface-strong)] px-3 py-2 text-left text-[color:var(--profile-text)] shadow-[0_18px_70px_-28px_rgba(0,0,0,0.7)] backdrop-blur-2xl backdrop-saturate-150"><p className={`${THEME_TYPOGRAPHY[key].meta} text-[color:var(--profile-text)]`}>{THEMES[key].label} - {THEMES[key].strength}</p><p className="mt-1 text-[11px] leading-4 text-[color:var(--profile-muted)]">{THEMES[key].description}</p><TooltipPrimitive.Arrow className="fill-[color:var(--profile-surface-strong)]" /></TooltipPrimitive.Content></TooltipPrimitive.Portal>
+            </TooltipPrimitive.Root>
+          ))}
+        </div>
+        {profileComplete && <button onClick={onDashboard} className={cx('rounded-lg px-4 py-2', typography.button, themeConfig.frame, softClass)}>Dashboard</button>}
+        <button onClick={onToggleEdit} disabled={!!pendingRequest && profileComplete} className={cx('rounded-lg px-4 py-2 disabled:opacity-50', typography.button, primaryClass)}>{isEditing ? 'Batal' : profileComplete ? 'Edit Profil' : 'Lengkapi Profil'}</button>
+        <button onClick={onLogout} aria-label="Keluar dari akun" title="Keluar" className="rounded-lg border border-rose-200 bg-[color:var(--profile-danger)] px-4 py-2 text-sm font-semibold text-[color:var(--profile-danger-text)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"><LogOut size={16} /></button>
+      </div>
+    </div>
+  );
+}
+
+function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, lecturer, isStudent, isLecturer, avatarLoading, typography, themeConfig, surfaceStrongClass, onAvatarChange }: any) {
+  return (
+    <div className="space-y-5">
+      <div ref={avatarRef} className={cx('flex flex-col items-center gap-4 rounded-xl p-5 text-center', themeConfig.frame, surfaceStrongClass, themeConfig.shadow)}>
+        <button type="button" onClick={() => avatarInputRef.current?.click()} className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] transition-all duration-300 hover:scale-105 hover:shadow-xl">
+          {user.avatar_url ? <img src={user.avatar_url} alt={user.name} className="h-full w-full object-cover" /> : <span className="flex h-full w-full flex-col items-center justify-center px-3 text-center text-[10px] font-black uppercase tracking-wider text-[color:var(--profile-soft-text)]"><Camera size={20} className="mb-1" />Foto Formal</span>}
+          {avatarLoading && <span className="absolute inset-0 flex items-center justify-center bg-[color:var(--profile-surface)]/70"><RefreshCw className="animate-spin text-[color:var(--profile-accent)]" /></span>}
+        </button>
+        <div><p className={`${typography.label} text-[color:var(--profile-text)] drop-shadow-sm`}>{user.name}</p><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>{user.username}</p>{student?.nim && <p className={`${typography.meta} text-[color:var(--profile-muted)]`}>NIM: {student.nim}</p>}{lecturer?.nip && <p className={`${typography.meta} text-[color:var(--profile-muted)]`}>NIP: {lecturer.nip}</p>}</div>
+        <div className="space-y-2">
+          <button type="button" onClick={() => avatarInputRef.current?.click()} className={cx('inline-flex items-center gap-2 rounded-lg px-3 py-2', typography.meta, themeConfig.frame, softClass)}><Camera size={14} /> Upload Foto Formal HD</button>
+          <p className={`${typography.meta} max-w-64 text-[color:var(--profile-muted)]`}>Foto ini akan dicetak di sertifikat. Gunakan pas foto formal HD dengan <strong>latar merah polos</strong> dan <strong>jas almamater</strong>. Sistem memvalidasi otomatis via AI.</p>
+          {(user as any).avatar_moderation_status === 'pending' && (
+            <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900">
+              ⏳ Foto menunggu verifikasi admin (server AI sedang sibuk)
+            </div>
+          )}
+          {(user as any).avatar_moderation_status === 'rejected' && (
+            <div className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-[11px] font-semibold text-rose-900">
+              ✗ Foto ditolak: {(user as any).avatar_moderation_reason || 'silakan upload ulang'}
+            </div>
+          )}
+        </div>
+        <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={onAvatarChange} aria-label="Upload foto profil" title="Pilih file foto profil" />
+      </div>
+      <div ref={statusRef} className={cx('space-y-4 rounded-xl p-5', themeConfig.frame, surfaceStrongClass, themeConfig.shadow)}>
+        <h3 className={typography.label}>Informasi Status</h3>
+        <StatusRow label="Biodata" typography={typography} complete={student?.biodata_complete ?? lecturer?.biodata_complete ?? true} subtitle={(student?.biodata_complete ?? lecturer?.biodata_complete) ? 'Telah lengkap' : 'Belum lengkap'} />
+        {isStudent && <StatusRow label="Alamat KTP" typography={typography} complete={!!student?.address_verified} subtitle={student?.address_verified ? 'Tervalidasi' : 'Belum verifikasi'} />}
+        {isStudent && <div className="grid grid-cols-2 gap-3 border-t border-[color:var(--profile-border)] pt-3"><div className="rounded-lg bg-[color:var(--profile-stat)] p-3 text-center transition-colors"><p className="text-lg font-bold text-[color:var(--profile-text)]">{student?.gpa ?? '-'}</p><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>IPK</p></div><div className="rounded-lg bg-[color:var(--profile-stat)] p-3 text-center transition-colors"><p className="text-lg font-bold text-[color:var(--profile-text)]">{student?.sks_completed ?? 0}</p><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>SKS</p></div></div>}
+        <div className={`space-y-1 border-t border-[color:var(--profile-border)] pt-2 ${typography.meta} text-[color:var(--profile-muted)]`}><div className="flex items-center gap-1.5"><GraduationCap size={13} />{student?.faculty?.nama || lecturer?.faculty?.nama || user.faculty?.nama || 'Fakultas belum diatur'}</div>{student?.prodi?.nama && <div className="flex items-center gap-1.5"><IdCard size={13} />{student.prodi.nama}</div>}{lecturer?.jabatan && <div className="flex items-center gap-1.5 italic"><Medal size={13} />{lecturer.jabatan}</div>}</div>
+        {isLecturer && <div className="rounded-lg bg-[color:var(--profile-soft)] p-3 transition-colors"><div className="mb-2 flex items-center gap-2"><BadgeCheck size={14} className={accentTextClass} /><span className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--profile-soft-text)]">Kualifikasi DPL</span></div><div className="grid grid-cols-2 gap-2 text-center text-[10px] font-bold"><span className={lecturer?.is_cpns ? 'rounded bg-amber-100 px-2 py-1 text-amber-800' : 'rounded bg-emerald-100 px-2 py-1 text-emerald-800'}>{lecturer?.is_cpns ? 'CPNS' : 'PNS/TETAP'}</span><span className={lecturer?.is_tugas_belajar ? 'rounded bg-rose-100 px-2 py-1 text-rose-800' : 'rounded bg-blue-100 px-2 py-1 text-blue-800'}>{lecturer?.is_tugas_belajar ? 'TUGAS BELAJAR' : 'AKTIF'}</span></div></div>}
+      </div>
+    </div>
+  );
+}
+
+function StudentAddressSection({ register, errors, isEditing, typography, addressLat, addressLng, reverseGeocoding, forwardGeocoding, onMapChange, onSyncMap }: any) {
+  return (
+    <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5">
+      <div className="space-y-1">
+        <h2 className={`${typography.label} text-[color:var(--profile-text)]`}>Alamat Asli sesuai KTP</h2>
+        <p className={`${typography.meta} text-[color:var(--profile-muted)]`}>Isi alamat asli sesuai KTP, bukan alamat kos atau alamat tinggal sementara. Peta juga harus menunjuk lokasi alamat KTP tersebut.</p>
+      </div>
+      <TextArea label="Alamat Lengkap sesuai KTP" registration={register('address')} disabled={!isEditing} error={errors.address?.message} />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"><TextInput label="Desa/Kelurahan KTP" registration={register('address_village_name')} disabled={!isEditing} /><TextInput label="Kecamatan KTP" registration={register('address_district_name')} disabled={!isEditing} /><TextInput label="Kabupaten/Kota KTP" registration={register('address_regency_name')} disabled={!isEditing} /><TextInput label="Kode Pos KTP" registration={register('address_postal_code')} disabled={!isEditing} /></div>
+      <button type="button" onClick={onSyncMap} disabled={!isEditing || forwardGeocoding} className={cx('inline-flex rounded-lg px-4 py-2 disabled:opacity-50', typography.button, primaryClass)}>{forwardGeocoding ? 'Mencari Lokasi...' : 'Sesuaikan Peta dari Alamat KTP'}</button>
+      <div className="space-y-2"><p className={`${typography.label} text-[color:var(--profile-text)]`}>Titik Koordinat Alamat KTP</p><AddressMapPicker value={typeof addressLat === 'number' && typeof addressLng === 'number' ? { lat: addressLat, lng: addressLng } : null} disabled={!isEditing || reverseGeocoding} onChange={onMapChange} /><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>{reverseGeocoding ? 'Membaca alamat dari titik peta...' : 'Alamat KTP dan peta saling tersinkron. Jika titik kurang tepat, klik/geser pin pada peta untuk koreksi.'}</p><input type="hidden" {...register('address_lat', { valueAsNumber: true })} /><input type="hidden" {...register('address_lng', { valueAsNumber: true })} />{(errors.address_lat || errors.address_lng) && <p className="text-xs font-semibold text-rose-600">Titik koordinat alamat KTP wajib dipilih pada peta.</p>}</div>
+      <label className={`flex gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] transition-colors ${typography.body}`}><input type="checkbox" {...register('address_verified')} disabled={!isEditing} className="mt-1 accent-[color:var(--profile-primary)]" /> Saya menyatakan alamat asli sesuai KTP dan titik peta di atas benar adanya. Data ini digunakan sebagai rujukan alamat resmi pada dashboard profil dan proses KKN.</label>
+    </section>
+  );
+}
+
+export default function ProfilePage(): React.JSX.Element {
   const router = useRouter();
-  const { user, isAuthenticated, isLoading, fetchUser, clearUser } = useAuthStore();
-  
+  const { user, isAuthenticated, isLoading, fetchUser, clearUser, setUser } = useAuthStore();
+  const { theme, setTheme, config: themeConfig, typography, surfaceClass, surfaceStrongClass } = useTheme();
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [profileData, setProfileData] = useState<{ student: StudentProfile | null; lecturer: LecturerProfile | null; pending: ChangeRequest | null } | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [avatarLoading, setAvatarLoading] = useState(false);
-
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors, isSubmitting, isDirty },
-  } = useForm<UpdateProfileFormData>({
-    resolver: zodResolver(updateProfileSchema),
-  });
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [reverseGeocoding, setReverseGeocoding] = useState(false);
+  const [forwardGeocoding, setForwardGeocoding] = useState(false);
+  const [lastMapSyncedAddress, setLastMapSyncedAddress] = useState('');
+  const tutorialTargets = useRef<Record<TutorialTarget, HTMLElement | null>>({ intro: null, theme: null, avatar: null, status: null, form: null });
+  const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (user) {
-      reset({
-        name: user.name,
-        phone: (user as any).phone || '',
-        address: (user as any).address || '',
-        domicile_village_name: (user as any).domicile_village_name || '',
-        domicile_district_name: (user as any).domicile_district_name || '',
-        domicile_regency_name: (user as any).domicile_regency_name || '',
+    const el = rootRef.current;
+    if (!el) return;
+    const vars = themeConfig.vars as Record<string, string>;
+    Object.entries(vars).forEach(([key, value]) => el.style.setProperty(key, value));
+    el.style.background = themeConfig.backdrop;
+  }, [themeConfig]);
+
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting, isDirty } } = useForm<UpdateProfileFormData>({
+    resolver: zodResolver(updateProfileSchema) as any,
+  });
+
+  const student = profileData?.student ?? null;
+  const lecturer = profileData?.lecturer ?? null;
+  const pendingRequest = profileData?.pending ?? null;
+  const roles = user?.roles ?? [];
+  const isStudent = !!student;
+  const isLecturer = !!lecturer;
+  const addressLat = watch('address_lat');
+  const addressLng = watch('address_lng');
+  const addressValue = watch('address');
+  const villageValue = watch('address_village_name');
+  const districtValue = watch('address_district_name');
+  const regencyValue = watch('address_regency_name');
+  const postalCodeValue = watch('address_postal_code');
+
+  const setTutorialTargetRef = (target: TutorialTarget) => (node: HTMLElement | null) => {
+    tutorialTargets.current[target] = node;
+  };
+
+  const changeTheme = (nextTheme: ThemeKey) => {
+    setTheme(nextTheme);
+  };
+
+  const handleAddressPointChange = async (point: { lat: number; lng: number }) => {
+    setValue('address_lat', point.lat, { shouldDirty: true });
+    setValue('address_lng', point.lng, { shouldDirty: true });
+    setReverseGeocoding(true);
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${point.lat}&lon=${point.lng}&zoom=18&addressdetails=1`, {
+        headers: { Accept: 'application/json' },
       });
+      if (!response.ok) throw new Error('Reverse geocoding failed');
+      const data = await response.json() as { display_name?: string; address?: ReverseGeocodeAddress };
+      const address = data.address ?? {};
+      setValue('address', composeAddress(data.display_name, address), { shouldDirty: true });
+      setValue('address_village_name', cleanAdminName(address.village || address.suburb || address.neighbourhood || address.town), { shouldDirty: true });
+      setValue('address_district_name', cleanAdminName(address.municipality || address.county || address.state_district), { shouldDirty: true });
+      setValue('address_regency_name', cleanAdminName(address.city || address.county || address.state_district), { shouldDirty: true });
+      setValue('address_postal_code', address.postcode ?? '', { shouldDirty: true });
+      setLastMapSyncedAddress(composeAddressQuery(cleanAdminName(address.village || address.suburb || address.neighbourhood || address.town), cleanAdminName(address.municipality || address.county || address.state_district), cleanAdminName(address.city || address.county || address.state_district)));
+      toast.success('Alamat KTP otomatis diisi dari titik peta');
+    } catch {
+      toast.warning('Titik tersimpan. Alamat otomatis gagal dibaca, silakan lengkapi manual.');
+    } finally {
+      setReverseGeocoding(false);
     }
+  };
+
+  const syncMapFromAddress = async () => {
+    const query = composeAddressQuery(villageValue, districtValue, regencyValue);
+    if (!query || query === lastMapSyncedAddress) return;
+    setForwardGeocoding(true);
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(query)}`, {
+        headers: { Accept: 'application/json' },
+      });
+      if (!response.ok) throw new Error('Forward geocoding failed');
+      const results = await response.json() as Array<{ lat: string; lon: string }>;
+      const first = results[0];
+      if (!first) throw new Error('Location not found');
+      setValue('address_lat', Number(first.lat), { shouldDirty: true });
+      setValue('address_lng', Number(first.lon), { shouldDirty: true });
+      setLastMapSyncedAddress(query);
+      toast.success('Peta alamat KTP disesuaikan dari alamat');
+    } catch {
+      toast.warning('Lokasi tidak ditemukan dari alamat. Silakan pilih titik pada peta.');
+    } finally {
+      setForwardGeocoding(false);
+    }
+  };
+
+  const closeTutorial = () => {
+    window.localStorage.setItem(profileTutorialKey(user), '1');
+    setShowTutorial(false);
+  };
+
+  useEffect(() => {
+    if (!showTutorial) return;
+    const driverObj = driver({
+      showProgress: true,
+      allowClose: true,
+      animate: true,
+      overlayOpacity: 0.72,
+      stagePadding: 12,
+      stageRadius: 18,
+      nextBtnText: 'Lanjut',
+      prevBtnText: 'Kembali',
+      doneBtnText: 'Selesai',
+      popoverClass: 'sibermas-profile-tour',
+      onDestroyed: () => {
+        window.localStorage.setItem(profileTutorialKey(user), '1');
+        setShowTutorial(false);
+      },
+      steps: PROFILE_TUTORIAL_STEPS.map((step) => ({
+        element: tutorialTargets.current[step.target] ?? undefined,
+        popover: {
+          title: step.title,
+          description: step.body,
+          side: step.placement === 'bottom-right' ? 'bottom' : step.placement === 'center' ? 'bottom' : step.placement,
+          align: step.placement === 'bottom-right' ? 'end' : 'center',
+        },
+      })),
+    });
+    const start = window.setTimeout(() => driverObj.drive(), 120);
+    return () => {
+      window.clearTimeout(start);
+      driverObj.destroy();
+    };
+  }, [showTutorial, user]);
+
+  useEffect(() => {
+    if (!isLoading && (!isAuthenticated || !user)) router.replace('/login');
+  }, [isLoading, isAuthenticated, user, router]);
+
+  useEffect(() => {
+    if (!user) return;
+    profileApi.get().then((res: any) => {
+      const nextStudent = res?.student ?? res?.user?.mahasiswa ?? null;
+      const nextLecturer = res?.lecturer ?? res?.user?.dosen ?? null;
+      setProfileData({ student: nextStudent, lecturer: nextLecturer, pending: res?.pending_change_request ?? null });
+      reset({
+        name: user.name ?? '',
+        phone: (res?.user?.phone ?? (user as any).phone ?? '') as string,
+        address: (res?.user?.address ?? (user as any).address ?? '') as string,
+        address_village_name: (res?.user?.address_village_name ?? (user as any).address_village_name ?? '') as string,
+        address_district_name: (res?.user?.address_district_name ?? (user as any).address_district_name ?? '') as string,
+        address_regency_name: (res?.user?.address_regency_name ?? (user as any).address_regency_name ?? '') as string,
+        address_postal_code: (res?.user?.address_postal_code ?? (user as any).address_postal_code ?? '') as string,
+        address_verified: !!res?.user?.address_verified_at,
+        address_lat: res?.user?.address_lat != null ? Number(res.user.address_lat) : null,
+        address_lng: res?.user?.address_lng != null ? Number(res.user.address_lng) : null,
+        nik: nextStudent?.nik ?? '',
+        mother_name: nextStudent?.mother_name ?? '',
+        gender: nextStudent?.gender ?? nextLecturer?.gender ?? '',
+        shirt_size: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL', ''].includes(nextStudent?.shirt_size ?? '') ? (nextStudent?.shirt_size ?? '') : '',
+        birth_place: nextStudent?.birth_place ?? nextLecturer?.tempat_lahir ?? '',
+        birth_date: nextStudent?.birth_date ?? nextLecturer?.birth_date ?? '',
+        nama_gelar: nextLecturer?.nama_gelar ?? '',
+        nidn: nextLecturer?.nidn ?? '',
+        dosen_nik: nextLecturer?.nik ?? '',
+        jabatan: nextLecturer?.jabatan ?? '',
+        kelas_jabatan: nextLecturer?.kelas_jabatan ?? '',
+        tugas_tambahan: nextLecturer?.tugas_tambahan ?? '',
+        golongan: nextLecturer?.golongan ?? '',
+        pangkat: nextLecturer?.pangkat ?? '',
+        no_rekening: nextLecturer?.no_rekening ?? '',
+        nama_bank: nextLecturer?.nama_bank ?? '',
+        npwp: nextLecturer?.npwp ?? '',
+        dosen_alamat: nextLecturer?.alamat ?? '',
+      });
+    }).catch(() => toast.error('Gagal memuat profil'));
   }, [user, reset]);
+
+  const missingFields = useMemo(() => {
+    if (student) return [...(student.missing_biodata_fields ?? []), ...(student.missing_address_fields ?? [])];
+    if (lecturer) return lecturer.missing_biodata_fields ?? [];
+    return [];
+  }, [student, lecturer]);
+  const profileComplete = missingFields.length === 0;
+
+  useEffect(() => {
+    if (!profileData || !user || profileComplete) return;
+    if (!window.localStorage.getItem(profileTutorialKey(user))) {
+      setShowTutorial(true);
+    }
+  }, [profileData, profileComplete, user]);
+
+  useEffect(() => {
+    if (profileData && !profileComplete) setIsEditing(true);
+  }, [profileData, profileComplete]);
 
   const onSubmit = async (data: UpdateProfileFormData) => {
     try {
-      await profileApi.update(data);
-      await fetchUser();
-      toast.success('Profil berhasil diperbarui');
+      const payload = { ...(data as unknown as Record<string, unknown>) };
+      await profileApi.update(payload);
+      toast.success(profileComplete ? 'Permintaan perubahan profil dikirim. Menunggu persetujuan superadmin.' : 'Profil berhasil disimpan. Pastikan semua data sudah valid.');
       setIsEditing(false);
+      const res: any = await profileApi.get();
+      setProfileData({ student: res?.student ?? null, lecturer: res?.lecturer ?? null, pending: res?.pending_change_request ?? null });
+      await fetchUser();
+      const complete = !!(res?.student?.biodata_complete && res?.student?.address_complete) || !!res?.lecturer?.biodata_complete;
+      setProfileCompleteCookie(complete);
     } catch (err: any) {
-      toast.error(err.response?.data?.error?.message || 'Gagal memperbarui profil');
+      const apiErrors = err.response?.data?.error?.errors as Record<string, string[]> | undefined;
+      const firstField = apiErrors ? Object.keys(apiErrors)[0] : null;
+      toast.error(firstField ? (apiErrors?.[firstField]?.[0] ?? 'Data belum valid.') : (err.response?.data?.error?.message || 'Gagal mengirim permintaan'));
+      if (firstField) focusProfileField(firstField);
     }
+  };
+
+  const onSubmitInvalid = (formErrors: Record<string, any>) => {
+    const firstField = Object.keys(formErrors)[0];
+    toast.error(firstField ? `Data belum valid: ${FIELD_LABELS[firstField] ?? firstField}` : 'Masih ada data yang belum valid.');
+    if (firstField) focusProfileField(firstField);
   };
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Sanity check only — format & size. Konten (background merah, jas almamater,
+    // pose formal, wajah) divalidasi oleh AI di server (Layer 3 PRD_AVATAR_VALIDATION.md).
+    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+      toast.error('Format foto harus JPG atau PNG.');
+      e.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Ukuran foto maksimal 5 MB.');
+      e.target.value = '';
+      return;
+    }
+
+    // Optimistic preview: show the picked file immediately via a local blob URL
+    // so the user sees the new avatar the moment they pick it, not after the
+    // upload completes.
+    const previewUrl = URL.createObjectURL(file);
+    const prevAvatarUrl = user?.avatar_url;
+    if (user) {
+      setUser({ ...user, avatar_url: previewUrl });
+    }
+
     const formData = new FormData();
     formData.append('avatar', file);
-
     setAvatarLoading(true);
+
+    let uploadSucceeded = false;
+    let moderationStatus: 'approved' | 'pending' | null = null;
+
     try {
-      await profileApi.updateAvatar(formData);
-      await fetchUser();
-      toast.success('Foto profil diperbarui');
-    } catch (err: any) {
-      toast.error('Gagal mengunggah foto profil');
-    } finally {
+      // Step 1: the actual upload. Only a throw HERE means the upload failed.
+      const uploadRes: any = await profileApi.updateAvatar(formData);
+      uploadSucceeded = true;
+      moderationStatus = (uploadRes?.data?.moderation_status ?? uploadRes?.moderation_status) ?? null;
+    } catch (error: any) {
+      // R-008 fix: only rollback the preview when the UPLOAD itself failed.
+      if (user) {
+        setUser({ ...user, avatar_url: prevAvatarUrl });
+      }
+      const apiMessage = error?.response?.data?.errors?.avatar?.[0] || error?.response?.data?.message;
+      toast.error(apiMessage || 'Gagal mengunggah foto profil');
+      window.setTimeout(() => URL.revokeObjectURL(previewUrl), 2000);
       setAvatarLoading(false);
+      e.target.value = '';
+      return;
+    }
+
+    // Step 2: refresh the user + profile. These are best-effort — the photo
+    // is already saved, so failures here must not roll back the preview.
+    try {
+      await fetchUser(true);
+      const freshUser = useAuthStore.getState().user;
+      if (freshUser && freshUser.avatar_url) {
+        const base = freshUser.avatar_url.split('?')[0];
+        setUser({ ...freshUser, avatar_url: `${base}?v=${Date.now()}` });
+      }
+
+      const res: any = await profileApi.get();
+      setProfileData({ student: res?.student ?? null, lecturer: res?.lecturer ?? null, pending: res?.pending_change_request ?? null });
+    } catch {
+      // Don't revert — the file is saved server-side. Just warn.
+      toast.warning('Foto sudah terunggah, tetapi data profil gagal dimuat ulang. Segarkan halaman untuk sinkron.');
+    } finally {
+      window.setTimeout(() => URL.revokeObjectURL(previewUrl), 2000);
+      setAvatarLoading(false);
+      e.target.value = '';
+    }
+
+    if (uploadSucceeded) {
+      if (moderationStatus === 'pending') {
+        toast.warning('Foto terunggah dan menunggu verifikasi admin (server AI sedang sibuk).');
+      } else {
+        toast.success('Foto profil diperbarui');
+      }
     }
   };
 
-  const handleLogout = () => {
-    if (confirm('Apakah Anda yakin ingin keluar?')) {
-      clearUser();
-      router.replace('/login');
-    }
+  const handleLogout = async () => {
+    try { await (await import('@/lib/api')).authApi.logout(); } catch { /* noop */ }
+    clearUser();
+    router.replace('/');
   };
 
-  if (isLoading) return (
-    <div className="flex min-h-[60vh] items-center justify-center">
-      <RefreshCw className="h-8 w-8 animate-spin text-emerald-500" />
-    </div>
-  );
-
-  if (!isAuthenticated || !user) {
-    router.replace('/login');
-    return null;
+  if (isLoading || !isAuthenticated || !user || !profileData) {
+    return <div className="flex min-h-[60vh] items-center justify-center"><RefreshCw className="h-8 w-8 animate-spin text-emerald-500" /></div>;
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10 space-y-8">
-      {/* Header Profile */}
-      <div className="relative group">
-        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 blur-3xl -z-10 rounded-[3rem]" />
-        <div className="bg-white/80 backdrop-blur-xl border border-white p-8 rounded-[2.5rem] shadow-sm flex flex-col md:flex-row items-center gap-8">
-          <div className="relative">
-            <div className="h-32 w-32 rounded-3xl bg-gradient-to-br from-emerald-100 to-cyan-100 flex items-center justify-center text-4xl font-black text-emerald-700 shadow-inner overflow-hidden border-4 border-white">
-              {user.avatar_url ? (
-                <img src={user.avatar_url} alt={user.name} className="h-full w-full object-cover" />
-              ) : (
-                user.name?.charAt(0).toUpperCase()
-              )}
-              {avatarLoading && (
-                <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center">
-                  <RefreshCw size={24} className="animate-spin text-emerald-600" />
-                </div>
-              )}
-            </div>
-            <label className="absolute -bottom-2 -right-2 h-10 w-10 bg-white border border-slate-100 rounded-xl shadow-lg flex items-center justify-center text-emerald-600 cursor-pointer hover:scale-110 transition-transform">
-              <Camera size={20} />
-              <input type="file" className="hidden" accept="image/*" onChange={handleAvatarChange} title="Unggah foto profil" aria-label="Unggah foto profil" />
-            </label>
-          </div>
+    <div ref={rootRef} className={`relative min-h-screen overflow-hidden px-4 py-8 pb-12 text-[color:var(--profile-text)] transition-all duration-700 ease-out ${typography.page}`}>
+      <style jsx global>{TOUR_CSS}</style>
+      {themeConfig.useParticles && (
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-emerald-500/10 rounded-full blur-[150px] mix-blend-screen animate-pulse [animation-duration:10s]" />
+          <div className="absolute bottom-[-20%] right-[-10%] w-[900px] h-[900px] bg-cyan-500/10 rounded-full blur-[180px] mix-blend-screen animate-pulse [animation-duration:15s]" />
+          <div className="absolute top-[40%] left-[20%] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[100px] mix-blend-screen" />
+        </div>
+      )}
+      {!themeConfig.useParticles && (
+        <>
+          <div className="pointer-events-none absolute inset-0 opacity-45 mix-blend-soft-light [background-image:linear-gradient(rgba(255,255,255,.45)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.35)_1px,transparent_1px)] [background-size:42px_42px]" />
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,255,255,0.2),transparent_34%),linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.09)_42%,transparent_62%)] opacity-70 mix-blend-screen" />
+        </>
+      )}
+      {themeConfig.useParticles && (
+        <div className="fixed inset-0 z-[1] pointer-events-none opacity-45 mix-blend-screen">
+          <ParticleBackground />
+        </div>
+      )}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-white/10 to-transparent opacity-80" />
+      <div className="pointer-events-none absolute -left-24 top-16 h-72 w-72 rounded-full bg-[color:var(--profile-accent)]/10 blur-3xl transition-colors duration-700" />
+      <div className="pointer-events-none absolute -right-24 top-48 h-80 w-80 rounded-full bg-[color:var(--profile-primary)]/10 blur-3xl transition-colors duration-700" />
+      <div className="relative z-10 mx-auto max-w-5xl space-y-6">
+      <ProfileHeader
+        refTarget={setTutorialTargetRef('intro')}
+        themeRef={setTutorialTargetRef('theme')}
+        theme={theme}
+        typography={typography}
+        themeConfig={themeConfig}
+        surfaceClass={surfaceClass}
+        isLecturer={isLecturer}
+        profileComplete={profileComplete}
+        roles={roles}
+        isEditing={isEditing}
+        pendingRequest={pendingRequest}
+        onThemeChange={changeTheme}
+        onDashboard={() => router.push(dashboardPathFor(roles))}
+        onToggleEdit={() => setIsEditing((v) => !v)}
+        onLogout={handleLogout}
+      />
 
-          <div className="flex-1 text-center md:text-left space-y-2">
-            <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-tight">{user.name}</h1>
-            <div className="flex flex-wrap justify-center md:justify-start gap-4">
-              <div className="flex items-center gap-2 text-slate-500 font-bold text-sm">
-                <Mail size={16} className="text-emerald-500" /> {user.email}
-              </div>
-              <div className="flex items-center gap-2 text-slate-500 font-bold text-sm">
-                <Shield size={16} className="text-cyan-500" /> {user.nim || user.username}
-              </div>
-            </div>
-            <div className="pt-2">
-              <span className="px-3 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-100">
-                {(user as any).role_label || 'Mahasiswa'}
-              </span>
-            </div>
-          </div>
+      {pendingRequest && profileComplete && <div className="rounded-xl border border-amber-300 bg-[color:var(--profile-warning)] p-4 text-sm text-[color:var(--profile-warning-text)] shadow-sm transition-colors duration-500">Permintaan perubahan profil sedang menunggu persetujuan superadmin.</div>}
+      {missingFields.length > 0 && <div className="flex gap-3 rounded-xl border border-amber-300 bg-[color:var(--profile-warning)] p-4 shadow-sm transition-colors duration-500"><AlertCircle size={18} className="mt-0.5 shrink-0 text-[color:var(--profile-warning-text)]" /><p className="text-sm text-[color:var(--profile-warning-text)]">Tahap awal wajib review dan melengkapi data berikut: <strong>{missingFields.map((f) => FIELD_LABELS[f] ?? f).join(', ')}</strong>. Pengisian awal disimpan langsung, edit setelah lengkap akan menunggu approval superadmin.</p></div>}
 
-          <div className="flex gap-3">
-            <button 
-              onClick={() => setIsEditing(!isEditing)}
-              className={`px-6 py-3 rounded-2xl font-bold text-sm transition-all flex items-center gap-2 ${
-                isEditing ? 'bg-slate-100 text-slate-600' : 'bg-emerald-600 text-white shadow-lg shadow-emerald-100 hover:-translate-y-1'
-              }`}
-            >
-              {isEditing ? 'Batal' : <><Settings size={18} /> Edit Profil</>}
-            </button>
-            <button 
-              onClick={handleLogout}
-              className="p-3 bg-rose-50 text-rose-500 border border-rose-100 rounded-2xl hover:bg-rose-100 transition-colors"
-              title="Keluar"
-            >
-              <LogOut size={24} />
-            </button>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <ProfileSidebar
+          avatarRef={setTutorialTargetRef('avatar')}
+          statusRef={setTutorialTargetRef('status')}
+          avatarInputRef={avatarInputRef}
+          user={user}
+          student={student}
+          lecturer={lecturer}
+          isStudent={isStudent}
+          isLecturer={isLecturer}
+          avatarLoading={avatarLoading}
+          typography={typography}
+          themeConfig={themeConfig}
+          surfaceStrongClass={surfaceStrongClass}
+          onAvatarChange={handleAvatarChange}
+        />
+
+        <div className="lg:col-span-2">
+          <form ref={setTutorialTargetRef('form')} onSubmit={handleSubmit(onSubmit, onSubmitInvalid)} className={cx('space-y-6 rounded-xl p-6', themeConfig.frame, surfaceStrongClass, themeConfig.shadow)}>
+            <section className="space-y-4">
+              <h2 className={`flex items-center gap-2 ${typography.label} text-[color:var(--profile-text)]`}><IdCard size={16} /> Data Pribadi & Kontak</h2>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <TextInput label="Email Sistem" value={user.email ?? '-'} disabled />
+                <TextInput label="Nama Lengkap" registration={register('name')} disabled={!isEditing} error={errors.name?.message} />
+                <TextInput label="Nomor HP / WA" registration={register('phone')} disabled={!isEditing} error={errors.phone?.message} />
+                {isStudent && <TextInput label="NIK (KTP)" registration={register('nik')} disabled={!isEditing} error={errors.nik?.message} />}
+                {isLecturer && <TextInput label="NIP / NIDN" value={lecturer?.nip ?? '-'} disabled />}
+                {isStudent && <TextInput label="Nama Ibu Kandung" registration={register('mother_name')} disabled={!isEditing} error={errors.mother_name?.message} />}
+                {isStudent && <TextInput label="Tempat Lahir" registration={register('birth_place')} disabled={!isEditing} error={errors.birth_place?.message} />}
+                <TextInput label="Tanggal Lahir" type="date" registration={register('birth_date')} disabled={!isEditing} error={errors.birth_date?.message} />
+                <SelectInput label="Jenis Kelamin" registration={register('gender')} disabled={!isEditing} options={[['', 'Pilih'], ['L', 'Laki-laki'], ['P', 'Perempuan']]} error={errors.gender?.message} />
+                {isStudent && <SelectInput label="Ukuran Baju / Jaket" registration={register('shirt_size')} disabled={!isEditing} options={SHIRT_SIZE_OPTIONS} error={errors.shirt_size?.message} />}
+              </div>
+            </section>
+
+            {isStudent && <StudentAddressSection register={register} errors={errors} isEditing={isEditing} typography={typography} addressLat={addressLat} addressLng={addressLng} reverseGeocoding={reverseGeocoding} forwardGeocoding={forwardGeocoding} onMapChange={handleAddressPointChange} onSyncMap={syncMapFromAddress} />}
+
+            {isLecturer && <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5"><h2 className={`${typography.label} text-[color:var(--profile-text)]`}>Data Kepegawaian, Keuangan & Pajak</h2><div className="grid grid-cols-1 gap-4 md:grid-cols-2"><TextInput label="Nama Bergelar" registration={register('nama_gelar')} disabled={!isEditing} /><TextInput label="NIDN" registration={register('nidn')} disabled={!isEditing} /><TextInput label="NIK Dosen" registration={register('dosen_nik')} disabled={!isEditing} /><TextInput label="Jabatan Fungsional" registration={register('jabatan')} disabled={!isEditing} /><TextInput label="Kelas Jabatan" registration={register('kelas_jabatan')} disabled={!isEditing} /><TextInput label="Tugas Tambahan" registration={register('tugas_tambahan')} disabled={!isEditing} /><TextInput label="Golongan" registration={register('golongan')} disabled={!isEditing} /><TextInput label="Pangkat" registration={register('pangkat')} disabled={!isEditing} /><TextArea label="Alamat Dosen" registration={register('dosen_alamat')} disabled={!isEditing} /><TextInput label="No. Rekening" registration={register('no_rekening')} disabled={!isEditing} /><TextInput label="Nama Bank" registration={register('nama_bank')} disabled={!isEditing} /><TextInput label="NPWP" registration={register('npwp')} disabled={!isEditing} /><TextInput label="Status Aktif" value={lecturer?.status_aktif ?? '-'} disabled /><TextInput label="Status Pegawai" value={lecturer?.status_pegawai ?? '-'} disabled /><TextInput label="Workshop DPL" value={lecturer?.has_workshop ? `Sudah (${lecturer?.workshop_date ?? '-'})` : 'Belum'} disabled /></div><div className={`flex gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] transition-colors ${typography.meta}`}><Info size={18} className="shrink-0" />Kolom yang tidak relevan untuk proses KKN seperti tanggal pensiun dan pendidikan terakhir tidak ditampilkan. Pengisian awal disimpan langsung; perubahan setelah profil lengkap menunggu persetujuan superadmin.</div></section>}
+
+            {isEditing && <button type="submit" disabled={isSubmitting || !isDirty || (!!pendingRequest && profileComplete)} className={cx('flex h-11 items-center justify-center gap-2 rounded-lg px-6 disabled:opacity-50', typography.button, primaryClass)}>{isSubmitting ? 'Menyimpan...' : profileComplete ? 'Ajukan Perubahan' : 'Simpan & Lanjutkan'}<Save size={16} /></button>}
+          </form>
+
+          <div className="mt-6">
+            {/* NotificationPreferencesCard hidden — managed via admin dashboard */}
+            <TwoFactorCard />
           </div>
         </div>
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Column: Security & Settings */}
-        <div className="space-y-6">
-          <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm space-y-4">
-            <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-              <Shield size={18} className="text-cyan-500" /> Keamanan Akun
-            </h3>
-            <div className="space-y-2">
-              <button 
-                onClick={() => router.push('/ganti-password')}
-                className="w-full group flex items-center justify-between p-4 bg-slate-50 rounded-2xl hover:bg-emerald-50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <Lock size={18} className="text-slate-400 group-hover:text-emerald-500" />
-                  <span className="text-sm font-bold text-slate-700">Ganti Kata Sandi</span>
-                </div>
-                <ChevronRight size={16} className="text-slate-300" />
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column: Information Forms */}
-        <div className="lg:col-span-2">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-            <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8">
-              {/* Personal Data */}
-              <section className="space-y-6">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-1 bg-emerald-500 rounded-full" />
-                  <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Data Personal</h3>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nama Lengkap</label>
-                    <div className="relative">
-                      <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                      <input 
-                        {...register('name')}
-                        disabled={!isEditing}
-                        className="w-full h-12 bg-slate-50 border-none rounded-2xl pl-12 pr-4 text-sm font-bold text-slate-900 focus:ring-4 focus:ring-emerald-500/10 disabled:opacity-60 transition-all outline-none"
-                      />
-                    </div>
-                    {errors.name && <p className="text-[10px] font-bold text-rose-500 ml-1">{errors.name.message}</p>}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">No. WhatsApp</label>
-                    <div className="relative">
-                      <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
-                      <input 
-                        {...register('phone')}
-                        disabled={!isEditing}
-                        placeholder="08xxxxxxxxxx"
-                        className="w-full h-12 bg-slate-50 border-none rounded-2xl pl-12 pr-4 text-sm font-bold text-slate-900 focus:ring-4 focus:ring-emerald-500/10 disabled:opacity-60 transition-all outline-none"
-                      />
-                    </div>
-                    {errors.phone && <p className="text-[10px] font-bold text-rose-500 ml-1">{errors.phone.message}</p>}
-                  </div>
-                </div>
-              </section>
-
-              {/* Domicile Data */}
-              <section className="space-y-6">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-1 bg-cyan-500 rounded-full" />
-                  <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Data Alamat & Domisili</h3>
-                </div>
-
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Alamat Lengkap</label>
-                    <div className="relative">
-                      <Home className="absolute left-4 top-4 text-slate-300" size={18} />
-                      <textarea 
-                        {...register('address')}
-                        disabled={!isEditing}
-                        rows={3}
-                        className="w-full bg-slate-50 border-none rounded-2xl pl-12 pr-4 py-4 text-sm font-bold text-slate-900 focus:ring-4 focus:ring-emerald-500/10 disabled:opacity-60 transition-all outline-none"
-                        placeholder="Alamat domisili saat ini..."
-                      />
-                    </div>
-                    {errors.address && <p className="text-[10px] font-bold text-rose-500 ml-1">{errors.address.message}</p>}
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Desa/Kelurahan</label>
-                      <input 
-                        {...register('domicile_village_name')}
-                        disabled={!isEditing}
-                        className="w-full h-12 bg-slate-50 border-none rounded-2xl px-4 text-sm font-bold text-slate-900 focus:ring-4 focus:ring-emerald-500/10 disabled:opacity-60 transition-all outline-none"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kecamatan</label>
-                      <input 
-                        {...register('domicile_district_name')}
-                        disabled={!isEditing}
-                        className="w-full h-12 bg-slate-50 border-none rounded-2xl px-4 text-sm font-bold text-slate-900 focus:ring-4 focus:ring-emerald-500/10 disabled:opacity-60 transition-all outline-none"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Kota/Kabupaten</label>
-                      <input 
-                        {...register('domicile_regency_name')}
-                        disabled={!isEditing}
-                        className="w-full h-12 bg-slate-50 border-none rounded-2xl px-4 text-sm font-bold text-slate-900 focus:ring-4 focus:ring-emerald-500/10 disabled:opacity-60 transition-all outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              {/* Submit Button */}
-              <AnimatePresence>
-                {isEditing && (
-                  <motion.div 
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="pt-6"
-                  >
-                    <button 
-                      type="submit" 
-                      disabled={isSubmitting || !isDirty}
-                      className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-xl shadow-emerald-100 disabled:opacity-50 flex items-center justify-center gap-3"
-                    >
-                      {isSubmitting ? <RefreshCw className="animate-spin" size={20} /> : <><Save size={20} /> Simpan Perubahan</>}
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-          </form>
-        </div>
       </div>
     </div>
   );
+}
+
+function TextInput({ label, registration, value, type = 'text', step, disabled, error }: { label: string; registration?: any; value?: string; type?: string; step?: string; disabled?: boolean; error?: string }) {
+  return <div className="space-y-1.5"><label className="text-sm font-medium text-[color:var(--profile-text)]">{label}</label><input type={type} step={step} {...registration} value={registration ? undefined : value} disabled={disabled} className={cx('h-10 w-full rounded-lg border px-3 text-sm tracking-[-0.01em]', fieldClass)} />{error && <p className="text-xs text-rose-600">{error}</p>}</div>;
+}
+
+function TextArea({ label, registration, disabled, error }: { label: string; registration?: any; disabled?: boolean; error?: string }) {
+  return <div className="space-y-1.5"><label className="text-sm font-medium text-[color:var(--profile-text)]">{label}</label><textarea {...registration} disabled={disabled} rows={3} className={cx('w-full rounded-lg border px-3 py-2 text-sm leading-6 tracking-[-0.01em]', fieldClass)} />{error && <p className="text-xs text-rose-600">{error}</p>}</div>;
+}
+
+function SelectInput({ label, registration, disabled, options, error }: { label: string; registration?: any; disabled?: boolean; options: string[][]; error?: string }) {
+  return <div className="space-y-1.5"><label className="text-sm font-medium text-[color:var(--profile-text)]">{label}</label><select {...registration} disabled={disabled} className={cx('h-10 w-full rounded-lg border px-3 text-sm tracking-[-0.01em]', fieldClass)}>{options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>{error && <p className="text-xs text-rose-600">{error}</p>}</div>;
 }

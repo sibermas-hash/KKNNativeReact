@@ -17,16 +17,35 @@ class ParticipantFeedbackController extends Controller
     {
         $dosen = auth()->user()->dosen;
         if (! $dosen) {
-            return $this->success(['feedback' => []]);
+            return $this->success([
+                'summary' => null,
+                'comments' => [],
+                'criteria_labels' => \App\Services\KKN\DplParticipantEvaluationService::CRITERIA,
+            ]);
         }
 
-        $feedback = EvaluasiDplPeserta::where('dosen_id', $dosen->id)
-            ->with(['mahasiswa.user', 'items'])
+        $service = app(\App\Services\KKN\DplParticipantEvaluationService::class);
+        $summary = $service->getDplSummary($dosen->id);
+        
+        $comments = EvaluasiDplPeserta::where('dosen_id', $dosen->id)
+            ->with(['mahasiswa.user', 'kelompok', 'periode', 'items'])
             ->orderByDesc('created_at')
-            ->paginate(25);
+            ->get()
+            ->map(function ($evaluation) {
+                return [
+                    'id' => $evaluation->id,
+                    'group_name' => $evaluation->kelompok?->nama_kelompok ?? 'N/A',
+                    'period_name' => $evaluation->periode?->name ?? 'N/A',
+                    'recommendation' => $evaluation->recommendation,
+                    'notes' => $evaluation->notes,
+                    'submitted_at' => $evaluation->created_at?->toIso8601String(),
+                ];
+            });
 
-        return $this->successCollection(
-            \App\Http\Resources\Api\V1\EvaluasiDplPesertaResource::collection($feedback)
-        );
+        return $this->success([
+            'summary' => $summary,
+            'comments' => $comments,
+            'criteria_labels' => \App\Services\KKN\DplParticipantEvaluationService::CRITERIA,
+        ]);
     }
 }

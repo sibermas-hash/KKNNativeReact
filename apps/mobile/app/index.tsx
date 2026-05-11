@@ -1,9 +1,18 @@
 import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { View, ActivityIndicator } from 'react-native';
+import { getMobileHomeRoute, useAuthIsLoading, useAuthUser } from '@/stores';
+import { colors } from '@/components/ui/primitives';
 
 export default function Index() {
   const router = useRouter();
-  useEffect(() => { router.replace('/(tabs)'); }, []);
-  return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><ActivityIndicator size="large" color="#0d9488" /></View>;
+  const isLoading = useAuthIsLoading();
+  const user = useAuthUser();
+
+  useEffect(() => {
+    if (isLoading) return;
+    router.replace(getMobileHomeRoute(user));
+  }, [isLoading, router, user]);
+
+  return <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}><ActivityIndicator size="large" color={colors.primary} /></View>;
 }

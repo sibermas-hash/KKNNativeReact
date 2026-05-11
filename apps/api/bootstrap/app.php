@@ -1,11 +1,14 @@
 <?php
 
+use App\Http\Middleware\AuthenticateWithCookieToken;
 use App\Http\Middleware\CheckPeriodLock;
 use App\Http\Middleware\CspHeaders;
 use App\Http\Middleware\DisableDebugbar;
+use App\Http\Middleware\EnforceTwoFactor;
+use App\Http\Middleware\EnsureAdminAuthorization;
 use App\Http\Middleware\EnsurePasswordChanged;
-use App\Http\Middleware\EnsureProfileCompleted;
 use App\Http\Middleware\EnsurePhase;
+use App\Http\Middleware\EnsureProfileCompleted;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Http\Middleware\HandleActivePeriod;
 use App\Http\Middleware\KknThrottleMiddleware;
@@ -18,12 +21,17 @@ use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use Illuminate\Validation\ValidationException;
 use Spatie\Permission\Exceptions\UnauthorizedException;
 use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -61,12 +69,13 @@ return Application::configure(basePath: dirname(__DIR__))
             '131.0.72.0/22',
         ]);
 
-        // TestAutoLogin: HANYA aktif di environment lokal untuk keperluan testing
-        if (env('APP_ENV', 'production') === 'local') {
-            $middleware->prepend([
-                TestAutoLogin::class,
-            ]);
-        }
+        // TestAutoLogin: Guard ada di dalam class handle() sendiri (abort 500
+        // jika bukan local/testing). Prepend tanpa conditional karena
+        // app()->environment() belum tersedia saat withMiddleware closure
+        // dieksekusi di Laravel 13 boot sequence.
+        $middleware->prepend([
+            TestAutoLogin::class,
+        ]);
 
         $middleware->web(append: [
             HandleActivePeriod::class,
@@ -76,11 +85,23 @@ return Application::configure(basePath: dirname(__DIR__))
             EnsureUserIsActive::class,
         ]);
 
-        $middleware->api(append: [
-            EnsurePasswordChanged::class,
-            EnsureProfileCompleted::class,
-            EnsureUserIsActive::class,
-        ]);
+        $middleware->api(
+            prepend: [
+                AuthenticateWithCookieToken::class,
+            ],
+            append: [
+                EnsurePasswordChanged::class,
+                EnsureProfileCompleted::class,
+                EnsureUserIsActive::class,
+                // Global per-tier rate limiter (roadmap §3.4).
+                // Superadmin: Limit::none (unlimited). Admin/faculty_admin: 120/min.
+                // DPL/Dosen: 60/min. Student: 60/min. Guest: 30/min IP-based.
+                // Routes with tighter per-route throttles still win — this
+                // acts as a FLOOR to close gaps on endpoints that had no
+                // explicit throttle (e.g. /v1/profile/*).
+                'throttle:authenticated',
+            ],
+        );
 
         $middleware->alias([
             'role' => RoleMiddleware::class,
@@ -93,6 +114,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'restrict.debugbar' => RestrictDebugbarAccess::class,
             'phase' => EnsurePhase::class,
             'not_locked' => CheckPeriodLock::class,
+            'admin.auth' => EnsureAdminAuthorization::class,
+            '2fa.enforced' => EnforceTwoFactor::class,
         ]);
 
         $middleware->redirectGuestsTo('/login');
@@ -138,7 +161,7 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        $exceptions->render(function (\Illuminate\Validation\ValidationException $e, $request) {
+        $exceptions->render(function (ValidationException $e, $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -151,7 +174,7 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, $request) {
+        $exceptions->render(function (NotFoundHttpException $e, $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -163,7 +186,7 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException $e, $request) {
+        $exceptions->render(function (MethodNotAllowedHttpException $e, $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -175,19 +198,21 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
-        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException $e, $request) {
+        $exceptions->render(function (TooManyRequestsHttpException $e, $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
+                // Preserve rate-limit headers (Retry-After, X-RateLimit-*) from
+                // the original exception so clients can implement proper back-off.
                 return response()->json([
                     'success' => false,
                     'error' => [
                         'code' => 'RATE_LIMITED',
                         'message' => 'Terlalu banyak permintaan. Silakan coba lagi nanti.',
                     ],
-                ], 429);
+                ], 429, $e->getHeaders());
             }
         });
 
-        $exceptions->render(function (\Illuminate\Http\Exceptions\ThrottleRequestsException $e, $request) {
+        $exceptions->render(function (ThrottleRequestsException $e, $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -195,13 +220,24 @@ return Application::configure(basePath: dirname(__DIR__))
                         'code' => 'RATE_LIMITED',
                         'message' => 'Terlalu banyak permintaan. Silakan coba lagi nanti.',
                     ],
-                ], 429);
+                ], 429, $e->getHeaders());
             }
         });
 
         // Catch-all: any unhandled exception on API routes → 500 envelope
-        $exceptions->render(function (\Throwable $e, $request) {
+        $exceptions->render(function (Throwable $e, $request) {
             if ($request->is('api/*') || $request->expectsJson()) {
+                // AI-powered Telegram alert for server errors
+                try {
+                    app(\App\Services\AI\ErrorAlertService::class)->alertBackendError(
+                        $e,
+                        $request->fullUrl(),
+                        $request->user()?->id,
+                    );
+                } catch (\Throwable) {
+                    // Alert failure must never break the response
+                }
+
                 $message = config('app.debug') ? $e->getMessage() : 'Terjadi kesalahan internal.';
 
                 return response()->json([
@@ -243,9 +279,28 @@ return Application::configure(basePath: dirname(__DIR__))
         $schedule->command('kkn:auto-sync-phase')->hourly();
 
         // Event-driven sync trigger (safe no-op when no trigger file exists).
-        $schedule->command('master:webhook:sync')->everyMinute();
+        // DISABLED 2026-05: SIAKAD sync is now a superadmin-triggered manual
+        // action (POST /api/v1/admin/sync/run-with-backup), with a fresh
+        // pg_dump backup taken BEFORE every run. The trigger-file polling
+        // job produced noise in ops logs and could silently overwrite
+        // admin-locked fields when SIAKAD payloads regressed. Leave the
+        // command (MasterWebhookSync) in place for one-off manual runs
+        // via `php artisan master:webhook:sync` if needed.
+        // $schedule->command('master:webhook:sync')->everyMinute();
 
         // Check student discipline (logbook 3 days) at 11 PM sesuai Panduan KKN 56
         $schedule->command('kkn:check-discipline')->dailyAt('23:00');
+
+        // R-005: prune expired mass-certificate ZIPs (signed URL TTL=2h,
+        // retention buffer 6h). Cleans up storage/app/private/exports/.
+        $schedule->command('certificates:prune-exports')->hourly();
+
+        // R-004: prune completed webhook idempotency rows (default 7d retention).
+        // Failed rows are retained for ops investigation.
+        $schedule->command('webhooks:prune')->dailyAt('02:30');
+
+        // AI-powered Telegram alerts
+        $schedule->command('telegram:daily-digest')->dailyAt('21:00');
+        $schedule->command('telegram:anomaly-check')->everyThirtyMinutes();
     })
     ->create();

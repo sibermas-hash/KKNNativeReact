@@ -81,6 +81,16 @@ class KknThrottleMiddleware extends ThrottleRequests
             $decayMinutes = 60;
         }
 
+        // If a named RateLimiter was requested (e.g. `throttle:authenticated`),
+        // delegate to the parent with EXACTLY 3 args so Laravel's named-limiter
+        // branch fires (see ThrottleRequests::handle — func_num_args() === 3).
+        // Passing 5 args would skip that branch and trigger the numeric-only
+        // resolveMaxAttempts path, which throws MissingRateLimiterException
+        // for string limiter names.
+        if (is_string($maxAttempts) && ! is_numeric($maxAttempts)) {
+            return parent::handle($request, $next, $maxAttempts);
+        }
+
         return parent::handle($request, $next, $maxAttempts, $decayMinutes, $prefix);
     }
 

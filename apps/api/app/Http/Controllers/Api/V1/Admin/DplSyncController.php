@@ -16,6 +16,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
 
 class DplSyncController extends Controller
 {
@@ -57,7 +58,7 @@ class DplSyncController extends Controller
         } catch (\Exception $e) {
             Log::error('DPL sync failed', ['error' => $e->getMessage()]);
 
-            return $this->error('Gagal melakukan sinkronisasi: '.$e->getMessage(), 500);
+            return $this->error('SYNC_FAILED', 'Gagal melakukan sinkronisasi: '.$e->getMessage(), 500);
         }
     }
 
@@ -84,18 +85,24 @@ class DplSyncController extends Controller
                 DB::transaction(function () use ($dosen, $nip, $name, $facultyMap, $defaultFacultyId, &$synced) {
                     $masterId   = $this->normalizeMasterId($dosen['organization_id'] ?? null);
                     $facultyId  = $masterId ? ($facultyMap[$masterId] ?? null) : null;
-                    $facultyId  ??= $defaultFacultyId;
 
-                    if (! $facultyId) {
-                        throw new \RuntimeException('Master fakultas belum tersedia.');
+                    // Audit fix: fakultas_id may legitimately be null for
+                    // external (LB-*) lecturers. Fall back to the default only
+                    // when SIAKAD supplied an unmapped id; otherwise keep null
+                    // and let admin assign later.
+                    if ($masterId !== null && ! $facultyId) {
+                        $facultyId = $defaultFacultyId;
                     }
 
                     $user = User::firstOrNew(['username' => $nip]);
-                    if (! $user->exists) {
-                        $birthDate      = $dosen['birth_date'] ?? $dosen['tanggal_lahir'] ?? null;
-                        $user->email    = $dosen['email'] ?? $nip.'@kkn.local';
-                        $user->password = Hash::make(PasswordHelper::fromBirthDate($birthDate, $nip));
+                    $isNewUser = ! $user->exists;
+                    if ($isNewUser) {
+                        $user->email    = $this->normalizeMasterEmail($dosen['email'] ?? null);
+                        // C-002 fix: secure random password; reset link below.
+                        $user->password = Hash::make(PasswordHelper::generateSecureDefault());
                         $user->must_change_password = true;
+                    } elseif (empty($user->email) && $this->normalizeMasterEmail($dosen['email'] ?? null)) {
+                        $user->email = $this->normalizeMasterEmail($dosen['email'] ?? null);
                     }
                     $user->name = $name;
                     $user->save();
@@ -118,6 +125,20 @@ class DplSyncController extends Controller
                         ]
                     );
 
+                    // C-002 follow-up: dispatch reset link after commit.
+                    if ($isNewUser && ! empty($user->email)) {
+                        $userEmail = $user->email;
+                        DB::afterCommit(function () use ($userEmail, $nip) {
+                            try {
+                                Password::sendResetLink(['email' => $userEmail]);
+                            } catch (\Throwable $e) {
+                                Log::warning('DplSyncController reset-link dispatch failed', [
+                                    'nip' => $nip, 'error' => $e->getMessage(),
+                                ]);
+                            }
+                        });
+                    }
+
                     $synced++;
                 });
             } catch (\Throwable $e) {
@@ -137,5 +158,18 @@ class DplSyncController extends Controller
         $v = trim((string) $value);
 
         return $v === '' ? null : $v;
+    }
+
+    private function normalizeMasterEmail(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+        $email = trim((string) $value);
+        if ($email === '' || str_ends_with(strtolower($email), '@kkn.local')) {
+            return null;
+        }
+
+        return filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : null;
     }
 }

@@ -76,8 +76,6 @@ class NilaiKkn extends Model
         'admin_graded_by',
         'admin_graded_at',
         'evidence_file',
-        'verification_token',
-        'is_finalized',
     ];
 
     protected $table = 'nilai_kkn';

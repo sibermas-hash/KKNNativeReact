@@ -18,8 +18,26 @@ class EnsurePasswordChanged
             return $next($request);
         }
 
-        // Admin roles handle their own security flow
-        if ($user->hasRole(['superadmin', 'admin', 'faculty_admin'])) {
+        if ($user->hasRole('superadmin')) {
+            // L-002 fix: Retain the superadmin bypass as a break-glass affordance,
+            // but emit a warning when the account has never rotated — so ops can
+            // see unrotated accounts in the monitoring channel instead of them
+            // being silently invisible. Rate-limited to one log per user per
+            // hour to avoid flooding.
+            $needsRotation = $user->must_change_password || is_null($user->password_changed_at);
+            if ($needsRotation) {
+                $cacheKey = 'auth:superadmin_unrotated_log:'.$user->id;
+                if (\Illuminate\Support\Facades\Cache::add($cacheKey, 1, now()->addHour())) {
+                    \Illuminate\Support\Facades\Log::warning(
+                        'Superadmin account has not rotated default password',
+                        [
+                            'user_id' => $user->id,
+                            'username' => $user->username,
+                            'created_at' => $user->created_at?->toIso8601String(),
+                        ]
+                    );
+                }
+            }
             return $next($request);
         }
 

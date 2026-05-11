@@ -34,7 +34,7 @@ export const CONSTANTS = {
   },
 
   // Status options
-  KKN_STATUS: ['draft', 'submitted', '_approved', 'rejected'] as const,
+  KKN_STATUS: ['draft', 'submitted', 'approved', 'rejected'] as const,
   WORKSHOP_STATUS: ['scheduled', 'completed', 'cancelled'] as const,
   ATTENDANCE_STATUS: ['pending_verification', 'attended', 'absent', 'excused'] as const,
 

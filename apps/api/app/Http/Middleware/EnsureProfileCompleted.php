@@ -14,8 +14,11 @@ class EnsureProfileCompleted
     {
         $user = $request->user();
 
-        // Hanya berlaku untuk role student
-        if (! $user || ! $user->hasRole('student')) {
+        if (! $user) {
+            return $next($request);
+        }
+
+        if ($user->hasRole('superadmin')) {
             return $next($request);
         }
 
@@ -24,24 +27,7 @@ class EnsureProfileCompleted
             return $next($request);
         }
 
-        $mahasiswa = $user->mahasiswa;
-
-        $isComplete = once(function () use ($user, $mahasiswa) {
-            return $mahasiswa
-                && filled($mahasiswa->nik)
-                && filled($mahasiswa->mother_name)
-                && filled($mahasiswa->birth_place)
-                && filled($mahasiswa->birth_date)
-                && filled($mahasiswa->gender)
-                && filled($mahasiswa->shirt_size)
-                && filled($user->phone)
-                && filled($user->address)
-                && filled($user->domicile_village_name)
-                && filled($user->domicile_district_name)
-                && filled($user->domicile_regency_name)
-                && filled($user->address_verified_at)
-                && filled($user->avatar);
-        });
+        $isComplete = $this->isComplete($user);
 
         if ($isComplete) {
             return $next($request);
@@ -53,11 +39,48 @@ class EnsureProfileCompleted
                 'success' => false,
                 'error' => [
                     'code' => 'PROFILE_INCOMPLETE',
-                    'message' => 'Mohon lengkapi seluruh data profil Anda (Biodata, Domisili, dan Foto Profil) sebelum dapat mengakses fitur KKN.',
+                    'message' => 'Mohon lengkapi seluruh data profil Anda (Biodata, Alamat Asli, dan Foto Profil) sebelum dapat mengakses fitur KKN.',
                 ],
             ], 403);
         }
 
         return redirect('/profil');
+    }
+
+    private function isComplete($user): bool
+    {
+        $user->loadMissing(['mahasiswa', 'dosen']);
+
+        // Dosen/DPL: bypass profile completeness — data kepegawaian diisi bertahap
+        if ($user->hasRole('dosen') || $user->hasRole('dpl')) {
+            return true;
+        }
+
+        // Mahasiswa: full address + biodata required
+        $baseComplete = filled($user->avatar)
+            && filled($user->phone)
+            && filled($user->address)
+            && filled($user->address_village_name)
+            && filled($user->address_district_name)
+            && filled($user->address_regency_name)
+            && filled($user->address_postal_code)
+            && filled($user->address_lat)
+            && filled($user->address_lng)
+            && filled($user->address_verified_at);
+
+        if (! $baseComplete) {
+            return false;
+        }
+
+        if ($user->mahasiswa) {
+            return filled($user->mahasiswa->nik)
+                && filled($user->mahasiswa->mother_name)
+                && filled($user->mahasiswa->birth_place)
+                && filled($user->mahasiswa->birth_date)
+                && filled($user->mahasiswa->gender)
+                && filled($user->mahasiswa->shirt_size);
+        }
+
+        return true;
     }
 }

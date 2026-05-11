@@ -28,7 +28,9 @@ class GradingService
     ): NilaiKkn {
         // MANDATORY MONITORING GUARD:
         // LPPM requirement: Min 2 field visits recorded before grading allowed.
-        $monitoringCount = MonitoringDpl::getCountForGroup($groupId);
+        $monitoringCount = MonitoringDpl::where('kelompok_id', $groupId)
+            ->where('dpl_id', $dplId)
+            ->count();
         if ($monitoringCount < 2) {
             throw new \DomainException("Penilaian ditolak. DPL wajib melakukan minimal 2 kali kunjungan monitoring (saat ini: {$monitoringCount}) sebelum memberikan nilai.");
         }
@@ -98,7 +100,12 @@ class GradingService
                 return KonfigurasiPenilaian::getForType($kknType)->pluck('percentage', 'config_key');
             });
         } catch (\Throwable $e) {
-            $configs = [];
+            \Illuminate\Support\Facades\Log::error('GradingService: failed to load KonfigurasiPenilaian, aborting grade calculation', [
+                'kkn_type' => $kknType->value,
+                'score_id' => $score->id,
+                'error' => $e->getMessage(),
+            ]);
+            throw $e;
         }
 
         // 1. Calculate Component A (DPL)

@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Models\KKN\Dosen;
-use App\Models\KKN\PesertaWorkshop;
-use Illuminate\Database\QueryException;
 
 class DplEligibilityService
 {
@@ -39,6 +37,7 @@ class DplEligibilityService
     /**
      * Check if a lecturer is qualified to be assigned as DPL for a period.
      * Criteria (PRD 2.B): Must have passed a Workshop.
+     * Additional: Cannot be DPL for multiple active KKN periods at once.
      */
     public function isQualifiedForDpl(Dosen $dosen, ?int $periodId = null): array
     {
@@ -48,23 +47,28 @@ class DplEligibilityService
             return $baseCheck;
         }
 
-        // Check Workshop History
-        // PRD 2.B.1: Must be registered as "Passed" (is_passed = true)
-        try {
-            $hasPassedWorkshop = PesertaWorkshop::where('user_id', $dosen->user_id)
-                ->where('is_passed', true)
-                ->exists();
-        } catch (QueryException $e) {
-            // Column may not exist yet if migration hasn't been run.
-            // Gracefully skip the workshop check.
-            $hasPassedWorkshop = true;
-        }
-
-        if (! $hasPassedWorkshop) {
+        // Check if Dosen has attended workshop (using new has_workshop flag)
+        if (! $dosen->has_workshop) {
             return [
                 'eligible' => false,
-                'reason' => 'Dosen belum mengikuti atau belum dinyatakan Lulus dalam Workshop DPL.',
+                'reason' => 'Dosen belum mengikuti Workshop Metodologi PKM.',
             ];
+        }
+
+        // Check if Dosen is already active DPL for another KKN period (cannot have double job)
+        if ($periodId) {
+            $activeOtherPeriods = \App\Models\KKN\DplPeriod::where('dosen_id', $dosen->id)
+                ->where('periode_id', '!=', $periodId)
+                ->where('is_active', true)
+                ->whereIn('status', ['approved', 'active'])
+                ->count();
+
+            if ($activeOtherPeriods > 0) {
+                return [
+                    'eligible' => false,
+                    'reason' => 'Dosen sudah aktif sebagai DPL di periode KKN lain.',
+                ];
+            }
         }
 
         return [

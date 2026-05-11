@@ -9,9 +9,15 @@ class GradeConversionService
     /**
      * Map numerical score (0-100) to Letter Grade and Index.
      * Based on DOKUMENTASI_SISTEM_KKN.md Section 4.6.
+     *
+     * R13-API-011: round(…, 2) at the boundary to defend against floating-
+     * point drift in weighted arithmetic upstream. A raw score of 85.9999999
+     * would otherwise drop to B+ instead of A.
      */
     public static function convert(float $score): array
     {
+        $score = round($score, 2);
+
         return match (true) {
             $score >= 86 => ['grade' => 'A',  'index' => 4.0],
             $score >= 81 => ['grade' => 'A-', 'index' => 3.6],
@@ -30,6 +36,6 @@ class GradeConversionService
      */
     public static function isPassing(float $score): bool
     {
-        return $score >= 56;
+        return round($score, 2) >= 56;
     }
 }

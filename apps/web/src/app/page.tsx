@@ -3,8 +3,8 @@ import { fetchApi } from '@/lib/server-api';
 import { Navbar } from '@/components/public/navbar';
 import { Footer } from '@/components/public/footer';
 import { HeroTitle } from '@/components/public/hero-title';
-import { HomeContent } from '@/components/public/home-content';
-import { SmoothScrollProvider } from '@/components/providers/smooth-scroll';
+import { Showcase3D, HomeContent } from '@/components/public/lazy';
+import { HomePopupAnnouncement } from '@/components/public/home-popup-announcement';
 
 export const revalidate = 3600; // 1 hour
 
@@ -28,6 +28,7 @@ interface DownloadItem {
   title: string;
   file_type?: string;
   file_path?: string;
+  file_url?: string;
   external_url?: string;
 }
 
@@ -74,31 +75,27 @@ export default async function LandingPage() {
   const visi = data.aboutContent?.visi;
 
   return (
-    <SmoothScrollProvider>
     <div className="min-h-screen bg-white text-emerald-950">
       <Navbar overlayNav={true} />
+      <HomePopupAnnouncement />
 
       {/* --- HERO SECTION --- */}
       <section className="relative z-0 h-screen min-h-[100svh] overflow-hidden bg-emerald-950">
-        <div 
-          className="absolute inset-0 h-full w-full bg-emerald-950"
-          dangerouslySetInnerHTML={{
-            __html: `
-              <video 
-                class="h-full w-full object-cover brightness-[0.58] saturate-[0.9]" 
-                autoplay 
-                muted 
-                loop 
-                playsinline 
-                preload="auto"
-              >
-                <source src="/videos/Video.mp4" type="video/mp4" />
-              </video>
-            `
-          }} 
-        />
+        <div className="absolute inset-0 h-full w-full bg-emerald-950 pointer-events-none">
+          <video
+            className="h-full w-full object-cover brightness-[0.58] saturate-[0.9]"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster="/images/uin-saizu_1712224471.webp"
+          >
+            <source src="/videos/Video.mp4" type="video/mp4" />
+          </video>
+        </div>
 
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.54)_0%,rgba(0,0,0,0.62)_36%,rgba(0,0,0,0.68)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.54)_0%,rgba(0,0,0,0.62)_36%,rgba(0,0,0,0.68)_100%)] pointer-events-none" />
 
         <div className="relative z-10 flex h-screen min-h-[100svh] items-center justify-center px-6 pb-16 pt-24 sm:pt-28 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
@@ -115,6 +112,9 @@ export default async function LandingPage() {
         </div>
       </section>
 
+      {/* --- 3D Showcase Section --- */}
+      <Showcase3D />
+
       {/* --- Animated Content Sections --- */}
       <HomeContent
         featuredAnnouncement={featuredAnnouncement}
@@ -126,6 +126,5 @@ export default async function LandingPage() {
 
       <Footer />
     </div>
-    </SmoothScrollProvider>
   );
 }

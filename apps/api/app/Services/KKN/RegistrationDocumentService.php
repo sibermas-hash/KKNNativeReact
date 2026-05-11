@@ -6,6 +6,7 @@ namespace App\Services\KKN;
 
 use App\Models\KKN\DokumenPesertaKkn;
 use App\Models\KKN\JenisKkn;
+use App\Models\KKN\JenisKknDocumentRequirement;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
@@ -20,6 +21,12 @@ class RegistrationDocumentService
      */
     public function requirementsForPeriod(Periode $period): array
     {
+        $dynamicRequirements = $this->dynamicRequirementsForPeriod($period);
+
+        if ($dynamicRequirements !== []) {
+            return $dynamicRequirements;
+        }
+
         $requirements = [];
         $jenisKkn = $this->resolveJenisKkn($period);
 
@@ -68,6 +75,11 @@ class RegistrationDocumentService
                 'storage' => 'registration_document',
                 'template_url' => null,
             ];
+        }
+
+        $suratKesediaan = $this->suratKesediaanForJenisKkn($jenisKkn);
+        if ($suratKesediaan !== null && ! isset($requirements['surat_kesediaan'])) {
+            $requirements['surat_kesediaan'] = $suratKesediaan;
         }
 
         return array_values($requirements);
@@ -125,6 +137,7 @@ class RegistrationDocumentService
                 $requirement['required'] && ! $alreadyUploaded ? 'required' : 'nullable',
                 'file',
                 'mimes:pdf,jpg,jpeg,png',
+                'mimetypes:application/pdf,image/jpeg,image/png',
                 'max:2048',
             ];
         }
@@ -165,7 +178,7 @@ class RegistrationDocumentService
 
             $document->fill([
                 'file_path' => $path,
-                'file_name' => $file->getClientOriginalName(),
+                'file_name' => $this->sanitizeFileName($file->getClientOriginalName()),
                 'file_size' => (int) ($file->getSize() ?? 0),
                 'uploaded_at' => now(),
                 'status' => 'pending',
@@ -255,6 +268,41 @@ class RegistrationDocumentService
         }
 
         return $jenisKkn;
+    }
+
+    /**
+     * @return array<int, array<string, mixed>>
+     */
+    private function dynamicRequirementsForPeriod(Periode $period): array
+    {
+        $period->loadMissing([
+            'jenisKkn.documentRequirements.defaultTemplate',
+            'documentTemplates.template',
+            'documentTemplates.requirement',
+        ]);
+
+        $requirements = $period->jenisKkn?->documentRequirements ?? collect();
+        if ($requirements->isEmpty()) {
+            return [];
+        }
+
+        $overrides = $period->documentTemplates->keyBy('jenis_kkn_document_requirement_id');
+
+        return $requirements->map(function (JenisKknDocumentRequirement $requirement) use ($overrides) {
+            $override = $overrides->get($requirement->id);
+            $template = $override?->template ?? $requirement->defaultTemplate;
+
+            return [
+                'field' => $requirement->document_key,
+                'document_type' => $requirement->document_key,
+                'label' => $requirement->document_label,
+                'description' => $requirement->description ?: 'Unggah dokumen pendukung untuk melengkapi persyaratan pendaftaran.',
+                'required' => $requirement->is_required,
+                'icon' => 'file-text',
+                'storage' => 'registration_document',
+                'template_url' => $template ? route('api.v1.admin.document-templates.download', $template) : null,
+            ];
+        })->values()->all();
     }
 
     /**
@@ -361,5 +409,91 @@ class RegistrationDocumentService
             'parent_permission' => 'parent-permissions',
             default => 'registration-documents/'.$field,
         };
+    }
+
+    private function suratKesediaanForJenisKkn(?JenisKkn $jenisKkn): ?array
+    {
+        $code = $jenisKkn?->code;
+
+        $templates = [
+            'NUSANTARA' => [
+                'label' => 'Surat Kesediaan KKN Nusantara',
+                'description' => 'Surat pernyataan kesediaan mengikuti KKN Nusantara.',
+                'template' => 'templates/surat_kesediaan_kkn_nusantara.docx',
+            ],
+            'INTERNASIONAL' => [
+                'label' => 'Surat Kesediaan Biaya Mandiri',
+                'description' => 'Surat pernyataan kesediaan mengikuti KKN dengan biaya mandiri.',
+                'template' => 'templates/surat_kesediaan_biaya_mandiri_kkn_internasional.docx',
+            ],
+            'KOLABORASI_PTKIN' => [
+                'label' => 'Surat Kesediaan KKN Kolaboratif PTKIN',
+                'description' => 'Surat pernyataan kesediaan mengikuti KKN Kolaboratif PTKIN.',
+                'template' => 'templates/surat_kesediaan_kkn_kolaboratif_ptkin.docx',
+            ],
+            'KAMPUNG_ZAKAT' => [
+                'label' => 'Surat Kesediaan KKN Tematik Kampung Zakat',
+                'description' => 'Surat pernyataan kesediaan mengikuti KKN Tematik Kampung Zakat.',
+                'template' => 'templates/surat_kesediaan_kkn_tematik_kampung_zakat.docx',
+            ],
+        ];
+
+        if ($code === null || ! isset($templates[$code])) {
+            return null;
+        }
+
+        $tpl = $templates[$code];
+
+        return [
+            'field' => 'surat_kesediaan',
+            'document_type' => 'surat_kesediaan',
+            'label' => $tpl['label'],
+            'description' => $tpl['description'],
+            'required' => true,
+            'icon' => 'file-text',
+            'storage' => 'registration_document',
+            'template_url' => asset($tpl['template']),
+        ];
+    }
+
+    /**
+     * Sanitize user-provided filenames before storing.
+     *
+     * Prevents Content-Disposition header injection on download
+     * (filename appears in `Content-Disposition: attachment; filename="..."`).
+     * Strips control chars, quotes, line breaks, and path separators,
+     * then truncates to 100 chars preserving extension.
+     */
+    private function sanitizeFileName(?string $name): string
+    {
+        $name = trim((string) $name);
+        if ($name === '') {
+            return 'document';
+        }
+
+        // Strip path separators (user could send `../../../etc/passwd`)
+        $name = basename($name);
+
+        // Strip control chars, quotes, backslash, and CR/LF (header injection)
+        $name = preg_replace('/[\x00-\x1F\x7F"\'\\\\]/u', '', $name) ?? '';
+        $name = str_replace(["\r", "\n"], '', $name);
+
+        // Collapse whitespace runs
+        $name = preg_replace('/\s+/', ' ', $name) ?? '';
+        $name = trim($name);
+
+        if ($name === '') {
+            return 'document';
+        }
+
+        // Truncate to 100 chars, preserving extension
+        if (mb_strlen($name) > 100) {
+            $ext = pathinfo($name, PATHINFO_EXTENSION);
+            $base = pathinfo($name, PATHINFO_FILENAME);
+            $keep = 100 - (strlen($ext) ? strlen($ext) + 1 : 0);
+            $name = mb_substr($base, 0, max(1, $keep)) . ($ext ? '.' . $ext : '');
+        }
+
+        return $name;
     }
 }

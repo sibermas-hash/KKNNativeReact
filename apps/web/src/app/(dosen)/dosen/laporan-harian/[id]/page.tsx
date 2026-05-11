@@ -1,14 +1,13 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { dplEndpoints } from '@sibermas/api-client';
-import { api, dplApi } from '@/lib/api';
+import { dplApi } from '@/lib/api';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { ChevronLeft, CheckCircle2, XCircle } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
-export default function DplReportDetailPage() {
+export default function DplReportDetailPage(): React.JSX.Element {
   const { id } = useParams();
   const router = useRouter();
   

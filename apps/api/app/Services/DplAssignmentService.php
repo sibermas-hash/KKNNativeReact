@@ -74,6 +74,13 @@ class DplAssignmentService
             throw new DomainException('DPL sudah mencapai batas maksimum kelompok untuk periode ini.');
         }
 
+        // Snapshot previous DPL untuk notification (R11-GROUP-017).
+        $previousDpl = null;
+        $existingKetuaBeforeChange = $group->dosen()->wherePivot('role', 'Ketua')->first();
+        if ($existingKetuaBeforeChange && $existingKetuaBeforeChange->id !== $dplPeriod->dosen_id) {
+            $previousDpl = $existingKetuaBeforeChange;
+        }
+
         DB::transaction(function () use ($dplPeriod, $group) {
             $existingKetua = $group->dosen()->wherePivot('role', 'Ketua')->first();
             if ($existingKetua && $existingKetua->id !== $dplPeriod->dosen_id) {
@@ -92,6 +99,62 @@ class DplAssignmentService
                 $dplPeriod->dosen_id => ['role' => 'Ketua'],
             ]);
         });
+
+        // Audit R11-GROUP-017 fix: kalau ada perubahan DPL (bukan assignment
+        // awal), beri tahu mahasiswa anggota kelompok supaya mereka aware
+        // DPL baru + bisa koordinasi ulang jalur komunikasi/bimbingan.
+        // Skip kalau ini assignment pertama kali (previousDpl null).
+        if ($previousDpl !== null) {
+            $this->notifyStudentsOfDplChange($group, $dplPeriod, $previousDpl);
+        }
+    }
+
+    /**
+     * Notify all approved students in the group about DPL change.
+     * Defensive: catch + log, jangan biarkan notification failure block
+     * assignment critical path.
+     */
+    private function notifyStudentsOfDplChange(
+        KelompokKkn $group,
+        DplPeriod $dplPeriod,
+        Dosen $previousDpl,
+    ): void {
+        try {
+            $group->loadMissing('periode');
+            $newDpl = Dosen::find($dplPeriod->dosen_id);
+            if (! $newDpl) {
+                return;
+            }
+
+            $studentUsers = User::query()
+                ->whereHas('mahasiswa.peserta', function ($q) use ($group) {
+                    $q->where('kelompok_id', $group->id)
+                        ->where('status', 'approved');
+                })
+                ->get();
+
+            if ($studentUsers->isEmpty()) {
+                return;
+            }
+
+            $notification = new \App\Notifications\KKN\DplChangedForGroupNotification(
+                groupName: $group->nama_kelompok ?? $group->code ?? 'Kelompok KKN',
+                periodName: $group->periode?->name ?? 'Periode KKN',
+                newDplName: $newDpl->nama ?? 'DPL Baru',
+                previousDplName: $previousDpl->nama ?? null,
+            );
+
+            foreach ($studentUsers as $user) {
+                $user->notify($notification);
+            }
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal kirim notifikasi perubahan DPL', [
+                'group_id' => $group->id,
+                'new_dosen_id' => $dplPeriod->dosen_id,
+                'previous_dosen_id' => $previousDpl->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function assignDistrictCoordinator(

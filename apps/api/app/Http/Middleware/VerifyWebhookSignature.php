@@ -26,21 +26,23 @@ class VerifyWebhookSignature
             return response()->json(['error' => 'Server configuration error'], 500);
         }
 
+        // H-009 fix: Timestamp is REQUIRED — without it, a captured signature
+        // could be replayed indefinitely (HMAC is deterministic over body only).
         $timestamp = $request->header('X-Webhook-Timestamp');
-        if ($timestamp) {
-            if (! is_numeric($timestamp)) {
-                return response()->json(['error' => 'Invalid timestamp format'], 401);
-            }
-
-            $windowSeconds = (int) config('services.master_api.webhook_window_seconds', 600);
-            if (abs(time() - (int) $timestamp) > $windowSeconds) {
-                return response()->json(['error' => 'Request expired'], 401);
-            }
+        if (! $timestamp) {
+            return response()->json(['error' => 'X-Webhook-Timestamp header required'], 401);
         }
 
-        $payload = $timestamp
-            ? $timestamp . '.' . $request->getContent()
-            : $request->getContent();
+        if (! is_numeric($timestamp)) {
+            return response()->json(['error' => 'Invalid timestamp format'], 401);
+        }
+
+        $windowSeconds = (int) config('services.master_api.webhook_window_seconds', 600);
+        if (abs(time() - (int) $timestamp) > $windowSeconds) {
+            return response()->json(['error' => 'Request expired'], 401);
+        }
+
+        $payload = $timestamp . '.' . $request->getContent();
         
         $expected = 'sha256=' . hash_hmac('sha256', $payload, $secret);
 

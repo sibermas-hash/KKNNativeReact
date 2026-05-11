@@ -29,13 +29,29 @@ class DailyReportController extends Controller
         $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
 
         $reports = KegiatanKkn::whereIn('kelompok_id', $groupIds)
-            ->with(['mahasiswa.user', 'kelompok', 'fileKegiatan'])
+            ->with(['mahasiswa.user', 'kelompok.lokasi', 'fileKegiatan'])
             ->when($request->input('status'), fn ($q, $s) => $q->whereIn('status', KegiatanKkn::{"{$s}Statuses"}()))
             ->when($request->input('kelompok_id'), fn ($q, $id) => $q->where('kelompok_id', $id))
             ->when($request->input('date_from'), fn ($q, $d) => $q->where('date', '>=', $d))
             ->when($request->input('date_to'), fn ($q, $d) => $q->where('date', '<=', $d))
             ->orderByDesc('date')
             ->paginate($request->input('per_page', 25));
+
+        // Add distance calculation using GeoService
+        $geoService = app(\App\Services\GeoService::class);
+        $reports->getCollection()->transform(function ($report) use ($geoService) {
+            if ($report->kelompok?->lokasi) {
+                $report->distance_meters = $geoService->calculateDistanceMeters(
+                    $report->latitude ?? 0,
+                    $report->longitude ?? 0,
+                    $report->kelompok->lokasi->latitude,
+                    $report->kelompok->lokasi->longitude
+                );
+            } else {
+                $report->distance_meters = null;
+            }
+            return $report;
+        });
 
         return $this->successCollection(KegiatanKknResource::collection($reports));
     }
@@ -58,6 +74,14 @@ class DailyReportController extends Controller
             'reviewed_at' => now(),
         ]);
 
+        // Send notification to student
+        $dailyReport->mahasiswa?->user?->notify(new \App\Notifications\KknActivityNotification([
+            'type' => 'daily_report_approved',
+            'title' => 'Laporan Harian Disetujui',
+            'message' => "Laporan harian Anda pada tanggal {$dailyReport->date} telah disetujui oleh DPL.",
+            'url' => "/mahasiswa/laporan-harian/{$dailyReport->id}",
+        ]));
+
         return $this->success(
             new KegiatanKknResource($dailyReport->refresh()),
             'Laporan disetujui.'
@@ -77,6 +101,14 @@ class DailyReportController extends Controller
             'review_notes' => $request->input('review_notes'),
         ]);
 
+        // Send notification to student
+        $dailyReport->mahasiswa?->user?->notify(new \App\Notifications\KknActivityNotification([
+            'type' => 'daily_report_revision',
+            'title' => 'Laporan Harian Perlu Revisi',
+            'message' => "Laporan harian Anda pada tanggal {$dailyReport->date} perlu direvisi: {$request->input('review_notes')}",
+            'url' => "/mahasiswa/laporan-harian/{$dailyReport->id}",
+        ]));
+
         return $this->success(
             new KegiatanKknResource($dailyReport->refresh()),
             'Revisi diminta.'
@@ -85,7 +117,10 @@ class DailyReportController extends Controller
 
     public function batchApprove(Request $request): JsonResponse
     {
-        $request->validate(['report_ids' => ['required', 'array'], 'report_ids.*' => ['integer']]);
+        $request->validate([
+            'report_ids' => ['required', 'array', 'max:50'],
+            'report_ids.*' => ['integer'],
+        ]);
 
         $dosen = auth()->user()->dosen;
         $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');

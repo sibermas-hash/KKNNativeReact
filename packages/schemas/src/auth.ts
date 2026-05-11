@@ -1,7 +1,10 @@
 import { z } from 'zod';
 
 export const loginSchema = z.object({
-  login: z.string().min(1, 'Username/email wajib diisi').max(255),
+  login: z.string()
+    .min(1, 'NIM/NIP/username wajib diisi')
+    .max(255)
+    .refine((value) => !value.includes('@'), 'Gunakan NIM, NIP, atau username. Email tidak dapat digunakan untuk login.'),
   password: z.string().min(1, 'Kata sandi wajib diisi'),
   captcha_id: z.string().min(1, 'CAPTCHA ID tidak valid'),
   captcha_answer: z.string().min(1, 'Jawaban CAPTCHA wajib diisi').max(10),

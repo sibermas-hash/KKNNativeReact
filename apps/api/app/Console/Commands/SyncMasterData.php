@@ -19,6 +19,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -164,7 +165,12 @@ class SyncMasterData extends Command
         foreach ($orgs as $orgData) {
             try {
                 $name = trim((string) ($orgData['name'] ?? $orgData['nama'] ?? ''));
-                $code = trim((string) ($orgData['code'] ?? $orgData['id'] ?? ''));
+                $apiId = $this->normalizeMasterId($orgData['id'] ?? null);
+                
+                // Use short_name as the primary code (most consistent field from API)
+                // Fallback to code field, then to id field
+                $shortName = trim((string) ($orgData['short_name'] ?? ''));
+                $code = !empty($shortName) ? $shortName : trim((string) ($orgData['code'] ?? $apiId ?? ''));
 
                 if ($name === '' || $code === '') {
                     $stats['total_skipped']++;
@@ -173,59 +179,39 @@ class SyncMasterData extends Command
                 }
 
                 // Sync ALL organizations from the API as fakultas.
-                // The API already curates which orgs it returns;
-                // filtering by name/level caused FK violations for mahasiswa
-                // whose fakultas_id didn't pass the old filter.
-                $faculty = Fakultas::updateOrCreate(
-                    ['master_id' => $this->normalizeMasterId($orgData['id'] ?? null) ?? $code],
-                    [
+                // Use 'api_id' as the master_id and 'code' as the unique key.
+                $normalizedMasterId = $apiId ?? $code;
+                
+                // Check if faculty with same name already exists to handle API inconsistencies
+                // The API may return same faculty with different IDs but same name
+                $existingFaculty = Fakultas::where('nama', $name)->where('deleted_at', null)->first();
+                
+                if ($existingFaculty) {
+                    // Faculty exists - update it with the most consistent data
+                    $existingFaculty->update([
+                        'master_id' => $normalizedMasterId,
+                        'code' => $code,
+                        'short_name' => trim((string) ($orgData['short_name'] ?? '')),
+                        'level' => isset($orgData['level']) ? (int) $orgData['level'] : null,
+                        'master_synced_at' => $now,
+                    ]);
+                    $stats['total_updated']++;
+                } else {
+                    // Create new faculty
+                    Fakultas::create([
+                        'master_id' => $normalizedMasterId,
                         'code' => $code,
                         'nama' => $name,
                         'short_name' => trim((string) ($orgData['short_name'] ?? '')),
                         'level' => isset($orgData['level']) ? (int) $orgData['level'] : null,
                         'master_synced_at' => $now,
-                    ]
-                );
-
-                if ($faculty->wasRecentlyCreated) {
+                    ]);
                     $stats['total_created']++;
-                } else {
-                    $stats['total_updated']++;
                 }
             } catch (\Exception $e) {
                 $stats['total_errors']++;
                 $errorDetails[] = ['id' => $orgData['id'] ?? 'unknown', 'error' => $e->getMessage()];
                 Log::warning('Failed to sync faculty', ['id' => $orgData['id'] ?? 'unknown', 'error' => $e->getMessage()]);
-            }
-        }
-
-        // Deduplicate: API may return same faculty with different master_ids
-        // (e.g. "FDAK" and "Dakwah" both for "Fakultas Dakwah")
-        // Keep the canonical record (earliest ID) and merge FKs from duplicates.
-        $duplicateGroups = DB::table('fakultas')
-            ->whereNull('deleted_at')
-            ->select('nama', DB::raw('COUNT(*) as cnt'), DB::raw('MIN(id) as canonical_id'))
-            ->groupBy('nama')
-            ->having(DB::raw('COUNT(*)'), '>', 1)
-            ->get();
-
-        foreach ($duplicateGroups as $group) {
-            $duplicateIds = DB::table('fakultas')
-                ->whereNull('deleted_at')
-                ->where('nama', $group->nama)
-                ->where('id', '!=', $group->canonical_id)
-                ->pluck('id');
-
-            foreach ($duplicateIds as $dupId) {
-                // Reassign all FKs to canonical
-                DB::table('dosen')->where('fakultas_id', $dupId)->update(['fakultas_id' => $group->canonical_id]);
-                DB::table('mahasiswa')->where('fakultas_id', $dupId)->update(['fakultas_id' => $group->canonical_id]);
-                DB::table('prodi')->where('fakultas_id', $dupId)->update(['fakultas_id' => $group->canonical_id]);
-
-                // Soft-delete the duplicate
-                DB::table('fakultas')->where('id', $dupId)->update(['deleted_at' => $now]);
-
-                $this->warn("  Merged duplicate fakultas ID={$dupId} → ID={$group->canonical_id} ({$group->nama})");
             }
         }
 
@@ -280,18 +266,7 @@ class SyncMasterData extends Command
         $errorDetails = [];
         $now = now();
 
-        $defaultFaculty = Fakultas::orderBy('id')->first();
-        if (! $defaultFaculty) {
-            $defaultFaculty = Fakultas::create([
-                'code' => 'DEFAULT',
-                'nama' => 'Default Faculty',
-                'master_id' => '0',
-                'master_synced_at' => $now,
-            ]);
-            $this->info('  Created Default Faculty as fallback for programs');
-        }
-
-        $facultyMap = Fakultas::pluck('id', 'master_id')->all();
+        $facultyMap = $this->buildFacultyLookupMap();
 
         foreach ($programs as $programData) {
             $stats['total_fetched']++;
@@ -312,10 +287,21 @@ class SyncMasterData extends Command
                     ?? null
                 );
                 $facultyId = $facultyMasterId !== null ? ($facultyMap[$facultyMasterId] ?? null) : null;
-                $facultyId ??= $defaultFaculty?->id;
 
                 if (! $facultyId) {
                     throw new \RuntimeException('Master fakultas belum tersedia untuk pemetaan prodi.');
+                }
+
+                // CHECK JENJANG - Filter out S2/S3/Pasca programs (not eligible for KKN)
+                $jenjang = trim((string) ($programData['jenjang'] ?? $programData['degree'] ?? ''));
+                if ($this->isNonKknEligibleJenjang($jenjang)) {
+                    $stats['total_skipped']++;
+                    Log::info('Skipping non-KKN-eligible program', [
+                        'name' => $name,
+                        'jenjang' => $jenjang,
+                        'reason' => 'Only S1 programs eligible for KKN'
+                    ]);
+                    continue;
                 }
 
                 $program = Prodi::updateOrCreate(
@@ -327,6 +313,7 @@ class SyncMasterData extends Command
                         'short_name' => trim((string) ($programData['short_name'] ?? '')),
                         'jenjang' => trim((string) ($programData['jenjang'] ?? $programData['degree'] ?? '')),
                         'organization_id' => $facultyMasterId,
+                        'is_kkn_eligible' => 1, // Flag that this program is eligible for KKN
                         'master_synced_at' => $now,
                     ]
                 );
@@ -406,20 +393,8 @@ class SyncMasterData extends Command
 
         $now = now();
 
-        // Default faculty if not found in data
-        $defaultFaculty = Fakultas::orderBy('id')->first();
-        if (! $defaultFaculty) {
-            $defaultFaculty = Fakultas::create([
-                'code' => 'DEFAULT',
-                'nama' => 'Default Faculty',
-                'master_id' => '0',
-                'master_synced_at' => $now,
-            ]);
-            $this->info('  Created Default Faculty as fallback');
-        }
-
         // Build faculty map for proper dosen→fakultas mapping
-        $facultyMap = Fakultas::pluck('id', 'master_id')->all();
+        $facultyMap = $this->buildFacultyLookupMap();
 
         foreach ($employees as $emp) {
             $stats['total_fetched']++;
@@ -443,7 +418,16 @@ class SyncMasterData extends Command
 
                 // Log ALL fields from the first record so we can verify mapping
                 if ($stats['total_fetched'] <= 1) {
-                    Log::info('DOSEN SYNC: First raw record from API', $empData);
+                    // Audit follow-up: the old version logged the entire first
+                    // record, which included nama, email, no_rekening, nama_bank.
+                    // Now emit only the schema keys + a redacted mask of values
+                    // — enough to diagnose mapping without shipping PII.
+                    Log::info('DOSEN SYNC: First record schema (values redacted)', [
+                        'keys' => array_keys($empData),
+                        'has_fakultas_id' => ! empty($empData['fakultas_id'] ?? null),
+                        'has_organization_id' => ! empty($empData['organization_id'] ?? null),
+                        'has_email' => ! empty($empData['email'] ?? null),
+                    ]);
                     $this->info('  First dosen raw keys: ' . implode(', ', array_keys($empData)));
                 }
 
@@ -453,38 +437,63 @@ class SyncMasterData extends Command
                     continue;
                 }
 
+                // Pre-DB filter for lecturers (config/siakad_filters.php).
+                $decision = app(\App\Services\MasterApi\SiakadRecordFilter::class)->shouldSyncLecturer($empData);
+                if ($decision['action'] !== \App\Services\MasterApi\SiakadRecordFilter::SYNC) {
+                    $stats['total_skipped']++;
+                    Log::info('SIAKAD lecturer filtered out before DB write', [
+                        'nip' => $nip,
+                        'reason' => $decision['reason'],
+                        'detail' => $decision['details'],
+                    ]);
+                    continue;
+                }
+
                 // 1. Ensure User account exists
                 $username = (string) $nip;
-                $incomingEmail = $empData['email'] ?? null;
-                $fallbackEmail = $username.'@kkn.local';
+                $incomingEmail = $this->normalizeMasterEmail($empData['email'] ?? null);
 
-                DB::transaction(function () use ($empData, $nip, $username, $incomingEmail, $fallbackEmail, &$stats, $now, $defaultFaculty, $facultyMap) {
-                    // Upsert by username. Jika user belum ada, coba pakai email dari API.
-                    // Jika email sudah dipakai user lain (duplicate), gunakan fallback @kkn.local.
+                DB::transaction(function () use ($empData, $nip, $username, $incomingEmail, &$stats, $now, $facultyMap) {
+                    // Field-lock registry — locked fields on existing Dosen
+                    // must NOT be overwritten by SIAKAD sync. Loaded up-front
+                    // so we can use it below when building $dosenUpdate.
+                    $existingDosen = Dosen::whereBlind('nip', (string) $nip)->first();
+
+                    // Upsert by username. Only persist a real Master email; keep null when absent/duplicate.
                     $user = User::firstOrNew(['username' => $username]);
                     $isNewUser = ! $user->exists;
 
                     if ($isNewUser) {
-                        $emailToUse = $fallbackEmail;
+                        $emailToUse = null;
                         if (! empty($incomingEmail)) {
                             $emailTaken = User::where('email', $incomingEmail)
                                 ->where('username', '!=', $username)
                                 ->exists();
-                            $emailToUse = $emailTaken ? $fallbackEmail : $incomingEmail;
+                            $emailToUse = $emailTaken ? null : $incomingEmail;
                         }
                         $user->email = $emailToUse;
-                    } elseif (empty($user->email)) {
-                        $user->email = $fallbackEmail;
+                    } elseif (empty($user->email) && ! empty($incomingEmail)) {
+                        $emailTaken = User::where('email', $incomingEmail)
+                            ->where('username', '!=', $username)
+                            ->exists();
+                        if (! $emailTaken) {
+                            $user->email = $incomingEmail;
+                        }
                     }
 
                     $user->username = $username;
-                    $user->name = $empData['nama'] ?? $empData['name'] ?? 'Unknown';
+                    // name may be locked on existing accounts.
+                    $candidateName = $empData['nama'] ?? $empData['name'] ?? 'Unknown';
+                    if ($isNewUser || ! $user->isFieldLocked('name')) {
+                        $user->name = $candidateName;
+                    }
 
                     if ($isNewUser) {
-                        $birthDate = $empData['tanggal_lahir'] ?? $empData['birth_date'] ?? null;
-                        $user->password = Hash::make(
-                            PasswordHelper::fromBirthDate($birthDate, $username)
-                        );
+                        // C-002 fix (also applies to this CLI path — earlier fix
+                        // covered only WebhookController + StudentSyncService).
+                        // New accounts get an unguessable random password; the
+                        // user claims it via the password-reset flow.
+                        $user->password = Hash::make(PasswordHelper::generateSecureDefault());
                         $user->must_change_password = true;
                     }
 
@@ -510,35 +519,75 @@ class SyncMasterData extends Command
                     $dosenFakultasId = $dosenOrgMasterId !== null
                         ? ($facultyMap[$dosenOrgMasterId] ?? null)
                         : null;
-                    $dosenFakultasId ??= $defaultFaculty?->id;
+
+                    // AUDIT FIX: "LB-*" (Luar Biasa / external) lecturers in
+                    // SIAKAD legitimately have no fakultas assignment. Previously
+                    // the sync hard-failed on this, which made the command
+                    // unusable in production. Now allow null — the admin can
+                    // assign a fakultas manually via the UI later. Only hard-fail
+                    // when the API DID supply a fakultas_id but it's unmapped
+                    // (that indicates a genuine data inconsistency).
+                    if ($dosenOrgMasterId !== null && ! $dosenFakultasId) {
+                        throw new \RuntimeException(
+                            "SIAKAD reported fakultas_id={$dosenOrgMasterId} for dosen {$nip} ".
+                            'but that id has no matching local fakultas. '.
+                            'Run sync:master-data with the faculties step completed first, '.
+                            'or add the missing fakultas record.'
+                        );
+                    }
+                    // $dosenFakultasId may legitimately be null for external lecturers.
+
+                    $dosenPayload = [
+                        'master_id' => (string) $empData['id'],
+                        'user_id' => $user->id,
+                        'nama' => $empData['nama'] ?? $empData['name'] ?? 'Unknown',
+                        'fakultas_id' => $dosenFakultasId,
+                        'phone' => $empData['telepon'] ?? $empData['phone'] ?? null,
+                        'gender' => $empData['jenis_kelamin'] ?? $empData['gender'] ?? 'L',
+                        'birth_date' => $empData['tanggal_lahir'] ?? $empData['birth_date'] ?? null,
+                        'is_cpns' => $isCpns,
+                        'is_tugas_belajar' => $isTugasBelajar,
+                        'jabatan' => $empData['jabatan'] ?? $empData['jabatan_fungsional'] ?? null,
+                        'golongan' => $empData['golongan'] ?? $empData['pangkat_golongan'] ?? null,
+                        'npwp' => $empData['npwp'] ?? null,
+                        'status_aktif' => $empData['status_aktif'] ?? null,
+                        'status_pegawai' => $empData['status_pegawai'] ?? null,
+                        'no_rekening' => $empData['no_rekening'] ?? null,
+                        'nama_bank' => $empData['nama_bank'] ?? null,
+                        'master_synced_at' => $now,
+                    ];
+
+                    // Respect per-dosen field locks on existing records so admin
+                    // edits don't get wiped by nightly sync.
+                    if ($existingDosen) {
+                        $dosenPayload = $existingDosen->filterLockedFields($dosenPayload);
+                    }
 
                     $dosen = Dosen::updateOrCreate(
                         ['nip' => $nip],
-                        [
-                            'master_id' => (string) $empData['id'],
-                            'user_id' => $user->id,
-                            'nama' => $empData['nama'] ?? $empData['name'] ?? 'Unknown',
-                            'fakultas_id' => $dosenFakultasId,
-                            'phone' => $empData['telepon'] ?? $empData['phone'] ?? null,
-                            'gender' => $empData['jenis_kelamin'] ?? $empData['gender'] ?? 'L',
-                            'birth_date' => $empData['tanggal_lahir'] ?? $empData['birth_date'] ?? null,
-                            'is_cpns' => $isCpns,
-                            'is_tugas_belajar' => $isTugasBelajar,
-                            'jabatan' => $empData['jabatan'] ?? $empData['jabatan_fungsional'] ?? null,
-                            'golongan' => $empData['golongan'] ?? $empData['pangkat_golongan'] ?? null,
-                            'npwp' => $empData['npwp'] ?? null,
-                            'status_aktif' => $empData['status_aktif'] ?? null,
-                            'status_pegawai' => $empData['status_pegawai'] ?? null,
-                            'no_rekening' => $empData['no_rekening'] ?? null,
-                            'nama_bank' => $empData['nama_bank'] ?? null,
-                            'master_synced_at' => $now,
-                        ]
+                        $dosenPayload
                     );
 
                     if ($dosen->wasRecentlyCreated) {
                         $stats['total_created']++;
                     } else {
                         $stats['total_updated']++;
+                    }
+
+                    // C-002 follow-up: dispatch a reset link after the
+                    // transaction commits so the user can claim the
+                    // random-password account. Mirrors WebhookController.
+                    if ($isNewUser && ! empty($user->email)) {
+                        $userEmail = $user->email;
+                        DB::afterCommit(function () use ($userEmail, $nip) {
+                            try {
+                                Password::sendResetLink(['email' => $userEmail]);
+                            } catch (\Throwable $e) {
+                                Log::warning('sync:master-data — reset-link dispatch failed', [
+                                    'nip' => $nip, 'error' => $e->getMessage(),
+                                ]);
+                            }
+                        });
                     }
                 });
 
@@ -575,6 +624,9 @@ class SyncMasterData extends Command
         SystemSetting::set('last_sync_dosen', $now->toIso8601String());
 
         $this->info("  {$stats['total_fetched']} lecturers synced ({$stats['total_created']} created, {$stats['total_updated']} updated) in {$duration}s");
+        if ($stats['total_skipped'] > 0) {
+            $this->warn("  {$stats['total_skipped']} lecturer(s) filtered out (see Laravel log for reasons — config/siakad_filters.php governs this).");
+        }
     }
 
     protected function syncStudents(): void
@@ -612,18 +664,6 @@ class SyncMasterData extends Command
         $errorDetails = [];
 
         $now = now();
-        $defaultFaculty = Fakultas::orderBy('id')->first();
-        if (! $defaultFaculty) {
-            $defaultFaculty = Fakultas::create([
-                'code' => 'DEFAULT',
-                'nama' => 'Default Faculty',
-                'master_id' => '0',
-                'master_synced_at' => $now,
-            ]);
-            $this->info('  Created Default Faculty as fallback');
-        }
-
-        $facultyMap = Fakultas::pluck('id', 'master_id')->all();
         $prodiMap = Prodi::pluck('id', 'master_id')->all();
 
         $this->info("Starting to process " . (is_countable($students) ? count($students) : "generator") . " students...");
@@ -656,9 +696,14 @@ class SyncMasterData extends Command
 
                 $nim = $studData['nim'] ?? null;
 
-                // Log ALL fields from the first record so we can verify mapping
+                // Log schema of the first record only (no PII — matches
+                // the lecturer-sync diagnostic). Values are redacted.
                 if ($stats['total_fetched'] <= 1) {
-                    Log::info('MAHASISWA SYNC: First raw record from API', $studData);
+                    Log::info('MAHASISWA SYNC: First record schema (values redacted)', [
+                        'keys' => array_keys($studData),
+                        'has_nim' => ! empty($studData['nim'] ?? null),
+                        'has_prodi_id' => ! empty($studData['prodi_id'] ?? null),
+                    ]);
                     $this->info('  First mahasiswa raw keys: ' . implode(', ', array_keys($studData)));
                 }
 
@@ -668,7 +713,29 @@ class SyncMasterData extends Command
                     continue;
                 }
 
-                DB::transaction(function () use ($studData, $nim, $now, $defaultFaculty, $facultyMap, $prodiMap, &$stats) {
+                // Pre-DB filter for students (config/siakad_filters.php).
+                $decision = app(\App\Services\MasterApi\SiakadRecordFilter::class)->shouldSyncStudent($studData);
+                if ($decision['action'] !== \App\Services\MasterApi\SiakadRecordFilter::SYNC) {
+                    $stats['total_skipped']++;
+                    Log::info('SIAKAD mahasiswa filtered out before DB write', [
+                        'nim' => $nim,
+                        'reason' => $decision['reason'],
+                        'detail' => $decision['details'],
+                    ]);
+                    continue;
+                }
+
+                // "Sudah KKN" freeze: once a mahasiswa has been accepted into
+                // a KKN group, their SIBERMAS data is the final snapshot and
+                // SIAKAD sync must not touch it. Mirrors StudentSyncService.
+                $existingMhs = Mahasiswa::whereBlind('nim', (string) $nim)->first();
+                if ($existingMhs && $existingMhs->hasEverBeenInKkn()) {
+                    $stats['total_skipped']++;
+                    Log::info('SIAKAD mahasiswa sync skipped — already in KKN', ['nim' => $nim]);
+                    continue;
+                }
+
+                DB::transaction(function () use ($studData, $nim, $now, $prodiMap, &$stats, $existingMhs) {
                     $prodiName = $studData['prodi'] ?? 'Unknown Program';
                     $programMasterId = isset($studData['prodi_id']) ? (string) $studData['prodi_id'] : null;
                     $prodiId = $programMasterId !== null ? ($prodiMap[$programMasterId] ?? null) : null;
@@ -683,104 +750,141 @@ class SyncMasterData extends Command
                     }
 
                     if (! $prodiId) {
-                        $program = Prodi::firstOrCreate(
-                            $programMasterId ? ['master_id' => $programMasterId] : ['nama' => $prodiName],
-                            [
-                                'code' => $this->resolveProgramCode($studData, $prodiName),
-                                'nama' => $prodiName,
-                                'fakultas_id' => $defaultFaculty?->id,
-                                'master_synced_at' => $now,
-                            ]
-                        );
-                        $prodiId = $program->id;
+                        // When the non-KKN-jenjang filter is on, an unmapped
+                        // prodi_id almost always means the prodi is S2/S3/Pasca
+                        // and was intentionally skipped at the prodi sync step.
+                        // Treat that as a soft skip rather than a hard error —
+                        // otherwise every S2 student inflates total_errors and
+                        // triggers false alarms in ops dashboards.
+                        if ((bool) config('siakad_filters.students.skip_non_kkn_jenjang', true)) {
+                            Log::info('SIAKAD mahasiswa skipped — prodi not in local DB (likely graduate program)', [
+                                'nim' => $nim,
+                                'prodi_master_id' => $programMasterId,
+                            ]);
+                            $stats['total_skipped']++;
+                            return;
+                        }
+
+                        throw new \RuntimeException("Master prodi belum tersedia untuk mahasiswa {$nim} (prodi_id={$programMasterId}).");
                     }
 
-                    $organizationMasterId = isset($studData['fakultas_id']) ? (string) $studData['fakultas_id'] : (isset($studData['organization_id']) ? (string) $studData['organization_id'] : null);
-                    $facultyId = $organizationMasterId !== null ? ($facultyMap[$organizationMasterId] ?? null) : null;
+                    // CHECK: Skip students from non-KKN-eligible prodi (S2/S3/Pasca)
+                    $prodiRecord = Prodi::find($prodiId);
+                    if ($prodiRecord && $this->isNonKknEligibleJenjang($prodiRecord->jenjang)) {
+                        Log::info('Skipping student from non-KKN-eligible prodi', [
+                            'nim' => $nim,
+                            'nama' => $studData['nama'] ?? 'Unknown',
+                            'prodi' => $prodiRecord->nama,
+                            'jenjang' => $prodiRecord->jenjang,
+                            'reason' => 'Only S1 students eligible for KKN'
+                        ]);
+                        $stats['total_skipped']++;
+                        return; // Skip this transaction
+                    }
 
-                    // Guard: verify mapped fakultas_id actually exists (handles stale maps / soft-deleted rows).
-                    // If not found, auto-create the fakultas record so the FK is satisfied.
-                    if ($facultyId !== null && ! Fakultas::where('id', $facultyId)->exists()) {
-                        $facultyId = null;
+                    // ENSURE CONSISTENCY: Always use fakultas_id from prodi, not from API data.
+                    $prodiRecord = Prodi::find($prodiId);
+                    if (! $prodiRecord) {
+                        throw new \RuntimeException("Prodi lokal tidak ditemukan untuk mahasiswa {$nim} (prodi_id={$prodiId}).");
                     }
-                    if ($facultyId === null && $organizationMasterId !== null) {
-                        // Auto-create a stub fakultas from the master_id so future syncs pick it up
-                        $stubFaculty = Fakultas::firstOrCreate(
-                            ['master_id' => $organizationMasterId],
-                            [
-                                'code' => $organizationMasterId,
-                                'nama' => 'Fakultas ' . $organizationMasterId,
-                                'master_synced_at' => $now,
-                            ]
-                        );
-                        $facultyId = $stubFaculty->id;
-                        // Update the map for subsequent iterations
-                        $facultyMap[$organizationMasterId] = $facultyId;
-                    }
+                    $facultyId = $prodiRecord->fakultas_id;
 
                     $username = (string) $nim;
-                    $incomingEmail = $studData['email'] ?? null;
-                    $fallbackEmail = $username.'@kkn.local';
+                    $incomingEmail = $this->normalizeMasterEmail($studData['email'] ?? null);
 
                     $user = User::firstOrNew(['username' => $username]);
                     $isNewUser = ! $user->exists;
 
                     if ($isNewUser) {
-                        $emailToUse = $fallbackEmail;
+                        $emailToUse = null;
                         if (! empty($incomingEmail)) {
                             $emailTaken = User::where('email', $incomingEmail)
                                 ->where('username', '!=', $username)
                                 ->exists();
-                            $emailToUse = $emailTaken ? $fallbackEmail : $incomingEmail;
+                            $emailToUse = $emailTaken ? null : $incomingEmail;
                         }
                         $user->email = $emailToUse;
-                        $user->password = Hash::make(Str::random(12));
+                        // C-002 fix: random unguessable password + reset link
+                        // dispatched after commit (see below).
+                        $user->password = Hash::make(PasswordHelper::generateSecureDefault());
                         $user->must_change_password = true;
-                    } elseif (empty($user->email)) {
-                        $user->email = $fallbackEmail;
+                    } elseif (empty($user->email) && ! empty($incomingEmail)) {
+                        $emailTaken = User::where('email', $incomingEmail)
+                            ->where('username', '!=', $username)
+                            ->exists();
+                        if (! $emailTaken) {
+                            $user->email = $incomingEmail;
+                        }
                     }
 
                     $user->username = $username;
-                    $user->name = $studData['nama'] ?? $studData['name'] ?? 'Unknown';
+                    // Respect lock: admin/mahasiswa may have corrected
+                    // typo'd SIAKAD name.
+                    $candidateName = $studData['nama'] ?? $studData['name'] ?? 'Unknown';
+                    if ($isNewUser || ! $user->isFieldLocked('name')) {
+                        $user->name = $candidateName;
+                    }
                     $user->save();
 
                     if (! $user->hasRole('student')) {
                         $user->assignRole('student');
                     }
 
+                    $mahasiswaPayload = [
+                        'master_id' => (string) $studData['id'],
+                        'user_id' => $user->id,
+                        'nim' => $nim,
+                        'nik' => \App\Services\MasterApi\MasterDataSanitizer::nik($studData['nik'] ?? null, $nim),
+                        'nama' => $studData['nama'] ?? $studData['name'] ?? 'Unknown',
+                        'mother_name' => $studData['nama_ibu'] ?? $studData['mother_name'] ?? null,
+                        'fakultas_id' => $facultyId,
+                        'prodi_id' => $prodiId,
+                        'batch_year' => $studData['angkatan'] ?? $studData['batch_year'] ?? date('Y'),
+                        'gender' => $studData['jenis_kelamin'] ?? $studData['gender'] ?? 'L',
+                        'birth_place' => $studData['tempat_lahir'] ?? $studData['birth_place'] ?? null,
+                        'birth_date' => $studData['tanggal_lahir'] ?? $studData['birth_date'] ?? null,
+                        'alamat' => $studData['alamat'] ?? null,
+                        'phone' => $studData['phone'] ?? $studData['telepon'] ?? null,
+
+                        'sks_completed' => (int) ($studData['total_sks'] ?? $studData['sks_lulus'] ?? $studData['sks_completed'] ?? 0),
+                        'gpa' => \App\Services\MasterApi\MasterDataSanitizer::gpa($studData['ipk'] ?? $studData['gpa'] ?? null, $nim),
+
+                        'status_bta_ppi' => $studData['status_bta_ppi'] ?? 'BELUM_LULUS',
+                        'status_aktif' => $studData['status_aktif'] ?? null,
+                        'is_paid_ukt' => (bool) ($studData['is_paid_ukt'] ?? false),
+                        'semester' => (int) ($studData['semester'] ?? $studData['semester_aktif'] ?? 0),
+                        'master_synced_at' => $now,
+                    ];
+
+                    // Respect field locks on existing mahasiswa.
+                    if ($existingMhs) {
+                        $mahasiswaPayload = $existingMhs->filterLockedFields($mahasiswaPayload);
+                    }
+
                     $mahasiswa = Mahasiswa::updateOrCreate(
                         ['nim' => $nim],
-                        [
-                            'master_id' => (string) $studData['id'],
-                            'user_id' => $user->id,
-                            'nim' => $nim,
-                            'nik' => $studData['nik'] ?? null,
-                            'nama' => $studData['nama'] ?? $studData['name'] ?? 'Unknown',
-                            'mother_name' => $studData['nama_ibu'] ?? $studData['mother_name'] ?? null,
-                            'fakultas_id' => $facultyId ?? $defaultFaculty?->id,
-                            'prodi_id' => $prodiId,
-                            'batch_year' => $studData['angkatan'] ?? $studData['batch_year'] ?? date('Y'),
-                            'gender' => $studData['jenis_kelamin'] ?? $studData['gender'] ?? 'L',
-                            'birth_place' => $studData['tempat_lahir'] ?? $studData['birth_place'] ?? null,
-                            'birth_date' => $studData['tanggal_lahir'] ?? $studData['birth_date'] ?? null,
-                            'alamat' => $studData['alamat'] ?? null,
-                            'phone' => $studData['phone'] ?? $studData['telepon'] ?? null,
-
-                            'sks_completed' => (int) ($studData['total_sks'] ?? $studData['sks_lulus'] ?? $studData['sks_completed'] ?? 0),
-                            'gpa' => (float) ($studData['ipk'] ?? $studData['gpa'] ?? 0),
-
-                            'status_bta_ppi' => $studData['status_bta_ppi'] ?? 'BELUM_LULUS',
-                            'status_aktif' => $studData['status_aktif'] ?? null,
-                            'is_paid_ukt' => (bool) ($studData['is_paid_ukt'] ?? false),
-                            'semester' => (int) ($studData['semester'] ?? $studData['semester_aktif'] ?? 0),
-                            'master_synced_at' => $now,
-                        ]
+                        $mahasiswaPayload
                     );
                     
                     if ($mahasiswa->wasRecentlyCreated) {
                         $stats['total_created']++;
                     } else {
                         $stats['total_updated']++;
+                    }
+
+                    // C-002 follow-up: reset-link dispatch for new student
+                    // accounts, deferred to after-commit.
+                    if ($isNewUser && ! empty($user->email)) {
+                        $userEmail = $user->email;
+                        DB::afterCommit(function () use ($userEmail, $nim) {
+                            try {
+                                Password::sendResetLink(['email' => $userEmail]);
+                            } catch (\Throwable $e) {
+                                Log::warning('sync:master-data — student reset-link dispatch failed', [
+                                    'nim' => $nim, 'error' => $e->getMessage(),
+                                ]);
+                            }
+                        });
                     }
                 });
 
@@ -817,6 +921,9 @@ class SyncMasterData extends Command
         SystemSetting::set('last_sync_mahasiswa', $now->toIso8601String());
 
         $this->info("  {$stats['total_fetched']} students synced ({$stats['total_created']} created, {$stats['total_updated']} updated) in {$duration}s");
+        if ($stats['total_skipped'] > 0) {
+            $this->warn("  {$stats['total_skipped']} student(s) filtered out (see Laravel log for reasons — config/siakad_filters.php governs this).");
+        }
     }
 
     private function normalizeSyncType(string $type): ?string
@@ -842,6 +949,20 @@ class SyncMasterData extends Command
         return $normalized === '' ? null : $normalized;
     }
 
+    private function normalizeMasterEmail(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $email = trim((string) $value);
+        if ($email === '' || str_ends_with(strtolower($email), '@kkn.local')) {
+            return null;
+        }
+
+        return filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : null;
+    }
+
     private function resolveProgramCode(array $programData, string $programName): string
     {
         $incoming = trim((string) ($programData['code'] ?? $programData['kode'] ?? ''));
@@ -860,5 +981,46 @@ class SyncMasterData extends Command
         }
 
         return $cleanName;
+    }
+
+    /**
+     * Master API uses multiple aliases for the same faculty. Keep all aliases valid
+     * for mapping while still storing only one faculty row per name.
+     *
+     * @return array<string, int>
+     */
+    private function buildFacultyLookupMap(): array
+    {
+        $map = [];
+
+        Fakultas::query()
+            ->select(['id', 'master_id', 'code', 'short_name'])
+            ->get()
+            ->each(function (Fakultas $faculty) use (&$map) {
+                foreach ([$faculty->master_id, $faculty->code, $faculty->short_name] as $key) {
+                    $key = $this->normalizeMasterId($key);
+                    if ($key !== null) {
+                        $map[$key] = $faculty->id;
+                    }
+                }
+            });
+
+        return $map;
+    }
+
+    private function isNonKknEligibleJenjang(string $jenjang): bool
+    {
+        // Programs that are NOT eligible for KKN
+        $nonEligibleJenjangs = ['S2', 'S3', 'Magister', 'Doktor', 'Pasca', 'Pascasarjana'];
+        $jenjang = trim(strtoupper($jenjang));
+        
+        // Check if jenjang is in non-eligible list
+        foreach ($nonEligibleJenjangs as $nonEligible) {
+            if (str_contains($jenjang, strtoupper($nonEligible))) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 }

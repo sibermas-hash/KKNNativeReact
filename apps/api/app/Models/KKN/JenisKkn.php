@@ -66,6 +66,11 @@ class JenisKkn extends Model
         return $this->hasMany(Periode::class, 'jenis_kkn_id');
     }
 
+    public function documentRequirements(): HasMany
+    {
+        return $this->hasMany(JenisKknDocumentRequirement::class, 'jenis_kkn_id')->orderBy('sort_order')->orderBy('id');
+    }
+
     // ─── Scopes ─────────────────────────────────────────
 
     public function scopeActive($query)
@@ -130,5 +135,48 @@ class JenisKkn extends Model
     public function isPhotoRequired(): bool
     {
         return $this->getAttendanceConfig()['require_photo'] ?? true;
+    }
+
+    // ─── Requirements Config Accessors ──────────────────
+    // Audit REGULER-001/002 fix: seeder menulis min_sks, min_gpa, dll.
+    // ke dalam kolom JSON `requirements_config`. EligibilityService
+    // sebelumnya akses `$jenisKkn->min_sks` langsung — property ini tidak
+    // ada di kolom/model, sehingga selalu null → service fallback ke
+    // SystemSetting global. Jenis KKN jadi tidak punya effect pada
+    // eligibility. Accessor berikut expose nilai dari JSON sebagai
+    // property virtual supaya existing service code tetap bekerja.
+
+    public function getMinSksAttribute(): ?int
+    {
+        $value = $this->requirements_config['min_sks'] ?? null;
+        return $value !== null ? (int) $value : null;
+    }
+
+    public function getMinGpaAttribute(): ?float
+    {
+        $value = $this->requirements_config['min_gpa'] ?? null;
+        return $value !== null ? (float) $value : null;
+    }
+
+    public function getRequireBtaPpiAttribute(): bool
+    {
+        // Default: wajib (REGULER expect), kecuali explicit di-set false di config.
+        return (bool) ($this->requirements_config['require_bta_ppi'] ?? true);
+    }
+
+    public function getRequireNotMarriedAttribute(): bool
+    {
+        return (bool) ($this->requirements_config['require_not_married'] ?? false);
+    }
+
+    public function getRequireParentPermissionAttribute(): bool
+    {
+        return (bool) ($this->requirements_config['require_parent_permission'] ?? false);
+    }
+
+    public function getSpecificProdiIdsAttribute(): ?array
+    {
+        $value = $this->requirements_config['specific_prodi_ids'] ?? null;
+        return is_array($value) && $value !== [] ? array_map('intval', $value) : null;
     }
 }

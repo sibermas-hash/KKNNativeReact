@@ -31,7 +31,7 @@ class DplProvisioningService
             $user = User::create([
                 'username' => $dosen->nip,
                 'name' => $dosen->nama,
-                'email' => $this->defaultEmail($dosen),
+                'email' => null,
                 'password' => Hash::make($temporaryPassword),
                 'is_active' => true,
                 'must_change_password' => true,
@@ -44,10 +44,6 @@ class DplProvisioningService
             if (! $user->is_active) {
                 $updates['is_active'] = true;
                 $activated = true;
-            }
-
-            if (blank($user->email)) {
-                $updates['email'] = $this->defaultEmail($dosen);
             }
 
             if ($user->name !== $dosen->nama) {
@@ -74,10 +70,5 @@ class DplProvisioningService
             'activated' => $activated,
             'temp_password' => $temporaryPassword,
         ];
-    }
-
-    private function defaultEmail(Dosen $dosen): string
-    {
-        return sprintf('%s@sibermas.uinsaizu.ac.id', $dosen->nip);
     }
 }

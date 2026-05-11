@@ -11,10 +11,7 @@ export function useAuth(client: AxiosInstance) {
   const useCurrentUser = () =>
     useQuery({
       queryKey: QUERY_KEYS.auth.user,
-      queryFn: async () => {
-        const res = await endpoints.user();
-        return res.data;
-      },
+      queryFn: () => endpoints.user(),
       retry: false,
       staleTime: 30_000,
     });
@@ -22,19 +19,14 @@ export function useAuth(client: AxiosInstance) {
   const useCaptcha = () =>
     useQuery({
       queryKey: QUERY_KEYS.auth.captcha,
-      queryFn: async () => {
-        const res = await endpoints.captcha();
-        return res.data;
-      },
+      queryFn: () => endpoints.captcha(),
       staleTime: 0,
     });
 
   const useLogin = () =>
     useMutation({
-      mutationFn: async (data: { login: string; password: string; captcha_id: string; captcha_answer: string }) => {
-        const res = await endpoints.login(data);
-        return res.data;
-      },
+      mutationFn: (data: { login: string; password: string; captcha_id: string; captcha_answer: string }) =>
+        endpoints.login(data),
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: QUERY_KEYS.auth.user });
       },
@@ -42,9 +34,7 @@ export function useAuth(client: AxiosInstance) {
 
   const useLogout = () =>
     useMutation({
-      mutationFn: async () => {
-        await endpoints.logout();
-      },
+      mutationFn: () => endpoints.logout(),
       onSuccess: () => {
         queryClient.clear();
       },
@@ -52,18 +42,13 @@ export function useAuth(client: AxiosInstance) {
 
   const useForgotPassword = () =>
     useMutation({
-      mutationFn: async (data: { email: string }) => {
-        const res = await endpoints.forgotPassword(data);
-        return res.data;
-      },
+      mutationFn: (data: { email: string }) => endpoints.forgotPassword(data),
     });
 
   const useResetPassword = () =>
     useMutation({
-      mutationFn: async (data: { token: string; email: string; password: string; password_confirmation: string }) => {
-        const res = await endpoints.resetPassword(data);
-        return res.data;
-      },
+      mutationFn: (data: { token: string; email: string; password: string; password_confirmation: string }) =>
+        endpoints.resetPassword(data),
     });
 
   return { useCurrentUser, useCaptcha, useLogin, useLogout, useForgotPassword, useResetPassword };

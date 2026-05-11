@@ -17,6 +17,8 @@ class PesertaWorkshop extends Model
     protected $fillable = [
         'workshop_id',
         'user_id',
+        'jabatan_sk',
+        'nomor_dokumen',
         'registered_at',
         'attendance_status',
         'is_passed',

@@ -46,6 +46,6 @@ class PoskoKelompok extends Model
 
     public function getPhotoUrlAttribute(): string
     {
-        return $this->photo_path ? route('student.posko.photo', $this) : '';
+        return $this->photo_path ? route('api.v1.student.posko.photo', $this) : '';
     }
 }

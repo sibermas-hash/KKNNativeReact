@@ -352,11 +352,13 @@ class WorkshopService
         $pdf = Pdf::loadView('certificates.workshop', $certificateData)
             ->setPaper('a4', 'landscape');
 
-        // Save to storage
+        // X-002 fix (audit): individual workshop certificates land on the
+        // PRIVATE disk. Served to the owning dosen / admins via
+        // PrivateFileController::workshopCertificate.
         $filename = 'certificate_'.($user->mahasiswa?->nim ?? $user->id)."_{$workshop->id}_".time().'.pdf';
         $path = "certificates/workshops/{$workshop->id}/{$filename}";
 
-        Storage::disk('public')->put($path, $pdf->output());
+        Storage::disk('local')->put($path, $pdf->output());
 
         // Update participant record
         $participant->update([
@@ -385,7 +387,7 @@ class WorkshopService
     private function revokeCertificate(PesertaWorkshop $participant): void
     {
         if ($participant->certificate_path) {
-            Storage::disk('public')->delete($participant->certificate_path);
+            Storage::disk('local')->delete($participant->certificate_path);
         }
 
         $participant->update([

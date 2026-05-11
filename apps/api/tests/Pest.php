@@ -23,6 +23,7 @@ pest()->extend(TestCase::class)
 // inside setUp(), which runs *after* this beforeAll hook.
 beforeAll(function () {
     \Illuminate\Support\Facades\Artisan::call('migrate:fresh');
+    \Illuminate\Support\Facades\Artisan::call('db:seed', ['--class' => 'RoleSeeder', '--force' => true]);
 });
 
 /*
@@ -76,4 +77,46 @@ function generateCaptchaWithAnswer(): array
         'captcha' => $captcha,
         'answer' => $answer,
     ];
+}
+
+function createActivePeriod(string $phase = 'execution'): \App\Models\KKN\Periode
+{
+    $jenis = \App\Models\KKN\JenisKkn::firstOrCreate(
+        ['code' => 'REGULER'],
+        [
+            'name' => 'KKN Reguler',
+            'description' => 'KKN Reguler',
+            'registration_mode' => 'open',
+            'placement_mode' => 'manual_admin',
+            'min_sks' => 100,
+            'min_gpa' => 2.0,
+            'color' => '#059669',
+            'is_active' => true,
+            'sort_order' => 0,
+        ]
+    );
+
+    $tahunAkademik = \App\Models\KKN\TahunAkademik::firstOrCreate(
+        ['year' => '2025/2026'],
+        ['is_active' => true]
+    );
+
+    // Deactivate all other periods to ensure this is the only active one
+    \App\Models\KKN\Periode::where('is_active', true)->update(['is_active' => false]);
+
+    $period = \App\Models\KKN\Periode::factory()->state([
+        'is_active' => true,
+        'current_phase' => $phase,
+        'jenis_kkn_id' => $jenis->id,
+        'academic_year_id' => $tahunAkademik->id,
+    ])->create();
+
+    // Clear PeriodContextService caches so the new period is picked up
+    \Illuminate\Support\Facades\Cache::forget('default_periode_id');
+    \Illuminate\Support\Facades\Cache::forget('available_periods');
+    if (auth()->check()) {
+        \Illuminate\Support\Facades\Cache::forget('period_context:'.auth()->id());
+    }
+
+    return $period;
 }

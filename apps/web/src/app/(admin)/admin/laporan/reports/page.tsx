@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { adminApi } from '@/lib/api';
+import { adminApi, apiUrl } from '@/lib/api';
 import Link from 'next/link';
 import { FileText, Search, Eye, Download } from 'lucide-react';
 import { PageHeader, DataTable, StatusBadge, StatCard, EmptyState } from '@/components/ui/shared';
@@ -19,7 +19,7 @@ const TYPE_LABELS: Record<string, string> = {
   evaluation_report: 'Evaluasi Refleksi',
 };
 
-export default function AdminReportsPage() {
+export default function AdminReportsPage(): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
@@ -108,7 +108,7 @@ export default function AdminReportsPage() {
                       </Link>
                       {!!r.file_path && (
                         <a
-                          href={String(r.file_path)}
+                          href={apiUrl(`/admin/laporan/akhir/${r.id}/unduh`)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-black hover:bg-blue-50 hover:text-blue-700 transition-colors"

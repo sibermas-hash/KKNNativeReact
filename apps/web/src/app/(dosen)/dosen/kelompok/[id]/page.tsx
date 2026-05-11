@@ -1,19 +1,17 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { dplEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api, dplApi } from '@/lib/api';
+import { dplApi } from '@/lib/api';
 import { useParams } from 'next/navigation';
 
-export default function GroupDetailPage() {
+export default function GroupDetailPage(): React.JSX.Element {
   const { id } = useParams();
   
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.dpl.group(Number(id)),
     queryFn: async () => {
-      const res = await dplApi.groups.show(Number(id)) as unknown as { success: boolean; data: Record<string, unknown> };
-      return res.data;
+      return await dplApi.groups.show(Number(id));
     },
     enabled: !!id,
   });
@@ -21,29 +19,30 @@ export default function GroupDetailPage() {
   if (isLoading) return <div className="h-32 animate-pulse rounded-2xl bg-slate-200" />;
   if (!data) return <div className="text-center text-slate-500">Kelompok tidak ditemukan</div>;
 
-  const members = (data.members as Record<string, unknown>[]) || [];
-  const workPrograms = (data.work_programs as Record<string, unknown>[]) || [];
+  const d = data as any;
+  const members = (d.members as Record<string, unknown>[]) || [];
+  const workPrograms = (d.work_programs as Record<string, unknown>[]) || [];
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">{data.name as string}</h1>
+      <h1 className="text-2xl font-bold text-slate-800">{d.name as string}</h1>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <div className="rounded-2xl bg-white p-4 shadow-sm">
           <p className="text-xs text-slate-500">Kode</p>
-          <p className="font-semibold">{data.code as string}</p>
+          <p className="font-semibold">{d.code as string}</p>
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
           <p className="text-xs text-slate-500">Lokasi</p>
-          <p className="font-semibold">{data.village_name as string}</p>
+          <p className="font-semibold">{d.village_name as string}</p>
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
           <p className="text-xs text-slate-500">Kapasitas</p>
-          <p className="font-semibold">{data.capacity as number}</p>
+          <p className="font-semibold">{d.capacity}</p>
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
           <p className="text-xs text-slate-500">Status</p>
-          <p className="font-semibold capitalize">{(data.status as string) || '-'}</p>
+          <p className="font-semibold capitalize">{(d.status as string) || '-'}</p>
         </div>
       </div>
 

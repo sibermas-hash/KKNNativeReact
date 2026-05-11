@@ -1,13 +1,12 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { studentEndpoints } from '@sibermas/api-client';
-import { api, studentApi } from '@/lib/api';
+import { studentApi } from '@/lib/api';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 
-export default function WorkProgramDetailPage() {
+export default function WorkProgramDetailPage(): React.JSX.Element {
   const { id } = useParams();
   
   const { data, isLoading } = useQuery({

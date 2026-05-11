@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { FileText, Search, Target, Globe, Eye } from 'lucide-react';
 import { PageHeader, DataTable, StatusBadge, StatCard, EmptyState } from '@/components/ui/shared';
 
-export default function AdminWorkProgramsMonitoringPage() {
+export default function AdminWorkProgramsMonitoringPage(): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);

@@ -9,12 +9,14 @@ const config: ExpoConfig = {
   userInterfaceStyle: 'automatic',
   scheme: 'sibermas',
   splash: {
-    backgroundColor: '#0f172a',
+    image: './assets/splash.png',
+    resizeMode: 'contain',
+    backgroundColor: '#FFFFFF',
   },
   android: {
     adaptiveIcon: {
       foregroundImage: './assets/adaptive-icon.png',
-      backgroundColor: '#0f172a',
+      backgroundColor: '#FFFFFF',
     },
     package: 'ac.id.uinsaizu.kkn',
     permissions: [
@@ -44,6 +46,10 @@ const config: ExpoConfig = {
     'expo-camera',
     'expo-image-picker',
     'expo-notifications',
+    // Sentry native integration — wires crash symbolication + offline queue
+    // to the native iOS/Android Sentry SDK. Without this plugin JS errors
+    // still reach Sentry (via captureException) but native crashes are lost.
+    '@sentry/react-native/expo',
   ],
   experiments: {
     typedRoutes: true,

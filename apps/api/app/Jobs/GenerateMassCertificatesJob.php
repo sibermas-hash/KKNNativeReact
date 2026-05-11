@@ -16,6 +16,8 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use ZipArchive;
 
 class GenerateMassCertificatesJob implements ShouldQueue
@@ -35,26 +37,21 @@ class GenerateMassCertificatesJob implements ShouldQueue
         $cacheKey = "cert_progress_{$this->periodId}_{$this->adminId}";
         Log::info("Starting background certificate generation for Period ID: {$this->periodId}");
 
-        $query = NilaiKkn::whereHas('kelompok', function ($q) {
+        $baseQuery = NilaiKkn::whereHas('kelompok', function ($q) {
             $q->where('periode_id', $this->periodId);
         })->where('is_finalized', true);
 
         if (! empty($this->filters['fakultas_id'])) {
-            $query->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $this->filters['fakultas_id']));
+            $baseQuery->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $this->filters['fakultas_id']));
         }
 
         if (! empty($this->filters['kelompok_id'])) {
-            $query->where('kelompok_id', $this->filters['kelompok_id']);
+            $baseQuery->where('kelompok_id', $this->filters['kelompok_id']);
         }
 
-        $scores = $query->with([
-            'mahasiswa.user',
-            'kelompok.periode',
-            'kelompok.lokasi',
-            'kelompok.dpl.user',
-        ])->get();
-
-        $total = $scores->count();
+        // H-015 fix: Use count() + chunkById to avoid loading every score
+        // (with 4 levels of eager-loaded relations) into memory at once.
+        $total = (clone $baseQuery)->count();
         if ($total === 0) {
             Cache::put($cacheKey, ['status' => 'failed', 'message' => 'Tidak ada sertifikat untuk diproses.'], 3600);
 
@@ -62,9 +59,18 @@ class GenerateMassCertificatesJob implements ShouldQueue
         }
 
         $zip = new ZipArchive;
-        $zipName = "Sertifikat_KKN_Periode_{$this->periodId}_".now()->format('Ymd_His').'.zip';
-        $zipRelativePath = "exports/{$zipName}";
-        $zipFullPath = storage_path("app/public/{$zipRelativePath}");
+
+        // C-003 fix: Write ZIP to the PRIVATE disk using a UUID so the
+        // filename cannot be guessed. Download is gated by a signed,
+        // short-lived route that verifies the admin's identity.
+        $zipId = (string) Str::uuid();
+        $zipName = "Sertifikat_KKN_Periode_{$this->periodId}_".now()->format('Ymd').'.zip';
+        $zipRelativePath = "exports/certificates/{$zipId}.zip";
+        $zipFullPath = storage_path("app/private/{$zipRelativePath}");
+
+        if (! is_dir(dirname($zipFullPath))) {
+            @mkdir(dirname($zipFullPath), 0750, true);
+        }
 
         if ($zip->open($zipFullPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
             Cache::put($cacheKey, ['status' => 'failed', 'message' => 'Gagal membuat arsip ZIP.'], 3600);
@@ -73,43 +79,75 @@ class GenerateMassCertificatesJob implements ShouldQueue
         }
 
         $processed = 0;
-        foreach ($scores as $score) {
-            try {
-                $pdf = $certificateService->generateForStudent($score);
-                $nim = $score->mahasiswa->nim ?? 'Unknown';
-                $name = $score->mahasiswa->nama ?? 'Mahasiswa';
-                $pdfName = "Sertifikat_{$name}_{$nim}.pdf";
 
-                // Sanitize filename
-                $pdfName = preg_replace('/[^A-Za-z0-9_\-\.]/', '_', $pdfName);
+        $baseQuery->with([
+            'mahasiswa.user',
+            'kelompok.periode',
+            'kelompok.lokasi',
+            'kelompok.dpl.user',
+        ])
+            ->orderBy('id')
+            ->chunkById(50, function ($scores) use ($zip, $certificateService, &$processed, $total, $cacheKey) {
+                foreach ($scores as $score) {
+                    try {
+                        $pdf = $certificateService->generateForStudent($score);
+                        $nim = $score->mahasiswa->nim ?? 'Unknown';
+                        $name = $score->mahasiswa->nama ?? 'Mahasiswa';
+                        $pdfName = "Sertifikat_{$name}_{$nim}.pdf";
 
-                $zip->addFromString($pdfName, $pdf->output());
-            } catch (\Exception $e) {
-                Log::error("Failed to generate PDF in background for User ID {$score->user_id}: ".$e->getMessage());
-            }
+                        // Sanitize filename
+                        $pdfName = preg_replace('/[^A-Za-z0-9_\-\.]/', '_', $pdfName);
 
-            $processed++;
-            if ($processed % 10 === 0) {
-                Cache::put($cacheKey, [
-                    'status' => 'processing',
-                    'processed' => $processed,
-                    'total' => $total,
-                    'progress' => round(($processed / $total) * 100),
-                ], 3600);
-            }
-        }
+                        $zip->addFromString($pdfName, $pdf->output());
+                    } catch (\Exception $e) {
+                        Log::error("Failed to generate PDF in background for User ID {$score->user_id}: ".$e->getMessage());
+                    }
+
+                    $processed++;
+                    if ($processed % 10 === 0) {
+                        Cache::put($cacheKey, [
+                            'status' => 'processing',
+                            'processed' => $processed,
+                            'total' => $total,
+                            'progress' => round(($processed / max($total, 1)) * 100),
+                        ], 3600);
+                    }
+                }
+
+                // Free memory between chunks.
+                unset($scores);
+            });
 
         $zip->close();
 
-        $downloadUrl = Storage::disk('public')->url($zipRelativePath);
+        // C-003 fix: generate a short-lived signed URL. The route
+        // `admin.certificates.bulk-download` verifies (a) the signature,
+        // (b) the caller's auth token, (c) that the caller is the same admin
+        // who initiated the job. Expires in 2 hours.
+        $downloadUrl = URL::temporarySignedRoute(
+            'admin.certificates.bulk-download',
+            now()->addHours(2),
+            ['token' => $zipId, 'admin' => $this->adminId]
+        );
 
         Cache::put($cacheKey, [
             'status' => 'completed',
             'processed' => $processed,
             'total' => $total,
             'download_url' => $downloadUrl,
+            'download_token' => $zipId,
+            'download_filename' => $zipName,
             'finished_at' => now(),
         ], 3600);
+
+        // Also keep a separate token → path mapping so the download
+        // controller doesn't need to trust the URL-embedded path.
+        Cache::put('cert_bulk_download:'.$zipId, [
+            'path' => $zipRelativePath,
+            'filename' => $zipName,
+            'admin_id' => $this->adminId,
+            'expires_at' => now()->addHours(2)->timestamp,
+        ], now()->addHours(3));
 
         // Notify Admin
         $admin = User::find($this->adminId);

@@ -23,20 +23,100 @@ class RekapNilaiController extends Controller
 
     public function finalize(NilaiKkn $score): JsonResponse
     {
+        // Audit R11-REGULER-016 fix: pastikan kelompok sudah punya min 4 sesi
+        // bimbingan 'completed' sebelum nilai difinalisasi. Superadmin bisa
+        // bypass dengan ?force=1 untuk kasus edge (DPL gagal input karena IT issue).
+        if ($deny = $this->enforceBimbinganRequirement($score)) {
+            return $deny;
+        }
+
         $score->update(['is_finalized' => true, 'admin_graded_by' => auth()->id(), 'admin_graded_at' => now()]);
         return $this->success(new NilaiKknResource($score->refresh()), 'Nilai berhasil difinalisasi.');
     }
 
     public function finalizeMass(Request $request): JsonResponse
     {
-        $request->validate(['ids' => ['required', 'array'], 'ids.*' => ['integer']]);
-        $count = NilaiKkn::whereIn('id', $request->input('ids'))->update(['is_finalized' => true, 'admin_graded_by' => auth()->id(), 'admin_graded_at' => now()]);
-        return $this->success(['finalized_count' => $count], "{$count} nilai berhasil difinalisasi.");
+        $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer'],
+            'periode_id' => ['required', 'integer', 'exists:periode,id'],
+        ]);
+
+        $scores = NilaiKkn::whereIn('id', $request->input('ids'))
+            ->whereHas('kelompok', fn ($q) => $q->where('periode_id', $request->input('periode_id')))
+            ->with('kelompok')
+            ->get();
+
+        $force = (bool) $request->boolean('force');
+        $isSuperadmin = (bool) auth()->user()?->hasRole('superadmin');
+        $finalized = 0;
+        $skipped = [];
+
+        foreach ($scores as $score) {
+            if (! ($force && $isSuperadmin)) {
+                $err = $this->enforceBimbinganRequirement($score);
+                if ($err !== null) {
+                    $skipped[] = [
+                        'id' => $score->id,
+                        'reason' => 'Bimbingan minimum belum terpenuhi',
+                    ];
+                    continue;
+                }
+            }
+            $score->update(['is_finalized' => true, 'admin_graded_by' => auth()->id(), 'admin_graded_at' => now()]);
+            $finalized++;
+        }
+
+        return $this->success(
+            ['finalized_count' => $finalized, 'skipped_count' => count($skipped), 'skipped' => $skipped],
+            "{$finalized} nilai berhasil difinalisasi." . (count($skipped) ? ' ' . count($skipped) . ' dilewati (bimbingan kurang).' : ''),
+        );
     }
 
-    public function export(): JsonResponse
+    /**
+     * Cek kelompok sudah punya min 4 sesi bimbingan completed.
+     * Return JsonResponse 422 kalau belum, null kalau sudah atau bisa di-bypass.
+     */
+    private function enforceBimbinganRequirement(NilaiKkn $score): ?JsonResponse
     {
-        return $this->success(['download_url' => '#'], 'Export rekap nilai.');
+        $kelompokId = $score->kelompok_id;
+        if (! $kelompokId) {
+            return null; // no kelompok → grading scenario edge, skip guard
+        }
+
+        $completedCount = \App\Models\KKN\BimbinganSession::where('kelompok_id', $kelompokId)
+            ->where('status', 'completed')
+            ->count();
+
+        $required = \App\Models\KKN\BimbinganSession::MIN_SESSIONS_REQUIRED;
+
+        if ($completedCount < $required) {
+            return $this->error(
+                'VALIDATION_ERROR',
+                "Finalisasi nilai ditolak. Kelompok baru punya {$completedCount} sesi bimbingan (minimum {$required}). DPL harus menyelesaikan bimbingan + notulensi terlebih dahulu.",
+                422,
+            );
+        }
+
+        return null;
+    }
+
+    public function export(Request $request)
+    {
+        $periodeId = $request->input('periode_id');
+
+        $scores = NilaiKkn::with(['user', 'kelompok.periode', 'kelompok.lokasi'])
+            ->when($periodeId, fn ($q, $id) => $q->whereHas('kelompok', fn ($q2) => $q2->where('periode_id', $id)))
+            ->where('is_finalized', true)
+            ->orderBy('created_at')
+            ->get();
+
+        $periode = $periodeId ? \App\Models\KKN\Periode::find($periodeId) : null;
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\RekapNilaiExport($scores, $periode),
+            'Rekap_Nilai_KKN_' . now()->format('Ymd') . '.xlsx'
+        );
     }
 
     public function getCertificateProgress(Request $request): JsonResponse

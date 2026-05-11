@@ -1,40 +1,64 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { dplEndpoints } from '@sibermas/api-client';
+import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api, dplApi } from '@/lib/api';
+import { dplApi } from '@/lib/api';
 import Link from 'next/link';
-import toast from 'react-hot-toast';
+import { MapPin, Plus } from 'lucide-react';
+import { PageHeader, EmptyState } from '@/components/ui/shared';
 
-export default function MonitoringPage() {
-  
-  const queryClient = useQueryClient();
+export default function MonitoringPage(): React.JSX.Element {
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.dpl.monitoring,
     queryFn: async () => {
-      const res = await dplApi.monitoring.index();
-      return (res as unknown as { success: boolean; data: unknown[] }).data;
+      return await dplApi.monitoring.index();
     },
   });
 
-  const monitoring = (data as Record<string, unknown>[]) || [];
+  const monitoring = ((data as any) || []) as Record<string, unknown>[];
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-800">Monitoring DPL</h1>
-        <Link href="/dosen/monitoring/buat" className="rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">+ Catat Kunjungan</Link>
-      </div>
+      <PageHeader
+        title="Monitoring DPL"
+        actions={
+          <Link
+            href="/dosen/monitoring/buat"
+            className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700"
+          >
+            <Plus size={16} />
+            Catat Kunjungan
+          </Link>
+        }
+      />
+
       {isLoading ? (
         <div className="h-32 animate-pulse rounded-2xl bg-slate-200" />
       ) : monitoring.length === 0 ? (
-        <div className="rounded-2xl bg-white p-12 text-center shadow-sm"><p className="text-4xl">📍</p><p className="mt-4 text-slate-500">Belum ada kunjungan monitoring</p></div>
+        <EmptyState
+          icon={<MapPin size={40} />}
+          title="Belum Ada Kunjungan"
+          description="Belum ada kunjungan monitoring yang dicatat."
+          action={
+            <Link
+              href="/dosen/monitoring/buat"
+              className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700"
+            >
+              <Plus size={16} />
+              Catat Kunjungan
+            </Link>
+          }
+        />
       ) : (
         <div className="space-y-3">
           {monitoring.map((m) => (
-            <div key={m.id as number} className="rounded-2xl bg-white p-5 shadow-sm">
-              <p className="font-semibold text-slate-800">{(m.kelompok as Record<string, unknown>)?.nama_kelompok as string || '-'}</p>
+            <div
+              key={m.id as number}
+              className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200"
+            >
+              <p className="font-semibold text-slate-800">
+                {(m.kelompok as Record<string, unknown>)?.nama_kelompok as string || '-'}
+              </p>
               <p className="text-sm text-slate-500">Tanggal: {m.visit_date as string}</p>
               <p className="mt-2 text-sm text-slate-700">{m.notes as string}</p>
             </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, StyleSheet, Alert } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
 import { enqueueReport, processQueue } from '@/lib/offlineQueue';
 import type { QueuedReport } from '@/lib/offlineQueue';
@@ -8,8 +8,37 @@ import * as Location from 'expo-location';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
+import {
+  colors,
+  FieldLabel,
+  formStyles,
+  HeroCard,
+  InlineAlert,
+  PrimaryButton,
+  Screen,
+  SecondaryButton,
+  SurfaceCard,
+} from '@/components/ui/primitives';
 
 type LocationState = { latitude: number; longitude: number } | null;
+
+function buildDailyReportFormData(payload: QueuedReport): FormData {
+  const formData = new FormData();
+  formData.append('title', payload.title);
+  formData.append('activity', payload.activity);
+  formData.append('reflection', payload.reflection || '');
+  formData.append('date', payload.date);
+  formData.append('captured_at', payload.captured_at);
+  formData.append('location_source', 'gps');
+  if (payload.latitude != null) formData.append('latitude', String(payload.latitude));
+  if (payload.longitude != null) formData.append('longitude', String(payload.longitude));
+  if (payload.latitude != null && payload.longitude != null) {
+    formData.append('location_name', `${payload.latitude.toFixed(6)}, ${payload.longitude.toFixed(6)}`);
+  }
+  formData.append('category', 'administrasi');
+  formData.append('abcd_stage', 'reflection');
+  return formData;
+}
 
 export default function DailyReportCreateScreen() {
   const router = useRouter();
@@ -30,22 +59,19 @@ export default function DailyReportCreateScreen() {
       Alert.alert('Berhasil', 'Laporan harian berhasil dikirim.', [
         { text: 'OK', onPress: () => router.back() },
       ]);
-      // Try to process any queued reports
       processQueue(api).catch(() => {});
     },
-    onError: async (err: any) => {
-      // If offline or network error, enqueue the report for later sync
+    onError: async () => {
       const state = await NetInfo.fetch();
       if (!state.isConnected) {
-        // extract fields for queue
         const payload = {
           title,
           activity,
           reflection,
           date: new Date().toISOString().split('T')[0],
           captured_at: new Date().toISOString(),
-          latitude: location?.latitude ? String(location.latitude) : undefined,
-          longitude: location?.longitude ? String(location.longitude) : undefined,
+          latitude: location?.latitude,
+          longitude: location?.longitude,
         };
         await enqueueReport(payload);
         queryClient.invalidateQueries({ queryKey: ['student', 'daily-reports'] });
@@ -62,7 +88,7 @@ export default function DailyReportCreateScreen() {
     (async () => {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        setLocationError('Izin lokasi diperlukan untuk melaporkan kegiatan KKN. Anda dapat mengisi koordinat secara manual.');
+        setLocationError('Izin lokasi diperlukan untuk melaporkan kegiatan KKN. Anda dapat mengirim laporan tanpa lokasi bila diperlukan.');
       }
     })();
   }, []);
@@ -74,7 +100,7 @@ export default function DailyReportCreateScreen() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        setLocationError('Izin lokasi ditolak. Silakan isi koordinat secara manual.');
+        setLocationError('Izin lokasi ditolak. Laporan masih bisa dikirim tanpa lokasi GPS.');
         setLocationLoading(false);
         return;
       }
@@ -125,8 +151,8 @@ export default function DailyReportCreateScreen() {
     };
 
     if (location) {
-      payload.latitude = String(location.latitude);
-      payload.longitude = String(location.longitude);
+      payload.latitude = location.latitude;
+      payload.longitude = location.longitude;
     }
 
     const state = await NetInfo.fetch();
@@ -138,116 +164,97 @@ export default function DailyReportCreateScreen() {
       return;
     }
 
-    const formData = new FormData();
-    formData.append('title', payload.title);
-    formData.append('activity', payload.activity);
-    formData.append('reflection', payload.reflection || '');
-    formData.append('date', payload.date);
-    formData.append('captured_at', payload.captured_at);
-    if (payload.latitude) formData.append('latitude', payload.latitude);
-    if (payload.longitude) formData.append('longitude', payload.longitude);
-
-    mutation.mutate(formData);
+    mutation.mutate(buildDailyReportFormData(payload));
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Buat Laporan Harian</Text>
+    <Screen>
+      <HeroCard
+        eyebrow="Laporan Harian"
+        title="Catat Aktivitas"
+        subtitle="Dokumentasikan kegiatan lapangan hari ini dengan ringkas dan lengkap."
+      />
 
-      <View style={styles.form}>
-        <Text style={styles.label}>Judul Kegiatan</Text>
-        <TextInput
-          style={styles.input}
-          value={title}
-          onChangeText={setTitle}
-          placeholder="Judul kegiatan hari ini"
-        />
+      <SurfaceCard style={styles.form}>
+        <View style={styles.formGroup}>
+          <FieldLabel required>Judul Kegiatan</FieldLabel>
+          <TextInput
+            style={formStyles.input}
+            value={title}
+            onChangeText={setTitle}
+            placeholder="Judul kegiatan hari ini"
+            placeholderTextColor={colors.textSubtle}
+          />
+        </View>
 
-        <Text style={styles.label}>Deskripsi Kegiatan</Text>
-        <TextInput
-          style={[styles.input, styles.textarea]}
-          value={activity}
-          onChangeText={setActivity}
-          placeholder="Jelaskan kegiatan yang dilakukan..."
-          multiline
-          numberOfLines={5}
-          textAlignVertical="top"
-        />
+        <View style={styles.formGroup}>
+          <FieldLabel required>Deskripsi Kegiatan</FieldLabel>
+          <TextInput
+            style={[formStyles.input, formStyles.textarea]}
+            value={activity}
+            onChangeText={setActivity}
+            placeholder="Jelaskan kegiatan yang dilakukan"
+            placeholderTextColor={colors.textSubtle}
+            multiline
+            numberOfLines={5}
+          />
+        </View>
 
-        <Text style={styles.label}>Refleksi</Text>
-        <TextInput
-          style={[styles.input, styles.textarea]}
-          value={reflection}
-          onChangeText={setReflection}
-          placeholder="Apa yang dipelajari hari ini?"
-          multiline
-          numberOfLines={3}
-          textAlignVertical="top"
-        />
+        <View style={styles.formGroup}>
+          <FieldLabel>Refleksi</FieldLabel>
+          <TextInput
+            style={[formStyles.input, styles.reflectionInput]}
+            value={reflection}
+            onChangeText={setReflection}
+            placeholder="Apa yang dipelajari hari ini?"
+            placeholderTextColor={colors.textSubtle}
+            multiline
+            numberOfLines={3}
+          />
+        </View>
 
-        <Text style={styles.label}>Lokasi GPS</Text>
-        <TouchableOpacity
-          style={[styles.gpsButton, locationLoading && styles.gpsButtonDisabled]}
-          onPress={getCurrentLocation}
-          disabled={locationLoading}
-        >
-          {locationLoading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.gpsButtonText}>
-              {location ? '📍 Perbarui Lokasi' : '📍 Gunakan Lokasi Saya'}
-            </Text>
-          )}
-        </TouchableOpacity>
+        <View style={styles.formGroup}>
+          <FieldLabel>Lokasi GPS</FieldLabel>
+          <SecondaryButton
+            label={location ? 'Perbarui Lokasi' : 'Gunakan Lokasi Saya'}
+            onPress={getCurrentLocation}
+            disabled={locationLoading}
+          />
+          {location ? (
+            <View style={styles.locationInfo}>
+              <Text style={styles.locationText} selectable>
+                {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
+              </Text>
+            </View>
+          ) : null}
+          {locationError ? <InlineAlert tone="amber" description={locationError} /> : null}
+        </View>
 
-        {location && (
-          <View style={styles.locationInfo}>
-            <Text style={styles.locationText}>
-              Lokasi: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
-            </Text>
-          </View>
-        )}
-
-        {locationError && (
-          <Text style={styles.locationError}>{locationError}</Text>
-        )}
-
-        <TouchableOpacity
-          style={[styles.submitButton, mutation.isPending && styles.submitButtonDisabled]}
-          onPress={handleSubmit}
-          disabled={mutation.isPending}
-        >
-          {mutation.isPending ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.submitButtonText}>Kirim Laporan</Text>
-          )}
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
-          <Text style={styles.cancelButtonText}>Batal</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+        <View style={styles.actions}>
+          <PrimaryButton
+            label="Kirim Laporan"
+            onPress={handleSubmit}
+            loading={mutation.isPending}
+            disabled={mutation.isPending}
+          />
+          <SecondaryButton label="Batal" onPress={() => router.back()} />
+        </View>
+      </SurfaceCard>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc', padding: 16 },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#0f172a', marginBottom: 20 },
-  form: { backgroundColor: '#fff', borderRadius: 16, padding: 20 },
-  label: { fontSize: 14, fontWeight: '600', color: '#334155', marginBottom: 6, marginTop: 16 },
-  input: { borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 14 },
-  textarea: { minHeight: 100 },
-  gpsButton: { backgroundColor: '#2563eb', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
-  gpsButtonDisabled: { opacity: 0.5 },
-  gpsButtonText: { color: '#fff', fontSize: 14, fontWeight: '600' },
-  locationInfo: { backgroundColor: '#f0fdf4', borderRadius: 8, padding: 12, marginTop: 8 },
-  locationText: { fontSize: 13, color: '#166534' },
-  locationError: { fontSize: 13, color: '#dc2626', marginTop: 8 },
-  submitButton: { backgroundColor: '#0d9488', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 24 },
-  submitButtonDisabled: { opacity: 0.5 },
-  submitButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  cancelButton: { borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 8 },
-  cancelButtonText: { color: '#64748b', fontSize: 14, fontWeight: '600' },
+  form: { gap: 16 },
+  formGroup: { gap: 8 },
+  reflectionInput: { minHeight: 86, textAlignVertical: 'top' },
+  locationInfo: {
+    backgroundColor: '#ECFDF5',
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  locationText: { fontSize: 13, color: '#065F46', fontWeight: '800' },
+  actions: { gap: 10, marginTop: 4 },
 });

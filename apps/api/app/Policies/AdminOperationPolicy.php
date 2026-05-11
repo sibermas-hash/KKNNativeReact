@@ -75,7 +75,15 @@ class AdminOperationPolicy extends BasePolicy
             return $bypass;
         }
 
-        return $user->hasAnyRole(['faculty_admin', 'admin']);
+        return $user->hasRole('admin');
+    }
+
+    /**
+     * Read-only access to participant data (for faculty_admin).
+     */
+    public function viewParticipants(User $user): bool
+    {
+        return $user->hasAnyRole(['superadmin', 'admin', 'faculty_admin']);
     }
 
     public function manageUsers(User $user): bool
@@ -97,7 +105,15 @@ class AdminOperationPolicy extends BasePolicy
             return $bypass;
         }
 
-        return $user->hasAnyRole(['faculty_admin', 'admin']);
+        return $user->hasRole('admin');
+    }
+
+    /**
+     * Read-only access to grades/reports (for faculty_admin).
+     */
+    public function viewGrades(User $user): bool
+    {
+        return $user->hasAnyRole(['superadmin', 'admin', 'faculty_admin']);
     }
 
     public function manageContent(User $user): bool

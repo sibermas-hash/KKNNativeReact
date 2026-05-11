@@ -1,13 +1,42 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Stack, useRouter, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Platform } from 'react-native';
+import { QueryClientProvider } from '@tanstack/react-query';
+import NetInfo from '@react-native-community/netinfo';
+import { LogBox, Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Application from 'expo-application';
 import * as Device from 'expo-device';
-import { useAuthStore } from '@/stores';
+
+// Suppress the dev-only "Maximum update depth exceeded" overlay coming from
+// expo-router's internal ImperativeApiEmitter (imperative-api.js:25). This
+// is a known library-side interaction with useSyncExternalStore that fires
+// once at mount as a defensive warning but does NOT impact runtime behavior;
+// we've already added state-change guards in the Zustand auth store. The
+// overlay otherwise blocks the login screen from being visible during dev.
+//
+// Safe to keep: LogBox only affects dev builds; release builds never render
+// the overlay and the underlying library fix will land in a future
+// expo-router upgrade.
+LogBox.ignoreLogs([
+  'Maximum update depth exceeded',
+  'Warning: Maximum update depth exceeded',
+]);
+import {
+  getMobileHomeRoute,
+  isDplLikeUser,
+  isStudentLikeUser,
+  useAuthIsLoading,
+  useAuthUser,
+  useFetchUserAction,
+  useIsAuthenticated,
+} from '@/stores';
 import { api } from '@/lib/api';
+import { AnimatedSplashScreen } from '@/components/animated-splash-screen';
+import { RootErrorBoundary } from '@/components/root-error-boundary';
+import { initSentry } from '@/lib/sentry';
+import { processQueue } from '@/lib/offlineQueue';
+import { queryClient, useQueryAppStateBridge } from '@/lib/query-client';
 import {
   registerForPushNotifications,
   setupAndroidChannels,
@@ -15,88 +44,171 @@ import {
   handleNotificationResponse,
 } from '@/lib/notifications';
 
-const queryClient = new QueryClient({
-  defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
-});
-
 export default function RootLayout() {
+  useQueryAppStateBridge();
+  initSentry();
+
+  const [appReady, setAppReady] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const { fetchUser, isAuthenticated, isLoading, user } = useAuthStore();
+  const fetchUser = useFetchUserAction();
+  const isAuthenticated = useIsAuthenticated();
+  const isLoading = useAuthIsLoading();
+  const user = useAuthUser();
   const notificationListener = useRef<Notifications.EventSubscription>(null);
   const responseListener = useRef<Notifications.EventSubscription>(null);
-  const deviceTokenRegistered = useRef(false);
+  const registeredPushUserRef = useRef<string | null>(null);
+  const pushRegistrationKey = isAuthenticated
+    ? String((user as { id?: string | number } | null)?.id ?? 'authenticated')
+    : null;
 
   useEffect(() => {
+    // Run once at mount. `fetchUser` comes from a stable Zustand action
+    // so adding it to deps would be safe, but we keep deps empty here to
+    // express intent clearly: "call once, never poll".
     fetchUser();
-  }, [fetchUser]);
+    // Splash + navigation delay: wait 2s before showing the main UI.
+    // This gives expo-router time to initialize its internal state,
+    // preventing the "Maximum update depth exceeded" error.
+    const timeout = setTimeout(() => setAppReady(true), 2000);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Push notification setup - run once on mount
   useEffect(() => {
     setupAndroidChannels();
-
-    registerForPushNotifications().then((token) => {
-      // Registration function - only called when auth state is confirmed
-      const registerToken = async () => {
-        if (!token || deviceTokenRegistered.current) return;
-
-        const deviceId = Platform.OS === 'android' ? Application.getAndroidId() : Device.deviceName;
-        try {
-          await api.post('/device-tokens', {
-            token,
-            platform: Platform.OS,
-            device_id: deviceId || 'unknown',
-          });
-          deviceTokenRegistered.current = true;
-        } catch (err) {
-          console.warn('Failed to register device token:', err);
-        }
-      };
-
-      // Only register when user is authenticated and stable
-      if (isAuthenticated) {
-        registerToken();
-      }
-    });
 
     notificationListener.current = Notifications.addNotificationReceivedListener(handleNotificationReceived);
     responseListener.current = Notifications.addNotificationResponseReceivedListener(handleNotificationResponse);
 
     return () => {
-      if (notificationListener.current) {
-        Notifications.removeNotificationSubscription(notificationListener.current);
-      }
-      if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
-      }
-      deviceTokenRegistered.current = false;
+      notificationListener.current?.remove();
+      responseListener.current?.remove();
     };
-  }, [isAuthenticated]);
+  }, []);
 
-  // Auth routing
   useEffect(() => {
-    if (isLoading) return;
     if (!isAuthenticated) {
-      if (!pathname.startsWith('/(auth)')) router.replace('/(auth)/login');
+      registeredPushUserRef.current = null;
       return;
     }
-    const roles = user?.roles || [];
-    const isDpl = roles.includes('dpl') || roles.includes('dosen');
-    if (pathname.startsWith('/(tabs)') && isDpl) {
-      router.replace('/(dpl-tabs)');
-    } else if (pathname.startsWith('/(dpl-tabs)') && !isDpl) {
-      router.replace('/(tabs)');
+
+    const userKey = pushRegistrationKey;
+    if (!userKey) return;
+    if (registeredPushUserRef.current === userKey) return;
+
+    let cancelled = false;
+
+    async function registerDeviceToken() {
+      const token = await registerForPushNotifications();
+      if (!token || cancelled || registeredPushUserRef.current === userKey) return;
+
+      const deviceId = Platform.OS === 'android' ? Application.getAndroidId() : Device.deviceName;
+
+      try {
+        await api.post('/device-tokens', {
+          token,
+          platform: Platform.OS,
+          device_id: deviceId || 'unknown',
+        });
+
+        if (!cancelled) {
+          registeredPushUserRef.current = userKey;
+        }
+      } catch (err) {
+        console.warn('Failed to register device token:', err);
+      }
     }
-  }, [isAuthenticated, isLoading, user, pathname]);
+
+    registerDeviceToken();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, pushRegistrationKey]);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const syncQueue = () => {
+      processQueue(api).catch((error) => {
+        console.warn('Failed to process offline queue:', error);
+      });
+    };
+
+    NetInfo.fetch().then((state) => {
+      if (state.isConnected && state.isInternetReachable !== false) {
+        syncQueue();
+      }
+    });
+
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      if (state.isConnected && state.isInternetReachable !== false) {
+        syncQueue();
+      }
+    });
+
+    return unsubscribe;
+  }, [isAuthenticated]);
+
+  // Auth routing — guard against redirect loops by tracking the last
+  // destination we navigated to.
+  const lastRedirectRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!appReady || isLoading) return;
+
+    const navigateIfNeeded = (target: string) => {
+      if (lastRedirectRef.current === target) return;
+      if (pathname === target) return;
+      lastRedirectRef.current = target;
+      router.replace(target as never);
+    };
+
+    if (!isAuthenticated) {
+      if (!pathname.startsWith('/(auth)')) navigateIfNeeded('/(auth)/login');
+      return;
+    }
+
+    const isDpl = isDplLikeUser(user);
+    const isStudent = isStudentLikeUser(user);
+    const homeRoute = getMobileHomeRoute(user);
+
+    if (pathname === '/' || pathname.length === 0) {
+      navigateIfNeeded(homeRoute);
+      return;
+    }
+
+    if (pathname === '/unsupported' || pathname.startsWith('/unsupported/')) {
+      if (homeRoute !== '/unsupported') {
+        navigateIfNeeded(homeRoute);
+      }
+      return;
+    }
+
+    if (pathname.startsWith('/(tabs)') && !isStudent) {
+      navigateIfNeeded(homeRoute);
+    } else if (pathname.startsWith('/(dpl-tabs)') && !isDpl) {
+      navigateIfNeeded(homeRoute);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appReady, isAuthenticated, isLoading, pathname]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <StatusBar style="auto" />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="(dpl-tabs)" />
-      </Stack>
-    </QueryClientProvider>
+    <RootErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <StatusBar style="auto" />
+        {!appReady ? (
+          <AnimatedSplashScreen />
+        ) : (
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(tabs)" />
+            <Stack.Screen name="(dpl-tabs)" />
+            <Stack.Screen name="unsupported" />
+          </Stack>
+        )}
+      </QueryClientProvider>
+    </RootErrorBoundary>
   );
 }

@@ -2,7 +2,13 @@
 node_modules/
 .turbo/
 .DS_Store
+**/.DS_Store
 *.log
+
+# ── Debug/diagnostic files ──────────────────────────
+pest_results.txt
+route_list.txt
+migrate_status.txt
 
 # ── apps/api (Laravel) ──────────────────────────────
 apps/api/vendor/

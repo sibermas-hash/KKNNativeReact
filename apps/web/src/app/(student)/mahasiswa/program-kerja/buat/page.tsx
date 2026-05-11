@@ -13,7 +13,7 @@ const KATEGORI_OPTIONS = [
   { value: 'tambahan', label: 'Program Tambahan' },
 ];
 
-export default function WorkProgramCreatePage() {
+export default function WorkProgramCreatePage(): React.JSX.Element {
   const router = useRouter();
   const [form, setForm] = useState({
     title: '',
@@ -28,14 +28,25 @@ export default function WorkProgramCreatePage() {
 
   const mutation = useMutation({
     mutationFn: async () => {
-      const fd = new FormData();
-      Object.entries(form).forEach(([k, v]) => fd.append(k, v));
-      if (proposalFile) fd.append('proposal_file', proposalFile);
-      return studentApi.workPrograms.store(fd as unknown as Record<string, unknown>);
+      // Create work program (JSON)
+      const res = await studentApi.workPrograms.store(form);
+      const created = (res as any)?.data ?? res;
+      const id = created?.id;
+
+      // Upload proposal file if provided
+      if (proposalFile && id) {
+        const fd = new FormData();
+        fd.append('proposal_file', proposalFile);
+        await studentApi.workPrograms.uploadProposal(id, fd);
+      }
+
+      return created;
     },
-    onSuccess: () => router.push('/mahasiswa/program-kerja'),
+    onSuccess: () => {
+      router.push('/mahasiswa/program-kerja');
+    },
     onError: (err: unknown) => {
-      const e = err as { response?: { data?: { errors?: Record<string, string[]> } } };
+      const e = err as { response?: { data?: { errors?: Record<string, string[]>; error?: { message?: string } } } };
       if (e?.response?.data?.errors) {
         const flat: Record<string, string> = {};
         Object.entries(e.response.data.errors).forEach(([k, v]) => { flat[k] = v[0]; });

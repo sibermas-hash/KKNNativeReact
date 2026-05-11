@@ -1,43 +1,35 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import type { AxiosInstance } from 'axios';
 import { studentEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
 
 export function useWorkPrograms(client: AxiosInstance) {
-  const endpoints = studentEndpoints(client);
+  const endpoints = useMemo(() => studentEndpoints(client), [client]);
 
   return useQuery({
     queryKey: QUERY_KEYS.student.workPrograms,
-    queryFn: async () => {
-      const res = await endpoints.workPrograms.index();
-      return res.data;
-    },
+    queryFn: () => endpoints.workPrograms.index(),
     staleTime: 30_000,
   });
 }
 
-export function useWorkProgram(client: AxiosInstance, id: number) {
-  const endpoints = studentEndpoints(client);
+export function useWorkProgram(client: AxiosInstance, id: number | undefined) {
+  const endpoints = useMemo(() => studentEndpoints(client), [client]);
 
   return useQuery({
-    queryKey: QUERY_KEYS.student.workProgram(id),
-    queryFn: async () => {
-      const res = await endpoints.workPrograms.show(id);
-      return res.data;
-    },
+    queryKey: QUERY_KEYS.student.workProgram(id!),
+    queryFn: () => endpoints.workPrograms.show(id!),
     enabled: !!id,
   });
 }
 
 export function useCreateWorkProgram(client: AxiosInstance) {
-  const endpoints = studentEndpoints(client);
+  const endpoints = useMemo(() => studentEndpoints(client), [client]);
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: Record<string, unknown>) => {
-      const res = await endpoints.workPrograms.store(data);
-      return res.data;
-    },
+    mutationFn: (data: Record<string, unknown>) => endpoints.workPrograms.store(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.workPrograms });
     },

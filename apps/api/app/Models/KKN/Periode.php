@@ -225,6 +225,11 @@ class Periode extends Model
         });
     }
 
+    public function documentTemplates(): HasMany
+    {
+        return $this->hasMany(PeriodeDocumentTemplate::class, 'periode_id');
+    }
+
     public static function flushContextCache(): void
     {
         foreach (self::CACHE_KEYS as $cacheKey) {

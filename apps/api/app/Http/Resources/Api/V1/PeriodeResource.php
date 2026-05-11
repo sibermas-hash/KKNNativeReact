@@ -29,6 +29,11 @@ class PeriodeResource extends JsonResource
             'is_locked' => $this->is_locked,
             'academic_year' => new TahunAkademikResource($this->whenLoaded('tahunAkademik')),
             'jenis_kkn' => new JenisKknResource($this->whenLoaded('jenisKkn')),
+            'document_templates' => $this->whenLoaded('documentTemplates', fn () => $this->documentTemplates->map(fn ($assignment) => [
+                'id' => $assignment->id,
+                'requirement_id' => $assignment->jenis_kkn_document_requirement_id,
+                'template_id' => $assignment->document_template_id,
+            ])->values()),
             'settings_override' => $this->settings_override,
         ];
     }

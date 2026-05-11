@@ -1,4 +1,6 @@
-export default function Loading() {
+import React from 'react';
+
+export default function Loading(): React.JSX.Element {
   return (
     <div className="flex min-h-screen items-center justify-center">
       <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" />

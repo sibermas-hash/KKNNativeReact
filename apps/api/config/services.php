@@ -45,8 +45,33 @@ return [
         'webhook_window_seconds' => env('MASTER_WEBHOOK_WINDOW_SECONDS', 600),
     ],
 
+    /*
+     |--------------------------------------------------------------------------
+     | Firebase Cloud Messaging
+     |--------------------------------------------------------------------------
+     | Used by App\Notifications\Channels\FcmChannel. When FCM_SERVER_KEY is
+     | empty, the channel short-circuits to a no-op — safe for dev + for
+     | deployments that don't use push notifications yet.
+     */
+    'fcm' => [
+        'server_key' => env('FCM_SERVER_KEY', ''),
+    ],
+
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
+    ],
+
+    /*
+     |--------------------------------------------------------------------------
+     | Telegram (Ops Alerting)
+     |--------------------------------------------------------------------------
+     | Used by App\Services\TelegramAlertService to notify operators of
+     | health degradations or critical events. Leave both blank to disable
+     | (the service becomes a no-op).
+     */
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN', ''),
+        'chat_id' => env('TELEGRAM_CHAT_ID', ''),
     ],
 
 ];

@@ -1,18 +1,51 @@
-import { useEffect, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import { useAuthStore } from '@/stores';
+import { getMobileHomeRoute, useAuthIsLoading, useAuthStore, useIsAuthenticated, useLoginAction } from '@/stores';
 import { api } from '@/lib/api';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, type LoginFormData } from '@sibermas/schemas';
+import {
+  BrandWordmark,
+  colors,
+  FieldLabel,
+  formStyles,
+  InlineAlert,
+  PrimaryButton,
+  SecondaryButton,
+  SurfaceCard,
+} from '@/components/ui/primitives';
+
+const logoUin = require('../../assets/logo_uinsaizu.png');
+const logoSibermas = require('../../assets/Logo_SIBERMAS.png');
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login, isAuthenticated, isLoading } = useAuthStore();
+  const login = useLoginAction();
+  const isAuthenticated = useIsAuthenticated();
+  const isLoading = useAuthIsLoading();
+  const [captchaQuestion, setCaptchaQuestion] = useState<string | null>(null);
+  const [captchaError, setCaptchaError] = useState<string | null>(null);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [isCaptchaLoading, setIsCaptchaLoading] = useState(false);
 
-  const { register, setValue, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormData>({
-    // Cast to any due to potential Zod/resolver type mismatches across workspace versions
+  const {
+    register,
+    setValue,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema as any),
     defaultValues: { login: '', password: '', captcha_id: '', captcha_answer: '', remember: false },
   });
@@ -25,22 +58,29 @@ export default function LoginScreen() {
     register('remember');
   }, [register]);
 
-  const fetchCaptcha = async () => {
-    try {
-      const res = await api.get('/auth/captcha');
-      const data = res.data as { success: boolean; data: { captcha_id: string; question: string } };
-      if (data.success) {
-        setValue('captcha_id', data.data.captcha_id);
-        setValue('captcha_answer', '');
-        // show question via local state
-        setCaptchaQuestion(data.data.question);
-      }
-    } catch {
-      Alert.alert('Error', 'Gagal memuat CAPTCHA');
-    }
-  };
+  const fetchCaptcha = useCallback(async () => {
+    setCaptchaError(null);
+    setIsCaptchaLoading(true);
 
-  const [captchaQuestion, setCaptchaQuestion] = useState<string | null>(null);
+    console.log('[SIBERMAS] fetchCaptcha starting...');
+    try {
+      const data = await api.get('/auth/captcha') as { captcha_id: string; question: string };
+      console.log('[SIBERMAS] captcha response:', JSON.stringify(data));
+      if (!data?.captcha_id) {
+        throw new Error('CAPTCHA tidak tersedia');
+      }
+
+      setValue('captcha_id', data.captcha_id);
+      setValue('captcha_answer', '');
+      setCaptchaQuestion(data.question);
+    } catch (err) {
+      console.warn('[SIBERMAS] fetchCaptcha failed:', err);
+      setCaptchaQuestion(null);
+      setCaptchaError('CAPTCHA belum dapat dimuat. Periksa koneksi API lalu coba muat ulang.');
+    } finally {
+      setIsCaptchaLoading(false);
+    }
+  }, [setValue]);
 
   useEffect(() => {
     let mounted = true;
@@ -48,81 +88,290 @@ export default function LoginScreen() {
       if (mounted) await fetchCaptcha();
     })();
     return () => { mounted = false; };
-  }, []);
+  }, [fetchCaptcha]);
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated) router.replace('/(tabs)');
-  }, [isAuthenticated, isLoading]);
+    if (!isLoading && isAuthenticated) {
+      router.replace(getMobileHomeRoute(useAuthStore.getState().user));
+    }
+  }, [isAuthenticated, isLoading, router]);
 
   const onSubmit = async (data: LoginFormData) => {
+    setLoginError(null);
+
     try {
       await login(data.login, data.password, data.captcha_id, data.captcha_answer);
-      router.replace('/(tabs)');
+      const nextUser = useAuthStore.getState().user;
+      router.replace(getMobileHomeRoute(nextUser));
     } catch (err: unknown) {
       const message = err && typeof err === 'object' && 'response' in err
         ? ((err as { response?: { data?: { error?: { message?: string } } } }).response?.data?.error?.message || 'Login gagal')
-        : 'Terjadi kesalahan';
-      Alert.alert('Error', message);
+        : 'Terjadi kesalahan saat login';
+      setLoginError(message);
       await fetchCaptcha();
     }
   };
 
+  const loginValue = watch('login');
+  const passwordValue = watch('password');
+  const captchaAnswerValue = watch('captcha_answer');
+  const submitDisabled = isSubmitting || isCaptchaLoading || !captchaQuestion;
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>SIBERMAS</Text>
-      <Text style={styles.subtitle}>KKN UIN Saizu</Text>
+    <KeyboardAvoidingView style={styles.root} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <ScrollView
+        contentInsetAdjustmentBehavior="automatic"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+      >
+        <View style={styles.homePill}>
+          <Text style={styles.homePillText}>Portal Mobile SIBERMAS</Text>
+        </View>
 
-      <View style={styles.form}>
-        <Text style={styles.label}>Username / Email</Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={(text) => setValue('login', text)}
-          placeholder="Masukkan username"
-          autoCapitalize="none"
-          accessibilityLabel="login"
-        />
-        {errors.login && <Text style={{ color: '#dc2626' }}>{String(errors.login.message)}</Text>}
+        <View style={styles.brandBlock}>
+          <View style={styles.logoRow}>
+            <Image source={logoUin} style={styles.logo} resizeMode="contain" />
+            <View style={styles.logoDivider} />
+            <Image source={logoSibermas} style={styles.logo} resizeMode="contain" />
+          </View>
+          <View style={styles.brandTextWrap}>
+            <Text style={styles.brand}>
+              Portal <Text style={styles.brandCyan}>SIBER</Text><Text style={styles.brandEmerald}>MAS.</Text>
+            </Text>
+            <Text style={styles.subtitle}>LPPM UIN Profesor Kiai Haji Saifuddin Zuhri Purwokerto</Text>
+          </View>
+        </View>
 
-        <Text style={styles.label}>Kata Sandi</Text>
-        <TextInput
-          style={styles.input}
-          onChangeText={(text) => setValue('password', text)}
-          placeholder="Masukkan kata sandi"
-          secureTextEntry
-          accessibilityLabel="password"
-        />
-        {errors.password && <Text style={{ color: '#dc2626' }}>{String(errors.password.message)}</Text>}
+        <SurfaceCard style={styles.card}>
+          <BrandWordmark subtitle="Akses Akun KKN" />
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardTitle}>Masuk ke Akun</Text>
+            <Text style={styles.cardSubtitle}>Gunakan akun mahasiswa atau DPL yang sudah terdaftar.</Text>
+          </View>
 
-        {captchaQuestion && (
-          <>
-            <Text style={styles.label}>{captchaQuestion}</Text>
+          {loginError ? <InlineAlert tone="rose" description={loginError} /> : null}
+          {captchaError ? (
+            <InlineAlert
+              tone="amber"
+              title="CAPTCHA tidak tersedia"
+              description={captchaError}
+            />
+          ) : null}
+
+          <View style={styles.formGroup}>
+            <FieldLabel required>Username / Email</FieldLabel>
             <TextInput
-              style={styles.input}
+              style={formStyles.input}
+              value={loginValue}
+              onChangeText={(text) => setValue('login', text)}
+              placeholder="Masukkan username atau email"
+              placeholderTextColor={colors.textSubtle}
+              autoCapitalize="none"
+              autoCorrect={false}
+              accessibilityLabel="login"
+            />
+            {errors.login ? <Text style={formStyles.errorText} selectable>{String(errors.login.message)}</Text> : null}
+          </View>
+
+          <View style={styles.formGroup}>
+            <FieldLabel required>Kata Sandi</FieldLabel>
+            <TextInput
+              style={formStyles.input}
+              value={passwordValue}
+              onChangeText={(text) => setValue('password', text)}
+              placeholder="Masukkan kata sandi"
+              placeholderTextColor={colors.textSubtle}
+              secureTextEntry
+              accessibilityLabel="password"
+            />
+            {errors.password ? <Text style={formStyles.errorText} selectable>{String(errors.password.message)}</Text> : null}
+          </View>
+
+          <View style={styles.captchaPanel}>
+            <View style={styles.captchaHeader}>
+              <Text style={styles.captchaLabel}>Verifikasi CAPTCHA</Text>
+              <SecondaryButton
+                label={isCaptchaLoading ? 'Memuat...' : 'Muat Ulang'}
+                onPress={fetchCaptcha}
+                disabled={isCaptchaLoading}
+                style={styles.reloadButton}
+                textStyle={styles.reloadButtonText}
+              />
+            </View>
+            <Text style={styles.captchaQuestion} selectable>
+              {captchaQuestion || 'CAPTCHA belum tersedia'}
+            </Text>
+            <TextInput
+              style={formStyles.input}
+              value={captchaAnswerValue}
               onChangeText={(text) => setValue('captcha_answer', text)}
               placeholder="Jawaban"
+              placeholderTextColor={colors.textSubtle}
               keyboardType="numeric"
               accessibilityLabel="captcha"
+              editable={Boolean(captchaQuestion)}
             />
-            {errors.captcha_answer && <Text style={{ color: '#dc2626' }}>{String(errors.captcha_answer.message)}</Text>}
-          </>
-        )}
+            {errors.captcha_answer ? <Text style={formStyles.errorText} selectable>{String(errors.captcha_answer.message)}</Text> : null}
+          </View>
 
-        <TouchableOpacity style={[styles.button, isSubmitting && styles.buttonDisabled]} onPress={handleSubmit(onSubmit)} disabled={isSubmitting || !captchaQuestion}>
-          {isSubmitting ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Masuk</Text>}
-        </TouchableOpacity>
-      </View>
-    </View>
+          <PrimaryButton
+            label="Masuk"
+            onPress={handleSubmit(onSubmit)}
+            loading={isSubmitting}
+            disabled={submitDisabled}
+          />
+
+          {__DEV__ && (
+            <SecondaryButton
+              label="[DEV] Login Superadmin"
+              onPress={async () => {
+                try {
+                  setLoginError(null);
+                  const captcha = await api.get('/auth/captcha') as { captcha_id: string; question: string };
+                  const match = captcha.question.match(/(\d+)\s*([+\-])\s*(\d+)/);
+                  if (!match) return;
+                  const ans = match[2] === '+' ? Number(match[1]) + Number(match[3]) : Number(match[1]) - Number(match[3]);
+                  await login('superadmin', 'Password123', captcha.captcha_id, String(ans));
+                } catch (e: any) {
+                  setLoginError(e?.message || 'Dev login failed');
+                }
+              }}
+            />
+          )}
+        </SurfaceCard>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: 'center', padding: 24, backgroundColor: '#0f172a' },
-  title: { fontSize: 32, fontWeight: 'bold', color: '#fff', textAlign: 'center' },
-  subtitle: { fontSize: 16, color: '#94a3b8', textAlign: 'center', marginBottom: 32 },
-  form: { backgroundColor: '#fff', borderRadius: 16, padding: 24 },
-  label: { fontSize: 14, fontWeight: '600', color: '#334155', marginBottom: 6, marginTop: 12 },
-  input: { borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 14 },
-  button: { backgroundColor: '#0d9488', borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 20 },
-  buttonDisabled: { opacity: 0.5 },
-  buttonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  root: { flex: 1, backgroundColor: '#FFFFFF' },
+  content: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 20,
+    gap: 20,
+  },
+  homePill: {
+    alignSelf: 'center',
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
+    paddingHorizontal: 16,
+    paddingVertical: 7,
+  },
+  homePillText: {
+    color: '#64748B',
+    fontSize: 10,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+  },
+  brandBlock: {
+    alignItems: 'center',
+    gap: 14,
+  },
+  logoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  logo: {
+    width: 48,
+    height: 48,
+  },
+  logoDivider: {
+    width: 1,
+    height: 32,
+    backgroundColor: '#E2E8F0',
+  },
+  brandTextWrap: {
+    alignItems: 'center',
+    gap: 6,
+  },
+  brand: {
+    color: '#0F172A',
+    fontSize: 28,
+    fontWeight: '900',
+    letterSpacing: 0,
+    textTransform: 'uppercase',
+  },
+  brandCyan: {
+    color: '#0891B2',
+  },
+  brandEmerald: {
+    color: '#059669',
+  },
+  subtitle: {
+    color: '#94A3B8',
+    fontSize: 10,
+    fontWeight: '800',
+    textAlign: 'center',
+    lineHeight: 15,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  card: {
+    gap: 16,
+    backgroundColor: '#FFFFFF',
+    borderColor: '#E2E8F0',
+    borderWidth: 1,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  cardHeader: {
+    gap: 6,
+  },
+  cardTitle: {
+    color: '#0F172A',
+    fontSize: 20,
+    fontWeight: '900',
+  },
+  cardSubtitle: {
+    color: '#64748B',
+    fontSize: 13,
+    lineHeight: 19,
+  },
+  formGroup: {
+    gap: 8,
+  },
+  captchaPanel: {
+    gap: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    backgroundColor: '#F8FAFC',
+    padding: 12,
+  },
+  captchaHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  captchaLabel: {
+    flex: 1,
+    color: '#0F172A',
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  captchaQuestion: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '800',
+    lineHeight: 22,
+  },
+  reloadButton: {
+    minHeight: 34,
+    paddingVertical: 7,
+    paddingHorizontal: 10,
+  },
+  reloadButtonText: {
+    fontSize: 12,
+  },
 });

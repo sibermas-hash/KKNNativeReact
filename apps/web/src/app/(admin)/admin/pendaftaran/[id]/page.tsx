@@ -1,28 +1,27 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminEndpoints } from '@sibermas/api-client';
-import { api, adminApi } from '@/lib/api';
+import { adminApi } from '@/lib/api';
 import { useParams } from 'next/navigation';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
-export default function RegistrationDetailPage() {
+export default function RegistrationDetailPage(): React.JSX.Element {
   const { id } = useParams();
   const queryClient = useQueryClient();
   
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'registration', Number(id)],
+    queryKey: ['admin', 'pendaftaran', Number(id)],
     queryFn: async () => {
       const res = await adminApi.registrations.show(Number(id));
-      return res.data;
+      return (res as any)?.data ?? res;
     },
     enabled: !!id,
   });
 
   const approveMutation = useMutation({
     mutationFn: () => adminApi.registrations.approve(Number(id)),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'registration', Number(id)] }); toast.success('Pendaftaran disetujui'); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'pendaftaran', Number(id)] }); toast.success('Pendaftaran disetujui'); },
   });
 
   if (isLoading) return <div className="h-32 animate-pulse rounded-2xl bg-slate-200" />;
@@ -44,7 +43,7 @@ export default function RegistrationDetailPage() {
         </div>
         {data.status === 'pending' && (
           <div className="mt-6 flex gap-3">
-            <button onClick={() => approveMutation.mutate()} className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-700">✅ Setujui</button>
+            <button onClick={() => approveMutation.mutate()} disabled={approveMutation.isPending} className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50">✅ Setujui</button>
           </div>
         )}
       </div>

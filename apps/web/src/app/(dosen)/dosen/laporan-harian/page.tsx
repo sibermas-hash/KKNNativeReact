@@ -2,22 +2,20 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { dplEndpoints } from '@sibermas/api-client';
-import { QUERY_KEYS } from '@sibermas/constants';
-import { api, dplApi } from '@/lib/api';
+import { dplApi } from '@/lib/api';
 import Link from 'next/link';
 import { FileText, CheckCircle2, XCircle } from 'lucide-react';
 import { StatusBadge, PageHeader, EmptyState } from '@/components/ui/shared';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
-export default function DplDailyReportsPage() {
+export default function DplDailyReportsPage(): React.JSX.Element {
   
   const queryClient = useQueryClient();
   const [status, setStatus] = useState('');
 
   const { data, isLoading } = useQuery({
     queryKey: ['dpl', 'daily-reports', { status }],
-    queryFn: async () => { const res = await dplApi.dailyReports.index({ status: status || undefined }); return (res as unknown as { success: boolean; data: unknown[]; meta?: Record<string, number> }).data; },
+    queryFn: async () => { return await dplApi.dailyReports.index({ status: status || undefined }); },
   });
 
   const approveMutation = useMutation({
@@ -25,7 +23,7 @@ export default function DplDailyReportsPage() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['dpl', 'daily-reports'] }); toast.success('Laporan disetujui'); },
   });
 
-  const reports = (data as Record<string, unknown>[]) || [];
+  const reports = ((data as any) || []) as Record<string, unknown>[];
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
@@ -55,7 +53,7 @@ export default function DplDailyReportsPage() {
               </div>
               {r.status === 'submitted' && (
                 <div className="flex gap-2 mt-4">
-                  <button onClick={() => approveMutation.mutate(r.id as number)} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase"><CheckCircle2 size={14} /> Setujui</button>
+                  <button onClick={() => approveMutation.mutate(r.id as number)} disabled={approveMutation.isPending} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase disabled:opacity-50"><CheckCircle2 size={14} /> Setujui</button>
                   <Link href={`/dosen/laporan-harian/${r.id}`} className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-black uppercase">Detail →</Link>
                 </div>
               )}

@@ -10,6 +10,7 @@ use App\Http\Traits\ApiResponse;
 use App\Models\KKN\KonfigurasiPenilaian;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class KonfigurasiPenilaianController extends Controller
 {
@@ -60,6 +61,16 @@ class KonfigurasiPenilaianController extends Controller
         foreach ($models as $model) {
             $percentage = (float) $configs->firstWhere('id', $model->id)['percentage'];
             $model->update(['percentage' => $percentage]);
+        }
+
+        // R11-FULL-023 fix: belt-and-suspenders cache invalidation.
+        // Model event `saved()` di KonfigurasiPenilaian sudah invalidate cache
+        // per-row, tapi kita explicit forget semua KknType cache di sini untuk
+        // memastikan tidak ada stale weight saat bulk update. Redis cache TTL
+        // 3600s — tanpa ini, perubahan bobot baru efektif setelah cache expire
+        // (bisa 1 jam grading dengan bobot lama).
+        foreach (KknType::cases() as $type) {
+            Cache::forget('grading_configs_'.$type->value);
         }
 
         return $this->success(null, 'Konfigurasi penilaian berhasil diperbarui.');

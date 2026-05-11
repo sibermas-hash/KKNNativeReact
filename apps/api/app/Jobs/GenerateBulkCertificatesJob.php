@@ -22,6 +22,15 @@ class GenerateBulkCertificatesJob implements ShouldQueue
     public $timeout = 600; // 10 minutes
 
     /**
+     * Re-audit 2026-05-10 H-004: retry policy added. Certificate generation
+     * often fails mid-batch due to DomPDF memory spikes; auto-retry lets the
+     * job recover after a worker restart.
+     */
+    public int $tries = 3;
+
+    public array $backoff = [30, 120, 600];
+
+    /**
      * Create a new job instance.
      */
     public function __construct(
@@ -38,7 +47,7 @@ class GenerateBulkCertificatesJob implements ShouldQueue
         try {
             $periode = Periode::findOrFail($this->periodeId);
             $query = NilaiKkn::query()
-                ->where('is_final', true)
+                ->where('is_finalized', true)
                 ->whereHas('kelompok', fn ($q) => $q->where('periode_id', $this->periodeId));
 
             if ($this->facultyId) {
@@ -83,5 +92,14 @@ class GenerateBulkCertificatesJob implements ShouldQueue
             Log::error('GenerateBulkCertificatesJob failed: '.$e->getMessage());
             throw $e;
         }
+    }
+
+    /**
+     * R13-API-006: ensure cleanup + log on exhausted retries so admin UI can
+     * surface the failure instead of hanging on "processing".
+     */
+    public function failed(\Throwable $e): void
+    {
+        Log::error("GenerateBulkCertificatesJob exhausted retries for period {$this->periodId}: ".$e->getMessage());
     }
 }

@@ -175,6 +175,53 @@ class DplParticipantEvaluationService
         return $evaluation;
     }
 
+    public function getDplSummary(int $dosenId): ?array
+    {
+        $evaluations = EvaluasiDplPeserta::where('dosen_id', $dosenId)
+            ->with('items')
+            ->get();
+
+        if ($evaluations->isEmpty()) {
+            return null;
+        }
+
+        $responseCount = $evaluations->count();
+        $eligibleCount = $evaluations->count(); // Simplified - could be enhanced
+        $responseRate = $eligibleCount > 0 ? ($responseCount / $eligibleCount) * 100 : 0;
+        
+        $totalScores = $evaluations->pluck('total_score')->filter()->toArray();
+        $averageScore = count($totalScores) > 0 ? round(array_sum($totalScores) / count($totalScores), 2) : 0;
+
+        // Calculate criterion averages
+        $criterionAverages = collect(self::CRITERIA)->map(function ($criterion) use ($evaluations) {
+            $scores = $evaluations->flatMap(fn ($eval) => 
+                $eval->items->where('criterion_key', $criterion['key'])->pluck('score')
+            )->toArray();
+            
+            return [
+                'key' => $criterion['key'],
+                'label' => $criterion['label'],
+                'average' => count($scores) > 0 ? round(array_sum($scores) / count($scores), 2) : 0,
+            ];
+        })->toArray();
+
+        // Count recommendations
+        $recommendations = $evaluations->groupBy('recommendation')
+            ->map(fn ($group) => $group->count())
+            ->toArray();
+
+        return [
+            'dosen_id' => $dosenId,
+            'dosen_name' => $evaluations->first()?->dosen?->nama ?? 'N/A',
+            'response_count' => $responseCount,
+            'eligible_count' => $eligibleCount,
+            'response_rate' => round($responseRate, 2),
+            'average_score' => $averageScore,
+            'criterion_averages' => $criterionAverages,
+            'recommendations' => $recommendations,
+        ];
+    }
+
     public function adminOverview(User $user, array $filters = []): array
     {
         $facultyId = $user->hasRole('faculty_admin') ? $user->fakultas_id : null;
@@ -194,14 +241,19 @@ class DplParticipantEvaluationService
             ->when($periodId, fn (Builder $query) => $query->where('periode_id', $periodId))
             ->when($recommendation, fn (Builder $query) => $query->where('recommendation', $recommendation))
             ->when($search !== '', function (Builder $query) use ($search) {
-                $query->where(function (Builder $inner) use ($search) {
-                    $inner->whereHas('dosen', fn (Builder $dosen) => $dosen
-                        ->where('nama', 'like', "%{$search}%")
-                        ->orWhere('nip', 'like', "%{$search}%"))
-                        ->orWhereHas('dosen.user', fn (Builder $u) => $u->where('name', 'like', "%{$search}%"))
+                $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+                $query->where(function (Builder $inner) use ($escaped, $search) {
+                    $inner->whereHas('dosen', function (Builder $dosen) use ($escaped, $search) {
+                        // nip encrypted — swap partial LIKE with nama + bidx exact
+                        $dosen->where('nama', 'like', "%{$escaped}%");
+                        if (preg_match('/^\d{6,20}$/', trim($search))) {
+                            $dosen->orWhere('nip_bidx', \App\Models\KKN\Dosen::computeBlindIndex(trim($search)));
+                        }
+                    })
+                        ->orWhereHas('dosen.user', fn (Builder $u) => $u->where('name', 'like', "%{$escaped}%"))
                         ->orWhereHas('kelompok', fn (Builder $kelompok) => $kelompok
-                            ->where('nama_kelompok', 'like', "%{$search}%")
-                            ->orWhere('code', 'like', "%{$search}%"));
+                            ->where('nama_kelompok', 'like', "%{$escaped}%")
+                            ->orWhere('code', 'like', "%{$escaped}%"));
                 });
             })
             ->orderByDesc('submitted_at')

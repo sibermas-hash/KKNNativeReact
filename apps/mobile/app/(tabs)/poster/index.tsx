@@ -1,38 +1,64 @@
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, Linking } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as DocumentPicker from 'expo-document-picker';
 import { studentEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
 import { useState } from 'react';
+import {
+  colors,
+  HeroCard,
+  InlineAlert,
+  LoadingState,
+  PrimaryButton,
+  Screen,
+  SecondaryButton,
+  StatusPill,
+  SurfaceCard,
+} from '@/components/ui/primitives';
+
+type PosterEndpoints = {
+  poster: {
+    index: () => Promise<unknown>;
+    store: (data: FormData) => Promise<unknown>;
+  };
+};
+
+type PosterResponse = {
+  kelompok?: {
+    nama_kelompok?: string;
+    poster_potensi_desa_path?: string | null;
+    poster_potensi_desa_name?: string | null;
+    poster_url?: string | null;
+  };
+  allowed_types?: string[];
+  max_size_mb?: number;
+};
 
 export default function PosterScreen() {
   const qc = useQueryClient();
-  const endpoints = studentEndpoints(api);
+  const endpoints = studentEndpoints(api) as unknown as PosterEndpoints;
   const [selectedFile, setSelectedFile] = useState<{ name: string; uri: string; mimeType?: string } | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'poster'],
-    queryFn: async () => {
-      const res = await (endpoints as unknown as { poster: { index: () => Promise<unknown> } }).poster.index();
-      return (res as { data?: unknown }).data ?? res;
-    },
+    queryFn: async () => await endpoints.poster.index() as PosterResponse,
   });
 
-  const poster = data as { kelompok?: { nama_kelompok?: string; poster_potensi_desa_path?: string | null; poster_potensi_desa_name?: string | null }; allowed_types?: string[]; max_size?: string } | null;
+  const poster = data ?? null;
 
   const mutation = useMutation({
     mutationFn: async () => {
       if (!selectedFile) throw new Error('Pilih file terlebih dahulu');
       const fd = new FormData();
       fd.append('poster', { uri: selectedFile.uri, name: selectedFile.name, type: selectedFile.mimeType || 'application/octet-stream' } as unknown as Blob);
-      return (endpoints as unknown as { poster: { store: (d: FormData) => Promise<unknown> } }).poster.store(fd);
+      return endpoints.poster.store(fd);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['student', 'poster'] });
       setSelectedFile(null);
       Alert.alert('Berhasil', 'Poster berhasil diunggah');
     },
-    onError: () => Alert.alert('Error', 'Gagal mengunggah poster'),
+    onError: (error: any) => Alert.alert('Error', error.response?.data?.error?.message || 'Gagal mengunggah poster'),
   });
 
   const pickFile = async () => {
@@ -46,94 +72,119 @@ export default function PosterScreen() {
   };
 
   if (isLoading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#0d9488" />
-      </View>
-    );
+    return <LoadingState label="Memuat poster potensi desa..." />;
   }
 
   const existing = poster?.kelompok;
+  const hasPoster = Boolean(existing?.poster_potensi_desa_path);
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: 16 }}>
-      <Text style={styles.title}>Poster Peta Potensi Desa</Text>
-      <Text style={styles.subtitle}>Sesuai Lampiran 10 Panduan KKN</Text>
+    <Screen>
+      <HeroCard
+        eyebrow="Poster Potensi"
+        title="Peta Potensi Desa"
+        subtitle="Unggah poster kelompok dalam format gambar atau PDF sesuai panduan KKN."
+        tone="emerald"
+        right={<StatusPill label={hasPoster ? 'Terunggah' : 'Belum'} tone={hasPoster ? 'teal' : 'slate'} />}
+      />
 
-      {/* Existing Poster */}
-      {existing?.poster_potensi_desa_path && (
-        <View style={styles.existingCard}>
-          <Text style={styles.existingIcon}>✅</Text>
-          <View style={styles.existingInfo}>
-            <Text style={styles.existingTitle}>Poster Sudah Diunggah</Text>
-            <Text style={styles.existingName} numberOfLines={1}>{existing.poster_potensi_desa_name}</Text>
+      {hasPoster ? (
+        <SurfaceCard style={styles.card}>
+          <View style={styles.cardHeader}>
+            <View style={styles.cardCopy}>
+              <Text style={styles.cardTitle}>Poster Aktif</Text>
+              <Text style={styles.fileName} numberOfLines={1}>{existing?.poster_potensi_desa_name || '-'}</Text>
+            </View>
+            {existing?.poster_url ? (
+              <SecondaryButton label="Lihat" onPress={() => Linking.openURL(existing.poster_url!)} style={styles.smallButton} />
+            ) : null}
           </View>
-        </View>
-      )}
+        </SurfaceCard>
+      ) : null}
 
-      {/* Info */}
-      <View style={styles.infoCard}>
-        <Text style={styles.infoIcon}>ℹ️</Text>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.infoText}>Format: {poster?.allowed_types?.join(', ') || 'JPG, PNG, PDF'}</Text>
-          <Text style={styles.infoText}>Ukuran maks: {poster?.max_size || '10MB'}</Text>
-        </View>
-      </View>
+      <InlineAlert
+        tone="amber"
+        title="Ketentuan File"
+        description={`Format: ${poster?.allowed_types?.join(', ') || 'JPG, PNG, PDF'}; ukuran maks: ${poster?.max_size_mb ? `${poster.max_size_mb}MB` : '5MB'}.`}
+      />
 
-      {/* File Picker */}
-      <TouchableOpacity style={styles.pickBtn} onPress={pickFile}>
-        <Text style={styles.pickIcon}>📎</Text>
-        <Text style={styles.pickText}>
-          {selectedFile ? selectedFile.name : 'Pilih File Poster'}
-        </Text>
-      </TouchableOpacity>
+      <SurfaceCard style={styles.uploadCard}>
+        <Text style={styles.cardTitle}>File Poster</Text>
 
-      {selectedFile && (
-        <View style={styles.selectedCard}>
-          <Text style={styles.selectedName} numberOfLines={1}>{selectedFile.name}</Text>
-          <TouchableOpacity onPress={() => setSelectedFile(null)}>
-            <Text style={styles.removeBtn}>✕</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+        <TouchableOpacity activeOpacity={0.82} style={styles.pickBox} onPress={pickFile}>
+          <View style={styles.pickMark}>
+            <Text style={styles.pickMarkText}>UP</Text>
+          </View>
+          <View style={styles.pickCopy}>
+            <Text style={styles.pickTitle}>{selectedFile ? selectedFile.name : 'Pilih File Poster'}</Text>
+            <Text style={styles.pickSubtitle}>Gambar atau PDF dari perangkat</Text>
+          </View>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={[styles.uploadBtn, (!selectedFile || mutation.isPending) && styles.uploadBtnDisabled]}
-        onPress={() => mutation.mutate()}
-        disabled={!selectedFile || mutation.isPending}
-      >
-        {mutation.isPending ? (
-          <ActivityIndicator size="small" color="#fff" />
-        ) : (
-          <Text style={styles.uploadBtnText}>
-            {existing?.poster_potensi_desa_path ? '🔄 Ganti Poster' : '⬆️ Upload Poster'}
-          </Text>
-        )}
-      </TouchableOpacity>
-    </ScrollView>
+        {selectedFile ? (
+          <View style={styles.selectedRow}>
+            <Text style={styles.selectedName} numberOfLines={1}>{selectedFile.name}</Text>
+            <TouchableOpacity onPress={() => setSelectedFile(null)}>
+              <Text style={styles.removeText}>Hapus</Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
+
+        <PrimaryButton
+          label={hasPoster ? 'Ganti Poster' : 'Upload Poster'}
+          onPress={() => mutation.mutate()}
+          disabled={!selectedFile}
+          loading={mutation.isPending}
+        />
+      </SurfaceCard>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 22, fontWeight: '800', color: '#0f172a', marginBottom: 4 },
-  subtitle: { fontSize: 13, color: '#64748b', marginBottom: 20 },
-  existingCard: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#ecfdf5', borderRadius: 16, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: '#a7f3d0' },
-  existingIcon: { fontSize: 24 },
-  existingInfo: { flex: 1 },
-  existingTitle: { fontSize: 14, fontWeight: '700', color: '#065f46' },
-  existingName: { fontSize: 12, color: '#047857', marginTop: 2 },
-  infoCard: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, backgroundColor: '#fffbeb', borderRadius: 12, padding: 14, marginBottom: 20, borderWidth: 1, borderColor: '#fde68a' },
-  infoIcon: { fontSize: 16 },
-  infoText: { fontSize: 12, color: '#92400e', lineHeight: 18 },
-  pickBtn: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#fff', borderRadius: 16, padding: 18, borderWidth: 2, borderColor: '#e2e8f0', borderStyle: 'dashed', marginBottom: 12 },
-  pickIcon: { fontSize: 24 },
-  pickText: { fontSize: 14, color: '#64748b', fontWeight: '600', flex: 1 },
-  selectedCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#f0fdf4', borderRadius: 12, padding: 12, marginBottom: 16, borderWidth: 1, borderColor: '#bbf7d0' },
-  selectedName: { flex: 1, fontSize: 13, color: '#166534', fontWeight: '600' },
-  removeBtn: { fontSize: 16, color: '#94a3b8', paddingLeft: 8 },
-  uploadBtn: { backgroundColor: '#0d9488', borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 8, shadowColor: '#0d9488', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4 },
-  uploadBtnDisabled: { opacity: 0.5 },
-  uploadBtnText: { color: '#fff', fontSize: 15, fontWeight: '800', letterSpacing: 0.5 },
+  card: { gap: 12 },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  cardCopy: { flex: 1, gap: 4 },
+  cardTitle: { fontSize: 17, fontWeight: '900', color: colors.text },
+  fileName: { fontSize: 13, color: colors.textMuted, fontWeight: '700' },
+  smallButton: { minHeight: 38, paddingVertical: 8, paddingHorizontal: 14 },
+  uploadCard: { gap: 14 },
+  pickBox: {
+    minHeight: 78,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: colors.borderStrong,
+    borderRadius: 8,
+    padding: 14,
+    backgroundColor: colors.surfaceMuted,
+  },
+  pickMark: {
+    width: 38,
+    height: 38,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#E6FFFA',
+    borderWidth: 1,
+    borderColor: '#99F6E4',
+  },
+  pickMarkText: { fontSize: 11, fontWeight: '900', color: colors.primary },
+  pickCopy: { flex: 1, gap: 3 },
+  pickTitle: { fontSize: 14, fontWeight: '800', color: colors.text },
+  pickSubtitle: { fontSize: 12, color: colors.textMuted },
+  selectedRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: '#ECFDF5',
+    borderWidth: 1,
+    borderColor: '#A7F3D0',
+  },
+  selectedName: { flex: 1, fontSize: 13, color: '#065F46', fontWeight: '800' },
+  removeText: { fontSize: 13, color: colors.rose, fontWeight: '800' },
 });

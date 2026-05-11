@@ -40,7 +40,11 @@ class HandleActivePeriod
         }
 
         if (! $this->contextService->getActivePeriodId()) {
-            $defaultId = $this->contextService->getDefaultPeriodId();
+            $userId = auth()->id();
+            $defaultId = \Illuminate\Support\Facades\Cache::remember(
+                "default_period_id_{$userId}", 60,
+                fn () => $this->contextService->getDefaultPeriodId()
+            );
             if ($defaultId) {
                 $this->contextService->setActivePeriod($defaultId);
             }

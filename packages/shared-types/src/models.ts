@@ -4,10 +4,24 @@ export interface User {
   name: string;
   email: string;
   avatar_url?: string | null;
+  avatar_moderation_status?: 'pending' | 'approved' | 'rejected' | null;
+  avatar_moderation_reason?: string | null;
+  two_factor_enabled?: boolean;
+  two_factor_required?: boolean;
   phone?: string | null;
   address?: string | null;
+  address_village_name?: string | null;
+  address_district_name?: string | null;
+  address_regency_name?: string | null;
+  address_postal_code?: string | null;
+  address_lat?: number | null;
+  address_lng?: number | null;
+  address_registered_at?: string | null;
+  address_verified_at?: string | null;
   is_active: boolean;
   must_change_password: boolean;
+  password_changed_at?: string | null;
+  profile_complete?: boolean;
   nim?: string | null;
   roles: string[];
   permissions: string[];
@@ -42,19 +56,6 @@ export interface Mahasiswa {
   faculty?: Faculty | null;
   prodi?: Program | null;
   profile_completion?: number;
-  domisili?: Domisili;
-}
-
-export interface Domisili {
-  lat?: number | null;
-  lng?: number | null;
-  address?: string | null;
-  village?: string | null;
-  district?: string | null;
-  regency?: string | null;
-  province?: string | null;
-  postal_code?: string | null;
-  registered_at?: string | null;
 }
 
 export interface Dosen {
@@ -236,7 +237,7 @@ export interface KegiatanKkn {
   ai_summary?: string | null;
   ai_analysis?: Record<string, unknown> | null;
   attachments?: FileKegiatan[];
-  kelompok?: { id: number; name: string };
+  kelompok?: { id: number; name?: string; nama_kelompok?: string };
   mahasiswa?: Mahasiswa;
   created_at?: string;
 }

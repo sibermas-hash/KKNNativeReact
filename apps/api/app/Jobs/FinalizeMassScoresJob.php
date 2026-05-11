@@ -22,6 +22,15 @@ class FinalizeMassScoresJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
+     * Re-audit 2026-05-10 H-004: retry policy added. Mass score finalization
+     * calls GradingService::updateUnifiedScore for each student; transient
+     * DB deadlocks should retry rather than abort the whole batch.
+     */
+    public int $tries = 3;
+
+    public array $backoff = [15, 60, 300];
+
+    /**
      * The number of seconds the job can run before timing out.
      *
      * @var int
@@ -66,6 +75,8 @@ class FinalizeMassScoresJob implements ShouldQueue
                         ->get()
                         ->groupBy(fn ($r) => $r->mahasiswa_id.'|'.$r->kelompok_id);
 
+                    $notifyQueue = []; // Collect notifications, send after transaction
+
                     foreach ($scores as $score) {
                         try {
                             if (! $score->mahasiswa) {
@@ -81,7 +92,6 @@ class FinalizeMassScoresJob implements ShouldQueue
                             if (! $report || ! $report->isApproved()) {
                                 $failed++;
                             } else {
-                                // FIX C6 & C15: Use row-level locking and update within transaction
                                 $lockedScore = NilaiKkn::where('id', $score->id)
                                     ->where('is_finalized', false)
                                     ->lockForUpdate()
@@ -99,14 +109,12 @@ class FinalizeMassScoresJob implements ShouldQueue
                                 $lockedScore->save();
                                 $totalFinalized++;
 
-                                // Notify student
                                 if ($score->mahasiswa->user) {
-                                    $score->mahasiswa->user->notify(new ScorePublished($score));
+                                    $notifyQueue[] = [$score->mahasiswa->user, $score];
                                 }
                             }
                         } catch (\Exception $e) {
                             Log::error("Failed to finalize score ID {$score->id}: ".$e->getMessage());
-                            // FIX C15: Increment failed counter in catch block
                             $failed++;
                         }
 
@@ -115,6 +123,15 @@ class FinalizeMassScoresJob implements ShouldQueue
                             'processed' => $processed,
                             'status' => 'processing',
                         ], 3600);
+                    }
+
+                    // Send notifications in batch after transaction commits
+                    foreach ($notifyQueue as [$user, $score]) {
+                        try {
+                            $user->notify(new ScorePublished($score));
+                        } catch (\Exception $e) {
+                            Log::warning("Failed to notify user {$user->id}: ".$e->getMessage());
+                        }
                     }
                 });
             });
@@ -136,5 +153,30 @@ class FinalizeMassScoresJob implements ShouldQueue
         );
 
         Log::info("Completed mass finalization for period ID: {$this->periodId}. Processed: {$processed}, Finalized: {$totalFinalized}, Failed: {$failed}");
+    }
+
+    /**
+     * R13-API-006: explicit failure handler so the progress cache key flips
+     * from 'processing' → 'failed' when retries are exhausted. Without this,
+     * the admin UI sees an infinite spinner because it only checks the
+     * cache-set status.
+     */
+    public function failed(\Throwable $e): void
+    {
+        Cache::put("finalize_progress_{$this->periodId}", [
+            'status' => 'failed',
+            'error' => $e->getMessage(),
+            'finished_at' => now(),
+        ], 3600);
+
+        AuditService::log(
+            'MASS_FINALIZE_FAILED',
+            "Finalisasi massal GAGAL untuk Periode ID: {$this->periodId}: {$e->getMessage()}",
+            null,
+            ['periode_id' => $this->periodId],
+            ['error' => $e->getMessage()],
+        );
+
+        Log::error("FinalizeMassScoresJob failed for period {$this->periodId}: ".$e->getMessage());
     }
 }

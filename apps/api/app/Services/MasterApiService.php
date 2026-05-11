@@ -82,7 +82,15 @@ class MasterApiService
             return [];
         }
 
-        return $this->get('/sync/mahasiswa', ['nims' => $nimList]);
+        // Audit sync finding S-2: SIAKAD's `/sync/mahasiswa?nims[]=...` filter
+        // is not honored server-side — the endpoint returns the first page of
+        // all students regardless. We stream the full list and filter locally,
+        // stopping early once every requested NIM has been found.
+        return $this->filterFromStream(
+            $this->yieldSyncMahasiswa(),
+            'nim',
+            $nimList
+        );
     }
 
     public function getEmployeesByNipList(array $nipList): array
@@ -91,7 +99,42 @@ class MasterApiService
             return [];
         }
 
-        return $this->get('/sync/dosen', ['nips' => $nipList]);
+        // See S-2 note above — same SIAKAD API defect for the dosen endpoint.
+        return $this->filterFromStream(
+            $this->yieldSyncDosen(),
+            'nip',
+            $nipList
+        );
+    }
+
+    /**
+     * S-2 helper: filter a streamed sync endpoint client-side.
+     * Stops early once every needle has been matched.
+     */
+    private function filterFromStream(\Generator $stream, string $keyField, array $needleValues): array
+    {
+        $needles = array_flip(array_map('strval', $needleValues));
+        $matched = [];
+
+        foreach ($stream as $record) {
+            $val = (string) ($record[$keyField] ?? '');
+            if ($val !== '' && isset($needles[$val])) {
+                $matched[] = $record;
+                unset($needles[$val]);
+                if (empty($needles)) {
+                    break; // every requested id found — no need to stream further
+                }
+            }
+        }
+
+        if (! empty($needles)) {
+            Log::info('MasterApi client-side filter: some ids not found', [
+                'field' => $keyField,
+                'missing' => array_keys($needles),
+            ]);
+        }
+
+        return $matched;
     }
 
     public function getAllOrganizations(?string $since = null): array

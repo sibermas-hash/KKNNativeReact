@@ -2,12 +2,11 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminEndpoints } from '@sibermas/api-client';
-import { api, adminApi } from '@/lib/api';
+import { adminApi } from '@/lib/api';
 import Link from 'next/link';
 import { ClipboardList, CheckCircle2, XCircle } from 'lucide-react';
 import { StatusBadge, PageHeader, EmptyState } from '@/components/ui/shared';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
 interface Registration {
   id: number;
@@ -20,7 +19,7 @@ interface Registration {
   [key: string]: unknown;
 }
 
-export default function AdminRegistrationsPage() {
+export default function AdminRegistrationsPage(): React.JSX.Element {
   
   const queryClient = useQueryClient();
   const [status, setStatus] = useState('');
@@ -40,11 +39,13 @@ export default function AdminRegistrationsPage() {
   const approveMutation = useMutation({
     mutationFn: (id: number) => adminApi.registrations.approve(id),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); toast.success('Disetujui'); },
+    onError: () => toast.error('Gagal menyetujui pendaftaran'),
   });
 
   const rejectMutation = useMutation({
     mutationFn: ({ id, reason }: { id: number; reason: string }) => adminApi.registrations.reject(id, { rejection_reason: reason }),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); toast.success('Ditolak'); },
+    onError: () => toast.error('Gagal menolak pendaftaran'),
   });
 
   const toggleSelect = (id: number) => setSelectedIds((prev) => prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]);
@@ -78,7 +79,7 @@ export default function AdminRegistrationsPage() {
                   </div>
                   {r.status === 'pending' && (
                     <div className="flex gap-2 mt-3">
-                      <button onClick={() => approveMutation.mutate(r.id as number)} className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-black"><CheckCircle2 size={12} /> Setujui</button>
+                      <button disabled={approveMutation.isPending} onClick={() => approveMutation.mutate(r.id as number)} className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-black disabled:opacity-50"><CheckCircle2 size={12} /> Setujui</button>
                       <button onClick={() => { const reason = prompt('Alasan penolakan:'); if (reason) rejectMutation.mutate({ id: r.id as number, reason }); }} className="flex items-center gap-1 px-3 py-1.5 bg-rose-100 text-rose-700 rounded-lg text-xs font-black"><XCircle size={12} /> Tolak</button>
                       <Link href={`/admin/pendaftaran/${r.id}`} className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold">Detail →</Link>
                     </div>

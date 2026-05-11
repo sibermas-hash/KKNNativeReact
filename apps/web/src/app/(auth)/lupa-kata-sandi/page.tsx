@@ -6,14 +6,18 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { forgotPasswordSchema, type ForgotPasswordFormData } from '@sibermas/schemas';
 import { api } from '@/lib/api';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { Mail, ArrowLeft, Send, CheckCircle2, RefreshCw, Home } from 'lucide-react';
-import { ParticleBackground } from '@/components/ui/particle-background';
+import dynamic from 'next/dynamic';
+const ParticleBackground = dynamic(
+  () => import('@/components/ui/particle-background').then((m) => ({ default: m.ParticleBackground })),
+  { ssr: false }
+);
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
-export default function ForgotPasswordPage() {
+export default function ForgotPasswordPage(): React.JSX.Element {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);

@@ -53,10 +53,16 @@ class IzinController extends Controller
         $this->authorizeDplAccess($izin);
 
         $validated = $request->validate([
-            'catatan' => ['required', 'string', 'max:500'],
+            'catatan' => ['nullable', 'string', 'max:500'],
+            'rejection_reason' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $this->izinService->tolakIzin(auth()->user(), $izin, $validated['catatan']);
+        $reason = $validated['rejection_reason'] ?? $validated['catatan'] ?? null;
+        if (! $reason) {
+            return $this->validationError(['rejection_reason' => ['Alasan penolakan wajib diisi.']]);
+        }
+
+        $this->izinService->tolakIzin(auth()->user(), $izin, $reason);
 
         return $this->success(['id' => $izin->id, 'status' => 'ditolak'], 'Izin berhasil ditolak.');
     }

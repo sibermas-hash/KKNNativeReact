@@ -276,7 +276,25 @@ class GroupSelectionService
         $group->loadMissing([
             'slotTerkunci.fakultas',
             'slotTerkunci.prodi',
+            'lokasi:id,regency_name',
+            'periode.jenisKkn:id,allowed_regencies',
         ]);
+
+        // Audit R11-JENIS-010 fix: enforce JenisKkn.allowed_regencies kalau di-set.
+        // Sebelumnya field ini ada di model/DB tapi tidak pernah dicek di placement.
+        // Gunakan untuk program KKN seperti Nusantara/Kampung Zakat yang punya
+        // whitelist kabupaten tertentu.
+        $allowedRegencies = $group->periode?->jenisKkn?->allowed_regencies;
+        if (is_array($allowedRegencies) && $allowedRegencies !== []) {
+            $groupRegency = strtolower(trim((string) ($group->lokasi?->regency_name ?? '')));
+            $allowedNorm = array_map(fn ($r) => strtolower(trim((string) $r)), $allowedRegencies);
+            if ($groupRegency === '' || ! in_array($groupRegency, $allowedNorm, true)) {
+                $jenisName = $group->periode?->jenisKkn?->name ?? 'program ini';
+                throw ValidationException::withMessages([
+                    'kelompok_id' => "Kelompok berada di kabupaten yang bukan wilayah {$jenisName} (whitelist: ".implode(', ', $allowedRegencies).').',
+                ]);
+            }
+        }
 
         // FIX C2: Use lockForUpdate() to prevent race conditions on capacity check
         // This is safe because the KelompokKkn row is already locked by the caller

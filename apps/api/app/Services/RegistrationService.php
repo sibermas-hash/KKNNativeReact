@@ -122,6 +122,28 @@ class RegistrationService
                     ]);
                 }
 
+                // 5. QUOTA FILTER (audit R9-R02): enforce periode->kuota.
+                // Sebelumnya kuota hanya di-cek di level kelompok saat
+                // plotting. Untuk periode dengan kuota global yang ditetapkan
+                // LPPM, kita perlu block pendaftar baru sebelum create row.
+                // Hitung existing pendaftar (termasuk pending + approved + document_submitted)
+                // tapi EXCLUDE peserta yang sedang resubmit (status=rejected trashed).
+                if ((int) ($periode->kuota ?? 0) > 0) {
+                    $activeCount = PesertaKkn::query()
+                        ->where('periode_id', $periodeId)
+                        ->whereIn('status', ['pending', 'approved', 'document_submitted', 'document_verified'])
+                        // Exclude record milik mahasiswa ini sendiri (re-register scenario)
+                        ->where('mahasiswa_id', '!=', $mahasiswa->id)
+                        ->lockForUpdate()
+                        ->count();
+
+                    if ($activeCount >= (int) $periode->kuota) {
+                        throw ValidationException::withMessages([
+                            'periode_id' => "Kuota periode KKN telah penuh ({$activeCount}/{$periode->kuota} pendaftar). Silakan daftar di periode berikutnya.",
+                        ]);
+                    }
+                }
+
                 $existing = PesertaKkn::query()
                     ->withTrashed() // FIX POIN B: Check trashed records too
                     ->where('mahasiswa_id', $mahasiswa->id)

@@ -10,6 +10,8 @@ use Illuminate\Support\Str;
 
 class Announcement extends Model
 {
+    use HasFactory;
+
     protected $table = 'announcements';
 
     public const CATEGORY_OPTIONS = [
@@ -20,6 +22,43 @@ class Announcement extends Model
         'PRESS RELEASE',
         'KEMITRAAN',
     ];
+
+    /**
+     * Content-type partitioning.
+     *
+     * Satu tabel `announcements` menyimpan dua konsep yang secara UX berbeda:
+     *   - "Pengumuman" — notifikasi formal (PENGUMUMAN)
+     *   - "Berita"    — artikel / agenda / press-release / kemitraan / pedoman
+     *
+     * Setiap row di-klasifikasikan menurut `category`. Kedua array di bawah
+     * menjadi sumber kebenaran untuk semua controller + scope. Kalau ada
+     * kategori baru, tambahkan ke SALAH SATU array ini — jangan keduanya.
+     */
+    public const TYPE_PENGUMUMAN = 'pengumuman';
+
+    public const TYPE_BERITA = 'berita';
+
+    public const TYPE_PENGUMUMAN_CATEGORIES = ['PENGUMUMAN'];
+
+    public const TYPE_BERITA_CATEGORIES = ['BERITA', 'AGENDA', 'PEDOMAN', 'PRESS RELEASE', 'KEMITRAAN'];
+
+    /**
+     * Resolve type dari kategori. Default fallback ke 'berita' supaya
+     * kategori baru tidak accidentally bocor sebagai "pengumuman".
+     */
+    public static function resolveType(?string $category): string
+    {
+        $cat = strtoupper((string) $category);
+
+        return in_array($cat, self::TYPE_PENGUMUMAN_CATEGORIES, true)
+            ? self::TYPE_PENGUMUMAN
+            : self::TYPE_BERITA;
+    }
+
+    public function getContentTypeAttribute(): string
+    {
+        return self::resolveType($this->category);
+    }
 
     protected $fillable = [
         'title',
@@ -35,14 +74,18 @@ class Announcement extends Model
         'meta_title',
         'meta_description',
         'meta_keywords',
+        'show_as_popup',
+        'popup_until',
+        'popup_dismissable',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'published_at' => 'datetime',
+        'show_as_popup' => 'boolean',
+        'popup_until' => 'datetime',
+        'popup_dismissable' => 'boolean',
     ];
-
-    use HasFactory;
 
     public function scopeActive($query)
     {
@@ -52,11 +95,51 @@ class Announcement extends Model
             ->where('published_at', '<=', now());
     }
 
+    /**
+     * Filter by content-type (berita|pengumuman). No-op kalau $type kosong.
+     */
+    public function scopeOfType($query, ?string $type)
+    {
+        if (! $type) {
+            return $query;
+        }
+
+        $normalized = strtolower($type);
+        if ($normalized === self::TYPE_PENGUMUMAN) {
+            return $query->whereIn('category', self::TYPE_PENGUMUMAN_CATEGORIES);
+        }
+
+        if ($normalized === self::TYPE_BERITA) {
+            return $query->whereIn('category', self::TYPE_BERITA_CATEGORIES);
+        }
+
+        // Unknown type — biarkan query tidak ter-filter supaya tidak mengembalikan
+        // hasil yang menyesatkan. Caller bisa validate lebih dulu kalau perlu.
+        return $query;
+    }
+
     public function scopeOrdered($query)
     {
         return $query
             ->orderByDesc('published_at')
             ->orderByDesc('updated_at');
+    }
+
+    /**
+     * Announcements eligible to render as a popup on the public home page.
+     * Must be active + published + flagged + not yet past popup_until.
+     */
+    public function scopeActivePopup($query)
+    {
+        return $query
+            ->where('is_active', true)
+            ->where('show_as_popup', true)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->where(function ($q) {
+                $q->whereNull('popup_until')
+                    ->orWhere('popup_until', '>=', now());
+            });
     }
 
     protected static function booted()

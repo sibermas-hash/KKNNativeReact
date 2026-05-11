@@ -12,6 +12,7 @@ use App\Services\PeriodContextService;
 use App\Services\WorkshopService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 
 class WorkshopController extends Controller
 {
@@ -61,11 +62,19 @@ class WorkshopController extends Controller
             ->orderByDesc('certificate_issued_at')
             ->get()
             ->map(fn ($p) => [
-                'id'                   => $p->id,
-                'workshop_name'        => $p->workshop?->title,
-                'workshop_date'        => $p->workshop?->workshop_date?->format('d M Y'),
+                'id' => $p->id,
+                'participant_id' => $p->id,
+                'title' => $p->workshop?->title,
+                'workshop_name' => $p->workshop?->title,
+                'workshop_date' => $p->workshop?->workshop_date?->format('d M Y'),
+                'is_passed' => true,
                 'certificate_issued_at' => $p->certificate_issued_at?->format('d M Y'),
-                'certificate_path'     => $p->certificate_path,
+                'certificate_path' => $p->certificate_path,
+                'download_url' => URL::temporarySignedRoute(
+                    'api.v1.dosen.workshops.certificate.download',
+                    now()->addHours(2),
+                    ['participant' => $p->id],
+                ),
             ]);
 
         return $this->success($certificates);
@@ -81,7 +90,8 @@ class WorkshopController extends Controller
             abort(404, 'Sertifikat belum tersedia.');
         }
 
-        $filePath = storage_path('app/public/'.$participant->certificate_path);
+        // X-002 fix (audit): read from PRIVATE disk, not public.
+        $filePath = storage_path('app/private/'.$participant->certificate_path);
 
         if (! file_exists($filePath)) {
             abort(404, 'File sertifikat tidak ditemukan.');

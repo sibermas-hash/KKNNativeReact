@@ -1,19 +1,18 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { adminEndpoints } from '@sibermas/api-client';
 import { api, adminApi } from '@/lib/api';
 import { useParams } from 'next/navigation';
 
-export default function GroupDetailPage() {
+export default function GroupDetailPage(): React.JSX.Element {
   const { id } = useParams();
   
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'group', Number(id)],
+    queryKey: ['admin', 'kelompok', Number(id)],
     queryFn: async () => {
-      const res = await adminApi.groups.show(Number(id));
-      return res.data;
+      const res = await api.get(`/admin/kelompok/${id}`);
+      return (res as any)?.data ?? res;
     },
     enabled: !!id,
   });

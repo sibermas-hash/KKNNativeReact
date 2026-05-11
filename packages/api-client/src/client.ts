@@ -1,18 +1,16 @@
 import axios, { type AxiosInstance, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
-
-// API Response shape - matches Laravel JSON API structure
-interface ApiResponse<T = unknown> {
-  success?: boolean;
-  data?: T;
-  error?: {
-    code?: string;
-    message?: string;
-    errors?: Record<string, string[]>;
-  };
-}
+import type { ApiResponse } from '@sibermas/shared-types';
 
 function handleResponse<T = unknown>(response: AxiosResponse<ApiResponse<T>>): T {
-  return response.data.data as T;
+  if (response.config.responseType === 'blob' || response.config.responseType === 'arraybuffer') {
+    return response.data as T;
+  }
+
+  if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+    return response.data.data as T;
+  }
+
+  return response.data as T;
 }
 
 function handleError(error: unknown): never {

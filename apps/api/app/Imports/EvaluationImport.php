@@ -37,7 +37,7 @@ class EvaluationImport implements ToCollection
                 continue;
             }
 
-            $mahasiswa = Mahasiswa::where('nim', $nim)->first();
+            $mahasiswa = Mahasiswa::whereBlind('nim', (string) $nim)->first();
             if (! $mahasiswa) {
                 continue;
             }

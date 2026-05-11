@@ -1,31 +1,31 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { dplEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api, dplApi } from '@/lib/api';
+import { dplApi } from '@/lib/api';
 import { useState } from 'react';
-import toast from 'react-hot-toast';
-import { CheckCircle2, FileText } from 'lucide-react';
+import { toast } from 'sonner';
+import { CheckCircle2, FileText, Upload } from 'lucide-react';
 import { PageHeader, EmptyState } from '@/components/ui/shared';
+import Link from 'next/link';
 
-export default function DplEvaluationsPage() {
+export default function DplEvaluationsPage(): React.JSX.Element {
   
   const queryClient = useQueryClient();
   const [scores, setScores] = useState<Record<number, Record<string, number>>>({});
 
   const { data } = useQuery({
     queryKey: QUERY_KEYS.dpl.evaluations,
-    queryFn: async () => { const res = await dplApi.evaluations.index() as unknown as { success: boolean; data: Record<string, unknown> }; return res.data; },
+    queryFn: async () => {
+      const res = await dplApi.evaluations.index();
+      // API client interceptor unwraps to res.data.data, so res is already the inner object
+      return (res as any)?.data ?? res;
+    },
   });
 
-  const saveMutation = useMutation({
-    mutationFn: (payload: Record<string, unknown>) => dplApi.evaluations.store(payload),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['dpl', 'evaluations'] }); toast.success('Nilai disimpan'); },
-    onError: () => toast.error('Gagal menyimpan nilai'),
-  });
-
-  const students = (data?.students as Record<string, unknown>[]) || [];
+  // Handle both cases: direct API call vs interceptor-unwrapped
+  const responseData = (data as any)?.data ?? data;
+  const students = (responseData?.students as Record<string, unknown>[]) || [];
   const aspects = ['dpl_relevansi_score', 'dpl_ketercapaian_score', 'dpl_inovasi_score', 'dpl_administrasi_score', 'dpl_artikel_score'];
   const aspectLabels: Record<string, string> = { dpl_relevansi_score: 'Relevansi', dpl_ketercapaian_score: 'Ketercapaian', dpl_inovasi_score: 'Inovasi', dpl_administrasi_score: 'Administrasi', dpl_artikel_score: 'Artikel' };
 
@@ -33,13 +33,29 @@ export default function DplEvaluationsPage() {
     setScores((prev) => ({ ...prev, [studentId]: { ...(prev[studentId] || {}), [aspect]: value } }));
   };
 
+  const saveMutation = useMutation({
+    mutationFn: (payload: { student_id: number; kelompok_id: number; scores: Record<string, number> }) =>
+      dplApi.evaluations.store(payload),
+    onSuccess: () => {
+      toast.success('Nilai berhasil disimpan');
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.dpl.evaluations });
+    },
+    onError: () => toast.error('Gagal menyimpan nilai'),
+  });
+
   const handleSave = (studentId: number, groupId: number) => {
     saveMutation.mutate({ student_id: studentId, kelompok_id: groupId, scores: scores[studentId] || {} });
   };
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      <PageHeader title="Evaluasi Mahasiswa" subtitle="Input nilai per aspek penilaian" />
+      <PageHeader title="Evaluasi Mahasiswa" subtitle="Input nilai per aspek penilaian"
+        actions={
+          <Link href="/dosen/evaluasi/import" className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 shadow-sm">
+            <Upload size={15} /> Import CSV
+          </Link>
+        }
+      />
 
       {students.length === 0 ? <EmptyState icon={<FileText size={48} />} title="Belum ada mahasiswa" />
       : (
@@ -54,7 +70,7 @@ export default function DplEvaluationsPage() {
                 {aspects.map((aspect) => (
                   <div key={aspect}>
                     <label className="text-[10px] font-black text-slate-400 uppercase">{aspectLabels[aspect]}</label>
-                    <input type="number" min={0} max={100} value={scores[s.id as number]?.[aspect] ?? ''} onChange={(e) => updateScore(s.id as number, aspect, Number(e.target.value))} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm font-bold mt-1" placeholder="0-100" />
+                    <input type="number" min={0} max={100} value={scores[s.id as number]?.[aspect] ?? (s as any)[aspect] ?? ''} onChange={(e) => updateScore(s.id as number, aspect, Number(e.target.value))} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm font-bold mt-1" placeholder="0-100" />
                   </div>
                 ))}
               </div>

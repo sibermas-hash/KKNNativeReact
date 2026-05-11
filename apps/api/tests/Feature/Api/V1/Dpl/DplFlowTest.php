@@ -6,6 +6,7 @@ use App\Models\User;
 describe('DPL Flow (E2E)', function () {
 
     beforeEach(function () {
+        createActivePeriod('grading');
         $this->dplUser = createUserWithRole('dpl');
         $this->dosen = Dosen::factory()->create(['user_id' => $this->dplUser->id]);
     });

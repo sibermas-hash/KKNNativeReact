@@ -45,7 +45,12 @@ class LogbookService
             foreach ($documentationFiles as $file) {
                 $extension = strtolower($file->getClientOriginalExtension());
                 $safeFilename = time().'_'.$mahasiswaId.'_'.Str::uuid().'.'.$extension;
-                $path = $file->storeAs("daily_reports/{$kelompokId}", $safeFilename, 'public');
+                // Audit follow-up: store on the private default disk (`local`)
+                // instead of `public`. Daily-report docs include GPS-tagged
+                // photos of students at KKN sites — sensitive. The admin/DPL
+                // download paths read from the default disk, so this also
+                // fixes a pre-existing mismatch that broke file preview.
+                $path = $file->storeAs("daily_reports/{$kelompokId}", $safeFilename, config('filesystems.default'));
 
                 if (method_exists($kegiatan, 'fileKegiatan')) {
                     $kegiatan->fileKegiatan()->create(['file_path' => $path]);

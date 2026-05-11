@@ -11,10 +11,12 @@
   "peerDependencies": {
     "axios": "^1.7.0"
   },
+  "dependencies": {
+    "@sibermas/shared-types": "workspace:*"
+  },
   "devDependencies": {
     "typescript": "^5.7.0",
     "@types/node": "^22.0.0",
-    "@sibermas/shared-types": "workspace:*",
     "vitest": "^4.1.5",
     "axios": "^1.9.0"
   }

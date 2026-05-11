@@ -189,13 +189,13 @@ class AttendanceController extends Controller
         $user = auth()->user();
 
         $syncStats = AttendanceSyncLog::where('user_id', $user->id)
-            ->selectRaw('
+            ->selectRaw("
                 COUNT(*) as total,
-                SUM(CASE WHEN status = "success" THEN 1 ELSE 0 END) as successful,
-                SUM(CASE WHEN status = "failed" THEN 1 ELSE 0 END) as failed,
-                SUM(CASE WHEN status = "retry_pending" THEN 1 ELSE 0 END) as pending_retry,
-                SUM(CASE WHEN status = "manual_intervention_needed" THEN 1 ELSE 0 END) as needs_manual
-            ')
+                SUM(CASE WHEN status = 'success' THEN 1 ELSE 0 END) as successful,
+                SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed,
+                SUM(CASE WHEN status = 'retry_pending' THEN 1 ELSE 0 END) as pending_retry,
+                SUM(CASE WHEN status = 'manual_intervention_needed' THEN 1 ELSE 0 END) as needs_manual
+            ")
             ->first();
 
         $pendingRetries = AttendanceSyncLog::where('user_id', $user->id)
@@ -228,6 +228,7 @@ class AttendanceController extends Controller
         $retryLogs = AttendanceSyncLog::where('user_id', $user->id)
             ->where('status', 'retry_pending')
             ->orWhere('status', 'manual_intervention_needed')
+            ->limit(50)
             ->get();
 
         // In real implementation, would retry each failed sync
@@ -262,6 +263,15 @@ class AttendanceController extends Controller
                 return;
             }
 
+            // SECURITY: Cap decoded size at 4MB to prevent memory exhaustion
+            if (strlen($imageData) > 4 * 1024 * 1024) {
+                \Log::warning('Attendance photo rejected: decoded size exceeds 4MB', [
+                    'attendance_id' => $attendance->id,
+                    'size_bytes' => strlen($imageData),
+                ]);
+                return;
+            }
+
             // SECURITY: Validate MIME type of decoded bytes before image processing
             $finfo = new \finfo(FILEINFO_MIME_TYPE);
             $mimeType = $finfo->buffer($imageData);
@@ -286,8 +296,11 @@ class AttendanceController extends Controller
                 $constraint->upsize();
             });
 
-            // Save to storage
-            Storage::disk('public')->put($path, $image->stream('jpg', 80));
+            // X-003 fix (audit): write to the PRIVATE disk. These are GPS-
+            // stamped selfies of students at KKN sites — PII that must not be
+            // served via the world-readable `public` disk. Served to
+            // authenticated callers via PrivateFileController instead.
+            Storage::disk('local')->put($path, $image->stream('jpg', 80));
 
             // Extract EXIF data if available
             $exifData = $this->extractExifData($imageData);
@@ -297,7 +310,7 @@ class AttendanceController extends Controller
                 'attendance_id' => $attendance->id,
                 'path' => $path,
                 'filename' => $filename,
-                'file_size_bytes' => Storage::disk('public')->size($path),
+                'file_size_bytes' => Storage::disk('local')->size($path),
                 'mime_type' => 'image/jpeg',
                 'exif_data' => $exifData,
                 'exif_latitude' => $exifData['latitude'] ?? null,

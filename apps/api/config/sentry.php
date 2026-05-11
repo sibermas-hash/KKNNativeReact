@@ -44,13 +44,13 @@ return [
     | Sentry Sample Rate
     |--------------------------------------------------------------------------
     |
-    | The percentage of errors to send to Sentry. Use this to reduce cost in
-    | development environment where errors are frequent. Set to 1.0 for
-    | production to send all errors.
+    | The percentage of errors to send to Sentry. Production default reduced
+    | from 1.0 to 0.2 (audit L-003) to avoid quota exhaustion on noisy errors.
+    | Override via SENTRY_SAMPLE_RATE env var if you need full fidelity.
     |
     */
 
-    'sample_rate' => (float) env('SENTRY_SAMPLE_RATE', env('APP_ENV') === 'production' ? 1.0 : 0.5),
+    'sample_rate' => (float) env('SENTRY_SAMPLE_RATE', env('APP_ENV') === 'production' ? 0.2 : 0.5),
 
     /*
     |--------------------------------------------------------------------------
@@ -90,7 +90,9 @@ return [
 
     'breadcrumbs' => [
         'sql_queries' => true,
-        'sql_bindings' => true,
+        // H-006: NEVER enable sql_bindings in production — it ships raw
+        // password hashes, NIK, tokens, NIM, and other PII to Sentry.
+        'sql_bindings' => false,
         'queries' => true,
         'queue_info' => true,
         'queue_jobs' => true,
@@ -102,18 +104,61 @@ return [
     |--------------------------------------------------------------------------
     |
     | This callback is called right before sending the event to Sentry.
-    | You can use it to filter or modify events.
+    | Used to (a) drop health-check noise, (b) scrub PII from request data.
+    |
+    | H-007 fix: signature now correctly uses \Sentry\Event, and adds scrubbing
+    | of sensitive request fields that could leak credentials or PII.
     |
     */
 
-    'before_send' => function (callable $event): ?callable {
-        // Filter out events from certain IP addresses or user-agents
-        if (! empty($event['request'])) {
-            // Example: Filter out health check requests
-            $url = $event['request']['url'] ?? '';
-            if (str_contains($url, '/health') || str_contains($url, '/ready')) {
-                return null;
+    'before_send' => function (\Sentry\Event $event, ?\Sentry\EventHint $hint = null): ?\Sentry\Event {
+        $request = $event->getRequest();
+
+        // (a) Drop health-check noise
+        $url = $request['url'] ?? '';
+        if (is_string($url) && (str_contains($url, '/health') || str_contains($url, '/ready') || str_contains($url, '/up'))) {
+            return null;
+        }
+
+        // (b) Scrub sensitive request fields (body, query, cookies, headers)
+        $sensitiveKeys = [
+            'password', 'password_confirmation', 'current_password', 'new_password',
+            'token', '_token', 'api_key', 'x-api-key', 'x-admin-secret',
+            'authorization', 'cookie', 'set-cookie',
+            'nik', 'nim', 'nip',
+            'birth_date', 'tanggal_lahir',
+            'sibermas_token', 'sibermas_session',
+            'captcha_answer', 'secret',
+        ];
+
+        $scrub = static function (array $data) use ($sensitiveKeys): array {
+            foreach ($data as $key => $value) {
+                $lower = is_string($key) ? strtolower($key) : $key;
+                if (in_array($lower, $sensitiveKeys, true)) {
+                    $data[$key] = '[Filtered]';
+                } elseif (is_array($value)) {
+                    $data[$key] = (function () use ($value, $sensitiveKeys) {
+                        // Recursive inline; Sentry only nests a couple of levels deep.
+                        foreach ($value as $k => $v) {
+                            $lk = is_string($k) ? strtolower($k) : $k;
+                            if (in_array($lk, $sensitiveKeys, true)) {
+                                $value[$k] = '[Filtered]';
+                            }
+                        }
+                        return $value;
+                    })();
+                }
             }
+            return $data;
+        };
+
+        if (! empty($request)) {
+            foreach (['data', 'query_string', 'cookies', 'headers'] as $field) {
+                if (! empty($request[$field]) && is_array($request[$field])) {
+                    $request[$field] = $scrub($request[$field]);
+                }
+            }
+            $event->setRequest($request);
         }
 
         return $event;

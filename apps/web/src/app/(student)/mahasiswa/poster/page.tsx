@@ -6,7 +6,7 @@ import { studentApi } from '@/lib/api';
 import Link from 'next/link';
 import { Upload, FileImage, FileText, AlertCircle, CheckCircle, ArrowLeft, Image as ImageIcon, ExternalLink } from 'lucide-react';
 
-export default function StudentPosterPage() {
+export default function StudentPosterPage(): React.JSX.Element {
   const qc = useQueryClient();
   const [file, setFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -14,13 +14,13 @@ export default function StudentPosterPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'poster'],
     queryFn: async () => {
-      const res = await (studentApi as unknown as { poster: { index: () => Promise<unknown> } }).poster.index();
+      const res = await studentApi.poster.index();
       return (res as { data?: unknown }).data ?? res;
     },
   });
 
   const poster = data as {
-    kelompok?: { nama_kelompok?: string; poster_potensi_desa_path?: string | null; poster_potensi_desa_name?: string | null };
+    kelompok?: { nama_kelompok?: string; poster_potensi_desa_path?: string | null; poster_potensi_desa_name?: string | null; poster_url?: string | null };
     allowed_types?: string[];
     max_size?: string;
   } | null;
@@ -30,7 +30,7 @@ export default function StudentPosterPage() {
       if (!file) throw new Error('Pilih file terlebih dahulu');
       const fd = new FormData();
       fd.append('poster', file);
-      return (studentApi as unknown as { poster: { store: (d: FormData) => Promise<unknown> } }).poster.store(fd);
+      return studentApi.poster.store(fd);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['student', 'poster'] });
@@ -56,6 +56,7 @@ export default function StudentPosterPage() {
   }
 
   const existing = poster?.kelompok;
+  const posterUrl = existing?.poster_url || existing?.poster_potensi_desa_path || undefined;
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 space-y-6">
@@ -90,7 +91,7 @@ export default function StudentPosterPage() {
             </div>
             {existing.poster_potensi_desa_name && isImage(existing.poster_potensi_desa_name) ? (
               <a
-                href={existing.poster_potensi_desa_path}
+                href={posterUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-black hover:bg-emerald-700 transition-colors shrink-0"
@@ -99,7 +100,7 @@ export default function StudentPosterPage() {
               </a>
             ) : (
               <a
-                href={existing.poster_potensi_desa_path}
+                href={posterUrl}
                 download
                 className="flex items-center gap-1.5 px-4 py-2 bg-slate-700 text-white rounded-xl text-xs font-black hover:bg-slate-800 transition-colors shrink-0"
               >

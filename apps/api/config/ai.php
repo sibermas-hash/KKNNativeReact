@@ -156,4 +156,103 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Failover AI Providers (Avatar Validation + AI Playground)
+    |--------------------------------------------------------------------------
+    |
+    | 3-tier failover via SumoPod (https://ai.sumopod.com/v1) yang OpenAI-compatible.
+    | Model picks per 2026-05-11:
+    |   Primary:  gemini/gemini-2.5-pro    → 1M ctx, 64K out, smartest vision
+    |   Fallback: gemini/gemini-2.5-flash  → 1M ctx, faster, masih kuat vision
+    |   Tertiary: gpt-4o                    → 128K ctx, classic OpenAI vision
+    |              (cross-vendor — berbeda family dari primary+fallback)
+    |
+    | Urutan: Primary → Fallback → Tertiary → manual review (Layer 4).
+    |
+    */
+    'failover' => [
+        'primary' => [
+            'url' => env('AI_PRIMARY_URL', 'https://ai.sumopod.com/v1'),
+            'key' => env('AI_PRIMARY_KEY'),
+            'model' => env('AI_PRIMARY_MODEL', 'gemini/gemini-2.5-pro'),
+        ],
+        'fallback' => [
+            'url' => env('AI_FALLBACK_URL', 'https://ai.sumopod.com/v1'),
+            'key' => env('AI_FALLBACK_KEY'),
+            'model' => env('AI_FALLBACK_MODEL', 'gemini/gemini-2.5-flash'),
+        ],
+        'tertiary' => [
+            'url' => env('AI_TERTIARY_URL', 'https://ai.sumopod.com/v1'),
+            'key' => env('AI_TERTIARY_KEY'),
+            'model' => env('AI_TERTIARY_MODEL', 'gpt-4o'),
+        ],
+        // Direct provider fallback — bypass SumoPod jika token habis/gateway down.
+        // Langsung ke API resmi masing-masing provider.
+        'direct_gemini' => [
+            'url' => env('GEMINI_DIRECT_URL', 'https://generativelanguage.googleapis.com/v1beta/openai'),
+            'key' => env('GEMINI_API_KEY'),
+            'model' => env('GEMINI_DIRECT_MODEL', 'gemini-2.0-flash'),
+        ],
+        'direct_openai' => [
+            'url' => env('OPENAI_DIRECT_URL', 'https://api.openai.com/v1'),
+            'key' => env('OPENAI_API_KEY'),
+            'model' => env('OPENAI_DIRECT_MODEL', 'gpt-4o-mini'),
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Task-Specific Model Routing
+    |--------------------------------------------------------------------------
+    |
+    | Optimal model selection per use case. Setiap task punya kebutuhan berbeda:
+    | - Alerting: butuh cepat (< 2s), murah, tidak perlu reasoning mendalam
+    | - Analysis: butuh akurat, structured output, reasoning kuat
+    | - Vision: butuh multimodal (foto avatar, dokumen)
+    | - Embeddings: butuh dimensi tinggi untuk semantic search
+    |
+    */
+    'routing' => [
+        // Real-time error alerting — prioritas: speed + cost
+        'alerting' => [
+            'model' => env('AI_ALERTING_MODEL', 'gemini/gemini-2.5-flash'),
+            'max_tokens' => 200,
+            'temperature' => 0.1,
+            'timeout' => 10,
+        ],
+
+        // Logbook analysis — prioritas: accuracy + structured output
+        'analysis' => [
+            'model' => env('AI_ANALYSIS_MODEL', 'gemini/gemini-2.5-pro'),
+            'max_tokens' => 800,
+            'temperature' => 0.2,
+            'timeout' => 45,
+        ],
+
+        // Daily digest / weekly report — prioritas: reasoning + summarization
+        'digest' => [
+            'model' => env('AI_DIGEST_MODEL', 'gemini/gemini-2.5-pro'),
+            'max_tokens' => 400,
+            'temperature' => 0.3,
+            'timeout' => 30,
+        ],
+
+        // Avatar validation — prioritas: vision accuracy
+        'vision' => [
+            'model' => env('AI_VISION_MODEL', 'gemini/gemini-2.5-pro'),
+            'max_tokens' => 500,
+            'temperature' => 0.1,
+            'timeout' => 30,
+        ],
+
+        // Code analysis (CodeGuardian) — prioritas: code understanding
+        'code' => [
+            'model' => env('AI_CODE_MODEL', 'gemini/gemini-2.5-pro'),
+            'max_tokens' => 1000,
+            'temperature' => 0.1,
+            'timeout' => 60,
+        ],
+    ],
+
 ];

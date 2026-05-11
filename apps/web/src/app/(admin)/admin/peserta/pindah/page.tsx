@@ -3,9 +3,9 @@
 import { useMutation } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
-export default function StudentTransferPage() {
+export default function StudentTransferPage(): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [pesertaId, setPesertaId] = useState<number | null>(null);
   const [targetGroupId, setTargetGroupId] = useState<number | null>(null);

@@ -16,7 +16,8 @@ class FileKegiatanResource extends JsonResource
             'kegiatan_kkn_id' => $this->kegiatan_kkn_id,
             'file_path' => $this->file_path,
             'file_name' => $this->file_name,
-            'preview_url' => route('student.laporan-harian.files.preview', $this->id),
+            'original_name' => $this->file_name,
+            'preview_url' => route('api.v1.dpl.daily-reports.files.preview', $this->id),
         ];
     }
 }

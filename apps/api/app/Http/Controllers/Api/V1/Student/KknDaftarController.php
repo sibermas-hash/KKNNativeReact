@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1\Student;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
+use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
@@ -90,6 +91,80 @@ class KknDaftarController extends Controller
         ]);
     }
 
+    /**
+     * GET /api/v1/student/kkn-daftar/{periode}/kelompok
+     * Returns available groups for a period with capacity and gender composition.
+     */
+    public function groups(Request $request, int $periode): JsonResponse
+    {
+        $periodeModel = Periode::where('id', $periode)
+            ->where('is_active', true)
+            ->first();
+
+        if (! $periodeModel) {
+            return $this->error('Periode tidak ditemukan', 404);
+        }
+
+        $activeStatuses = ['pending', 'document_submitted', 'approved'];
+
+        $groups = KelompokKkn::where('periode_id', $periode)
+            ->where('status', 'active')
+            ->with('lokasi')
+            ->withCount(['peserta as peserta_count' => function ($q) use ($activeStatuses) {
+                $q->whereIn('status', $activeStatuses);
+            }])
+            ->withCount(['peserta as male_count' => function ($q) use ($activeStatuses) {
+                $q->whereIn('status', $activeStatuses)
+                    ->whereHas('mahasiswa', fn ($mq) => $mq->where('gender', 'L'));
+            }])
+            ->withCount(['peserta as female_count' => function ($q) use ($activeStatuses) {
+                $q->whereIn('status', $activeStatuses)
+                    ->whereHas('mahasiswa', fn ($mq) => $mq->where('gender', 'P'));
+            }])
+            ->orderBy('nama_kelompok')
+            ->get()
+            ->map(function ($group) {
+                $remaining = max(0, $group->capacity - $group->peserta_count);
+                $maleMinRequired = (int) ceil($group->capacity * 0.2);
+                $maleTargetMax = (int) ceil($group->capacity * 0.3);
+
+                return [
+                    'id'               => $group->id,
+                    'nama_kelompok'    => $group->nama_kelompok,
+                    'code'             => $group->code,
+                    'capacity'         => $group->capacity,
+                    'peserta_count'    => $group->peserta_count,
+                    'remaining_seats'  => $remaining,
+                    'male_count'       => $group->male_count,
+                    'female_count'     => $group->female_count,
+                    'male_min_required' => $maleMinRequired,
+                    'male_target_max'  => $maleTargetMax,
+                    'lokasi'           => $group->lokasi ? [
+                        'id'            => $group->lokasi->id,
+                        'village_name'  => $group->lokasi->village_name,
+                        'district_name' => $group->lokasi->district_name,
+                        'regency_name'  => $group->lokasi->regency_name,
+                        'full_name'     => $group->lokasi->full_name ?? implode(', ', array_filter([
+                            $group->lokasi->village_name,
+                            $group->lokasi->district_name,
+                            $group->lokasi->regency_name,
+                        ])),
+                    ] : null,
+                ];
+            });
+
+        return $this->success([
+            'periode' => [
+                'id'   => $periodeModel->id,
+                'name' => $periodeModel->name,
+                'self_service_enabled' => $periodeModel->usesSelfServiceRegistration(),
+            ],
+            'groups' => $groups,
+            'total_capacity' => $groups->sum('capacity'),
+            'total_registered' => $groups->sum('peserta_count'),
+        ]);
+    }
+
     private function checkEligibility(?Mahasiswa $mahasiswa, ?Periode $periode): array
     {
         if (! $mahasiswa || ! $periode) {
@@ -107,7 +182,14 @@ class KknDaftarController extends Controller
     private function getUserEligibility(?Mahasiswa $mahasiswa): array
     {
         if (! $mahasiswa) {
-            return ['sks_completed' => 0, 'gpa' => 0, 'bta_ppi_passed' => false, 'has_health_certificate' => false, 'has_parent_permission' => false];
+            return [
+                'sks_completed' => 0,
+                'gpa' => 0,
+                'bta_ppi_passed' => false,
+                'has_health_certificate' => false,
+                'has_parent_permission' => false,
+                'thresholds' => $this->globalEligibilityThresholds(),
+            ];
         }
 
         return [
@@ -116,6 +198,22 @@ class KknDaftarController extends Controller
             'bta_ppi_passed'         => in_array(strtoupper(trim($mahasiswa->status_bta_ppi ?? '')), ['LULUS', 'PASSED', 'SUCCESS']),
             'has_health_certificate' => ! empty($mahasiswa->health_certificate_path),
             'has_parent_permission'  => ! empty($mahasiswa->parent_permission_path),
+            // R11 audit fix: kirim threshold ke frontend supaya tidak hardcoded.
+            'thresholds'             => $this->globalEligibilityThresholds(),
+        ];
+    }
+
+    /**
+     * Default threshold dari SystemSetting (admin configurable).
+     * Per-periode threshold via jenis_kkn.min_sks / min_gpa di-override di UI.
+     *
+     * @return array<string, float|int>
+     */
+    private function globalEligibilityThresholds(): array
+    {
+        return [
+            'min_sks' => (int) \App\Models\KKN\SystemSetting::get('eligibility_min_sks', '100'),
+            'min_gpa' => (float) \App\Models\KKN\SystemSetting::get('eligibility_min_gpa', '2.0'),
         ];
     }
 }

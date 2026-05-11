@@ -30,6 +30,7 @@ class StoreDailyReportRequest extends FormRequest
             'latitude' => ['required', 'numeric', 'between:-90,90'],
             'longitude' => ['required', 'numeric', 'between:-180,180'],
             'gps_accuracy' => ['nullable', 'numeric', 'min:0', 'max:5000'],
+            'is_mock_location' => ['nullable', 'boolean'],
             'captured_at' => ['required', 'date'],
             'location_source' => ['nullable', 'string', 'max:20'],
             'location_name' => ['nullable', 'string', 'max:255'],

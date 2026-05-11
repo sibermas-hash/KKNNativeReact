@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminApi } from '@/lib/api';
+import { adminApi, apiUrl } from '@/lib/api';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -34,7 +34,7 @@ interface LaporanAkhir {
   reviewer?: { name?: string };
 }
 
-export default function AdminLaporanAkhirDetailPage() {
+export default function AdminLaporanAkhirDetailPage(): React.JSX.Element {
   const { id } = useParams();
   const router = useRouter();
   const qc = useQueryClient();
@@ -43,24 +43,20 @@ export default function AdminLaporanAkhirDetailPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'laporan-akhir', id],
     queryFn: async () => {
-      const res = await (adminApi as unknown as {
-        laporanAkhir: { show: (id: number) => Promise<unknown> };
-      }).laporanAkhir.show(Number(id));
-      return (res as { data?: LaporanAkhir }).data ?? (res as LaporanAkhir);
+      const res = await adminApi.kknOperations.finalReports.show(Number(id));
+      return (res as unknown as { data?: LaporanAkhir } & LaporanAkhir).data ?? (res as unknown as LaporanAkhir);
     },
     enabled: !!id,
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (status: 'approved' | 'revision') => {
-      return (adminApi as unknown as {
-        laporanAkhir: { updateStatus: (id: number, d: Record<string, unknown>) => Promise<unknown> };
-      }).laporanAkhir.updateStatus(Number(id), { status, review_notes: notes });
-    },
+    mutationFn: async (status: 'approved' | 'revision') =>
+      adminApi.kknOperations.finalReports.updateStatus(Number(id), { status, review_notes: notes }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'laporan-akhir', id] });
       router.push('/admin/laporan/akhir');
     },
+    onError: () => { /* handled */ },
   });
 
   if (isLoading) {
@@ -83,6 +79,10 @@ export default function AdminLaporanAkhirDetailPage() {
     { label: 'Poster Peta 2', path: data.poster_2_path, icon: ImageIcon },
     { label: 'Poster Peta 3', path: data.poster_3_path, icon: ImageIcon },
   ];
+
+  const downloadUrl = (asset: string) => {
+    return `${apiUrl(`/admin/laporan/akhir/${id}/unduh`)}?asset=${encodeURIComponent(asset)}`;
+  };
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 space-y-6">
@@ -154,7 +154,7 @@ export default function AdminLaporanAkhirDetailPage() {
                     <span className="text-[10px] font-black text-slate-600 uppercase tracking-wider">{item.label}</span>
                   </div>
                   {item.path ? (
-                    <a href={`/api/v1/admin/laporan/akhir/${id}/unduh?asset=${item.path}`} target="_blank" rel="noreferrer"
+                    <a href={downloadUrl(item.path)} target="_blank" rel="noreferrer"
                       className="flex items-center justify-center gap-1 h-8 bg-slate-900 text-white rounded-lg text-[10px] font-black uppercase hover:bg-black transition-colors">
                       Lihat <ArrowRight size={10} />
                     </a>

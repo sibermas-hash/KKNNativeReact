@@ -1,41 +1,88 @@
 import { useEffect } from 'react';
 import { useRouter, Tabs } from 'expo-router';
-import { useAuthStore } from '@/stores';
-import { Text } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { getMobileHomeRoute, isDplLikeUser, useAuthIsLoading, useAuthUser, useIsAuthenticated } from '@/stores';
+import { colors, radius } from '@/components/ui/primitives';
 
-function TabIcon({ icon, focused }: { icon: string; focused: boolean }) {
-  return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.5 }}>{icon}</Text>;
+function TabIcon({ label, focused }: { label: string; focused: boolean }) {
+  return (
+    <View style={[styles.tabIcon, focused && styles.tabIconActive]}>
+      <Text style={[styles.tabIconText, focused && styles.tabIconTextActive]}>{label}</Text>
+    </View>
+  );
 }
 
 export default function DplTabLayout() {
   const router = useRouter();
-  const { isAuthenticated, isLoading, user } = useAuthStore();
+  const isAuthenticated = useIsAuthenticated();
+  const isLoading = useAuthIsLoading();
+  const user = useAuthUser();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) router.replace('/(auth)/login');
     if (!isLoading && isAuthenticated && user) {
-      const roles = user.roles || [];
-      if (!roles.includes('dpl') && !roles.includes('dosen') && !roles.includes('superadmin')) {
-        router.replace('/(tabs)');
+      if (!isDplLikeUser(user)) {
+        router.replace(getMobileHomeRoute(user));
       }
     }
-  }, [isAuthenticated, isLoading, user]);
+  }, [isAuthenticated, isLoading, router, user]);
 
-  if (isLoading || !isAuthenticated) return null;
+  if (isLoading || !isAuthenticated || !isDplLikeUser(user)) return null;
 
   return (
-    <Tabs screenOptions={{
-      headerStyle: { backgroundColor: '#1e3a5f' },
-      headerTintColor: '#fff',
-      headerTitleStyle: { fontWeight: '600' },
-      tabBarActiveTintColor: '#2563eb',
-      tabBarInactiveTintColor: '#94a3b8',
-      tabBarStyle: { borderTopWidth: 1, borderTopColor: '#e2e8f0', paddingBottom: 4, height: 60 },
-    }}>
-      <Tabs.Screen name="index" options={{ title: 'Dashboard', headerTitle: 'SIBERMAS DPL', tabBarIcon: ({ focused }) => <TabIcon icon="🏠" focused={focused} /> }} />
-      <Tabs.Screen name="groups" options={{ title: 'Kelompok', tabBarIcon: ({ focused }) => <TabIcon icon="👥" focused={focused} /> }} />
-      <Tabs.Screen name="reports" options={{ title: 'Laporan', tabBarIcon: ({ focused }) => <TabIcon icon="📋" focused={focused} /> }} />
-      <Tabs.Screen name="profile" options={{ title: 'Profil', tabBarIcon: ({ focused }) => <TabIcon icon="👤" focused={focused} /> }} />
+    <Tabs
+      screenOptions={{
+        headerStyle: { backgroundColor: colors.surface },
+        headerTintColor: colors.text,
+        headerShadowVisible: false,
+        headerTitleStyle: { fontWeight: '800', fontSize: 17 },
+        tabBarActiveTintColor: colors.text,
+        tabBarInactiveTintColor: colors.textSubtle,
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '700' },
+        tabBarStyle: {
+          height: 66,
+          paddingTop: 6,
+          paddingBottom: 8,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+          backgroundColor: colors.surface,
+        },
+      }}
+    >
+      <Tabs.Screen name="index" options={{ title: 'Dashboard', headerTitle: 'SIBERMAS DPL', tabBarIcon: ({ focused }) => <TabIcon label="DB" focused={focused} /> }} />
+      <Tabs.Screen name="groups" options={{ title: 'Kelompok', tabBarIcon: ({ focused }) => <TabIcon label="KL" focused={focused} /> }} />
+      <Tabs.Screen name="reports" options={{ title: 'Laporan', tabBarIcon: ({ focused }) => <TabIcon label="LP" focused={focused} /> }} />
+      <Tabs.Screen name="notifications" options={{ title: 'Notifikasi', tabBarIcon: ({ focused }) => <TabIcon label="NF" focused={focused} /> }} />
+      <Tabs.Screen name="profile" options={{ title: 'Profil', tabBarIcon: ({ focused }) => <TabIcon label="PF" focused={focused} /> }} />
+      {/* Hidden tabs — accessible via navigation but not shown in tab bar */}
+      <Tabs.Screen name="final-reports" options={{ href: null, headerTitle: 'Laporan Akhir' }} />
+      <Tabs.Screen name="leave-requests" options={{ href: null, headerTitle: 'Permohonan Izin' }} />
+      <Tabs.Screen name="monitoring" options={{ href: null, headerTitle: 'Monitoring Lapangan' }} />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  tabIcon: {
+    width: 28,
+    height: 24,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surfaceMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabIconActive: {
+    borderColor: colors.border,
+    backgroundColor: colors.soft,
+  },
+  tabIconText: {
+    color: colors.textSubtle,
+    fontSize: 10,
+    fontWeight: '900',
+  },
+  tabIconTextActive: {
+    color: colors.accent,
+  },
+});

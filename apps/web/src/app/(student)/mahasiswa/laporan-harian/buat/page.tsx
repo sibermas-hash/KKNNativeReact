@@ -3,15 +3,17 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
+import { useQueryClient } from '@tanstack/react-query';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createDailyReportSchema, type CreateDailyReportFormData } from '@sibermas/schemas';
 import { useCreateDailyReport } from '@sibermas/hooks';
 import { api } from '@/lib/api';
 import { ChevronLeft, Navigation, Camera, CloudUpload } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
-export default function CreateDailyReportPage() {
+export default function CreateDailyReportPage(): React.JSX.Element {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const mutation = useCreateDailyReport(api);
   const [files, setFiles] = useState<File[]>([]);
   const [gpsLoading, setGpsLoading] = useState(false);
@@ -50,7 +52,14 @@ export default function CreateDailyReportPage() {
     Object.entries(data).forEach(([key, value]) => { if (value !== undefined && value !== null) formData.append(key, String(value)); });
     files.forEach((file) => formData.append('files', file));
     mutation.mutate(formData, {
-      onSuccess: () => { toast.success('Laporan harian berhasil dikirim!'); router.push('/mahasiswa/laporan-harian'); },
+      onSuccess: () => {
+        // Invalidate list & student dashboard caches so the new report
+        // appears immediately when user navigates back. FE-Q1 re-audit fix.
+        queryClient.invalidateQueries({ queryKey: ['student', 'daily-reports'] });
+        queryClient.invalidateQueries({ queryKey: ['student', 'dashboard'] });
+        toast.success('Laporan harian berhasil dikirim!');
+        router.push('/mahasiswa/laporan-harian');
+      },
       onError: () => toast.error('Gagal mengirim laporan'),
     });
   };

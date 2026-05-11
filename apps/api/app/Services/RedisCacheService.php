@@ -325,17 +325,32 @@ class RedisCacheService
     }
 
     /**
-     * Invalidate all caches (full reset)
-     * ⚠️ Use sparingly - only for major system changes
+     * Invalidate all KKN-related caches (targeted per-tag flush).
+     *
+     * M-002 fix: previously this called Cache::flush(), which wipes EVERYTHING
+     * in the cache store — including sessions, rate-limit buckets, API-key
+     * prefix caches, password-reset tokens if cached, etc. Now it iterates
+     * only the tags this service manages.
      */
     public static function invalidateAll(): bool
     {
         try {
-            Cache::flush();
+            $tags = [
+                self::TAG_MASTER_DATA,
+                self::TAG_REGISTRATIONS,
+                self::TAG_GROUPS,
+                self::TAG_GRADES,
+                self::TAG_REPORTS,
+                self::TAG_ASSIGNMENTS,
+            ];
+
+            foreach ($tags as $tag) {
+                self::flushTagged($tag);
+            }
 
             return true;
         } catch (\Exception $e) {
-            \Log::error('Redis full flush failed', ['error' => $e->getMessage()]);
+            \Log::error('Redis targeted flush failed', ['error' => $e->getMessage()]);
 
             return false;
         }

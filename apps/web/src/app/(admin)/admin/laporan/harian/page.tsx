@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Activity, Search, FileText, Eye, RefreshCw, Filter } from 'lucide-react';
 import { PageHeader, DataTable, StatusBadge, StatCard, EmptyState } from '@/components/ui/shared';
 
-export default function AdminDailyReportsPage() {
+export default function AdminDailyReportsPage(): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);

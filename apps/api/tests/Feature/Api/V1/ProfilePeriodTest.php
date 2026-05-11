@@ -10,7 +10,7 @@ describe('Profile & Period Context (E2E)', function () {
         $this->actingAs($user)->getJson('/api/v1/profile')
             ->assertOk()
             ->assertJson(['success' => true])
-            ->assertJsonStructure(['data' => ['id', 'name', 'username']]);
+            ->assertJsonStructure(['data' => ['user' => ['id', 'name', 'username']]]);
     });
 
     it('authenticated user can update profile name', function () {
@@ -19,7 +19,8 @@ describe('Profile & Period Context (E2E)', function () {
         $this->actingAs($user)->patchJson('/api/v1/profile', [
             'name' => 'Updated Name',
         ])->assertOk()
-            ->assertJson(['success' => true]);
+            ->assertJson(['success' => true])
+            ->assertJsonPath('message', 'Profil berhasil dilengkapi. Silakan lanjutkan menggunakan portal.');
     });
 
     it('profile update rejects name that is too long', function () {

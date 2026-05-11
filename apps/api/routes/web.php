@@ -26,9 +26,11 @@ Route::get('/health', [HealthController::class, 'check'])->name('health');
 // Readiness Check — public (Kubernetes/Docker probes)
 Route::get('/ready', [HealthController::class, 'ready'])->name('ready');
 
-// Detailed health — restricted to internal/admin use
+// Detailed health — superadmin only. Leaks internal telemetry (Redis version,
+// external API URL, queue depth, DB table count) so it must not be accessible
+// to ordinary authenticated users (audit M-006).
 Route::get('/health/detailed', [HealthController::class, 'detailed'])
-    ->middleware('auth:sanctum')
+    ->middleware(['auth:sanctum', 'role:superadmin'])
     ->name('health.detailed');
 
 // Catch-all: return JSON 404 for API paths, redirect to Next.js frontend for everything else.

@@ -197,19 +197,19 @@ class DatabaseSyncMonitoringService
     public function getSyncDashboard(): array
     {
         $today = now()->startOfDay();
-        $yesterday = now()->subDay()->startOfDay();
+        $sevenDaysAgo = now()->subDays(6)->startOfDay();
 
-        // Today's sync stats
+        // Today's sync stats — range comparison for index usage
         $todayStats = DatabaseSyncLog::query()
-            ->whereDate('created_at', '>=', $today)
+            ->where('created_at', '>=', $today)
             ->selectRaw('entity_type, status, COUNT(*) as count')
             ->groupBy('entity_type', 'status')
             ->get()
             ->groupBy('entity_type');
 
-        // Sync trends (last 7 days)
+        // Sync trends (last 7 days) — optimized range
         $trends = DatabaseSyncLog::query()
-            ->whereDate('created_at', '>=', $today)
+            ->where('created_at', '>=', $sevenDaysAgo)
             ->selectRaw('DATE(created_at) as date, status, COUNT(*) as count')
             ->groupBy('date', 'status')
             ->orderBy('date')
@@ -218,7 +218,7 @@ class DatabaseSyncMonitoringService
         // Error breakdown
         $errors = DatabaseSyncLog::query()
             ->where('status', 'failed')
-            ->whereDate('created_at', '>=', $today)
+            ->where('created_at', '>=', $today)
             ->selectRaw('error_message, COUNT(*) as count')
             ->groupBy('error_message')
             ->orderByDesc('count')
@@ -230,9 +230,9 @@ class DatabaseSyncMonitoringService
             'trends' => $trends,
             'errors' => $errors,
             'summary' => [
-                'total_today' => DatabaseSyncLog::whereDate('created_at', '>=', $today)->count(),
+                'total_today' => DatabaseSyncLog::where('created_at', '>=', $today)->count(),
                 'failed_today' => DatabaseSyncLog::where('status', 'failed')
-                    ->whereDate('created_at', '>=', $today)
+                    ->where('created_at', '>=', $today)
                     ->count(),
                 'success_rate_today' => $this->calculateTodaySuccessRate($today),
             ],
@@ -244,14 +244,15 @@ class DatabaseSyncMonitoringService
      */
     protected function calculateTodaySuccessRate(Carbon $date): float
     {
-        $total = DatabaseSyncLog::whereDate('created_at', '>=', $date)->count();
+        // Use range comparison for performance
+        $total = DatabaseSyncLog::where('created_at', '>=', $date)->count();
 
         if ($total === 0) {
             return 100.0;
         }
 
         $successful = DatabaseSyncLog::where('status', 'success')
-            ->whereDate('created_at', '>=', $date)
+            ->where('created_at', '>=', $date)
             ->count();
 
         return round(($successful / $total) * 100, 2);

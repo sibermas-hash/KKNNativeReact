@@ -23,6 +23,12 @@ class TestAutoLogin
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // H-002 fix: Hard-gate to local/testing environments only.
+        // Previously only blocked `production`, which would leave staging open.
+        if (! app()->environment(['local', 'testing'])) {
+            abort(500, 'TestAutoLogin only permitted in local/testing environments');
+        }
+
         // SECURITY: Only allow when explicitly enabled via config AND header is present.
         // NEVER use config('app.env') for security decisions.
         $testAutoLoginEnabled = config('auth.test_auto_login_enabled', false);
@@ -32,19 +38,11 @@ class TestAutoLogin
             return $next($request);
         }
 
+        // H-002 fix: Only honor the explicit X-Test-Login header. The previous
+        // implementation sniffed bearer tokens for substrings like "admin" and
+        // logged anyone in as admin — a full authentication bypass if this
+        // middleware ever got loaded in the wrong environment.
         $testLoginHeader = $request->header('X-Test-Login');
-        $bearerToken = $request->bearerToken();
-
-        if (! $testLoginHeader && $bearerToken) {
-            $tokenStr = strtolower($bearerToken);
-            if (str_contains($tokenStr, 'non-admin') || str_contains($tokenStr, 'non_admin') || str_contains($tokenStr, 'nonadm')) {
-                $testLoginHeader = 'student';
-            } elseif (str_contains($tokenStr, 'admin')) {
-                $testLoginHeader = 'admin';
-            } elseif (str_contains($tokenStr, 'student') || str_contains($tokenStr, 'valid_test_token') || str_contains($tokenStr, 'valid_token') || str_contains($tokenStr, 'valid.token')) {
-                $testLoginHeader = 'student';
-            }
-        }
 
         $isSensitivePath = $request->is('mahasiswa*', 'admin*', 'api*', 'dpl*');
 
@@ -55,7 +53,7 @@ class TestAutoLogin
 
         if ($testLoginHeader) {
             $username = $testLoginHeader;
-            \Log::info('TestAutoLogin: Attempting login for '.$username.' based on token/header.');
+            \Log::info('TestAutoLogin: Attempting login for '.$username.' based on X-Test-Login header.');
 
             $user = User::where('username', $username)->first();
 

@@ -75,7 +75,7 @@ class CheckStudentDisciplineCommand extends Command
                             'title' => 'Peringatan Kedisiplinan',
                             'message' => "Mahasiswa {$participant->mahasiswa->nama} tidak mengisi logbook selama 3 hari berturut-turut.",
                             'icon' => 'exclamation-triangle',
-                            'action' => route('dosen.kelompok.show', $participant->kelompok_id),
+                            'action' => "/dosen/kelompok/{$participant->kelompok_id}",
                         ]));
                     }
 
@@ -86,7 +86,7 @@ class CheckStudentDisciplineCommand extends Command
                             'title' => 'Peringatan Kritis!',
                             'message' => 'Anda tidak mengisi logbook selama 3 hari. Sesuai Panduan KKN 56, meninggalkan lokasi > 3 hari tanpa keterangan dianggap mengundurkan diri.',
                             'icon' => 'shield-exclamation',
-                            'action' => route('student.laporan-harian.index'),
+                            'action' => '/mahasiswa/laporan-harian',
                         ]));
                     }
                 }

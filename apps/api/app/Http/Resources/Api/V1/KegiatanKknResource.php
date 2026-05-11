@@ -37,11 +37,30 @@ class KegiatanKknResource extends JsonResource
             'ai_summary' => $this->ai_summary,
             'ai_analysis' => $this->ai_analysis,
             'attachments' => FileKegiatanResource::collection($this->whenLoaded('fileKegiatan')),
+            'files' => FileKegiatanResource::collection($this->whenLoaded('fileKegiatan')),
             'kelompok' => [
                 'id' => $this->kelompok_id,
                 'name' => $this->whenLoaded('kelompok', fn () => $this->kelompok?->nama_kelompok ?? '-'),
+                'location' => $this->whenLoaded('kelompok', fn () => $this->kelompok?->lokasi?->full_name),
             ],
             'mahasiswa' => new MahasiswaResource($this->whenLoaded('mahasiswa')),
+            'student' => $this->whenLoaded('mahasiswa', fn () => [
+                'name' => $this->mahasiswa?->nama ?? $this->mahasiswa?->user?->name,
+                'nim' => $this->mahasiswa?->nim,
+                'prodi' => $this->mahasiswa?->prodi?->nama,
+                'fakultas' => $this->mahasiswa?->fakultas?->nama,
+            ]),
+            'review' => [
+                'reviewer_name' => $this->whenLoaded('reviewer', fn () => $this->reviewer?->name),
+                'notes' => $this->review_notes,
+                'reviewed_at' => $this->reviewed_at?->toIso8601String(),
+            ],
+            'location_metadata' => [
+                'latitude' => $this->latitude,
+                'longitude' => $this->longitude,
+                'gps_accuracy' => $this->gps_accuracy,
+                'location_name' => $this->location_name,
+            ],
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }

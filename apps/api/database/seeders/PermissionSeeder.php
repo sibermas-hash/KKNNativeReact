@@ -10,6 +10,10 @@ class PermissionSeeder extends Seeder
 {
     public function run(): void
     {
+        // NOTE: Permissions di sini HARUS cocok dengan referensi di
+        // App\Http\Middleware\EnsureAdminAuthorization::PERMISSION_MAP.
+        // Ada regression test (AdminPermissionCoverageTest) yang memastikan
+        // setiap permission name yang di-reference sudah ter-seed.
         $permissions = [
             // Master Data
             'manage-master-data',
@@ -19,10 +23,12 @@ class PermissionSeeder extends Seeder
             'sync-data',
             'manageDplAssignment',
 
-            // Grades
+            // Grades (read-only vs write distinction)
+            'view-grades',
             'manage-grades',
 
-            // Participants
+            // Participants (read-only vs write distinction)
+            'view-participants',
             'manage-participants',
             'transfer-students',
 
@@ -70,17 +76,51 @@ class PermissionSeeder extends Seeder
             Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
         }
 
-        // Assign all permissions to superadmin
+        // ── Role assignments ────────────────────────────────────────────
+        // Superadmin: semua permission
         $superadmin = Role::where('name', 'superadmin')->first();
         if ($superadmin) {
-            $superadmin->givePermissionTo($permissions);
+            $superadmin->syncPermissions($permissions);
         }
 
-        // Admin gets all except system settings
+        // Admin: semua kecuali manage-settings (sengaja dibatasi —
+        // SystemSetting + AI key rotation hanya superadmin).
         $admin = Role::where('name', 'admin')->first();
         if ($admin) {
             $adminPermissions = array_filter($permissions, fn ($p) => $p !== 'manage-settings');
-            $admin->givePermissionTo($adminPermissions);
+            $admin->syncPermissions($adminPermissions);
         }
+
+        // Faculty Admin: READ-ONLY. Lihat data mahasiswa/nilai/kelompok di
+        // fakultasnya. Tidak boleh mutate. Controller-level guard sudah
+        // mem-block PATCH/POST untuk faculty_admin (lihat PesertaKknController,
+        // KelompokKknAdminController, GradeController).
+        $facultyAdmin = Role::where('name', 'faculty_admin')->first();
+        if ($facultyAdmin) {
+            $facultyAdmin->syncPermissions([
+                'access-admin-panel',
+                'view-participants',
+                'view-grades',
+                'view-reports',
+                'view-audit-logs',
+                // Masih perlu permission level-koleksi untuk endpoint admin
+                // yang fundamental (kelompok listing/search, DPL list).
+                // Controller filter dengan faculty scoping.
+                'manage-groups',
+                'manage-dpl',
+                'manage-master-data',
+            ]);
+        }
+
+        // Dosen/DPL: akses panel dosen. Permission detail di cek level controller
+        // (by pivot dpl_kelompok).
+        foreach (['dosen', 'dpl'] as $roleName) {
+            $role = Role::where('name', $roleName)->first();
+            if ($role) {
+                $role->syncPermissions(['access-dosen-panel']);
+            }
+        }
+
+        // Student: tidak pakai admin panel, no permission needed di sini.
     }
 }

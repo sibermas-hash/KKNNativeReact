@@ -1,21 +1,22 @@
 'use client';
+import React from 'react';
 
 import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { dplApi } from '@/lib/api';
+import { dosenApi } from '@/lib/api';
 import { useAuthStore } from '@/stores';
 import { StatCard, NavButton } from '@/components/ui/shared';
 import Link from 'next/link';
 import { Users, ClipboardList, MapPin, FileText, Star, BookOpen, Calendar } from 'lucide-react';
 
-export default function DosenDashboard() {
+export default function DosenDashboard(): React.JSX.Element {
   const { user } = useAuthStore();
 
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.dosen.dashboard,
     queryFn: async () => {
-      const res = await dplApi.dashboard() as unknown as { success: boolean; data: Record<string, unknown> };
-      return res.data;
+      const res = await dosenApi.dashboard();
+      return (res as any)?.data ?? res;
     },
   });
 
@@ -28,9 +29,9 @@ export default function DosenDashboard() {
     </div>
   );
 
-  const isDpl = (data?.is_dpl as boolean) || false;
-  const periods = (data?.dpl_periods as Record<string, unknown>[]) || [];
-  const workshops = (data?.workshops as Record<string, unknown>[]) || [];
+  const isDpl = ((data as any)?.is_dpl as boolean) || false;
+  const periods = ((data as any)?.dpl_periods as Record<string, unknown>[]) || [];
+  const workshops = ((data as any)?.workshops as Record<string, unknown>[]) || [];
 
   return (
     <div className="space-y-6">

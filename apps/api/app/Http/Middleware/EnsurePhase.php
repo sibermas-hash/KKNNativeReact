@@ -33,9 +33,10 @@ class EnsurePhase
     {
         // SECURITY: Admin/Superadmin always bypass — they manage phases.
         // Non-admins NEVER bypass phase checks regardless of environment.
+        /** @var \App\Models\User|null $user */
         $user = auth()->user();
 
-        if ($user?->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])) {
+        if ($user?->hasAnyRole(['superadmin', 'admin'])) {
             return $next($request);
         }
 

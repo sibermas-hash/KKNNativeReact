@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminApi } from '@/lib/api';
+import { adminApi, apiUrl } from '@/lib/api';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -10,8 +10,9 @@ import {
 } from 'lucide-react';
 import { StatusBadge } from '@/components/ui/shared';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
-export default function AdminDailyReportDetailPage() {
+export default function AdminDailyReportDetailPage(): React.JSX.Element {
   const { id } = useParams();
   const router = useRouter();
   const qc = useQueryClient();
@@ -20,9 +21,7 @@ export default function AdminDailyReportDetailPage() {
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'daily-report', id],
     queryFn: async () => {
-      const res = await (adminApi as unknown as {
-        dailyReports: { show: (id: number) => Promise<unknown> };
-      }).dailyReports.show(Number(id));
+      const res = await adminApi.kknOperations.dailyReports.show(Number(id));
       return (res as { data?: unknown }).data ?? res;
     },
     enabled: !!id,
@@ -46,22 +45,27 @@ export default function AdminDailyReportDetailPage() {
   } | null;
 
   const approveMutation = useMutation({
-    mutationFn: async () => {
-      return (adminApi as unknown as {
-        dailyReports: { approve: (id: number, d: Record<string, unknown>) => Promise<unknown> };
-      }).dailyReports.approve(Number(id), { notes });
-    },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'daily-report', id] }); router.push('/admin/laporan/harian'); },
+    mutationFn: async () => adminApi.kknOperations.dailyReports.approve(Number(id)),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'daily-report', id] }); toast.success('Laporan disetujui'); router.push('/admin/laporan/harian'); },
+    onError: () => toast.error('Gagal menyetujui laporan'),
   });
 
   const revisionMutation = useMutation({
-    mutationFn: async () => {
-      return (adminApi as unknown as {
-        dailyReports: { revision: (id: number, d: Record<string, unknown>) => Promise<unknown> };
-      }).dailyReports.revision(Number(id), { notes });
-    },
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'daily-report', id] }); router.push('/admin/laporan/harian'); },
+    mutationFn: async () => adminApi.kknOperations.dailyReports.revision(Number(id), { review_notes: notes.trim() }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'daily-report', id] }); toast.success('Revisi diminta'); router.push('/admin/laporan/harian'); },
+    onError: () => toast.error('Gagal meminta revisi'),
   });
+
+  const requestRevision = () => {
+    if (!notes.trim()) {
+      toast.error('Catatan revisi wajib diisi');
+      return;
+    }
+    revisionMutation.mutate();
+  };
+
+  const fileUrl = (file: { id: number; file_path: string }) =>
+    file.id ? apiUrl(`/admin/laporan/harian/file/${file.id}/preview`) : apiUrl(file.file_path);
 
   if (isLoading) {
     return (
@@ -129,7 +133,7 @@ export default function AdminDailyReportDetailPage() {
                 {files.map((f) => (
                   <a
                     key={f.id}
-                    href={f.file_path}
+                    href={fileUrl(f)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 p-3 rounded-xl border border-slate-100 hover:border-emerald-200 hover:bg-emerald-50/30 transition-all group"
@@ -173,7 +177,7 @@ export default function AdminDailyReportDetailPage() {
               />
               <div className="flex gap-3">
                 <button
-                  onClick={() => revisionMutation.mutate()}
+                  onClick={requestRevision}
                   disabled={revisionMutation.isPending}
                   className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border border-amber-200 bg-amber-50 text-amber-700 text-xs font-black uppercase tracking-wider hover:bg-amber-100 transition-colors disabled:opacity-60"
                 >
@@ -198,7 +202,7 @@ export default function AdminDailyReportDetailPage() {
               </h2>
               <p className="text-sm font-bold text-slate-700">Oleh: {review.reviewer_name}</p>
               {review.reviewed_at && <p className="text-xs text-slate-400">{review.reviewed_at}</p>}
-              {review.notes && <p className="text-sm text-slate-600 italic">"{review.notes}"</p>}
+              {review.notes && <p className="text-sm text-slate-600 italic">&quot;{review.notes}&quot;</p>}
             </div>
           )}
         </div>

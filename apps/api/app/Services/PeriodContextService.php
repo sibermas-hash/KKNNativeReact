@@ -38,7 +38,9 @@ class PeriodContextService
      */
     public function getActivePeriodId(): ?int
     {
-        return Session::get(self::SESSION_KEY);
+        $periodId = Session::get(self::SESSION_KEY);
+
+        return is_numeric($periodId) ? (int) $periodId : null;
     }
 
     /**
@@ -106,11 +108,15 @@ class PeriodContextService
      */
     public function getDefaultPeriodId(): ?int
     {
-        return Cache::remember('default_periode_id', 3600, function () {
-            return Periode::where('is_active', true)
+        $periodId = Cache::remember('default_periode_id', 3600, function () {
+            $value = Periode::where('is_active', true)
                 ->orderBy('periode', 'desc')
                 ->value('id');
+
+            return is_numeric($value) ? (int) $value : null;
         });
+
+        return is_numeric($periodId) ? (int) $periodId : null;
     }
 
     /**

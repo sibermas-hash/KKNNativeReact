@@ -2,9 +2,8 @@
 
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { dplEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api, dplApi } from '@/lib/api';
+import { dplApi } from '@/lib/api';
 import { useAuthStore } from '@/stores';
 import {
   Users, FileText, CheckCircle2, MapPin, AlertTriangle,
@@ -30,17 +29,27 @@ function StatBox({ label, value, icon: Icon, color }: { label: string; value: st
   );
 }
 
-export default function DplDashboardPage() {
+export default function DplDashboardPage(): React.JSX.Element {
   const { user } = useAuthStore();
   
 
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.dpl.dashboard,
     queryFn: async () => {
-      const res = await dplApi.dashboard() as unknown as { success: boolean; data: Record<string, unknown> };
-      return res.data;
+      const res = await dplApi.dashboard();
+      // dplApi.dashboard() already returns the unwrapped data (interceptor handles this)
+      return res as any;
     },
   });
+  
+  // API client interceptor unwraps to response.data.data, so data is already the inner object
+  const dashboardData = data as Record<string, unknown> || {};
+  
+  const groups = (dashboardData.groups as Record<string, unknown>[]) || [];
+  const pendingReports = (dashboardData.pending_reports as number) || 0;
+  const gradingProgress = (dashboardData.grading_progress as string) || '0%';
+  const atRiskStudents = (dashboardData.at_risk_students as Record<string, unknown>[]) || [];
+  const coordinatorAreas = (dashboardData.coordinator_areas as unknown[]) || [];
 
   if (isLoading) {
     return (
@@ -50,12 +59,6 @@ export default function DplDashboardPage() {
       </div>
     );
   }
-
-  const groups = (data?.groups as Record<string, unknown>[]) || [];
-  const pendingReports = (data?.pending_reports as number) || 0;
-  const gradingProgress = (data?.grading_progress as string) || '0%';
-  const atRiskStudents = (data?.at_risk_students as Record<string, unknown>[]) || [];
-  const coordinatorAreas = (data?.coordinator_areas as unknown[]) || [];
 
   return (
     <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-6 pb-12">

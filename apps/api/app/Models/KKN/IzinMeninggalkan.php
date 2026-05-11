@@ -19,6 +19,7 @@ class IzinMeninggalkan extends Model
         'tanggal_kembali',
         'durasi_hari',
         'alasan',
+        'file_bukti',
         'status',
         'diproses_oleh',
         'diproses_pada',
@@ -29,6 +30,10 @@ class IzinMeninggalkan extends Model
         'tanggal_mulai' => 'date',
         'tanggal_kembali' => 'date',
         'diproses_pada' => 'datetime',
+        // PII encryption — `alasan` sering berisi info medis/keluarga
+        // sensitif. `catatan_dpl` also encrypted for privacy.
+        'alasan' => 'encrypted',
+        'catatan_dpl' => 'encrypted',
     ];
 
     public function mahasiswa(): BelongsTo

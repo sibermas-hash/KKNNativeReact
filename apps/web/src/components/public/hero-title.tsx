@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-export function HeroTitle({ title, subtitle }: { title: string; subtitle?: React.ReactNode }) {
+export function HeroTitle({ title, subtitle }: { title: string; subtitle?: React.ReactNode }): React.JSX.Element {
   const letters = title.split('');
 
   const container = {

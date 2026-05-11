@@ -13,6 +13,7 @@ use App\Models\KKN\NilaiKkn;
 use App\Services\DplScopeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class EvaluationController extends Controller
 {
@@ -84,6 +85,16 @@ class EvaluationController extends Controller
             return $this->forbidden('Anda tidak memiliki akses ke kelompok ini.');
         }
 
+        // Verify student is registered in the specified group with approved status
+        $studentInGroup = \App\Models\KKN\PesertaKkn::where('kelompok_id', $request->input('kelompok_id'))
+            ->whereHas('mahasiswa', fn ($q) => $q->where('user_id', $request->input('student_id')))
+            ->where('status', 'approved')
+            ->exists();
+
+        if (! $studentInGroup) {
+            return $this->forbidden('Mahasiswa tidak terdaftar di kelompok Anda.');
+        }
+
         try {
             $nilai = app(\App\Services\GradingService::class)->submitDPLScores(
                 userId: $request->input('student_id'),
@@ -102,43 +113,99 @@ class EvaluationController extends Controller
     {
         $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240']]);
 
-        // Parse and validate import data
-        $file = $request->file('file');
-        $data = $this->parseImportFile($file);
+        try {
+            $file = $request->file('file');
+            $import = new \App\Imports\EvaluationImport();
+            Excel::import($import, $file);
 
-        return $this->success([
-            'preview' => $data['rows'],
-            'total_rows' => $data['total'],
-            'valid_rows' => $data['valid'],
-            'errors' => $data['errors'],
-        ]);
+            return $this->success([
+                'preview' => $import->rows,
+                'total_rows' => $import->totalRows,
+                'valid_rows' => $import->validRows,
+                'errors' => $import->errors,
+            ]);
+        } catch (\Exception $e) {
+            return $this->error('VALIDATION_ERROR', 'Gagal memproses file: ' . $e->getMessage(), 422);
+        }
     }
 
     public function import(Request $request): JsonResponse
     {
         $request->validate([
-            'data' => ['required', 'array'],
+            'data' => ['required', 'array', 'max:100'],
             'data.*.user_id' => ['required', 'integer'],
             'data.*.kelompok_id' => ['required', 'integer'],
+            'data.*.relevansi' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'data.*.ketercapaian' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'data.*.inovasi' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'data.*.administrasi' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'data.*.artikel' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
 
-        $imported = 0;
-        \Illuminate\Support\Facades\DB::transaction(function () use ($request, &$imported) {
-            foreach ($request->input('data') as $row) {
-                NilaiKkn::updateOrCreate(
-                    ['user_id' => $row['user_id'], 'kelompok_id' => $row['kelompok_id']],
-                    array_merge($row, ['dpl_graded_by' => auth()->id(), 'dpl_graded_at' => now()])
-                );
-                $imported++;
-            }
-        });
+        $dosen = auth()->user()->dosen;
+        $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
 
-        return $this->success(['imported_count' => $imported], "{$imported} nilai berhasil diimpor.");
+        $validRows = [];
+        $errors = [];
+
+        // Validate all rows first before any DB writes (BH-06: atomic consistency)
+        foreach ($request->input('data') as $index => $row) {
+            if (! $groupIds->contains($row['kelompok_id'])) {
+                $errors[] = "Baris {$index}: Kelompok tidak dalam binaan Anda.";
+                continue;
+            }
+
+            // BC-03: verify student is in the group
+            $inGroup = \App\Models\KKN\PesertaKkn::where('kelompok_id', $row['kelompok_id'])
+                ->whereHas('mahasiswa', fn ($q) => $q->where('user_id', $row['user_id']))
+                ->where('status', 'approved')
+                ->exists();
+
+            if (! $inGroup) {
+                $errors[] = "Baris {$index}: Mahasiswa tidak terdaftar di kelompok tersebut.";
+                continue;
+            }
+
+            $validRows[] = $row;
+        }
+
+        $imported = 0;
+        if (! empty($validRows)) {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($validRows, &$imported) {
+                foreach ($validRows as $row) {
+                    NilaiKkn::updateOrCreate(
+                        ['user_id' => $row['user_id'], 'kelompok_id' => $row['kelompok_id']],
+                        [
+                            'dpl_relevansi_score' => $row['relevansi'] ?? 0,
+                            'dpl_ketercapaian_score' => $row['ketercapaian'] ?? 0,
+                            'dpl_inovasi_score' => $row['inovasi'] ?? 0,
+                            'dpl_administrasi_score' => $row['administrasi'] ?? 0,
+                            'dpl_artikel_score' => $row['artikel'] ?? 0,
+                            'dpl_graded_by' => auth()->id(),
+                            'dpl_graded_at' => now(),
+                        ]
+                    );
+                    $imported++;
+                }
+            });
+        }
+
+        return $this->success([
+            'imported_count' => $imported,
+            'errors' => $errors,
+        ], "{$imported} nilai berhasil diimport.");
     }
 
     private function parseImportFile($file): array
     {
-        // Placeholder — implement with maatwebsite/excel
-        return ['rows' => [], 'total' => 0, 'valid' => 0, 'errors' => []];
+        $import = new \App\Imports\EvaluationImport();
+        Excel::import($import, $file);
+
+        return [
+            'rows'   => $import->rows ?? [],
+            'total'  => $import->totalRows ?? 0,
+            'valid'  => $import->validRows ?? 0,
+            'errors' => $import->errors ?? [],
+        ];
     }
 }

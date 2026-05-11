@@ -1,0 +1,21 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    # Level 5: catches type errors, missing return types, dead code.
+    # Run `./vendor/bin/phpstan analyse --generate-baseline` to refresh
+    # the baseline after mass-fixing a batch of issues.
+    level: 5
+
+    paths:
+        - app/
+
+    excludePaths:
+        - app/Console/Commands/LegacyImport*.php
+        - app/Console/Commands/SeedDemoTestingCommand.php
+        # Dev-only provider that guards against missing package. PHPStan
+        # can't reason about the conditional class_exists() trick used inside.
+
+    treatPhpDocTypesAsCertain: false
+    reportUnmatchedIgnoredErrors: false

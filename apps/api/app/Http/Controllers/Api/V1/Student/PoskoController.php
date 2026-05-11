@@ -28,7 +28,7 @@ class PoskoController extends Controller
             'latitude'   => $posko?->latitude !== null ? (float) $posko->latitude : null,
             'longitude'  => $posko?->longitude !== null ? (float) $posko->longitude : null,
             'gmaps_link' => $posko?->gmaps_link,
-            'photo_url'  => $posko?->photo_path ? route('student.posko.photo', $posko) : null,
+            'photo_url'  => $posko?->photo_path ? route('api.v1.student.posko.photo', $posko) : null,
             'photo_name' => $posko?->photo_name,
             'updated_at' => $posko?->updated_at?->toIso8601String(),
         ]);
@@ -91,7 +91,7 @@ class PoskoController extends Controller
             'latitude'   => (float) $posko->latitude,
             'longitude'  => (float) $posko->longitude,
             'gmaps_link' => $posko->gmaps_link,
-            'photo_url'  => $posko->photo_path ? route('student.posko.photo', $posko) : null,
+            'photo_url'  => $posko->photo_path ? route('api.v1.student.posko.photo', $posko) : null,
         ], 'Data posko berhasil diperbarui.');
     }
 

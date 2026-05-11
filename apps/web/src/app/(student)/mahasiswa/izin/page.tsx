@@ -1,14 +1,13 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { studentEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api, studentApi } from '@/lib/api';
+import { studentApi } from '@/lib/api';
 import Link from 'next/link';
 import { Plus, Plane } from 'lucide-react';
 import { StatusBadge, EmptyState } from '@/components/ui/shared';
 
-export default function IzinPage() {
+export default function IzinPage(): React.JSX.Element {
   
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.leaveRequests,

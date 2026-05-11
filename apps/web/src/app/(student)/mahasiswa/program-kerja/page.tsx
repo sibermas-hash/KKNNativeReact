@@ -1,21 +1,20 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { studentEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api, studentApi } from '@/lib/api';
+import { studentApi } from '@/lib/api';
 import Link from 'next/link';
 import { Plus, Presentation } from 'lucide-react';
 import { StatusBadge, EmptyState } from '@/components/ui/shared';
 
-export default function WorkProgramsPage() {
+export default function WorkProgramsPage(): React.JSX.Element {
   
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.workPrograms,
-    queryFn: async () => { const res = await studentApi.workPrograms.index() as unknown as { success: boolean; data: Record<string, unknown> }; return res.data; },
+    queryFn: async () => { return await studentApi.workPrograms.index(); },
   });
 
-  const programs = (data?.programs as Record<string, unknown>[]) || [];
+  const programs = ((data as any)?.programs as Record<string, unknown>[]) || [];
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">

@@ -2,21 +2,25 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Menu, X } from 'lucide-react';
-import { useAuthStore } from '@/stores';
 import { useScroll, useTransform, motion, AnimatePresence } from 'framer-motion';
+import { useAuthStore } from '@/stores';
+
+// Assign motion components to local constants. Workaround untuk Next.js 15 SWC
+// yang kadang gagal parse JSX member expressions seperti <motion.nav>.
+const MotionNav = motion.nav;
+const MotionDiv = motion.div;
 
 interface NavItem {
   label: string;
   href: string;
 }
 
-export function Navbar({ overlayNav = false }: { overlayNav?: boolean }) {
+export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.JSX.Element {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
   const { user, isAuthenticated } = useAuthStore();
-
-  useEffect(() => { setMounted(true); }, []);
 
   const { scrollY } = useScroll();
 
@@ -40,18 +44,18 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }) {
     { label: 'Berita', href: '/berita' },
     { label: 'Lokasi', href: '/lokasi' },
     { label: 'Unduhan', href: '/unduhan' },
+    { label: 'Bantuan', href: '/support' },
   ];
 
-  const getDashboardRoute = () => {
-    if (!mounted || !isAuthenticated || !user) return '/login';
-    const roles = user.roles || [];
-    if (roles.some(r => ['superadmin', 'admin', 'faculty_admin'].includes(r))) return '/admin';
-    if (roles.some(r => ['dosen', 'dpl'].includes(r))) return '/dosen';
-    return '/mahasiswa';
-  };
-
-  const dashboardLabel = mounted && isAuthenticated ? 'Dashboard' : 'Login';
-  const dashboardItem: NavItem = { label: dashboardLabel, href: getDashboardRoute() };
+  const dashboardHref = (() => {
+    const roles = user?.roles || [];
+    if (roles.some((role) => ['superadmin', 'admin', 'faculty_admin'].includes(role))) return '/admin';
+    if (roles.some((role) => ['dosen', 'dpl'].includes(role))) return '/dosen';
+    if (roles.includes('student')) return '/mahasiswa';
+    return '/';
+  })();
+  const loginHref = pathname === '/login' ? '/login' : `/login?redirect=${encodeURIComponent(pathname || '/')}`;
+  const loginItem: NavItem = isAuthenticated ? { label: 'Dashboard', href: dashboardHref } : { label: 'Login', href: loginHref };
 
   const navTextClass = overlayNav
     ? isScrolled
@@ -59,17 +63,19 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }) {
       : 'text-white hover:text-white/80'
     : 'text-emerald-950 hover:text-emerald-700';
 
+  const linkClass = `group relative font-display text-[0.76rem] font-bold uppercase tracking-[0.16em] no-underline transition-colors cursor-pointer ${navTextClass}`;
+
   const overlayStyle = overlayNav
     ? { backgroundColor: bgColor, backdropFilter: backdropBlur, minHeight: navHeight, boxShadow }
     : {};
 
   return (
-    <motion.nav
+    <MotionNav
       style={overlayStyle}
       className={
         overlayNav
-          ? 'fixed inset-x-0 top-0 z-50 flex items-center min-h-[70px] transition-colors duration-500 border-b border-transparent'
-          : 'sticky top-0 z-50 border-b border-emerald-100 bg-white/95 backdrop-blur-xl py-4 h-[72px] flex items-center'
+          ? 'fixed inset-x-0 top-0 z-50 flex items-center min-h-[70px] transition-colors duration-500 border-b border-transparent overflow-visible'
+          : 'sticky top-0 z-50 border-b border-emerald-100 bg-white/95 backdrop-blur-xl py-4 h-[72px] flex items-center overflow-visible'
       }
     >
       <div className="mx-auto w-full max-w-[1920px] px-6 py-4 sm:px-10 lg:px-12">
@@ -85,14 +91,14 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }) {
 
           {/* Menu Navigasi (Tengah) */}
           <div className="hidden lg:flex flex-none items-center justify-center gap-8">
-            {[...navItems, dashboardItem].map((item) => (
+            {[...navItems, loginItem].map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
-                className={`group relative font-display text-[0.76rem] font-bold uppercase tracking-[0.16em] no-underline transition-colors ${navTextClass}`}
+                className={`group relative font-display text-[0.76rem] font-bold uppercase tracking-[0.16em] no-underline transition-colors cursor-pointer ${navTextClass}`}
               >
                 {item.label}
-                <span className={`absolute -bottom-1 left-0 h-0.5 w-0 transition-all duration-300 group-hover:w-full ${isScrolled ? 'bg-emerald-600' : 'bg-white'}`} />
+                <span className={`absolute -bottom-1 left-0 h-0.5 w-0 transition-all duration-300 group-hover:w-full ${overlayNav && !isScrolled ? 'bg-white' : 'bg-emerald-600'}`} />
               </Link>
             ))}
           </div>
@@ -102,7 +108,7 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }) {
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               aria-label={isMenuOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
-              aria-expanded={isMenuOpen ? 'true' : 'false'}
+              aria-expanded={isMenuOpen}
               className={
                 overlayNav
                   ? `rounded-full border p-2.5 lg:hidden transition-all duration-300 ${
@@ -120,7 +126,7 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }) {
 
         <AnimatePresence>
           {isMenuOpen && (
-            <motion.div
+            <MotionDiv
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
@@ -135,22 +141,22 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }) {
                   : 'bg-white border-emerald-100 text-emerald-950'
               }`}>
                 <div className="flex flex-col gap-5">
-                  {[...navItems, dashboardItem].map((item) => (
+                  {[...navItems, loginItem].map((item) => (
                     <Link
                       key={item.label}
                       href={item.href}
                       onClick={() => setIsMenuOpen(false)}
-                      className="font-display text-xs font-semibold uppercase tracking-[0.16em]"
+                      className="font-display text-xs font-semibold uppercase tracking-[0.16em] no-underline [color:inherit]"
                     >
                       {item.label}
                     </Link>
                   ))}
                 </div>
               </div>
-            </motion.div>
+            </MotionDiv>
           )}
         </AnimatePresence>
       </div>
-    </motion.nav>
+    </MotionNav>
   );
 }

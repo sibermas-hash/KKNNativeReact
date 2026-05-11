@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import { ArrowRight, Download, FileText, MapPinned, Newspaper, Users, UserCheck, MapPin } from 'lucide-react';
 import { RevealOnScroll, StaggerContainer, StaggerItem, GlowCard, CountUp, TextReveal } from '@/components/ui/motion-effects';
+import { apiUrl } from '@/lib/api';
 
-interface Announcement {
+export interface Announcement {
   id: number;
   title: string;
   slug?: string;
@@ -15,11 +16,12 @@ interface Announcement {
   reading_time?: number;
 }
 
-interface DownloadItem {
+export interface DownloadItem {
   id: number;
   title: string;
   file_type?: string;
   file_path?: string;
+  file_url?: string;
   external_url?: string;
 }
 
@@ -48,7 +50,7 @@ export function HomeContent({
   featuredDownloads: DownloadItem[];
   stats: { students: number; groups: number; locations: number };
   visi?: string;
-}) {
+}): React.JSX.Element {
   return (
     <>
       {/* --- INFORMATION SECTION --- */}
@@ -181,7 +183,7 @@ export function HomeContent({
                         featuredDownloads.map((download) => (
                           <a
                             key={download.id}
-                            href={download.external_url || download.file_path || '/unduhan'}
+                            href={download.external_url || download.file_url || (download.file_path ? apiUrl(download.file_path) : '/unduhan')}
                             className="flex items-start gap-3 rounded-[1.15rem] border border-emerald-100 bg-white p-4 no-underline transition-all hover:border-emerald-300 hover:shadow-md"
                           >
                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
@@ -269,6 +271,31 @@ export function HomeContent({
           </RevealOnScroll>
         </div>
       </section>
+
+      {/* --- VISI / TENTANG LPPM SECTION --- */}
+      {visi && (
+        <section className="border-t border-emerald-100 bg-white py-16 sm:py-20">
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <RevealOnScroll direction="up">
+              <div className="mx-auto max-w-3xl text-center">
+                <p className="home-kicker text-emerald-600 font-semibold uppercase tracking-widest text-xs">
+                  Tentang Lembaga
+                </p>
+                <h2 className="mt-3 text-3xl font-display font-bold tracking-tight text-emerald-950 sm:text-4xl">
+                  Visi LPPM UIN SAIZU
+                </h2>
+                <div className="mt-6 relative">
+                  <div className="absolute -left-4 top-0 w-1 h-full bg-emerald-200 rounded-full hidden sm:block" />
+                  <TextReveal
+                    text={visi}
+                    className="text-base sm:text-lg leading-8 text-slate-600 font-medium italic sm:pl-6"
+                  />
+                </div>
+              </div>
+            </RevealOnScroll>
+          </div>
+        </section>
+      )}
     </>
   );
 }

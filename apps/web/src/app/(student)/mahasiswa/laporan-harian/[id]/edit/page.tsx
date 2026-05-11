@@ -1,23 +1,22 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { studentEndpoints } from '@sibermas/api-client';
-import { api, studentApi } from '@/lib/api';
+import { studentApi } from '@/lib/api';
 import { useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { editDailyReportSchema, type EditDailyReportFormData } from '@sibermas/schemas';
 import { ChevronLeft, Navigation } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 
-export default function EditDailyReportPage() {
+export default function EditDailyReportPage(): React.JSX.Element {
   const { id } = useParams();
   const router = useRouter();
   
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['student', 'daily-report', Number(id)],
+    queryKey: ['student', 'daily-reports', Number(id)],
     queryFn: async () => {
       const res = await studentApi.dailyReports.show(Number(id));
       return (res as any).data ?? res;
@@ -27,7 +26,11 @@ export default function EditDailyReportPage() {
 
   const updateMutation = useMutation({
     mutationFn: (formData: FormData) => studentApi.dailyReports.update(Number(id), formData),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['student', 'daily-reports'] }); toast.success('Laporan berhasil diperbarui'); router.push('/mahasiswa/laporan-harian'); },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', 'daily-reports'] });
+      toast.success('Laporan berhasil diperbarui');
+      router.push('/mahasiswa/laporan-harian');
+    },
     onError: () => toast.error('Gagal memperbarui laporan'),
   });
 

@@ -15,6 +15,7 @@ class ApiKey extends Model
 
     protected $fillable = [
         'key',
+        'key_prefix',
         'name',
         'permissions',
         'email',
@@ -32,11 +33,33 @@ class ApiKey extends Model
         'last_used_at' => 'datetime',
     ];
 
+    /**
+     * Length of the searchable prefix extracted from each plaintext key.
+     *
+     * Plaintext layout is `sk_<32-hex>` (35 chars). 11 = "sk_" + 8 hex = enough
+     * entropy to narrow `findByPlaintext` to a single row in practice, while
+     * keeping the column small and cheaply indexable.
+     */
+    public const PREFIX_LENGTH = 11;
+
+    /**
+     * Mutator: when a plaintext key is assigned, hash it AND derive the
+     * searchable prefix in one pass. Already-hashed values pass through
+     * untouched (e.g. reassigning from the DB).
+     *
+     * CRITICAL: the prefix MUST come from the plaintext before hashing.
+     * Hashed output has no usable relationship to the original string.
+     */
     public function setKeyAttribute(string $value): void
     {
-        $this->attributes['key'] = $this->looksHashed($value)
-            ? $value
-            : Hash::make($value);
+        if ($this->looksHashed($value)) {
+            $this->attributes['key'] = $value;
+
+            return;
+        }
+
+        $this->attributes['key_prefix'] = substr($value, 0, self::PREFIX_LENGTH);
+        $this->attributes['key'] = Hash::make($value);
     }
 
     protected static function booted()
@@ -81,26 +104,46 @@ class ApiKey extends Model
     }
 
     /**
-     * Find API key by plaintext value.
-     * Uses prefix-based caching to prevent O(n) scans and N+1 query DoS attacks.
+     * Find API key by plaintext value using the indexed `key_prefix` column.
+     *
+     * Previous implementation ran `LIKE '<prefix>%'` against the hashed `key`
+     * column — that could NEVER match (hash output has no relation to the
+     * plaintext prefix), so it devolved into an O(n) table scan plus an
+     * expensive Hash::check per row. This version:
+     *
+     *   1. Derives the prefix from the plaintext (first PREFIX_LENGTH chars).
+     *   2. Queries the indexed `key_prefix` column — typically narrows to
+     *      a single row.
+     *   3. Runs Hash::check against the hashed `key` to confirm the candidate.
+     *
+     * Result stays cached per-prefix (1h) so repeated auth for the same key
+     * skips the DB entirely. The prefix index is tracked separately so
+     * `clearCache()` can still invalidate everything on create/update/delete.
      */
     public static function findByPlaintext(string $candidate): ?self
     {
-        // Extract a prefix to narrow the candidate set (first 8 chars after "sk_")
-        $prefix = substr($candidate, 3, 8);
-        if ($prefix === false || strlen($prefix) < 4) {
+        if (strlen($candidate) < self::PREFIX_LENGTH) {
             return null;
         }
 
+        $prefix = substr($candidate, 0, self::PREFIX_LENGTH);
         $cacheKey = 'api_keys_prefix:'.$prefix;
 
         $keys = Cache::remember(
             $cacheKey,
-            3600, // 1 hour cache
-            function () use ($prefix) {
+            3600,
+            function () use ($prefix, $cacheKey) {
+                $index = Cache::get('api_keys_prefix_index', []);
+                if (! in_array($cacheKey, $index, true)) {
+                    $index[] = $cacheKey;
+                    if (count($index) > 10000) {
+                        array_shift($index);
+                    }
+                    Cache::forever('api_keys_prefix_index', $index);
+                }
+
                 return static::query()
-                    ->whereRaw('key LIKE ?', [static::hashPrefixForLookup($prefix).'%'])
-                    ->orWhereRaw('key LIKE ?', [$prefix.'%'])
+                    ->where('key_prefix', $prefix)
                     ->get();
             }
         );
@@ -115,26 +158,31 @@ class ApiKey extends Model
     }
 
     /**
-     * Hash a key prefix for use in LIKE queries against hashed keys.
-     * This is a best-effort optimization; hashed keys cannot be prefix-searched
-     * reliably, so we fall back to scanning recent keys if needed.
-     */
-    private static function hashPrefixForLookup(string $prefix): string
-    {
-        // If keys are stored hashed, prefix search is not possible.
-        // This method exists for future indexing strategies (e.g., prefix hash column).
-        return $prefix;
-    }
-
-    /**
      * Clear the API key cache when keys are created/updated/deleted.
+     *
+     * C-007 fix: Iterates the cached prefix index and invalidates every
+     * prefix-based cache so revoked/modified keys stop authenticating
+     * immediately (previously, they kept working for up to 1h TTL).
+     *
+     * R-006: Removed a dead `Cache::tags(['api_keys'])->flush()` branch. The
+     * prefix caches in findByPlaintext() are not written with tags, so the
+     * tag-flush was a silent no-op that misled readers into thinking cache
+     * tags were wired up. If you wire tags in findByPlaintext() later, you
+     * can add the tag flush back here.
      */
     public static function clearCache(): void
     {
         Cache::forget('api_keys_active');
         Cache::forget('api_keys_all');
-        // Clear prefix-based caches by tag is not supported here; in production
-        // consider using Cache::tags(['api_keys']) if your cache driver supports it.
+
+        // Invalidate every prefix cache we tracked via the index.
+        $index = Cache::get('api_keys_prefix_index', []);
+        foreach ((array) $index as $cacheKey) {
+            if (is_string($cacheKey)) {
+                Cache::forget($cacheKey);
+            }
+        }
+        Cache::forget('api_keys_prefix_index');
     }
 
     private function looksHashed(string $value): bool

@@ -26,8 +26,24 @@ class DownloadController extends Controller
     {
         $validated = $request->validate([
             'title' => ['required', 'string', 'max:255'],
-            'file' => ['nullable', 'file', 'max:10240'],
+            // 102400 KB = 100 MB. Cukup untuk APK mobile app, PDF panduan,
+            // dan dokumen Word. MIME types di-whitelist: document, image,
+            // archive, dan APK Android (vnd.android.package-archive).
+            'file' => [
+                'nullable',
+                'file',
+                'max:102400',
+                'mimetypes:application/pdf,application/msword,'
+                    .'application/vnd.openxmlformats-officedocument.wordprocessingml.document,'
+                    .'application/vnd.ms-excel,'
+                    .'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,'
+                    .'application/zip,'
+                    .'application/vnd.android.package-archive,'
+                    .'image/jpeg,image/png',
+            ],
             'external_url' => ['nullable', 'url'],
+            // `file_type` bebas string — konvensi: 'mobile-app' untuk APK,
+            // 'panduan' untuk PDF manual, 'formulir' untuk template.
             'file_type' => ['nullable', 'string', 'max:50'],
             'is_active' => ['nullable', 'boolean'],
         ]);

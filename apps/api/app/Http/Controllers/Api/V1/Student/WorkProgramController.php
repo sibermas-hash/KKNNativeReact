@@ -21,7 +21,9 @@ class WorkProgramController extends Controller
 
     public function index(): JsonResponse
     {
-        $mahasiswa = auth()->user()?->mahasiswa;
+        /** @var \App\Models\User|null $user */
+        $user = auth()->user();
+        $mahasiswa = $user?->mahasiswa;
         $registration = $mahasiswa?->peserta()->where('status', 'approved')->first();
 
         if (! $registration?->kelompok_id) {
@@ -48,11 +50,17 @@ class WorkProgramController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $mahasiswa = auth()->user()?->mahasiswa;
+        /** @var \App\Models\User|null $user */
+        $user = auth()->user();
+        $mahasiswa = $user?->mahasiswa;
         $registration = $mahasiswa?->peserta()->where('status', 'approved')->first();
 
         if (! $registration?->kelompok_id) {
             return $this->forbidden('Anda belum ditempatkan di kelompok.');
+        }
+
+        if (strtolower((string) $registration->role) !== 'ketua') {
+            return $this->forbidden('Hanya ketua kelompok yang dapat membuat program kerja.');
         }
 
         $validated = $request->validate([
@@ -88,6 +96,15 @@ class WorkProgramController extends Controller
     {
         Gate::authorize('update', $programKerja);
 
+        /** @var \App\Models\User|null $user */
+        $user = auth()->user();
+        $mahasiswa = $user?->mahasiswa;
+        $registration = $mahasiswa?->peserta()->where('status', 'approved')->first();
+
+        if (strtolower((string) $registration?->role) !== 'ketua') {
+            return $this->forbidden('Hanya ketua kelompok yang dapat mengunggah proposal.');
+        }
+
         $request->validate([
             'proposal' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:10240'],
         ]);
@@ -114,6 +131,11 @@ class WorkProgramController extends Controller
     public function downloadProposal(ProgramKerja $programKerja, ProposalProgramKerja $proposal): JsonResponse
     {
         Gate::authorize('view', $programKerja);
+
+        // Verify proposal belongs to this program (prevent IDOR)
+        if ($proposal->program_kerja_id !== $programKerja->id) {
+            return $this->notFound('Proposal tidak ditemukan untuk program kerja ini.');
+        }
 
         if (! Storage::disk(config('filesystems.default'))->exists($proposal->file_path)) {
             return $this->notFound('File proposal tidak ditemukan.');

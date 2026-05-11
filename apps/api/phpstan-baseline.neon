@@ -1,0 +1,5227 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Method App\\Console\\Commands\\AutoSyncPeriodePhase\:\:getTriggerDate\(\) should return Carbon\\Carbon\|null but returns string\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Console/Commands/AutoSyncPeriodePhase.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:notify\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Console/Commands/CekAbsensiHarian.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/KKN/CekGugurOtomatis.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/KKN/CekGugurOtomatis.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/KKN/CekGugurOtomatis.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/KKN/CekGugurOtomatis.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$dpl\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/KKN/CheckStudentDisciplineCommand.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Console/Commands/KKN/CheckStudentDisciplineCommand.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/KKN/CheckStudentDisciplineCommand.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/KKN/CheckStudentDisciplineCommand.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Console/Commands/KKN/SendDeadlineRemindersCommand.php
+
+		-
+			message: '#^Cannot call method startOfDay\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Console/Commands/KKN/SendDeadlineRemindersCommand.php
+
+		-
+			message: '#^Anonymous function has an unused use \$firstWord\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Console/Commands/ReadExcelCommand.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/SendLogbookReminders.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 11
+			path: app/Console/Commands/StressTestRegistrationCommand.php
+
+		-
+			message: '#^Variable \$nim on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 2
+			path: app/Console/Commands/SyncMasterData.php
+
+		-
+			message: '#^Variable \$nip on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 2
+			path: app/Console/Commands/SyncMasterData.php
+
+		-
+			message: '#^Method App\\Exports\\BiodataPesertaExport\:\:query\(\) has invalid return type Laravel\\Scout\\Builder\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Exports/BiodataPesertaExport.php
+
+		-
+			message: '#^Method App\\Exports\\BpjsParticipantExport\:\:query\(\) has invalid return type Laravel\\Scout\\Builder\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Exports/BpjsParticipantExport.php
+
+		-
+			message: '#^Method App\\Exports\\PesertaKknExport\:\:query\(\) has invalid return type Laravel\\Scout\\Builder\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Exports/PesertaKknExport.php
+
+		-
+			message: '#^Call to static method make\(\) on an unknown class Intervention\\Image\\Facades\\Image\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/AttendanceController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\ConnectionInterface\:\:getDriverName\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/NotificationController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_kelompok\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ActivityAuditController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ActivityAuditController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$body\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$username\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\AdminChatController\:\:badRequest\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\AdminChatController\:\:created\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\AdminChatController\:\:success\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\AvatarModerationController\:\:success\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Admin/AvatarModerationController.php
+
+		-
+			message: '#^Cannot call method isFuture\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 5
+			path: app/Http/Controllers/Api/V1/Admin/DashboardController.php
+
+		-
+			message: '#^Cannot call method isPast\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 4
+			path: app/Http/Controllers/Api/V1/Admin/DashboardController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\DplAssignmentController\:\:created\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/DplAssignmentController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\DplAssignmentController\:\:error\(\)\.$#'
+			identifier: method.notFound
+			count: 6
+			path: app/Http/Controllers/Api/V1/Admin/DplAssignmentController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\DplAssignmentController\:\:noContent\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/DplAssignmentController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\DplAssignmentController\:\:success\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Admin/DplAssignmentController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\DplAssignmentController\:\:successCollection\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/DplAssignmentController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\DplRegistrationController\:\:error\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/DplRegistrationController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\DplRegistrationController\:\:noContent\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/DplRegistrationController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\DplRegistrationController\:\:success\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: app/Http/Controllers/Api/V1/Admin/DplRegistrationController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/GeneratorNilaiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/GeneratorNilaiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nilai\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/GeneratorNilaiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/GeneratorNilaiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Admin/GeneratorNilaiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$file_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/JenisKknDocumentRequirementController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/JenisKknDocumentRequirementController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/JenisKknDocumentRequirementController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/KelompokKknAdminController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$mahasiswa\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Http/Controllers/Api/V1/Admin/KelompokKknAdminController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/KelompokKknAdminController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/KelompokKknAdminController.php
+
+		-
+			message: '#^Call to an undefined static method App\\Models\\KKN\\KknRequirement\:\:ordered\(\)\.$#'
+			identifier: staticMethod.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/KknRequirementController.php
+
+		-
+			message: '#^Anonymous function should return array\{group\: \(int\|string\), enforce_total\: bool, total\: float, items\: Illuminate\\Support\\Collection\<int, array\{id\: mixed, config_key\: mixed, label\: mixed, percentage\: float, description\: mixed\}\>\} but returns array\{group\: \(int\|string\), enforce_total\: bool, total\: float, items\: Illuminate\\Support\\Collection\<int, array\{id\: mixed, config_key\: mixed, label\: mixed, percentage\: float, description\: mixed\}\>\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/KonfigurasiPenilaianController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$documentRequirements\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PeriodeDocumentTemplateController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$template\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PeriodeDocumentTemplateController.php
+
+		-
+			message: '#^Call to static method query\(\) on an unknown class App\\Http\\Controllers\\Api\\V1\\Admin\\DocumentTemplate\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PeriodeDocumentTemplateController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fakultas\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fakultas_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$gpa\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$mother_name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_kelompok\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nik\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$prodi\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sks_completed\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
+
+		-
+			message: '#^Relation ''pesertaKkn'' is not found in App\\Models\\KKN\\DokumenPesertaKkn model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\PlaygroundController\:\:error\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/PlaygroundController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\PlaygroundController\:\:success\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/PlaygroundController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$dosen\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ProfileChangeRequestController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$mahasiswa\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ProfileChangeRequestController.php
+
+		-
+			message: '#^Argument of an invalid type string supplied for foreach, only iterables are supported\.$#'
+			identifier: foreach.nonIterable
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ProfileChangeRequestController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:lockFields\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ProfileChangeRequestController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:lockedFields\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: app/Http/Controllers/Api/V1/Admin/ProfileLockController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:unlockField\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/ProfileLockController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/RekapNilaiController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:kelompokKkn\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/RekapNilaiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Collection\<int, Illuminate\\Database\\Eloquent\\Model\>\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/RekapitulasiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$district_name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/RekapitulasiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/RekapitulasiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$regency_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/RekapitulasiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$village_name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/RekapitulasiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$mahasiswa\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ReportExportController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ReportExportController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/StudentTransferController.php
+
+		-
+			message: '#^Variable \$currentGroupId might not be defined\.$#'
+			identifier: variable.undefined
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/StudentTransferController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\UserActivityLog\:\:\$attempts\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/UserActivityController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\UserActivityLog\:\:\$last_attempt\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/UserActivityController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/UserActivityController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/UserActivityController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$username\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/UserActivityController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\UserActivityController\:\:success\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Admin/UserActivityController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$attended\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/WorkshopController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$certificate_generated\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/WorkshopController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$is_passed\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/WorkshopController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/WorkshopController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$birth_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/AuthController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$birth_place\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/AuthController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$gender\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/AuthController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Auth/AuthController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$mother_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/AuthController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/AuthController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nik\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/AuthController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/AuthController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$shirt_size\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/AuthController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dosen/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dosen/DplRegistrationController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dosen/WorkshopController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$workshop_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dosen/WorkshopController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 5
+			path: app/Http/Controllers/Api/V1/Dpl/BimbinganController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\KegiatanKkn\:\:\$distance_meters\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/DailyReportController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$kelompok_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/DailyReportController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$lokasi\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/DailyReportController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/DailyReportController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:kelompokKkn\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Dpl/DailyReportController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\KegiatanKkn\:\:\$count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jenis_label\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$village_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property App\\Imports\\EvaluationImport\:\:\$errors\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Access to an undefined property App\\Imports\\EvaluationImport\:\:\$rows\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Access to an undefined property App\\Imports\\EvaluationImport\:\:\$totalRows\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Access to an undefined property App\\Imports\\EvaluationImport\:\:\$validRows\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\KonfigurasiPenilaian\:\:\$dpl_weight\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\KonfigurasiPenilaian\:\:\$lppm_weight\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\KonfigurasiPenilaian\:\:\$village_weight\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_kelompok\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:kelompokKkn\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Class App\\Imports\\EvaluationImport constructor invoked with 0 parameters, 2 required\.$#'
+			identifier: arguments.count
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/FinalReportController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:kelompokKkn\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/FinalReportController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$address\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$latitude\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$longitude\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$mahasiswa\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$photo_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$village_name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:kelompokKkn\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/GroupController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:kelompokKkn\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/IzinController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/LogbookPdfController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$kelompok\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/LogbookPdfController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Dpl/MonitoringController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:kelompokKkn\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/MonitoringController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Dpl/ParticipantFeedbackController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_kelompok\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/ParticipantFeedbackController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dpl/ParticipantFeedbackController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\PesertaWorkshop\:\:\$dosen\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/PrivateFileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$kelompok\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/PrivateFileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$mahasiswa\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/PrivateFileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$alamat\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$birth_date\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$birth_place\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$gender\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$golongan\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jabatan\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$kelas_jabatan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$mother_name\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_bank\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_gelar\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nidn\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nik\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nip\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$no_rekening\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$npwp\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pangkat\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$shirt_size\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tugas_tambahan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/BimbinganController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:peserta\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Student/BimbinganController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:kelompokKkn\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/CertificateController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$body\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/ChatController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/ChatController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$is_read\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/ChatController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/ChatController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sender_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/ChatController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Student\\ChatController\:\:badRequest\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/ChatController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Student\\ChatController\:\:created\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Student/ChatController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Student\\ChatController\:\:forbidden\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Student/ChatController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Student\\ChatController\:\:success\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Student/ChatController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$file_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/DailyReportController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Student/DailyReportController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/DailyReportController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:peserta\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/DailyReportController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$batch_year\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$dosen\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Student/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 8
+			path: app/Http/Controllers/Api/V1/Student/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jenisKkn\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Controllers/Api/V1/Student/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$lokasi\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_kelompok\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/DashboardController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Http\\Request\:\:validated\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/DplEvaluationController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/FinalReportController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:peserta\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Student/FinalReportController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Student/IzinController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:peserta\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/IzinController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\KelompokKkn\:\:\$female_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\KelompokKkn\:\:\$male_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$district_name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jenisKkn\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$regency_name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$requirements_config\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$village_name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 4
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Student\\KknDaftarController\:\:error\(\) invoked with 2 parameters, 3\-4 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:kelompokKkn\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/PoskoController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:peserta\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Student/PoskoController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Student/PosterController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_kelompok\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/PosterController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$poster_potensi_desa_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/PosterController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$poster_potensi_desa_path\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Student/PosterController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Student/RegistrationController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$documentRequirements\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/RegistrationDocumentController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/RegistrationDocumentController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$requirement\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/RegistrationDocumentController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$template\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/RegistrationDocumentController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Student/RekapitulasiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$lokasi\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/RekapitulasiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_kelompok\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/RekapitulasiController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/RekapitulasiController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:peserta\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Student/WorkProgramController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\TotpController\:\:badRequest\(\)\.$#'
+			identifier: method.notFound
+			count: 5
+			path: app/Http/Controllers/Api/V1/TotpController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\TotpController\:\:error\(\)\.$#'
+			identifier: method.notFound
+			count: 4
+			path: app/Http/Controllers/Api/V1/TotpController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\TotpController\:\:forbidden\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/TotpController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\TotpController\:\:success\(\)\.$#'
+			identifier: method.notFound
+			count: 5
+			path: app/Http/Controllers/Api/V1/TotpController.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$category\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AnnouncementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$content\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AnnouncementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AnnouncementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$excerpt\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AnnouncementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$file_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AnnouncementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$file_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AnnouncementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AnnouncementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$image\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AnnouncementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AnnouncementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$meta_description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AnnouncementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$meta_title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AnnouncementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$popup_dismissable\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AnnouncementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$popup_until\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AnnouncementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$published_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AnnouncementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$show_as_popup\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AnnouncementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$slug\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AnnouncementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AnnouncementResource\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AnnouncementResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AttendanceResource\:\:\$check_in_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AttendanceResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AttendanceResource\:\:\$check_out_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AttendanceResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AttendanceResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AttendanceResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AttendanceResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AttendanceResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AttendanceResource\:\:\$latitude\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AttendanceResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AttendanceResource\:\:\$longitude\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AttendanceResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AttendanceResource\:\:\$method\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AttendanceResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AttendanceResource\:\:\$peserta_kkn_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AttendanceResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AttendanceResource\:\:\$photo_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AttendanceResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\AttendanceResource\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/AttendanceResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DatabaseSyncLogResource\:\:\$action\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DatabaseSyncLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DatabaseSyncLogResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DatabaseSyncLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DatabaseSyncLogResource\:\:\$entity_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DatabaseSyncLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DatabaseSyncLogResource\:\:\$entity_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DatabaseSyncLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DatabaseSyncLogResource\:\:\$error_message\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DatabaseSyncLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DatabaseSyncLogResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DatabaseSyncLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DatabaseSyncLogResource\:\:\$payload\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DatabaseSyncLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DatabaseSyncLogResource\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DatabaseSyncLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DatabaseSyncLogResource\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DatabaseSyncLogResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DokumenPesertaResource\:\:\$document_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DokumenPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DokumenPesertaResource\:\:\$file_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DokumenPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DokumenPesertaResource\:\:\$file_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DokumenPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DokumenPesertaResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DokumenPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DokumenPesertaResource\:\:\$peserta_kkn_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DokumenPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DokumenPesertaResource\:\:\$rejection_reason\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DokumenPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DokumenPesertaResource\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DokumenPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DokumenPesertaResource\:\:\$uploaded_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DokumenPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$alamat\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$birth_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$gender\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$golongan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$has_workshop\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$is_cpns\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$is_tugas_belajar\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$jabatan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$kelas_jabatan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$nama_bank\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$nama_gelar\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$nidn\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$nik\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$nip\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$no_rekening\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$npwp\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$pangkat\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$phone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$status_aktif\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$status_pegawai\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$tempat_lahir\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$tugas_tambahan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$workshop_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DownloadResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DownloadResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DownloadResource\:\:\$external_url\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DownloadResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DownloadResource\:\:\$file_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DownloadResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DownloadResource\:\:\$file_path\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/DownloadResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DownloadResource\:\:\$file_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DownloadResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DownloadResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DownloadResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DownloadResource\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DownloadResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DownloadResource\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DownloadResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DplPeriodResource\:\:\$approved_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DplPeriodResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DplPeriodResource\:\:\$dosen_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DplPeriodResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DplPeriodResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DplPeriodResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DplPeriodResource\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DplPeriodResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DplPeriodResource\:\:\$max_kelompok_kkn\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DplPeriodResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DplPeriodResource\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DplPeriodResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DplPeriodResource\:\:\$rejection_reason\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DplPeriodResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DplPeriodResource\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DplPeriodResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\DplPeriodResource\:\:getRemainingSlots\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DplPeriodResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\DplPeriodResource\:\:hasCapacity\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DplPeriodResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\EvaluasiDplPesertaResource\:\:\$comment\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/EvaluasiDplPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\EvaluasiDplPesertaResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/EvaluasiDplPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\EvaluasiDplPesertaResource\:\:\$dosen_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/EvaluasiDplPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\EvaluasiDplPesertaResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/EvaluasiDplPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\EvaluasiDplPesertaResource\:\:\$kelompok_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/EvaluasiDplPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\EvaluasiDplPesertaResource\:\:\$mahasiswa_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/EvaluasiDplPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\EvaluasiResource\:\:\$evaluated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/EvaluasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\EvaluasiResource\:\:\$evaluator_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/EvaluasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\EvaluasiResource\:\:\$grade\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/EvaluasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\EvaluasiResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/EvaluasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\EvaluasiResource\:\:\$kelompok_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/EvaluasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\EvaluasiResource\:\:\$mahasiswa_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/EvaluasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\EvaluasiResource\:\:\$notes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/EvaluasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\EvaluasiResource\:\:\$total_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/EvaluasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\FakultasResource\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/FakultasResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\FakultasResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/FakultasResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\FakultasResource\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/FakultasResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\FileKegiatanResource\:\:\$file_name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/FileKegiatanResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\FileKegiatanResource\:\:\$file_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/FileKegiatanResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\FileKegiatanResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/FileKegiatanResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\FileKegiatanResource\:\:\$kegiatan_kkn_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/FileKegiatanResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ItemEvaluasiDplPesertaResource\:\:\$aspect\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ItemEvaluasiDplPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ItemEvaluasiDplPesertaResource\:\:\$evaluasi_dpl_peserta_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ItemEvaluasiDplPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ItemEvaluasiDplPesertaResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ItemEvaluasiDplPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ItemEvaluasiDplPesertaResource\:\:\$score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ItemEvaluasiDplPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ItemEvaluasiResource\:\:\$criterion\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ItemEvaluasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ItemEvaluasiResource\:\:\$evaluasi_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ItemEvaluasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ItemEvaluasiResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ItemEvaluasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ItemEvaluasiResource\:\:\$notes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ItemEvaluasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ItemEvaluasiResource\:\:\$score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ItemEvaluasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ItemEvaluasiResource\:\:\$weight\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ItemEvaluasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\IzinMeninggalkanResource\:\:\$alasan\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/IzinMeninggalkanResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\IzinMeninggalkanResource\:\:\$catatan_dpl\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/IzinMeninggalkanResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\IzinMeninggalkanResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/IzinMeninggalkanResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\IzinMeninggalkanResource\:\:\$durasi_hari\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/IzinMeninggalkanResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\IzinMeninggalkanResource\:\:\$file_bukti\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/IzinMeninggalkanResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\IzinMeninggalkanResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/IzinMeninggalkanResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\IzinMeninggalkanResource\:\:\$kelompok_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/IzinMeninggalkanResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\IzinMeninggalkanResource\:\:\$mahasiswa_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/IzinMeninggalkanResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\IzinMeninggalkanResource\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/IzinMeninggalkanResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\IzinMeninggalkanResource\:\:\$tanggal_kembali\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/IzinMeninggalkanResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\IzinMeninggalkanResource\:\:\$tanggal_mulai\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/IzinMeninggalkanResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\JenisKknResource\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/JenisKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\JenisKknResource\:\:\$color\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/JenisKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\JenisKknResource\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/JenisKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\JenisKknResource\:\:\$documentRequirements\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/JenisKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\JenisKknResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/JenisKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\JenisKknResource\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/JenisKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\JenisKknResource\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/JenisKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\JenisKknResource\:\:\$placement_mode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/JenisKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\JenisKknResource\:\:\$registration_mode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/JenisKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\JenisKknResource\:\:\$requirements_config\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/JenisKknResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\JenisKknResource\:\:getAttendanceConfig\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/JenisKknResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\JenisKknResource\:\:placementModeLabel\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/JenisKknResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\JenisKknResource\:\:registrationModeLabel\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/JenisKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$abcd_stage\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$activity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$ai_analysis\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$ai_summary\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$captured_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$date\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$gps_accuracy\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$kelompok\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$kelompok_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$latitude\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$location_name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$location_source\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$longitude\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$mahasiswa\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$mahasiswa_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$reflection\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$review_notes\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$reviewed_at\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$reviewer\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$social_media_link\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$status_color\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$status_label\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\KegiatanKknResource\:\:canonicalStatus\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KegiatanKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KelompokKknResource\:\:\$capacity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KelompokKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KelompokKknResource\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KelompokKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KelompokKknResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KelompokKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KelompokKknResource\:\:\$ketua_dpl\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KelompokKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KelompokKknResource\:\:\$nama_kelompok\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KelompokKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KelompokKknResource\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KelompokKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KelompokKknResource\:\:\$peserta\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KelompokKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KelompokKknResource\:\:\$poster_potensi_desa_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KelompokKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KelompokKknResource\:\:\$poster_potensi_desa_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KelompokKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KelompokKknResource\:\:\$poster_potensi_desa_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KelompokKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KelompokKknResource\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KelompokKknResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\KelompokKknResource\:\:relationLoaded\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KelompokKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$abstract\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$article_1_path\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$article_2_path\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$download_url\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$file_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$file_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$kelompok_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$mahasiswa_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$news_link\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$poster_1_path\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$poster_2_path\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$poster_3_path\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$review_notes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$reviewed_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$status_color\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$status_label\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$submitted_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:\$video_link\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\LaporanAkhirResource\:\:canonicalStatus\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LaporanAkhirResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LogAuditResource\:\:\$action\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LogAuditResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LogAuditResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LogAuditResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LogAuditResource\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LogAuditResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LogAuditResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LogAuditResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LogAuditResource\:\:\$ip_address\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LogAuditResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LogAuditResource\:\:\$model_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LogAuditResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LogAuditResource\:\:\$model_type\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/LogAuditResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LogAuditResource\:\:\$new_values\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LogAuditResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LogAuditResource\:\:\$old_values\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LogAuditResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LogAuditResource\:\:\$severity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LogAuditResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LogAuditResource\:\:\$user_agent\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LogAuditResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LogAuditResource\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LogAuditResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:\$address\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LokasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:\$capacity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LokasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:\$district_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LokasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:\$district_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LokasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:\$fakultas_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LokasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:\$full_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LokasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LokasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:\$kelompok\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LokasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:\$latitude\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LokasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:\$longitude\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LokasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:\$province_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LokasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:\$regency_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LokasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:\$regency_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LokasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:\$village_code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LokasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:\$village_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LokasiResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:relationLoaded\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LokasiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$batch_year\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$birth_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$birth_place\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$gender\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$gpa\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$health_certificate_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$is_paid_ukt\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$mother_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$nik\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$parent_permission_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$profile_completion\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$semester\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$shirt_size\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$sks_completed\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$status_aktif\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$status_bta_ppi\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MonitoringDplResource\:\:\$catatan_tambahan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MonitoringDplResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MonitoringDplResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MonitoringDplResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MonitoringDplResource\:\:\$dpl_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MonitoringDplResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MonitoringDplResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MonitoringDplResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MonitoringDplResource\:\:\$kelompok_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MonitoringDplResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MonitoringDplResource\:\:\$permasalahan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MonitoringDplResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MonitoringDplResource\:\:\$solusi\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MonitoringDplResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MonitoringDplResource\:\:\$tanggal_kunjungan\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MonitoringDplResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$admin_graded_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$administration_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$desa_disiplin_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$desa_interaksi_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$desa_kinerja_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$dpl_administrasi_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$dpl_artikel_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$dpl_graded_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$dpl_inovasi_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$dpl_ketercapaian_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$dpl_relevansi_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$dpl_weighted_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$is_finalized\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$kelompok_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$letter_grade\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$lppm_weighted_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$total_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$village_graded_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$village_weighted_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:\$workshop_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:calculateDplScore\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:calculateLppmScore\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\NilaiKknResource\:\:calculateVillageScore\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/NilaiKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$current_phase\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$documentTemplates\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$end_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$grading_end\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$grading_start\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$is_locked\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$kuota\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$periode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$registration_end\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$registration_start\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$settings_override\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$start_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$theme\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$approved_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$joined_group_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$kelompok_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$mahasiswa_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$notes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$notification_shown\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$registration_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$rejection_reason\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$revision_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaWorkshopResource\:\:\$attended\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaWorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaWorkshopResource\:\:\$attended_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaWorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaWorkshopResource\:\:\$certificate_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaWorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaWorkshopResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaWorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaWorkshopResource\:\:\$is_passed\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaWorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaWorkshopResource\:\:\$registered_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaWorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaWorkshopResource\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaWorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaWorkshopResource\:\:\$workshop_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaWorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PoskoResource\:\:\$address\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PoskoResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PoskoResource\:\:\$gmaps_link\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PoskoResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PoskoResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PoskoResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PoskoResource\:\:\$kelompok_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PoskoResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PoskoResource\:\:\$latitude\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PoskoResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PoskoResource\:\:\$longitude\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PoskoResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PoskoResource\:\:\$nama_posko\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PoskoResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PoskoResource\:\:\$photo_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PoskoResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PoskoResource\:\:\$radius_meters\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PoskoResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProdiResource\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProdiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProdiResource\:\:\$fakultas_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProdiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProdiResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProdiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProdiResource\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProdiResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProgramKerjaResource\:\:\$abcd_stage\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProgramKerjaResource\:\:\$approval_notes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProgramKerjaResource\:\:\$approved_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProgramKerjaResource\:\:\$budget\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProgramKerjaResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProgramKerjaResource\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProgramKerjaResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProgramKerjaResource\:\:\$kategori\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProgramKerjaResource\:\:\$kelompok_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProgramKerjaResource\:\:\$objectives\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProgramKerjaResource\:\:\$sdg_goals\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProgramKerjaResource\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProgramKerjaResource\:\:\$submitted_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProgramKerjaResource\:\:\$target_participants\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProgramKerjaResource\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProposalProgramKerjaResource\:\:\$file_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProposalProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProposalProgramKerjaResource\:\:\$file_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProposalProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProposalProgramKerjaResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProposalProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProposalProgramKerjaResource\:\:\$notes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProposalProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProposalProgramKerjaResource\:\:\$program_kerja_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProposalProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProposalProgramKerjaResource\:\:\$uploaded_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProposalProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\ProposalProgramKerjaResource\:\:\$version\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/ProposalProgramKerjaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\SertifikatKknResource\:\:\$certificate_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/SertifikatKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\SertifikatKknResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/SertifikatKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\SertifikatKknResource\:\:\$issued_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/SertifikatKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\SertifikatKknResource\:\:\$letter_grade\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/SertifikatKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\SertifikatKknResource\:\:\$lokasi_kkn\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/SertifikatKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\SertifikatKknResource\:\:\$nama_fakultas\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/SertifikatKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\SertifikatKknResource\:\:\$nama_mahasiswa\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/SertifikatKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\SertifikatKknResource\:\:\$nama_prodi\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/SertifikatKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\SertifikatKknResource\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/SertifikatKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\SertifikatKknResource\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/SertifikatKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\SertifikatKknResource\:\:\$revoked_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/SertifikatKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\SertifikatKknResource\:\:\$total_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/SertifikatKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\SertifikatKknResource\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/SertifikatKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\SertifikatKknResource\:\:\$verification_token\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/SertifikatKknResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\SertifikatKknResource\:\:isRevoked\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/SertifikatKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\TahunAkademikResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TahunAkademikResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\TahunAkademikResource\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TahunAkademikResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\TahunAkademikResource\:\:\$year\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TahunAkademikResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$address\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$address_district_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$address_lat\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$address_lng\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$address_postal_code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$address_regency_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$address_registered_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$address_verified_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$address_village_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$avatar\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$must_change_password\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$password_changed_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$phone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$username\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\UserResource\:\:getPermissionsViaRoles\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\UserResource\:\:getRoleNames\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\WorkshopResource\:\:\$active_token\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/WorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\WorkshopResource\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/WorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\WorkshopResource\:\:\$formatted_end_time\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/WorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\WorkshopResource\:\:\$formatted_start_time\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/WorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\WorkshopResource\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/WorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\WorkshopResource\:\:\$latitude\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/WorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\WorkshopResource\:\:\$location\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/WorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\WorkshopResource\:\:\$longitude\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/WorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\WorkshopResource\:\:\$max_participants\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/WorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\WorkshopResource\:\:\$methodology\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/WorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\WorkshopResource\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/WorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\WorkshopResource\:\:\$peserta\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/WorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\WorkshopResource\:\:\$radius_meters\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/WorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\WorkshopResource\:\:\$speaker\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/WorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\WorkshopResource\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/WorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\WorkshopResource\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/WorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\WorkshopResource\:\:\$workshop_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/WorkshopResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\WorkshopResource\:\:relationLoaded\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/WorkshopResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Jobs/FinalizeMassScoresJob.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Jobs/FinalizeMassScoresJob.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Jobs/GenerateBulkCertificatesJob.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Jobs/GenerateBulkCertificatesJob.php
+
+		-
+			message: '#^Call to an undefined method App\\Services\\CertificateService\:\:generateCertificatePdf\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Jobs/GenerateBulkCertificatesJob.php
+
+		-
+			message: '#^Property App\\Mcp\\Servers\\AppServer\:\:\$tools \(array\<int, class\-string\<Laravel\\Mcp\\Server\\Tool\>\|Laravel\\Mcp\\Server\\Tool\>\) does not accept default value of type array\<int, string\>\.$#'
+			identifier: property.defaultValue
+			count: 1
+			path: app/Mcp/Servers/AppServer.php
+
+		-
+			message: '#^Attribute class Laravel\\Mcp\\Attributes\\AsMcpTool does not exist\.$#'
+			identifier: attribute.notFound
+			count: 1
+			path: app/Mcp/Tools/GetStudentStats.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/AntrianKkn.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: app/Models/KKN/AntrianKkn.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/Attendance.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$posko\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/Attendance.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: app/Models/KKN/Attendance.php
+
+		-
+			message: '#^Property App\\Models\\KKN\\AttendanceSyncLog\:\:\$total_retry_seconds \(int\<0, max\>\) does not accept float\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Models/KKN/AttendanceSyncLog.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\Dosen\:\:\$manually_edited_fields\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Models/KKN/Dosen.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:hasCapacity\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/KKN/Dosen.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/DplKecamatanAssignment.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: app/Models/KKN/DplKecamatanAssignment.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/DplPeriod.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: app/Models/KKN/DplPeriod.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/EvaluasiDplPeserta.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: app/Models/KKN/EvaluasiDplPeserta.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model&object\{pivot\: Illuminate\\Database\\Eloquent\\Relations\\Pivot\}\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Models/KKN/KelompokKkn.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jenis\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/KelompokKkn.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jenisKkn\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/KelompokKkn.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/KelompokKkn.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pivot\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/KelompokKkn.php
+
+		-
+			message: '#^Method App\\Models\\KKN\\KelompokKkn\:\:getKetuaDplAttribute\(\) should return App\\Models\\KKN\\Dosen\|null but returns \(Illuminate\\Database\\Eloquent\\Model&object\{pivot\: Illuminate\\Database\\Eloquent\\Relations\\Pivot\}\)\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/KKN/KelompokKkn.php
+
+		-
+			message: '#^Method App\\Models\\KKN\\KelompokKkn\:\:getKetuaDplAttribute\(\) should return App\\Models\\KKN\\Dosen\|null but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/KKN/KelompokKkn.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: app/Models/KKN/KelompokKkn.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/LocationDispensation.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: app/Models/KKN/LocationDispensation.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\Mahasiswa\:\:\$manually_edited_fields\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Models/KKN/Mahasiswa.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$address\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/Mahasiswa.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/Mahasiswa.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/MonitoringDpl.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: app/Models/KKN/MonitoringDpl.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Models/KKN/NilaiKkn.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$mahasiswa\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/NilaiKkn.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$placement_mode\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Models/KKN/Periode.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$registration_mode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/Periode.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/PesertaKkn.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: app/Models/KKN/PesertaKkn.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/SertifikatKkn.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 1
+			path: app/Models/KKN/SertifikatKkn.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/KKN/Workshop.php
+
+		-
+			message: '#^Unsafe usage of new static\(\)\.$#'
+			identifier: new.static
+			count: 2
+			path: app/Models/KKN/Workshop.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$manually_edited_fields\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Models/User.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$peserta\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:peserta\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Notifications/DeadlineReminderNotification.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Notifications/KKN/StudentLeaveRequestedNotification.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fakultas_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Policies/EvaluasiPolicy.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:kelompokKkn\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Policies/IzinPolicy.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fakultas_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Policies/KegiatanKknPolicy.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Policies/KegiatanKknPolicy.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:dosen\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Policies/KegiatanKknPolicy.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fakultas_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Policies/KknScorePolicy.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:dplPeriods\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Policies/PeriodPolicy.php
+
+		-
+			message: '#^Class Maatwebsite\\Excel\\Excel constructor invoked with 3 parameters, 4 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Providers/DocumentServiceProvider.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\DplKecamatanAssignment\:\:\$district_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Admin/DplAssignmentService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/Admin/DplAssignmentService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/Admin/DplAssignmentService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/Admin/DplAssignmentService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\HasMany\:\:detach\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/Admin/DplAssignmentService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Admin/PeriodeService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$dpl_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Admin/PeriodeService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$dpl_periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Admin/PeriodeService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Admin/PeriodeService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Admin/PeriodeService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$slotTerkunci\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Admin/PeriodeService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Admin/PeriodeService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$token\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/Admin/PeriodeService.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Services/Admin/PeriodeService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\KelompokKkn\:\:\$active_participants_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AutomaticGroupPlacementService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$address_regency_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AutomaticGroupPlacementService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jenisKkn\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AutomaticGroupPlacementService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$regency_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/AutomaticGroupPlacementService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/CertificateService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$lokasi\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/CertificateService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/CertificateService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/CertificateService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/CertificateService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\KelompokKkn\:\:\$member_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ComprehensiveReportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$district_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ComprehensiveReportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$village_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ComprehensiveReportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/DailyReportCompilationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model&object\{pivot\: Illuminate\\Database\\Eloquent\\Relations\\Pivot\}\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/DplAssignmentService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/DplAssignmentService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/DplProvisioningService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$is_active\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/DplProvisioningService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/DplProvisioningService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:assignRole\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/DplProvisioningService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:hasRole\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/DplProvisioningService.php
+
+		-
+			message: '#^Method App\\Services\\DplProvisioningService\:\:ensureDplAccount\(\) should return array\{user\: App\\Models\\User, created\: bool, activated\: bool, temp_password\: string\|null\} but returns array\{user\: Illuminate\\Database\\Eloquent\\Model\|null, created\: bool, activated\: bool, temp_password\: string\|null\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/DplProvisioningService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\DplKecamatanAssignment\:\:\$district_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/DplScopeService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/DplScopeService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fakultas\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/EligibilityService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$min_gpa\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/EligibilityService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$min_sks\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/EligibilityService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/EligibilityService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$require_bta_ppi\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/EligibilityService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$require_not_married\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/EligibilityService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$require_parent_permission\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/EligibilityService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$requirements_config\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/EligibilityService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$specific_prodi_ids\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/EligibilityService.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Services/EligibilityService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$district_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/GradeExportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/GradeExportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$regency_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/GradeExportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tahunAkademik\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/GradeExportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/GradeExportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$village_name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/GradeExportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$year\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/GradeExportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/GradingService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$gender\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/GroupSelectionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jenisKkn\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/GroupSelectionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/GroupSelectionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$regency_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/GroupSelectionService.php
+
+		-
+			message: '#^Cannot call method copy\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/GroupSelectionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$dpl\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/IzinService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/IzinService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\Attendance\:\:\$peserta\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/AttendanceValidationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/AttendanceValidationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$posko\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/AttendanceValidationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$criterion_key\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$criterion_label\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fakultas\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_kelompok\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nip\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$weight\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Anonymous function should return array\{id\: int, student_name\: mixed, student_nim\: mixed, group_name\: mixed, period_name\: mixed, recommendation\: string, total_score\: float, notes\: string\|null, \.\.\.\} but returns array\{id\: int, student_name\: mixed, student_nim\: mixed, group_name\: mixed, period_name\: mixed, recommendation\: string, total_score\: float, notes\: string\|null, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:peserta\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/KKN/DplParticipantEvaluationService.php
+
+		-
+			message: '#^Call to private method haversineDistance\(\) of class App\\Models\\KKN\\Attendance\.$#'
+			identifier: method.private
+			count: 1
+			path: app/Services/KKN/FraudDetectionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/IntelligenceService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/IntelligenceService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/IntelligenceService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/IntelligenceService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/KknRequirementService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/KknRequirementService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/KknRequirementService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$requirements_config\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/KknRequirementService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/NilaiAkhirService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/NilaiAkhirService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/KKN/PlacementService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$placement_mode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/PlacementService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:usesAutomaticPlacementAfterApproval\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/KKN/RegistrationApprovalService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$documentRequirements\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/RegistrationDocumentService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$template\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/RegistrationDocumentService.php
+
+		-
+			message: '#^Call to an undefined method PhpOffice\\PhpSpreadsheet\\Spreadsheet\:\:getStyle\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/KKN/RegistrationExportService.php
+
+		-
+			message: '#^Call to an undefined method PhpOffice\\PhpSpreadsheet\\Spreadsheet\:\:setCellValue\(\)\.$#'
+			identifier: method.notFound
+			count: 9
+			path: app/Services/KKN/RegistrationExportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$kelompok\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/LogbookPdfService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$kelompok_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/LogbookPdfService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Services/MasterApi/EntityMapperService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/MasterApi/EntityMapperService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$master_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/MasterApi/EntityMapperService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Services/MasterApi/EntityMapperService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/MasterApi/EntityMapperService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/NotificationBroadcastService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:notify\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/NotificationBroadcastService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PeriodContextService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PeriodContextService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$placement_mode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PeriodContextService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$registration_mode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PeriodContextService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$year\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/PeriodContextService.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/PeriodContextService.php
+
+		-
+			message: '#^Method App\\Services\\ProfileSnapshotService\:\:resolveProfileable\(\) should return App\\Models\\KKN\\Dosen\|App\\Models\\KKN\\Mahasiswa\|null but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/ProfileSnapshotService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$capacity\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/RegistrationPortalService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/RegistrationPortalService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/RegistrationPortalService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$lokasi\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/RegistrationPortalService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_kelompok\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/RegistrationPortalService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/RegistrationPortalService.php
+
+		-
+			message: '#^Method App\\Services\\RegistrationPortalService\:\:activePeriodsSnapshot\(\) should return Illuminate\\Support\\Collection\<int, array\<string, mixed\>\> but returns Illuminate\\Support\\Collection\<int, array\{id\: int, nama\: string, jenis\: mixed, jenis_code\: mixed, program_type\: mixed, program_subtype\: mixed, registration_mode\: mixed, placement_mode\: mixed, \.\.\.\}\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/RegistrationPortalService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fakultas_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/RegistrationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/RegistrationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$lokasi\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/RegistrationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_kelompok\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/RegistrationService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Contracts\\Cache\\Repository\:\:lock\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Services/RegistrationService.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 4
+			path: app/Services/RegistrationService.php
+
+		-
+			message: '#^Property App\\Models\\KKN\\PesertaKkn\:\:\$resubmitted_at \(string\|null\) does not accept Illuminate\\Support\\Carbon\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Services/RegistrationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$end_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/StudentTransferService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/StudentTransferService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$start_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/StudentTransferService.php
+
+		-
+			message: '#^Cannot call method gt\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/StudentTransferService.php
+
+		-
+			message: '#^Cannot call method lt\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Services/StudentTransferService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$attendance_score\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$attendance_status\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$checked_in_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$dosen\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$location\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$mahasiswa\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$media\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$methodology\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$title\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$workshop_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:getActiveGroupId\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/WorkshopService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/YudisiumService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_kelompok\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/YudisiumService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/YudisiumService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$prodi\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/YudisiumService.php

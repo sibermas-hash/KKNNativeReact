@@ -16,14 +16,21 @@ return [
     | authentication cookies. Typically, these should include your local
     | and production domains which access your API via a frontend SPA.
     |
+    | H-012 fix: In production the default is empty — SANCTUM_STATEFUL_DOMAINS
+    | MUST be set explicitly. Otherwise the legacy default included
+    | `.localhost,.test` which could enable cookie auth from attacker-controlled
+    | subdomains through DNS tricks.
+    |
     */
 
-    'stateful' => explode(',', env('SANCTUM_STATEFUL_DOMAINS', sprintf(
-        '%s%s%s',
-        'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1',
-        Sanctum::currentApplicationUrlWithPort(),
-        ',.localhost,.test'
-    ))),
+    'stateful' => explode(',', (string) env('SANCTUM_STATEFUL_DOMAINS', env('APP_ENV') === 'production'
+        ? ''
+        : sprintf(
+            '%s%s%s',
+            'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,::1',
+            Sanctum::currentApplicationUrlWithPort(),
+            ',.localhost,.test'
+        ))),
 
     /*
     |--------------------------------------------------------------------------
@@ -48,9 +55,13 @@ return [
     | considered expired. This will override any values set in the token's
     | "expires_at" attribute, but first-party sessions are not affected.
     |
+    | H-004 fix: default lowered from 30 days (43200) to 7 days (10080) for
+    | a student/grade system. Override via SANCTUM_TOKEN_EXPIRATION if the
+    | mobile app needs longer-lived tokens with refresh support.
+    |
     */
 
-    'expiration' => env('SANCTUM_TOKEN_EXPIRATION', 43200), // 30 days default
+    'expiration' => env('SANCTUM_TOKEN_EXPIRATION', 10080), // 7 days default
 
     /*
     |--------------------------------------------------------------------------

@@ -172,8 +172,8 @@ class AttendanceValidationService
             ];
         }
 
-        if ($locationSource === 'domisili') {
-            return $this->validateGeofenceAgainstDomisili($attendance, $allowedRadius);
+        if ($locationSource === 'address') {
+            return $this->validateGeofenceAgainstAddress($attendance, $allowedRadius);
         }
 
         return $this->validateGeofenceAgainstPosko($attendance, $allowedRadius);
@@ -203,20 +203,22 @@ class AttendanceValidationService
     }
 
     /**
-     * Validate against student's registered domisili location (for KKN Mandiri)
+     * Validate against student's registered original address location (for KKN Mandiri)
      */
-    private function validateGeofenceAgainstDomisili(Attendance $attendance, int $allowedRadius): array
+    private function validateGeofenceAgainstAddress(Attendance $attendance, int $allowedRadius): array
     {
-        if (! $attendance->peserta?->mahasiswa?->domisili_lat || ! $attendance->peserta?->mahasiswa?->domisili_lng) {
+        $user = $attendance->peserta?->mahasiswa?->user;
+
+        if (! $user?->address_lat || ! $user?->address_lng) {
             return [
                 'within_geofence' => false,
                 'distance' => null,
-                'reason' => 'No domisili location registered',
+                'reason' => 'No original address location registered',
             ];
         }
 
-        $domisiliLat = $attendance->peserta->mahasiswa->domisili_lat;
-        $domisiliLng = $attendance->peserta->mahasiswa->domisili_lng;
+        $addressLat = $user->address_lat;
+        $addressLng = $user->address_lng;
         $attendanceLat = $attendance->latitude;
         $attendanceLng = $attendance->longitude;
 
@@ -231,14 +233,14 @@ class AttendanceValidationService
         $distance = $this->calculateHaversineDistance(
             $attendanceLat,
             $attendanceLng,
-            $domisiliLat,
-            $domisiliLng
+            $addressLat,
+            $addressLng
         );
 
         return [
             'within_geofence' => $distance <= $allowedRadius,
             'distance' => $distance,
-            'location_type' => 'domisili',
+            'location_type' => 'address',
         ];
     }
 

@@ -1,0 +1,188 @@
+'use client';
+
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api';
+import { toast } from 'sonner';
+import { CheckCircle2, XCircle, Clock, User } from 'lucide-react';
+
+interface ChangeRequest {
+  id: number;
+  user: { id: number; name: string; username: string };
+  requested_changes: Record<string, { old: unknown; new: unknown }>;
+  status: 'pending' | 'approved' | 'rejected';
+  rejection_reason?: string;
+  reviewed_at?: string;
+  created_at: string;
+}
+
+const FIELD_LABELS: Record<string, string> = {
+  name: 'Nama', phone: 'No. HP', address: 'Alamat',
+  address_village_name: 'Desa/Kelurahan', address_district_name: 'Kecamatan',
+  address_regency_name: 'Kota/Kabupaten', address_postal_code: 'Kode Pos',
+  address_lat: 'Latitude Alamat', address_lng: 'Longitude Alamat', nik: 'NIK', mother_name: 'Nama Ibu',
+  gender: 'Jenis Kelamin', shirt_size: 'Ukuran Baju', birth_place: 'Tempat Lahir',
+  birth_date: 'Tanggal Lahir', jabatan: 'Jabatan', golongan: 'Golongan',
+  no_rekening: 'No. Rekening', nama_bank: 'Nama Bank', npwp: 'NPWP',
+};
+
+export default function AdminProfileChangeRequestsPage(): React.JSX.Element {
+  const queryClient = useQueryClient();
+  const [statusFilter, setStatusFilter] = useState('pending');
+  const [rejectId, setRejectId] = useState<number | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ['admin', 'profile-change-requests', statusFilter],
+    queryFn: () => api.get(`/admin/profile-change-requests?status=${statusFilter}`),
+  });
+
+  const approveMutation = useMutation({
+    mutationFn: (id: number) => api.patch(`/admin/profile-change-requests/${id}/approve`),
+    onSuccess: () => {
+      toast.success('Perubahan profil disetujui');
+      queryClient.invalidateQueries({ queryKey: ['admin', 'profile-change-requests'] });
+    },
+    onError: (err: any) => toast.error(err?.response?.data?.error?.message || 'Gagal menyetujui'),
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: ({ id, reason }: { id: number; reason: string }) =>
+      api.patch(`/admin/profile-change-requests/${id}/reject`, { rejection_reason: reason }),
+    onSuccess: () => {
+      toast.success('Permintaan ditolak');
+      setRejectId(null);
+      setRejectReason('');
+      queryClient.invalidateQueries({ queryKey: ['admin', 'profile-change-requests'] });
+    },
+    onError: (err: any) => toast.error(err?.response?.data?.error?.message || 'Gagal menolak'),
+  });
+
+  const requests: ChangeRequest[] = Array.isArray((data as any)?.data) ? (data as any).data : Array.isArray(data) ? (data as any) : [];
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">Permintaan Perubahan Profil</h1>
+          <p className="text-sm text-slate-500 mt-1">Tinjau dan setujui perubahan data profil pengguna</p>
+        </div>
+        <div className="flex gap-2">
+          {(['pending', 'approved', 'rejected'] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${
+                statusFilter === s ? 'bg-emerald-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              {s === 'pending' ? 'Menunggu' : s === 'approved' ? 'Disetujui' : 'Ditolak'}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" /></div>
+      ) : isError ? (
+        <div className="bg-rose-50 border border-rose-100 rounded-2xl p-8 text-center">
+          <p className="text-rose-600 font-medium">Gagal memuat data. Silakan refresh halaman.</p>
+        </div>
+      ) : requests.length === 0 ? (
+        <div className="bg-white rounded-2xl border border-slate-100 p-12 text-center">
+          <Clock size={40} className="mx-auto text-slate-300 mb-4" />
+          <p className="text-slate-500 font-medium">Tidak ada permintaan {statusFilter === 'pending' ? 'yang menunggu' : statusFilter}</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {requests.map((req) => (
+            <div key={req.id} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+                    <User size={20} className="text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="font-black text-slate-900">{req.user?.name}</p>
+                    <p className="text-xs text-slate-500">@{req.user?.username} · {new Date(req.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+                  </div>
+                </div>
+                {req.status === 'pending' && (
+                  <div className="flex gap-2 shrink-0">
+                    <button
+                      onClick={() => approveMutation.mutate(req.id)}
+                      disabled={approveMutation.isPending}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-emerald-700 transition-all disabled:opacity-50"
+                    >
+                      <CheckCircle2 size={14} /> Setujui
+                    </button>
+                    <button
+                      onClick={() => setRejectId(req.id)}
+                      className="flex items-center gap-1.5 px-4 py-2 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl text-xs font-black uppercase tracking-wider hover:bg-rose-100 transition-all"
+                    >
+                      <XCircle size={14} /> Tolak
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Changes table */}
+              <div className="mt-4 rounded-xl overflow-hidden border border-slate-100">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-slate-50 text-left">
+                      <th className="px-4 py-2 text-xs font-black text-slate-500 uppercase tracking-wider">Field</th>
+                      <th className="px-4 py-2 text-xs font-black text-slate-500 uppercase tracking-wider">Nilai Lama</th>
+                      <th className="px-4 py-2 text-xs font-black text-slate-500 uppercase tracking-wider">Nilai Baru</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(req.requested_changes).map(([field, val]) => (
+                      <tr key={field} className="border-t border-slate-50">
+                        <td className="px-4 py-2 font-medium text-slate-700">{FIELD_LABELS[field] ?? field}</td>
+                        <td className="px-4 py-2 text-slate-400 line-through">{String(val.old ?? '-')}</td>
+                        <td className="px-4 py-2 text-emerald-700 font-semibold">{String(val.new ?? '-')}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {req.status === 'rejected' && req.rejection_reason && (
+                <p className="mt-3 text-xs text-rose-600 bg-rose-50 rounded-xl px-4 py-2">
+                  <span className="font-black">Alasan penolakan:</span> {req.rejection_reason}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Reject modal */}
+      {rejectId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6">
+            <h3 className="font-black text-slate-900 mb-4">Alasan Penolakan</h3>
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              rows={3}
+              placeholder="Jelaskan alasan penolakan..."
+              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-200 focus:border-rose-400"
+            />
+            <div className="flex gap-3 mt-4">
+              <button onClick={() => { setRejectId(null); setRejectReason(''); }} className="flex-1 h-10 rounded-xl border border-slate-200 text-xs font-black text-slate-600 hover:bg-slate-50">Batal</button>
+              <button
+                onClick={() => rejectMutation.mutate({ id: rejectId, reason: rejectReason })}
+                disabled={!rejectReason.trim() || rejectMutation.isPending}
+                className="flex-1 h-10 rounded-xl bg-rose-600 text-white text-xs font-black hover:bg-rose-700 disabled:opacity-50"
+              >
+                {rejectMutation.isPending ? 'Menolak...' : 'Tolak'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

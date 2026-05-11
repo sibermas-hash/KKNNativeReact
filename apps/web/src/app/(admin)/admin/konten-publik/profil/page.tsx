@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { BookOpenText, Save, RefreshCw } from 'lucide-react';
 import { PageHeader } from '@/components/ui/shared';
 
-export default function AdminKontenProfilPage() {
+export default function AdminKontenProfilPage(): React.JSX.Element {
   const qc = useQueryClient();
   const [form, setForm] = useState({ about: '', visi: '', misi: '' });
   const [saved, setSaved] = useState(false);

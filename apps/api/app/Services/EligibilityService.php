@@ -77,20 +77,8 @@ class EligibilityService
      */
     public function checkEligibility(Mahasiswa $mahasiswa, ?int $periodeId = null, array $preloadedData = [], string $context = 'registration'): array
     {
-        // Headless testing mock for TC003
-        if (config('app.env') === 'local' && request()->has('force_ineligible')) {
-            return [
-                'is_eligible' => false,
-                'summary' => 'Ineligible (Mocked for Testing)',
-                'issues' => [
-                    [
-                        'key' => 'min_sks',
-                        'passed' => false,
-                        'message' => '[SKS requirement failure] - SKS tidak mencukupi (0/100)',
-                    ],
-                ],
-            ];
-        }
+        // Real eligibility checks only — no testing backdoor.
+        // Tests should mock EligibilityService::checkEligibility() directly.
 
         // 1. Resolve Periode (Use preloaded -> then cached -> then DB)
         $periode = $preloadedData['periode']
@@ -115,6 +103,9 @@ class EligibilityService
         // 3b. Legacy Checks (Hanya berjalan jika belum ada di dynamic checks untuk kompatibilitas)
         if (! isset($checks['min_sks'])) {
             $checks['min_sks'] = $this->checkMinimumSKS($mahasiswa, $periode, $settings);
+        }
+        if (! isset($checks['min_semester'])) {
+            $checks['min_semester'] = $this->checkMinimumSemester($mahasiswa, $settings);
         }
         if (! isset($checks['min_gpa'])) {
             $checks['min_gpa'] = $this->checkMinimumGPA($mahasiswa, $periode, $settings);
@@ -239,6 +230,39 @@ class EligibilityService
     }
 
     /**
+     * Check minimum semester requirement
+     */
+    private function checkMinimumSemester(Mahasiswa $mahasiswa, array $settings): array
+    {
+        $minSemester = (int) ($settings['min_semester_registration'] ?? 6);
+        $currentSemester = (int) ($mahasiswa->semester ?? 0);
+
+        // Skip check jika mahasiswa sudah lulus (semester tidak reliable untuk status LULUS)
+        if (in_array(strtoupper(trim($mahasiswa->status_aktif ?? '')), ['LULUS', 'GRADUATED'])) {
+            return [
+                'passed' => true,
+                'key' => 'min_semester',
+                'message' => 'Mahasiswa sudah lulus (semester tidak dicek)',
+                'current_semester' => $currentSemester,
+                'required_semester' => $minSemester,
+                'skipped' => true,
+            ];
+        }
+
+        $hasEnoughSemester = $currentSemester >= $minSemester;
+
+        return [
+            'passed' => $hasEnoughSemester,
+            'key' => 'min_semester',
+            'message' => $hasEnoughSemester
+                ? "Semester mencukupi ({$currentSemester}/{$minSemester})"
+                : "[Semester requirement failure] - Semester tidak mencukupi ({$currentSemester}/{$minSemester})",
+            'current_semester' => $currentSemester,
+            'required_semester' => $minSemester,
+        ];
+    }
+
+    /**
      * Check minimum GPA requirement
      */
     private function checkMinimumGPA(Mahasiswa $mahasiswa, ?Periode $periode, array $settings): array
@@ -343,7 +367,15 @@ class EligibilityService
     }
 
     /**
-     * Mandatory status notices (Data-driven from Jenis KKN)
+     * Enforce personal status requirements: marital status + parent permission.
+     *
+     * Audit R11-JENIS-005 fix: sebelumnya hanya notice (selalu passed=true).
+     * Sekarang benar-benar block kalau JenisKkn config require tapi mahasiswa
+     * tidak memenuhi:
+     *   - require_not_married: mahasiswa.marital_status harus 'belum_menikah'.
+     *     Kalau field null (legacy record), treat as 'belum_menikah' default.
+     *   - require_parent_permission: mahasiswa.parent_permission_path harus
+     *     terisi (dokumen izin ortu di-upload).
      */
     private function checkPersonalStatusMandate(Mahasiswa $mahasiswa, ?Periode $periode): array
     {
@@ -352,24 +384,36 @@ class EligibilityService
         }
 
         $jkkn = $periode->jenisKkn;
-        $messages = [];
+        $failures = [];
 
         if ($jkkn->require_not_married) {
-            $messages[] = 'Belum Menikah';
-        }
-        if ($jkkn->require_parent_permission) {
-            $messages[] = 'Izin Orang Tua';
+            $status = strtolower((string) ($mahasiswa->marital_status ?? 'belum_menikah'));
+            if (! in_array($status, ['belum_menikah', 'single', ''], true)) {
+                $failures[] = 'Status pernikahan: program ini mewajibkan belum menikah.';
+            }
         }
 
-        if (empty($messages)) {
-            return ['passed' => true, 'key' => 'personal_status', 'message' => 'Lolos kriteria umum'];
+        if ($jkkn->require_parent_permission) {
+            if (empty($mahasiswa->parent_permission_path)) {
+                $failures[] = 'Surat izin orang tua/wali wajib diunggah untuk program ini.';
+            }
+        }
+
+        if ($failures === []) {
+            $notices = [];
+            if ($jkkn->require_not_married) $notices[] = 'Belum Menikah';
+            if ($jkkn->require_parent_permission) $notices[] = 'Izin Orang Tua';
+            return [
+                'passed' => true,
+                'key' => 'personal_status',
+                'message' => $notices === [] ? 'Lolos kriteria umum' : 'SYARAT KHUSUS terpenuhi: '.implode(', ', $notices),
+            ];
         }
 
         return [
-            'passed' => true, // Notice only
+            'passed' => false,
             'key' => 'personal_status',
-            'message' => 'SYARAT KHUSUS: '.implode(', ', $messages),
-            'is_warning' => true,
+            'message' => implode(' ', $failures),
         ];
     }
 

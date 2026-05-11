@@ -65,7 +65,7 @@ class RegistrationController extends Controller
             'existing_registration' => $existingRegistration ? new PesertaKknResource($existingRegistration) : null,
             'jenis_kkn_options' => JenisKkn::dropdownOptions(),
             'biodata_complete' => $this->isBiodataComplete($mahasiswa, $user),
-            'domisili_complete' => $this->isDomisiliComplete($user),
+            'address_complete' => $this->isAddressComplete($user),
             'document_requirements' => $periods->map(fn ($p) => [
                 'periode_id' => $p->id,
                 'requirements' => $this->documentService->requirementsForPeriod($p),
@@ -90,11 +90,11 @@ class RegistrationController extends Controller
             );
         }
 
-        // Cek domisili lengkap & terverifikasi (sesuai codebase lama)
-        if (! $this->isDomisiliComplete($user)) {
+        // Cek alamat asli lengkap & terverifikasi
+        if (! $this->isAddressComplete($user)) {
             return $this->validationError(
-                ['domisili' => ['Lengkapi dan verifikasi alamat domisili terlebih dahulu.']],
-                'Lengkapi dan verifikasi alamat domisili terlebih dahulu.'
+                ['address' => ['Lengkapi dan verifikasi alamat asli terlebih dahulu.']],
+                'Lengkapi dan verifikasi alamat asli terlebih dahulu.'
             );
         }
 
@@ -137,11 +137,22 @@ class RegistrationController extends Controller
                 Log::warning('Registration notification failed: ' . $e->getMessage());
             }
 
+            \DB::afterCommit(function () use ($user, $validated, $periode) {
+                \App\Services\ActivityLogger::log('registration', 'success', $user->id, [
+                    'periode_id' => (int) $validated['periode_id'],
+                    'periode_name' => $periode->name,
+                ]);
+            });
+
             return $this->created(
                 new PesertaKknResource($registration->load(['periode', 'kelompok'])),
                 'Pendaftaran KKN berhasil dikirim.'
             );
         } catch (ValidationException $e) {
+            \App\Services\ActivityLogger::log('registration', 'failed', $user->id, [
+                'periode_id' => $validated['periode_id'] ?? null,
+                'errors' => $e->errors(),
+            ]);
             return $this->validationError($e->errors(), $e->getMessage());
         } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
             return $this->forbidden($e->getMessage());
@@ -199,7 +210,20 @@ class RegistrationController extends Controller
             return $this->error('VALIDATION_ERROR', 'Masa pendaftaran sudah ditutup. Pembatalan tidak diizinkan.', 422);
         }
 
+        // R11 audit-pendaftaran fix: simpan status terakhir + audit trail
+        // sebelum soft-delete (deleted_at alone tidak cukup untuk forensik)
+        $previousStatus = $registration->status;
+        $registration->update(['status' => 'cancelled']);
         $registration->delete();
+
+        \DB::afterCommit(function () use ($user, $registration, $periode, $previousStatus) {
+            \App\Services\ActivityLogger::log('registration', 'cancelled', $user->id, [
+                'registration_id' => $registration->id,
+                'periode_id' => $periode->id,
+                'periode_name' => $periode->name,
+                'previous_status' => $previousStatus,
+            ]);
+        });
 
         return $this->noContent('Anda telah keluar dari pendaftaran KKN.');
     }
@@ -218,12 +242,15 @@ class RegistrationController extends Controller
             && filled($user?->address);
     }
 
-    private function isDomisiliComplete($user): bool
+    private function isAddressComplete($user): bool
     {
         return filled($user?->address)
-            && filled($user?->domicile_village_name)
-            && filled($user?->domicile_district_name)
-            && filled($user?->domicile_regency_name)
+            && filled($user?->address_village_name)
+            && filled($user?->address_district_name)
+            && filled($user?->address_regency_name)
+            && filled($user?->address_postal_code)
+            && filled($user?->address_lat)
+            && filled($user?->address_lng)
             && filled($user?->address_verified_at);
     }
 }

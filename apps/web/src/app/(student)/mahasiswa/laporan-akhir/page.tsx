@@ -2,16 +2,16 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { studentEndpoints } from '@sibermas/api-client';
-import { api, studentApi } from '@/lib/api';
+import { apiUrl, studentApi } from '@/lib/api';
 import { FileText, CloudUpload, CheckCircle2, Clock, AlertCircle, ExternalLink } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 
-export default function FinalReportPage() {
+export default function FinalReportPage(): React.JSX.Element {
   
   const queryClient = useQueryClient();
   const [file, setFile] = useState<File | null>(null);
+  const [title, setTitle] = useState('');
 
   const { data: reportData, isLoading } = useQuery({
     queryKey: ['student', 'final-report'],
@@ -35,8 +35,9 @@ export default function FinalReportPage() {
 
   const handleUpload = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file) return;
+    if (!file || !title.trim()) return;
     const formData = new FormData();
+    formData.append('title', title.trim());
     formData.append('file', file);
     mutation.mutate(formData);
   };
@@ -51,6 +52,7 @@ export default function FinalReportPage() {
   }
 
   const report = reportData?.report;
+  const isLeader = Boolean((reportData as { is_leader?: boolean } | undefined)?.is_leader);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
@@ -89,7 +91,7 @@ export default function FinalReportPage() {
               <span className="text-sm font-bold text-slate-700 truncate max-w-[200px]">{report.file_name}</span>
             </div>
             <a 
-              href={report.file_url} 
+              href={report.file_url || apiUrl(`/student/final-report/${report.id}/preview`)} 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-xs font-black text-emerald-600 hover:text-emerald-700 uppercase tracking-widest"
@@ -105,7 +107,7 @@ export default function FinalReportPage() {
             </div>
           )}
 
-          {report.status === 'rejected' && (
+          {report.status === 'rejected' && isLeader && (
             <button 
               onClick={() => queryClient.setQueryData(['student', 'final-report'], { ...reportData, report: null })}
               className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-200"
@@ -113,6 +115,28 @@ export default function FinalReportPage() {
               Unggah Ulang Laporan
             </button>
           )}
+          {report.status === 'rejected' && !isLeader && (
+            <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4">
+              <p className="text-sm font-bold text-amber-900">Laporan perlu direvisi. Hubungi ketua kelompok untuk mengunggah ulang.</p>
+            </div>
+          )}
+        </motion.div>
+      ) : !isLeader ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-amber-50 rounded-[2rem] p-10 border-2 border-amber-200 text-center space-y-4"
+        >
+          <div className="mx-auto h-20 w-20 bg-amber-100 rounded-3xl flex items-center justify-center text-amber-600">
+            <AlertCircle size={40} />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-xl font-bold text-amber-950">Hanya Ketua Kelompok</h3>
+            <p className="text-sm text-amber-800 font-medium max-w-md mx-auto">
+              Unggah laporan akhir diperuntukkan bagi ketua kelompok. Silakan koordinasikan dokumen bersama anggota kelompok
+              dan serahkan kepada ketua untuk diunggah.
+            </p>
+          </div>
         </motion.div>
       ) : (
         <motion.div 
@@ -128,6 +152,14 @@ export default function FinalReportPage() {
               <h3 className="text-xl font-bold text-emerald-950">Pilih File Laporan</h3>
               <p className="text-sm text-slate-400">Format PDF, Maksimal 10MB</p>
             </div>
+
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Judul laporan akhir"
+              className="w-full max-w-md rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-800 outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
+              required
+            />
 
             <label className="cursor-pointer">
               <input 
@@ -154,7 +186,7 @@ export default function FinalReportPage() {
 
             <button 
               type="submit" 
-              disabled={!file || mutation.isPending}
+              disabled={!file || !title.trim() || mutation.isPending}
               className="w-full max-w-xs py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black uppercase tracking-widest transition-all shadow-lg shadow-emerald-200 disabled:opacity-50 disabled:shadow-none"
             >
               {mutation.isPending ? 'Mengunggah...' : 'Unggah Sekarang'}

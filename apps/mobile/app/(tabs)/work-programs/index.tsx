@@ -1,14 +1,47 @@
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl, TextInput, ScrollView, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl, TextInput, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
 import { useState } from 'react';
+import {
+  colors,
+  EmptyState,
+  FieldLabel,
+  formStyles,
+  HeroCard,
+  LoadingState,
+  PrimaryButton,
+  Screen,
+  SecondaryButton,
+  SectionTitle,
+  StatusPill,
+  SurfaceCard,
+} from '@/components/ui/primitives';
 
 const KATEGORI_OPTIONS = ['pendukung', 'utama', 'tambahan'];
 
+type WorkProgramsResponse = {
+  programs?: Record<string, unknown>[];
+};
+
+function isWorkProgramsResponse(value: unknown): value is WorkProgramsResponse {
+  return typeof value === 'object' && value !== null && 'programs' in value;
+}
+
+function statusTone(status: string) {
+  if (status === 'approved') return 'teal' as const;
+  if (status === 'submitted' || status === 'pending') return 'amber' as const;
+  if (status === 'revision' || status === 'rejected') return 'rose' as const;
+  return 'slate' as const;
+}
+
+function formatBudget(value: unknown) {
+  const amount = Number(value);
+  if (!Number.isFinite(amount) || amount <= 0) return null;
+  return `Rp ${amount.toLocaleString('id-ID')}`;
+}
+
 export default function WorkProgramsScreen() {
-  const router = useRouter();
   const qc = useQueryClient();
   const endpoints = studentEndpoints(api);
   const [showForm, setShowForm] = useState(false);
@@ -17,15 +50,22 @@ export default function WorkProgramsScreen() {
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['student', 'work-programs'],
     queryFn: async () => {
-      const res = await endpoints.workPrograms.index();
-      return (res as { data?: Record<string, unknown>[] }).data ?? [];
+      const result = await endpoints.workPrograms.index();
+      return isWorkProgramsResponse(result) ? result : { programs: [] };
     },
   });
 
-  const programs = data ?? [];
+  const programs = Array.isArray(data?.programs) ? data.programs : [];
 
   const mutation = useMutation({
-    mutationFn: async () => endpoints.workPrograms.store(form as unknown as Record<string, unknown>),
+    mutationFn: async () => endpoints.workPrograms.store({
+      title: form.title,
+      description: form.description || undefined,
+      objectives: form.objectives || undefined,
+      target_participants: form.target_participants ? Number(form.target_participants) : undefined,
+      budget: form.budget ? Number(form.budget) : undefined,
+      kategori: form.kategori || undefined,
+    }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['student', 'work-programs'] });
       setShowForm(false);
@@ -34,132 +74,198 @@ export default function WorkProgramsScreen() {
     onError: () => Alert.alert('Error', 'Gagal menyimpan program kerja'),
   });
 
-  const statusColors: Record<string, string> = { draft: '#94a3b8', submitted: '#f59e0b', approved: '#10b981', revision: '#ef4444', pending: '#f59e0b' };
-  const statusLabels: Record<string, string> = { draft: 'Draft', submitted: 'Menunggu', approved: 'Disetujui', revision: 'Revisi', pending: 'Menunggu' };
+  const statusLabels: Record<string, string> = { draft: 'Draft', submitted: 'Menunggu', approved: 'Disetujui', revision: 'Revisi', pending: 'Menunggu', rejected: 'Ditolak' };
+
+  if (isLoading) {
+    return <LoadingState label="Memuat program kerja..." />;
+  }
 
   if (showForm) {
     return (
-      <ScrollView style={styles.container} contentContainerStyle={{ padding: 16 }}>
-        <Text style={styles.formTitle}>Ajukan Program Kerja</Text>
+      <Screen>
+        <HeroCard
+          eyebrow="Program Kerja"
+          title="Ajukan Program"
+          subtitle="Lengkapi detail program agar DPL dapat meninjau rencana kegiatan kelompok."
+        />
 
-        <Text style={styles.label}>Judul Program *</Text>
-        <TextInput style={styles.input} value={form.title} onChangeText={(v) => setForm((p) => ({ ...p, title: v }))} placeholder="Judul program kerja" />
+        <SurfaceCard style={styles.formCard}>
+          <View style={styles.formGroup}>
+            <FieldLabel required>Judul Program</FieldLabel>
+            <TextInput
+              style={formStyles.input}
+              value={form.title}
+              onChangeText={(v) => setForm((p) => ({ ...p, title: v }))}
+              placeholder="Judul program kerja"
+              placeholderTextColor={colors.textSubtle}
+            />
+          </View>
 
-        <Text style={styles.label}>Kategori</Text>
-        <View style={styles.kategoriRow}>
-          {KATEGORI_OPTIONS.map((k) => (
-            <TouchableOpacity
-              key={k}
-              style={[styles.kategoriBtn, form.kategori === k && styles.kategoriBtnActive]}
-              onPress={() => setForm((p) => ({ ...p, kategori: k }))}
-            >
-              <Text style={[styles.kategoriBtnText, form.kategori === k && styles.kategoriBtnTextActive]}>
-                {k.charAt(0).toUpperCase() + k.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+          <View style={styles.formGroup}>
+            <FieldLabel>Kategori</FieldLabel>
+            <View style={styles.kategoriRow}>
+              {KATEGORI_OPTIONS.map((k) => {
+                const active = form.kategori === k;
+                return (
+                  <TouchableOpacity
+                    key={k}
+                    activeOpacity={0.82}
+                    style={[styles.kategoriBtn, active && styles.kategoriBtnActive]}
+                    onPress={() => setForm((p) => ({ ...p, kategori: k }))}
+                  >
+                    <Text style={[styles.kategoriBtnText, active && styles.kategoriBtnTextActive]}>
+                      {k.charAt(0).toUpperCase() + k.slice(1)}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </View>
 
-        <Text style={styles.label}>Deskripsi *</Text>
-        <TextInput style={[styles.input, styles.textarea]} value={form.description} onChangeText={(v) => setForm((p) => ({ ...p, description: v }))} placeholder="Deskripsi program" multiline numberOfLines={4} textAlignVertical="top" />
+          <View style={styles.formGroup}>
+            <FieldLabel required>Deskripsi</FieldLabel>
+            <TextInput
+              style={[formStyles.input, formStyles.textarea]}
+              value={form.description}
+              onChangeText={(v) => setForm((p) => ({ ...p, description: v }))}
+              placeholder="Deskripsi program"
+              placeholderTextColor={colors.textSubtle}
+              multiline
+              numberOfLines={4}
+            />
+          </View>
 
-        <Text style={styles.label}>Tujuan</Text>
-        <TextInput style={[styles.input, styles.textarea]} value={form.objectives} onChangeText={(v) => setForm((p) => ({ ...p, objectives: v }))} placeholder="Tujuan program" multiline numberOfLines={3} textAlignVertical="top" />
+          <View style={styles.formGroup}>
+            <FieldLabel>Tujuan</FieldLabel>
+            <TextInput
+              style={[formStyles.input, formStyles.textarea]}
+              value={form.objectives}
+              onChangeText={(v) => setForm((p) => ({ ...p, objectives: v }))}
+              placeholder="Tujuan program"
+              placeholderTextColor={colors.textSubtle}
+              multiline
+              numberOfLines={3}
+            />
+          </View>
 
-        <Text style={styles.label}>Target Peserta</Text>
-        <TextInput style={styles.input} value={form.target_participants} onChangeText={(v) => setForm((p) => ({ ...p, target_participants: v }))} placeholder="Contoh: Ibu PKK, 30 orang" />
+          <View style={styles.twoColumn}>
+            <View style={[styles.formGroup, styles.flexItem]}>
+              <FieldLabel>Target Peserta</FieldLabel>
+              <TextInput
+                style={formStyles.input}
+                value={form.target_participants}
+                onChangeText={(v) => setForm((p) => ({ ...p, target_participants: v }))}
+                placeholder="30"
+                placeholderTextColor={colors.textSubtle}
+                keyboardType="numeric"
+              />
+            </View>
+            <View style={[styles.formGroup, styles.flexItem]}>
+              <FieldLabel>Anggaran</FieldLabel>
+              <TextInput
+                style={formStyles.input}
+                value={form.budget}
+                onChangeText={(v) => setForm((p) => ({ ...p, budget: v }))}
+                placeholder="500000"
+                placeholderTextColor={colors.textSubtle}
+                keyboardType="numeric"
+              />
+            </View>
+          </View>
 
-        <Text style={styles.label}>Estimasi Anggaran</Text>
-        <TextInput style={styles.input} value={form.budget} onChangeText={(v) => setForm((p) => ({ ...p, budget: v }))} placeholder="Contoh: Rp 500.000" />
-
-        <View style={styles.formActions}>
-          <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowForm(false)}>
-            <Text style={styles.cancelBtnText}>Batal</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.submitBtn, mutation.isPending && styles.submitBtnDisabled]}
-            onPress={() => mutation.mutate()}
-            disabled={mutation.isPending || !form.title || !form.description}
-          >
-            <Text style={styles.submitBtnText}>{mutation.isPending ? 'Menyimpan...' : 'Ajukan'}</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+          <View style={styles.formActions}>
+            <SecondaryButton label="Batal" onPress={() => setShowForm(false)} style={styles.actionButton} />
+            <PrimaryButton
+              label="Ajukan Program"
+              onPress={() => mutation.mutate()}
+              disabled={!form.title || !form.description}
+              loading={mutation.isPending}
+              style={styles.actionButtonWide}
+            />
+          </View>
+        </SurfaceCard>
+      </Screen>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={programs}
-        keyExtractor={(item) => String(item.id)}
-        refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
-        contentContainerStyle={{ padding: 16, paddingBottom: 80 }}
-        ListEmptyComponent={
-          !isLoading ? (
-            <View style={styles.empty}>
-              <Text style={styles.emptyIcon}>📋</Text>
-              <Text style={styles.emptyText}>Belum ada program kerja</Text>
-              <Text style={styles.emptySubtext}>Tap tombol + untuk mengajukan</Text>
-            </View>
-          ) : null
-        }
-        renderItem={({ item }) => (
-          <View style={styles.card}>
+    <FlatList
+      style={styles.container}
+      contentInsetAdjustmentBehavior="automatic"
+      data={programs}
+      keyExtractor={(item) => String(item.id)}
+      refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={refetch} />}
+      contentContainerStyle={styles.content}
+      ListHeaderComponent={
+        <>
+          <HeroCard
+            eyebrow="Program Kerja"
+            title="Rencana Kegiatan"
+            subtitle="Kelola program yang diajukan kelompok dan pantau status persetujuannya."
+            right={<Text style={styles.heroCount}>{programs.length}</Text>}
+          />
+          <PrimaryButton label="Ajukan Program Kerja" onPress={() => setShowForm(true)} />
+          <SectionTitle title="Daftar Program" subtitle="Ringkasan program kerja kelompok." />
+        </>
+      }
+      ListEmptyComponent={
+        <EmptyState
+          title="Belum ada program kerja"
+          description="Ajukan program kerja pertama agar rencana kegiatan dapat ditinjau DPL."
+        />
+      }
+      renderItem={({ item }) => {
+        const status = String(item.status || 'draft');
+        const budget = formatBudget(item.budget);
+        return (
+          <SurfaceCard style={styles.card}>
             <View style={styles.cardHeader}>
-              <View style={[styles.badge, { backgroundColor: statusColors[String(item.status)] || '#94a3b8' }]}>
-                <Text style={styles.badgeText}>{statusLabels[String(item.status)] || String(item.status)}</Text>
-              </View>
+              <StatusPill label={statusLabels[status] || status} tone={statusTone(status)} />
               <Text style={styles.kategoriTag}>{String(item.kategori || 'pendukung').toUpperCase()}</Text>
             </View>
-            <Text style={styles.cardTitle}>{String(item.title || '')}</Text>
-            {item.description ? <Text style={styles.cardBody} numberOfLines={2}>{String(item.description)}</Text> : null}
-            {item.target_participants ? (
-              <Text style={styles.cardMeta}>👥 {String(item.target_participants)}</Text>
-            ) : null}
-            {item.budget ? (
-              <Text style={styles.cardMeta}>💰 {String(item.budget)}</Text>
-            ) : null}
-          </View>
-        )}
-      />
-      <TouchableOpacity style={styles.fab} onPress={() => setShowForm(true)}>
-        <Text style={styles.fabText}>+</Text>
-      </TouchableOpacity>
-    </View>
+            <Text style={styles.cardTitle}>{String(item.title || '-')}</Text>
+            {item.description ? <Text style={styles.cardBody} numberOfLines={3}>{String(item.description)}</Text> : null}
+            <View style={styles.metaRow}>
+              {item.target_participants ? <Text style={styles.cardMeta}>Peserta {String(item.target_participants)}</Text> : null}
+              {budget ? <Text style={styles.cardMeta}>{budget}</Text> : null}
+            </View>
+          </SurfaceCard>
+        );
+      }}
+    />
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f8fafc' },
-  empty: { alignItems: 'center', paddingTop: 80 },
-  emptyIcon: { fontSize: 48 },
-  emptyText: { fontSize: 16, color: '#64748b', marginTop: 12, fontWeight: '600' },
-  emptySubtext: { fontSize: 13, color: '#94a3b8', marginTop: 4 },
-  card: { backgroundColor: '#fff', borderRadius: 16, padding: 16, marginBottom: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
-  badge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
-  badgeText: { color: '#fff', fontSize: 10, fontWeight: '700', textTransform: 'uppercase' },
-  kategoriTag: { fontSize: 9, fontWeight: '800', color: '#94a3b8', letterSpacing: 1 },
-  cardTitle: { fontSize: 15, fontWeight: '700', color: '#0f172a', marginBottom: 4 },
-  cardBody: { fontSize: 13, color: '#64748b', lineHeight: 18 },
-  cardMeta: { fontSize: 12, color: '#94a3b8', marginTop: 6 },
-  fab: { position: 'absolute', bottom: 24, right: 24, width: 56, height: 56, borderRadius: 28, backgroundColor: '#0d9488', alignItems: 'center', justifyContent: 'center', shadowColor: '#0d9488', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 6 },
-  fabText: { color: '#fff', fontSize: 28, fontWeight: '300', lineHeight: 32 },
-  // Form styles
-  formTitle: { fontSize: 20, fontWeight: '800', color: '#0f172a', marginBottom: 20 },
-  label: { fontSize: 11, fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6, marginTop: 14 },
-  input: { backgroundColor: '#fff', borderWidth: 1, borderColor: '#e2e8f0', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: '#0f172a' },
-  textarea: { height: 100, paddingTop: 12 },
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { padding: 16, gap: 16, paddingBottom: 32 },
+  heroCount: { color: colors.text, fontSize: 28, fontWeight: '900', fontVariant: ['tabular-nums'] },
+  card: { gap: 10 },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+  kategoriTag: { fontSize: 10, fontWeight: '900', color: colors.textSubtle, letterSpacing: 0 },
+  cardTitle: { fontSize: 16, fontWeight: '900', color: colors.text, lineHeight: 21 },
+  cardBody: { fontSize: 13, color: colors.textMuted, lineHeight: 19 },
+  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  cardMeta: { fontSize: 12, color: colors.textMuted, fontWeight: '700' },
+  formCard: { gap: 16 },
+  formGroup: { gap: 8 },
   kategoriRow: { flexDirection: 'row', gap: 8 },
-  kategoriBtn: { flex: 1, paddingVertical: 10, borderRadius: 10, borderWidth: 1, borderColor: '#e2e8f0', alignItems: 'center', backgroundColor: '#fff' },
-  kategoriBtnActive: { backgroundColor: '#0d9488', borderColor: '#0d9488' },
-  kategoriBtnText: { fontSize: 12, fontWeight: '700', color: '#64748b' },
-  kategoriBtnTextActive: { color: '#fff' },
-  formActions: { flexDirection: 'row', gap: 12, marginTop: 24, marginBottom: 40 },
-  cancelBtn: { flex: 1, paddingVertical: 14, borderRadius: 12, borderWidth: 1, borderColor: '#e2e8f0', alignItems: 'center' },
-  cancelBtnText: { fontSize: 13, fontWeight: '700', color: '#64748b' },
-  submitBtn: { flex: 2, paddingVertical: 14, borderRadius: 12, backgroundColor: '#0d9488', alignItems: 'center' },
-  submitBtnDisabled: { opacity: 0.6 },
-  submitBtnText: { fontSize: 13, fontWeight: '800', color: '#fff', textTransform: 'uppercase', letterSpacing: 0.5 },
+  kategoriBtn: {
+    flex: 1,
+    minHeight: 42,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+  },
+  kategoriBtnActive: { backgroundColor: '#E6FFFA', borderColor: '#99F6E4' },
+  kategoriBtnText: { fontSize: 12, fontWeight: '800', color: colors.textMuted },
+  kategoriBtnTextActive: { color: colors.primary },
+  twoColumn: { flexDirection: 'row', gap: 10 },
+  flexItem: { flex: 1 },
+  formActions: { flexDirection: 'row', gap: 10, marginTop: 4 },
+  actionButton: { flex: 1 },
+  actionButtonWide: { flex: 1.4 },
 });

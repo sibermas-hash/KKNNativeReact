@@ -12,10 +12,44 @@ use App\Models\KKN\PoskoKelompok;
 use App\Models\KKN\ProgramKerja;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class DashboardStatisticsService
 {
     private const CACHE_TTL = 300; // 5 minutes
+
+    /**
+     * M-003: Log any dashboard sub-query that exceeds this wall-clock budget.
+     * Use `config(['dashboard.slow_query_ms' => 500])` to override per env.
+     */
+    private const DEFAULT_SLOW_QUERY_MS = 500;
+
+    /**
+     * Run a dashboard sub-query, measure wall-clock time, and emit a warning
+     * when it crosses the threshold. The label is attached so log readers can
+     * identify which computation is expensive without stack-walking.
+     *
+     * @template T
+     * @param  \Closure():T  $callback
+     * @return T
+     */
+    private function measure(string $label, \Closure $callback): mixed
+    {
+        $start = microtime(true);
+        $result = $callback();
+        $elapsedMs = (microtime(true) - $start) * 1000;
+
+        $threshold = (int) config('dashboard.slow_query_ms', self::DEFAULT_SLOW_QUERY_MS);
+        if ($elapsedMs > $threshold) {
+            Log::warning('Slow dashboard query', [
+                'label' => $label,
+                'elapsed_ms' => round($elapsedMs, 2),
+                'threshold_ms' => $threshold,
+            ]);
+        }
+
+        return $result;
+    }
 
     /**
      * Get comprehensive statistics for a specific period, optionally scoped by faculty.
@@ -27,11 +61,11 @@ class DashboardStatisticsService
         try {
             return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($periodId, $facultyId) {
                 return [
-                    'summary' => $this->getSummaryStats($periodId, $facultyId),
-                    'students_by_status' => $this->getStudentsByStatus($periodId, $facultyId),
-                    'grade_distribution' => $this->getGradeDistribution($periodId, $facultyId),
-                    'dpl_workload' => $this->getDplWorkload($periodId, $facultyId),
-                    'sdg_distribution' => $this->getSdgDistribution($periodId, $facultyId),
+                    'summary' => $this->measure('summary', fn () => $this->getSummaryStats($periodId, $facultyId)),
+                    'students_by_status' => $this->measure('students_by_status', fn () => $this->getStudentsByStatus($periodId, $facultyId)),
+                    'grade_distribution' => $this->measure('grade_distribution', fn () => $this->getGradeDistribution($periodId, $facultyId)),
+                    'dpl_workload' => $this->measure('dpl_workload', fn () => $this->getDplWorkload($periodId, $facultyId)),
+                    'sdg_distribution' => $this->measure('sdg_distribution', fn () => $this->getSdgDistribution($periodId, $facultyId)),
                 ];
             });
         } catch (\Throwable $e) {
@@ -197,11 +231,50 @@ class DashboardStatisticsService
     }
 
     /**
+     * Get weekly registration & validation trend (last 7 days).
+     */
+    public function getWeeklyTrend(int $periodId): array
+    {
+        $cacheKey = "dashboard:weekly_trend:{$periodId}";
+
+        return Cache::remember($cacheKey, 300, function () use ($periodId) {
+            $days = collect(range(6, 0))->map(fn ($i) => now()->subDays($i)->format('Y-m-d'));
+            $from = now()->subDays(6)->startOfDay();
+            $to   = now()->endOfDay();
+
+            $registrations = PesertaKkn::where('periode_id', $periodId)
+                ->whereBetween('created_at', [$from, $to])
+                ->select(DB::raw('DATE(created_at) as day'), DB::raw('COUNT(*) as count'))
+                ->groupBy(DB::raw('DATE(created_at)'))
+                ->pluck('count', 'day');
+
+            $validations = PesertaKkn::where('periode_id', $periodId)
+                ->whereBetween('updated_at', [$from, $to])
+                ->whereIn('status', ['approved', 'rejected'])
+                ->select(DB::raw('DATE(updated_at) as day'), DB::raw('COUNT(*) as count'))
+                ->groupBy(DB::raw('DATE(updated_at)'))
+                ->pluck('count', 'day');
+
+            $dayNames = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+
+            return $days->map(function ($date) use ($registrations, $validations, $dayNames) {
+                $dow = (int) date('w', strtotime($date));
+                return [
+                    'day'      => $dayNames[$dow],
+                    'daftar'   => (int) ($registrations[$date] ?? 0),
+                    'validasi' => (int) ($validations[$date] ?? 0),
+                ];
+            })->values()->toArray();
+        });
+    }
+
+    /**
      * Clear cached statistics for a period.
      */
     public function clearCache(int $periodId, ?int $facultyId = null): void
     {
         $facultyKey = $facultyId ?? 'global';
         Cache::forget("dashboard:period:{$periodId}:faculty:{$facultyKey}");
+        Cache::forget("dashboard:weekly_trend:{$periodId}");
     }
 }

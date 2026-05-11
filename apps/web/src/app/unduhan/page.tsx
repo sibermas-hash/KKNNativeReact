@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { fetchApi } from '@/lib/server-api';
 import { Navbar } from '@/components/public/navbar';
 import { Footer } from '@/components/public/footer';
-import { FileText, ExternalLink } from 'lucide-react';
+import { FileText, ExternalLink, Smartphone, Shield, Download as DownloadIcon } from 'lucide-react';
 
 export const revalidate = 3600;
 
@@ -20,11 +20,35 @@ interface Download {
   file_type?: string;
   file_url?: string;
   external_url?: string;
+  updated_at?: string;
+  file_size?: number;
+}
+
+function formatFileSize(bytes?: number): string {
+  if (!bytes) return '';
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatDate(iso?: string): string {
+  if (!iso) return '';
+  try {
+    return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+  } catch {
+    return '';
+  }
 }
 
 export default async function DownloadsPage() {
   const data = await fetchApi<{ success: boolean; data: Download[] }>('/public/downloads');
-  const downloads = data?.data || [];
+  const allDownloads = data?.data || [];
+
+  // Pisahkan file aplikasi mobile (APK) dari dokumen biasa. Konvensi:
+  // admin set `file_type = 'mobile-app'` ATAU file_name berakhir dengan `.apk`.
+  const mobileApps = allDownloads.filter(
+    (d) => d.file_type === 'mobile-app' || (d.file_name?.toLowerCase().endsWith('.apk') ?? false),
+  );
+  const documents = allDownloads.filter((d) => !mobileApps.includes(d));
 
   return (
     <div className="min-h-screen bg-white text-emerald-950">
@@ -37,12 +61,107 @@ export default async function DownloadsPage() {
             Unduhan Publik KKN
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-            Dokumen resmi, panduan, dan formulir yang dapat diunduh oleh seluruh sivitas akademika.
+            Dokumen resmi, panduan, formulir, dan aplikasi mobile yang dapat diunduh oleh seluruh sivitas akademika.
           </p>
         </div>
 
-        <div className="mt-10">
-          {downloads.length === 0 ? (
+        {/* --- Mobile App Section --- */}
+        {mobileApps.length > 0 && (
+          <section aria-labelledby="mobile-app-heading" className="mt-10">
+            <div className="mb-4 flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-cyan-100 text-cyan-700">
+                <Smartphone size={18} />
+              </span>
+              <h2 id="mobile-app-heading" className="font-display text-xl font-bold text-emerald-950">
+                Aplikasi Mobile SIBERMAS
+              </h2>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              {mobileApps.map((d) => (
+                <div
+                  key={d.id}
+                  className="group relative overflow-hidden rounded-[1.6rem] border border-cyan-100 bg-gradient-to-br from-cyan-50 via-white to-emerald-50 p-6 shadow-[0_14px_40px_rgba(6,78,59,0.05)] transition-all hover:shadow-[0_18px_50px_rgba(6,78,59,0.1)]"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cyan-600 text-white shadow-md">
+                        <Smartphone size={22} />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-cyan-700">Android</p>
+                        <p className="font-display text-base font-bold text-emerald-950">{d.title}</p>
+                      </div>
+                    </div>
+                    <span className="rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-bold text-cyan-700">
+                      APK
+                    </span>
+                  </div>
+
+                  <dl className="mt-4 grid grid-cols-2 gap-2 text-xs">
+                    {d.file_name && (
+                      <div>
+                        <dt className="font-semibold uppercase tracking-wider text-slate-400">File</dt>
+                        <dd className="mt-0.5 truncate font-mono text-slate-700" title={d.file_name}>
+                          {d.file_name}
+                        </dd>
+                      </div>
+                    )}
+                    {d.updated_at && (
+                      <div>
+                        <dt className="font-semibold uppercase tracking-wider text-slate-400">Rilis</dt>
+                        <dd className="mt-0.5 text-slate-700">{formatDate(d.updated_at)}</dd>
+                      </div>
+                    )}
+                  </dl>
+
+                  <a
+                    href={d.file_url || d.external_url || '#'}
+                    className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-cyan-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-700"
+                  >
+                    <DownloadIcon size={16} />
+                    Unduh APK
+                  </a>
+                </div>
+              ))}
+            </div>
+
+            {/* Install instruction banner — standar untuk distribusi sideload */}
+            <div className="mt-4 flex gap-3 rounded-2xl border border-amber-200 bg-amber-50/60 p-4">
+              <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-200 text-amber-800">
+                <Shield size={14} />
+              </span>
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-amber-900">Cara install APK di Android</p>
+                <ol className="ml-4 list-decimal space-y-0.5 text-xs text-amber-900/90">
+                  <li>Setelah unduh, buka file APK di Files / Downloads.</li>
+                  <li>
+                    Android akan meminta izin <em>Install unknown apps</em> — izinkan hanya untuk browser yang Anda pakai.
+                  </li>
+                  <li>Tap <strong>Install</strong>, tunggu selesai, buka aplikasi.</li>
+                  <li>
+                    Untuk update: cek halaman ini secara berkala. Download APK baru dan install ulang (data tetap).
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* --- Documents Section --- */}
+        <section aria-labelledby="documents-heading" className={mobileApps.length > 0 ? 'mt-12' : 'mt-10'}>
+          {mobileApps.length > 0 && (
+            <div className="mb-4 flex items-center gap-3">
+              <span className="flex h-9 w-9 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                <FileText size={18} />
+              </span>
+              <h2 id="documents-heading" className="font-display text-xl font-bold text-emerald-950">
+                Dokumen & Formulir
+              </h2>
+            </div>
+          )}
+
+          {documents.length === 0 && mobileApps.length === 0 ? (
             <div className="rounded-[1.6rem] border border-dashed border-emerald-200 bg-emerald-50/60 p-8 text-center">
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
                 Belum ada file unduhan
@@ -51,9 +170,9 @@ export default async function DownloadsPage() {
                 Dokumen publik akan ditampilkan di halaman ini setelah diunggah oleh administrator.
               </p>
             </div>
-          ) : (
+          ) : documents.length === 0 ? null : (
             <div className="space-y-4">
-              {downloads.map((d) => (
+              {documents.map((d) => (
                 <a
                   key={d.id}
                   href={d.file_url || d.external_url || '#'}
@@ -82,7 +201,7 @@ export default async function DownloadsPage() {
               ))}
             </div>
           )}
-        </div>
+        </section>
       </main>
 
       <Footer />

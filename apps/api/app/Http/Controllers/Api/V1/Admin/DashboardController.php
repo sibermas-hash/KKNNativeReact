@@ -11,6 +11,7 @@ use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\NilaiKkn;
+use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Services\DashboardStatisticsService;
 use App\Services\PeriodContextService;
@@ -25,45 +26,80 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
+        $quickLinks = [
+            ['label' => 'Dashboard', 'route' => 'admin.dashboard'],
+            ['label' => 'Konten Publik', 'route' => 'admin.konten-publik'],
+        ];
+
+        // Admin gets operational KKN links but NOT system settings
+        if ($user->hasAnyRole(['superadmin', 'admin'])) {
+            $quickLinks = array_merge($quickLinks, [
+                ['label' => 'Pendaftaran', 'route' => 'admin.pendaftaran.index'],
+                ['label' => 'Kelompok', 'route' => 'admin.kelompok.index'],
+                ['label' => 'Laporan Harian', 'route' => 'admin.laporan.harian.index'],
+                ['label' => 'Rekap Nilai', 'route' => 'admin.grade-reports.index'],
+            ]);
+        }
+
+        // Only superadmin sees system-level links
+        if ($user->hasRole('superadmin')) {
+            $quickLinks[] = ['label' => 'Pengaturan Sistem', 'route' => 'admin.pengaturan.sistem'];
+            $quickLinks[] = ['label' => 'Monitoring', 'route' => 'admin.monitoring'];
+            $quickLinks[] = ['label' => 'Database Sync', 'route' => 'admin.database-sync'];
+            $quickLinks[] = ['label' => 'Pengguna', 'route' => 'admin.pengguna'];
+        }
+
         return $this->success([
             'user' => [
                 'name' => $user->name,
                 'roles' => $user->getRoleNames()->toArray(),
             ],
-            'quick_links' => [
-                ['label' => 'Dashboard', 'route' => 'admin.dashboard'],
-                ['label' => 'Pendaftaran', 'route' => 'admin.pendaftaran.index'],
-                ['label' => 'Kelompok', 'route' => 'admin.kelompok.index'],
-                ['label' => 'Laporan Harian', 'route' => 'admin.laporan.harian.index'],
-                ['label' => 'Rekap Nilai', 'route' => 'admin.grade-reports.index'],
-                ['label' => 'Pengaturan', 'route' => 'admin.pengaturan.sistem'],
-            ],
+            'quick_links' => $quickLinks,
         ]);
     }
 
     public function index(Request $request, PeriodContextService $periodContextService): JsonResponse
     {
-        $periodId = $request->input('periode_id')
+        $periodId = $request->integer('periode_id')
             ?? $periodContextService->getActivePeriodId()
             ?? $periodContextService->getDefaultPeriodId();
 
         if (! $periodId) {
             return $this->success([
                 'stats' => null,
+                'weekly_trend' => [],
                 'period' => null,
                 'phase_context' => ['hint' => 'Tidak ada periode aktif.'],
             ]);
         }
 
-        $stats = app(DashboardStatisticsService::class)->getPeriodStatistics($periodId);
-        $period = \App\Models\KKN\Periode::with(['tahunAkademik', 'jenisKkn'])->find($periodId);
+        $periodId = (int) $periodId;
+        $period = Periode::with(['tahunAkademik', 'jenisKkn'])->find($periodId);
+
+        if (! $period) {
+            return $this->success([
+                'stats' => null,
+                'weekly_trend' => [],
+                'period' => null,
+                'current_phase' => 'upcoming',
+                'phase_context' => ['hint' => 'Periode tidak ditemukan.'],
+                'available_periods' => $periodContextService->getAvailablePeriods(),
+            ]);
+        }
+
+        $facultyId = auth()->user()?->hasRole('faculty_admin') ? auth()->user()?->fakultas_id : null;
+        $service = app(DashboardStatisticsService::class);
+        $stats = $service->getPeriodStatistics($periodId, $facultyId);
+        $weeklyTrend = $service->getWeeklyTrend($periodId);
         $phaseContext = $this->getPhaseContext($period, $periodId);
 
         return $this->success([
             'stats' => $stats,
+            'weekly_trend' => $weeklyTrend,
             'period' => new PeriodeResource($period),
             'current_phase' => $period->current_phase ?? 'upcoming',
             'phase_context' => $phaseContext,
+            'available_periods' => $periodContextService->getAvailablePeriods(),
         ]);
     }
 
@@ -77,27 +113,31 @@ class DashboardController extends Controller
         $facultyId = $user?->hasRole('faculty_admin') ? $user->fakultas_id : null;
         $phase = $period->current_phase ?? 'upcoming';
 
-        return match ($phase) {
-            'upcoming' => [
-                'hint' => 'Periode siap dimulai. Klik "Buka Pendaftaran" untuk membuka portal mahasiswa.',
-                'actions' => [
-                    ['label' => 'Kelola Persyaratan', 'route' => 'admin.kkn-requirements.index', 'color' => 'emerald'],
-                    ['label' => 'Cek Lokasi KKN', 'route' => 'admin.lokasi.index', 'color' => 'blue'],
+        $cacheKey = "phase_context_{$periodId}_{$phase}_" . ($facultyId ?? 'all');
+
+        return \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function () use ($phase, $periodId, $facultyId) {
+            return match ($phase) {
+                'upcoming' => [
+                    'hint' => 'Periode siap dimulai. Klik "Buka Pendaftaran" untuk membuka portal mahasiswa.',
+                    'actions' => [
+                        ['label' => 'Kelola Persyaratan', 'route' => 'admin.kkn-requirements.index', 'color' => 'emerald'],
+                        ['label' => 'Cek Lokasi KKN', 'route' => 'admin.lokasi.index', 'color' => 'blue'],
+                    ],
                 ],
-            ],
-            'registration' => $this->registrationContext($periodId, $facultyId),
-            'placement' => $this->placementContext($periodId, $facultyId),
-            'execution', 'implementation' => $this->executionContext($periodId, $facultyId),
-            'grading' => $this->gradingContext($periodId, $facultyId),
-            'finished' => [
-                'hint' => 'KKN periode ini telah selesai. Data sudah terkunci.',
-                'actions' => [
-                    ['label' => 'Rekap Nilai Akhir', 'route' => 'admin.grade-reports.index', 'color' => 'emerald'],
-                    ['label' => 'Ekspor Data', 'route' => 'admin.pendaftaran.index', 'color' => 'blue'],
+                'registration' => $this->registrationContext($periodId, $facultyId),
+                'placement' => $this->placementContext($periodId, $facultyId),
+                'execution', 'implementation' => $this->executionContext($periodId, $facultyId),
+                'grading' => $this->gradingContext($periodId, $facultyId),
+                'finished' => [
+                    'hint' => 'KKN periode ini telah selesai. Data sudah terkunci.',
+                    'actions' => [
+                        ['label' => 'Rekap Nilai Akhir', 'route' => 'admin.grade-reports.index', 'color' => 'emerald'],
+                        ['label' => 'Ekspor Data', 'route' => 'admin.pendaftaran.index', 'color' => 'blue'],
+                    ],
                 ],
-            ],
-            default => ['hint' => 'Fase tidak dikenali.'],
-        };
+                default => ['hint' => 'Fase tidak dikenali.'],
+            };
+        });
     }
 
     private function registrationContext(int $periodId, ?int $facultyId): array
@@ -189,8 +229,10 @@ class DashboardController extends Controller
             ->whereNotNull('kelompok_id')
             ->count();
 
-        $groupIds = \App\Models\KKN\KelompokKkn::where('periode_id', $periodId)->pluck('id');
-        $gradedStudents = \App\Models\KKN\NilaiKkn::whereIn('kelompok_id', $groupIds)
+        // Subquery: avoid pluck+whereIn round-trip
+        $gradedStudents = \App\Models\KKN\NilaiKkn::whereHas(
+            'kelompok', fn ($q) => $q->where('periode_id', $periodId)
+        )
             ->where('total_score', '>', 0)
             ->count();
         $ungradedStudents = max(0, $totalStudents - $gradedStudents);
@@ -213,28 +255,52 @@ class DashboardController extends Controller
     {
         $request->validate([
             'periode_id' => ['required', 'exists:periode,id'],
-            'phase' => ['required', 'string', 'in:upcoming,registration,placement,execution,grading,finished,implementation'],
+            'phase' => ['required', 'string', 'in:upcoming,registration,placement,execution,grading,finished'],
         ]);
 
         $periodId = (int) $request->input('periode_id');
         $phase = $request->input('phase');
 
-        if ($periodId) {
-            $period = \App\Models\KKN\Periode::findOrFail($periodId);
-            $period->update(['current_phase' => $phase]);
-        } else {
-            \App\Models\KKN\Periode::query()->update(['current_phase' => $phase]);
+        // State machine: define valid transitions
+        $validTransitions = [
+            'upcoming'     => ['registration'],
+            'registration' => ['placement', 'upcoming'],
+            'placement'    => ['execution', 'registration'],
+            'execution'    => ['grading', 'placement'],
+            'grading'      => ['finished', 'execution'],
+            'finished'     => [],
+        ];
+
+        $period = Periode::findOrFail($periodId);
+        $currentPhase = $period->current_phase ?? 'upcoming';
+
+        // Superadmin can bypass state machine; admin must follow it
+        if (! auth()->user()->hasRole('superadmin')) {
+            $allowed = $validTransitions[$currentPhase] ?? [];
+            if (! in_array($phase, $allowed, true)) {
+                return $this->error(
+                    'INVALID_TRANSITION',
+                    "Transisi fase dari '{$currentPhase}' ke '{$phase}' tidak diizinkan.",
+                    422
+                );
+            }
         }
 
+        $period->update(['current_phase' => $phase]);
+
+        \Illuminate\Support\Facades\Log::info('Phase switched', [
+            'periode_id' => $periodId,
+            'from' => $currentPhase,
+            'to' => $phase,
+            'by' => auth()->id(),
+        ]);
+
         // Clear cache
-        if (config('app.env') === 'local') {
-            \Illuminate\Support\Facades\Cache::flush();
-            app(\App\Services\PeriodContextService::class)->clearContextCache();
-        }
+        app(PeriodContextService::class)->clear();
         \App\Services\RedisCacheService::invalidateMasterData();
 
         return $this->success(
-            new PeriodeResource(\App\Models\KKN\Periode::find($periodId)->refresh()),
+            new PeriodeResource($period->refresh()),
             "Fase berhasil diubah ke {$phase}."
         );
     }

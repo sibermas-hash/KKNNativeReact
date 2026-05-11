@@ -1,11 +1,11 @@
 'use client';
+import React from 'react';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { studentEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS, PHASE_LABELS } from '@sibermas/constants';
-import { api, studentApi } from '@/lib/api';
+import { studentApi } from '@/lib/api';
 import { useAuthStore, usePeriodStore } from '@/stores';
 import {
   Calendar, MapPin, ArrowRight, ClipboardList, CheckCircle2,
@@ -19,13 +19,14 @@ import { StatusBadge } from '@/components/ui/shared';
 function normalizeStatus(status?: string): string | undefined {
   if (!status) return status;
   const s = String(status).toLowerCase();
-  if (['approved', 'disetujui', 'verifikasi_pusat', 'completed'].includes(s)) return 'approved';
+  if (['completed', 'selesai'].includes(s)) return 'completed';
+  if (['approved', 'disetujui', 'verifikasi_pusat'].includes(s)) return 'approved';
   if (['pending', 'menunggu', 'document_submitted', 'document_verified'].includes(s)) return 'pending';
   if (['rejected', 'ditolak', 'gugur'].includes(s)) return 'rejected';
   return status;
 }
 
-export default function StudentDashboard() {
+export default function StudentDashboard(): React.JSX.Element {
   const { user } = useAuthStore();
   const { activePeriod, currentPhase } = usePeriodStore();
   const queryClient = useQueryClient();
@@ -33,12 +34,9 @@ export default function StudentDashboard() {
 
   
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<Record<string, unknown> | null>({
     queryKey: QUERY_KEYS.student.dashboard,
-    queryFn: async () => {
-      const res = await studentApi.dashboard() as unknown as { success: boolean; data: Record<string, unknown> };
-      return res.data;
-    },
+    queryFn: () => studentApi.dashboard() as unknown as Promise<Record<string, unknown> | null>,
   });
 
   const notificationMutation = useMutation({
@@ -54,7 +52,8 @@ export default function StudentDashboard() {
   const finalReport = data?.final_report as Record<string, unknown> | null | undefined;
 
   const normalizedStatus = normalizeStatus(registration?.status as string);
-  const isApproved = normalizedStatus === 'approved';
+  const isCompleted = normalizedStatus === 'completed';
+  const isApproved = normalizedStatus === 'approved' || isCompleted;
   const isPending = normalizedStatus === 'pending';
   const isRejected = normalizedStatus === 'rejected';
   const isGroupPinned = isApproved && !!group;
@@ -62,8 +61,15 @@ export default function StudentDashboard() {
   const groupName = (group?.name as string) || 'Belum Ditentukan';
   const groupLocation = ((group?.location as Record<string, unknown>)?.name as string) || '-';
   const dplName = ((group?.lecturer as Record<string, unknown>)?.name as string) || 'Belum Ditentukan';
+  const leader = group?.leader as { name?: string; is_self?: boolean } | null | undefined;
+  const leaderName = leader?.name ? (leader.is_self ? `${leader.name} (Anda)` : leader.name) : 'Sedang Ditentukan';
   const periodName = (activePeriod?.name as string) || 'Periode KKN';
-  const minLogbook = 30;
+  // REGULER-005 fix: jenis KKN dari response dashboard (periode.jenis_*)
+  const periodData = registration?.period as { jenis?: string; jenis_code?: string; jenis_color?: string } | null | undefined;
+  const jenisKknLabel = periodData?.jenis || '';
+  const jenisKknCode = periodData?.jenis_code || '';
+  // Audit F-13 fix: ambil dari backend SystemSetting (key `min_daily_reports`, default 30).
+  const minLogbook = Number(data?.min_daily_reports) || 30;
 
   const phases = [
     { id: 1, label: 'Registrasi', done: isApproved, active: isPending || !registration },
@@ -173,6 +179,11 @@ export default function StudentDashboard() {
             <div className="flex flex-col">
               <span className="text-[8px] font-black text-slate-400 uppercase mb-0.5">Tahun Akademik</span>
               <span className="text-xs font-black text-slate-900 uppercase tracking-tight">{periodName}</span>
+              {jenisKknLabel && (
+                <span className="text-[9px] font-bold text-emerald-700 uppercase tracking-tight mt-0.5">
+                  {jenisKknLabel}{jenisKknCode ? ` · ${jenisKknCode}` : ''}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -191,7 +202,7 @@ export default function StudentDashboard() {
                 </span>
               </div>
               <div className="w-full bg-slate-100 h-1.5 rounded-full mb-6 overflow-hidden">
-                {/* eslint-disable-next-line */}
+                {/* eslint-disable-next-line react/forbid-dom-props */}
                 <div className="bg-emerald-600 h-full rounded-full transition-all duration-500" style={{ width: `${progressPercent}%` }} />
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -288,7 +299,7 @@ export default function StudentDashboard() {
                     <div className="p-2 bg-slate-50 rounded-lg text-slate-400"><Users size={16} /></div>
                     <div>
                       <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5 block">Ketua Kelompok</span>
-                      <span className="text-xs font-bold text-slate-900 uppercase">Sedang Ditentukan</span>
+                      <span className="text-xs font-bold text-slate-900 uppercase">{leaderName}</span>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
@@ -340,7 +351,7 @@ export default function StudentDashboard() {
                 </li>
                 <li className="flex gap-3">
                   <div className="h-5 w-5 bg-emerald-600 text-white rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold">2</div>
-                  <p className="text-xs font-semibold text-emerald-950 leading-relaxed">Minimal 30 laporan harian yang divalidasi DPL untuk syarat kelulusan.</p>
+                  <p className="text-xs font-semibold text-emerald-950 leading-relaxed">Minimal {minLogbook} laporan harian yang divalidasi DPL untuk syarat kelulusan.</p>
                 </li>
               </ul>
             </div>

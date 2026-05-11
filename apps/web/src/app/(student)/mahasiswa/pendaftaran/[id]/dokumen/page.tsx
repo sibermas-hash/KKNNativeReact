@@ -1,61 +1,246 @@
 'use client';
 
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@sibermas/constants';
 import { studentApi } from '@/lib/api';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
+import { AlertCircle, CheckCircle2, FileText, Upload } from 'lucide-react';
 
-export default function UploadDokumenPage() {
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB — matches backend RegistrationDocumentService
+const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
+const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png'];
+
+function formatSize(bytes: number) {
+  return bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(0)} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function validateFile(file: File): string | null {
+  if (file.size > MAX_FILE_SIZE) return `Ukuran file ${formatSize(file.size)} melebihi batas maksimal 2 MB.`;
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    const ext = file.name.split('.').pop()?.toLowerCase();
+    if (!ext || !ALLOWED_EXTENSIONS.includes(`.${ext}`)) return 'Format file tidak didukung. Gunakan PDF, JPG, atau PNG.';
+  }
+  return null;
+}
+
+type Requirement = { field: string; label?: string; description?: string; template_url?: string; required?: boolean };
+type UploadedDoc = {
+  /** Legacy alias: some older responses used `field`. Prefer `document_type`. */
+  field?: string;
+  /** Canonical backend key — matches Requirement.field. */
+  document_type?: string;
+  file_name?: string;
+  uploaded_at?: string;
+};
+
+/**
+ * Normalize lookup key: check both `field` and `document_type` against the
+ * Requirement field. Backend uses `document_type` (DokumenPesertaResource)
+ * but some historical paths used `field`. Handle both defensively.
+ */
+function docMatchesField(doc: UploadedDoc, field: string): boolean {
+  return doc.field === field || doc.document_type === field;
+}
+
+export default function UploadDokumenPage(): React.JSX.Element {
   const { id } = useParams();
   const router = useRouter();
   const queryClient = useQueryClient();
   const [files, setFiles] = useState<Record<string, File | null>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+
+  const { data: formData, isLoading } = useQuery({
+    queryKey: [...QUERY_KEYS.student.registration.form, 'period-docs', Number(id)],
+    queryFn: async () => {
+      const res = await studentApi.registration.form();
+      return (res as any).data ?? res;
+    },
+  });
+
+  // Fetch previously uploaded documents
+  const { data: statusData } = useQuery({
+    queryKey: [...QUERY_KEYS.student.registration.status],
+    queryFn: async () => {
+      const res = await studentApi.registration.status();
+      return (res as any).data ?? res;
+    },
+  });
 
   const mutation = useMutation({
-    mutationFn: (formData: FormData) => studentApi.documents(Number(id), formData),
+    mutationFn: (fd: FormData) => studentApi.documents(Number(id), fd),
     onSuccess: () => {
       toast.success('Dokumen berhasil diunggah');
+      setUploadProgress(null);
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.registration.status });
       router.push('/mahasiswa/cek-pendaftaran');
     },
-    onError: () => toast.error('Gagal mengunggah dokumen'),
+    onError: (err: any) => {
+      setUploadProgress(null);
+      const apiErrors = err?.response?.data?.errors as Record<string, string[]> | undefined;
+      if (apiErrors) {
+        const fieldErrors: Record<string, string> = {};
+        Object.entries(apiErrors).forEach(([key, msgs]) => { fieldErrors[key] = msgs[0]; });
+        setErrors(fieldErrors);
+        const firstField = Object.keys(apiErrors)[0];
+        toast.error(`Gagal: ${apiErrors[firstField]?.[0] || 'Dokumen tidak valid'}`);
+      } else {
+        toast.error(err?.response?.data?.message || 'Gagal mengunggah dokumen. Periksa koneksi dan coba lagi.');
+      }
+    },
   });
+
+  const requirements: Requirement[] = ((formData?.document_requirements as Array<{ periode_id: number; requirements: Requirement[] }> | undefined) ?? [])
+    .find((entry) => Number(entry.periode_id) === Number(id))?.requirements ?? [];
+
+  // R11 audit fix: status endpoint mengembalikan { registrations: [...] }, tiap
+  // registration punya relasi `dokumen`. Cari registration yang cocok dengan
+  // periode ini, lalu ambil dokumennya. Sebelumnya (bug): kita cari field
+  // `documents` / `uploaded_documents` di response yang tidak pernah ada →
+  // `alreadyUploaded` selalu false sehingga mahasiswa selalu harus re-upload.
+  const registrations = (statusData as { registrations?: Array<{ periode_id?: number; dokumen?: UploadedDoc[] }> } | undefined)?.registrations ?? [];
+  const matchingRegistration = registrations.find((r) => Number(r?.periode_id) === Number(id));
+  const uploadedDocs: UploadedDoc[] = matchingRegistration?.dokumen ?? [];
+
+  const handleFileChange = (field: string, file: File | null) => {
+    if (file) {
+      const error = validateFile(file);
+      if (error) {
+        setErrors((prev) => ({ ...prev, [field]: error }));
+        setFiles((prev) => ({ ...prev, [field]: null }));
+        toast.error(error);
+        return;
+      }
+    }
+    setErrors((prev) => { const next = { ...prev }; delete next[field]; return next; });
+    setFiles((prev) => ({ ...prev, [field]: file }));
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = new FormData();
-    Object.entries(files).forEach(([key, file]) => { if (file) formData.append(key, file); });
-    mutation.mutate(formData);
+
+    // Validate required documents are selected
+    const missingRequired: string[] = [];
+    requirements.forEach((req) => {
+      if (req.required === false) return;
+      const field = req.field;
+      const alreadyUploaded = uploadedDocs.some((d) => docMatchesField(d, field));
+      if (!files[field] && !alreadyUploaded) {
+        missingRequired.push(req.label || field);
+      }
+    });
+
+    if (missingRequired.length > 0) {
+      toast.error(`Dokumen wajib belum dipilih: ${missingRequired.join(', ')}`);
+      return;
+    }
+
+    if (Object.keys(errors).length > 0) {
+      toast.error('Perbaiki error pada file yang dipilih sebelum mengirim.');
+      return;
+    }
+
+    const selectedFiles = Object.entries(files).filter(([, f]) => f !== null);
+    if (selectedFiles.length === 0) {
+      toast.error('Pilih minimal satu dokumen untuk diunggah.');
+      return;
+    }
+
+    const fd = new FormData();
+    selectedFiles.forEach(([key, file]) => { if (file) fd.append(key, file); });
+    setUploadProgress(0);
+    mutation.mutate(fd);
   };
+
+  if (isLoading) {
+    return <div className="mx-auto max-w-2xl"><div className="h-32 animate-pulse rounded-2xl bg-slate-200" /></div>;
+  }
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Upload Dokumen Persyaratan</h1>
-      <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl bg-white p-6 shadow-sm">
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Surat Keterangan Sehat</label>
-          <input
-            type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
-            onChange={(e) => setFiles({ ...files, health_certificate: e.target.files?.[0] || null })}
-            className="w-full text-sm text-slate-500 file:mr-4 file:rounded-xl file:border-0 file:bg-teal-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-teal-700"
-          />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Izin Orang Tua</label>
-          <input
-            type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
-            onChange={(e) => setFiles({ ...files, parent_permission: e.target.files?.[0] || null })}
-            className="w-full text-sm text-slate-500 file:mr-4 file:rounded-xl file:border-0 file:bg-teal-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-teal-700"
-          />
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-slate-800">Upload Dokumen Persyaratan</h1>
+        <p className="mt-1 text-sm text-slate-500">Format: PDF, JPG, PNG. Maksimal 2 MB per file.</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+        {requirements.length === 0 ? (
+          <p className="text-sm text-slate-500">Tidak ada requirement dokumen untuk periode ini.</p>
+        ) : requirements.map((requirement) => {
+          const field = String(requirement.field || '');
+          const label = String(requirement.label || field);
+          const description = String(requirement.description || '');
+          const templateUrl = typeof requirement.template_url === 'string' ? requirement.template_url : '';
+          const required = requirement.required !== false;
+          const existingDoc = uploadedDocs.find((d) => docMatchesField(d, field));
+          const selectedFile = files[field];
+          const fieldError = errors[field];
+
+          return (
+            <div key={field} className={`rounded-xl border p-4 ${fieldError ? 'border-rose-200 bg-rose-50/50' : existingDoc ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-100'}`}>
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <div>
+                  <label className="mb-1 block text-sm font-semibold text-slate-700">
+                    {label} {required && <span className="text-rose-500">*</span>}
+                  </label>
+                  {description && <p className="text-xs text-slate-500">{description}</p>}
+                </div>
+                {templateUrl && (
+                  <a href={`/api/v1/student/registration/${Number(id)}/documents/${field}/template`} target="_blank" rel="noreferrer"
+                    className="shrink-0 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100">
+                    Unduh Template
+                  </a>
+                )}
+              </div>
+
+              {/* Previously uploaded indicator */}
+              {existingDoc && !selectedFile && (
+                <div className="mb-2 flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
+                  <CheckCircle2 size={14} />
+                  <span>Sudah diunggah: {existingDoc.file_name || 'dokumen'}</span>
+                  {existingDoc.uploaded_at && <span className="text-emerald-500">({existingDoc.uploaded_at})</span>}
+                </div>
+              )}
+
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={(e) => handleFileChange(field, e.target.files?.[0] || null)}
+                className="w-full text-sm text-slate-500 file:mr-4 file:rounded-xl file:border-0 file:bg-teal-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-teal-700 hover:file:bg-teal-100"
+              />
+
+              {/* Selected file info */}
+              {selectedFile && !fieldError && (
+                <p className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-500">
+                  <FileText size={12} /> {selectedFile.name} ({formatSize(selectedFile.size)})
+                </p>
+              )}
+
+              {/* Error */}
+              {fieldError && (
+                <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-rose-600">
+                  <AlertCircle size={12} /> {fieldError}
+                </p>
+              )}
+            </div>
+          );
+        })}
+
+        {/* Upload progress */}
+        {uploadProgress !== null && (
+          <div className="rounded-lg bg-teal-50 p-3">
+            <div className="flex items-center gap-2 text-xs font-semibold text-teal-700">
+              <Upload size={14} className="animate-bounce" /> Mengunggah dokumen...
+            </div>
+          </div>
+        )}
+
         <button
           type="submit"
-          disabled={mutation.isPending}
-          className="w-full rounded-xl bg-teal-600 py-3 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50"
+          disabled={mutation.isPending || Object.keys(errors).length > 0}
+          className="w-full rounded-xl bg-teal-600 py-3 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50 transition-colors"
         >
           {mutation.isPending ? 'Mengunggah...' : 'Kirim Dokumen'}
         </button>

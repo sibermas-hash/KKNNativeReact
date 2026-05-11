@@ -198,8 +198,11 @@ return [
         /*
          * After creating the zip, verify it can be opened and contains files.
          * Recommended for critical backups but adds a small overhead.
+         *
+         * R13-OPS-012: enabled — catches corrupt backups at backup-time rather
+         * than at restore-time (i.e. during an incident).
          */
-        'verify_backup' => false,
+        'verify_backup' => true,
 
         /*
          * The number of attempts, in case the backup command encounters an exception
@@ -237,7 +240,9 @@ return [
         'notifiable' => Notifiable::class,
 
         'mail' => [
-            'to' => 'tholibadilmaruf.campus@gmail.com',
+            // H-008 fix: read from env, default to institutional address (never a personal Gmail).
+            // Use `?:` so an empty (set-but-blank) env var falls back to the default.
+            'to' => env('BACKUP_NOTIFICATION_EMAIL') ?: 'sibermas-ops@uinsaizu.ac.id',
 
             'from' => [
                 'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),

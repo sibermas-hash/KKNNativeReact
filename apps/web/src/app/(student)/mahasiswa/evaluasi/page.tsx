@@ -31,7 +31,7 @@ const GRADE_COLORS: Record<string, string> = {
   E: 'text-rose-700 bg-rose-50 border-rose-200',
 };
 
-export default function StudentEvaluasiPage() {
+export default function StudentEvaluasiPage(): React.JSX.Element {
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'evaluations'],
     queryFn: async () => {

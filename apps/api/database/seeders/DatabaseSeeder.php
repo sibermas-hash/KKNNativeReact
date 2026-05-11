@@ -18,17 +18,11 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             PermissionSeeder::class,
             SuperAdminSeeder::class,       // ← Superadmin (semua environment)
-            MasterDataSeeder::class,
             KonfigurasiPenilaianSeeder::class,
             KonfigurasiSertifikatSeeder::class,
             JenisKknSeeder::class,
             SystemSettingSeeder::class,
         ];
-
-        if (app()->environment('local')) {
-            $seeders[] = AdminUserSeeder::class;
-            $seeders[] = SampleUserSeeder::class;
-        }
 
         $this->call($seeders);
     }

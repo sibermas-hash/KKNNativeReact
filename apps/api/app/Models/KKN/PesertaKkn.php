@@ -49,6 +49,10 @@ class PesertaKkn extends Model
             'revision_count' => 'integer',
             'joined_group_at' => 'datetime',
             'group_locked_until' => 'datetime',
+            // R11 audit-pendaftaran fix — field di fillable tapi sebelumnya
+            // tidak di-cast, sehingga strict comparison (PHP 8 strict_types)
+            // bisa fail terhadap nilai string "0"/"1" dari PostgreSQL.
+            'notification_shown' => 'boolean',
         ];
     }
 
@@ -105,11 +109,18 @@ class PesertaKkn extends Model
      */
     public function scopeSearch(Builder $query, string $search): Builder
     {
+        // `nim` is encrypted at rest — LIKE substring match cannot work.
+        // We search by `nama` (plaintext) with LIKE, and ALSO match on
+        // `nim_bidx` (HMAC blind index) when the input looks like a full
+        // NIM. Partial-NIM search is intentionally dropped; it's not
+        // recoverable without plaintext column.
         $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
 
-        return $query->whereHas('mahasiswa', function ($q) use ($s) {
-            $q->where('nama', 'like', "%{$s}%")
-                ->orWhere('nim', 'like', "%{$s}%");
+        return $query->whereHas('mahasiswa', function ($q) use ($s, $search) {
+            $q->where('nama', 'like', "%{$s}%");
+            if (preg_match('/^\d{6,20}$/', trim($search))) {
+                $q->orWhere('nim_bidx', \App\Models\KKN\Mahasiswa::computeBlindIndex(trim($search)));
+            }
         });
     }
 }

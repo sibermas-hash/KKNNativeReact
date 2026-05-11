@@ -20,11 +20,11 @@ class DispensasiController extends Controller
     {
         $dispensasi = DispensasiKkn::with(['periode:id,name,periode', 'grantedByUser:id,name'])
             ->when($request->input('search'), function ($q, $search) {
-                $s = str_replace(['%', '_'], ['\\%', '\\_'], $search);
-                $q->where(function ($sub) use ($s) {
-                    $sub->where('nim', 'ilike', "%{$s}%")
-                        ->orWhere('alasan', 'ilike', "%{$s}%");
-                });
+                // R13-SEC-007 + R13-SEC-010: use QueryHelper for consistency and drop
+                // the orWhere('alasan', 'ilike', ...) — `alasan` is encrypted-at-rest
+                // so LIKE on ciphertext never matches (dead code path).
+                $s = \App\Helpers\QueryHelper::escapeLike($search);
+                $q->where('nim', 'ilike', "%{$s}%");
             })
             ->latest()
             ->paginate(15);

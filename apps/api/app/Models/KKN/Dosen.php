@@ -11,14 +11,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Dosen extends Model
 {
+    // R13-DB-001: soft-delete enabled (migration 2026_05_11_060000 adds the column).
+    use SoftDeletes, \App\Traits\HasManuallyEditedFields, \App\Traits\HasBlindIndex;
+
     protected $table = 'dosen';
 
 protected $fillable = [
         'user_id',
         'nip',
+        'nip_bidx',
         'nama',
         'nama_gelar',
         'nidn',
@@ -29,6 +34,9 @@ protected $fillable = [
         'tugas_tambahan',
         'pendidikan_terakhir',
         'golongan',
+        'no_rekening',
+        'nama_bank',
+        'npwp',
         'pangkat',
         'birth_date',
         'tempat_lahir',
@@ -44,6 +52,7 @@ protected $fillable = [
         'fakultas_id',
         'master_id',
         'master_synced_at',
+        'manually_edited_fields',
     ];
 
     protected $hidden = [
@@ -53,6 +62,7 @@ protected $fillable = [
     ];
 
     protected $casts = [
+        'manually_edited_fields' => 'array',
         'birth_date' => 'date',
         'tanggal_pensiun' => 'date',
         'is_cpns' => 'boolean',
@@ -60,9 +70,30 @@ protected $fillable = [
         'has_workshop' => 'boolean',
         'workshop_date' => 'date',
         'master_synced_at' => 'datetime',
+        // PII encryption — Dosen sensitive fields.
+        // NIP INTENTIONALLY NOT ENCRYPTED: same reason as Mahasiswa.nim —
+        // used as updateOrCreate key in sync paths (SyncDosenJob, WebhookController,
+        // DplSyncController). Non-deterministic AES would produce duplicates.
+        // Lookup still uses nip_bidx (HMAC) for indexed fast access.
+        'nik' => 'encrypted',
+        'alamat' => 'encrypted',
+        'phone' => 'encrypted',
+        'no_rekening' => 'encrypted',
+        'npwp' => 'encrypted',
     ];
 
     use HasFactory;
+
+    /**
+     * Blind-index map consumed by HasBlindIndex trait.
+     * NIP stays plaintext during transition; `nip_bidx` is auto-populated
+     * on save. Encryption of `nip` column is a follow-up step once all
+     * call sites are migrated to `whereBlind('nip', ...)`.
+     */
+    protected function blindIndexMap(): array
+    {
+        return ['nip' => 'nip_bidx'];
+    }
 
     public function user(): BelongsTo
     {

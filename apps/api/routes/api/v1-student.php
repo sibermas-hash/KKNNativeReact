@@ -3,7 +3,6 @@
 use App\Http\Controllers\Api\V1\Student\CertificateController;
 use App\Http\Controllers\Api\V1\Student\DailyReportController;
 use App\Http\Controllers\Api\V1\Student\DashboardController;
-use App\Http\Controllers\Api\V1\Student\DomisiliController;
 use App\Http\Controllers\Api\V1\Student\DplEvaluationController;
 use App\Http\Controllers\Api\V1\Student\FinalReportController;
 use App\Http\Controllers\Api\V1\Student\IzinController;
@@ -14,7 +13,6 @@ use App\Http\Controllers\Api\V1\Student\RekapitulasiController;
 use App\Http\Controllers\Api\V1\Student\RegistrationController;
 use App\Http\Controllers\Api\V1\Student\RegistrationDocumentController;
 use App\Http\Controllers\Api\V1\Student\WorkProgramController;
-use App\Http\Controllers\Api\V1\Student\WorkshopController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -41,32 +39,28 @@ Route::prefix('student')
 
         // Halaman pemilihan periode KKN
         Route::get('/kkn-daftar', [KknDaftarController::class, 'index'])->name('api.v1.student.kkn-daftar');
+        Route::get('/kkn-daftar/{periode}/kelompok', [KknDaftarController::class, 'groups'])->middleware('throttle:10,1')->name('api.v1.student.kkn-daftar.groups');
 
-        // Posko & Domisili — tersedia setelah placement
+        // Posko — tersedia setelah placement
         Route::get('/posko', [PoskoController::class, 'show'])->name('api.v1.student.posko.show');
         Route::post('/posko', [PoskoController::class, 'store'])->name('api.v1.student.posko.store');
-        Route::get('/posko/{posko}/photo', [PoskoController::class, 'photo'])->name('student.posko.photo');
-        Route::get('/domisili', [DomisiliController::class, 'show'])->name('api.v1.student.domisili.show');
-        Route::post('/domisili', [DomisiliController::class, 'store'])->name('api.v1.student.domisili.store');
+        Route::get('/posko/{posko}/photo', [PoskoController::class, 'photo'])->name('api.v1.student.posko.photo');
 
         // Rekapitulasi — selalu tersedia (sesuai codebase lama)
         Route::get('/rekapitulasi', [RekapitulasiController::class, 'index'])->name('api.v1.student.rekapitulasi.index');
         Route::post('/rekapitulasi', [RekapitulasiController::class, 'store'])->name('api.v1.student.rekapitulasi.store');
 
-        // Workshop — selalu tersedia
-        Route::prefix('workshops')->name('api.v1.student.workshops.')->group(function () {
-            Route::get('/', [WorkshopController::class, 'index'])->name('index');
-            Route::get('/{workshop}', [WorkshopController::class, 'show'])->name('show');
-            Route::post('/{workshop}/attend', [WorkshopController::class, 'attend'])->name('attend');
-            Route::post('/{workshopId}/register', [WorkshopController::class, 'register'])->name('register');
-            Route::get('/my-certificates', [WorkshopController::class, 'myCertificates'])->name('my-certificates');
-            Route::get('/{participant}/certificate', [WorkshopController::class, 'downloadCertificate'])->name('certificate');
-        });
-
         // ─── FASE: PENDAFTARAN ────────────────────────────────────────
         Route::middleware('phase:registration')->group(function () {
-            Route::post('/registration', [RegistrationController::class, 'store'])->name('api.v1.student.registration.store');
-            Route::post('/registration/{id}/documents', [RegistrationDocumentController::class, 'store'])->name('api.v1.student.registration.documents');
+            Route::post('/registration', [RegistrationController::class, 'store'])->middleware('throttle:3,1')->name('api.v1.student.registration.store');
+        });
+
+        // Document upload tersedia di phase registration DAN placement.
+        // Alasan: mahasiswa yang ditolak (status=rejected) saat phase sudah
+        // placement tetap perlu bisa resubmit dokumen (R11 audit REG-001).
+        Route::middleware('phase:registration,placement')->group(function () {
+            Route::post('/registration/{id}/documents', [RegistrationDocumentController::class, 'store'])->middleware('throttle:5,1')->name('api.v1.student.registration.documents');
+            Route::get('/registration/{id}/documents/{documentKey}/template', [RegistrationDocumentController::class, 'downloadTemplate'])->name('api.v1.student.registration.documents.template');
         });
 
         // ─── FASE: PELAKSANAAN ────────────────────────────────────────
@@ -108,5 +102,17 @@ Route::prefix('student')
             // Sertifikat
             Route::get('/certificates', [CertificateController::class, 'index'])->name('api.v1.student.certificates.index');
             Route::get('/certificates/{sertifikat}/download', [CertificateController::class, 'download'])->name('api.v1.student.certificates.download');
+        });
+
+        // Logbook PDF (tersedia di fase execution + grading)
+        Route::get('/logbook/pdf', [\App\Http\Controllers\Api\V1\Student\LogbookPdfController::class, 'download'])
+            ->middleware('throttle:10,1')
+            ->name('api.v1.student.logbook.pdf');
+
+        // Sistem Bimbingan Online — mahasiswa sisi (R6)
+        Route::prefix('bimbingan')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Api\V1\Student\BimbinganController::class, 'index'])->name('api.v1.student.bimbingan.index');
+            Route::get('/progress', [\App\Http\Controllers\Api\V1\Student\BimbinganController::class, 'progress'])->name('api.v1.student.bimbingan.progress');
+            Route::get('/{session}', [\App\Http\Controllers\Api\V1\Student\BimbinganController::class, 'show'])->name('api.v1.student.bimbingan.show');
         });
     });

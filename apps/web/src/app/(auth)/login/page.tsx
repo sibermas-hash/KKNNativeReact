@@ -1,24 +1,30 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, type LoginFormData } from '@sibermas/schemas';
-import { useAuthStore } from '@/stores';
-import { setAuthToken } from '@/stores';
+import { useAuthStore, setAuthToken, setPasswordChangedCookie } from '@/stores';
 import type { User } from '@sibermas/shared-types';
 import { api } from '@/lib/api';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { Lock, Eye, EyeOff, RefreshCw, User as UserIcon, AlertCircle, ArrowRight, Home } from 'lucide-react';
-import { ParticleBackground } from '@/components/ui/particle-background';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const ParticleBackground = dynamic(
+  () => import('@/components/ui/particle-background').then((m) => ({ default: m.ParticleBackground })),
+  { ssr: false }
+);
 
-export default function LoginPage() {
+
+export default function LoginPage(): React.JSX.Element {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect');
   const { setUser, isAuthenticated, user } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -42,6 +48,7 @@ export default function LoginPage() {
     handleSubmit,
     setValue,
     setError,
+    clearErrors,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -72,13 +79,39 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated && user) {
+      const isSuperadmin = user.roles?.includes('superadmin');
+
+      if (isSuperadmin) {
+        router.replace('/admin');
+        return;
+      }
+
+      // Never changed password → must go to /ganti-password first
+      if (!user.password_changed_at) {
+        router.replace('/ganti-password');
+        return;
+      }
+
+      const isAdmin = ['admin', 'faculty_admin'].some(r => user.roles?.includes(r));
+      if (isAdmin) {
+        router.replace('/admin');
+        return;
+      }
+
+      // Password changed but profile still incomplete → go to /profil
+      if (!user.profile_complete) {
+        router.replace('/profil');
+        return;
+      }
+
       const roleRedirect: Record<string, string> = {
-        superadmin: '/admin', admin: '/admin', faculty_admin: '/admin',
         dosen: '/dosen', dpl: '/dosen', student: '/mahasiswa',
       };
-      router.replace(roleRedirect[user.roles?.[0] as string] || '/');
+      const target = roleRedirect[user.roles?.[0] as string] || '/';
+      const invalidRedirect = !redirectTo || redirectTo.startsWith('/login') || redirectTo.startsWith('/admin') || redirectTo === '/';
+      router.replace(invalidRedirect ? target : redirectTo);
     }
-  }, [isAuthenticated, user, router]);
+  }, [isAuthenticated, redirectTo, user, router]);
 
   const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
@@ -89,20 +122,35 @@ export default function LoginPage() {
       const result = await api.post('/auth/login', data) as { user: User; token?: string };
       if (result?.user) {
         if (result.token) setAuthToken(result.token);
+        setPasswordChangedCookie(result.user.password_changed_at ?? null);
         setUser(result.user);
         toast.success('Login berhasil!');
       }
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'response' in err) {
-        const axiosErr = err as { response?: { status?: number; data?: { error?: { code?: string; message?: string; errors?: Record<string, string[]> } } } };
+        const axiosErr = err as { response?: { status?: number; data?: { error?: { code?: string; message?: string; errors?: Record<string, string[]>; challenge_token?: string; expires_in?: number } } } };
+        // 2FA required — navigate to 2FA verification
+        if (axiosErr.response?.status === 423 && axiosErr.response.data?.error?.code === 'TWO_FACTOR_REQUIRED') {
+          const token = axiosErr.response.data.error.challenge_token;
+          if (token) {
+            sessionStorage.setItem('sibermas_2fa_challenge', token);
+            router.push('/login/2fa');
+            return;
+          }
+        }
         if (axiosErr.response?.status === 422) {
           const errorData = axiosErr.response.data?.error;
           if (errorData?.code === 'CAPTCHA_INVALID') {
             setServerErrors(['Verifikasi keamanan kedaluwarsa atau salah.']);
-            fetchCaptcha();
+            setValue('captcha_answer', '');
+            clearErrors('captcha_answer');
+            setTimeout(() => fetchCaptcha(), 100);
+            toast.error('Captcha diperbarui. Silakan coba lagi.');
           } else if (errorData?.code === 'CREDENTIALS_INVALID') {
-            setError('login', { message: 'Username/email atau kata sandi salah' });
-            fetchCaptcha();
+            setError('login', { message: 'NIM/NIP/username atau kata sandi salah' });
+            setValue('captcha_answer', '');
+            clearErrors('captcha_answer');
+            setTimeout(() => fetchCaptcha(), 100);
           } else if (errorData?.errors) {
             Object.entries(errorData.errors).forEach(([field, messages]) => {
               setError(field as keyof LoginFormData, { message: messages[0] });
@@ -217,7 +265,7 @@ export default function LoginPage() {
               <div className="space-y-5">
                 {/* Username */}
                 <div className="space-y-2">
-                  <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Identitas Pengguna</label>
+                  <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">NIM / NIP / Username</label>
                   <div className="relative group">
                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400 group-focus-within:text-emerald-600 transition-colors">
                       <UserIcon size={16} />
@@ -226,8 +274,12 @@ export default function LoginPage() {
                       {...register('login')}
                       data-testid="login-identifier"
                       type="text"
+                      inputMode="text"
+                      autoCapitalize="none"
+                      autoCorrect="off"
+                      autoComplete="username"
                       className="w-full h-12 bg-white/60 border border-white focus:bg-white rounded-xl pl-[3.2rem] pr-4 text-sm font-bold text-emerald-950 placeholder:text-emerald-800/40 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none shadow-sm"
-                      placeholder="NIM / NIP / Username"
+                      placeholder="Masukkan NIM, NIP, atau username"
                       autoFocus
                     />
                   </div>
@@ -251,6 +303,8 @@ export default function LoginPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+                      aria-pressed={showPassword}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-400 hover:text-emerald-600 transition-colors"
                     >
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -337,9 +391,15 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <div className="mt-6 text-center">
+        <div className="mt-6 text-center space-y-2">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
             &copy; {new Date().getFullYear()} LPPM UIN Saizu Purwokerto
+          </p>
+          <p className="text-[9px] text-slate-400">
+            Tidak bisa login?{' '}
+            <a href="/api/clear-session" className="underline hover:text-slate-600 transition-colors">
+              Reset sesi browser
+            </a>
           </p>
         </div>
       </motion.div>

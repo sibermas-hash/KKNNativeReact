@@ -5,6 +5,10 @@ use App\Models\User;
 
 describe('DPL API', function () {
 
+    beforeEach(function () {
+        createActivePeriod('grading');
+    });
+
     describe('Authentication', function () {
         it('returns 401 for unauthenticated', function () {
             $this->getJson('/api/v1/dosen/dashboard')

@@ -45,8 +45,8 @@ class RegistrationPortalService
                     'registration_end',
                 ])
                 ->where('is_active', true)
-                ->whereDate('registration_start', '<=', $today)
-                ->whereDate('registration_end', '>=', $today)
+                ->where('registration_start', '<=', $today)
+                ->where('registration_end', '>=', $today)
                 ->with([
                     'jenisKkn:id,code,name,description,registration_mode,placement_mode,requirements_config',
                     'kelompok' => function ($query) {

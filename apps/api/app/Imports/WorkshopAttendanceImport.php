@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Imports;
 
+use App\Models\KKN\Dosen;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaWorkshop;
 use Illuminate\Support\Collection;
@@ -13,42 +14,65 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 class WorkshopAttendanceImport implements ToCollection, WithHeadingRow
 {
     private int $workshopId;
+    private string $type; // 'mahasiswa' or 'dosen'
 
     public int $processedCount = 0;
 
-    public function __construct(int $workshopId)
+    public function __construct(int $workshopId, string $type = 'dosen')
     {
         $this->workshopId = $workshopId;
+        $this->type = $type;
     }
 
     public function collection(Collection $rows)
     {
         foreach ($rows as $row) {
-            // Kita dukung format NIM yang mungkin ada spasi atau karakter aneh
-            $nim = trim((string) ($row['nim'] ?? $row['NIM'] ?? ''));
+            $identifier = match ($this->type) {
+                'mahasiswa' => trim((string) ($row['nim'] ?? $row['NIM'] ?? '')),
+                'dosen' => trim((string) ($row['nip'] ?? $row['NIP'] ?? '')),
+                default => null,
+            };
 
-            if (empty($nim)) {
+            if (empty($identifier)) {
                 continue;
             }
 
-            // Cari mahasiswa berdasarkan NIM
-            $mahasiswa = Mahasiswa::where('nim', $nim)->first();
+            $userId = match ($this->type) {
+                'mahasiswa' => $this->findMahasiswaUserId($identifier),
+                'dosen' => $this->findDosenUserId($identifier),
+                default => null,
+            };
 
-            if ($mahasiswa) {
-                // Update status di tabel PesertaWorkshop
-                // Kolom aslinya adalah 'attended' (boolean) atau 'attended_at' (timestamp)
-                // Berdasarkan migrasi yang saya lihat sebelumnya.
-                $updated = PesertaWorkshop::where('workshop_id', $this->workshopId)
-                    ->where('user_id', $mahasiswa->user_id)
-                    ->update([
-                        'attended' => true,
-                        'attended_at' => now(),
-                    ]);
+            if ($userId) {
+                // Update attendance status directly from Excel import (no online check-in)
+                PesertaWorkshop::updateOrCreate(
+                    [
+                        'workshop_id' => $this->workshopId,
+                        'user_id' => $userId,
+                    ],
+                    [
+                        'attendance_status' => 'attended',
+                        'checked_in_at' => now(),
+                        'is_passed' => true,
+                    ]
+                );
 
-                if ($updated) {
-                    $this->processedCount++;
-                }
+                $this->processedCount++;
             }
         }
+    }
+
+    private function findMahasiswaUserId(string $nim): ?int
+    {
+        $mahasiswa = Mahasiswa::whereBlind('nim', (string) $nim)->first();
+
+        return $mahasiswa?->user_id;
+    }
+
+    private function findDosenUserId(string $nip): ?int
+    {
+        $dosen = Dosen::whereBlind('nip', (string) $nip)->first();
+
+        return $dosen?->user_id;
     }
 }

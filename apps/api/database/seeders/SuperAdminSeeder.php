@@ -101,6 +101,22 @@ class SuperAdminSeeder extends Seeder
     private function createSuperAdmin(): void
     {
         $envPassword = env('KKN_SUPERADMIN_PASSWORD');
+
+        // L-001 fix: In production, do NOT allow creating a new superadmin
+        // with an auto-generated password printed to stdout — deploy logs
+        // may be captured/shipped to aggregators. Require the operator to
+        // set KKN_SUPERADMIN_PASSWORD explicitly.
+        $existing = User::where('email', self::SUPERADMIN_EMAIL)->exists();
+
+        if (app()->environment('production') && ! $existing && ! $envPassword) {
+            $this->command?->error(
+                'SuperAdminSeeder refused to run in production without KKN_SUPERADMIN_PASSWORD. '.
+                'Set the env var before running this seeder, e.g.: '.
+                'KKN_SUPERADMIN_PASSWORD="…" php artisan db:seed --class=SuperAdminSeeder'
+            );
+            throw new \RuntimeException('Missing KKN_SUPERADMIN_PASSWORD in production.');
+        }
+
         $plainPassword = $envPassword ?: Str::password(16);
 
         $user = User::firstOrNew(['email' => self::SUPERADMIN_EMAIL]);
@@ -113,7 +129,6 @@ class SuperAdminSeeder extends Seeder
             'must_change_password' => ! $envPassword, // Wajib ganti jika password auto-generated
         ]);
 
-        $user->email_verified_at = now();
 
         // Set password hanya jika: (1) user baru, atau (2) password diberikan via env
         if ($isNewUser || $envPassword) {

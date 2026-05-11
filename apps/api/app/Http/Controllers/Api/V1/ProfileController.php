@@ -9,6 +9,7 @@ use App\Http\Resources\Api\V1\UserResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\Mahasiswa;
+use App\Models\ProfileChangeRequest;
 use App\Models\User;
 use App\Services\ProfileSnapshotService;
 use Illuminate\Http\JsonResponse;
@@ -26,143 +27,393 @@ class ProfileController extends Controller
     {
         $user = $request->user();
         $user->load(['mahasiswa.fakultas', 'mahasiswa.prodi', 'dosen.fakultas', 'fakultas']);
+        $mahasiswa = $user->mahasiswa;
+        $dosen = $user->dosen;
 
-        return $this->success(new UserResource($user));
+        $pending = ProfileChangeRequest::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->latest()
+            ->first();
+
+        $studentMissing = $mahasiswa ? collect([
+            'avatar' => $user->avatar,
+            'nik' => $mahasiswa->nik,
+            'mother_name' => $mahasiswa->mother_name,
+            'birth_place' => $mahasiswa->birth_place,
+            'birth_date' => $mahasiswa->birth_date,
+            'gender' => $mahasiswa->gender,
+            'shirt_size' => $mahasiswa->shirt_size,
+            'phone' => $user->phone,
+            'address' => $user->address,
+        ])->filter(fn ($value) => blank($value))->keys()->values()->all() : [];
+
+        $lecturerMissing = $dosen ? collect([
+            'avatar' => $user->avatar,
+            'nip' => $dosen->nip,
+            'nama' => $dosen->nama,
+            'jabatan' => $dosen->jabatan,
+            'golongan' => $dosen->golongan,
+            'no_rekening' => $dosen->no_rekening,
+            'nama_bank' => $dosen->nama_bank,
+            'npwp' => $dosen->npwp,
+            'gender' => $dosen->gender,
+            'birth_date' => $dosen->birth_date,
+            'phone' => $user->phone,
+            'address' => $user->address,
+            'address_village_name' => $user->address_village_name,
+            'address_district_name' => $user->address_district_name,
+            'address_regency_name' => $user->address_regency_name,
+            'address_verified_at' => $user->address_verified_at,
+        ])->filter(fn ($value) => blank($value))->keys()->values()->all() : [];
+
+        $addressMissing = collect([
+            'address' => $user->address,
+            'address_village_name' => $user->address_village_name,
+            'address_district_name' => $user->address_district_name,
+            'address_regency_name' => $user->address_regency_name,
+            'address_postal_code' => $user->address_postal_code,
+            'address_lat' => $user->address_lat,
+            'address_lng' => $user->address_lng,
+        ])->filter(fn ($value) => blank($value))->keys()->values()->all();
+
+        return $this->success([
+            'user'                  => new UserResource($user),
+            'student'               => $mahasiswa ? array_merge((new \App\Http\Resources\Api\V1\MahasiswaResource($mahasiswa))->resolve($request), [
+                'biodata_complete' => $studentMissing === [],
+                'missing_biodata_fields' => $studentMissing,
+                'address_complete' => $addressMissing === [] && filled($user->address_verified_at),
+                'address_verified' => filled($user->address_verified_at),
+                'address_verified_at' => $user->address_verified_at?->toIso8601String(),
+                'missing_address_fields' => $addressMissing,
+            ]) : null,
+            'lecturer'              => $dosen ? array_merge((new \App\Http\Resources\Api\V1\DosenResource($dosen))->resolve($request), [
+                'biodata_complete' => $lecturerMissing === [],
+                'missing_biodata_fields' => $lecturerMissing,
+            ]) : null,
+            'is_onboarding'         => blank($user->address_verified_at) || $user->must_change_password,
+            'pending_change_request' => $pending ? [
+                'id'                => $pending->id,
+                'requested_changes' => $pending->requested_changes,
+                'created_at'        => $pending->created_at,
+            ] : null,
+        ]);
     }
 
     public function update(Request $request): JsonResponse
     {
         $user = $request->user();
+        $user->load(['mahasiswa', 'dosen']);
 
         $validated = $request->validate([
             'name'                   => ['sometimes', 'string', 'max:255'],
             'phone'                  => ['nullable', 'string', 'max:20'],
             'address'                => ['nullable', 'string', 'max:500'],
-            'domicile_village_name'  => ['nullable', 'string', 'max:150'],
-            'domicile_district_name' => ['nullable', 'string', 'max:150'],
-            'domicile_regency_name'  => ['nullable', 'string', 'max:150'],
+            'address_village_name'   => ['nullable', 'string', 'max:150'],
+            'address_district_name'  => ['nullable', 'string', 'max:150'],
+            'address_regency_name'   => ['nullable', 'string', 'max:150'],
+            'address_postal_code'    => ['nullable', 'string', 'max:10'],
+            'address_lat'            => ['nullable', 'numeric', 'between:-90,90'],
+            'address_lng'            => ['nullable', 'numeric', 'between:-180,180'],
             'address_verified'       => ['nullable', 'boolean'],
+            'address_verified_at'    => ['nullable'],
             // Mahasiswa biodata
             'nik'                    => ['nullable', 'regex:/^\d{16}$/'],
             'mother_name'            => ['nullable', 'string', 'max:150'],
             'gender'                 => ['nullable', 'in:L,P'],
-            'shirt_size'             => ['nullable', 'string', 'max:10'],
+            'shirt_size'             => ['nullable', 'string', 'in:S,M,L,XL,XXL,3XL,4XL,5XL'],
             'birth_place'            => ['nullable', 'string', 'max:100'],
             'birth_date'             => ['nullable', 'date'],
             // Dosen fields
+            'nama_gelar'             => ['nullable', 'string', 'max:255'],
+            'nidn'                   => ['nullable', 'string', 'max:50'],
+            'dosen_nik'              => ['nullable', 'string', 'max:50'],
             'jabatan'                => ['nullable', 'string', 'max:100'],
+            'kelas_jabatan'          => ['nullable', 'string', 'max:50'],
+            'tugas_tambahan'         => ['nullable', 'string', 'max:150'],
             'golongan'               => ['nullable', 'string', 'max:50'],
+            'pangkat'                => ['nullable', 'string', 'max:100'],
             'no_rekening'            => ['nullable', 'string', 'max:50'],
             'nama_bank'              => ['nullable', 'string', 'max:100'],
             'npwp'                   => ['nullable', 'string', 'max:50'],
+            'dosen_alamat'           => ['nullable', 'string', 'max:500'],
         ]);
 
-        $requestedAddressVerified = (bool) ($validated['address_verified'] ?? false);
-        $addressFields = [
-            'address'                => $validated['address'] ?? null,
-            'domicile_village_name'  => $validated['domicile_village_name'] ?? null,
-            'domicile_district_name' => $validated['domicile_district_name'] ?? null,
-            'domicile_regency_name'  => $validated['domicile_regency_name'] ?? null,
+        // Build diff: only include fields that actually changed
+        $mahasiswa = $user->mahasiswa;
+        $dosen     = $user->dosen;
+
+        $changes = [];
+
+        $userMap = [
+            'name'                   => $user->name,
+            'phone'                  => $user->phone,
+            'address'                => $user->address,
+            'address_village_name'   => $user->address_village_name,
+            'address_district_name'  => $user->address_district_name,
+            'address_regency_name'   => $user->address_regency_name,
+            'address_postal_code'    => $user->address_postal_code,
+            'address_lat'            => $user->address_lat,
+            'address_lng'            => $user->address_lng,
         ];
 
-        if ($requestedAddressVerified && collect($addressFields)->contains(fn ($v) => blank($v))) {
-            return $this->validationError(
-                ['address_verified' => ['Lengkapi alamat domisili, desa/kelurahan, kecamatan, dan kabupaten/kota sebelum melakukan verifikasi alamat.']],
-                'Lengkapi alamat domisili terlebih dahulu.'
-            );
+        $mahasiswaMap = $mahasiswa ? [
+            'nik'         => $mahasiswa->nik,
+            'mother_name' => $mahasiswa->mother_name,
+            'gender'      => $mahasiswa->gender,
+            'shirt_size'  => $mahasiswa->shirt_size,
+            'birth_place' => $mahasiswa->birth_place,
+            'birth_date'  => $mahasiswa->birth_date?->toDateString(),
+        ] : [];
+
+        $dosenMap = $dosen ? [
+            'nama_gelar'  => $dosen->nama_gelar,
+            'nidn'        => $dosen->nidn,
+            'dosen_nik'   => $dosen->nik,
+            'jabatan'     => $dosen->jabatan,
+            'kelas_jabatan' => $dosen->kelas_jabatan,
+            'tugas_tambahan' => $dosen->tugas_tambahan,
+            'golongan'    => $dosen->golongan,
+            'pangkat'     => $dosen->pangkat,
+            'no_rekening' => $dosen->no_rekening,
+            'nama_bank'   => $dosen->nama_bank,
+            'npwp'        => $dosen->npwp,
+            'gender'      => $dosen->gender,
+            'birth_date'  => $dosen->birth_date?->toDateString(),
+            'dosen_alamat' => $dosen->alamat,
+        ] : [];
+
+        $currentValues = array_merge($userMap, $mahasiswaMap, $dosenMap);
+
+        foreach ($validated as $field => $newValue) {
+            if ($field === 'address_verified') {
+                $oldVerified = filled($user->address_verified_at);
+                $newVerified = (bool) $newValue;
+                if ($oldVerified !== $newVerified) {
+                    $changes['address_verified_at'] = ['old' => $user->address_verified_at?->toIso8601String(), 'new' => $newVerified ? now()->toIso8601String() : null];
+                }
+                continue;
+            }
+            $old = $currentValues[$field] ?? null;
+            $new = $newValue;
+            // Normalize for comparison
+            if ((string) $old !== (string) $new) {
+                $changes[$field] = ['old' => $old, 'new' => $new];
+            }
         }
 
-        DB::transaction(function () use ($user, $validated, $requestedAddressVerified) {
-            $addressChanged = $user->address !== ($validated['address'] ?? null)
-                || $user->domicile_village_name !== ($validated['domicile_village_name'] ?? null)
-                || $user->domicile_district_name !== ($validated['domicile_district_name'] ?? null)
-                || $user->domicile_regency_name !== ($validated['domicile_regency_name'] ?? null);
+        if (empty($changes)) {
+            return $this->badRequest('Tidak ada perubahan yang terdeteksi.');
+        }
 
-            $user->fill([
-                'name'                   => $validated['name'] ?? $user->name,
-                'phone'                  => $validated['phone'] ?? null,
-                'address'                => $validated['address'] ?? null,
-                'domicile_village_name'  => $validated['domicile_village_name'] ?? null,
-                'domicile_district_name' => $validated['domicile_district_name'] ?? null,
-                'domicile_regency_name'  => $validated['domicile_regency_name'] ?? null,
+        $wasProfileComplete = $this->isProfileComplete($user);
+
+        if (! $wasProfileComplete) {
+            DB::transaction(function () use ($user, $changes, $mahasiswa, $dosen) {
+                $this->applyProfileChanges($user, $changes, $mahasiswa, $dosen);
+            });
+
+            \App\Services\ActivityLogger::log('profile_update', 'success', $user->id, [
+                'first_onboarding' => true,
+                'fields_changed' => array_keys($changes),
             ]);
 
-            if (! $requestedAddressVerified) {
-                $user->address_verified_at = null;
-            } elseif ($addressChanged || ! $user->address_verified_at) {
-                $user->address_verified_at = now();
-            }
+            return $this->success(null, 'Profil berhasil dilengkapi. Silakan lanjutkan menggunakan portal.');
+        }
 
-            $user->save();
+        // Block if there's already a pending request after onboarding is complete.
+        $hasPending = ProfileChangeRequest::where('user_id', $user->id)
+            ->where('status', 'pending')
+            ->exists();
 
-            if ($user->mahasiswa) {
-                $mahasiswa = Mahasiswa::where('user_id', $user->id)->lockForUpdate()->first();
-                if ($mahasiswa) {
-                    $mahasiswa->fill([
-                        'nama'        => $validated['name'] ?? $mahasiswa->nama,
-                        'nik'         => $validated['nik'] ?? null,
-                        'mother_name' => $validated['mother_name'] ?? null,
-                        'gender'      => $validated['gender'] ?? $mahasiswa->gender,
-                        'shirt_size'  => $validated['shirt_size'] ?? null,
-                        'birth_place' => $validated['birth_place'] ?? null,
-                        'birth_date'  => $validated['birth_date'] ?? null,
-                    ]);
-                    $mahasiswa->save();
-                }
-            } elseif ($user->dosen) {
-                $dosen = Dosen::where('user_id', $user->id)->lockForUpdate()->first();
-                if ($dosen) {
-                    $dosen->fill([
-                        'nama'        => $validated['name'] ?? $dosen->nama,
-                        'jabatan'     => $validated['jabatan'] ?? $dosen->jabatan,
-                        'golongan'    => $validated['golongan'] ?? $dosen->golongan,
-                        'no_rekening' => $validated['no_rekening'] ?? $dosen->no_rekening,
-                        'nama_bank'   => $validated['nama_bank'] ?? $dosen->nama_bank,
-                        'npwp'        => $validated['npwp'] ?? $dosen->npwp,
-                    ]);
-                    $dosen->save();
-                }
-            }
+        if ($hasPending) {
+            return $this->badRequest('Anda sudah memiliki permintaan perubahan profil yang sedang menunggu persetujuan.');
+        }
 
-            app(ProfileSnapshotService::class)->sync($user);
-        });
+        ProfileChangeRequest::create([
+            'user_id'           => $user->id,
+            'requested_changes' => $changes,
+            'status'            => 'pending',
+        ]);
 
-        $user->refresh()->load(['mahasiswa.fakultas', 'mahasiswa.prodi', 'dosen.fakultas', 'fakultas']);
+        \App\Services\ActivityLogger::log('profile_update', 'success', $user->id, [
+            'pending_approval' => true,
+            'fields_changed' => array_keys($changes),
+        ]);
 
-        return $this->success(new UserResource($user), 'Profil berhasil diperbarui.');
+        return $this->success(null, 'Permintaan perubahan profil berhasil dikirim. Menunggu persetujuan superadmin.', 202);
     }
 
-    public function updateAvatar(Request $request): JsonResponse
+    private function isProfileComplete(User $user): bool
+    {
+        $user->loadMissing(['mahasiswa', 'dosen']);
+
+        $baseComplete = filled($user->avatar)
+            && filled($user->phone)
+            && filled($user->address)
+            && filled($user->address_village_name)
+            && filled($user->address_district_name)
+            && filled($user->address_regency_name)
+            && filled($user->address_postal_code)
+            && filled($user->address_lat)
+            && filled($user->address_lng)
+            && filled($user->address_verified_at);
+
+        if (! $baseComplete) {
+            return false;
+        }
+
+        if ($user->mahasiswa) {
+            return filled($user->mahasiswa->nik)
+                && filled($user->mahasiswa->mother_name)
+                && filled($user->mahasiswa->birth_place)
+                && filled($user->mahasiswa->birth_date)
+                && filled($user->mahasiswa->gender)
+                && filled($user->mahasiswa->shirt_size);
+        }
+
+        if ($user->dosen) {
+            return filled($user->dosen->jabatan)
+                && filled($user->dosen->golongan)
+                && filled($user->dosen->no_rekening)
+                && filled($user->dosen->nama_bank)
+                && filled($user->dosen->npwp)
+                && filled($user->dosen->gender)
+                && filled($user->dosen->birth_date);
+        }
+
+        return true;
+    }
+
+    private function applyProfileChanges(User $user, array $changes, ?Mahasiswa $mahasiswa, ?Dosen $dosen): void
+    {
+        $userFields = ['name', 'phone', 'address', 'address_village_name', 'address_district_name', 'address_regency_name', 'address_postal_code', 'address_lat', 'address_lng', 'address_registered_at', 'address_verified_at'];
+        $mahasiswaFields = ['nik', 'mother_name', 'gender', 'shirt_size', 'birth_place', 'birth_date'];
+        $dosenFields = ['nama_gelar', 'nidn', 'dosen_nik', 'jabatan', 'kelas_jabatan', 'tugas_tambahan', 'golongan', 'pangkat', 'no_rekening', 'nama_bank', 'npwp', 'gender', 'birth_date', 'dosen_alamat'];
+
+        $userUpdate = [];
+        $mahasiswaUpdate = [];
+        $dosenUpdate = [];
+
+        foreach ($changes as $field => $value) {
+            $new = is_array($value) ? ($value['new'] ?? null) : $value;
+            if (in_array($field, $userFields, true)) {
+                $userUpdate[$field] = $new;
+            } elseif (in_array($field, $mahasiswaFields, true)) {
+                $mahasiswaUpdate[$field] = $new;
+            } elseif (in_array($field, $dosenFields, true)) {
+                $dosenUpdate[match ($field) {
+                    'dosen_nik' => 'nik',
+                    'dosen_alamat' => 'alamat',
+                    default => $field,
+                }] = $new;
+            }
+        }
+
+        if ($userUpdate) {
+            $user->fill($userUpdate)->save();
+            // Field-lock registry: once the user / admin has set these
+            // fields manually, SIAKAD sync MUST NOT overwrite them.
+            // See App\Traits\HasManuallyEditedFields::lockFields.
+            $user->lockFields(array_keys($userUpdate));
+        }
+
+        if ($mahasiswa && $mahasiswaUpdate) {
+            $mahasiswa->fill($mahasiswaUpdate)->save();
+            $mahasiswa->lockFields(array_keys($mahasiswaUpdate));
+        }
+
+        if ($dosen && $dosenUpdate) {
+            $dosen->fill($dosenUpdate)->save();
+            $dosen->lockFields(array_keys($dosenUpdate));
+        }
+    }
+
+    public function updateAvatar(Request $request, \App\Services\AvatarValidationService $validator): JsonResponse
     {
         $user = $request->user();
 
         $request->validate([
-            'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'mimetypes:image/jpeg,image/png,image/webp', 'max:5120'],
         ]);
+
+        $path = $request->file('avatar')->store('avatars', config('filesystems.default'));
+
+        // Layer 3: AI Validation (background merah + jas almamater + pose formal)
+        $aiResult = $validator->validateAvatar($path);
+
+        // Layer 3 AI tegas menolak (tidak butuh manual review) — tolak instan
+        if (!$aiResult['is_valid'] && !$aiResult['requires_manual_review']) {
+            Storage::disk(config('filesystems.default'))->delete($path);
+
+            \App\Services\ActivityLogger::log('avatar_rejected', 'failed', $user->id, [
+                'reason' => $aiResult['reason'],
+            ]);
+
+            return $this->error('VALIDATION_ERROR', $aiResult['reason'] ?? 'Foto ditolak oleh sistem AI.', 422, [
+                'avatar' => [$aiResult['reason']]
+            ]);
+        }
+
+        // Layer 4: tentukan status moderasi
+        // - approved: AI lolos tegas → foto langsung bisa dipakai
+        // - pending : AI tidak tersedia/ragu → butuh review admin
+        $status = $aiResult['requires_manual_review'] ? 'pending' : 'approved';
+        $reason = $aiResult['requires_manual_review']
+            ? 'Server AI tidak tersedia, menunggu verifikasi admin.'
+            : null;
 
         if ($user->avatar) {
             Storage::disk(config('filesystems.default'))->delete($user->avatar);
         }
 
-        $path = $request->file('avatar')->store('avatars', config('filesystems.default'));
-        $user->update(['avatar' => $path]);
+        $user->update([
+            'avatar' => $path,
+            'avatar_moderation_status' => $status,
+            'avatar_moderation_reason' => $reason,
+            'avatar_moderation_reviewed_at' => $status === 'approved' ? now() : null,
+            'avatar_moderation_reviewed_by' => null,
+        ]);
 
-        return $this->success(['avatar_url' => asset('storage/'.$path)], 'Foto profil berhasil diperbarui.');
+        \App\Services\ActivityLogger::log('avatar_upload', 'success', $user->id, [
+            'moderation_status' => $status,
+        ]);
+
+        $msg = $status === 'pending'
+            ? 'Foto berhasil diunggah namun butuh persetujuan Admin karena server AI sedang sibuk.'
+            : 'Foto profil berhasil diperbarui.';
+
+        return $this->success([
+            'avatar_url' => asset('storage/' . $path),
+            'moderation_status' => $status,
+            'moderation_reason' => $reason,
+        ], $msg);
     }
 
     public function changePassword(Request $request): JsonResponse
     {
         $user = $request->user();
 
-        $request->validate([
-            'current_password' => ['required', 'string'],
-            'password'         => ['required', 'confirmed', Password::defaults()],
-        ]);
+        $isFirstPasswordChange = $user->must_change_password || is_null($user->password_changed_at);
 
-        if (! Hash::check($request->input('current_password'), $user->password)) {
-            return $this->error('VALIDATION_ERROR', 'Kata sandi saat ini salah.', 422, [
-                'current_password' => ['Kata sandi saat ini salah.'],
+        if ($isFirstPasswordChange) {
+            $request->validate([
+                'password'         => ['required', 'confirmed', Password::defaults()],
             ]);
+        } else {
+            $request->validate([
+                'current_password' => ['required', 'string'],
+                'password'         => ['required', 'confirmed', Password::defaults()],
+            ]);
+
+            if (! Hash::check($request->input('current_password'), $user->password)) {
+                \App\Services\ActivityLogger::log('password_change', 'failed', $user->id, [
+                    'reason' => 'invalid_current_password',
+                ]);
+
+                return $this->error('VALIDATION_ERROR', 'Kata sandi saat ini salah.', 422, [
+                    'current_password' => ['Kata sandi saat ini salah.'],
+                ]);
+            }
         }
 
         $user->update([
@@ -171,6 +422,74 @@ class ProfileController extends Controller
             'must_change_password' => false,
         ]);
 
-        return $this->noContent('Kata sandi berhasil diubah.');
+        \App\Services\ActivityLogger::log('password_change', 'success', $user->id, [
+            'first_time' => $isFirstPasswordChange,
+        ]);
+
+        // X-004 fix (audit follow-up): force Secure flag in production even
+        // when $request->secure() is false (misconfigured reverse proxy
+        // stripping X-Forwarded-Proto). Same pattern as M-007 in AuthController.
+        $isSecure = app()->environment('production') ? true : $request->secure();
+
+        return $this->noContent('Kata sandi berhasil diubah.')
+            ->withCookie(cookie('sibermas_pwd_changed', '1', 60 * 24 * 7, '/', null, $isSecure, false, false, 'Strict'));
+    }
+
+    /**
+     * GET /v1/profile/notification-preferences
+     *
+     * Returns the effective preferences (user overrides merged over defaults),
+     * plus the raw stored preferences so the UI can distinguish "using default"
+     * from "explicitly set to default".
+     */
+    public function notificationPreferences(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        return $this->success([
+            'preferences' => $user->notificationPreferences(),
+            'raw' => $user->notification_preferences,
+            'defaults' => [
+                'in_app' => \App\Models\KKN\SystemSetting::get('notification_default_in_app', '1') !== '0',
+                'email'  => \App\Models\KKN\SystemSetting::get('notification_default_email', '1') !== '0',
+                'push'   => \App\Models\KKN\SystemSetting::get('notification_default_push', '1') !== '0',
+            ],
+        ]);
+    }
+
+    /**
+     * PATCH /v1/profile/notification-preferences
+     *
+     * Partial update — fields omitted from the request keep their current
+     * value. To reset to defaults, PATCH with `{ "reset": true }`.
+     */
+    public function updateNotificationPreferences(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'in_app' => ['sometimes', 'boolean'],
+            'email'  => ['sometimes', 'boolean'],
+            'push'   => ['sometimes', 'boolean'],
+            'reset'  => ['sometimes', 'boolean'],
+        ]);
+
+        $user = $request->user();
+
+        if (! empty($validated['reset'])) {
+            $user->notification_preferences = null;
+        } else {
+            $current = $user->notification_preferences ?? [];
+            $merged = array_merge(
+                is_array($current) ? $current : [],
+                array_intersect_key($validated, array_flip(['in_app', 'email', 'push'])),
+            );
+            $user->notification_preferences = $merged;
+        }
+
+        $user->save();
+
+        return $this->success([
+            'preferences' => $user->notificationPreferences(),
+            'raw' => $user->notification_preferences,
+        ], 'Preferensi notifikasi diperbarui.');
     }
 }

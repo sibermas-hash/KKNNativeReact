@@ -48,14 +48,6 @@ describe('Student Registration Flow (E2E)', function () {
             ->assertJsonPath('error.code', 'PROFILE_INCOMPLETE');
     });
 
-    it('student without complete profile gets 403 on workshops', function () {
-        $user = createUserWithRole('student');
-
-        $this->actingAs($user)->getJson('/api/v1/student/workshops')
-            ->assertStatus(403)
-            ->assertJsonPath('error.code', 'PROFILE_INCOMPLETE');
-    });
-
     it('student without complete profile gets 403 on final-report', function () {
         $user = createUserWithRole('student');
 
@@ -68,14 +60,6 @@ describe('Student Registration Flow (E2E)', function () {
         $user = createUserWithRole('student');
 
         $this->actingAs($user)->getJson('/api/v1/student/posko')
-            ->assertStatus(403)
-            ->assertJsonPath('error.code', 'PROFILE_INCOMPLETE');
-    });
-
-    it('student without complete profile gets 403 on domisili', function () {
-        $user = createUserWithRole('student');
-
-        $this->actingAs($user)->getJson('/api/v1/student/domisili')
             ->assertStatus(403)
             ->assertJsonPath('error.code', 'PROFILE_INCOMPLETE');
     });

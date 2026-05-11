@@ -24,6 +24,19 @@ class JenisKknResource extends JsonResource
             'is_active' => $this->is_active,
             'attendance_config' => $this->getAttendanceConfig(),
             'requirements_config' => $this->requirements_config,
+            'document_requirements' => $this->whenLoaded('documentRequirements', fn () => $this->documentRequirements->map(fn ($requirement) => [
+                'id' => $requirement->id,
+                'document_key' => $requirement->document_key,
+                'document_label' => $requirement->document_label,
+                'description' => $requirement->description,
+                'is_required' => $requirement->is_required,
+                'sort_order' => $requirement->sort_order,
+                'default_template' => $requirement->defaultTemplate ? [
+                    'id' => $requirement->defaultTemplate->id,
+                    'name' => $requirement->defaultTemplate->name,
+                    'file_name' => $requirement->defaultTemplate->file_name,
+                ] : null,
+            ])->values()),
         ];
     }
 }

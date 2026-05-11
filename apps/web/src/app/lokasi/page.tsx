@@ -1,10 +1,11 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { fetchApi } from '@/lib/server-api';
 import { Navbar } from '@/components/public/navbar';
 import { Footer } from '@/components/public/footer';
 import { MapPin } from 'lucide-react';
 
-export const revalidate = 86400;
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -23,8 +24,13 @@ interface Location {
 }
 
 export default async function LocationsPage() {
-  const data = await fetchApi<{ success: boolean; data: Location[] }>('/public/locations');
-  const locations = data?.data || [];
+  let locations: Location[] = [];
+  try {
+    const data = await fetchApi<{ success: boolean; data: Location[] }>('/public/locations');
+    locations = data?.data || [];
+  } catch (error) {
+    console.error('Failed to fetch locations:', error);
+  }
 
   return (
     <div className="min-h-screen bg-white text-emerald-950">

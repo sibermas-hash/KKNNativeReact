@@ -16,7 +16,7 @@ const ROLES = [
   { value: 'superadmin', label: 'Superadmin' },
 ];
 
-export default function AdminUserCreatePage() {
+export default function AdminUserCreatePage(): React.JSX.Element {
   const router = useRouter();
   const [form, setForm] = useState({
     username: '', name: '', email: '', password: '',
@@ -45,10 +45,10 @@ export default function AdminUserCreatePage() {
     mutationFn: async () => adminApi.users.store(form as unknown as Record<string, unknown>),
     onSuccess: () => router.push('/admin/pengguna'),
     onError: (err: unknown) => {
-      const e = err as { response?: { data?: { errors?: Record<string, string[]> } } };
-      if (e?.response?.data?.errors) {
+      const e = err as { response?: { data?: { error?: { errors?: Record<string, string[]> } } } };
+      if (e?.response?.data?.error?.errors) {
         const flat: Record<string, string> = {};
-        Object.entries(e.response.data.errors).forEach(([k, v]) => { flat[k] = v[0]; });
+        Object.entries(e.response.data.error.errors).forEach(([k, v]) => { flat[k] = v[0]; });
         setErrors(flat);
       }
     },

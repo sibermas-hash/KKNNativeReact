@@ -1,23 +1,22 @@
 'use client';
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { dplEndpoints } from '@sibermas/api-client';
-import { api, dplApi } from '@/lib/api';
+import { dplApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
+import { PageHeader } from '@/components/ui/shared';
 
 type Group = { id: number; name: string; code: string };
 
-export default function CreateMonitoringPage() {
+export default function CreateMonitoringPage(): React.JSX.Element {
   const router = useRouter();
-  
   const queryClient = useQueryClient();
 
   const { data: groupsData } = useQuery({
     queryKey: ['dpl', 'groups'],
     queryFn: async () => {
-      const res = await dplApi.groups.index() as unknown as { success: boolean; data: { groups: Group[] } };
-      return res?.data?.groups ?? [];
+      const res = await dplApi.groups.index() as any;
+      return (res?.groups ?? res?.data?.groups ?? []) as Group[];
     },
   });
 
@@ -46,30 +45,62 @@ export default function CreateMonitoringPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Catat Kunjungan Monitoring</h1>
-      <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl bg-white p-6 shadow-sm">
+      <PageHeader title="Catat Kunjungan Monitoring" />
+
+      <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
         <div>
           <label className="mb-1.5 block text-sm font-medium text-slate-700">Kelompok</label>
-          <select name="kelompok_id" required className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-blue-500 focus:outline-none">
+          <select
+            name="kelompok_id"
+            required
+            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-cyan-500 focus:outline-none"
+          >
             <option value="">-- Pilih Kelompok --</option>
             {(groupsData ?? []).map((g) => (
-              <option key={g.id} value={g.id}>{g.name} ({g.code})</option>
+              <option key={g.id} value={g.id}>
+                {g.name} ({g.code})
+              </option>
             ))}
           </select>
         </div>
+
         <div>
           <label className="mb-1.5 block text-sm font-medium text-slate-700">Tanggal Kunjungan</label>
-          <input name="visit_date" type="date" required defaultValue={new Date().toISOString().split('T')[0]} className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" />
+          <input
+            name="visit_date"
+            type="date"
+            required
+            defaultValue={new Date().toISOString().split('T')[0]}
+            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-cyan-500 focus:outline-none"
+          />
         </div>
+
         <div>
           <label className="mb-1.5 block text-sm font-medium text-slate-700">Catatan</label>
-          <textarea name="notes" rows={5} required placeholder="Jelaskan hasil kunjungan..." className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" />
+          <textarea
+            name="notes"
+            rows={5}
+            required
+            placeholder="Jelaskan hasil kunjungan..."
+            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-cyan-500 focus:outline-none"
+          />
         </div>
+
         <div>
           <label className="mb-1.5 block text-sm font-medium text-slate-700">Foto (opsional)</label>
-          <input name="photo" type="file" accept=".jpg,.jpeg,.png" className="w-full text-sm text-slate-500 file:mr-4 file:rounded-xl file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-blue-700" />
+          <input
+            name="photo"
+            type="file"
+            accept=".jpg,.jpeg,.png"
+            className="w-full text-sm text-slate-500 file:mr-4 file:rounded-xl file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-slate-700"
+          />
         </div>
-        <button type="submit" disabled={mutation.isPending} className="w-full rounded-xl bg-blue-600 py-3 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50">
+
+        <button
+          type="submit"
+          disabled={mutation.isPending}
+          className="w-full rounded-xl bg-cyan-600 py-3 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-50"
+        >
           {mutation.isPending ? 'Menyimpan...' : 'Simpan Kunjungan'}
         </button>
       </form>

@@ -91,8 +91,24 @@ test('GET /api/server-time returns 200', function () {
         ->assertJsonStructure(['server_unix_ms']);
 });
 
-test('POST /api/log-error returns 422 on empty body', function () {
+test('POST /api/log-error requires auth (H-005)', function () {
+    // Audit H-005 fix: log-error now requires auth:sanctum to prevent
+    // anonymous log flooding. An unauthenticated POST must return 401.
     $this->postJson('/api/log-error', [])
+        ->assertStatus(401);
+});
+
+test('POST /api/log-error returns 422 on empty body when authenticated', function () {
+    // Use a superadmin to bypass EnsurePasswordChanged + EnsureProfileCompleted
+    // middleware (both exempt superadmin) — we only care about the validation
+    // layer here, not the profile-completion flow. is_active is set explicitly
+    // to satisfy EnsureUserIsActive.
+    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'superadmin', 'guard_name' => 'web']);
+    $user = \App\Models\User::factory()->create(['is_active' => true]);
+    $user->assignRole('superadmin');
+
+    $this->actingAs($user)
+        ->postJson('/api/log-error', [])
         ->assertStatus(422);
 });
 

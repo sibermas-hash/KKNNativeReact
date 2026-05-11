@@ -131,8 +131,8 @@ describe('Auth API', function () {
                 'email' => 'test@example.com',
             ]);
 
-            $response->assertOk()
-                ->assertJson(['success' => true]);
+            // noContent() returns 204 per HTTP spec (R12-D3-001 fix).
+            $response->assertStatus(204);
         });
 
         it('rejects invalid email', function () {

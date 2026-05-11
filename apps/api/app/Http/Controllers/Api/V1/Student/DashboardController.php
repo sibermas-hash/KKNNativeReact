@@ -25,6 +25,7 @@ class DashboardController extends Controller
 
     public function index(PeriodContextService $periodContextService): JsonResponse
     {
+        /** @var \App\Models\User|null $user */
         $user = auth()->user();
         $mahasiswa = $user->mahasiswa;
 
@@ -41,6 +42,10 @@ class DashboardController extends Controller
                 'periode.jenisKkn',
                 'kelompok.lokasi',
                 'kelompok.dosen' => fn ($q) => $q->wherePivot('role', 'Ketua'),
+                // Audit FLOW-003 fix: include kelompok's student leader so FE
+                // tidak perlu hardcode "Sedang Ditentukan". Eager-load hanya
+                // relasi minimum (mahasiswa.nama) untuk UI.
+                'kelompok.peserta' => fn ($q) => $q->ketua()->with('mahasiswa:id,user_id,nama,nim'),
             ])
             ->latest('created_at')
             ->first();
@@ -74,6 +79,9 @@ class DashboardController extends Controller
                 ->first()
             : null;
 
+        $certificateMinScore = (float) \App\Models\KKN\SystemSetting::get('certificate_min_score', '70');
+        $minDailyReports = (int) \App\Models\KKN\SystemSetting::get('min_daily_reports', '30');
+
         return $this->success([
             'student' => [
                 'id' => $mahasiswa->id,
@@ -92,7 +100,13 @@ class DashboardController extends Controller
                 'period' => $registration->periode ? [
                     'id' => $registration->periode->id,
                     'name' => $registration->periode->name,
+                    // Audit REGULER-005 fix: expose jenis KKN dengan label + code
+                    // supaya FE bisa render badge yang jelas. Sebelumnya hanya
+                    // `jenis` (name) yang include.
                     'jenis' => $registration->periode->jenisKkn?->name,
+                    'jenis_code' => $registration->periode->jenisKkn?->code,
+                    'jenis_color' => $registration->periode->jenisKkn?->color,
+                    'jenis_description' => $registration->periode->jenisKkn?->description,
                 ] : null,
                 'group' => $registration->kelompok ? [
                     'id' => $registration->kelompok->id,
@@ -106,6 +120,9 @@ class DashboardController extends Controller
                         'id' => $registration->kelompok->dosen->first()->id,
                         'name' => $registration->kelompok->dosen->first()->nama,
                     ] : null,
+                    // Audit FLOW-003 fix: expose ketua mahasiswa dari DB.
+                    // FE dulunya hardcode "Sedang Ditentukan".
+                    'leader' => $this->leaderPayload($registration->kelompok, (int) $mahasiswa->id),
                 ] : null,
             ] : null,
             'daily_report_count' => $dailyReportCount,
@@ -116,13 +133,20 @@ class DashboardController extends Controller
                 'score' => (float) $grade->total_score,
                 'letter' => trim((string) $grade->letter_grade),
                 'is_finalized' => (bool) $grade->is_finalized,
-                'is_eligible_certificate' => $grade->total_score >= 70,
+                // Audit F-14 fix: threshold dari SystemSetting (default 70).
+                // Audit R11-FULL-025 fix: explicit round(2) sebelum compare
+                // untuk avoid 69.9999999 < 70 floating-point edge case.
+                'is_eligible_certificate' => round((float) $grade->total_score, 2) >= $certificateMinScore,
             ] : null,
+            // FE gunakan value ini untuk info "nilai minimum sertifikat" — jangan hardcode di UI.
+            'certificate_min_score' => $certificateMinScore,
+            'min_daily_reports' => $minDailyReports,
         ]);
     }
 
     public function markNotificationShown(Request $request, PesertaKkn $pesertaKkn): JsonResponse
     {
+        /** @var \App\Models\User|null $user */
         $user = auth()->user();
 
         if ($pesertaKkn->mahasiswa_id !== $user->mahasiswa?->id) {
@@ -137,10 +161,39 @@ class DashboardController extends Controller
     private function normalizeStatus(?string $status): ?string
     {
         return match ($status) {
-            'approved', 'disetujui', 'verifikasi_pusat', 'completed' => 'approved',
+            'approved', 'disetujui', 'verifikasi_pusat' => 'approved',
+            'completed', 'selesai' => 'completed',
             'pending', 'menunggu', 'document_submitted', 'document_verified' => 'pending',
             'rejected', 'ditolak', 'gugur' => 'rejected',
             default => $status,
         };
+    }
+
+    /**
+     * Render info ketua kelompok untuk dashboard student.
+     * Dipisah agar type-hints PesertaKkn/Mahasiswa jelas buat PHPStan.
+     *
+     * @return array{id: ?int, name: ?string, nim: ?string, is_self: bool}|null
+     */
+    private function leaderPayload(\App\Models\KKN\KelompokKkn $kelompok, int $currentMahasiswaId): ?array
+    {
+        /** @var \App\Models\KKN\PesertaKkn|null $leader */
+        $leader = $kelompok->peserta->first();
+        if (! $leader) {
+            return null;
+        }
+
+        /** @var \App\Models\KKN\Mahasiswa|null $mhs */
+        $mhs = $leader->mahasiswa;
+        if (! $mhs) {
+            return ['id' => null, 'name' => null, 'nim' => null, 'is_self' => false];
+        }
+
+        return [
+            'id' => (int) $mhs->id,
+            'name' => $mhs->nama,
+            'nim' => $mhs->nim,
+            'is_self' => (int) $mhs->id === $currentMahasiswaId,
+        ];
     }
 }

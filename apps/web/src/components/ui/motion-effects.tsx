@@ -23,7 +23,7 @@ export function RevealOnScroll({
   delay = 0,
   duration = 0.7,
   once = true,
-}: RevealOnScrollProps) {
+}: RevealOnScrollProps): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once, margin: '-80px' });
 
@@ -74,7 +74,7 @@ export function StaggerContainer({
   className = '',
   stagger = 0.1,
   delay = 0,
-}: StaggerContainerProps) {
+}: StaggerContainerProps): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-50px' });
 
@@ -105,7 +105,7 @@ export function StaggerItem({
 }: {
   children: React.ReactNode;
   className?: string;
-}) {
+}): React.JSX.Element {
   return (
     <motion.div
       variants={{
@@ -139,14 +139,15 @@ export function GlowCard({
   const cardRef = useRef<HTMLDivElement>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
+  const lastMove = useRef(0);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const now = Date.now();
+    if (now - lastMove.current < 16) return; // ~60fps throttle
+    lastMove.current = now;
     if (!cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
-    setMousePosition({
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
-    });
+    setMousePosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
   };
 
   return (
@@ -158,7 +159,7 @@ export function GlowCard({
       whileHover={{ y: -4, transition: { duration: 0.3 } }}
       className={`relative overflow-hidden isolate ${className}`}
     >
-      {/* eslint-disable-next-line */}
+
       <div
         className="pointer-events-none absolute -inset-px rounded-[inherit] opacity-0 transition-opacity duration-500"
         style={{
@@ -187,7 +188,7 @@ export function CountUp({
   className?: string;
   suffix?: string;
   prefix?: string;
-}) {
+}): React.JSX.Element {
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true });
   const [count, setCount] = useState(0);
@@ -230,7 +231,7 @@ export function TextReveal({
 }: {
   text: string;
   className?: string;
-}) {
+}): React.JSX.Element {
   const ref = useRef<HTMLParagraphElement>(null);
   const isInView = useInView(ref, { once: true, margin: '-40px' });
   const words = text.split(' ');
@@ -239,7 +240,7 @@ export function TextReveal({
     <p ref={ref} className={className}>
       {words.map((word, i) => (
         <motion.span
-          key={i}
+          key={`${word}-${i}`}
           initial={{ opacity: 0, y: 10 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ delay: i * 0.04, duration: 0.4, ease: 'easeOut' }}
@@ -264,7 +265,7 @@ export function ParallaxSection({
   children: React.ReactNode;
   speed?: number;
   className?: string;
-}) {
+}): React.JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
   const [offset, setOffset] = useState(0);
 
@@ -283,7 +284,6 @@ export function ParallaxSection({
 
   return (
     <div ref={ref} className={className}>
-      {/* eslint-disable-next-line */}
       <div style={{ transform: `translateY(${offset}px)` }}>
         {children}
       </div>

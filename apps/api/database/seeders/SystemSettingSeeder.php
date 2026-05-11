@@ -77,6 +77,22 @@ class SystemSettingSeeder extends Seeder
                 'type' => 'text',
                 'group' => 'map',
             ],
+
+            // KKN Academic Thresholds (Audit F-14 & F-13 fix)
+            [
+                'config_key' => 'certificate_min_score',
+                'label' => 'Nilai Minimum Sertifikat',
+                'value' => '70',
+                'type' => 'number',
+                'group' => 'academic',
+            ],
+            [
+                'config_key' => 'min_daily_reports',
+                'label' => 'Minimum Logbook Harian untuk Lulus KKN',
+                'value' => '30',
+                'type' => 'number',
+                'group' => 'academic',
+            ],
         ];
 
         foreach ($settings as $setting) {

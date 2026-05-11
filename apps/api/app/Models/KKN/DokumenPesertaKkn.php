@@ -36,6 +36,13 @@ class DokumenPesertaKkn extends Model
         'archived_at' => 'datetime',
         'is_verified' => 'boolean',
         'is_archived' => 'boolean',
+        // PII: `notes` may contain reviewer's personal remarks about the
+        // student. `file_path` is INTENTIONALLY NOT encrypted because
+        // PesertaKknController does an ownership check via
+        // `->where('file_path', $path)` that would break with non-
+        // deterministic ciphertext. File contents on disk are the
+        // sensitive payload, not the path string itself.
+        'notes' => 'encrypted',
     ];
 
     use HasFactory;

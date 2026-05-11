@@ -24,6 +24,13 @@ class DispensasiKkn extends Model
     protected $casts = [
         'bypassed_requirements' => 'array',
         'is_active' => 'boolean',
+        // `alasan` was previously cast as 'encrypted' for PII protection,
+        // but DispensasiController::index performs `ilike` substring search
+        // on this column. Encrypted ciphertext is non-deterministic so
+        // ilike always misses. We revert to plaintext here; admins should
+        // avoid storing raw medical details and use `bypassed_requirements`
+        // JSON for structured context. `nim` in this table is also
+        // plaintext by design (ilike UX) — NOT foreign-keyed to mahasiswa.
     ];
 
     public function periode(): BelongsTo

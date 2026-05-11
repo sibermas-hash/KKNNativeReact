@@ -16,6 +16,7 @@ export const QUERY_KEYS = {
       form: ['student', 'registration', 'form'] as const,
       status: ['student', 'registration', 'status'] as const,
     },
+    kknDaftar: ['student', 'kkn-daftar'] as const,
     certificates: ['student', 'certificates'] as const,
     leaveRequests: ['student', 'leave-requests'] as const,
     finalReport: ['student', 'final-report'] as const,
@@ -23,7 +24,6 @@ export const QUERY_KEYS = {
     dplEvaluation: ['student', 'dpl-evaluation'] as const,
     rekapitulasi: ['student', 'rekapitulasi'] as const,
     posko: ['student', 'posko'] as const,
-    domisili: ['student', 'domisili'] as const,
   },
   dpl: {
     dashboard: ['dpl', 'dashboard'] as const,
@@ -77,6 +77,8 @@ export const PHASE_LABELS: Record<string, string> = {
   execution: 'Pelaksanaan KKN',
   grading: 'Masa Penilaian',
   finished: 'KKN Selesai',
+  idle: 'Tidak Aktif',
+  closed: 'Ditutup',
 };
 
 export const ROLE_REDIRECT_MAP: Record<string, string> = {
@@ -110,12 +112,14 @@ export const STATUS_LABELS: Record<string, Record<string, string>> = {
     submitted: 'Menunggu Review',
     approved: 'Disetujui',
     revision: 'Perlu Revisi',
+    completed: 'Selesai',
   },
   laporanAkhir: {
     draft: 'Draft',
     submitted: 'Menunggu Review',
     approved: 'Disetujui',
     revision: 'Perlu Revisi',
+    completed: 'Selesai',
   },
   izin: {
     pending: 'Menunggu',

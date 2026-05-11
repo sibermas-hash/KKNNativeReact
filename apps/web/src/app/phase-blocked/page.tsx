@@ -52,7 +52,7 @@ function PhaseBlockedContent() {
   );
 }
 
-export default function PhaseBlockedPage() {
+export default function PhaseBlockedPage(): React.JSX.Element {
   return (
     <Suspense fallback={<div className="min-h-[70vh] flex items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" /></div>}>
       <PhaseBlockedContent />

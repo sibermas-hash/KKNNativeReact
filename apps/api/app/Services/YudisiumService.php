@@ -38,7 +38,8 @@ class YudisiumService
             return 'pending';
         }
 
-        if ($nilai->total_score >= $minSkorLulus) {
+        // Audit R11-FULL-025 fix: round(2) untuk avoid FP edge case.
+        if (round((float) $nilai->total_score, 2) >= $minSkorLulus) {
             return 'lulus';
         }
 

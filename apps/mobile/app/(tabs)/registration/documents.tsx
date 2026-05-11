@@ -1,72 +1,143 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ActivityIndicator, Alert, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Text, Alert, StyleSheet } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as DocumentPicker from 'expo-document-picker';
-import { CameraView } from 'expo-camera';
+import { Camera, CameraView } from 'expo-camera';
 import { studentEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
+import {
+  colors,
+  EmptyState,
+  HeroCard,
+  InlineAlert,
+  LoadingState,
+  PrimaryButton,
+  Screen,
+  SecondaryButton,
+  SectionTitle,
+  StatusPill,
+  SurfaceCard,
+} from '@/components/ui/primitives';
+
+type DocumentRequirement = {
+  field: string;
+  label: string;
+  description: string;
+  required: boolean;
+  template_url?: string | null;
+};
+
+type ExistingDocument = {
+  exists: boolean;
+  file_name: string | null;
+  file_path: string | null;
+  status: string | null;
+};
+
+type RegistrationItem = {
+  id: number;
+  periode_id: number;
+  status: string;
+};
+
+type RegistrationStatusResponse = {
+  registrations?: Array<RegistrationItem & {
+    documents?: Array<{ document_type?: string; file_name?: string | null; status?: string | null }>;
+  }>;
+};
+
+type RegistrationFormResponse = {
+  document_requirements?: Array<{
+    periode_id: number;
+    requirements: DocumentRequirement[];
+  }>;
+};
+
+function isImageRequirement(field: string): boolean {
+  return field.includes('photo') || field.includes('poster') || field.includes('pas_foto');
+}
 
 export default function RegistrationDocumentsScreen() {
   const queryClient = useQueryClient();
   const [scanning, setScanning] = useState(false);
-  const [scannedData, setScannedData] = useState<any>(null);
   const [uploading, setUploading] = useState(false);
-  const [uploadedDocs, setUploadedDocs] = useState<{ [key: string]: string | null }>({
-    surat_persetujuan: null,
-    surat_pernyataan: null,
-    transkrip_nilai: null,
-    surat_bebas_tunggakan: null,
-    surat_kesehatan: null,
-    surat_izin_orangtua: null,
-    pas_foto: null,
+  const [uploadedDocs, setUploadedDocs] = useState<Record<string, ExistingDocument>>({});
+
+  const endpoints = studentEndpoints(api);
+
+  const { data: statusData, isLoading } = useQuery({
+    queryKey: ['student', 'registration', 'status'],
+    queryFn: () => endpoints.registration.status(),
   });
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['student', 'registration', 'status'],
-    queryFn: async () => {
-      const endpoints = studentEndpoints(api);
-      return await endpoints.registration.status();
-    }
+  const { data: formData } = useQuery({
+    queryKey: ['student', 'registration', 'form'],
+    queryFn: () => endpoints.registration.form(),
   });
+
+  const registrations = ((statusData as RegistrationStatusResponse | undefined)?.registrations ?? []);
+  const registration = registrations[0] ?? null;
+  const periodeId = registration?.periode_id ?? null;
+  const requirements = (((formData as RegistrationFormResponse | undefined)?.document_requirements ?? [])
+    .find((entry) => entry.periode_id === periodeId)?.requirements ?? []);
 
   useEffect(() => {
-    if (data?.data?.documents) {
-      const docs = data.data.documents;
-      setUploadedDocs({
-        surat_persetujuan: docs.surat_persetujuan?.url || null,
-        surat_pernyataan: docs.surat_pernyataan?.url || null,
-        transkrip_nilai: docs.transkrip_nilai?.url || null,
-        surat_bebas_tunggakan: docs.surat_bebas_tunggakan?.url || null,
-        surat_kesehatan: docs.surat_kesehatan?.url || null,
-        surat_izin_orangtua: docs.surat_izin_orangtua?.url || null,
-        pas_foto: docs.pas_foto?.url || null,
-      });
+    if (requirements.length === 0) {
+      setUploadedDocs({});
+      return;
     }
-  }, [data]);
+
+    const existingByType = new Map(
+      (registration?.documents ?? [])
+        .filter((doc) => doc.document_type)
+        .map((doc) => [String(doc.document_type), doc])
+    );
+
+    const nextState = requirements.reduce<Record<string, ExistingDocument>>((carry, requirement) => {
+      const existing = existingByType.get(requirement.field);
+      carry[requirement.field] = {
+        exists: Boolean(existing),
+        file_name: existing?.file_name ?? null,
+        file_path: null,
+        status: existing?.status ?? null,
+      };
+      return carry;
+    }, {});
+
+    setUploadedDocs(nextState);
+  }, [registration, requirements]);
 
   const uploadMutation = useMutation({
-    mutationFn: async ({ document, fileUri }: { document: string; fileUri: string }) => {
+    mutationFn: async ({ document, asset }: { document: string; asset: DocumentPicker.DocumentPickerAsset }) => {
       setUploading(true);
-      const formData = new FormData();
-      formData.append('file', {
-        uri: fileUri,
-        type: document === 'pas_foto' ? 'image/jpeg' : 'application/pdf',
-        name: `${document}.${document === 'pas_foto' ? 'jpg' : 'pdf'}`,
+      const payload = new FormData();
+      payload.append(document, {
+        uri: asset.uri,
+        type: asset.mimeType || 'application/octet-stream',
+        name: asset.name,
       } as any);
 
-      const endpoints = studentEndpoints(api);
-      const periodeId = data?.data?.registration?.periode_id || 1;
-      return await endpoints.documents(periodeId, formData);
+      if (!periodeId) {
+        throw new Error('Periode pendaftaran tidak ditemukan');
+      }
+
+      return endpoints.documents(periodeId, payload);
     },
-    onSuccess: (response, variables) => {
+    onSuccess: (_response, variables) => {
       setUploadedDocs(prev => ({
         ...prev,
-        [variables.document]: response.data?.file_url || null,
+        [variables.document]: {
+          exists: true,
+          file_name: variables.asset.name,
+          file_path: variables.asset.uri,
+          status: 'uploaded',
+        },
       }));
       Alert.alert('Upload Berhasil', `Dokumen ${variables.document} berhasil diunggah`);
+      queryClient.invalidateQueries({ queryKey: ['student', 'registration', 'status'] });
     },
     onError: (error: any) => {
-      Alert.alert('Upload Gagal', error.response?.data?.message || 'Gagal mengunggah dokumen');
+      Alert.alert('Upload Gagal', error.response?.data?.error?.message || 'Gagal mengunggah dokumen');
     },
     onSettled: () => {
       setUploading(false);
@@ -75,55 +146,39 @@ export default function RegistrationDocumentsScreen() {
 
   const handlePickDocument = async (document: string) => {
     try {
+      const requirement = requirements.find((item) => item.field === document);
       const result = await DocumentPicker.getDocumentAsync({
-        type: document === 'pas_foto' ? 'image/*' : 'application/pdf',
+        type: isImageRequirement(requirement?.field || '') ? ['image/*'] : ['application/pdf', 'image/jpeg', 'image/png'],
         copyToCacheDirectory: true,
       });
 
       if (!result.canceled && result.assets[0]) {
         uploadMutation.mutate({
           document,
-          fileUri: result.assets[0].uri,
+          asset: result.assets[0],
         });
       }
-    } catch (error: any) {
+    } catch {
       Alert.alert('Error', 'Gagal memilih dokumen');
     }
   };
 
   const uploadAllDocuments = async () => {
-    const requiredDocs = ['surat_persetujuan', 'surat_pernyataan', 'transkrip_nilai'];
-    const missingDocs = requiredDocs.filter(doc => !uploadedDocs[doc]);
+    const requiredDocs = requirements.filter((item) => item.required).map((item) => item.field);
+    const missingDocs = requiredDocs.filter(doc => !uploadedDocs[doc]?.exists);
 
     if (missingDocs.length > 0) {
       Alert.alert('Dokumen Belum Lengkap', `Silakan lengkapi dokumen berikut:\n${missingDocs.map(d => `- ${d}`).join('\n')}`);
       return;
     }
 
-    Alert.alert(
-      'Konfirmasi upload',
-      'Upload semua dokumen ke server?',
-      [
-        { text: 'Batal', style: 'cancel' },
-        {
-          text: 'Ya, Upload',
-          onPress: async () => {
-            for (const [doc, uri] of Object.entries(uploadedDocs)) {
-              if (uri) {
-                await uploadMutation.mutateAsync({ document: doc, fileUri: uri });
-              }
-            }
-            Alert.alert('Selesai', 'Semua dokumen berhasil diunggah');
-          },
-        },
-      ]
-    );
+    Alert.alert('Selesai', 'Dokumen wajib untuk periode ini sudah lengkap.');
   };
 
-  const scanQRCode = async (document: string) => {
-    const { status } = await BarcodeScanner.requestPermissionsAsync();
+  const scanQRCode = async () => {
+    const { status } = await Camera.requestCameraPermissionsAsync();
     if (status === 'granted') {
-      setScannedData({ document });
+      setScanning(true);
     } else {
       Alert.alert('Izin Kamera', 'Aplikasi membutuhkan izin kamera untuk memindai QR Code');
     }
@@ -133,146 +188,134 @@ export default function RegistrationDocumentsScreen() {
     title,
     required,
     description,
-    document
+    document,
   }: {
     title: string;
     required: boolean;
     description: string;
     document: string;
   }) => {
-    const isUploaded = uploadedDocs[document] !== null;
+    const state = uploadedDocs[document];
+    const isUploaded = Boolean(state?.exists);
 
     return (
-      <View style={styles.documentItem}>
+      <SurfaceCard style={styles.documentItem}>
         <View style={styles.documentHeader}>
           <View style={styles.titleSection}>
             <Text style={styles.documentTitle}>{title}</Text>
-            {required && <Text style={styles.requiredBadge}>Wajib</Text>}
+            {required ? <StatusPill label="Wajib" tone="amber" /> : <StatusPill label="Opsional" tone="slate" />}
           </View>
-          {isUploaded && <Text style={styles.uploadedBadge}>✓ Terupload</Text>}
+          {isUploaded ? <StatusPill label="Terunggah" tone="teal" /> : null}
         </View>
         <Text style={styles.documentDescription}>{description}</Text>
+        {state?.file_name ? (
+          <Text style={styles.fileNameText} numberOfLines={1} selectable>{state.file_name}</Text>
+        ) : null}
+        {requirements.find((item) => item.field === document)?.template_url ? (
+          <InlineAlert tone="blue" description="Template tersedia di versi web." />
+        ) : null}
         <View style={styles.documentActions}>
-          <TouchableOpacity
-            style={[styles.actionButton, isUploaded && styles.disabledButton]}
+          <PrimaryButton
+            label={isUploaded ? 'Terunggah' : 'Upload'}
             onPress={() => handlePickDocument(document)}
             disabled={isUploaded || uploading}
-          >
-            <Text style={styles.actionButtonText}>
-              {isUploaded ? 'Sudah' : 'Upload'}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.actionButton, styles.scanButton]}
-            onPress={() => scanQRCode(document)}
-          >
-            <Text style={styles.actionButtonText}>Scan QR</Text>
-          </TouchableOpacity>
+            style={styles.actionButton}
+          />
+          {required ? (
+            <SecondaryButton
+              label="Scan QR"
+              onPress={scanQRCode}
+              disabled={uploading}
+              style={styles.actionButtonSmall}
+            />
+          ) : null}
         </View>
-      </View>
+      </SurfaceCard>
     );
   };
 
   if (isLoading) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color="#0d9488" />
-      </View>
-    );
+    return <LoadingState label="Memuat dokumen pendaftaran..." />;
   }
 
-  const registration = data?.data?.registration;
   const isEditable = registration?.status === 'draft';
+  const uploadedCount = Object.values(uploadedDocs).filter((value) => value.exists).length;
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Dokumen Pendaftaran</Text>
+    <View style={styles.root}>
+      <Screen>
+        <HeroCard
+          eyebrow="Pendaftaran"
+          title="Dokumen KKN"
+          subtitle="Unggah dan pantau kelengkapan dokumen pendaftaran pada periode aktif."
+          right={<StatusPill label={registration?.status || 'draft'} tone={isEditable ? 'amber' : 'slate'} />}
+        />
 
-      {!isEditable && registration?.status !== 'draft' && (
-        <View style={styles.warningBox}>
-          <Text style={styles.warningText}>
-            Status pendaftaran: {registration?.status}. Tidak dapat mengedit dokumen.
-          </Text>
-        </View>
-      )}
+        {registration && !isEditable && registration.status !== 'draft' ? (
+          <InlineAlert
+            tone="amber"
+            title="Dokumen dikunci"
+            description={`Status pendaftaran: ${registration?.status}. Dokumen tidak dapat diedit dari aplikasi.`}
+          />
+        ) : null}
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Dokumen Wajib</Text>
-        <DocumentItem
-          title="Surat Persetujuan"
-          required
-          description="Surat persetujuan partisipasi KKN yang ditandatangani dan di-stempel"
-          document="surat_persetujuan"
-        />
-        <DocumentItem
-          title="Surat Pernyataan"
-          required
-          description="Surat pernyataan sanggup mengikuti seluruh rangkaian kegiatan KKN"
-          document="surat_pernyataan"
-        />
-        <DocumentItem
-          title="Transkrip Nilai"
-          required
-          description="Transkrip nilai terlegalisir oleh pihak kampus"
-          document="transkrip_nilai"
-        />
-      </View>
+        {requirements.length === 0 ? (
+          <EmptyState
+            title="Belum ada dokumen"
+            description="Persyaratan dokumen akan muncul saat periode pendaftaran aktif."
+          />
+        ) : (
+          <>
+            <SectionTitle title="Dokumen Wajib" subtitle="Lengkapi berkas utama untuk proses validasi." />
+            {requirements.filter((item) => item.required).map((requirement) => (
+              <DocumentItem
+                key={requirement.field}
+                title={requirement.label}
+                required={requirement.required}
+                description={requirement.description}
+                document={requirement.field}
+              />
+            ))}
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Dokumen Tambahan</Text>
-        <DocumentItem
-          title="Surat Bebas Tunggakan"
-          required={false}
-          description="Surat keterangan bebas tunggakan biaya kuliah"
-          document="surat_bebas_tunggakan"
-        />
-        <DocumentItem
-          title="Surat Kesehatan"
-          required={false}
-          description="Surat keterangan sehat dari fasilitas kesehatan"
-          document="surat_kesehatan"
-        />
-        <DocumentItem
-          title="Surat Izin Orangtua"
-          required={false}
-          description="Surat izin orangtua/wali untuk mengikuti KKN"
-          document="surat_izin_orangtua"
-        />
-        <DocumentItem
-          title="Pas Foto"
-          required={false}
-          description="Pas foto ukuran 3x4, latar belakang merah (format JPG)"
-          document="pas_foto"
-        />
-      </View>
+            {requirements.some((item) => !item.required) ? (
+              <>
+                <SectionTitle title="Dokumen Tambahan" subtitle="Berkas pendukung bila diminta oleh periode KKN." />
+                {requirements.filter((item) => !item.required).map((requirement) => (
+                  <DocumentItem
+                    key={requirement.field}
+                    title={requirement.label}
+                    required={requirement.required}
+                    description={requirement.description}
+                    document={requirement.field}
+                  />
+                ))}
+              </>
+            ) : null}
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Status Upload</Text>
-        {Object.entries(uploadedDocs).map(([key, value]) => (
-          <View key={key} style={styles.statusRow}>
-            <Text style={styles.statusLabel}>{key.replace(/_/g, ' ').toUpperCase()}</Text>
-            <Text style={[styles.statusValue, value ? styles.statusUploaded : styles.statusPending]}>
-              {value ? '✓ Uploaded' : 'Pending'}
-            </Text>
-          </View>
-        ))}
-      </View>
+            <SurfaceCard style={styles.statusCard}>
+              <Text style={styles.cardTitle}>Status Upload</Text>
+              <Text style={styles.statusSummary}>{uploadedCount} dari {requirements.length} dokumen sudah tersedia.</Text>
+              {Object.entries(uploadedDocs).map(([key, value]) => (
+                <View key={key} style={styles.statusRow}>
+                  <Text style={styles.statusLabel}>{key.replace(/_/g, ' ').toUpperCase()}</Text>
+                  <StatusPill label={value?.exists ? 'Terunggah' : 'Pending'} tone={value?.exists ? 'teal' : 'amber'} />
+                </View>
+              ))}
+            </SurfaceCard>
 
-      {isEditable && (
-        <TouchableOpacity
-          style={[styles.submitButton, uploading && styles.disabledButton]}
-          onPress={uploadAllDocuments}
-          disabled={uploading}
-        >
-          {uploading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <Text style={styles.submitButtonText}>Upload Semua Dokumen</Text>
-          )}
-        </TouchableOpacity>
-      )}
+            {isEditable ? (
+              <PrimaryButton
+                label="Cek Kelengkapan Dokumen"
+                onPress={uploadAllDocuments}
+                disabled={uploading}
+                loading={uploading}
+              />
+            ) : null}
+          </>
+        )}
+      </Screen>
 
-      {scanning && (
+      {scanning ? (
         <CameraView
           style={StyleSheet.absoluteFillObject}
           onBarcodeScanned={(result) => {
@@ -281,42 +324,38 @@ export default function RegistrationDocumentsScreen() {
           }}
         >
           <View style={styles.scannerOverlay}>
-            <TouchableOpacity style={styles.closeScanner} onPress={() => setScanning(false)}>
-              <Text style={styles.closeScannerText}>Tutup Scanner</Text>
-            </TouchableOpacity>
+            <SecondaryButton label="Tutup Scanner" onPress={() => setScanning(false)} style={styles.closeScanner} />
           </View>
         </CameraView>
-      )}
-    </ScrollView>
+      ) : null}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#f5f5f5' },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, color: '#1f1f1f' },
-  warningBox: { backgroundColor: '#fef3c7', borderRadius: 8, padding: 12, marginBottom: 20, borderWidth: 1, borderColor: '#f59e0b' },
-  warningText: { fontSize: 14, color: '#b45309' },
-  section: { marginBottom: 24 },
-  sectionTitle: { fontSize: 18, fontWeight: '600', marginBottom: 12, color: '#0d9488' },
-  documentItem: { backgroundColor: '#fff', borderRadius: 8, padding: 12, marginBottom: 12 },
-  documentHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  titleSection: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  documentTitle: { fontSize: 16, fontWeight: '600', color: '#1f1f1f' },
-  requiredBadge: { backgroundColor: '#dcfce7', color: '#166534', fontSize: 11, fontWeight: '600', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 },
-  uploadedBadge: { backgroundColor: '#dbeafe', color: '#1e40af', fontSize: 11, fontWeight: '600', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 },
-  documentDescription: { fontSize: 13, color: '#666', marginBottom: 12, lineHeight: 18 },
-  documentActions: { flexDirection: 'row', gap: 8 },
-  actionButton: { flex: 1, backgroundColor: '#0d9488', borderRadius: 6, paddingVertical: 10, alignItems: 'center' },
-  actionButtonText: { color: '#fff', fontSize: 14, fontWeight: '600' },
-  scanButton: { backgroundColor: '#2563eb', flex: 0.4 },
-  disabledButton: { backgroundColor: '#9ca3af', opacity: 0.7 },
-  statusRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' },
-  statusLabel: { fontSize: 14, color: '#333', flex: 1 },
-  statusValue: { fontSize: 14, fontWeight: '600' },
-  statusUploaded: { color: '#166534' },
-  statusPending: { color: '#92400e' },
-  submitButton: { backgroundColor: '#0d9488', borderRadius: 8, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
-  submitButtonText: { color: '#fff', fontSize: 16, fontWeight: '600' },
-  closeScanner: { position: 'absolute', top: 50, right: 20, backgroundColor: '#000', padding: 15, borderRadius: 50 },
-  closeScannerText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+  root: { flex: 1, backgroundColor: colors.background },
+  documentItem: { gap: 12 },
+  documentHeader: { gap: 10 },
+  titleSection: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 },
+  documentTitle: { flex: 1, fontSize: 16, fontWeight: '900', color: colors.text, lineHeight: 21 },
+  documentDescription: { fontSize: 13, color: colors.textMuted, lineHeight: 19 },
+  fileNameText: { fontSize: 12, color: colors.text, fontWeight: '700' },
+  documentActions: { flexDirection: 'row', gap: 10 },
+  actionButton: { flex: 1 },
+  actionButtonSmall: { flex: 0.7 },
+  statusCard: { gap: 8 },
+  cardTitle: { fontSize: 17, fontWeight: '900', color: colors.text },
+  statusSummary: { fontSize: 13, color: colors.textMuted, lineHeight: 19 },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#EEF2F7',
+  },
+  statusLabel: { flex: 1, fontSize: 12, color: colors.textMuted, fontWeight: '800' },
+  scannerOverlay: { flex: 1, backgroundColor: 'rgba(17, 24, 39, 0.55)' },
+  closeScanner: { position: 'absolute', top: 54, right: 18, minHeight: 42, paddingVertical: 9 },
 });

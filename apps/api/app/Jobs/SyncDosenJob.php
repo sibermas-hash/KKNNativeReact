@@ -14,6 +14,7 @@ use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Password;
 
 class SyncDosenJob implements ShouldQueue
 {
@@ -51,7 +52,7 @@ class SyncDosenJob implements ShouldQueue
 
     protected function syncSingleDosen(MasterApiService $masterApi): void
     {
-        $dosen = Dosen::where('nip', $this->dosenId)
+        $dosen = Dosen::whereBlind('nip', (string) $this->dosenId)
             ->first();
 
         if (! $dosen) {
@@ -130,21 +131,18 @@ class SyncDosenJob implements ShouldQueue
             }
 
             $username = (string) $nip;
-            $incomingEmail = $data['email'] ?? null;
-            $fallbackEmail = $username.'@kkn.local';
+            $incomingEmail = $this->normalizeMasterEmail($data['email'] ?? null);
 
             $user = User::firstOrNew(['username' => $username]);
             $isNewUser = ! $user->exists;
 
             if ($isNewUser) {
-                $user->email = ! empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
-                $birthDate = $data['birth_date'] ?? null;
-                $user->password = Hash::make(
-                    PasswordHelper::fromBirthDate($birthDate, $username)
-                );
+                $user->email = ! empty($incomingEmail) ? $incomingEmail : null;
+                // C-002 fix: random unguessable password; reset link below.
+                $user->password = Hash::make(PasswordHelper::generateSecureDefault());
                 $user->must_change_password = true;
-            } elseif (empty($user->email)) {
-                $user->email = ! empty($incomingEmail) ? $incomingEmail : $fallbackEmail;
+            } elseif (empty($user->email) && ! empty($incomingEmail)) {
+                $user->email = $incomingEmail;
             }
 
             $user->username = $username;
@@ -170,6 +168,20 @@ class SyncDosenJob implements ShouldQueue
                     'master_synced_at' => now(),
                 ]
             );
+
+            // C-002 follow-up: reset-link dispatch after commit.
+            if ($isNewUser && ! empty($user->email)) {
+                $userEmail = $user->email;
+                DB::afterCommit(function () use ($userEmail, $nip) {
+                    try {
+                        Password::sendResetLink(['email' => $userEmail]);
+                    } catch (\Throwable $e) {
+                        Log::warning('SyncDosenJob reset-link dispatch failed', [
+                            'nip' => $nip, 'error' => $e->getMessage(),
+                        ]);
+                    }
+                });
+            }
         });
     }
 
@@ -182,5 +194,19 @@ class SyncDosenJob implements ShouldQueue
         $normalized = trim((string) $value);
 
         return $normalized === '' ? null : $normalized;
+    }
+
+    private function normalizeMasterEmail(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $email = trim((string) $value);
+        if ($email === '' || str_ends_with(strtolower($email), '@kkn.local')) {
+            return null;
+        }
+
+        return filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : null;
     }
 }

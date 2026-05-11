@@ -1,15 +1,14 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { dplEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api, dplApi } from '@/lib/api';
+import { dplApi } from '@/lib/api';
 import { useState } from 'react';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { CheckCircle2, XCircle, FileText } from 'lucide-react';
 import { StatusBadge, EmptyState } from '@/components/ui/shared';
 
-export default function DplIzinPage() {
+export default function DplIzinPage(): React.JSX.Element {
   
   const queryClient = useQueryClient();
   const [rejectId, setRejectId] = useState<number | null>(null);
@@ -17,7 +16,7 @@ export default function DplIzinPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.dpl.leaveRequests,
-    queryFn: async () => { const res = await dplApi.leaveRequests.index(); return (res as unknown as { success: boolean; data: unknown[] }).data; },
+    queryFn: async () => { return await dplApi.leaveRequests.index(); },
   });
 
   const approveMutation = useMutation({
@@ -30,7 +29,7 @@ export default function DplIzinPage() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['dpl', 'leave-requests'] }); setRejectId(null); setRejectReason(''); toast.success('Izin ditolak'); },
   });
 
-  const izinList = (data as Record<string, unknown>[]) || [];
+  const izinList = ((data as any) || []) as Record<string, unknown>[];
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
@@ -52,7 +51,7 @@ export default function DplIzinPage() {
               </div>
               {izin.status === 'pending' && (
                 <div className="flex gap-2 mt-4">
-                  <button onClick={() => approveMutation.mutate(izin.id as number)} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase"><CheckCircle2 size={14} /> Setujui</button>
+                  <button onClick={() => approveMutation.mutate(izin.id as number)} disabled={approveMutation.isPending} className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase disabled:opacity-50"><CheckCircle2 size={14} /> Setujui</button>
                   {rejectId === izin.id ? (
                     <div className="flex flex-1 gap-2">
                       <input value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="Alasan penolakan" className="flex-1 h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm" />

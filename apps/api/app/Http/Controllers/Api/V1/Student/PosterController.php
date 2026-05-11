@@ -37,7 +37,7 @@ class PosterController extends Controller
                 'poster_potensi_desa_path' => $kelompok->poster_potensi_desa_path,
                 'poster_potensi_desa_name' => $kelompok->poster_potensi_desa_name,
                 'poster_url' => $kelompok->poster_potensi_desa_path
-                    ? Storage::url($kelompok->poster_potensi_desa_path)
+                    ? Storage::disk(config('filesystems.default'))->url($kelompok->poster_potensi_desa_path)
                     : null,
             ],
             'allowed_types' => ['pdf', 'jpg', 'jpeg', 'png'],
@@ -62,13 +62,14 @@ class PosterController extends Controller
 
         $kelompok = KelompokKkn::findOrFail($peserta->kelompok_id);
 
-        // Delete old poster if exists
+        // FIX F-01: Use consistent disk for delete — must match store disk
+        $diskName = config('filesystems.default');
         if ($kelompok->poster_potensi_desa_path) {
-            Storage::delete($kelompok->poster_potensi_desa_path);
+            Storage::disk($diskName)->delete($kelompok->poster_potensi_desa_path);
         }
 
         $file = $request->file('poster');
-        $path = $file->store("posters/kelompok/{$kelompok->id}", 'public');
+        $path = $file->store("posters/kelompok/{$kelompok->id}", $diskName);
 
         $kelompok->update([
             'poster_potensi_desa_path' => $path,
@@ -76,7 +77,7 @@ class PosterController extends Controller
         ]);
 
         return $this->success([
-            'poster_url' => Storage::url($path),
+            'poster_url' => Storage::disk($diskName)->url($path),
             'poster_name' => $file->getClientOriginalName(),
         ], 'Poster potensi desa berhasil diunggah.');
     }

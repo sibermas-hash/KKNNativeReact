@@ -10,6 +10,7 @@ use App\Models\KKN\IzinMeninggalkan;
 use App\Services\IzinService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class IzinController extends Controller
 {
@@ -21,7 +22,9 @@ class IzinController extends Controller
 
     public function index(): JsonResponse
     {
-        $mahasiswa = auth()->user()?->mahasiswa;
+        /** @var \App\Models\User|null $user */
+        $user = auth()->user();
+        $mahasiswa = $user?->mahasiswa;
 
         if (! $mahasiswa) {
             return $this->success(['izin' => [], 'akumulasi_tanpa_keterangan' => 0]);
@@ -41,7 +44,7 @@ class IzinController extends Controller
                 'alasan'           => $i->alasan,
                 'status'           => $i->status,
                 'catatan_dpl'      => $i->catatan_dpl,
-                'file_url'         => $i->file_bukti ? asset('storage/'.$i->file_bukti) : null,
+                'file_url'         => $i->file_bukti ? Storage::disk(config('filesystems.default'))->url($i->file_bukti) : null,
                 'created_at'       => $i->created_at?->toIso8601String(),
             ]),
             'akumulasi_tanpa_keterangan' => $this->izinService->hitungAkumulasiTanpaKeterangan($mahasiswa->id),
@@ -50,6 +53,7 @@ class IzinController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        /** @var \App\Models\User|null $user */
         $user = auth()->user();
         $mahasiswa = $user?->mahasiswa;
         $registration = $mahasiswa?->peserta()->where('status', 'approved')->first();

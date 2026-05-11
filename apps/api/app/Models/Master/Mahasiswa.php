@@ -55,6 +55,14 @@ class Mahasiswa extends Model
         'gpa' => 'decimal:2',
         'semester' => 'integer',
         'batch_year' => 'integer',
+        // PII encryption (R11 audit fix) — SIAKAD mirror table awalnya
+        // plaintext. Encrypted supaya konsisten dengan KKN\Mahasiswa &
+        // Dosen & User. Columns widened ke TEXT di migration
+        // 2026_05_11_020000_widen_master_mahasiswa_pii_columns.
+        'nik' => 'encrypted',
+        'email' => 'encrypted',
+        'phone' => 'encrypted',
+        'alamat' => 'encrypted',
     ];
 
     public function getNameAttribute(): ?string

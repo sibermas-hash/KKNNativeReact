@@ -12,6 +12,7 @@ use App\Models\KKN\FileKegiatanKkn;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\SystemSetting;
 use App\Services\GeofenceService;
+use App\Services\KKN\GpsAntiSpoofService;
 use App\Services\PhotoWatermarkService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -28,6 +29,7 @@ class DailyReportController extends Controller
 
     public function __construct(
         private readonly GeofenceService $geofenceService,
+        private readonly GpsAntiSpoofService $gpsAntiSpoof,
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -41,7 +43,9 @@ class DailyReportController extends Controller
         $reports = KegiatanKkn::where('mahasiswa_id', $mahasiswa->id)
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
             ->when($request->input('search'), fn ($q, $s) => $q->where(function ($q) use ($s) {
-                $q->where('title', 'like', "%{$s}%")->orWhere('activity', 'like', "%{$s}%");
+                // R13-SEC-007: escape LIKE wildcards (%, _) to prevent pattern injection
+                $safe = \App\Helpers\QueryHelper::escapeLike($s);
+                $q->where('title', 'like', "%{$safe}%")->orWhere('activity', 'like', "%{$safe}%");
             }))
             ->with(['kelompok', 'fileKegiatan'])
             ->orderByDesc('date')
@@ -79,24 +83,33 @@ class DailyReportController extends Controller
         }
 
         $this->enforceGpsPolicy($validated, $pendaftaran->kelompok);
+        $spoofResult = $this->runAntiSpoof($validated, $mahasiswa->id);
 
         $kegiatan = KegiatanKkn::create([
             'mahasiswa_id' => $mahasiswa->id,
             'kelompok_id' => $pendaftaran->kelompok_id,
             'date' => $validated['date'],
             'category' => $validated['category'] ?? null,
-            'title' => $validated['title'],
+            'title' => strip_tags($validated['title']),
             'abcd_stage' => $validated['abcd_stage'] ?? null,
-            'activity' => $validated['activity'],
-            'reflection' => $validated['reflection'] ?? null,
+            'activity' => strip_tags($validated['activity']),
+            'reflection' => isset($validated['reflection']) ? strip_tags($validated['reflection']) : null,
             'social_media_link' => $validated['social_media_link'] ?? null,
             'latitude' => $validated['latitude'],
             'longitude' => $validated['longitude'],
             'gps_accuracy' => $validated['gps_accuracy'] ?? null,
+            'gps_is_mock' => $validated['is_mock_location'] ?? null,
+            'gps_spoof_score' => $spoofResult['score'],
+            'gps_spoof_details' => $spoofResult['suspicions'],
             'captured_at' => Carbon::parse($validated['captured_at']),
             'location_source' => 'gps',
             'location_name' => $validated['location_name'] ?? null,
-            'status' => KegiatanKkn::STATUS_SUBMITTED,
+            'status' => $spoofResult['action'] === GpsAntiSpoofService::ACTION_FLAG
+                ? KegiatanKkn::STATUS_REVISION
+                : KegiatanKkn::STATUS_SUBMITTED,
+            'review_notes' => $spoofResult['action'] === GpsAntiSpoofService::ACTION_FLAG
+                ? $this->buildSpoofReviewNote($spoofResult)
+                : null,
         ]);
 
         if ($request->hasFile('files')) {
@@ -118,24 +131,41 @@ class DailyReportController extends Controller
         $wasRevision = $dailyReport->isRevisionRequested();
 
         $validated = $request->validated();
+
+        // 24-hour backdate protection (same as store)
+        $reportDate = Carbon::parse($validated['date']);
+        if ($reportDate->diffInHours(now()) > 24 && ! auth()->user()->hasRole('superadmin')) {
+            throw ValidationException::withMessages([
+                'date' => 'Logbook maksimal diisi 24 jam setelah kegiatan berlangsung.',
+            ]);
+        }
+
         $this->enforceGpsPolicy($validated, $dailyReport->kelompok);
+        $spoofResult = $this->runAntiSpoof($validated, $dailyReport->mahasiswa_id);
 
         $dailyReport->update([
             'date' => $validated['date'],
             'category' => $validated['category'] ?? null,
-            'title' => $validated['title'],
+            'title' => strip_tags($validated['title']),
             'abcd_stage' => $validated['abcd_stage'] ?? null,
-            'activity' => $validated['activity'],
-            'reflection' => $validated['reflection'] ?? null,
+            'activity' => strip_tags($validated['activity']),
+            'reflection' => isset($validated['reflection']) ? strip_tags($validated['reflection']) : null,
             'social_media_link' => $validated['social_media_link'] ?? null,
             'latitude' => $validated['latitude'],
             'longitude' => $validated['longitude'],
             'gps_accuracy' => $validated['gps_accuracy'] ?? null,
+            'gps_is_mock' => $validated['is_mock_location'] ?? null,
+            'gps_spoof_score' => $spoofResult['score'],
+            'gps_spoof_details' => $spoofResult['suspicions'],
             'captured_at' => Carbon::parse($validated['captured_at']),
             'location_source' => 'gps',
             'location_name' => $validated['location_name'] ?? null,
-            'status' => KegiatanKkn::STATUS_SUBMITTED,
-            'review_notes' => null,
+            'status' => $spoofResult['action'] === GpsAntiSpoofService::ACTION_FLAG
+                ? KegiatanKkn::STATUS_REVISION
+                : KegiatanKkn::STATUS_SUBMITTED,
+            'review_notes' => $spoofResult['action'] === GpsAntiSpoofService::ACTION_FLAG
+                ? $this->buildSpoofReviewNote($spoofResult)
+                : null,
             'reviewed_by' => null,
             'reviewed_at' => null,
         ]);
@@ -173,11 +203,15 @@ class DailyReportController extends Controller
             $path = $file->storeAs('daily-reports', $safeFilename, $diskName);
 
             if (in_array($extension, ['jpg', 'jpeg', 'png', 'webp'])) {
-                app(PhotoWatermarkService::class)->apply($path, [
+                // R11-FULL-017 fix: watermark dijalankan async via queue
+                // untuk menghindari blocking HTTP response (foto besar bisa
+                // 3-5 detik render). Kalau queue belum setup (sync driver),
+                // behavior sama dengan sync lama.
+                \App\Jobs\ApplyPhotoWatermarkJob::dispatch($path, [
                     'nim' => $nim,
-                    'captured_at' => $validated['captured_at'],
-                    'latitude' => $validated['latitude'],
-                    'longitude' => $validated['longitude'],
+                    'captured_at' => (string) $validated['captured_at'],
+                    'latitude' => (float) $validated['latitude'],
+                    'longitude' => (float) $validated['longitude'],
                 ]);
             }
 
@@ -223,5 +257,53 @@ class DailyReportController extends Controller
                 ]);
             }
         }
+    }
+
+    /**
+     * Jalankan anti-spoof check. Kalau REJECT → throw ValidationException (hard block).
+     * Kalau FLAG atau ALLOW → return result untuk disimpan + optional auto-revision.
+     *
+     * @param  array<string, mixed>  $validated
+     * @return array{action: string, score: int, suspicions: array<int, array{code: string, message: string, severity: int}>, metadata: array<string, mixed>}
+     */
+    private function runAntiSpoof(array $validated, int $mahasiswaId): array
+    {
+        $isSuperadmin = auth()->user()?->hasRole('superadmin') ?? false;
+
+        $result = $this->gpsAntiSpoof->analyze($validated, $mahasiswaId);
+
+        // Hard-reject on REJECT action, kecuali superadmin bypass
+        if ($result['action'] === GpsAntiSpoofService::ACTION_REJECT && ! $isSuperadmin) {
+            $reasons = array_column($result['suspicions'], 'message');
+            throw ValidationException::withMessages([
+                'latitude' => 'Lokasi GPS terdeteksi spoof/fake: '.implode(' | ', array_slice($reasons, 0, 2)),
+            ]);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Format review_notes ketika kegiatan di-FLAG oleh anti-spoof (auto-revision).
+     *
+     * @param  array{action: string, score: int, suspicions: array<int, array{code: string, message: string, severity: int}>, metadata: array<string, mixed>}  $result
+     */
+    private function buildSpoofReviewNote(array $result): string
+    {
+        $lines = [
+            "🛰️ [GPS Anti-Spoof Auto-Flag]",
+            "Risk score: {$result['score']}/100",
+            '',
+            'Suspicions:',
+        ];
+
+        foreach ($result['suspicions'] as $s) {
+            $lines[] = '• '.$s['message'];
+        }
+
+        $lines[] = '';
+        $lines[] = 'Mahasiswa dapat submit ulang dengan lokasi GPS yang valid. DPL dapat override keputusan ini jika terbukti benar.';
+
+        return implode("\n", $lines);
     }
 }

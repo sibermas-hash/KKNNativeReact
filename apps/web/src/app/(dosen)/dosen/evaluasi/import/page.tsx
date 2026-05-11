@@ -192,7 +192,7 @@ function ImportPreviewContent() {
   );
 }
 
-export default function DplEvaluasiImportPage() {
+export default function DplEvaluasiImportPage(): React.JSX.Element {
   return (
     <Suspense fallback={<div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" /></div>}>
       <ImportPreviewContent />

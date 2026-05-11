@@ -16,7 +16,7 @@ return new class extends Migration
 
             // Aturan Absensi: Geofencing, Radius, Lokasi Rujukan
             $table->json('attendance_config')->nullable()->after('requirements_config')
-                ->comment('Attendance rules: {radius_check: bool, radius_meter, location_source: "posko|domisili", require_photo: bool}');
+                ->comment('Attendance rules: {radius_check: bool, radius_meter, location_source: "posko|address", require_photo: bool}');
         });
 
         // 2. Refactor periode to support Configuration Overrides (Instance Logic)

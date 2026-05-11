@@ -5,6 +5,7 @@ namespace App\Models\KKN;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\URL;
 
 class AttendancePhoto extends Model
 {
@@ -100,11 +101,20 @@ class AttendancePhoto extends Model
     }
 
     /**
-     * Get file URL for display
+     * Get file URL for display.
+     *
+     * X-003 fix (audit): this previously emitted a public storage URL —
+     * anyone who could guess the path could download another student's
+     * GPS-stamped selfie. Now it points at the authenticated download
+     * route which runs the per-record authorization check.
      */
     public function getFileUrl(): string
     {
-        return asset('storage/'.$this->path);
+        return URL::temporarySignedRoute(
+            'api.v1.files.attendance-photo',
+            now()->addHours(2),
+            ['photo' => $this->id],
+        );
     }
 
     /**

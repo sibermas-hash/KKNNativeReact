@@ -16,6 +16,12 @@ class ImportLegacyDataCommand extends Command
     {
         $this->info("Memulai proses deployment sinkronisasi data Legacy SIBERMAS...");
 
+        if (app()->environment('production') && ! $this->option('force')) {
+            $this->error('Import legacy dinonaktifkan di production tanpa --force.');
+
+            return 1;
+        }
+
         $storagePath = storage_path();
         $directories = [
             'DB2' => $storagePath . '/DB2',
@@ -59,7 +65,7 @@ class ImportLegacyDataCommand extends Command
 
         // 5. Patch Manual Anomali (Hikamudin)
         $this->info("\n--- Menjalankan Patching Anomali Data ---");
-        \App\Models\KKN\Dosen::where('nip', '2021018302')->update([
+        \App\Models\KKN\Dosen::whereBlind('nip', '2021018302')->update([
             'has_workshop' => true, 
             'workshop_date' => '2024-01-01'
         ]);

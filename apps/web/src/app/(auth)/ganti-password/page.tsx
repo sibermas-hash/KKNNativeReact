@@ -1,42 +1,110 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { changePasswordSchema, type ChangePasswordFormData } from '@sibermas/schemas';
-import { api } from '@/lib/api';
-import toast from 'react-hot-toast';
-import { Lock, Eye, EyeOff, ShieldCheck, ArrowRight, RefreshCw, AlertCircle } from 'lucide-react';
-import { ParticleBackground } from '@/components/ui/particle-background';
+import { z } from 'zod';
+import { api, authApi } from '@/lib/api';
+import { resetAuthState, useAuthStore, setPasswordChangedCookie } from '@/stores';
+import type { User } from '@sibermas/shared-types';
+import { toast } from 'sonner';
+import { Lock, Eye, EyeOff, ShieldCheck, ArrowRight, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react';
+import dynamic from 'next/dynamic';
+const ParticleBackground = dynamic(
+  () => import('@/components/ui/particle-background').then((m) => ({ default: m.ParticleBackground })),
+  { ssr: false }
+);
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 
-export default function ChangePasswordPage() {
+const firstLoginSchema = z.object({
+  current_password: z.string().optional(),
+  password: z.string()
+    .min(8, 'Kata sandi minimal 8 karakter')
+    .regex(/[a-z]/, 'Harus mengandung huruf kecil')
+    .regex(/[A-Z]/, 'Harus mengandung huruf besar')
+    .regex(/[0-9]/, 'Harus mengandung angka')
+    .regex(/[^a-zA-Z0-9]/, 'Harus mengandung simbol'),
+  password_confirmation: z.string().min(1, 'Konfirmasi kata sandi wajib diisi'),
+}).refine((d) => d.password === d.password_confirmation, {
+  message: 'Kata sandi tidak cocok',
+  path: ['password_confirmation'],
+});
+
+interface UserData {
+  must_change_password: boolean;
+}
+
+function maskPassword(password: string) {
+  if (password.length <= 4) return '•'.repeat(password.length);
+  return `${password.slice(0, 2)}${'•'.repeat(password.length - 4)}${password.slice(-2)}`;
+}
+
+export default function ChangePasswordPage(): React.JSX.Element {
   const router = useRouter();
+  const { setUser } = useAuthStore();
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [serverErrors, setServerErrors] = useState<string[]>([]);
+  const [isFirstLogin, setIsFirstLogin] = useState(true);
+  const [checking, setChecking] = useState(true);
+  const [successPasswordMask, setSuccessPasswordMask] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkUser = async () => {
+      try {
+        // interceptor already unwraps response.data.data → result is the User object directly
+        const user = await authApi.user() as unknown as User | null;
+        if (user && typeof user === 'object' && 'must_change_password' in user) {
+          setIsFirstLogin(!!user.must_change_password);
+        }
+      } catch {
+        resetAuthState();
+        router.replace('/login');
+      } finally {
+        setChecking(false);
+      }
+    };
+    checkUser();
+  }, [router]);
 
   const {
     register,
     handleSubmit,
     setError,
+    reset,
     formState: { errors },
   } = useForm<ChangePasswordFormData>({
-    resolver: zodResolver(changePasswordSchema),
+    resolver: zodResolver(isFirstLogin ? firstLoginSchema : changePasswordSchema) as any,
   });
+
+  // Re-initialize form when isFirstLogin is determined so resolver updates
+  useEffect(() => {
+    if (!checking) reset();
+  }, [isFirstLogin, checking, reset]);
 
   const onSubmit = async (data: ChangePasswordFormData) => {
     setLoading(true);
     setServerErrors([]);
     try {
-      const result = await api.patch('/profile/password', data) as { success: boolean; message: string };
-      if (result.success) {
-        toast.success('Kata sandi berhasil diperbarui!');
-        router.replace('/'); // Redirect to dashboard, middleware will handle role-based routing
+      const payload = isFirstLogin
+        ? { password: data.password, password_confirmation: data.password_confirmation }
+        : data;
+      await api.patch('/profile/password', payload);
+      toast.success('Kata sandi berhasil diperbarui!');
+
+      // Re-fetch user so store has must_change_password=false before redirect
+      // (mirrors Inertia's server-side auth.user re-share on every response)
+      const freshUser = await authApi.user() as unknown as User | null;
+      if (freshUser && typeof freshUser === 'object' && 'id' in freshUser) {
+        setPasswordChangedCookie(freshUser.password_changed_at ?? new Date().toISOString());
+        setUser(freshUser);
       }
+
+      setSuccessPasswordMask(maskPassword(data.password));
     } catch (err: any) {
       const errorData = err.response?.data?.error;
       if (err.response?.status === 422 && errorData?.errors) {
@@ -51,6 +119,14 @@ export default function ChangePasswordPage() {
     }
   };
 
+  if (checking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <RefreshCw className="animate-spin text-emerald-500" size={32} />
+      </div>
+    );
+  }
+
   return (
     <div className="relative min-h-screen flex flex-col sm:justify-center items-center overflow-hidden font-sans selection:bg-cyan-500/30 bg-slate-950">
       {/* Background Layers */}
@@ -62,6 +138,47 @@ export default function ChangePasswordPage() {
       <div className="fixed inset-0 z-[1] pointer-events-none">
         <ParticleBackground />
       </div>
+
+      {successPasswordMask && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-md"
+        >
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 220, damping: 22 }}
+            className="w-full max-w-md rounded-[2rem] border border-white/70 bg-white p-8 text-center shadow-[0_24px_80px_rgba(16,185,129,0.28)]"
+          >
+            <motion.div
+              initial={{ scale: 0.4, rotate: -20 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 14, delay: 0.08 }}
+              className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 shadow-inner"
+            >
+              <CheckCircle2 size={44} strokeWidth={2.6} />
+            </motion.div>
+            <h2 className="text-2xl font-black uppercase tracking-tight text-emerald-950">Berhasil</h2>
+            <p className="mt-3 text-sm font-medium leading-7 text-slate-600">
+              Selamat, Anda telah berhasil mengganti password. Password Anda saat ini adalah password baru yang baru saja dibuat:
+            </p>
+            <div className="my-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 font-mono text-lg font-black tracking-[0.25em] text-emerald-800">
+              {successPasswordMask}
+            </div>
+            <p className="text-xs font-semibold leading-6 text-amber-700">
+              Catat dan simpan password baru tersebut di tempat yang aman. Jangan membagikannya kepada siapa pun.
+            </p>
+            <button
+              type="button"
+              onClick={() => router.replace('/profil')}
+              className="mt-7 inline-flex h-12 w-full items-center justify-center rounded-xl bg-emerald-600 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-emerald-100 transition hover:bg-emerald-700"
+            >
+              Oke, Lanjut ke Profil
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
 
       {/* Card */}
       <motion.div 
@@ -104,7 +221,8 @@ export default function ChangePasswordPage() {
             {/* Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div className="space-y-4">
-                {/* Current Password */}
+                {/* Current Password - only show if not first login */}
+                {!isFirstLogin && (
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Kata Sandi Lama</label>
                   <div className="relative group">
@@ -120,6 +238,8 @@ export default function ChangePasswordPage() {
                     <button
                       type="button"
                       onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      aria-label={showCurrentPassword ? 'Sembunyikan kata sandi lama' : 'Tampilkan kata sandi lama'}
+                      aria-pressed={showCurrentPassword}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-400 hover:text-emerald-600"
                     >
                       {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -127,6 +247,7 @@ export default function ChangePasswordPage() {
                   </div>
                   {errors.current_password && <p className="text-[10px] font-bold text-rose-500 ml-1">{errors.current_password.message}</p>}
                 </div>
+                )}
 
                 <div className="h-px bg-slate-100 mx-2" />
 
@@ -146,11 +267,16 @@ export default function ChangePasswordPage() {
                     <button
                       type="button"
                       onClick={() => setShowNewPassword(!showNewPassword)}
+                      aria-label={showNewPassword ? 'Sembunyikan kata sandi baru' : 'Tampilkan kata sandi baru'}
+                      aria-pressed={showNewPassword}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-400 hover:text-emerald-600"
                     >
                       {showNewPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
+                  <p className="text-[10px] text-slate-500 ml-1 leading-relaxed">
+                    Kombinasi <span className="font-bold text-emerald-700">huruf besar</span>, <span className="font-bold text-emerald-700">huruf kecil</span>, <span className="font-bold text-emerald-700">angka</span>, dan <span className="font-bold text-emerald-700">simbol</span> (min. 8 karakter). Contoh: <span className="font-mono text-slate-600">Sandi@2025</span>
+                  </p>
                   {errors.password && <p className="text-[10px] font-bold text-rose-500 ml-1">{errors.password.message}</p>}
                 </div>
 

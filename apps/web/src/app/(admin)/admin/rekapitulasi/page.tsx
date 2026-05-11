@@ -27,7 +27,7 @@ interface RekapData {
 
 function fmt(v: number) { return v?.toLocaleString('id-ID') ?? '0'; }
 
-export default function AdminRekapitulasiPage() {
+export default function AdminRekapitulasiPage(): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [selectedGroup, setSelectedGroup] = useState('');
 

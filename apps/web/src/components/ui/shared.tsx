@@ -1,12 +1,16 @@
+'use client';
+
 import Link from 'next/link';
 import clsx from 'clsx';
-import { BadgeCheck, Lock, AlertTriangle, Clock, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
-type StatusType = 'approved' | 'pending' | 'rejected' | 'draft' | 'revision' | 'submitted' | string;
+type StatusType = 'approved' | 'completed' | 'pending' | 'rejected' | 'draft' | 'revision' | 'submitted' | string;
 
 const STATUS_CONFIG: Record<string, { bg: string; text: string; border: string; label: string }> = {
   approved: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', label: 'DISETUJUI' },
   disetujui: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', label: 'DISETUJUI' },
+  completed: { bg: 'bg-teal-50', text: 'text-teal-700', border: 'border-teal-200', label: 'SELESAI' },
+  selesai: { bg: 'bg-teal-50', text: 'text-teal-700', border: 'border-teal-200', label: 'SELESAI' },
   pending: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'MENUNGGU' },
   menunggu: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'MENUNGGU' },
   submitted: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'MENUNGGU REVIEW' },
@@ -17,7 +21,7 @@ const STATUS_CONFIG: Record<string, { bg: string; text: string; border: string; 
   unregistered: { bg: 'bg-slate-50', text: 'text-slate-500', border: 'border-slate-200', label: 'BELUM DAFTAR' },
 };
 
-export function StatusBadge({ status, size = 'sm' }: { status: StatusType; size?: 'sm' | 'md' }) {
+export function StatusBadge({ status, size = 'sm' }: { status: StatusType; size?: 'sm' | 'md' }): React.JSX.Element {
   const config = STATUS_CONFIG[status?.toLowerCase()] || STATUS_CONFIG.draft;
   return (
     <span className={clsx('inline-flex items-center gap-1 rounded border font-black uppercase tracking-wider', config.bg, config.text, config.border, size === 'sm' ? 'px-2 py-0.5 text-[10px]' : 'px-3 py-1 text-xs')}>
@@ -32,7 +36,7 @@ export function StatCard({ icon: Icon, label, value, suffix, color = 'emerald' }
   value: string | number;
   suffix?: string;
   color?: 'emerald' | 'blue' | 'amber' | 'rose' | 'indigo';
-}) {
+}): React.JSX.Element {
   const colorClasses = { emerald: 'bg-emerald-50 text-emerald-600', blue: 'bg-blue-50 text-blue-600', amber: 'bg-amber-50 text-amber-600', rose: 'bg-rose-50 text-rose-600', indigo: 'bg-indigo-50 text-indigo-600' };
   return (
     <div className="bg-white ring-1 ring-slate-200 rounded-xl p-5 flex items-center gap-5 shadow-sm">
@@ -54,7 +58,7 @@ export function NavButton({ href, icon: Icon, label }: {
   href: string;
   icon: React.ComponentType<{ size?: number; className?: string }>;
   label: string;
-}) {
+}): React.JSX.Element {
   return (
     <Link href={href} className="flex items-center gap-3 p-3 rounded-lg border border-transparent hover:border-emerald-100 hover:bg-emerald-50 transition-all group">
       <div className="p-2 bg-slate-50 text-slate-400 rounded-md group-hover:bg-emerald-600 group-hover:text-white transition-all">
@@ -66,7 +70,7 @@ export function NavButton({ href, icon: Icon, label }: {
   );
 }
 
-export function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: string; actions?: React.ReactNode }) {
+export function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: string; actions?: React.ReactNode }): React.JSX.Element {
   return (
     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
       <div className="space-y-1">
@@ -78,7 +82,7 @@ export function PageHeader({ title, subtitle, actions }: { title: string; subtit
   );
 }
 
-export function DataTable({ columns, children }: { columns: string[]; children: React.ReactNode }) {
+export function DataTable({ columns, children }: { columns: string[]; children: React.ReactNode }): React.JSX.Element {
   return (
     <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
       <table className="w-full text-sm">
@@ -93,7 +97,7 @@ export function DataTable({ columns, children }: { columns: string[]; children: 
   );
 }
 
-export function EmptyState({ icon, title, description, action }: { icon: React.ReactNode; title: string; description?: string; action?: React.ReactNode }) {
+export function EmptyState({ icon, title, description, action }: { icon: React.ReactNode; title: string; description?: string; action?: React.ReactNode }): React.JSX.Element {
   return (
     <div className="rounded-2xl bg-white p-12 text-center shadow-sm ring-1 ring-slate-200">
       <div className="text-4xl mb-4">{icon}</div>
@@ -104,57 +108,5 @@ export function EmptyState({ icon, title, description, action }: { icon: React.R
   );
 }
 
-import { AnimatePresence, motion } from 'framer-motion';
-
-const CONFIRM_COLORS = {
-  danger: 'bg-rose-600 hover:bg-rose-700',
-  warning: 'bg-amber-500 hover:bg-amber-600',
-  info: 'bg-emerald-600 hover:bg-emerald-700',
-};
-
-export function ConfirmDialog({
-  open, onClose, onConfirm, title, description,
-  confirmText = 'Konfirmasi', variant = 'danger',
-}: {
-  open: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  title: string;
-  description?: string;
-  confirmText?: string;
-  variant?: 'danger' | 'warning' | 'info';
-}) {
-  return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
-          onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
-          onKeyDown={(e) => { if (e.key === 'Escape') onClose(); }}
-        >
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            role="dialog" aria-modal="true" aria-labelledby="confirm-title"
-            className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 ring-1 ring-slate-200"
-          >
-            <h2 id="confirm-title" className="text-base font-black text-slate-900 text-center mb-2">{title}</h2>
-            {description && <p className="text-sm text-slate-500 text-center mb-4">{description}</p>}
-            <div className="flex gap-3 mt-6">
-              <button onClick={onClose} className="flex-1 h-10 rounded-xl border border-slate-200 text-xs font-black text-slate-600 hover:bg-slate-50 transition-colors uppercase tracking-wider">
-                Batal
-              </button>
-              <button
-                onClick={() => { onConfirm(); onClose(); }}
-                className={clsx('flex-1 h-10 rounded-xl text-white text-xs font-black uppercase tracking-wider transition-all active:scale-[0.98]', CONFIRM_COLORS[variant])}
-              >
-                {confirmText}
-              </button>
-            </div>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-}
+// Re-export from dedicated file for tree-shaking
+export { ConfirmDialog } from './ConfirmDialog';

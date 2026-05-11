@@ -1,4 +1,6 @@
-export default function AdminLokasiPage() {
+import React from 'react';
+
+export default function AdminLokasiPage(): React.JSX.Element {
   return (
     <div className="flex flex-col items-center justify-center min-h-[40vh] text-slate-400">
       <p className="text-lg font-semibold">Wilayah Penugasan</p>

@@ -22,16 +22,40 @@ class PublicController extends Controller
 
     /**
      * GET /api/v1/public/announcements
-     * Published announcements, paginated. No auth required.
+     * Published announcements (all types), paginated. No auth required.
+     *
+     * Supports optional `?type=berita|pengumuman` query param untuk filter
+     * — gunakan `/public/berita` atau `/public/pengumuman` sebagai shortcut
+     * semantik (mereka mengembalikan bentuk response yang sama).
      */
     public function announcements(Request $request): JsonResponse
     {
         $announcements = Announcement::where('is_active', true)
             ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->ofType($request->input('type'))
             ->orderByDesc('published_at')
             ->paginate($request->input('per_page', 12));
 
         return $this->successCollection(AnnouncementResource::collection($announcements));
+    }
+
+    /**
+     * GET /api/v1/public/berita
+     * Shortcut untuk announcements dengan type=berita (semua kategori selain PENGUMUMAN).
+     */
+    public function berita(Request $request): JsonResponse
+    {
+        return $this->announcements($request->merge(['type' => Announcement::TYPE_BERITA]));
+    }
+
+    /**
+     * GET /api/v1/public/pengumuman
+     * Shortcut untuk announcements dengan type=pengumuman (kategori PENGUMUMAN).
+     */
+    public function pengumuman(Request $request): JsonResponse
+    {
+        return $this->announcements($request->merge(['type' => Announcement::TYPE_PENGUMUMAN]));
     }
 
     /**
@@ -42,6 +66,8 @@ class PublicController extends Controller
     {
         $announcement = Announcement::where('slug', $slug)
             ->where('is_active', true)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
             ->first();
 
         if (! $announcement) {
@@ -110,8 +136,13 @@ class PublicController extends Controller
      */
     public function home(): JsonResponse
     {
+        // Home feature list menampilkan berita — pengumuman di-handle terpisah
+        // via popup modal (/public/popup-announcement), tidak di-embed sebagai
+        // artikel preview di landing.
         $announcements = Announcement::where('is_active', true)
             ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->ofType(Announcement::TYPE_BERITA)
             ->orderByDesc('published_at')
             ->limit(6)
             ->get();
@@ -137,6 +168,46 @@ class PublicController extends Controller
             'aboutContent' => [
                 'visi' => config('app.visi', 'Menjadi Lembaga Penelitian dan Pengabdian kepada Masyarakat yang unggul dan kompetitif dalam pengembangan ilmu pengetahuan, teknologi, dan seni yang berbasis pada nilai-nilai moderasi Islam dan kearifan lokal.'),
             ],
+        ]);
+    }
+
+    /**
+     * GET /api/v1/public/popup-announcement
+     *
+     * Returns the single latest announcement flagged as a home popup that
+     * is currently active (published, not past popup_until). No auth.
+     *
+     * The payload is intentionally minimal — only what the popup modal
+     * needs to render. Full content is fetched via
+     * `/public/announcements/{slug}` when the user clicks "Baca selengkapnya".
+     *
+     * Response shape:
+     *   { data: null }            — no active popup
+     *   { data: { id, title, ... } } — otherwise
+     */
+    public function popupAnnouncement(): JsonResponse
+    {
+        $announcement = Announcement::activePopup()
+            ->orderByDesc('published_at')
+            ->first();
+
+        if (! $announcement) {
+            return $this->success(null);
+        }
+
+        return $this->success([
+            'id'                => $announcement->id,
+            'title'             => $announcement->title,
+            'slug'              => $announcement->slug,
+            'excerpt'           => $announcement->excerpt_text,
+            'category'          => $announcement->category,
+            'image_url'         => $announcement->image
+                ? asset('storage/' . $announcement->image)
+                : null,
+            'published_at'      => $announcement->published_at?->toIso8601String(),
+            'popup_until'       => $announcement->popup_until?->toIso8601String(),
+            'popup_dismissable' => (bool) $announcement->popup_dismissable,
+            'read_more_url'     => '/berita/' . $announcement->slug,
         ]);
     }
 }

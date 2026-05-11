@@ -36,6 +36,7 @@ class FinalReportController extends Controller
 
     public function show(LaporanAkhir $report): JsonResponse
     {
+        $this->authorizeReportAccess($report);
         $report->load(['mahasiswa.user', 'kelompok']);
 
         return $this->success(new LaporanAkhirResource($report));
@@ -43,6 +44,7 @@ class FinalReportController extends Controller
 
     public function approve(Request $request, LaporanAkhir $report): JsonResponse
     {
+        $this->authorizeReportAccess($report);
         $request->validate(['score' => ['nullable', 'numeric', 'min:0', 'max:100']]);
 
         $report->update([
@@ -52,6 +54,14 @@ class FinalReportController extends Controller
             'score' => $request->input('score'),
         ]);
 
+        // Send notification to student
+        $report->mahasiswa?->user?->notify(new \App\Notifications\KknActivityNotification([
+            'type' => 'final_report_approved',
+            'title' => 'Laporan Akhir Disetujui',
+            'message' => "Laporan akhir Anda \"{$report->title}\" telah disetujui oleh DPL.",
+            'url' => "/mahasiswa/laporan-akhir/{$report->id}",
+        ]));
+
         return $this->success(
             new LaporanAkhirResource($report->refresh()),
             'Laporan akhir disetujui.'
@@ -60,6 +70,7 @@ class FinalReportController extends Controller
 
     public function revision(Request $request, LaporanAkhir $report): JsonResponse
     {
+        $this->authorizeReportAccess($report);
         $request->validate(['review_notes' => ['required', 'string', 'max:2000']]);
 
         $report->update([
@@ -68,6 +79,14 @@ class FinalReportController extends Controller
             'reviewed_at' => now(),
             'review_notes' => $request->input('review_notes'),
         ]);
+
+        // Send notification to student
+        $report->mahasiswa?->user?->notify(new \App\Notifications\KknActivityNotification([
+            'type' => 'final_report_revision',
+            'title' => 'Laporan Akhir Perlu Revisi',
+            'message' => "Laporan akhir Anda \"{$report->title}\" perlu direvisi: {$request->input('review_notes')}",
+            'url' => "/mahasiswa/laporan-akhir/{$report->id}",
+        ]));
 
         return $this->success(
             new LaporanAkhirResource($report->refresh()),
@@ -80,16 +99,21 @@ class FinalReportController extends Controller
      */
     public function download(LaporanAkhir $report)
     {
-        $dosen = auth()->user()->dosen;
-        abort_if(! $dosen, 403, 'Akses ditolak.');
-
-        $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
-        abort_unless($groupIds->contains($report->kelompok_id), 403, 'Akses ditolak.');
+        $this->authorizeReportAccess($report);
 
         abort_if(! $report->file_path || ! Storage::exists($report->file_path), 404, 'File laporan tidak ditemukan.');
 
         $filename = 'Laporan_Akhir_' . ($report->title ?? $report->id) . '.pdf';
 
         return Storage::download($report->file_path, $filename);
+    }
+
+    private function authorizeReportAccess(LaporanAkhir $report): void
+    {
+        $dosen = auth()->user()->dosen;
+        abort_if(! $dosen, 403, 'Akses ditolak.');
+
+        $groupIds = $dosen->kelompokKkn()->pluck('kelompok_kkn.id');
+        abort_unless($groupIds->contains($report->kelompok_id), 403, 'Akses ditolak.');
     }
 }

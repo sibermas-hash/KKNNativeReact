@@ -83,14 +83,28 @@ trait ApiResponse
     }
 
     /**
-     * No content response.
+     * No content response (HTTP 204).
+     *
+     * Audit R12-D3-001 fix: sebelumnya return status 200 dengan body
+     * `{success:true, message}` — secara semantic itu bukan "no content".
+     * Sekarang return proper HTTP 204 tanpa body content sesuai RFC 7231
+     * §6.3.5.
+     *
+     * Return type tetap JsonResponse untuk menjaga signature compatibility
+     * dengan 33 controller callsite yang declare return `: JsonResponse`.
+     * Body kosong (null) dengan status 204 adalah compromise: status
+     * code spec-compliant, JSON body empty.
+     *
+     * $message parameter dipertahankan untuk backward compat dengan
+     * callsite existing tapi TIDAK dikirim. Kalau controller perlu
+     * toast message di FE, gunakan `$this->success(null, $message)`
+     * yang return 200 dengan envelope.
      */
     protected function noContent(string $message = 'OK'): JsonResponse
     {
-        return response()->json([
-            'success' => true,
-            'message' => $message,
-        ], 200);
+        // Body null + status 204. Laravel will serialize to "null" but
+        // clients handling 204 should not read body per HTTP spec.
+        return response()->json(null, 204);
     }
 
     /**

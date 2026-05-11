@@ -17,7 +17,9 @@ class RekapitulasiController extends Controller
 
     public function index(): JsonResponse
     {
-        $mahasiswa = auth()->user()->mahasiswa;
+        /** @var \App\Models\User|null $user */
+        $user = auth()->user();
+        $mahasiswa = $user?->mahasiswa;
         abort_if(! $mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
 
         $peserta = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
@@ -48,7 +50,9 @@ class RekapitulasiController extends Controller
 
     public function store(Request $request): JsonResponse
     {
-        $mahasiswa = auth()->user()->mahasiswa;
+        /** @var \App\Models\User|null $user */
+        $user = auth()->user();
+        $mahasiswa = $user?->mahasiswa;
         abort_if(! $mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
 
         $peserta = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
@@ -56,6 +60,10 @@ class RekapitulasiController extends Controller
             ->first();
 
         abort_if(! $peserta?->kelompok_id, 403, 'Anda belum memiliki kelompok KKN aktif.');
+
+        if (strtolower((string) $peserta->role) !== 'ketua') {
+            return $this->forbidden('Hanya ketua kelompok yang dapat mengisi rekapitulasi kegiatan.');
+        }
 
         $validated = $request->validate([
             'uraian_kegiatan'    => ['required', 'string', 'max:500'],

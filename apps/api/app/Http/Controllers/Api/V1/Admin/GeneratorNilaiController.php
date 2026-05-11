@@ -69,6 +69,16 @@ class GeneratorNilaiController extends Controller
 
         $saved = 0;
         foreach ($validated['scores'] as $item) {
+            // Verify student is registered in the specified group
+            $inGroup = \App\Models\KKN\PesertaKkn::where('kelompok_id', $item['kelompok_id'])
+                ->whereHas('mahasiswa', fn ($q) => $q->where('user_id', $item['user_id']))
+                ->whereIn('status', ['approved', 'pending'])
+                ->exists();
+
+            if (! $inGroup) {
+                continue; // Skip unauthorized entries silently
+            }
+
             NilaiKkn::updateOrCreate(
                 ['user_id' => $item['user_id'], 'kelompok_id' => $item['kelompok_id']],
                 array_merge($item['scores'], ['admin_graded_by' => auth()->id(), 'admin_graded_at' => now()])

@@ -1,13 +1,13 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { studentEndpoints } from '@sibermas/api-client';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { api, studentApi } from '@/lib/api';
-import { GraduationCap } from 'lucide-react';
+import { studentApi } from '@/lib/api';
+import { Download, GraduationCap } from 'lucide-react';
 import { StatusBadge, EmptyState } from '@/components/ui/shared';
+import { toast } from 'sonner';
 
-export default function CertificatesPage() {
+export default function CertificatesPage(): React.JSX.Element {
   
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.certificates,
@@ -42,9 +42,46 @@ export default function CertificatesPage() {
           {certificates.length > 0 && (
             <div className="space-y-4"><h2 className="text-lg font-black text-slate-700">Sertifikat</h2>
               {certificates.map((c) => (
-                <div key={String(c.id)} className="bg-white rounded-2xl p-6 ring-1 ring-slate-200 shadow-sm">
-                  <p className="font-black text-slate-900">{String(c.nama_mahasiswa || '-')}</p>
-                  <p className="text-sm text-slate-500">No: {String(c.certificate_number || '-')} | NIM: {String(c.nim || '-')}</p>
+                <div key={String(c.id)} className="bg-white rounded-2xl p-6 ring-1 ring-slate-200 shadow-sm flex items-center justify-between">
+                  <div>
+                    <p className="font-black text-slate-900">{String(c.nama_mahasiswa || '-')}</p>
+                    <p className="text-sm text-slate-500">No: {String(c.certificate_number || '-')} | NIM: {String(c.nim || '-')}</p>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      try {
+                        // With responseType: 'blob', axios returns a Blob (via handleResponse
+                        // the client returns `response.data` directly for blob responses).
+                        // Validate it really is a PDF so an accidental JSON error envelope
+                        // can't get masked as `.pdf` on disk.
+const res = await studentApi.certificates.download(Number(c.id));
+                         const blob = res instanceof Blob ? res : new Blob([res as unknown as BlobPart], { type: 'application/pdf' });
+
+                        if (blob.type && !blob.type.includes('pdf')) {
+                          // Backend likely returned JSON error envelope despite 200;
+                          // try to surface a meaningful message.
+                          const text = await blob.text();
+                          try {
+                            const parsed = JSON.parse(text);
+                            toast.error(parsed?.error?.message || 'Gagal mengunduh sertifikat');
+                          } catch {
+                            toast.error('Gagal mengunduh sertifikat');
+                          }
+                          return;
+                        }
+
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `Sertifikat_KKN_${String(c.nim || '')}.pdf`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      } catch { toast.error('Gagal mengunduh sertifikat'); }
+                    }}
+                    className="flex items-center gap-2 rounded-xl bg-purple-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-purple-700 shadow-sm"
+                  >
+                    <Download size={14} /> Unduh
+                  </button>
                 </div>
               ))}
             </div>

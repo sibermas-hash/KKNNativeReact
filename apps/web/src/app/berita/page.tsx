@@ -4,12 +4,12 @@ import { fetchApi } from '@/lib/server-api';
 import { Navbar } from '@/components/public/navbar';
 import { Footer } from '@/components/public/footer';
 
-export const revalidate = 1800;
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: 'Berita & Pengumuman — SIBERMAS UIN SAIZU',
-    description: 'Berita dan pengumuman terbaru seputar KKN UIN Prof. K.H. Saifuddin Zuhri Purwokerto',
+    title: 'Berita — SIBERMAS UIN SAIZU',
+    description: 'Berita dan artikel seputar KKN UIN Prof. K.H. Saifuddin Zuhri Purwokerto',
   };
 }
 
@@ -37,8 +37,15 @@ const formatDate = (dateStr?: string) => {
 };
 
 export default async function AnnouncementsPage() {
-  const data = await fetchApi<{ success: boolean; data: Announcement[] }>('/public/announcements');
-  const announcements = data?.data || [];
+  let announcements: Announcement[] = [];
+  try {
+    // Hanya berita — pengumuman (category=PENGUMUMAN) dipisah karena hanya
+    // tampil sebagai popup di home, tidak di halaman list ini.
+    const data = await fetchApi<{ success: boolean; data: Announcement[] }>('/public/berita');
+    announcements = data?.data || [];
+  } catch (error) {
+    console.error('Failed to fetch berita:', error);
+  }
 
   return (
     <div className="min-h-screen bg-white text-emerald-950">
@@ -48,10 +55,11 @@ export default async function AnnouncementsPage() {
         <div className="max-w-3xl">
           <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600">Warta Publik</p>
           <h1 className="mt-3 text-3xl font-display font-bold tracking-tight text-emerald-950 sm:text-4xl">
-            Berita &amp; Pengumuman KKN
+            Berita Terbaru
           </h1>
           <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-            Informasi terbaru seputar pelaksanaan program Kuliah Kerja Nyata UIN SAIZU Purwokerto.
+            Artikel, agenda, press release, dan cerita seputar pelaksanaan program Kuliah Kerja
+            Nyata UIN SAIZU Purwokerto.
           </p>
         </div>
 

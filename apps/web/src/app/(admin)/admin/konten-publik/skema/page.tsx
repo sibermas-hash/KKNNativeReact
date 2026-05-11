@@ -23,7 +23,7 @@ const COLOR_CLASSES: Record<SchemeColor, string> = {
   slate: 'border-slate-200 bg-slate-50',
 };
 
-export default function AdminKontenSkemaPage() {
+export default function AdminKontenSkemaPage(): React.JSX.Element {
   const qc = useQueryClient();
   const [form, setForm] = useState({ title: '', intro: '', schemes: [] as SchemeItem[] });
   const [saved, setSaved] = useState(false);

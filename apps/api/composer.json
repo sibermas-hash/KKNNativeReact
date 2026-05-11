@@ -10,6 +10,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.4",
+        "bacon/bacon-qr-code": "^3.1",
         "barryvdh/laravel-dompdf": "^3.1.2",
         "intervention/image": "^3.11",
         "knuckleswtf/scribe": "^5.9",
@@ -22,26 +23,30 @@
         "league/flysystem-aws-s3-v3": "^3.32",
         "maatwebsite/excel": "^3.1.68",
         "phpoffice/phpword": "^1.4.0",
+        "pragmarx/google2fa": "^9.0",
         "predis/predis": "^2.3",
         "prism-php/prism": "^0.100",
         "spatie/laravel-backup": "^10.0",
         "spatie/laravel-permission": "^7.3.0"
     },
     "require-dev": {
-            "fakerphp/faker": "^1.23",
-            "laravel/pail": "^1.2",
-            "laravel/pint": "^1.18",
-            "mockery/mockery": "^1.6",
-            "nunomaduro/collision": "^8.1",
-            "pestphp/pest": "^4.0",
-            "pestphp/pest-plugin-laravel": "^4.1"
-        },
+        "fakerphp/faker": "^1.23",
+        "larastan/larastan": "^3.9",
+        "laravel/pail": "^1.2",
+        "laravel/pint": "^1.18",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.1",
+        "pestphp/pest": "^4.0",
+        "pestphp/pest-plugin-laravel": "^4.1"
+    },
     "scripts": {
         "test": "pest --no-coverage",
         "test:filter": "pest --no-coverage --filter=",
         "lint": "pint",
         "lint:fix": "pint --fix",
-        "format": "pint --fix"
+        "format": "pint --fix",
+        "stan": "phpstan analyse --memory-limit=512M",
+        "stan:baseline": "phpstan analyse --memory-limit=512M --generate-baseline"
     },
     "autoload": {
         "psr-4": {

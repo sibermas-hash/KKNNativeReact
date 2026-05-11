@@ -9,6 +9,10 @@ use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\SertifikatKkn;
 use App\Services\KKN\KonfigurasiSertifikatService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer as QrWriter;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use PhpOffice\PhpWord\TemplateProcessor;
@@ -94,8 +98,17 @@ class CertificateService
             throw new RuntimeException('Data periode untuk kelompok ini tidak ditemukan');
         }
 
-        if ($score->total_score < 70) {
-            throw new RuntimeException('Sertifikat hanya diterbitkan untuk nilai minimal B (70)');
+        // Audit F-14 fix: threshold tidak lagi hardcoded, baca dari
+        // SystemSetting (`certificate_min_score`, default 70).
+        // Audit R11-FULL-025/027 fix: explicit round ke 2 decimal untuk
+        // avoid floating-point edge case 69.9999999 < 70 (student kehilangan
+        // sertifikat karena FP precision). total_score di-store decimal:2
+        // di DB, tapi cast (float) di PHP bisa munculkan drift kalau
+        // upstream computation belum di-round.
+        $minScore = (float) \App\Models\KKN\SystemSetting::get('certificate_min_score', '70');
+        $normalizedScore = round((float) $score->total_score, 2);
+        if ($normalizedScore < $minScore) {
+            throw new RuntimeException("Sertifikat hanya diterbitkan untuk nilai minimal {$minScore}");
         }
 
         // Cek Laporan Akhir
@@ -179,13 +192,19 @@ class CertificateService
             $bgBase64 = 'data:image/'.$bgType.';base64,'.base64_encode($bgData);
         }
 
-        // Convert QR URL to base64 to avoid remote fetch issues in DomPDF
-        $qrRawUrl = 'https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl='.urlencode($verificationUrl).'&choe=UTF-8';
+        // Audit R11-FULL-029 fix: sebelumnya pakai chart.googleapis.com yang
+        // sudah di-deprecate Google sejak 2012. Sekarang generate QR lokal
+        // pakai bacon/bacon-qr-code (SVG) + encode ke data URI.
+        // DomPDF 3+ render SVG via data URI dengan baik.
         try {
-            $qrData = file_get_contents($qrRawUrl);
-            $qrBase64 = 'data:image/png;base64,'.base64_encode($qrData);
-        } catch (\Exception $e) {
-            $qrBase64 = $qrRawUrl; // Fallback
+            $renderer = new ImageRenderer(new RendererStyle(150), new SvgImageBackEnd());
+            $qrSvg = (new QrWriter($renderer))->writeString($verificationUrl);
+            $qrBase64 = 'data:image/svg+xml;base64,'.base64_encode($qrSvg);
+        } catch (\Throwable $e) {
+            // Fallback: external QR code provider (free, no deprecation).
+            // Note: external fetch may fail at PDF-render time; we still need
+            // a non-blocking fallback to avoid empty QR.
+            $qrBase64 = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data='.urlencode($verificationUrl);
         }
 
         return [

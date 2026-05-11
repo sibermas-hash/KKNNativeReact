@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ApiKeyGenerated;
 use App\Models\ApiKey;
 use App\Models\Project;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class AdminKeyController extends Controller
@@ -61,26 +64,56 @@ class AdminKeyController extends Controller
         $permissions = $validated['permissions'] ?? ['read'];
         $apiKey = 'sk_'.Str::replace('-', '', Str::uuid()->toString());
 
-        // Create or update project
-        $project = Project::updateOrCreate(
-            ['email' => $validated['owner']],
-            ['project_name' => $validated['name']]
-        );
+        // X-001 fix (audit follow-up): was echoing the plaintext API key in
+        // the response body — same H-013 pattern we already fixed on the
+        // self-service endpoint, missed here. Now the key is ONLY delivered
+        // via email and the whole thing is transactional so mail failure
+        // rolls back the project + key creation (mirrors RegistrationController).
+        try {
+            DB::transaction(function () use ($validated, $permissions, $apiKey) {
+                $project = Project::updateOrCreate(
+                    ['email' => $validated['owner']],
+                    ['project_name' => $validated['name']]
+                );
 
-        // Create API key
-        $keyModel = ApiKey::create([
-            'key' => $apiKey,
-            'name' => $validated['name'],
-            'permissions' => $permissions,
-            'email' => $validated['owner'],
-        ]);
+                // Wipe any prior inactive keys for this owner (idempotent retry).
+                ApiKey::where('email', $validated['owner'])
+                    ->where('is_active', false)
+                    ->delete();
+
+                // Create inactive, then activate after mail success. We keep a
+                // reference to the model so we can flip `is_active` without
+                // querying by hashed value (which would require rehashing).
+                $record = ApiKey::create([
+                    'key' => $apiKey,
+                    'name' => $validated['name'],
+                    'permissions' => $permissions,
+                    'email' => $validated['owner'],
+                    'is_active' => false,
+                ]);
+
+                $serverUrl = rtrim(config('app.url'), '/');
+                Mail::to($validated['owner'])->send(
+                    new ApiKeyGenerated($validated['name'], $apiKey, $serverUrl)
+                );
+
+                $record->update(['is_active' => true]);
+            });
+        } catch (\Throwable $e) {
+            Log::warning('Admin API key generation failed', [
+                'owner' => $validated['owner'],
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'error' => 'Gagal mengirim API key ke email pemilik. Silakan coba lagi atau cek log.',
+            ], 502);
+        }
 
         return response()->json([
-            'message' => 'API key berhasil dibuat.',
-            'api_key' => $apiKey,
+            'message' => 'API key berhasil dibuat dan dikirim ke email pemilik.',
             'name' => $validated['name'],
             'permissions' => $permissions,
-            'project_id' => $project->id,
         ], 201);
     }
 

@@ -6,14 +6,18 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { resetPasswordSchema, type ResetPasswordFormData } from '@sibermas/schemas';
 import { api } from '@/lib/api';
-import toast from 'react-hot-toast';
+import { toast } from 'sonner';
 import { Lock, Eye, EyeOff, ShieldCheck, ArrowRight, RefreshCw, AlertCircle, Home } from 'lucide-react';
-import { ParticleBackground } from '@/components/ui/particle-background';
+import dynamic from 'next/dynamic';
+const ParticleBackground = dynamic(
+  () => import('@/components/ui/particle-background').then((m) => ({ default: m.ParticleBackground })),
+  { ssr: false }
+);
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
-export default function ResetPasswordPage() {
+export default function ResetPasswordPage(): React.JSX.Element {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
@@ -146,6 +150,8 @@ export default function ResetPasswordPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
+                      aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'}
+                      aria-pressed={showPassword}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-400 hover:text-blue-600"
                     >
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}

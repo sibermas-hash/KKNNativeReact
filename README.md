@@ -17,7 +17,7 @@ Aplikasi ini mengelola seluruh siklus KKN:
 
 - **Backend**: Laravel 13 (PHP 8.4) + PostgreSQL 16 + Redis 7
 - **Frontend**: React 19 + TypeScript + Inertia.js + Tailwind CSS 4
-- **Mobile**: Capacitor 8 (Android)
+- **Mobile**: Expo 53 / React Native (Android)
 - **Testing**: Pest PHP + Vitest
 - **CI/CD**: GitHub Actions
 
@@ -66,11 +66,10 @@ Dokumentasi lengkap tersedia di folder `docs/`:
 - [📘 API Reference](docs/API_REFERENCE.md) - Referensi API lengkap (V1)
 - [🏗️ Arsitektur](docs/ARCHITECTURE.md) - Gambaran arsitektur sistem
 - [🔧 Setup Guide](docs/SETUP.md) - Panduan setup & pengembangan lokal
-- [🔒 Security Guide](docs/SECURITY_GUIDE.md) - Best practices keamanan
-- [📡 External API](docs/EXTERNAL_API_GUIDE.md) - Panduan integrasi SIAKAD
-- [⚙️ SIAKAD Config](docs/SIAKAD_CONFIG.md) - Konfigurasi API SIAKAD
-- [📋 Audit Status](docs/auditnow.md) - Temuan audit & status terkini
-- [✅ Implementation Checklist](docs/IMPLEMENTATION_CHECKLIST.md) - Checklist implementasi
+- [📋 Audit Status](docs/AUDIT_STATUS.md) - Temuan audit & status terkini
+- [🖥️ FreeBSD Deployment](docs/FREEBSD_DEPLOYMENT.md) - Panduan deploy ke production
+- [🛠️ Workshop System](docs/workshop-system.md) - Sistem workshop & sertifikat DPL
+- [🚀 Roadmap](docs/pengembangan_lanjutan.md) - Rencana pengembangan lanjutan
 
 ## 🧪 Testing
 
@@ -192,11 +191,12 @@ service supervisord start
 
 ## 📱 Mobile App
 
-Aplikasi Android tersedia via Capacitor:
+Aplikasi Android tersedia via Expo React Native:
 
 ```bash
-npx cap sync android
-npx cap open android
+cd apps/mobile
+npx expo prebuild --platform android
+npx expo run:android
 ```
 
 ## 👥 Role Pengguna

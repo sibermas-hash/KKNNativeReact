@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 
-export function SmoothScrollProvider({ children }: { children: React.ReactNode }) {
+export function SmoothScrollProvider({ children }: { children: React.ReactNode }): React.JSX.Element {
   const lenisRef = useRef<{ raf: (time: number) => void; destroy: () => void } | null>(null);
 
   useEffect(() => {

@@ -24,6 +24,24 @@ return [
 
     'cipher' => 'AES-256-CBC',
 
+    /*
+    |--------------------------------------------------------------------------
+    | Blind Index Key (PII Phase 2)
+    |--------------------------------------------------------------------------
+    |
+    | Server-side HMAC-SHA256 key for computing blind indexes on encrypted
+    | PII columns. See App\Traits\HasBlindIndex and docs/PII_ENCRYPTION_PLAN.md.
+    |
+    | Generate once: `php artisan tinker --execute='echo base64_encode(random_bytes(32));'`
+    | or `openssl rand -base64 32`. Store in APP_BLIND_INDEX_KEY env.
+    |
+    | Rotating this key INVALIDATES all existing blind-index columns; a
+    | recompute-backfill command must run before deploying a rotated key.
+    |
+    */
+
+    'blind_index_key' => env('APP_BLIND_INDEX_KEY'),
+
     'maintenance' => [
         'driver' => 'file',
     ],

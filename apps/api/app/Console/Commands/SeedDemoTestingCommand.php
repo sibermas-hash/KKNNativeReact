@@ -50,6 +50,12 @@ class SeedDemoTestingCommand extends Command
 
     public function handle(): int
     {
+        if (app()->environment('production')) {
+            $this->components->error('Seeder demo/testing dinonaktifkan di production.');
+
+            return self::FAILURE;
+        }
+
         $this->components->info('Menyiapkan dataset demo testing KKN...');
 
         $this->ensureRoles();
@@ -435,7 +441,6 @@ PDF;
                 'periode' => 1,
                 'jenis' => KknType::REGULER,
                 'program_type' => Periode::PROGRAM_TYPE_REGULER,
-                'angkatan' => '2026',
                 'start_date' => now()->addWeeks(2)->toDateString(),
                 'end_date' => now()->addWeeks(10)->toDateString(),
                 'registration_start' => now()->subWeek()->toDateString(),
@@ -454,7 +459,6 @@ PDF;
                 'periode' => 2,
                 'jenis' => KknType::REGULER,
                 'program_type' => Periode::PROGRAM_TYPE_REGULER,
-                'angkatan' => '2025',
                 'start_date' => now()->subMonths(8)->toDateString(),
                 'end_date' => now()->subMonths(6)->toDateString(),
                 'registration_start' => now()->subMonths(9)->toDateString(),

@@ -205,7 +205,7 @@ function StatusRow({ label, complete, subtitle, typography }: { label: string; c
   );
 }
 
-function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, surfaceClass, isLecturer, profileComplete, isEditing, pendingRequest, onThemeChange, onDashboard, onToggleEdit, onLogout }: Record<string, unknown>) {
+function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, surfaceClass, isLecturer, profileComplete, isEditing, pendingRequest, onThemeChange, onDashboard, onToggleEdit, onLogout }: Record<string, any>) {
   return (
     <div ref={refTarget} className={cx('flex flex-col gap-4 rounded-2xl p-5 sm:flex-row sm:items-end sm:justify-between', themeConfig.frame, surfaceClass, themeConfig.shadow)}>
       <div className="space-y-1">
@@ -230,7 +230,7 @@ function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, su
   );
 }
 
-function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, lecturer, isStudent, isLecturer, avatarLoading, typography, themeConfig, surfaceStrongClass, onAvatarChange }: Record<string, unknown>) {
+function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, lecturer, isStudent, isLecturer, avatarLoading, typography, themeConfig, surfaceStrongClass, onAvatarChange }: Record<string, any>) {
   return (
     <div className="space-y-5">
       <div ref={avatarRef} className={cx('flex flex-col items-center gap-4 rounded-xl p-5 text-center', themeConfig.frame, surfaceStrongClass, themeConfig.shadow)}>
@@ -267,7 +267,7 @@ function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, l
   );
 }
 
-function StudentAddressSection({ register, errors, isEditing, typography, addressLat, addressLng, reverseGeocoding, forwardGeocoding, onMapChange, onSyncMap }: Record<string, unknown>) {
+function StudentAddressSection({ register, errors, isEditing, typography, addressLat, addressLng, reverseGeocoding, forwardGeocoding, onMapChange, onSyncMap }: Record<string, any>) {
   return (
     <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5">
       <div className="space-y-1">
@@ -307,7 +307,7 @@ export default function ProfilePage(): React.JSX.Element {
   }, [themeConfig]);
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting, isDirty } } = useForm<UpdateProfileFormData>({
-    resolver: zodResolver(updateProfileSchema) as unknown as typeof zodResolver,
+    resolver: zodResolver(updateProfileSchema),
   });
 
   const student = profileData?.student ?? null;
@@ -436,27 +436,27 @@ export default function ProfilePage(): React.JSX.Element {
         address_district_name: (r?.user?.address_district_name ?? (user as unknown as { address_district_name?: string }).address_district_name ?? '') as string,
         address_regency_name: (r?.user?.address_regency_name ?? (user as unknown as { address_regency_name?: string }).address_regency_name ?? '') as string,
         address_postal_code: (r?.user?.address_postal_code ?? (user as unknown as { address_postal_code?: string }).address_postal_code ?? '') as string,
-        address_verified: !!res?.user?.address_verified_at,
-        address_lat: res?.user?.address_lat != null ? Number(res.user.address_lat) : null,
-        address_lng: res?.user?.address_lng != null ? Number(res.user.address_lng) : null,
-        nik: nextStudent?.nik ?? '',
-        mother_name: nextStudent?.mother_name ?? '',
-        gender: nextStudent?.gender ?? nextLecturer?.gender ?? '',
-        shirt_size: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL', ''].includes(nextStudent?.shirt_size ?? '') ? (nextStudent?.shirt_size ?? '') : '',
-        birth_place: nextStudent?.birth_place ?? nextLecturer?.tempat_lahir ?? '',
-        birth_date: nextStudent?.birth_date ?? nextLecturer?.birth_date ?? '',
-        nama_gelar: nextLecturer?.nama_gelar ?? '',
-        nidn: nextLecturer?.nidn ?? '',
-        dosen_nik: nextLecturer?.nik ?? '',
-        jabatan: nextLecturer?.jabatan ?? '',
-        kelas_jabatan: nextLecturer?.kelas_jabatan ?? '',
-        tugas_tambahan: nextLecturer?.tugas_tambahan ?? '',
-        golongan: nextLecturer?.golongan ?? '',
-        pangkat: nextLecturer?.pangkat ?? '',
-        no_rekening: nextLecturer?.no_rekening ?? '',
-        nama_bank: nextLecturer?.nama_bank ?? '',
-        npwp: nextLecturer?.npwp ?? '',
-        dosen_alamat: nextLecturer?.alamat ?? '',
+        address_verified: !!r?.user?.address_verified_at,
+        address_lat: r?.user?.address_lat != null ? Number(r.user.address_lat) : null,
+        address_lng: r?.user?.address_lng != null ? Number(r.user.address_lng) : null,
+        nik: (nextStudent?.nik as string) ?? '',
+        mother_name: (nextStudent?.mother_name as string) ?? '',
+        gender: ((nextStudent?.gender ?? nextLecturer?.gender) as '' | 'L' | 'P') ?? '',
+        shirt_size: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL', ''].includes((nextStudent?.shirt_size as string) ?? '') ? ((nextStudent?.shirt_size as '' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | '3XL' | '4XL' | '5XL') ?? '') : '',
+        birth_place: ((nextStudent?.birth_place ?? nextLecturer?.tempat_lahir) as string) ?? '',
+        birth_date: ((nextStudent?.birth_date ?? nextLecturer?.birth_date) as string) ?? '',
+        nama_gelar: (nextLecturer?.nama_gelar as string) ?? '',
+        nidn: (nextLecturer?.nidn as string) ?? '',
+        dosen_nik: (nextLecturer?.nik as string) ?? '',
+        jabatan: (nextLecturer?.jabatan as string) ?? '',
+        kelas_jabatan: (nextLecturer?.kelas_jabatan as string) ?? '',
+        tugas_tambahan: (nextLecturer?.tugas_tambahan as string) ?? '',
+        golongan: (nextLecturer?.golongan as string) ?? '',
+        pangkat: (nextLecturer?.pangkat as string) ?? '',
+        no_rekening: (nextLecturer?.no_rekening as string) ?? '',
+        nama_bank: (nextLecturer?.nama_bank as string) ?? '',
+        npwp: (nextLecturer?.npwp as string) ?? '',
+        dosen_alamat: (nextLecturer?.alamat as string) ?? '',
       });
     }).catch(() => toast.error('Gagal memuat profil'));
   }, [user, reset]);
@@ -540,16 +540,16 @@ export default function ProfilePage(): React.JSX.Element {
 
     try {
       // Step 1: the actual upload. Only a throw HERE means the upload failed.
-      const uploadRes: unknown = await profileApi.updateAvatar(formData);
+      const uploadRes = await profileApi.updateAvatar(formData) as unknown as Record<string, unknown> & { data?: Record<string, unknown> };
       uploadSucceeded = true;
-      moderationStatus = (uploadRes?.data?.moderation_status ?? uploadRes?.moderation_status) ?? null;
+      moderationStatus = ((uploadRes?.data?.moderation_status ?? uploadRes?.moderation_status) as 'approved' | 'pending' | null) ?? null;
     } catch (error: unknown) {
       // R-008 fix: only rollback the preview when the UPLOAD itself failed.
       if (user) {
         setUser({ ...user, avatar_url: prevAvatarUrl });
       }
-      const e = error as { response?: { data?: { errors?: { avatar?: string[]; message?: string }; message?: string } } };
-      const apiMessage = e?.response?.data?.errors?.avatar?.[0] || e?.response?.data?.message;
+      const apiErr = error as { response?: { data?: { errors?: { avatar?: string[]; message?: string }; message?: string } } };
+      const apiMessage = apiErr?.response?.data?.errors?.avatar?.[0] || apiErr?.response?.data?.message;
       toast.error(apiMessage || 'Gagal mengunggah foto profil');
       window.setTimeout(() => URL.revokeObjectURL(previewUrl), 2000);
       setAvatarLoading(false);
@@ -567,8 +567,8 @@ export default function ProfilePage(): React.JSX.Element {
         setUser({ ...freshUser, avatar_url: `${base}?v=${Date.now()}` });
       }
 
-      const res: Record<string, unknown> = await profileApi.get();
-      setProfileData({ student: res?.student ?? null, lecturer: res?.lecturer ?? null, pending: res?.pending_change_request ?? null });
+      const res = await profileApi.get() as unknown as Record<string, unknown>;
+      setProfileData({ student: (res?.student as StudentProfile) ?? null, lecturer: (res?.lecturer as LecturerProfile) ?? null, pending: (res?.pending_change_request as ChangeRequest) ?? null });
     } catch {
       // Don't revert — the file is saved server-side. Just warn.
       toast.warning('Foto sudah terunggah, tetapi data profil gagal dimuat ulang. Segarkan halaman untuk sinkron.');
@@ -669,7 +669,7 @@ export default function ProfilePage(): React.JSX.Element {
                 <TextInput label="Nama Lengkap" registration={register('name')} disabled={!isEditing} error={errors.name?.message} />
                 <TextInput label="Nomor HP / WA" registration={register('phone')} disabled={!isEditing} error={errors.phone?.message} />
                 {isStudent && <TextInput label="NIK (KTP)" registration={register('nik')} disabled={!isEditing} error={errors.nik?.message} />}
-                {isLecturer && <TextInput label="NIP / NIDN" value={lecturer?.nip ?? '-'} disabled />}
+                {isLecturer && <TextInput label="NIP / NIDN" value={(lecturer?.nip as string) ?? '-'} disabled />}
                 {isStudent && <TextInput label="Nama Ibu Kandung" registration={register('mother_name')} disabled={!isEditing} error={errors.mother_name?.message} />}
                 {isStudent && <TextInput label="Tempat Lahir" registration={register('birth_place')} disabled={!isEditing} error={errors.birth_place?.message} />}
                 <TextInput label="Tanggal Lahir" type="date" registration={register('birth_date')} disabled={!isEditing} error={errors.birth_date?.message} />
@@ -680,7 +680,7 @@ export default function ProfilePage(): React.JSX.Element {
 
             {isStudent && <StudentAddressSection register={register} errors={errors} isEditing={isEditing} typography={typography} addressLat={addressLat} addressLng={addressLng} reverseGeocoding={reverseGeocoding} forwardGeocoding={forwardGeocoding} onMapChange={handleAddressPointChange} onSyncMap={syncMapFromAddress} />}
 
-            {isLecturer && <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5"><h2 className={`${typography.label} text-[color:var(--profile-text)]`}>Data Kepegawaian, Keuangan & Pajak</h2><div className="grid grid-cols-1 gap-4 md:grid-cols-2"><TextInput label="Nama Bergelar" registration={register('nama_gelar')} disabled={!isEditing} /><TextInput label="NIDN" registration={register('nidn')} disabled={!isEditing} /><TextInput label="NIK Dosen" registration={register('dosen_nik')} disabled={!isEditing} /><TextInput label="Jabatan Fungsional" registration={register('jabatan')} disabled={!isEditing} /><TextInput label="Kelas Jabatan" registration={register('kelas_jabatan')} disabled={!isEditing} /><TextInput label="Tugas Tambahan" registration={register('tugas_tambahan')} disabled={!isEditing} /><TextInput label="Golongan" registration={register('golongan')} disabled={!isEditing} /><TextInput label="Pangkat" registration={register('pangkat')} disabled={!isEditing} /><TextArea label="Alamat Dosen" registration={register('dosen_alamat')} disabled={!isEditing} /><TextInput label="No. Rekening" registration={register('no_rekening')} disabled={!isEditing} /><TextInput label="Nama Bank" registration={register('nama_bank')} disabled={!isEditing} /><TextInput label="NPWP" registration={register('npwp')} disabled={!isEditing} /><TextInput label="Status Aktif" value={lecturer?.status_aktif ?? '-'} disabled /><TextInput label="Status Pegawai" value={lecturer?.status_pegawai ?? '-'} disabled /><TextInput label="Workshop DPL" value={lecturer?.has_workshop ? `Sudah (${lecturer?.workshop_date ?? '-'})` : 'Belum'} disabled /></div><div className={`flex gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] transition-colors ${typography.meta}`}><Info size={18} className="shrink-0" />Kolom yang tidak relevan untuk proses KKN seperti tanggal pensiun dan pendidikan terakhir tidak ditampilkan. Pengisian awal disimpan langsung; perubahan setelah profil lengkap menunggu persetujuan superadmin.</div></section>}
+            {isLecturer && <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5"><h2 className={`${typography.label} text-[color:var(--profile-text)]`}>Data Kepegawaian, Keuangan & Pajak</h2><div className="grid grid-cols-1 gap-4 md:grid-cols-2"><TextInput label="Nama Bergelar" registration={register('nama_gelar')} disabled={!isEditing} /><TextInput label="NIDN" registration={register('nidn')} disabled={!isEditing} /><TextInput label="NIK Dosen" registration={register('dosen_nik')} disabled={!isEditing} /><TextInput label="Jabatan Fungsional" registration={register('jabatan')} disabled={!isEditing} /><TextInput label="Kelas Jabatan" registration={register('kelas_jabatan')} disabled={!isEditing} /><TextInput label="Tugas Tambahan" registration={register('tugas_tambahan')} disabled={!isEditing} /><TextInput label="Golongan" registration={register('golongan')} disabled={!isEditing} /><TextInput label="Pangkat" registration={register('pangkat')} disabled={!isEditing} /><TextArea label="Alamat Dosen" registration={register('dosen_alamat')} disabled={!isEditing} /><TextInput label="No. Rekening" registration={register('no_rekening')} disabled={!isEditing} /><TextInput label="Nama Bank" registration={register('nama_bank')} disabled={!isEditing} /><TextInput label="NPWP" registration={register('npwp')} disabled={!isEditing} /><TextInput label="Status Aktif" value={(lecturer?.status_aktif as string) ?? '-'} disabled /><TextInput label="Status Pegawai" value={(lecturer?.status_pegawai as string) ?? '-'} disabled /><TextInput label="Workshop DPL" value={lecturer?.has_workshop ? `Sudah (${(lecturer?.workshop_date as string) ?? '-'})` : 'Belum'} disabled /></div><div className={`flex gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] transition-colors ${typography.meta}`}><Info size={18} className="shrink-0" />Kolom yang tidak relevan untuk proses KKN seperti tanggal pensiun dan pendidikan terakhir tidak ditampilkan. Pengisian awal disimpan langsung; perubahan setelah profil lengkap menunggu persetujuan superadmin.</div></section>}
 
             {isEditing && <button type="submit" disabled={isSubmitting || !isDirty || (!!pendingRequest && profileComplete)} className={cx('flex h-11 items-center justify-center gap-2 rounded-lg px-6 disabled:opacity-50', typography.button, primaryClass)}>{isSubmitting ? 'Menyimpan...' : profileComplete ? 'Ajukan Perubahan' : 'Simpan & Lanjutkan'}<Save size={16} /></button>}
           </form>

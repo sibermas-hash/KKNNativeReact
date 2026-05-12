@@ -20,7 +20,7 @@ export default function DplEvaluationPage(): React.JSX.Element {
     queryKey: ['student', 'dpl-evaluation', 'form'],
     queryFn: async () => {
       const res = await studentApi.dplEvaluation.form();
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
   });
 
@@ -38,7 +38,7 @@ export default function DplEvaluationPage(): React.JSX.Element {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const aspects = formData?.aspects || [];
+    const aspects = (formData?.aspects as Aspect[]) || [];
     const missing = aspects.filter((a: Aspect) => !ratings[a.id]);
     
     if (missing.length > 0) {
@@ -54,7 +54,7 @@ export default function DplEvaluationPage(): React.JSX.Element {
 
   if (isLoading) return <div className="p-10 text-center animate-pulse text-slate-400 font-bold uppercase tracking-widest">Memuat Form Evaluasi...</div>;
 
-  const aspects = formData?.aspects || [
+  const aspects = (formData?.aspects as Aspect[]) || [
     { id: 'komunikasi', label: 'Komunikasi', description: 'Kemudahan dalam berkonsultasi dan berkomunikasi dengan DPL.' },
     { id: 'bimbingan', label: 'Bimbingan Teknik', description: 'Kualitas bimbingan dalam penyusunan program kerja dan laporan.' },
     { id: 'kehadiran', label: 'Kehadiran di Lokasi', description: 'Frekuensi dan kualitas kunjungan DPL ke lokasi KKN.' },

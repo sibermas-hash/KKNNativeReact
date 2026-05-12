@@ -18,7 +18,7 @@ export default function AdminGroupsPage(): React.JSX.Element {
     queryKey: ['admin', 'groups'],
     queryFn: async () => {
       const res = await adminApi.groups.index();
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
   });
 
@@ -52,7 +52,7 @@ export default function AdminGroupsPage(): React.JSX.Element {
     if (file) { setIsImporting(true); importMutation.mutate(file); }
   };
 
-  const groups = (data as Record<string, unknown>[]) || [];
+  const groups = (data as unknown as Record<string, unknown>[]) || [];
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">

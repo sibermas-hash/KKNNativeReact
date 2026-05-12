@@ -34,7 +34,9 @@ class SyncMasterData extends Command
         {--source=api : Source of data (api or db)}
         {--delta : Run a delta sync based on last sync time}
         {--force : Force sync even if cache is fresh}
-        {--nim=* : Specific NIMs to sync (for mahasiswa only)}';
+        {--nim=* : Specific NIMs to sync (for mahasiswa only)}
+        {--chunk-size=200 : Rows to process between throttle pauses (0 = no pause)}
+        {--chunk-sleep-ms=0 : Milliseconds to sleep between chunks, to release CPU for PHP-FPM/Node. 200-500 is a safe starting point on a 2-4 core box}';
 
     protected $description = 'Sync identity data from Master API Service to KKN local database';
 
@@ -44,6 +46,32 @@ class SyncMasterData extends Command
     {
         parent::__construct();
         $this->masterApi = $masterApi;
+    }
+
+    /**
+     * Sleep briefly between chunks so a large sync run does not starve the
+     * PHP-FPM pool or Node process on a 2-4 core box. Called from the two
+     * processor loops (`processStudentsSync`, `processLecturersSync`) every
+     * `--chunk-size` records.
+     *
+     * Tunable per-run:
+     *   --chunk-size=200       (rows per chunk)
+     *   --chunk-sleep-ms=250   (ms pause between chunks)
+     *
+     * Default: no pause, to stay backward-compatible with small syncs.
+     */
+    protected function maybeThrottleChunk(int $processed): void
+    {
+        $chunkSize = (int) $this->option('chunk-size');
+        $sleepMs = (int) $this->option('chunk-sleep-ms');
+
+        if ($chunkSize <= 0 || $sleepMs <= 0) {
+            return;
+        }
+
+        if ($processed > 0 && $processed % $chunkSize === 0) {
+            usleep($sleepMs * 1000);
+        }
     }
 
     public function handle(): int
@@ -97,6 +125,10 @@ class SyncMasterData extends Command
         }
         $this->info('All required tables verified.');
 
+        // Reset per-run data-quality counters so we can surface anomalies
+        // (e.g. >1% GPA clamped) at the end of the run via Telegram alert.
+        MasterDataSanitizer::resetStats();
+
         // REMOVED: DB::beginTransaction() at global level to prevent long-running mass locks
         // We will use individual transactions or direct writes per record for stability
 
@@ -119,6 +151,20 @@ class SyncMasterData extends Command
 
             $this->newLine();
             $this->info('Sync completed successfully.');
+
+            // Surface SIAKAD data-quality issues (e.g. IPK anomalies) to
+            // ops via Telegram when the threshold is crossed. Silent
+            // no-op otherwise.
+            $qualityStats = MasterDataSanitizer::getStats();
+            if ($qualityStats['gpa_clamped'] > 0) {
+                $this->warn(sprintf(
+                    '  Data quality: %d/%d GPA values clamped (%.2f%%) — see laravel log for details.',
+                    $qualityStats['gpa_clamped'],
+                    $qualityStats['gpa_processed'],
+                    $qualityStats['gpa_clamp_ratio'] * 100,
+                ));
+            }
+            MasterDataSanitizer::maybeAlertOps('sync:master-data');
 
             return 0;
         } catch (\Exception $e) {
@@ -598,6 +644,13 @@ class SyncMasterData extends Command
                 if ($stats['total_fetched'] % 100 === 0) {
                     $this->info("    Processed {$stats['total_fetched']} lecturers...");
                 }
+
+                // CPU throttle — release the box between chunks so PHP-FPM
+                // (serving Nginx → Laravel /api/*) and Node (Next.js) can
+                // still respond. On production FreeBSD with 2-4 cores this
+                // prevents the 503 Service Unavailable storm we saw during
+                // the first 12k-student sync.
+                $this->maybeThrottleChunk($stats['total_fetched']);
             } catch (\Exception $e) {
                 $stats['total_errors']++;
                 $errorDetails[] = ['nip' => $nip ?? 'unknown', 'error' => $e->getMessage()];
@@ -899,6 +952,9 @@ class SyncMasterData extends Command
                 if ($stats['total_fetched'] % 100 === 0) {
                     $this->info("    Processed {$stats['total_fetched']} students...");
                 }
+
+                // CPU throttle — see comment in processLecturersSync.
+                $this->maybeThrottleChunk($stats['total_fetched']);
             } catch (\Exception $e) {
                 $stats['total_errors']++;
                 $errorDetails[] = ['nim' => $nim ?? 'unknown', 'error' => $e->getMessage()];

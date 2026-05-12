@@ -49,7 +49,7 @@ export default function FakultasPage(): React.JSX.Element {
         setFieldErrors(mapped);
         toast.error(Object.values(mapped)[0] || 'Data tidak valid');
       } else {
-        toast.error(err?.response?.data?.error?.message || 'Gagal menyimpan');
+        toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal menyimpan');
       }
     },
   });

@@ -45,7 +45,9 @@ return [
             'port' => env('MAIL_PORT', 2525),
             'username' => env('MAIL_USERNAME'),
             'password' => env('MAIL_PASSWORD'),
-            'timeout' => null,
+            // Keep finite so Gmail stalls don't hang the worker past retry_after
+            // and cause duplicate dispatch. See Notifications\Concerns\QueuesMail.
+            'timeout' => (int) env('MAIL_TIMEOUT', 30),
             'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
         ],
 

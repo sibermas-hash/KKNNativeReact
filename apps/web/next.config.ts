@@ -34,7 +34,7 @@ const nextConfig: NextConfig = {
   // DO NOT set `true` untuk menambal error baru tanpa mencatat di doc.
   // ─────────────────────────────────────────────────────────────────────
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   serverExternalPackages: ['canvas', 'jsdom', 'isomorphic-dompurify'],
   devIndicators: false,

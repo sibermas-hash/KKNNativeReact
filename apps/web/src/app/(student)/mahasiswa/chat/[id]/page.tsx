@@ -58,7 +58,7 @@ export default function ChatRoomPage() {
       const res = await api.post(`/chat/${id}/messages`, fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
     onSuccess: () => {
       setBody(''); setFile(null);

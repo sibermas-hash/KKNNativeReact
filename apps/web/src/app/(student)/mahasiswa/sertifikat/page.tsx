@@ -11,7 +11,7 @@ export default function CertificatesPage(): React.JSX.Element {
   
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.certificates,
-    queryFn: async () => { const res = await studentApi.certificates.index(); return (res as unknown as { data?: unknown })?.data ?? res; },
+    queryFn: async () => { const res = await studentApi.certificates.index(); return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>; },
   });
 
   const scores = (data?.scores as Record<string, unknown>[]) || [];

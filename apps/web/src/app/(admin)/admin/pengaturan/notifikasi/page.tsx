@@ -24,7 +24,7 @@ export default function NotificationSettingsPage() {
     queryKey: ['admin', 'settings'],
     queryFn: async () => {
       const res = await adminApi.settings.index();
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
   });
 
@@ -37,7 +37,7 @@ export default function NotificationSettingsPage() {
     onError: () => toast.error('Gagal menyimpan pengaturan'),
   });
 
-  const settings = data?.settings || {};
+  const settings = (data?.settings || {}) as Record<string, string>;
   const defaults: NotifDefaults = {
     in_app: settings['notification_default_in_app'] !== '0',
     email: settings['notification_default_email'] !== '0',

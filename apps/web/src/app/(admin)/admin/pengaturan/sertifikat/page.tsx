@@ -10,7 +10,7 @@ export default function CertificateConfigPage(): React.JSX.Element {
     queryKey: ['admin', 'certificate-config'],
     queryFn: async () => {
       const res = await api.get('/admin/pengaturan/sertifikat');
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
   });
 
@@ -29,7 +29,7 @@ export default function CertificateConfigPage(): React.JSX.Element {
           <div className="space-y-2">
             <div className="flex items-center justify-between border-b border-slate-100 py-3">
               <p className="text-sm font-medium text-slate-700">Template</p>
-              <p className="text-sm text-slate-500">{String(data.config.template_path || 'Default')}</p>
+              <p className="text-sm text-slate-500">{String((data.config as Record<string, unknown>)?.template_path || 'Default')}</p>
             </div>
           </div>
         </div>

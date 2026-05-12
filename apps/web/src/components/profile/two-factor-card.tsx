@@ -76,7 +76,7 @@ export function TwoFactorCard() {
   const disableMut = useMutation({
     mutationFn: async () => {
       const res = await api.post('/2fa/disable', { password: disablePassword, code: disableCode });
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
     onSuccess: () => {
       setShowDisable(false);

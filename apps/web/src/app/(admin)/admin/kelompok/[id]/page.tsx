@@ -12,7 +12,7 @@ export default function GroupDetailPage(): React.JSX.Element {
     queryKey: ['admin', 'kelompok', Number(id)],
     queryFn: async () => {
       const res = await api.get(`/admin/kelompok/${id}`);
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
     enabled: !!id,
   });

@@ -153,7 +153,7 @@ export function ActivityStatsWidget() {
 
 import { ComponentType } from 'react';
 
-function StatCard({ icon: Icon, color, label, value, warn }: { icon: ComponentType; color: string; label: string; value: number; warn?: boolean }) {
+function StatCard({ icon: Icon, color, label, value, warn }: { icon: React.ElementType; color: string; label: string; value: number; warn?: boolean }) {
   const colorMap: Record<string, string> = {
     emerald: 'bg-emerald-50 text-emerald-700',
     rose: 'bg-rose-50 text-rose-700',

@@ -38,7 +38,7 @@ export default function AvatarModerationPage() {
     queryKey: ['admin', 'avatar-moderation', filter],
     queryFn: async () => {
       const res = await api.get('/admin/avatar-moderation', { params: { status: filter } });
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
   });
 

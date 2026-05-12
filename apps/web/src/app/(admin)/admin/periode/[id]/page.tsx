@@ -14,7 +14,7 @@ export default function PeriodDetailPage(): React.JSX.Element {
     queryKey: ['admin', 'period', Number(id)],
     queryFn: async () => {
       const res = await adminApi.periods.show(Number(id));
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
     enabled: !!id,
   });

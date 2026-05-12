@@ -22,8 +22,18 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
   const pathname = usePathname();
   const { user, isAuthenticated } = useAuthStore();
 
-  // Hydration guard: defer auth-dependent rendering until after mount
-  // so the initial client render matches the server HTML exactly.
+  // ── Hydration guard ─────────────────────────────────────────────────────
+  // Server + first-client render harus menghasilkan HTML IDENTIK. Semua
+  // efek yang bergantung pada browser APIs (framer-motion useScroll,
+  // zustand state yang mungkin baru di-hydrate, pathname yang kadang
+  // lagging di client) di-defer ke setelah mount.
+  //
+  // Sebelum mount (SSR + first client render):
+  //   - MotionValue-based styles TIDAK dipakai (render static transparent nav)
+  //   - loginItem = null (allNavItems hanya berisi static items)
+  //   - isScrolled = false
+  //
+  // Setelah mount: full motion + auth-aware rendering aktif.
   const [hasMounted, setHasMounted] = useState(false);
   useEffect(() => setHasMounted(true), []);
 
@@ -42,7 +52,11 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
   const boxShadow = useTransform(shadowOpacity, (s) => `0 4px 30px rgba(0,0,0,${s})`);
 
   const [isScrolled, setIsScrolled] = useState(false);
-  useEffect(() => scrollY.on('change', (v) => setIsScrolled(v > 100)), [scrollY]);
+  useEffect(() => {
+    if (!hasMounted) return;
+    const unsubscribe = scrollY.on('change', (v) => setIsScrolled(v > 100));
+    return () => unsubscribe();
+  }, [scrollY, hasMounted]);
 
   const navItems: NavItem[] = [
     { label: 'Home', href: '/' },
@@ -51,9 +65,9 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
     { label: 'Unduhan', href: '/unduhan' },
   ];
 
-  // Compute auth-dependent nav item only after hydration to avoid SSR mismatch.
-  // Before mount, loginItem is null — the nav renders only the static navItems,
-  // which are identical on server and client.
+  // Compute auth-dependent nav item only after hydration to avoid SSR
+  // mismatch. Before mount, loginItem is null — the nav renders only the
+  // static navItems, which are identical on server and client.
   const loginItem: NavItem | null = hasMounted
     ? isAuthenticated
       ? { label: 'Dashboard', href: (() => {
@@ -69,21 +83,29 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
   // Build the full nav list: static items + conditional login/dashboard item
   const allNavItems = loginItem ? [...navItems, loginItem] : navItems;
 
+  // Determine text color — saat belum mount, assume non-scrolled (matches SSR)
   const navTextClass = overlayNav
-    ? isScrolled
+    ? hasMounted && isScrolled
       ? 'text-emerald-950 hover:text-emerald-600'
       : 'text-white hover:text-white/80'
     : 'text-emerald-950 hover:text-emerald-700';
 
   const helpIconClass = overlayNav
-    ? isScrolled
+    ? hasMounted && isScrolled
       ? 'text-emerald-700 hover:text-emerald-500 hover:bg-emerald-50'
       : 'text-white/80 hover:text-white hover:bg-white/10'
     : 'text-emerald-700 hover:text-emerald-500 hover:bg-emerald-50';
 
-  const overlayStyle = overlayNav
+  // MotionValue styles HANYA aktif setelah mount. Sebelum mount pakai
+  // static style object (rgba 0 = transparent, minHeight 90 = initial
+  // state sebelum scroll). Server-rendered HTML otomatis match client's
+  // first render karena MotionValue ditangani oleh framer-motion hanya di
+  // browser.
+  const overlayStyle = overlayNav && hasMounted
     ? { backgroundColor: bgColor, backdropFilter: backdropBlur, minHeight: navHeight, boxShadow }
-    : {};
+    : overlayNav
+      ? { backgroundColor: 'rgba(255, 255, 255, 0)', minHeight: 90 }
+      : {};
 
   return (
     <MotionNav
@@ -99,9 +121,19 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
           {/* Logo (Kiri) */}
           <div className="flex-1 flex justify-start">
             <Link href="/" className="flex items-center gap-2.5 no-underline shrink-0 py-1">
-              <img src="/images/logo_uinsaizu.png" alt="Logo UIN SAIZU" className="h-9 w-auto object-contain sm:h-11" />
+              <img
+                src="/images/logo_uinsaizu.png"
+                alt="Logo UIN SAIZU"
+                className="h-9 w-auto object-contain sm:h-11"
+                style={{ width: 'auto', height: 'auto', maxHeight: '2.75rem' }}
+              />
               <div className="w-px h-6 bg-emerald-200/50 mx-0.5" />
-              <img src="/images/Logo_SIBERMAS.png" alt="Logo SIBERMAS" className="h-9 w-auto object-contain sm:h-11" />
+              <img
+                src="/images/Logo_SIBERMAS.png"
+                alt="Logo SIBERMAS"
+                className="h-9 w-auto object-contain sm:h-11"
+                style={{ width: 'auto', height: 'auto', maxHeight: '2.75rem' }}
+              />
             </Link>
           </div>
 
@@ -114,7 +146,7 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
                 className={`group relative font-display text-[0.76rem] font-bold uppercase tracking-[0.16em] no-underline transition-colors cursor-pointer ${navTextClass}`}
               >
                 {item.label}
-                <span className={`absolute -bottom-1 left-0 h-0.5 w-0 transition-all duration-300 group-hover:w-full ${overlayNav && !isScrolled ? 'bg-white' : 'bg-emerald-600'}`} />
+                <span className={`absolute -bottom-1 left-0 h-0.5 w-0 transition-all duration-300 group-hover:w-full ${overlayNav && !(hasMounted && isScrolled) ? 'bg-white' : 'bg-emerald-600'}`} />
               </Link>
             ))}
           </div>
@@ -139,7 +171,7 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
               className={
                 overlayNav
                   ? `rounded-full border p-2.5 lg:hidden transition-all duration-300 ${
-                      isScrolled
+                      hasMounted && isScrolled
                         ? 'border-emerald-100 bg-emerald-50 text-emerald-950 shadow-sm'
                         : 'border-white/20 bg-white/10 text-white backdrop-blur-md'
                     }`
@@ -162,7 +194,7 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
             >
               <div className={`p-6 rounded-3xl border shadow-2xl transition-all duration-500 ${
                 overlayNav
-                  ? isScrolled
+                  ? hasMounted && isScrolled
                     ? 'bg-white/95 border-emerald-100 text-emerald-950 backdrop-blur-xl'
                     : 'bg-emerald-950/90 border-white/10 text-white backdrop-blur-md'
                   : 'bg-white border-emerald-100 text-emerald-950'

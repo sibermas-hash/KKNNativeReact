@@ -43,7 +43,7 @@ export default function AdminChatListPage() {
       if (filter !== 'all') params.status = filter;
       if (priorityFilter) params.priority = priorityFilter;
       const res = await api.get('/admin/chat', { params });
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
     refetchInterval: 30_000,
   });

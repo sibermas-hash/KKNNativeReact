@@ -23,38 +23,38 @@ echo "  ✅ Push ke GitHub selesai"
 
 # Step 2: SSH ke server dan deploy
 echo ""
-echo "[2/2] Deploying ke server..."
-echo "  → Masukkan password server saat diminta: KampelM45/.26:"
+echo "[2/2] Deploying ke server via automated SSH..."
 echo ""
 
-ssh -p "$PORT" -o StrictHostKeyChecking=no "$SERVER" << 'REMOTE_SCRIPT'
-set -e
-APP_DIR="/usr/local/www/apache24/data/Sibermas2026"
 
-echo "  [a] Pulling latest code..."
-cd "$APP_DIR"
-git pull origin main
-
-echo "  [b] Installing dependencies..."
-pnpm install --frozen-lockfile
-
-echo "  [c] Building frontend..."
-pnpm build
-
-echo "  [d] Copying static & public to standalone..."
-cp -r apps/web/.next/static   apps/web/.next/standalone/apps/web/.next/static
-cp -r apps/web/public         apps/web/.next/standalone/apps/web/public
-
-echo "  [e] Fixing permissions..."
-chown -R www:www apps/web/.next
-
-echo "  [f] Restarting services..."
-supervisorctl restart all
-
-echo ""
-echo "  ✅ Deploy selesai!"
-echo "  🌐 Cek di: https://sibermas.uinsaizu.ac.id"
-REMOTE_SCRIPT
+expect << EOF
+set timeout -1
+spawn ssh -p "$PORT" -o StrictHostKeyChecking=no "$SERVER"
+expect "*assword:*"
+send "KampelM45/.26:\r"
+expect "*$"
+send "set -e\r"
+send "APP_DIR=\"/usr/local/www/apache24/data/Sibermas2026\"\r"
+send "echo \"  [a] Pulling latest code...\"\r"
+send "cd \$APP_DIR\r"
+send "git pull origin main\r"
+send "echo \"  [b] Installing dependencies...\"\r"
+send "pnpm install --frozen-lockfile\r"
+send "echo \"  [c] Building frontend...\"\r"
+send "pnpm build\r"
+send "echo \"  [d] Copying static & public to standalone...\"\r"
+send "cp -r apps/web/.next/static   apps/web/.next/standalone/apps/web/.next/static\r"
+send "cp -r apps/web/public         apps/web/.next/standalone/apps/web/public\r"
+send "echo \"  [e] Fixing permissions...\"\r"
+send "chown -R www:www apps/web/.next\r"
+send "echo \"  [f] Restarting services...\"\r"
+send "supervisorctl restart all\r"
+send "echo \"\"\r"
+send "echo \"  ✅ Deploy selesai!\"\r"
+send "echo \"  🌐 Cek di: https://sibermas.uinsaizu.ac.id\"\r"
+send "exit\r"
+expect eof
+EOF
 
 echo ""
 echo "═══════════════════════════════════════════════"

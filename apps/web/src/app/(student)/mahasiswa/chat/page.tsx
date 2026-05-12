@@ -49,7 +49,7 @@ export default function ChatListPage() {
     queryKey: ['student', 'chat', 'conversations'],
     queryFn: async () => {
       const res = await api.get('/chat');
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
     refetchInterval: 30_000,
   });
@@ -57,7 +57,7 @@ export default function ChatListPage() {
   const createMut = useMutation({
     mutationFn: async () => {
       const res = await api.post('/chat', { subject, message, priority });
-      return (res as unknown as { data?: { id: number } })?.data ?? res;
+      return ((res as unknown as { data?: { id: number } })?.data ?? res) as { id: number };
     },
     onSuccess: (conv) => {
       qc.invalidateQueries({ queryKey: ['student', 'chat', 'conversations'] });

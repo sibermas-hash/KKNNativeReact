@@ -84,7 +84,7 @@ function WorkshopFormModal({ workshop, onClose, onSaved }: { workshop?: Workshop
     queryKey: ['admin', 'periods-dropdown'],
     queryFn: async () => {
       const res = await adminApi.periods.index();
-      return (res as unknown as { data?: Array<{ id: number; name: string }> })?.data ?? res;
+      return ((res as unknown as { data?: Array<{ id: number; name: string }> })?.data ?? res) as Array<{ id: number; name: string }>;
     },
   });
 
@@ -268,7 +268,7 @@ export default function WorkshopsPage(): React.JSX.Element {
       return adminApi.workshops.importPeserta(workshopId, fd);
     },
     onSuccess: (res: unknown) => {
-      const data = (res as { data?: { success?: number; not_found?: number; skipped?: number } })?.data ?? res;
+      const data = ((res as { data?: { success?: number; not_found?: number; skipped?: number } })?.data ?? res) as { success?: number; not_found?: number; skipped?: number };
       const msg = `Import selesai: ${data.success ?? 0} berhasil, ${data.not_found ?? 0} tidak ditemukan, ${data.skipped ?? 0} dilewati.`;
       toast.success(msg);
       qc.invalidateQueries({ queryKey: ['admin', 'workshops'] });

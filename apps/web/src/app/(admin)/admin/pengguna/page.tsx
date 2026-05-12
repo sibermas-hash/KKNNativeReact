@@ -31,7 +31,7 @@ export default function AdminUsersPage(): React.JSX.Element {
     queryKey: ['admin', 'users', { search }],
     queryFn: async () => {
       const res = await adminApi.users.index({ search });
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
   });
 
@@ -72,7 +72,7 @@ export default function AdminUsersPage(): React.JSX.Element {
     onError: (error: unknown) => toast.error((error as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal mengubah data pengguna'),
   });
 
-  const users = (data as User[]) || [];
+  const users = (data as unknown as User[]) || [];
 
   const roleOptions = [
     { value: 'student', label: 'Mahasiswa' },

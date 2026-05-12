@@ -95,8 +95,8 @@ function PeriodCard({ period, onRegister, isRegistering, disabled }: { period: P
       setLoadingGroups(true);
       try {
         const res = await studentApi.kknDaftar.groups(period.id);
-        const data = (res as unknown as { data?: { groups?: unknown[] }; groups?: unknown[] })?.data ?? res;
-        setGroups((data.groups ?? data.data?.groups ?? []) as typeof groups);
+        const data = (res as unknown as { data?: { groups?: unknown[] }; groups?: unknown[] })?.data ?? (res as { groups?: unknown[] });
+        setGroups((data.groups ?? []) as unknown as GroupInfo[]);
       } catch { toast.error('Gagal memuat data kelompok'); }
       finally { setLoadingGroups(false); }
     }
@@ -193,7 +193,7 @@ export default function RegistrationFormPage(): React.JSX.Element {
     queryKey: QUERY_KEYS.student.kknDaftar,
     queryFn: async () => {
       const res = await studentApi.kknDaftar.index();
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
   });
 

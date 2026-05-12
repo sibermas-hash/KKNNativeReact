@@ -17,7 +17,7 @@ export default function FinalReportPage(): React.JSX.Element {
     queryKey: ['student', 'final-report'],
     queryFn: async () => {
       const res = await studentApi.finalReport.index();
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
   });
 
@@ -52,7 +52,7 @@ export default function FinalReportPage(): React.JSX.Element {
     );
   }
 
-  const report = reportData?.report;
+  const report = reportData?.report as Record<string, unknown> | undefined;
   const isLeader = Boolean((reportData as { is_leader?: boolean } | undefined)?.is_leader);
 
   return (
@@ -75,24 +75,24 @@ export default function FinalReportPage(): React.JSX.Element {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-emerald-950">Laporan Telah Terunggah</h3>
-                <p className="text-sm text-slate-500">Diunggah pada {new Date(report.created_at).toLocaleDateString('id-ID', { dateStyle: 'long' })}</p>
+                <p className="text-sm text-slate-500">Diunggah pada {new Date(report.created_at as string).toLocaleDateString('id-ID', { dateStyle: 'long' })}</p>
               </div>
             </div>
             <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
               report.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : 
               report.status === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'
             }`}>
-              {report.status_label || report.status}
+              {String(report.status_label || report.status || '')}
             </div>
           </div>
 
           <div className="bg-slate-50 rounded-2xl p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <FileText className="text-slate-400" size={20} />
-              <span className="text-sm font-bold text-slate-700 truncate max-w-[200px]">{report.file_name}</span>
+              <span className="text-sm font-bold text-slate-700 truncate max-w-[200px]">{String(report.file_name || '')}</span>
             </div>
             <a 
-              href={report.file_url || apiUrl(`/student/final-report/${report.id}/preview`)} 
+              href={String(report.file_url || '') || apiUrl(`/student/final-report/${report.id}/preview`)} 
               target="_blank" 
               rel="noopener noreferrer"
               className="flex items-center gap-2 text-xs font-black text-emerald-600 hover:text-emerald-700 uppercase tracking-widest"
@@ -101,10 +101,10 @@ export default function FinalReportPage(): React.JSX.Element {
             </a>
           </div>
 
-          {report.notes && (
+          {!!report.notes && (
             <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 space-y-1">
               <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest">Catatan DPL:</p>
-              <p className="text-sm text-amber-900 font-medium">{report.notes}</p>
+              <p className="text-sm text-amber-900 font-medium">{String(report.notes || '')}</p>
             </div>
           )}
 

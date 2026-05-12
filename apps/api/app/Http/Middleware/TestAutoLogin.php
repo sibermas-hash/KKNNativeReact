@@ -23,10 +23,13 @@ class TestAutoLogin
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // H-002 fix: Hard-gate to local/testing environments only.
-        // Previously only blocked `production`, which would leave staging open.
+        // Hard-gate: silently pass through in non-local/testing environments.
+        // abort(500) was replaced with a transparent pass-through because the
+        // middleware is prepended globally (Laravel 13 boot sequence does not
+        // allow conditional registration in withMiddleware). Throwing 500 on
+        // every production request — including public endpoints — is wrong.
         if (! app()->environment(['local', 'testing'])) {
-            abort(500, 'TestAutoLogin only permitted in local/testing environments');
+            return $next($request);
         }
 
         // SECURITY: Only allow when explicitly enabled via config AND header is present.

@@ -16,7 +16,7 @@ export default function DosenDashboard(): React.JSX.Element {
     queryKey: QUERY_KEYS.dosen.dashboard,
     queryFn: async () => {
       const res = await dosenApi.dashboard();
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
   });
 

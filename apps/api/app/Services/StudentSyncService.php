@@ -229,7 +229,9 @@ class StudentSyncService
             // log for manual provisioning.
             // R-001 fix (audit): dispatch AFTER commit to avoid emailing
             // rolled-back users or queueing notifications from inside the tx.
-            if ($isNewUser) {
+            // SYNC_SEND_WELCOME_EMAIL=false disables this during bulk sync
+            // to prevent Gmail SMTP rate-limit (454 Too many login attempts).
+            if ($isNewUser && config('services.sync.send_welcome_email', true)) {
                 if (! empty($user->email)) {
                     $userEmail = $user->email;
                     $nim = $data['nim'];
@@ -248,6 +250,10 @@ class StudentSyncService
                         'nim' => $data['nim'],
                     ]);
                 }
+            } elseif ($isNewUser && ! config('services.sync.send_welcome_email', true)) {
+                Log::info('Mahasiswa created without welcome email (SYNC_SEND_WELCOME_EMAIL=false)', [
+                    'nim' => $data['nim'],
+                ]);
             }
 
             return true;

@@ -30,7 +30,7 @@ export default function WorkProgramCreatePage(): React.JSX.Element {
     mutationFn: async () => {
       // Create work program (JSON)
       const res = await studentApi.workPrograms.store(form);
-      const created = (res as unknown as { data?: { id: number } })?.data ?? res;
+      const created = ((res as unknown as { data?: { id: number } })?.data ?? res) as { id: number };
       const id = created?.id;
 
       // Upload proposal file if provided

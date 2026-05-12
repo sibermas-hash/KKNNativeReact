@@ -74,4 +74,16 @@ return [
         'chat_id' => env('TELEGRAM_CHAT_ID', ''),
     ],
 
+    /*
+     |--------------------------------------------------------------------------
+     | Sync Behaviour
+     |--------------------------------------------------------------------------
+     | SYNC_SEND_WELCOME_EMAIL=false disables password-reset emails during
+     | bulk sync to prevent Gmail SMTP rate-limit (454 Too many login attempts).
+     | Set to true (default) for normal incremental syncs.
+     */
+    'sync' => [
+        'send_welcome_email' => env('SYNC_SEND_WELCOME_EMAIL', true),
+    ],
+
 ];

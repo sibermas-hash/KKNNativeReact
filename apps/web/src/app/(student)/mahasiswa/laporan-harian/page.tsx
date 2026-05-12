@@ -25,7 +25,7 @@ export default function DailyReportsPage(): React.JSX.Element {
     },
   });
 
-  const reports = (data as unknown as { data?: unknown[] })?.data || [];
+  const reports = (data as unknown as { data?: Record<string, unknown>[] })?.data || [];
   const meta = (data as unknown as { meta?: { current_page: number; last_page: number; total: number } })?.meta;
 
   return (

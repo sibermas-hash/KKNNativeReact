@@ -54,7 +54,7 @@ export default function AdminChatRoomPage() {
       const res = await api.post(`/admin/chat/${id}/reply`, fd, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
     onSuccess: () => {
       setBody(''); setFile(null);
@@ -68,7 +68,7 @@ export default function AdminChatRoomPage() {
   const closeMut = useMutation({
     mutationFn: async () => {
       const res = await api.patch(`/admin/chat/${id}/close`);
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
     onSuccess: () => {
       toast.success('Percakapan ditutup');

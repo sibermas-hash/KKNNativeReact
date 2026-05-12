@@ -19,12 +19,12 @@ export default function DplEvaluationsPage(): React.JSX.Element {
     queryFn: async () => {
       const res = await dplApi.evaluations.index();
       // API client interceptor unwraps to res.data.data, so res is already the inner object
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
   });
 
   // Handle both cases: direct API call vs interceptor-unwrapped
-  const responseData = (data as unknown as { data?: unknown })?.data ?? data;
+  const responseData = (data as unknown as { data?: { students?: Record<string, unknown>[] } })?.data ?? (data as { students?: Record<string, unknown>[] });
   const students = (responseData?.students as Record<string, unknown>[]) || [];
   const aspects = ['dpl_relevansi_score', 'dpl_ketercapaian_score', 'dpl_inovasi_score', 'dpl_administrasi_score', 'dpl_artikel_score'];
   const aspectLabels: Record<string, string> = { dpl_relevansi_score: 'Relevansi', dpl_ketercapaian_score: 'Ketercapaian', dpl_inovasi_score: 'Inovasi', dpl_administrasi_score: 'Administrasi', dpl_artikel_score: 'Artikel' };

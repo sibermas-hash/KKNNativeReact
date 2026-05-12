@@ -5,6 +5,7 @@ import { Footer } from '@/components/public/footer';
 import { HeroTitle } from '@/components/public/hero-title';
 import { Showcase3D, HomeContent } from '@/components/public/lazy';
 import { HomePopupAnnouncement } from '@/components/public/home-popup-announcement';
+import { LandingMapPreview } from '@/components/public/landing-map-preview';
 
 export const revalidate = 3600; // 1 hour
 
@@ -114,6 +115,9 @@ export default async function LandingPage() {
 
       {/* --- 3D Showcase Section --- */}
       <Showcase3D />
+
+      {/* --- Peta Sebaran Kelompok KKN (realtime preview) --- */}
+      <LandingMapPreview />
 
       {/* --- Animated Content Sections --- */}
       <HomeContent

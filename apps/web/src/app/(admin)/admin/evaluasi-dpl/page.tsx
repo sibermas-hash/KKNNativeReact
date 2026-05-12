@@ -13,11 +13,11 @@ export default function EvaluasiDplPage(): React.JSX.Element {
     queryKey: ['admin', 'evaluasi-dpl', { periode_id: periodeId }],
     queryFn: async () => {
       const res = await api.get('/admin/evaluasi-dpl', { params: { periode_id: periodeId || undefined } });
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
   });
 
-  const evaluations = (data as Record<string, unknown>[]) || [];
+  const evaluations = (data as unknown as Record<string, unknown>[]) || [];
 
   return (
     <div className="space-y-6">

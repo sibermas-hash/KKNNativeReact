@@ -10,7 +10,7 @@ export default function SystemSettingsPage(): React.JSX.Element {
     queryKey: ['admin', 'settings'],
     queryFn: async () => {
       const res = await adminApi.settings.index();
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
   });
 

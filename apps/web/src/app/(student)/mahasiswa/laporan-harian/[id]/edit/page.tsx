@@ -19,7 +19,7 @@ export default function EditDailyReportPage(): React.JSX.Element {
     queryKey: ['student', 'daily-reports', Number(id)],
     queryFn: async () => {
       const res = await studentApi.dailyReports.show(Number(id));
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
     enabled: !!id,
   });
@@ -35,7 +35,8 @@ export default function EditDailyReportPage(): React.JSX.Element {
   });
 
   const { register, handleSubmit } = useForm<EditDailyReportFormData>({
-    resolver: zodResolver(editDailyReportSchema) as unknown as typeof zodResolver,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(editDailyReportSchema) as any,
     values: data ? { date: String(data.date || ''), title: String(data.title || ''), activity: String(data.activity || ''), reflection: String(data.reflection || ''), latitude: Number(data.latitude || 0), longitude: Number(data.longitude || 0), captured_at: String(data.captured_at || '') } as unknown as EditDailyReportFormData : undefined,
   });
 

@@ -66,6 +66,11 @@ return [
             'replace_placeholders' => true,
             // R13-OPS-015: redact passwords/tokens/NIK/NIM from log file entries.
             'processors' => [PiiScrubber::class],
+            // OPS-FreeBSD 2026-05-12: force group-writable perms so both www
+            // (FPM) and the deploy user (artisan CLI) can append. Without
+            // this, logs rotated by the user who first wrote them become
+            // read-only for the other → "Permission denied" on log rotation.
+            'permission' => 0o664,
         ],
 
         'daily' => [
@@ -76,6 +81,8 @@ return [
             'replace_placeholders' => true,
             // R13-OPS-015: redact passwords/tokens/NIK/NIM from daily log files.
             'processors' => [PiiScrubber::class],
+            // OPS-FreeBSD 2026-05-12: see comment on 'single' channel.
+            'permission' => 0o664,
         ],
 
         'slack' => [

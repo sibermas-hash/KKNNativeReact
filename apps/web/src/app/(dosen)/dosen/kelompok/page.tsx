@@ -12,7 +12,7 @@ export default function GroupsPage(): React.JSX.Element {
     queryKey: QUERY_KEYS.dpl.groups,
     queryFn: async () => {
       const res = await dplApi.groups.index();
-      return (res as unknown as { data?: unknown }).data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
   });
 

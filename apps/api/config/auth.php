@@ -127,4 +127,26 @@ return [
 
     'test_auto_login_enabled' => env('AUTH_TEST_AUTO_LOGIN_ENABLED', false),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Two-Factor Authentication
+    |--------------------------------------------------------------------------
+    |
+    | 'grace_period_hours' — for freshly-created privileged accounts, how
+    |   long the EnforceTwoFactor middleware should allow unrestricted access
+    |   so the admin can discover the 2FA setup page. Once the window
+    |   elapses, only the onboarding endpoints (profile, 2fa setup, auth)
+    |   remain open until 2FA is confirmed.
+    |
+    |   Default 0 = no grace period (strict enforcement from second 0).
+    |   Recommended for first-launch production: 24.
+    |
+    |   Set via AUTH_2FA_GRACE_HOURS in .env.
+    |
+    */
+
+    'two_factor' => [
+        'grace_period_hours' => (int) env('AUTH_2FA_GRACE_HOURS', 0),
+    ],
+
 ];

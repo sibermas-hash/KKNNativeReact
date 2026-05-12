@@ -34,7 +34,7 @@ export default function MahasiswaRekapitulasiPage(): React.JSX.Element {
     queryKey: QUERY_KEYS.student.rekapitulasi,
     queryFn: async () => {
       const res = await api.get('/student/rekapitulasi');
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
   });
 

@@ -16,7 +16,7 @@ export default function AdminGradesPage(): React.JSX.Element {
     queryKey: ['admin', 'nilai', { periode_id: selectedPeriodId, search }],
     queryFn: async () => {
       const res = await api.get('/admin/nilai', { params: { periode_id: selectedPeriodId || undefined, search: search || undefined } });
-      return (res as unknown as { data?: unknown })?.data ?? res;
+      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
   });
 
@@ -28,7 +28,7 @@ export default function AdminGradesPage(): React.JSX.Element {
     },
   });
 
-  const scores = (data as Record<string, unknown>[]) || [];
+  const scores = (data as unknown as Record<string, unknown>[]) || [];
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">

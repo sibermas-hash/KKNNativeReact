@@ -73,7 +73,8 @@ export default function ChangePasswordPage(): React.JSX.Element {
     reset,
     formState: { errors },
   } = useForm<ChangePasswordFormData>({
-    resolver: zodResolver(isFirstLogin ? firstLoginSchema : changePasswordSchema) as unknown as typeof zodResolver,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: zodResolver(isFirstLogin ? firstLoginSchema : changePasswordSchema) as any,
   });
 
   // Re-initialize form when isFirstLogin is determined so resolver updates

@@ -38,7 +38,7 @@ export default function GroupDetailPage(): React.JSX.Element {
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
           <p className="text-xs text-slate-500">Kapasitas</p>
-          <p className="font-semibold">{d.capacity}</p>
+          <p className="font-semibold">{String(d.capacity ?? '-')}</p>
         </div>
         <div className="rounded-2xl bg-white p-4 shadow-sm">
           <p className="text-xs text-slate-500">Status</p>

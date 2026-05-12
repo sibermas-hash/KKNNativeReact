@@ -128,7 +128,7 @@ export default function ParticipantFeedbackPage(): React.JSX.Element {
 
 import { ComponentType } from 'react';
 
-function StatCard({ icon: Icon, label, value }: { icon: ComponentType; label: string; value: string | number }) {
+function StatCard({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string | number }) {
   return (
     <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
       <div className="flex items-center gap-3">

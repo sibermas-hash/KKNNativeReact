@@ -98,7 +98,7 @@ export default function PeriodsPage(): React.JSX.Element {
         const firstKey = Object.keys(mapped)[0];
         toast.error(mapped[firstKey] || 'Data yang diberikan tidak valid.');
       } else {
-        toast.error(err?.response?.data?.error?.message || 'Gagal menyimpan');
+        toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal menyimpan');
       }
     },
   });

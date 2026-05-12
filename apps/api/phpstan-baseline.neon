@@ -85,12 +85,6 @@ parameters:
 			path: app/Console/Commands/KKN/SendDeadlineRemindersCommand.php
 
 		-
-			message: '#^Anonymous function has an unused use \$firstWord\.$#'
-			identifier: closure.unusedUse
-			count: 1
-			path: app/Console/Commands/ReadExcelCommand.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
 			identifier: property.notFound
 			count: 1
@@ -681,7 +675,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
 			identifier: property.notFound
-			count: 3
+			count: 5
 			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
 
 		-
@@ -699,7 +693,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
 			identifier: property.notFound
-			count: 4
+			count: 6
 			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
 
 		-
@@ -724,6 +718,12 @@ parameters:
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\PesertaKkn\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
 			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of static method Illuminate\\Database\\Connection\:\:transaction\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
 
 		-
@@ -3513,7 +3513,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:\$kelompok\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 3
 			path: app/Http/Resources/Api/V1/LokasiResource.php
 
 		-
@@ -3561,7 +3561,7 @@ parameters:
 		-
 			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:relationLoaded\(\)\.$#'
 			identifier: method.notFound
-			count: 1
+			count: 3
 			path: app/Http/Resources/Api/V1/LokasiResource.php
 
 		-

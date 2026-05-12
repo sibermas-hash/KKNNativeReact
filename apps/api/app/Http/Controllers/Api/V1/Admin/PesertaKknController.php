@@ -307,54 +307,98 @@ class PesertaKknController extends Controller
 
         $approved = 0;
         $skipped = [];
+        $auditQueue = [];
 
+        // Audit fix (2026-05-12): bulk approve sebelumnya loop `cursor()` tanpa
+        // transaction/lock — dua admin bulk-approve bersamaan bisa double-update.
+        // Sekarang tiap peserta di-lock via `lockForUpdate()` dan status
+        // di-re-check setelah lock didapat (double-check locking). Audit log
+        // di-queue dan dispatch setelah semua row selesai untuk hindari
+        // overhead per-iterasi.
         foreach ($query->cursor() as $peserta) {
             /** @var PesertaKkn $peserta */
-            $forceBypass = false;
-            $bypassedReasons = null;
-            if (! ($force && $isSuperadmin)) {
-                $eligibility = $this->checkApprovalEligibility($peserta);
-                if (! $eligibility['eligible']) {
-                    $skipped[] = [
+            $result = DB::transaction(function () use ($peserta, $force, $isSuperadmin) {
+                // Lock baris — kalau request lain approve duluan, kita lihat
+                // status baru dan skip.
+                $locked = PesertaKkn::whereKey($peserta->id)->lockForUpdate()->first();
+
+                if ($locked === null || $locked->status !== 'pending') {
+                    return [
+                        'status' => 'race_skip',
                         'id' => $peserta->id,
                         'nim' => $peserta->mahasiswa?->nim,
                         'nama' => $peserta->mahasiswa?->nama,
-                        'reason' => $eligibility['first_message'],
+                        'reason' => 'Sudah di-proses oleh request lain',
                     ];
+                }
 
-                    continue;
+                $forceBypass = false;
+                $bypassedReasons = null;
+
+                if (! ($force && $isSuperadmin)) {
+                    $eligibility = $this->checkApprovalEligibility($peserta);
+                    if (! $eligibility['eligible']) {
+                        return [
+                            'status' => 'ineligible',
+                            'id' => $peserta->id,
+                            'nim' => $peserta->mahasiswa?->nim,
+                            'nama' => $peserta->mahasiswa?->nama,
+                            'reason' => $eligibility['first_message'],
+                        ];
+                    }
+                } else {
+                    $eligibility = $this->checkApprovalEligibility($peserta);
+                    if (! $eligibility['eligible']) {
+                        $forceBypass = true;
+                        $bypassedReasons = $eligibility['messages'] ?? [$eligibility['first_message'] ?? 'unknown'];
+                    }
+                }
+
+                $locked->update([
+                    'status' => 'approved',
+                    'approved_at' => now(),
+                    'approved_by' => auth()->id(),
+                ]);
+
+                return [
+                    'status' => 'approved',
+                    'peserta_id' => $locked->id,
+                    'nim' => $peserta->mahasiswa?->nim,
+                    'force_bypass' => $forceBypass,
+                    'bypassed_reasons' => $bypassedReasons,
+                ];
+            });
+
+            if (($result['status'] ?? null) === 'approved') {
+                $approved++;
+                if (! empty($result['force_bypass'])) {
+                    $auditQueue[] = $result;
                 }
             } else {
-                // R13-API-005: when superadmin bypasses eligibility, capture the
-                // issues that WOULD have blocked approval so LPPM audit can
-                // distinguish these from clean approvals.
-                $eligibility = $this->checkApprovalEligibility($peserta);
-                if (! $eligibility['eligible']) {
-                    $forceBypass = true;
-                    $bypassedReasons = $eligibility['messages'] ?? [$eligibility['first_message'] ?? 'unknown'];
-                }
+                $skipped[] = [
+                    'id' => $result['id'] ?? $peserta->id,
+                    'nim' => $result['nim'] ?? $peserta->mahasiswa?->nim,
+                    'nama' => $result['nama'] ?? $peserta->mahasiswa?->nama,
+                    'reason' => $result['reason'] ?? 'unknown',
+                ];
             }
+        }
 
-            $peserta->update([
-                'status' => 'approved',
-                'approved_at' => now(),
-                'approved_by' => auth()->id(),
-            ]);
-            $approved++;
-
-            if ($forceBypass) {
-                AuditService::log(
-                    'FORCE_APPROVE',
-                    "Superadmin force-approved peserta id={$peserta->id} (NIM {$peserta->mahasiswa?->nim}) melewati pengecekan eligibility",
-                    $peserta,
-                    ['skipped_eligibility' => $bypassedReasons],
-                );
-            }
+        // R13-API-005: force-approve audit log — dispatch di luar transaction
+        // supaya tidak menahan koneksi DB saat Redis/queue call.
+        foreach ($auditQueue as $entry) {
+            AuditService::log(
+                'FORCE_APPROVE',
+                "Superadmin force-approved peserta id={$entry['peserta_id']} (NIM {$entry['nim']}) melewati pengecekan eligibility",
+                PesertaKkn::find($entry['peserta_id']),
+                null,
+                ['skipped_eligibility' => $entry['bypassed_reasons']],
+            );
         }
 
         $message = "{$approved} pendaftaran berhasil disetujui.";
         if ($skipped !== []) {
-            $message .= ' '.count($skipped).' dilewati karena tidak memenuhi syarat.';
+            $message .= ' '.count($skipped).' dilewati karena tidak memenuhi syarat atau sudah di-proses.';
         }
 
         return $this->success([

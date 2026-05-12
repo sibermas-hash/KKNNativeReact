@@ -395,6 +395,13 @@ class RegistrationService
     /**
      * Check if a QueryException is a unique constraint violation.
      * FIX C12 & C14: Used to handle race condition edge cases gracefully.
+     *
+     * Audit fix (2026-05-12): sebelumnya string match pakai
+     * 'peserta_kkn_mahasiswa_period_unique' yang tidak pernah ada di DB
+     * (migration bikin index dengan nama 'unique_mahasiswa_periode').
+     * Deteksi utama tetap via error code 23505/1062; string fallback
+     * sekarang match kedua nama constraint untuk robust terhadap migrasi
+     * lama/baru.
      */
     private function isUniqueConstraintViolation(QueryException $e): bool
     {
@@ -405,6 +412,7 @@ class RegistrationService
         return in_array($errorCode, [1062, 23505], true)
             || str_contains($e->getMessage(), 'UNIQUE constraint failed')
             || str_contains($e->getMessage(), 'Duplicate entry')
+            || str_contains($e->getMessage(), 'unique_mahasiswa_periode')
             || str_contains($e->getMessage(), 'peserta_kkn_mahasiswa_period_unique');
     }
 }

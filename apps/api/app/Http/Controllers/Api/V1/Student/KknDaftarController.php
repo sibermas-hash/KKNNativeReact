@@ -12,6 +12,7 @@ use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\SystemSetting;
 use App\Services\EligibilityService;
+use App\Services\GroupSelectionService;
 use App\Services\KKN\RegistrationDocumentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -108,6 +109,13 @@ class KknDaftarController extends Controller
 
         $activeStatuses = ['pending', 'document_submitted', 'approved'];
 
+        // Audit fix (2026-05-12): male quota sebelumnya hardcoded 20%/30% di sini
+        // sementara `GroupSelectionService` baca dari SystemSetting. Kalau admin
+        // ubah group_male_min_ratio / group_male_target_ratio di SystemSetting,
+        // UI mahasiswa akan tampil angka lama padahal backend enforce angka baru.
+        // Sekarang pakai single source of truth via service.
+        $groupSelection = app(GroupSelectionService::class);
+
         $groups = KelompokKkn::where('periode_id', $periode)
             ->where('status', 'active')
             ->with('lokasi')
@@ -124,10 +132,11 @@ class KknDaftarController extends Controller
             }])
             ->orderBy('nama_kelompok')
             ->get()
-            ->map(function ($group) {
+            ->map(function ($group) use ($groupSelection) {
                 $remaining = max(0, $group->capacity - $group->peserta_count);
-                $maleMinRequired = (int) ceil($group->capacity * 0.2);
-                $maleTargetMax = (int) ceil($group->capacity * 0.3);
+                $maleQuota = $groupSelection->maleQuotaRange((int) $group->capacity);
+                $maleMinRequired = $maleQuota['minimum'];
+                $maleTargetMax = $maleQuota['maximum'];
 
                 return [
                     'id' => $group->id,

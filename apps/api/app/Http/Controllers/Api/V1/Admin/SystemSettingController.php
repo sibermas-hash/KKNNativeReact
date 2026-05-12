@@ -6,9 +6,12 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
+use App\Jobs\ResetPendaftaranJob;
 use App\Models\KKN\SystemSetting;
+use App\Services\AuditService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class SystemSettingController extends Controller
 {
@@ -54,5 +57,61 @@ class SystemSettingController extends Controller
         SystemSetting::set('gemini_api_key', null);
 
         return $this->noContent('API key AI berhasil dihapus.');
+    }
+
+    public function resetPendaftaran(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'confirmation' => ['required', 'string', 'in:HAPUS SEMUA DATA PENDAFTARAN'],
+            'soft' => ['sometimes', 'boolean'],
+        ]);
+
+        $user = $request->user();
+        if ($user === null) {
+            return $this->unauthorized();
+        }
+
+        try {
+            // Preserve current access token supaya operator tidak force-logout
+            // saat job memanggil `pendaftaran:reset` yang truncate tokens.
+            $currentToken = $user->currentAccessToken();
+            $keepTokenId = $currentToken !== null && isset($currentToken->id) ? (int) $currentToken->id : null;
+
+            // Audit log SEBELUM dispatch — trail tetap tercatat walau job gagal.
+            AuditService::log(
+                'RESET_PENDAFTARAN_INITIATED',
+                'Reset pendaftaran di-initiate dari admin panel ('.($validated['soft'] ?? false ? 'soft' : 'full').')',
+                null,
+                null,
+                [
+                    'mode' => $validated['soft'] ?? false ? 'soft' : 'full',
+                    'keep_token_id' => $keepTokenId,
+                ],
+                (int) $user->id
+            );
+
+            // Dispatch ke queue 'long' — response cepat, kerja berat di background.
+            ResetPendaftaranJob::dispatch(
+                (int) $user->id,
+                $keepTokenId,
+                (bool) ($validated['soft'] ?? false),
+            );
+
+            return $this->success(
+                [
+                    'status' => 'queued',
+                    'message' => 'Reset sedang diproses di background. Cek log audit untuk konfirmasi.',
+                ],
+                'Reset pendaftaran dijadwalkan.',
+                202
+            );
+        } catch (\Throwable $e) {
+            Log::error('resetPendaftaran dispatch failed', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->serverError('Gagal menjadwalkan reset: '.$e->getMessage());
+        }
     }
 }

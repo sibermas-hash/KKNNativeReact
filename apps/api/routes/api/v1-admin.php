@@ -290,6 +290,8 @@ Route::prefix('admin')
             Route::post('/pengaturan/sistem/ai/test', [SystemSettingController::class, 'testAiConnection']);
             Route::patch('/pengaturan/sistem/ai/update', [SystemSettingController::class, 'updateAiSettings']);
             Route::delete('/pengaturan/sistem/ai/key', [SystemSettingController::class, 'removeAiKey']);
+            Route::post('/pengaturan/sistem/reset-pendaftaran', [SystemSettingController::class, 'resetPendaftaran'])
+                ->middleware('throttle:2,60');
         });
         Route::get('/audit-log', [LogAuditController::class, 'index']);
         Route::get('/audit-log/{auditLog}', [LogAuditController::class, 'show']);

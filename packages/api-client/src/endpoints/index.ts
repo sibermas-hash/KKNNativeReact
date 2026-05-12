@@ -473,6 +473,8 @@ export function adminEndpoints(client: AxiosInstance) {
       testAi: () => client.post('/admin/pengaturan/sistem/ai/test'),
       updateAi: (data: Record<string, unknown>) => client.patch('/admin/pengaturan/sistem/ai/update', data),
       certificates: () => client.get('/admin/pengaturan/sertifikat'),
+      resetPendaftaran: (data: { confirmation: string; soft?: boolean }) =>
+        client.post('/admin/pengaturan/sistem/reset-pendaftaran', data),
     },
 
     monitoring: {

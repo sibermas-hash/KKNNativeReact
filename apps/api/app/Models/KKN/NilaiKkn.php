@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class NilaiKkn extends Model
 {
     use SoftDeletes;
+
     protected function casts(): array
     {
         return [
@@ -125,9 +126,19 @@ class NilaiKkn extends Model
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /**
+     * Relation ke Mahasiswa via user_id.
+     *
+     * Audit fix (2026-05-12): pakai `withTrashed()` supaya tetap bisa akses
+     * data nilai walaupun row mahasiswa di-soft-delete. Tanpa ini, default
+     * SoftDeletes scope di Mahasiswa akan buat relation return null untuk
+     * mahasiswa yang di-soft-delete — UI grading dan reporting akan crash.
+     * Nilai dibuat berdasarkan user_id (bukan mahasiswa_id), jadi seharusnya
+     * tetap valid walaupun mahasiswa record di-hide.
+     */
     public function mahasiswa(): HasOne
     {
-        return $this->hasOne(Mahasiswa::class, 'user_id', 'user_id');
+        return $this->hasOne(Mahasiswa::class, 'user_id', 'user_id')->withTrashed();
     }
 
     /**

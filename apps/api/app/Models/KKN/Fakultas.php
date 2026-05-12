@@ -34,4 +34,16 @@ class Fakultas extends Model
     {
         return $this->hasMany(Mahasiswa::class, 'fakultas_id');
     }
+
+    /**
+     * Relasi balik dari Dosen. Sebelumnya hilang walaupun FK
+     * `dosen.fakultas_id` exists — caller terpaksa query manual via
+     * `Dosen::where('fakultas_id', $id)`. Ditambah agar konsisten dengan
+     * `prodi()` dan `mahasiswa()`, plus memudahkan eager loading di
+     * dashboard faculty_admin.
+     */
+    public function dosen(): HasMany
+    {
+        return $this->hasMany(Dosen::class, 'fakultas_id');
+    }
 }

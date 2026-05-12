@@ -146,6 +146,12 @@ class KelompokKkn extends Model
      * Sync flat dpl_id and dpl_periode_id columns from pivot table data.
      * These legacy columns are kept for backward compatibility with queries
      * that filter via kelompok_kkn.dpl_id directly.
+     *
+     * Audit fix (2026-05-12): method ini sekarang jadi single entry-point
+     * untuk menjaga konsistensi flat columns vs pivot dpl_kelompok. Semua
+     * pemanggil mutation pivot (DplAssignmentService, bulk assign, reset)
+     * harus memanggil method ini setelah pivot berubah supaya query legacy
+     * via `kelompok_kkn.dpl_id` tidak serve data stale.
      */
     public function syncKetuaFlatColumns(): void
     {
@@ -172,6 +178,10 @@ class KelompokKkn extends Model
     protected static function booted()
     {
         static::deleting(function ($group) {
+            // Detach pivot supaya `dpl_kelompok` tidak punya orphan row.
+            // syncKetuaFlatColumns akan set dpl_id / dpl_periode_id = null
+            // walaupun record ini eventual di-delete — defensif untuk kasus
+            // soft-delete (record masih ada, pivot sudah hilang).
             $group->dosen()->detach();
         });
     }

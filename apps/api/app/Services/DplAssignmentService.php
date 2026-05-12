@@ -90,16 +90,17 @@ class DplAssignmentService
                 $group->dosen()->updateExistingPivot($existingKetua->id, ['role' => 'Anggota']);
             }
 
-            // Sync flat columns for simple reporting/queries
-            $group->update([
-                'dpl_id' => $dplPeriod->dosen_id,
-                'dpl_periode_id' => $dplPeriod->id,
-            ]);
-
-            // Sync pivot table for multiple DPL support
+            // Sync pivot table first — single source of truth untuk multi-DPL.
             $group->dosen()->syncWithoutDetaching([
                 $dplPeriod->dosen_id => ['role' => 'Ketua'],
             ]);
+
+            // Audit fix (2026-05-12): sync flat columns via helper method
+            // supaya konsisten dengan sumber data pivot. Sebelumnya langsung
+            // assign ke update([...]) — rawan drift kalau DplPeriod tidak
+            // match (mis. is_active=false). syncKetuaFlatColumns() lookup
+            // DplPeriod yang aktif dan menulis null kalau tidak ada.
+            $group->syncKetuaFlatColumns();
         });
 
         // Audit R11-GROUP-017 fix: kalau ada perubahan DPL (bukan assignment

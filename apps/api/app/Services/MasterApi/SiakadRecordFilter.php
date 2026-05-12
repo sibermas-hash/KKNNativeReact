@@ -33,6 +33,8 @@ class SiakadRecordFilter
 
     public const SKIP_STUDENT_BLOCKLISTED = 'skip_student_blocklisted';
 
+    public const SKIP_STUDENT_FACULTY_BLOCKLISTED = 'skip_student_faculty_blocklisted';
+
     public const SKIP_STUDENT_NO_NIM = 'skip_student_no_nim';
 
     // lecturer reasons
@@ -43,6 +45,8 @@ class SiakadRecordFilter
     public const SKIP_LECTURER_BLOCKLISTED = 'skip_lecturer_blocklisted';
 
     public const SKIP_LECTURER_NO_NIP = 'skip_lecturer_no_nip';
+
+    public const SKIP_LECTURER_NON_NUMERIC_NIP = 'skip_lecturer_non_numeric_nip';
 
     private array $studentCfg;
 
@@ -148,6 +152,18 @@ class SiakadRecordFilter
             }
         }
 
+        // Faculty blocklist — reject students from certain faculties (e.g. Pascasarjana)
+        $blockedFacultyIds = (array) ($this->studentCfg['blocklist_fakultas_ids'] ?? []);
+        if (! empty($blockedFacultyIds)) {
+            $facultyId = trim((string) ($record['fakultas_id'] ?? $record['faculty_id'] ?? $record['organization_id'] ?? ''));
+            if ($facultyId !== '' && in_array($facultyId, $blockedFacultyIds, true)) {
+                return $this->skip(self::SKIP_STUDENT_FACULTY_BLOCKLISTED, [
+                    'nim' => $nim,
+                    'fakultas_id' => $facultyId,
+                ]);
+            }
+        }
+
         return $this->allow();
     }
 
@@ -189,6 +205,13 @@ class SiakadRecordFilter
                 || str_contains(strtoupper((string) ($record['status_aktif'] ?? '')), 'TUGAS BELAJAR');
             if ($isTB) {
                 return $this->skip(self::SKIP_LECTURER_TUGAS_BELAJAR, ['nip' => $nip]);
+            }
+        }
+
+        // Reject non-numeric NIP (e.g. "LB-xxxx" — honorer/contract lecturers)
+        if ($this->lecturerCfg['require_numeric_nip'] ?? true) {
+            if (! preg_match('/^\d+$/', $nip)) {
+                return $this->skip(self::SKIP_LECTURER_NON_NUMERIC_NIP, ['nip' => $nip]);
             }
         }
 
@@ -277,11 +300,13 @@ class SiakadRecordFilter
             self::SKIP_STUDENT_GRADUATE_PROGRAM => 'Enrolled in non-KKN jenjang (S2/S3/Pascasarjana)',
             self::SKIP_STUDENT_NO_NIK => 'Missing/invalid NIK (strict mode)',
             self::SKIP_STUDENT_BLOCKLISTED => 'NIM in blocklist',
+            self::SKIP_STUDENT_FACULTY_BLOCKLISTED => 'Student from blocked faculty (Pascasarjana)',
             self::SKIP_STUDENT_NO_NIM => 'Record has no NIM',
             self::SKIP_LECTURER_INACTIVE => 'Dosen status not aktif',
             self::SKIP_LECTURER_TUGAS_BELAJAR => 'Dosen on tugas belajar',
             self::SKIP_LECTURER_BLOCKLISTED => 'NIP in blocklist',
             self::SKIP_LECTURER_NO_NIP => 'Record has no NIP',
+            self::SKIP_LECTURER_NON_NUMERIC_NIP => 'NIP is non-numeric (honorer/contract)',
             default => $reason,
         };
     }

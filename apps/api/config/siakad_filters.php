@@ -65,6 +65,16 @@ return [
             'trim',
             explode(',', (string) env('SIAKAD_STUDENT_BLOCKLIST_NIM', ''))
         )),
+
+        /*
+         | Reject students whose fakultas_id / faculty master ID is in this list.
+         | Used to exclude entire faculties (e.g. Pascasarjana / ID 1) from KKN.
+         | Format: comma-separated IDs.
+         */
+        'blocklist_fakultas_ids' => array_filter(array_map(
+            'trim',
+            explode(',', (string) env('SIAKAD_STUDENT_BLOCKLIST_FAKULTAS_IDS', '1'))
+        )),
     ],
 
     'lecturers' => [
@@ -91,6 +101,13 @@ return [
             'trim',
             explode(',', (string) env('SIAKAD_LECTURER_BLOCKLIST_NIP', ''))
         )),
+
+        /*
+         | Reject lecturers whose NIP is not purely numeric (e.g. "LB-xxxx").
+         | Honorer/contract lecturers don't have a real NIP and cannot be DPL.
+         | Default: true.
+         */
+        'require_numeric_nip' => (bool) env('SIAKAD_LECTURER_REQUIRE_NUMERIC_NIP', true),
     ],
 
     /*

@@ -13,9 +13,9 @@ SERVER="${DEPLOY_SERVER:?DEPLOY_SERVER tidak di-set (contoh: user@host)}"
 PORT="${DEPLOY_PORT:-22}"
 APP_DIR="${APP_DIR:-/usr/local/www/sibermas}"
 
-# Jails mode: set JAIL_WEB_IP / JAIL_API_IP / JAIL_PROXY_IP to use per-jail restart.
+# Jails mode: set JAIL_WEB_IP / JAIL_API_IP / JAIL_PROXY_IP untuk restart per-jail.
 # CATATAN: jails mode membutuhkan SSH server aktif di setiap jail, ATAU
-# jalankan script ini dari FreeBSD host (bukan remote) agar bisa pakai jexec.
+# script ini jalan dari FreeBSD host (bukan remote) agar bisa pakai jexec.
 # Lihat docs/JAILS_MIGRATION.md untuk detail arsitektur two-nginx.
 JAIL_WEB_IP="${JAIL_WEB_IP:-}"
 JAIL_API_IP="${JAIL_API_IP:-}"
@@ -45,38 +45,54 @@ echo ""
 echo "[2/2] Deploying ke server via SSH key..."
 echo ""
 
-ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" << ENDSSH
-  set -e
-  APP_DIR="$APP_DIR"
+# Quoted heredoc (<<'ENDSSH') mencegah expansion di lokal — variable
+# expand di server. Env vars di-pass explicit via `VAR=xxx bash -s` karena
+# FreeBSD sshd default tidak accept SendEnv tanpa konfigurasi server-side.
+ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
+  APP_DIR="$APP_DIR" \
+  JAIL_WEB_IP="$JAIL_WEB_IP" \
+  JAIL_API_IP="$JAIL_API_IP" \
+  JAIL_PROXY_IP="$JAIL_PROXY_IP" \
+  bash -s << 'ENDSSH'
+  set -euo pipefail
+
+  APP_DIR="${APP_DIR:-/usr/local/www/sibermas}"
+  JAIL_WEB_IP="${JAIL_WEB_IP:-}"
+  JAIL_API_IP="${JAIL_API_IP:-}"
+  JAIL_PROXY_IP="${JAIL_PROXY_IP:-10.0.0.10}"
 
   echo "  [a] Pulling latest code..."
-  cd "\${APP_DIR}"
+  cd "${APP_DIR}"
   git pull origin main
 
   echo "  [b] Installing dependencies..."
-  pnpm install --frozen-lockfile
+  TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm install --frozen-lockfile
 
   echo "  [c] Building frontend..."
-  pnpm build
+  TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:web
 
   echo "  [d] Copying static & public to standalone..."
   cp -r apps/web/.next/static   apps/web/.next/standalone/apps/web/.next/static
   cp -r apps/web/public         apps/web/.next/standalone/apps/web/public
 
   echo "  [e] Fixing permissions..."
-  chown -R www:www apps/web/.next
+  chown -R www:www apps/web/.next apps/api/storage apps/api/bootstrap/cache
 
-  echo "  [f] Restarting services..."
+  echo "  [f] Reloading PHP-FPM (OPcache reset)..."
   if [ -n "${JAIL_WEB_IP}" ]; then
     echo "  → Jails mode: restart per jail"
+    jexec api service php-fpm reload 2>/dev/null || \
+      (command -v ssh >/dev/null && ssh "${JAIL_API_IP}" service php-fpm reload) || true
     jexec api supervisorctl restart workers:* 2>/dev/null || \
-      ssh "${JAIL_API_IP}" supervisorctl restart workers:*
+      (command -v ssh >/dev/null && ssh "${JAIL_API_IP}" supervisorctl restart "workers:*") || true
     jexec web supervisorctl restart sibermas-web 2>/dev/null || \
-      ssh "${JAIL_WEB_IP}" supervisorctl restart sibermas-web
+      (command -v ssh >/dev/null && ssh "${JAIL_WEB_IP}" supervisorctl restart sibermas-web) || true
     jexec nginx-proxy service nginx reload 2>/dev/null || \
-      ssh "${JAIL_PROXY_IP:-10.0.0.10}" service nginx reload
+      (command -v ssh >/dev/null && ssh "${JAIL_PROXY_IP}" service nginx reload) || true
   else
-    supervisorctl restart workers:*
+    service php-fpm reload 2>/dev/null || service php-fpm restart || true
+    supervisorctl restart "workers:*"
+    service nginx reload 2>/dev/null || true
   fi
 
   echo ""

@@ -21,12 +21,31 @@ DOMAIN="${WEB_DOMAIN:-sibermas.uinsaizu.ac.id}"
 CERT_EMAIL="${CERT_EMAIL:-admin@uinsaizu.ac.id}"
 JAIL_ROOT="/usr/local/jails"
 APP_DIR="/usr/local/www/sibermas"
+FREEBSD_RELEASE="${FREEBSD_RELEASE:-14.1-RELEASE}"
 
 # IP per jail
 NGINX_PROXY_IP="10.0.0.10"
 WEB_IP="10.0.0.11"
 API_IP="10.0.0.12"
 DATA_IP="10.0.0.13"
+
+# Auto-detect external NIC dari default route. Override via env:
+#   EXT_IF=vtnet0 sh jail_setup.sh --multi
+detect_ext_if() {
+  if [ -n "${EXT_IF:-}" ]; then
+    echo "$EXT_IF"
+    return
+  fi
+  local iface
+  iface=$(route -n get default 2>/dev/null | awk '/interface:/ {print $2}')
+  if [ -z "$iface" ]; then
+    # Fallback ke interface aktif pertama (selain lo0)
+    iface=$(ifconfig -l | tr ' ' '\n' | grep -v '^lo' | head -1)
+  fi
+  echo "${iface:-em0}"
+}
+
+EXT_IF=$(detect_ext_if)
 
 # ─── Helper ─────────────────────────────────────────────────────────────
 info()  { printf "\033[36m==>\033[0m %s\n" "$*"; }
@@ -40,29 +59,43 @@ check_root() {
   fi
 }
 
+check_freebsd_version() {
+  local ver
+  ver=$(uname -r | cut -d- -f1 | cut -d. -f1)
+  if [ "$ver" -lt 14 ] 2>/dev/null; then
+    warn "Detected FreeBSD $(uname -r). Script ini diuji di 14.x — proceed at own risk."
+  fi
+}
+
 # ─── Bridge Network ────────────────────────────────────────────────────
 setup_bridge() {
-  info "Setup bridge network..."
+  info "Setup bridge network (external NIC: ${EXT_IF})..."
   if ! ifconfig bridge0 >/dev/null 2>&1; then
     sysrc cloned_interfaces+="bridge0"
     service netif cloneup
   fi
-  ifconfig bridge0 addm em0 2>/dev/null || warn "em0 not added to bridge (maybe already added)"
+  ifconfig bridge0 addm "${EXT_IF}" 2>/dev/null || warn "${EXT_IF} not added to bridge (maybe already added)"
   ifconfig bridge0 "$BRIDGE_IP" up
+  ifconfig bridge0 name "${BRIDGE}" 2>/dev/null || true
   sysctl net.link.bridge.pfil_onlyip=0
-  ok "Bridge bridge0 = $BRIDGE_IP"
+  ok "Bridge ${BRIDGE} = $BRIDGE_IP"
 
-  # pf.conf
-  if ! grep -q "jailnet" /etc/pf.conf 2>/dev/null; then
-    cat >> /etc/pf.conf << 'EOPF'
+  # pf.conf — guard lebih ketat dengan marker komentar
+  local pf_marker="# sibermas:jailnet"
+  if ! grep -q "${pf_marker}" /etc/pf.conf 2>/dev/null; then
+    cat >> /etc/pf.conf << EOPF
 
+${pf_marker}
 # jailnet — NAT + port forwarding untuk jail
-nat on egress from 10.0.0.0/24 to any -> (egress)
-rdr on egress proto tcp to port { 80 443 } -> 10.0.0.10
+ext_if = "${EXT_IF}"
+nat on \$ext_if from 10.0.0.0/24 to any -> (\$ext_if)
+rdr on \$ext_if proto tcp to port { 80 443 } -> ${NGINX_PROXY_IP}
 EOPF
     sysrc pf_enable="YES"
     service pf restart 2>/dev/null || service pf enable 2>/dev/null || true
-    ok "pf.conf updated"
+    ok "pf.conf updated (marker: ${pf_marker})"
+  else
+    ok "pf.conf already has ${pf_marker}, skipping append"
   fi
 }
 
@@ -74,16 +107,21 @@ bootstrap_jail() {
   info "Bootstrapping jail: $name ($ip)..."
   mkdir -p "${JAIL_ROOT}/${name}"
 
-  # Periksa apakah base sudah ada
-  if [ ! -f "${JAIL_ROOT}/${name}/etc/hosts" ]; then
+  # Periksa apakah base sudah extracted secara utuh.
+  # Cek sentinel file (bin/sh) bukan sekadar etc/hosts supaya tidak lolos
+  # kalau partial extract (disk full, CTRL-C).
+  if [ ! -x "${JAIL_ROOT}/${name}/bin/sh" ]; then
     if [ -f "/usr/freebsd-dist/base.txz" ]; then
-      tar -xzf /usr/freebsd-dist/base.txz -C "${JAIL_ROOT}/${name}" 2>/dev/null || \
-        warn "base.txz not found at /usr/freebsd-dist/ — jail directory created empty."
+      # tar -xf autodetect xz/gzip — portable untuk BSD tar.
+      tar -xf /usr/freebsd-dist/base.txz -C "${JAIL_ROOT}/${name}" || \
+        err "base.txz extract gagal — periksa disk space / integritas file."
+      ok "base.txz extracted to ${JAIL_ROOT}/${name}"
     else
       warn "FreeBSD base.txz not found. Install via:"
-      warn "  fetch https://download.freebsd.org/releases/amd64/amd64/14.1-RELEASE/base.txz \\"
+      warn "  mkdir -p /usr/freebsd-dist"
+      warn "  fetch https://download.freebsd.org/releases/amd64/amd64/${FREEBSD_RELEASE}/base.txz \\"
       warn "    -o /usr/freebsd-dist/base.txz"
-      warn "  tar -xzf /usr/freebsd-dist/base.txz -C ${JAIL_ROOT}/${name}"
+      warn "  tar -xf /usr/freebsd-dist/base.txz -C ${JAIL_ROOT}/${name}"
       mkdir -p "${JAIL_ROOT}/${name}/etc"
     fi
   fi
@@ -93,6 +131,26 @@ bootstrap_jail() {
   echo "hostname=\"${name}\"" > "${JAIL_ROOT}/${name}/etc/rc.conf.local"
   echo 'sendmail_enable="NONE"' >> "${JAIL_ROOT}/${name}/etc/rc.conf.local"
 
+  # Bootstrap resolver supaya jail bisa DNS lookup (wajib untuk pkg install).
+  if [ ! -f "${JAIL_ROOT}/${name}/etc/resolv.conf" ]; then
+    cp /etc/resolv.conf "${JAIL_ROOT}/${name}/etc/resolv.conf" 2>/dev/null || \
+      echo 'nameserver 1.1.1.1' > "${JAIL_ROOT}/${name}/etc/resolv.conf"
+  fi
+
+  # Stub fstab (operator harus edit sebelum start untuk nullfs mounts).
+  local fstab_file="/etc/jails.fstab.${name}"
+  if [ ! -f "$fstab_file" ]; then
+    cat > "$fstab_file" << EOF
+# Jail fstab: ${name}
+# Format: <src> <dst-inside-jail> <fstype> <options> <dump> <pass>
+# Tambah nullfs mount untuk kode aplikasi / shared storage. Contoh:
+#
+#   /usr/local/www/sibermas/releases/current/apps/api  /usr/local/jails/${name}/usr/local/www/sibermas/api  nullfs  rw  0  0
+#   /usr/local/www/sibermas/shared/storage             /usr/local/jails/${name}/usr/local/www/sibermas/api/storage  nullfs  rw  0  0
+EOF
+    ok "Stub fstab dibuat: ${fstab_file}"
+  fi
+
   ok "Jail $name directory ready at ${JAIL_ROOT}/${name}"
 }
 
@@ -100,8 +158,10 @@ bootstrap_jail() {
 pkg_inside() {
   local jail="$1"
   shift
-  jexec "$jail" pkg install -y "$@" || \
-    jexec "$jail" env ASSUME_ALWAYS_YES=YES pkg install -y "$@"
+  # set -e + fallback: kalau dua-duanya gagal, keluar dengan error jelas.
+  if ! jexec "$jail" env ASSUME_ALWAYS_YES=YES pkg install -y "$@"; then
+    err "pkg install gagal di jail '${jail}'. Pastikan jail running dan punya akses internet (resolv.conf + NAT)."
+  fi
 }
 
 # ─── Setup Data Services Jail ──────────────────────────────────────────
@@ -202,7 +262,7 @@ setup_fat_jail() {
   bootstrap_jail "$j" "$ip"
   service jail start "$j" 2>/dev/null || true
 
-  # Install semua paket
+  # Install semua paket (PostgreSQL 18 — selaras dengan jails mode).
   pkg_inside "$j" \
     nginx node24 npm-node24 \
     php84 php84-extensions php84-pdo php84-pdo_pgsql \
@@ -222,7 +282,7 @@ setup_fat_jail() {
   jexec "$j" sysrc supervisord_enable="YES"
 
   ok "$j Single Fat Jail ready — start with: service jail start $j"
-  warn "Path aplikasi di dalam fat jail: /usr/local/www/apache24/data/Sibermas2026"
+  warn "Path aplikasi di dalam fat jail: ${APP_DIR}"
   warn "Gunakan install-freebsd.sh untuk setup aplikasi di dalam jail."
 }
 
@@ -233,82 +293,84 @@ generate_jail_conf() {
 
   if [ "$mode" = "multi" ]; then
     info "Generating Multi-Jails VNET config: $file"
-    cat > "$file" << 'JAILCONF'
+    cat > "$file" << JAILCONF
+# Auto-generated by jail_setup.sh — edit with care.
 exec.start  = "/bin/sh /etc/rc";
 exec.stop   = "/bin/sh /etc/rc.shutdown";
 exec.clean;
 mount.devfs;
 
-path = /usr/local/jails/$name;
+path = "/usr/local/jails/\$name";
 
 nginx-proxy {
+    \$ip     = "${NGINX_PROXY_IP}";
+    \$bridge = "${BRIDGE}";
     vnet;
     vnet.interface = "epair0b";
-    $ip = "10.0.0.10";
-    $bridge = "jailnet";
-    ip4.addr = $ip;
+    ip4.addr = \$ip;
     allow.raw_sockets;
     mount.fstab = "/etc/jails.fstab.nginx-proxy";
-    exec.prestart  = "ifconfig epair0a up";
-    exec.poststart = "ifconfig $bridge addm epair0a";
+    exec.prestart  = "ifconfig epair0 create up && ifconfig epair0a up";
+    exec.poststart = "ifconfig \$bridge addm epair0a";
     exec.poststop  = "ifconfig epair0a destroy";
 }
 
 web {
+    \$ip     = "${WEB_IP}";
+    \$bridge = "${BRIDGE}";
     vnet;
     vnet.interface = "epair1b";
-    $ip = "10.0.0.11";
-    $bridge = "jailnet";
-    ip4.addr = $ip;
+    ip4.addr = \$ip;
     mount.fstab = "/etc/jails.fstab.web";
-    exec.prestart  = "ifconfig epair1a up";
-    exec.poststart = "ifconfig $bridge addm epair1a";
+    exec.prestart  = "ifconfig epair1 create up && ifconfig epair1a up";
+    exec.poststart = "ifconfig \$bridge addm epair1a";
     exec.poststop  = "ifconfig epair1a destroy";
 }
 
 api {
+    \$ip     = "${API_IP}";
+    \$bridge = "${BRIDGE}";
     vnet;
     vnet.interface = "epair2b";
-    $ip = "10.0.0.12";
-    $bridge = "jailnet";
-    ip4.addr = $ip;
+    ip4.addr = \$ip;
     mount.fstab = "/etc/jails.fstab.api";
-    exec.prestart  = "ifconfig epair2a up";
-    exec.poststart = "ifconfig $bridge addm epair2a";
+    exec.prestart  = "ifconfig epair2 create up && ifconfig epair2a up";
+    exec.poststart = "ifconfig \$bridge addm epair2a";
     exec.poststop  = "ifconfig epair2a destroy";
 }
 
 data-services {
+    \$ip     = "${DATA_IP}";
+    \$bridge = "${BRIDGE}";
     vnet;
     vnet.interface = "epair3b";
-    $ip = "10.0.0.13";
-    $bridge = "jailnet";
-    ip4.addr = $ip;
-    mount.fstab = "/etc/jails.fstab.data";
-    exec.prestart  = "ifconfig epair3a up";
-    exec.poststart = "ifconfig $bridge addm epair3a";
+    ip4.addr = \$ip;
+    mount.fstab = "/etc/jails.fstab.data-services";
+    exec.prestart  = "ifconfig epair3 create up && ifconfig epair3a up";
+    exec.poststart = "ifconfig \$bridge addm epair3a";
     exec.poststop  = "ifconfig epair3a destroy";
 }
 JAILCONF
-  ok "Generated $file for multi-jails VNET"
+    ok "Generated $file for multi-jails VNET"
   else
     info "Generating Single Fat Jail config: $file"
-    cat > "$file" << 'JAILCONF'
+    cat > "$file" << JAILCONF
+# Auto-generated by jail_setup.sh — edit with care.
 exec.start  = "/bin/sh /etc/rc";
 exec.stop   = "/bin/sh /etc/rc.shutdown";
 exec.clean;
 mount.devfs;
 
-path = /usr/local/jails/sibermas;
+path = "/usr/local/jails/\$name";
 
 sibermas {
-    ip4.addr = "10.0.0.10";
-    interface = "em0";
+    ip4.addr = "${EXT_IF}|${NGINX_PROXY_IP}";
+    interface = "${EXT_IF}";
     mount.fstab = "/etc/jails.fstab.sibermas";
     allow.raw_sockets;
 }
 JAILCONF
-  ok "Generated $file for single fat jail"
+    ok "Generated $file for single fat jail (interface: ${EXT_IF})"
   fi
 }
 
@@ -320,18 +382,21 @@ print_summary() {
   echo "═══════════════════════════════════════════════════════"
   echo "
   Arsitektur jaringan:
-    Bridge:   bridge0 = ${BRIDGE_IP}
-    nginx-proxy: ${NGINX_PROXY_IP}
-    web:         ${WEB_IP}
-    api:         ${API_IP}
-    data:        ${DATA_IP}
+    External NIC: ${EXT_IF}
+    Bridge:       ${BRIDGE} = ${BRIDGE_IP}
+    nginx-proxy:  ${NGINX_PROXY_IP}
+    web:          ${WEB_IP}
+    api:          ${API_IP}
+    data:         ${DATA_IP}
 
   Langkah selanjutnya:
-    1. Salin kode aplikasi ke ${APP_DIR}/releases/current/
-    2. Setup nullfs mounts (/etc/jails.fstab.*)
-    3. Jalankan semua jail:  for j in data-services api web nginx-proxy; do
-                                service jail start \$j
-                             done
+    1. Edit /etc/jails.fstab.* (stub sudah dibuat) — tambah nullfs mount
+       untuk kode aplikasi dan shared storage.
+    2. Salin kode aplikasi ke ${APP_DIR}/releases/current/
+    3. Jalankan semua jail:
+         for j in data-services api web nginx-proxy; do
+           service jail start \$j
+         done
     4. Install aplikasi di setiap jail (lihat docs/JAILS_MIGRATION.md)
     5. Setup SSL cert di nginx-proxy jail
     6. Deploy dan test
@@ -347,6 +412,7 @@ print_summary() {
 # ─── Main ──────────────────────────────────────────────────────────────
 main() {
   check_root
+  check_freebsd_version
 
   case "${1:-}" in
     --fat)
@@ -395,8 +461,10 @@ main() {
       echo ""
       echo "Sebelum mulai, pastikan:"
       echo "  1. Koneksi internet aktif"
-      echo "  2. Interface network: em0 (ganti jika berbeda)"
+      echo "  2. External NIC terdeteksi otomatis — override: EXT_IF=vtnet0 sh $0 ..."
       echo "  3. FreeBSD 14.x base.txz di /usr/freebsd-dist/ (opsional)"
+      echo ""
+      echo "Detected external NIC: ${EXT_IF}"
       ;;
   esac
 }

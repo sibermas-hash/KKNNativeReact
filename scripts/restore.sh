@@ -28,11 +28,19 @@ if [[ -z "${DB_DUMP}" ]] || [[ ! -f "${DB_DUMP}" ]]; then
   exit 1
 fi
 
-# Load .env
+# Load .env — parse safe (tanpa shell eval). Value di .env bisa mengandung
+# $(...) atau backticks yang akan dieksekusi kalau pakai `source` / `eval`.
 if [[ -f "${API_DIR}/.env" ]]; then
-  set -a
-  source <(grep -E '^DB_' "${API_DIR}/.env" | sed 's/^/export /')
-  set +a
+  while IFS='=' read -r key value; do
+    # Strip surrounding quotes dari value.
+    value="${value%\"}"
+    value="${value#\"}"
+    value="${value%\'}"
+    value="${value#\'}"
+    case "$key" in
+      DB_*) export "$key=$value" ;;
+    esac
+  done < <(grep -E '^DB_' "${API_DIR}/.env")
 fi
 
 DB_HOST="${DB_HOST:-127.0.0.1}"

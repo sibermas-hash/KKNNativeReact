@@ -3,9 +3,15 @@
 # Usage: SSH_USER=user SSH_HOST=host SSH_PORT=port expect test_login.exp
 log_file ./test_login.log
 set timeout 10
-set env(SSH_USER) [expr {[info exists env(SSH_USER)] ? $env(SSH_USER) : "kampelmas"}]
-set env(SSH_HOST) [expr {[info exists env(SSH_HOST)] ? $env(SSH_HOST) : "172.16.2.70"}]
-set env(SSH_PORT) [expr {[info exists env(SSH_PORT)] ? $env(SSH_PORT) : "1977"}]
+
+foreach var {SSH_USER SSH_HOST SSH_PORT} {
+    if {![info exists env($var)] || $env($var) eq ""} {
+        puts stderr "ERROR: $var environment variable required."
+        puts stderr "Usage: SSH_USER=user SSH_HOST=host SSH_PORT=port expect test_login.exp"
+        exit 2
+    }
+}
+
 spawn ssh -p $env(SSH_PORT) -o StrictHostKeyChecking=accept-new $env(SSH_USER)@$env(SSH_HOST)
 expect {
     "*$" {

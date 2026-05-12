@@ -21,6 +21,8 @@ PF_CONF="/etc/pf.conf"
 APP_USER="www"
 LOG_DIR="/var/log/sibermas"
 PHP_VERSION="84"  # php84
+PG_VERSION="18"   # postgresql18 — selaras dengan jails mode & conf/postgresql-scaling.conf
+PG_DATA_DIR="/var/db/postgres/data${PG_VERSION}"
 
 # Production domain fallbacks. Override dengan export sebelum jalankan script:
 #   WEB_DOMAIN=staging.example.com CERT_BASE=staging.example.com sh install-freebsd.sh
@@ -62,8 +64,8 @@ pkg install -y \
     php${PHP_VERSION}-posix \
     composer \
     nginx \
-    postgresql16-server \
-    postgresql16-client \
+    postgresql${PG_VERSION}-server \
+    postgresql${PG_VERSION}-client \
     redis \
     node22 \
     npm-node22 \
@@ -80,7 +82,7 @@ sysrc supervisord_enable="YES"
 sysrc php_fpm_enable="YES"
 
 echo "==> Menginisialisasi PostgreSQL..."
-if [ ! -f /var/db/postgres/data16/PG_VERSION ]; then
+if [ ! -f "${PG_DATA_DIR}/PG_VERSION" ]; then
     service postgresql initdb
 fi
 service postgresql start
@@ -193,7 +195,7 @@ echo " 14. chown -R ${APP_USER}:${APP_USER} ${APP_DIR}/apps/api/bootstrap/cache"
 echo " 15. chown -R ${APP_USER}:${APP_USER} ${APP_DIR}/apps/web/.next"
 echo ""
 echo " 🔥 Pastikan PostgreSQL dan Redis hanya listen di localhost:"
-echo "     sed -i '' 's/^listen_addresses =.*/listen_addresses = '\''127.0.0.1'\''/' /var/db/postgres/data16/postgresql.conf"
+echo "     sed -i '' 's/^listen_addresses =.*/listen_addresses = '\''127.0.0.1'\''/' ${PG_DATA_DIR}/postgresql.conf"
 echo "     echo 'bind 127.0.0.1' >> /usr/local/etc/redis.conf"
 echo "     service postgresql restart && service redis restart"
 echo ""

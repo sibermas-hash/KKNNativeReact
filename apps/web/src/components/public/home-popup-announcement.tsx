@@ -69,8 +69,10 @@ export function HomePopupAnnouncement(): React.JSX.Element | null {
         headers: { Accept: 'application/json' },
       });
       if (!res.ok) return null;
-      const body = (await res.json()) as { data: PopupPayload | null };
-      return body.data;
+      const body: unknown = await res.json();
+      if (!body || typeof body !== 'object') return null;
+      const payload = body as { data: PopupPayload | null };
+      return payload.data ?? null;
     },
     staleTime: 5 * 60_000,
     retry: 0,

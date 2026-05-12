@@ -126,12 +126,14 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
                 src="/images/logo_uinsaizu.png"
                 alt="Logo UIN SAIZU"
                 className="h-9 max-h-11 w-auto object-contain sm:h-11"
+                style={{ width: 'auto', height: 'auto' }}
               />
               <div className="w-px h-6 bg-emerald-200/50 mx-0.5" />
               <img
                 src="/images/Logo_SIBERMAS.png"
                 alt="Logo SIBERMAS"
                 className="h-9 max-h-11 w-auto object-contain sm:h-11"
+                style={{ width: 'auto', height: 'auto' }}
               />
             </Link>
           </div>

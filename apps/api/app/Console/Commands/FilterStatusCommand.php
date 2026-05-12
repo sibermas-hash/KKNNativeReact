@@ -74,15 +74,18 @@ class FilterStatusCommand extends Command
         $this->info('  Students:');
         $this->line(sprintf('    min_batch_year          : <options=bold>%d</>', $s['min_batch_year'] ?? 0));
         $this->line(sprintf('    max_batch_year_offset   : <options=bold>+%d</> (max allowed = current year + offset)', $s['max_batch_year_offset'] ?? 1));
-        $this->line(sprintf('    allowed_status_aktif    : <options=bold>%s</>', implode(', ', $s['allowed_status_aktif'] ?? ['(any)'])));
+        $this->line('    status_aktif filter     : <fg=gray>disabled (all statuses accepted)</>');
         $this->line(sprintf('    skip_non_kkn_jenjang    : <options=bold>%s</>', ($s['skip_non_kkn_jenjang'] ?? false) ? 'yes (S2/S3/Pascasarjana)' : 'no'));
         $this->line(sprintf('    require_valid_nik       : <options=bold>%s</>', ($s['require_valid_nik'] ?? false) ? 'yes (strict mode)' : 'no (stored NULL if invalid)'));
         $this->line(sprintf('    blocklist_nim           : <options=bold>%d entries</>', count($s['blocklist_nim'] ?? [])));
+        $this->line(sprintf('    blocklist_nim_prefix    : <options=bold>%s</>', implode(', ', $s['blocklist_nim_prefix'] ?? []) ?: '(none)'));
+        $this->line(sprintf('    blocklist_fakultas_ids  : <options=bold>%s</>', implode(', ', $s['blocklist_fakultas_ids'] ?? []) ?: '(none)'));
 
         $this->line('');
         $this->info('  Lecturers:');
-        $this->line(sprintf('    allowed_status_aktif    : <options=bold>%s</>', implode(', ', $l['allowed_status_aktif'] ?? ['(any)'])));
+        $this->line('    status_aktif filter     : <fg=gray>disabled (all statuses accepted)</>');
         $this->line(sprintf('    skip_tugas_belajar      : <options=bold>%s</>', ($l['skip_tugas_belajar'] ?? true) ? 'yes' : 'no'));
+        $this->line(sprintf('    require_numeric_nip     : <options=bold>%s</>', ($l['require_numeric_nip'] ?? true) ? 'yes (reject LB-xxxx honorer)' : 'no'));
         $this->line(sprintf('    blocklist_nip           : <options=bold>%d entries</>', count($l['blocklist_nip'] ?? [])));
     }
 

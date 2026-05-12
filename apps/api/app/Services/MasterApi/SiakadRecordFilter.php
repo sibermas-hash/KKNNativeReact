@@ -25,8 +25,6 @@ class SiakadRecordFilter
 
     public const SKIP_STUDENT_BATCH_FUTURE = 'skip_student_batch_future';
 
-    public const SKIP_STUDENT_INACTIVE = 'skip_student_inactive';
-
     public const SKIP_STUDENT_GRADUATE_PROGRAM = 'skip_student_graduate_program';
 
     public const SKIP_STUDENT_NO_NIK = 'skip_student_no_nik';
@@ -40,8 +38,6 @@ class SiakadRecordFilter
     public const SKIP_STUDENT_NO_NIM = 'skip_student_no_nim';
 
     // lecturer reasons
-    public const SKIP_LECTURER_INACTIVE = 'skip_lecturer_inactive';
-
     public const SKIP_LECTURER_TUGAS_BELAJAR = 'skip_lecturer_tugas_belajar';
 
     public const SKIP_LECTURER_BLOCKLISTED = 'skip_lecturer_blocklisted';
@@ -118,16 +114,9 @@ class SiakadRecordFilter
             ]);
         }
 
-        // Active status
-        $allowed = array_map('strtolower', (array) ($this->studentCfg['allowed_status_aktif'] ?? []));
-        if (! empty($allowed)) {
-            $status = strtolower(trim((string) ($record['status_aktif'] ?? '')));
-            if ($status !== '' && ! in_array($status, $allowed, true)) {
-                return $this->skip(self::SKIP_STUDENT_INACTIVE, [
-                    'nim' => $nim, 'status' => $record['status_aktif'] ?? null,
-                ]);
-            }
-        }
+        // NOTE: status_aktif filter dihapus (2026-05-12) — semua status
+        // (Aktif, Cuti, Non-Aktif, Lulus) boleh sync ke DB. Eligibility KKN
+        // dihitung ulang di logic pendaftaran.
 
         // Graduate-program filter
         if ($this->studentCfg['skip_non_kkn_jenjang'] ?? false) {
@@ -202,16 +191,9 @@ class SiakadRecordFilter
             return $this->skip(self::SKIP_LECTURER_BLOCKLISTED, ['nip' => $nip]);
         }
 
-        // Active status — case-insensitive
-        $allowed = array_map('strtolower', (array) ($this->lecturerCfg['allowed_status_aktif'] ?? []));
-        if (! empty($allowed)) {
-            $status = strtolower(trim((string) ($record['status_aktif'] ?? '')));
-            if ($status !== '' && ! in_array($status, $allowed, true)) {
-                return $this->skip(self::SKIP_LECTURER_INACTIVE, [
-                    'nip' => $nip, 'status' => $record['status_aktif'] ?? null,
-                ]);
-            }
-        }
+        // NOTE: status_aktif whitelist filter dihapus (2026-05-12). Semua
+        // status dosen boleh sync; keputusan eligibility untuk jadi DPL
+        // dihitung di logic assignment, bukan di sync layer.
 
         // Tugas belajar = lecturer currently studying
         if ($this->lecturerCfg['skip_tugas_belajar'] ?? true) {
@@ -310,14 +292,12 @@ class SiakadRecordFilter
         return match ($reason) {
             self::SKIP_STUDENT_BATCH_TOO_OLD => 'Batch year older than minimum',
             self::SKIP_STUDENT_BATCH_FUTURE => 'Batch year in far future',
-            self::SKIP_STUDENT_INACTIVE => 'Status aktif not accepted',
             self::SKIP_STUDENT_GRADUATE_PROGRAM => 'Enrolled in non-KKN jenjang (S2/S3/Pascasarjana)',
             self::SKIP_STUDENT_NO_NIK => 'Missing/invalid NIK (strict mode)',
             self::SKIP_STUDENT_BLOCKLISTED => 'NIM in blocklist',
             self::SKIP_STUDENT_BLOCKLISTED_PREFIX => 'NIM prefix in blocklist (batch/year filter)',
             self::SKIP_STUDENT_FACULTY_BLOCKLISTED => 'Student from blocked faculty (Pascasarjana)',
             self::SKIP_STUDENT_NO_NIM => 'Record has no NIM',
-            self::SKIP_LECTURER_INACTIVE => 'Dosen status not aktif',
             self::SKIP_LECTURER_TUGAS_BELAJAR => 'Dosen on tugas belajar',
             self::SKIP_LECTURER_BLOCKLISTED => 'NIP in blocklist',
             self::SKIP_LECTURER_NO_NIP => 'Record has no NIP',

@@ -34,13 +34,12 @@ return [
         'max_batch_year_offset' => (int) env('SIAKAD_STUDENT_MAX_BATCH_YEAR_OFFSET', 1),
 
         /*
-         | Reject mahasiswa whose status_aktif field does not match one of
-         | these values (case-insensitive). Empty array = accept all.
+         | NOTE: status_aktif whitelist filter telah dihapus (2026-05-12).
+         | SIAKAD kadang kirim record dengan status "Cuti", "Non-Aktif",
+         | "Lulus", "Aktif" — semua mahasiswa boleh masuk DB; keputusan
+         | eligible/tidak untuk KKN dilakukan di logic pendaftaran, bukan
+         | di sync layer.
          */
-        'allowed_status_aktif' => array_filter(array_map(
-            'trim',
-            explode(',', (string) env('SIAKAD_STUDENT_ALLOWED_STATUS', 'Aktif,Active'))
-        )),
 
         /*
          | Reject mahasiswa in a non-KKN-eligible jenjang (S2/S3 programs).
@@ -88,13 +87,11 @@ return [
 
     'lecturers' => [
         /*
-         | Reject dosen whose status_aktif field does not match (case-insensitive).
-         | Empty array = accept all.
+         | NOTE: status_aktif whitelist filter telah dihapus (2026-05-12).
+         | Semua dosen (status "Aktif", "Non-Aktif", "Pensiun", dll) boleh
+         | masuk DB. Filter "tugas_belajar" di bawah masih aktif karena
+         | dosen yang sedang studi lanjut secara logis tidak bisa jadi DPL.
          */
-        'allowed_status_aktif' => array_filter(array_map(
-            'trim',
-            explode(',', (string) env('SIAKAD_LECTURER_ALLOWED_STATUS', 'Aktif,Active'))
-        )),
 
         /*
          | Tugas belajar = lecturer currently studying; can't supervise KKN.

@@ -33,6 +33,8 @@ class SiakadRecordFilter
 
     public const SKIP_STUDENT_BLOCKLISTED = 'skip_student_blocklisted';
 
+    public const SKIP_STUDENT_BLOCKLISTED_PREFIX = 'skip_student_blocklisted_prefix';
+
     public const SKIP_STUDENT_FACULTY_BLOCKLISTED = 'skip_student_faculty_blocklisted';
 
     public const SKIP_STUDENT_NO_NIM = 'skip_student_no_nim';
@@ -84,6 +86,18 @@ class SiakadRecordFilter
         $blocklist = $this->studentCfg['blocklist_nim'] ?? [];
         if (in_array($nim, $blocklist, true)) {
             return $this->skip(self::SKIP_STUDENT_BLOCKLISTED, ['nim' => $nim]);
+        }
+
+        // NIM prefix blocklist (e.g. "18,19,20" to skip batches by admission year)
+        $prefixes = (array) ($this->studentCfg['blocklist_nim_prefix'] ?? []);
+        if (! empty($prefixes)) {
+            foreach ($prefixes as $prefix) {
+                if ($prefix !== '' && str_starts_with($nim, $prefix)) {
+                    return $this->skip(self::SKIP_STUDENT_BLOCKLISTED_PREFIX, [
+                        'nim' => $nim, 'prefix' => $prefix,
+                    ]);
+                }
+            }
         }
 
         // Batch year lower bound
@@ -300,6 +314,7 @@ class SiakadRecordFilter
             self::SKIP_STUDENT_GRADUATE_PROGRAM => 'Enrolled in non-KKN jenjang (S2/S3/Pascasarjana)',
             self::SKIP_STUDENT_NO_NIK => 'Missing/invalid NIK (strict mode)',
             self::SKIP_STUDENT_BLOCKLISTED => 'NIM in blocklist',
+            self::SKIP_STUDENT_BLOCKLISTED_PREFIX => 'NIM prefix in blocklist (batch/year filter)',
             self::SKIP_STUDENT_FACULTY_BLOCKLISTED => 'Student from blocked faculty (Pascasarjana)',
             self::SKIP_STUDENT_NO_NIM => 'Record has no NIM',
             self::SKIP_LECTURER_INACTIVE => 'Dosen status not aktif',

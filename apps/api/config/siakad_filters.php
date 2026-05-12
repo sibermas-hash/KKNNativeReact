@@ -67,6 +67,15 @@ return [
         )),
 
         /*
+         | Reject students whose NIM starts with any of these prefixes.
+         | Used to exclude entire batches by admission year (e.g. 18, 19, 20).
+         */
+        'blocklist_nim_prefix' => array_filter(array_map(
+            'trim',
+            explode(',', (string) env('SIAKAD_STUDENT_BLOCKLIST_NIM_PREFIX', ''))
+        )),
+
+        /*
          | Reject students whose fakultas_id / faculty master ID is in this list.
          | Used to exclude entire faculties (e.g. Pascasarjana / ID 1) from KKN.
          | Format: comma-separated IDs.

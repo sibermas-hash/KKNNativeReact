@@ -31,10 +31,13 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
   //
   // Sebelum mount (SSR + first client render):
   //   - MotionValue-based styles TIDAK dipakai (render static transparent nav)
-  //   - loginItem = null (allNavItems hanya berisi static items)
+  //   - allNavItems berisi 5 items (dengan "Login" placeholder — jumlah
+  //     elemen IDENTIK antara server dan client, menghindari mismatch).
   //   - isScrolled = false
   //
   // Setelah mount: full motion + auth-aware rendering aktif.
+  // Label/href item terakhir berubah via re-render biasa (post-hydration,
+  // aman).
   const [hasMounted, setHasMounted] = useState(false);
   useEffect(() => setHasMounted(true), []);
 
@@ -66,23 +69,35 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
     { label: 'Unduhan', href: '/unduhan' },
   ];
 
-  // Compute auth-dependent nav item only after hydration to avoid SSR
-  // mismatch. Before mount, loginItem is null — the nav renders only the
-  // static navItems, which are identical on server and client.
-  const loginItem: NavItem | null = hasMounted
+  // Always render 5 items (same count on server + client) to prevent
+  // hydration mismatch from structural DOM changes. Before mount the
+  // auth item renders as "Login" — after mount the label/href update
+  // happens via a regular state-driven re-render (post-hydration, safe).
+  const authLabel = hasMounted
     ? isAuthenticated
-      ? { label: 'Dashboard', href: (() => {
+      ? 'Dashboard'
+      : 'Login'
+    : 'Login';
+
+  const authHref = !hasMounted
+    ? '/login'
+    : isAuthenticated
+      ? (() => {
           const roles = user?.roles || [];
           if (roles.some((role) => ['superadmin', 'admin', 'faculty_admin'].includes(role))) return '/admin';
           if (roles.some((role) => ['dosen', 'dpl'].includes(role))) return '/dosen';
           if (roles.includes('student')) return '/mahasiswa';
           return '/';
-        })() }
-      : { label: 'Login', href: pathname === '/login' ? '/login' : `/login?redirect=${encodeURIComponent(pathname || '/')}` }
-    : null;
+        })()
+      : pathname === '/login'
+        ? '/login'
+        : `/login?redirect=${encodeURIComponent(pathname)}`;
 
-  // Build the full nav list: static items + conditional login/dashboard item
-  const allNavItems = loginItem ? [...navItems, loginItem] : navItems;
+  // Same number of items on every render — only label/href change post-hydration
+  const allNavItems: NavItem[] = [
+    ...navItems,
+    { label: authLabel, href: authHref },
+  ];
 
   // Determine text color — saat belum mount, assume non-scrolled (matches SSR)
   const navTextClass = overlayNav

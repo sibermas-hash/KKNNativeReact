@@ -61,18 +61,22 @@ export function HomePopupAnnouncement(): React.JSX.Element | null {
   const { data } = useQuery<PopupPayload | null>({
     queryKey: ['public', 'popup-announcement'],
     queryFn: async () => {
-      const apiBase =
-        (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL) ||
-        'http://localhost:8000/api/v1';
-      const res = await fetch(`${apiBase}/public/popup-announcement`, {
-        credentials: 'omit',
-        headers: { Accept: 'application/json' },
-      });
-      if (!res.ok) return null;
-      const body: unknown = await res.json();
-      if (!body || typeof body !== 'object') return null;
-      const payload = body as { data: PopupPayload | null };
-      return payload.data ?? null;
+      try {
+        const apiBase =
+          (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL) ||
+          'http://localhost:8000/api/v1';
+        const res = await fetch(`${apiBase}/public/popup-announcement`, {
+          credentials: 'omit',
+          headers: { Accept: 'application/json' },
+        });
+        if (!res.ok) return null;
+        const body: unknown = await res.json();
+        if (!body || typeof body !== 'object') return null;
+        const payload = body as { data: PopupPayload | null };
+        return payload.data ?? null;
+      } catch {
+        return null;
+      }
     },
     staleTime: 5 * 60_000,
     retry: 0,

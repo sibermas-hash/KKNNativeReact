@@ -12,9 +12,10 @@ import { toast } from 'sonner';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
-import { AlertCircle, BadgeCheck, Camera, GraduationCap, IdCard, Info, LogOut, Medal, RefreshCw, Save, User } from 'lucide-react';
+import { AlertCircle, BadgeCheck, Camera, GraduationCap, IdCard, Info, LogOut, Medal, RefreshCw, Save, User as UserIcon } from 'lucide-react';
+import type { User } from '@sibermas/shared-types';
 import { useTheme } from '@/components/ui/theme-provider';
-import { THEMES, THEME_KEYS, THEME_TYPOGRAPHY, SOFT_CLASS, PRIMARY_CLASS, MUTED_TEXT_CLASS, ACCENT_TEXT_CLASS, FIELD_CLASS, type ThemeKey } from '@/lib/theme-config';
+import { THEMES, THEME_KEYS, THEME_TYPOGRAPHY, SOFT_CLASS, PRIMARY_CLASS, MUTED_TEXT_CLASS, ACCENT_TEXT_CLASS, FIELD_CLASS, type ThemeKey, type ThemeDefinition } from '@/lib/theme-config';
 
 const ParticleBackground = dynamic(
   () => import('@/components/ui/particle-background').then((m) => ({ default: m.ParticleBackground })),
@@ -45,8 +46,58 @@ const AddressMapPicker = dynamic(() => import('@/components/profile/address-map-
 });
 
 type ChangeRequest = { id: number; requested_changes: Record<string, { old: unknown; new: unknown }>; created_at: string };
-type StudentProfile = Record<string, unknown> & { faculty?: { nama?: string }; prodi?: { nama?: string }; missing_biodata_fields?: string[]; missing_address_fields?: string[]; biodata_complete?: boolean; address_verified?: boolean; address_verified_at?: string | null };
-type LecturerProfile = Record<string, unknown> & { faculty?: { nama?: string }; missing_biodata_fields?: string[]; biodata_complete?: boolean };
+type StudentProfile = { nim?: string; gpa?: number; sks_completed?: number; faculty?: { nama?: string }; prodi?: { nama?: string }; missing_biodata_fields?: string[]; missing_address_fields?: string[]; biodata_complete?: boolean; address_verified?: boolean; address_verified_at?: string | null; [key: string]: unknown };
+type LecturerProfile = { nip?: string; faculty?: { nama?: string }; missing_biodata_fields?: string[]; biodata_complete?: boolean; jabatan?: string; status_aktif?: string; status_pegawai?: string; has_workshop?: boolean; workshop_date?: string; is_cpns?: boolean; is_tugas_belajar?: boolean; [key: string]: unknown };
+
+type TypographyKeys = { page: string; eyebrow: string; heading: string; body: string; label: string; button: string; meta: string };
+
+type SurfaceClass = string;
+
+interface ProfileHeaderProps {
+  refTarget: (node: HTMLElement | null) => void;
+  themeRef: (node: HTMLElement | null) => void;
+  theme: string;
+  typography: TypographyKeys;
+  themeConfig: ThemeDefinition;
+  surfaceClass: SurfaceClass;
+  isLecturer: boolean;
+  profileComplete: boolean;
+  isEditing: boolean;
+  pendingRequest: ChangeRequest | null;
+  onThemeChange: (key: string) => void;
+  onDashboard: () => void;
+  onToggleEdit: () => void;
+  onLogout: () => void;
+}
+
+interface ProfileSidebarProps {
+  avatarRef: (node: HTMLElement | null) => void;
+  statusRef: (node: HTMLElement | null) => void;
+  avatarInputRef: React.RefObject<HTMLInputElement | null>;
+  user: User;
+  student: StudentProfile | null;
+  lecturer: LecturerProfile | null;
+  isStudent: boolean;
+  isLecturer: boolean;
+  avatarLoading: boolean;
+  typography: TypographyKeys;
+  themeConfig: ThemeDefinition;
+  surfaceStrongClass: SurfaceClass;
+  onAvatarChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+interface StudentAddressSectionProps {
+  register: ReturnType<typeof useForm<UpdateProfileFormData>>['register'];
+  errors: ReturnType<typeof useForm<UpdateProfileFormData>>['formState']['errors'];
+  isEditing: boolean;
+  typography: TypographyKeys;
+  addressLat: number | null | undefined;
+  addressLng: number | null | undefined;
+  reverseGeocoding: boolean;
+  forwardGeocoding: boolean;
+  onMapChange: (value: { lat: number; lng: number }) => void;
+  onSyncMap: () => void;
+}
 
 const FIELD_LABELS: Record<string, string> = {
   nik: 'NIK (KTP)',
@@ -205,11 +256,11 @@ function StatusRow({ label, complete, subtitle, typography }: { label: string; c
   );
 }
 
-function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, surfaceClass, isLecturer, profileComplete, isEditing, pendingRequest, onThemeChange, onDashboard, onToggleEdit, onLogout }: Record<string, any>) {
+function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, surfaceClass, isLecturer, profileComplete, isEditing, pendingRequest, onThemeChange, onDashboard, onToggleEdit, onLogout }: ProfileHeaderProps) {
   return (
     <div ref={refTarget} className={cx('flex flex-col gap-4 rounded-2xl p-5 sm:flex-row sm:items-end sm:justify-between', themeConfig.frame, surfaceClass, themeConfig.shadow)}>
       <div className="space-y-1">
-        <div className="flex items-center gap-2"><User size={16} className={accentTextClass} /><span className={`${typography.eyebrow} ${accentTextClass}`}>Pengaturan Akun</span></div>
+        <div className="flex items-center gap-2"><UserIcon size={16} className={accentTextClass} /><span className={`${typography.eyebrow} ${accentTextClass}`}>Pengaturan Akun</span></div>
         <h1 className={`${typography.heading} drop-shadow-sm`}>Pusat Data Profil</h1>
         <p className={`max-w-xl ${typography.body} ${mutedTextClass} drop-shadow-sm`}>{isLecturer ? 'Pastikan data kepegawaian dan kontak Anda valid untuk keperluan pembimbingan KKN.' : 'Lengkapi data pribadi, alamat asli sesuai KTP, peta alamat KTP, dan foto formal HD untuk kelancaran proses KKN.'}</p>
       </div>
@@ -230,7 +281,7 @@ function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, su
   );
 }
 
-function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, lecturer, isStudent, isLecturer, avatarLoading, typography, themeConfig, surfaceStrongClass, onAvatarChange }: Record<string, any>) {
+function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, lecturer, isStudent, isLecturer, avatarLoading, typography, themeConfig, surfaceStrongClass, onAvatarChange }: ProfileSidebarProps) {
   return (
     <div className="space-y-5">
       <div ref={avatarRef} className={cx('flex flex-col items-center gap-4 rounded-xl p-5 text-center', themeConfig.frame, surfaceStrongClass, themeConfig.shadow)}>
@@ -267,7 +318,7 @@ function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, l
   );
 }
 
-function StudentAddressSection({ register, errors, isEditing, typography, addressLat, addressLng, reverseGeocoding, forwardGeocoding, onMapChange, onSyncMap }: Record<string, any>) {
+function StudentAddressSection({ register, errors, isEditing, typography, addressLat, addressLng, reverseGeocoding, forwardGeocoding, onMapChange, onSyncMap }: StudentAddressSectionProps) {
   return (
     <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5">
       <div className="space-y-1">
@@ -631,7 +682,6 @@ export default function ProfilePage(): React.JSX.Element {
         surfaceClass={surfaceClass}
         isLecturer={isLecturer}
         profileComplete={profileComplete}
-        roles={roles}
         isEditing={isEditing}
         pendingRequest={pendingRequest}
         onThemeChange={changeTheme}

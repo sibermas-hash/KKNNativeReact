@@ -1,12 +1,9 @@
-#!/usr/bin/expect -f
-log_file /Users/macm4/Documents/KKN/kknuinsaizu/test_login.log
+#!/usr/bin/env expect -f
+# SSH login test (requires SSH key auth)
+log_file ./test_login.log
 set timeout 10
-spawn ssh -p 1977 -o StrictHostKeyChecking=no kampelmas@172.16.2.70
+spawn ssh -p 1977 -o StrictHostKeyChecking=accept-new kampelmas@172.16.2.70
 expect {
-    "assword:" {
-        send "KampelM45/.26:\r"
-        exp_continue
-    }
     "*$" {
         send "echo LOGGED_IN_SUCCESS\r"
         expect "LOGGED_IN_SUCCESS"

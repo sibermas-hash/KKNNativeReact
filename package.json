@@ -15,7 +15,7 @@
     "build:packages": "turbo build --filter='./packages/*'"
   },
   "engines": {
-    "node": ">=22 <25"
+    "node": ">=22"
   },
   "devDependencies": {
     "turbo": "^2.5.0"

@@ -1,9 +1,10 @@
+/* eslint-disable jsx-a11y/aria-proptypes */
 'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, LifeBuoy } from 'lucide-react';
+import { Menu, X, CircleHelp } from 'lucide-react';
 import { useScroll, useTransform, motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/stores';
 
@@ -124,15 +125,13 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
               <img
                 src="/images/logo_uinsaizu.png"
                 alt="Logo UIN SAIZU"
-                className="h-9 w-auto object-contain sm:h-11"
-                style={{ width: 'auto', height: 'auto', maxHeight: '2.75rem' }}
+                className="h-9 max-h-11 w-auto object-contain sm:h-11"
               />
               <div className="w-px h-6 bg-emerald-200/50 mx-0.5" />
               <img
                 src="/images/Logo_SIBERMAS.png"
                 alt="Logo SIBERMAS"
-                className="h-9 w-auto object-contain sm:h-11"
-                style={{ width: 'auto', height: 'auto', maxHeight: '2.75rem' }}
+                className="h-9 max-h-11 w-auto object-contain sm:h-11"
               />
             </Link>
           </div>
@@ -159,7 +158,7 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
               title="Bantuan"
               className={`relative rounded-full p-2 transition-all duration-300 ${helpIconClass}`}
             >
-              <LifeBuoy size={20} strokeWidth={2} />
+              <CircleHelp size={20} strokeWidth={2} />
               <span className="sr-only">Bantuan</span>
             </Link>
 
@@ -216,7 +215,7 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
                     onClick={() => setIsMenuOpen(false)}
                     className="flex items-center gap-2 font-display text-xs font-semibold uppercase tracking-[0.16em] no-underline [color:inherit]"
                   >
-                    <LifeBuoy size={14} strokeWidth={2} />
+                    <CircleHelp size={14} strokeWidth={2} />
                     Bantuan
                   </Link>
                 </div>

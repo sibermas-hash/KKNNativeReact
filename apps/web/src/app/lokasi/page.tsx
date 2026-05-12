@@ -88,18 +88,7 @@ export default async function LocationsPage() {
         </div>
 
         <div className="mt-10">
-          {locations.length === 0 ? (
-            <div className="rounded-[1.6rem] border border-dashed border-emerald-200 bg-emerald-50/60 p-8 text-center">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                Belum ada data lokasi
-              </p>
-              <p className="mt-3 text-sm leading-7 text-slate-600">
-                Data lokasi pengabdian akan ditampilkan setelah periode aktif dimulai.
-              </p>
-            </div>
-          ) : (
-            <LocationsMapLoader initialLocations={locations} />
-          )}
+          <LocationsMapLoader initialLocations={locations} />
         </div>
 
         {/* Lokasi tanpa koordinat → tampil sebagai card list (fallback) */}

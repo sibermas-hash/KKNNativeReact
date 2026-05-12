@@ -1,12 +1,9 @@
-#!/usr/bin/expect -f
+#!/usr/bin/env expect -f
+# SSH connection test (requires SSH key auth)
 set timeout 30
-log_file -a /Users/macm4/Documents/KKN/kknuinsaizu/ssh_output.log
-spawn ssh -p 1977 -o StrictHostKeyChecking=no kampelmas@172.16.2.70 "whoami; hostname; pwd; echo SSH_SUCCESS"
+log_file -a ./ssh_output.log
+spawn ssh -p 1977 -o StrictHostKeyChecking=accept-new kampelmas@172.16.2.70 "whoami; hostname; pwd; echo SSH_SUCCESS"
 expect {
-    "assword:" {
-        send "KampelM45/.26:\r"
-        exp_continue
-    }
     "SSH_SUCCESS" {
         puts "\nCONNECTION_OK"
     }

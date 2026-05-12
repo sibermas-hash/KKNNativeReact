@@ -19,6 +19,11 @@ apps/api/storage/framework/sessions/*
 apps/api/storage/framework/views/*
 apps/api/storage/app/public/*
 apps/api/storage/app/private/*
+apps/api/storage/debugbar/*
+apps/api/storage/pail/
+apps/api/storage/DOC\ DB/
+apps/api/storage/DPL/
+apps/api/storage/surat/
 apps/api/bootstrap/cache/*
 apps/api/.env
 apps/api/.env.backup
@@ -26,9 +31,6 @@ apps/api/.env.production
 apps/api/.env.testing
 apps/api/.phpunit.result.cache
 apps/api/.phpunit.cache/
-
-# ── DebugBar
-apps/api/storage/debugbar/*
 
 # ── apps/web (Next.js) ─────────────────────────────
 apps/web/node_modules/

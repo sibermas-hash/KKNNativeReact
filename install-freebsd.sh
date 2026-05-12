@@ -14,6 +14,7 @@
 set -e
 
 APP_DIR="/usr/local/www/apache24/data/Sibermas2026"
+PF_CONF="/etc/pf.conf"
 APP_USER="www"
 LOG_DIR="/var/log/sibermas"
 PHP_VERSION="84"  # php84
@@ -25,7 +26,7 @@ PHP_VERSION="84"  # php84
 : "${CERT_BASE:=sibermas.uinsaizu.ac.id}"
 
 echo "==> Memperbarui pkg repository..."
-pkg update -f
+pkg update
 
 echo "==> Menginstal dependensi sistem..."
 pkg install -y \
@@ -97,11 +98,26 @@ else
     DB_PASS=$(cat "${DB_PASS_FILE}")
 fi
 
-su -l postgres -c "psql -c \"CREATE USER kkn_app WITH PASSWORD '${DB_PASS}';\"" 2>/dev/null || true
-su -l postgres -c "psql -c \"CREATE DATABASE kkn_production OWNER kkn_app;\"" 2>/dev/null || true
+# Gunakan pipe (bukan cmdline) untuk hindari leak password di ps aux
+echo "CREATE USER kkn_app WITH PASSWORD '${DB_PASS}';" | su -l postgres -c psql 2>/dev/null || true
+echo "CREATE DATABASE kkn_production OWNER kkn_app;" | su -l postgres -c psql 2>/dev/null || true
 
 echo "==> Memulai Redis..."
 service redis start
+
+echo "==> Konfigurasi firewall (pf)..."
+# Hanya buka port 80 (HTTP), 443 (HTTPS), dan SSH (1977). Blokir lainnya
+# termasuk PostgreSQL (5432) dan Redis (6379) — hanya bind ke localhost.
+if [ -f "${PF_CONF}" ] && ! grep -q "sibermas" "${PF_CONF}" 2>/dev/null; then
+  cat >> "${PF_CONF}" << 'EOPF'
+
+# sibermas - production rules
+pass in proto tcp to port { 80 443 1977 }
+block in log proto tcp to port { 5432 6379 }
+EOPF
+  sysrc pf_enable="YES"
+  service pf start 2>/dev/null || service pf enable 2>/dev/null || true
+fi
 
 echo "==> Memulai PHP-FPM..."
 service php-fpm start 2>/dev/null || true
@@ -112,7 +128,10 @@ mkdir -p "${LOG_DIR}"
 chown -R ${APP_USER}:${APP_USER} "${LOG_DIR}"
 
 echo "==> Menginstal pnpm..."
-npm install -g pnpm
+# Prioritaskan FreeBSD package jika tersedia, fallback ke npm
+if ! pkg install -y pnpm 2>/dev/null; then
+  npm install -g --user root pnpm
+fi
 
 echo "==> Menyalin konfigurasi supervisord..."
 mkdir -p /usr/local/etc/supervisord.d
@@ -166,6 +185,11 @@ echo "        ${APP_DIR}/apps/web/.next/standalone/apps/web/public"
 echo " 13. chown -R ${APP_USER}:${APP_USER} ${APP_DIR}/apps/api/storage"
 echo " 14. chown -R ${APP_USER}:${APP_USER} ${APP_DIR}/apps/api/bootstrap/cache"
 echo " 15. chown -R ${APP_USER}:${APP_USER} ${APP_DIR}/apps/web/.next"
+echo ""
+echo " 🔥 Pastikan PostgreSQL dan Redis hanya listen di localhost:"
+echo "     sed -i '' 's/^listen_addresses =.*/listen_addresses = '\''127.0.0.1'\''/' /var/db/postgres/data16/postgresql.conf"
+echo "     echo 'bind 127.0.0.1' >> /usr/local/etc/redis.conf"
+echo "     service postgresql restart && service redis restart"
 echo ""
 echo " 16. (Setelah app hidup di HTTP) issue SSL single-domain:"
 echo "       pkg install -y py311-certbot"

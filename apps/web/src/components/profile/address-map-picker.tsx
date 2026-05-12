@@ -140,6 +140,11 @@ export default function AddressMapPicker({
       cooperativeGestures: false,
       maxZoom: 20,
       minZoom: 5,
+      transformRequest: (url) => {
+        if (url.startsWith('https://server.arcgisonline.com/')) {
+          return { url, headers: { 'Referer': 'https://sibermas.uinsaizu.ac.id/' } };
+        }
+      },
     });
 
     map.addControl(new maplibregl.NavigationControl({ visualizePitch: true, showCompass: true }), 'top-right');
@@ -169,10 +174,17 @@ export default function AddressMapPicker({
 
     map.on('load', () => setLoading(false));
     map.on('idle', () => setLoading(false));
+    map.on('error', (e) => {
+      if (e.error?.status === 403 || e.error?.status === 404) return;
+      console.warn('[MapLibre]', e.error?.message ?? e.error);
+    });
+
+    const loadingTimeout = window.setTimeout(() => setLoading(false), 15_000);
 
     mapRef.current = map;
 
     return () => {
+      window.clearTimeout(loadingTimeout);
       markerRef.current?.remove();
       markerRef.current = null;
       map.remove();
@@ -186,8 +198,14 @@ export default function AddressMapPicker({
     const map = mapRef.current;
     if (!map) return;
     setLoading(true);
+
+    let cancelled = false;
+    const timeout = window.setTimeout(() => { if (!cancelled) setLoading(false); }, 15_000);
+
     map.setStyle(STYLES[activeStyle]);
-    map.once('idle', () => setLoading(false));
+    map.once('idle', () => { if (!cancelled) { window.clearTimeout(timeout); setLoading(false); } });
+
+    return () => { cancelled = true; window.clearTimeout(timeout); };
   }, [activeStyle]);
 
   // Sync marker position + draggable state with `value` prop.

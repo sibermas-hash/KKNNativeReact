@@ -83,7 +83,7 @@ export function NotificationBell({ className }: { className?: string }): React.J
       if (aborted) return;
       const apiBase =
         (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL) ||
-        '/api/v1';
+        'http://localhost:8000/api/v1';
       // SSE endpoint is under /api (not /api/v1) and uses the Sanctum
       // cookie. withCredentials is required to forward it.
       const streamUrl = apiBase.replace(/\/v1\/?$/, '') + '/notifications/stream';

@@ -170,7 +170,7 @@ function buildPopupHtml(loc: MapLocation): string {
     <div class="kkn-popup">
       <div class="kkn-popup__header">
         <p class="kkn-popup__title">${village}</p>
-        ${subtitle ? `<p class="kkn-popup__subtitle">${escapeHtml(subtitle)}</p>` : ''}
+        ${subtitle ? `<p class="kkn-popup__subtitle">${subtitle}</p>` : ''}
       </div>
       <div class="kkn-popup__stats">
         <span class="kkn-popup__stat kkn-popup__stat--sky">
@@ -243,6 +243,11 @@ export default function LocationsMap({
       attributionControl: false,
       maxZoom: 18,
       minZoom: 5,
+      transformRequest: (url) => {
+        if (url.startsWith('https://server.arcgisonline.com/')) {
+          return { url, headers: { 'Referer': 'https://sibermas.uinsaizu.ac.id/' } };
+        }
+      },
     });
 
     map.addControl(
@@ -258,10 +263,17 @@ export default function LocationsMap({
 
     map.on('load', () => setMapLoading(false));
     map.on('idle', () => setMapLoading(false));
+    map.on('error', (e) => {
+      if (e.error?.status === 403 || e.error?.status === 404) return;
+      console.warn('[MapLibre]', e.error?.message ?? e.error);
+    });
+
+    const loadingTimeout = window.setTimeout(() => setMapLoading(false), 15_000);
 
     mapRef.current = map;
 
     return () => {
+      window.clearTimeout(loadingTimeout);
       markersRef.current.forEach((m) => m.remove());
       markersRef.current = [];
       map.remove();
@@ -275,8 +287,14 @@ export default function LocationsMap({
     const map = mapRef.current;
     if (!map) return;
     setMapLoading(true);
+
+    let cancelled = false;
+    const timeout = window.setTimeout(() => { if (!cancelled) setMapLoading(false); }, 15_000);
+
     map.setStyle(STYLES[activeStyle]);
-    map.once('idle', () => setMapLoading(false));
+    map.once('idle', () => { if (!cancelled) { window.clearTimeout(timeout); setMapLoading(false); } });
+
+    return () => { cancelled = true; window.clearTimeout(timeout); };
   }, [activeStyle]);
 
   // ── Render markers whenever locations change ──

@@ -43,5 +43,6 @@ export const attendanceApi = attendanceEndpoints(legacyApi);
 export function apiUrl(path: string) {
   if (/^https?:\/\//i.test(path)) return path;
   const baseUrl = api.defaults.baseURL?.replace(/\/$/, '') ?? '';
-  return `${baseUrl}/${path.replace(/^\/|^api\/v1\//g, '')}`;
+  const cleaned = path.replace(/^\/*(?:api\/v1\/)?/, '');
+  return `${baseUrl}/${cleaned}`;
 }

@@ -96,7 +96,7 @@ const nextConfig: NextConfig = {
     return [
       // Exclude Next.js internal API routes from being proxied to backend
       { source: '/api/clear-session', destination: '/api/clear-session' },
-      { source: '/api/:path*', destination: `${apiUrl}/:path*` },
+      { source: '/api/v1/:path*', destination: `${apiUrl}/:path*` },
     ];
   },
 
@@ -132,19 +132,23 @@ const nextConfig: NextConfig = {
       }
     })();
     const mapTilesOrigin = 'https://*.basemaps.cartocdn.com';
-    const connectSrc = ['\'self\'', apiUrlOrigin, sentryOrigin, mapTilesOrigin].filter(Boolean).join(' ');
+    const arcGisOrigin = 'https://server.arcgisonline.com';
+    const nominatimOrigin = 'https://nominatim.openstreetmap.org';
+    const connectSrc = ['\'self\'', apiUrlOrigin, sentryOrigin, mapTilesOrigin, arcGisOrigin, nominatimOrigin].filter(Boolean).join(' ');
     const isDev = process.env.NODE_ENV !== 'production';
     const csp = [
       "default-src 'self'",
       `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src 'self' data: blob: https:",
+      "img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://server.arcgisonline.com",
       "font-src 'self' data: https://fonts.gstatic.com",
+      "worker-src 'self' blob:",
       `connect-src ${connectSrc}`,
       "frame-ancestors 'none'",
       "base-uri 'self'",
       "form-action 'self'",
       "object-src 'none'",
+      "upgrade-insecure-requests",
     ].join('; ');
 
     return [

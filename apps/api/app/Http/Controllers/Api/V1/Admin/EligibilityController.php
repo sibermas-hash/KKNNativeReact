@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\Mahasiswa;
+use App\Services\AuditService;
 use App\Services\EligibilityService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -139,20 +140,44 @@ class EligibilityController extends Controller
 
     /**
      * Bulk update SKS mahasiswa dari data SIAKAD (superadmin only).
+     *
+     * Audit fix (2026-05-12):
+     *   - Kolom target sebelumnya `sks_lulus` yang sudah di-drop di migration
+     *     2026_04_29_030000_sync_duplicate_sks_columns.php (merge ke
+     *     `sks_completed`). Sekarang tulis ke `sks_completed` + lock field
+     *     supaya sync SIAKAD berikutnya tidak timpa.
+     *   - Tambah audit log.
      */
     public function bulkUpdateSks(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'updates' => ['required', 'array'],
             'updates.*.mahasiswa_id' => ['required', 'exists:mahasiswa,id'],
-            'updates.*.sks_completed' => ['required', 'integer', 'min:0'],
+            'updates.*.sks_completed' => ['required', 'integer', 'min:0', 'max:250'],
         ]);
 
         $updated = 0;
+        $affectedIds = [];
         foreach ($validated['updates'] as $item) {
-            Mahasiswa::where('id', $item['mahasiswa_id'])
-                ->update(['sks_lulus' => $item['sks_completed']]);
+            $mahasiswa = Mahasiswa::find($item['mahasiswa_id']);
+            if ($mahasiswa === null) {
+                continue;
+            }
+            $mahasiswa->sks_completed = (int) $item['sks_completed'];
+            $mahasiswa->save();
+            $mahasiswa->lockFields(['sks_completed']);
+            $affectedIds[] = $mahasiswa->id;
             $updated++;
+        }
+
+        if ($updated > 0) {
+            AuditService::log(
+                'BULK_UPDATE_SKS',
+                "Superadmin bulk update SKS untuk {$updated} mahasiswa",
+                null,
+                null,
+                ['mahasiswa_ids' => $affectedIds, 'count' => $updated],
+            );
         }
 
         return $this->success(['updated' => $updated], "{$updated} data SKS berhasil diperbarui.");

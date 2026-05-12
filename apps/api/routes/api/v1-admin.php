@@ -231,6 +231,7 @@ Route::prefix('admin')
         Route::middleware('role:superadmin')->group(function () {
             Route::get('/pengguna', [UserController::class, 'index']);
             Route::post('/pengguna', [UserController::class, 'store']);
+            Route::get('/pengguna/{user}', [UserController::class, 'show']);
             Route::patch('/pengguna/{user}', [UserController::class, 'update']);
             Route::patch('/pengguna/{user}/ubah-status', [UserController::class, 'toggleActive']);
             Route::patch('/pengguna/{user}/role', [UserController::class, 'updateRole']);

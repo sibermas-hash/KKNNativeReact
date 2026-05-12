@@ -14,7 +14,70 @@ interface User {
   email: string;
   roles?: string[];
   is_active?: boolean;
+  fakultas_id?: number | null;
 }
+
+interface MahasiswaDetail {
+  id: number;
+  nim: string;
+  nama: string;
+  nik?: string | null;
+  mother_name?: string | null;
+  birth_place?: string | null;
+  birth_date?: string | null;
+  gender?: string | null;
+  shirt_size?: string | null;
+  marital_status?: string | null;
+  phone?: string | null;
+  alamat?: string | null;
+  api_email?: string | null;
+  fakultas_id?: number | null;
+  prodi_id?: number | null;
+  batch_year?: number | null;
+  semester?: number | null;
+  sks_completed?: number | null;
+  gpa?: number | null;
+  is_paid_ukt?: boolean;
+  status_bta_ppi?: string | null;
+  status_aktif?: string | null;
+}
+
+interface DosenDetail {
+  id: number;
+  nip: string;
+  nama: string;
+  nama_gelar?: string | null;
+  nidn?: string | null;
+  nik?: string | null;
+  phone?: string | null;
+  jabatan?: string | null;
+  pangkat?: string | null;
+  golongan?: string | null;
+  pendidikan_terakhir?: string | null;
+  birth_date?: string | null;
+  tempat_lahir?: string | null;
+  gender?: string | null;
+  alamat?: string | null;
+  status_aktif?: string | null;
+  status_pegawai?: string | null;
+  is_cpns?: boolean;
+  is_tugas_belajar?: boolean;
+  fakultas_id?: number | null;
+}
+
+interface UserDetailPayload {
+  user: User;
+  mahasiswa: MahasiswaDetail | null;
+  dosen: DosenDetail | null;
+}
+
+type EditForm = {
+  user: Partial<User>;
+  mahasiswa: Partial<MahasiswaDetail>;
+  dosen: Partial<DosenDetail>;
+};
+
+const EMPTY_EDIT: EditForm = { user: {}, mahasiswa: {}, dosen: {} };
 
 export default function AdminUsersPage(): React.JSX.Element {
   const queryClient = useQueryClient();
@@ -22,9 +85,9 @@ export default function AdminUsersPage(): React.JSX.Element {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ username: '', name: '', email: '', role: 'student' });
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [editingProfile, setEditingProfile] = useState<User | null>(null);
-  const [profileForm, setProfileForm] = useState({ username: '', name: '', email: '', is_active: true });
   const [editRole, setEditRole] = useState('student');
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState<EditForm>(EMPTY_EDIT);
   const passwordRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading } = useQuery({
@@ -34,6 +97,79 @@ export default function AdminUsersPage(): React.JSX.Element {
       return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
   });
+
+  const { data: detailData, isLoading: detailLoading } = useQuery({
+    queryKey: ['admin', 'users', 'detail', editingId],
+    queryFn: async () => {
+      if (editingId === null) return null;
+      const res = await adminApi.users.show(editingId);
+      return (((res as unknown as { data?: unknown })?.data ?? res) as { data?: UserDetailPayload })?.data
+        ?? ((res as unknown as UserDetailPayload));
+    },
+    enabled: editingId !== null,
+  });
+
+  if (detailData && editForm.user.id !== detailData.user?.id) {
+    const { user: u, mahasiswa, dosen } = detailData;
+    setEditForm({
+      user: {
+        id: u.id,
+        username: u.username ?? '',
+        name: u.name ?? '',
+        email: u.email ?? '',
+        is_active: !!u.is_active,
+        fakultas_id: u.fakultas_id ?? null,
+      },
+      mahasiswa: mahasiswa
+        ? {
+            nim: mahasiswa.nim,
+            nama: mahasiswa.nama ?? '',
+            nik: mahasiswa.nik ?? '',
+            mother_name: mahasiswa.mother_name ?? '',
+            birth_place: mahasiswa.birth_place ?? '',
+            birth_date: mahasiswa.birth_date ?? '',
+            gender: mahasiswa.gender ?? '',
+            shirt_size: mahasiswa.shirt_size ?? '',
+            marital_status: mahasiswa.marital_status ?? '',
+            phone: mahasiswa.phone ?? '',
+            alamat: mahasiswa.alamat ?? '',
+            api_email: mahasiswa.api_email ?? '',
+            fakultas_id: mahasiswa.fakultas_id ?? null,
+            prodi_id: mahasiswa.prodi_id ?? null,
+            batch_year: mahasiswa.batch_year ?? null,
+            semester: mahasiswa.semester ?? null,
+            sks_completed: mahasiswa.sks_completed ?? null,
+            gpa: mahasiswa.gpa ?? null,
+            is_paid_ukt: !!mahasiswa.is_paid_ukt,
+            status_bta_ppi: mahasiswa.status_bta_ppi ?? '',
+            status_aktif: mahasiswa.status_aktif ?? '',
+          }
+        : {},
+      dosen: dosen
+        ? {
+            nip: dosen.nip,
+            nama: dosen.nama ?? '',
+            nama_gelar: dosen.nama_gelar ?? '',
+            nidn: dosen.nidn ?? '',
+            nik: dosen.nik ?? '',
+            phone: dosen.phone ?? '',
+            jabatan: dosen.jabatan ?? '',
+            pangkat: dosen.pangkat ?? '',
+            golongan: dosen.golongan ?? '',
+            pendidikan_terakhir: dosen.pendidikan_terakhir ?? '',
+            birth_date: dosen.birth_date ?? '',
+            tempat_lahir: dosen.tempat_lahir ?? '',
+            gender: dosen.gender ?? '',
+            alamat: dosen.alamat ?? '',
+            status_aktif: dosen.status_aktif ?? '',
+            status_pegawai: dosen.status_pegawai ?? '',
+            is_cpns: !!dosen.is_cpns,
+            is_tugas_belajar: !!dosen.is_tugas_belajar,
+            fakultas_id: dosen.fakultas_id ?? null,
+          }
+        : {},
+    });
+  }
 
   const createMutation = useMutation({
     mutationFn: (data: Record<string, unknown>) => adminApi.users.store(data),
@@ -62,14 +198,33 @@ export default function AdminUsersPage(): React.JSX.Element {
     onError: (error: unknown) => toast.error((error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Gagal mengubah role'),
   });
 
-  const profileMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Record<string, unknown> }) => adminApi.users.update(id, data),
+  const resetPwMutation = useMutation({
+    mutationFn: (id: number) => adminApi.users.resetPassword(id),
+    onSuccess: (res: unknown) => {
+      const data = (res as { data?: { data?: { email_sent?: boolean } } })?.data?.data;
+      toast.success(
+        data?.email_sent
+          ? 'Password sementara dikirim ke email.'
+          : 'Password sementara dibuat (user tidak punya email — hubungi manual).'
+      );
+    },
+    onError: () => toast.error('Gagal reset password'),
+  });
+
+  const editMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: number; payload: Record<string, unknown> }) =>
+      adminApi.users.update(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
-      setEditingProfile(null);
-      toast.success('Data pengguna berhasil diubah');
+      setEditingId(null);
+      setEditForm(EMPTY_EDIT);
+      toast.success('Data pengguna berhasil diperbarui.');
     },
-    onError: (error: unknown) => toast.error((error as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal mengubah data pengguna'),
+    onError: (error: unknown) =>
+      toast.error(
+        (error as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error
+          ?.message || 'Gagal memperbarui data.'
+      ),
   });
 
   const users = (data as unknown as User[]) || [];
@@ -82,6 +237,46 @@ export default function AdminUsersPage(): React.JSX.Element {
     { value: 'faculty_admin', label: 'Admin Fakultas' },
     { value: 'superadmin', label: 'Superadmin' },
   ];
+
+  const handleSubmitEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingId === null) return;
+
+    // Strip id dari user payload supaya tidak dikirim ke backend.
+    const { id: _id, ...userPayload } = editForm.user;
+    void _id;
+
+    const payload: Record<string, unknown> = {
+      ...userPayload,
+      email: (userPayload.email as string | null | undefined)?.toString().trim() || null,
+    };
+
+    const hasMahasiswa = Object.keys(editForm.mahasiswa).length > 0;
+    const hasDosen = Object.keys(editForm.dosen).length > 0;
+
+    if (hasMahasiswa) {
+      const { nim: _nim, ...rest } = editForm.mahasiswa;
+      void _nim;
+      payload.mahasiswa = rest;
+    }
+    if (hasDosen) {
+      const { nip: _nip, ...rest } = editForm.dosen;
+      void _nip;
+      payload.dosen = rest;
+    }
+
+    editMutation.mutate({ id: editingId, payload });
+  };
+
+  const updateUserField = <K extends keyof User>(key: K, value: User[K]) => {
+    setEditForm((prev) => ({ ...prev, user: { ...prev.user, [key]: value } }));
+  };
+  const updateMahasiswaField = <K extends keyof MahasiswaDetail>(key: K, value: MahasiswaDetail[K]) => {
+    setEditForm((prev) => ({ ...prev, mahasiswa: { ...prev.mahasiswa, [key]: value } }));
+  };
+  const updateDosenField = <K extends keyof DosenDetail>(key: K, value: DosenDetail[K]) => {
+    setEditForm((prev) => ({ ...prev, dosen: { ...prev.dosen, [key]: value } }));
+  };
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
@@ -156,7 +351,7 @@ export default function AdminUsersPage(): React.JSX.Element {
                 <p className="font-black text-slate-900">{String(u.name || '-')} ({String(u.username || '-')})</p>
                 <p className="text-xs text-slate-400">{String(u.email || '-')} | Role: {(u.roles as string[])?.join(', ') || '-'}</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <button
                   onClick={() => toggleMutation.mutate(u.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-black ${u.is_active ? 'bg-rose-50 text-rose-700 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}`}
@@ -164,19 +359,26 @@ export default function AdminUsersPage(): React.JSX.Element {
                   {u.is_active ? 'Nonaktifkan' : 'Aktifkan'}
                 </button>
                 <button
-                  onClick={() => {
-                    setEditingProfile(u);
-                    setProfileForm({ username: u.username || '', name: u.name || '', email: u.email || '', is_active: !!u.is_active });
-                  }}
+                  onClick={() => setEditingId(u.id)}
                   className="px-3 py-1.5 rounded-lg text-xs font-black bg-cyan-50 text-cyan-700 hover:bg-cyan-100"
                 >
-                  Ubah Data
+                  Edit Data
                 </button>
                 <button
                   onClick={() => { setEditingUser(u); setEditRole(u.roles?.[0] || 'student'); }}
                   className="px-3 py-1.5 rounded-lg text-xs font-black bg-slate-100 text-slate-700 hover:bg-slate-200"
                 >
                   Ubah Role
+                </button>
+                <button
+                  onClick={() => {
+                    if (confirm(`Reset password untuk ${u.name}? Password sementara akan dikirim ke email (jika ada).`)) {
+                      resetPwMutation.mutate(u.id);
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-lg text-xs font-black bg-amber-50 text-amber-700 hover:bg-amber-100"
+                >
+                  Reset Password
                 </button>
               </div>
             </div>
@@ -204,44 +406,262 @@ export default function AdminUsersPage(): React.JSX.Element {
         </div>
       )}
 
-      {editingProfile && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      {editingId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              profileMutation.mutate({
-                id: editingProfile.id,
-                data: { ...profileForm, email: profileForm.email.trim() || null },
-              });
-            }}
-            className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl space-y-5"
+            onSubmit={handleSubmitEdit}
+            className="bg-white rounded-2xl p-6 w-full max-w-3xl shadow-xl space-y-6 my-auto max-h-[90vh] overflow-y-auto"
           >
-            <h3 className="font-black text-slate-900 text-lg">Ubah Data Pengguna</h3>
-            <div className="grid gap-4">
+            <div className="flex items-start justify-between">
               <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase">Username</label>
-                <input value={profileForm.username} onChange={(e) => setProfileForm({ ...profileForm, username: e.target.value })} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1" required />
+                <h3 className="font-black text-slate-900 text-lg">Edit Data Pengguna</h3>
+                <p className="text-xs text-slate-500 mt-1">NIM / NIP di-lock (tidak dapat diubah).</p>
               </div>
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase">Nama</label>
-                <input value={profileForm.name} onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1" required />
-              </div>
-              <div>
-                <label className="text-[10px] font-black text-slate-400 uppercase">Email</label>
-                <input type="email" value={profileForm.email} onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })} placeholder="Kosongkan jika belum ada" className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1" />
-              </div>
-              <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
-                <input type="checkbox" checked={profileForm.is_active} onChange={(e) => setProfileForm({ ...profileForm, is_active: e.target.checked })} />
-                Akun aktif
-              </label>
+              <button
+                type="button"
+                onClick={() => { setEditingId(null); setEditForm(EMPTY_EDIT); }}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                ✕
+              </button>
             </div>
-            <div className="flex gap-3 justify-end">
-              <button type="button" onClick={() => setEditingProfile(null)} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200">Batal</button>
-              <button type="submit" disabled={profileMutation.isPending} className="px-4 py-2 bg-cyan-600 text-white rounded-xl text-xs font-black hover:bg-cyan-700 disabled:opacity-50">Simpan</button>
+
+            {detailLoading ? (
+              <div className="h-48 animate-pulse rounded-xl bg-slate-100" />
+            ) : (
+              <>
+                {/* User-level */}
+                <section className="space-y-3">
+                  <h4 className="text-xs font-black text-slate-700 uppercase tracking-wide">Akun</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <label className="block">
+                      <span className="text-[10px] font-black text-slate-400 uppercase">Username</span>
+                      <input
+                        value={String(editForm.user.username ?? '')}
+                        onChange={(e) => updateUserField('username', e.target.value)}
+                        className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="text-[10px] font-black text-slate-400 uppercase">Nama (Akun)</span>
+                      <input
+                        value={String(editForm.user.name ?? '')}
+                        onChange={(e) => updateUserField('name', e.target.value)}
+                        className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1"
+                      />
+                    </label>
+                    <label className="block sm:col-span-2">
+                      <span className="text-[10px] font-black text-slate-400 uppercase">Email</span>
+                      <input
+                        type="email"
+                        value={String(editForm.user.email ?? '')}
+                        onChange={(e) => updateUserField('email', e.target.value)}
+                        placeholder="Kosongkan jika belum ada"
+                        className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1"
+                      />
+                    </label>
+                    <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                      <input
+                        type="checkbox"
+                        checked={!!editForm.user.is_active}
+                        onChange={(e) => updateUserField('is_active', e.target.checked)}
+                      />
+                      Akun aktif
+                    </label>
+                  </div>
+                </section>
+
+                {/* Mahasiswa */}
+                {detailData?.mahasiswa && (
+                  <section className="space-y-3">
+                    <h4 className="text-xs font-black text-slate-700 uppercase tracking-wide">Data Mahasiswa</h4>
+                    <div className="text-[10px] font-bold text-slate-500">
+                      NIM: <code className="bg-slate-100 px-2 py-0.5 rounded text-slate-700">{editForm.mahasiswa.nim}</code> (locked)
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <TextField label="Nama Lengkap" value={editForm.mahasiswa.nama} onChange={(v) => updateMahasiswaField('nama', v)} />
+                      <TextField label="NIK" value={editForm.mahasiswa.nik} onChange={(v) => updateMahasiswaField('nik', v)} placeholder="16 digit" />
+                      <TextField label="Nama Ibu" value={editForm.mahasiswa.mother_name} onChange={(v) => updateMahasiswaField('mother_name', v)} />
+                      <TextField label="Phone" value={editForm.mahasiswa.phone} onChange={(v) => updateMahasiswaField('phone', v)} />
+                      <TextField label="Tempat Lahir" value={editForm.mahasiswa.birth_place} onChange={(v) => updateMahasiswaField('birth_place', v)} />
+                      <TextField label="Tanggal Lahir" type="date" value={editForm.mahasiswa.birth_date} onChange={(v) => updateMahasiswaField('birth_date', v)} />
+                      <SelectField label="Gender" value={editForm.mahasiswa.gender} options={[{ value: '', label: '-' }, { value: 'L', label: 'Laki-laki' }, { value: 'P', label: 'Perempuan' }]} onChange={(v) => updateMahasiswaField('gender', v)} />
+                      <TextField label="Ukuran Baju" value={editForm.mahasiswa.shirt_size} onChange={(v) => updateMahasiswaField('shirt_size', v)} />
+                      <NumberField label="Angkatan" value={editForm.mahasiswa.batch_year} onChange={(v) => updateMahasiswaField('batch_year', v)} />
+                      <NumberField label="Semester" value={editForm.mahasiswa.semester} onChange={(v) => updateMahasiswaField('semester', v)} />
+                      <NumberField label="SKS Lulus" value={editForm.mahasiswa.sks_completed} onChange={(v) => updateMahasiswaField('sks_completed', v)} />
+                      <NumberField label="IPK" value={editForm.mahasiswa.gpa} onChange={(v) => updateMahasiswaField('gpa', v)} step={0.01} />
+                      <TextField label="Status BTA-PPI" value={editForm.mahasiswa.status_bta_ppi} onChange={(v) => updateMahasiswaField('status_bta_ppi', v)} placeholder="LULUS / BELUM" />
+                      <TextField label="Status Aktif" value={editForm.mahasiswa.status_aktif} onChange={(v) => updateMahasiswaField('status_aktif', v)} placeholder="AKTIF / CUTI / LULUS" />
+                      <NumberField label="Fakultas ID" value={editForm.mahasiswa.fakultas_id} onChange={(v) => updateMahasiswaField('fakultas_id', v)} />
+                      <NumberField label="Prodi ID" value={editForm.mahasiswa.prodi_id} onChange={(v) => updateMahasiswaField('prodi_id', v)} />
+                      <TextField label="Email API" value={editForm.mahasiswa.api_email} onChange={(v) => updateMahasiswaField('api_email', v)} />
+                      <TextField label="Status Nikah" value={editForm.mahasiswa.marital_status} onChange={(v) => updateMahasiswaField('marital_status', v)} />
+                      <div className="sm:col-span-2">
+                        <TextField label="Alamat" value={editForm.mahasiswa.alamat} onChange={(v) => updateMahasiswaField('alamat', v)} />
+                      </div>
+                      <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                        <input
+                          type="checkbox"
+                          checked={!!editForm.mahasiswa.is_paid_ukt}
+                          onChange={(e) => updateMahasiswaField('is_paid_ukt', e.target.checked)}
+                        />
+                        UKT sudah dibayar
+                      </label>
+                    </div>
+                  </section>
+                )}
+
+                {/* Dosen */}
+                {detailData?.dosen && (
+                  <section className="space-y-3">
+                    <h4 className="text-xs font-black text-slate-700 uppercase tracking-wide">Data Dosen</h4>
+                    <div className="text-[10px] font-bold text-slate-500">
+                      NIP: <code className="bg-slate-100 px-2 py-0.5 rounded text-slate-700">{editForm.dosen.nip}</code> (locked)
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <TextField label="Nama Lengkap" value={editForm.dosen.nama} onChange={(v) => updateDosenField('nama', v)} />
+                      <TextField label="Nama + Gelar" value={editForm.dosen.nama_gelar} onChange={(v) => updateDosenField('nama_gelar', v)} />
+                      <TextField label="NIDN" value={editForm.dosen.nidn} onChange={(v) => updateDosenField('nidn', v)} />
+                      <TextField label="NIK" value={editForm.dosen.nik} onChange={(v) => updateDosenField('nik', v)} placeholder="16 digit" />
+                      <TextField label="Phone" value={editForm.dosen.phone} onChange={(v) => updateDosenField('phone', v)} />
+                      <TextField label="Jabatan" value={editForm.dosen.jabatan} onChange={(v) => updateDosenField('jabatan', v)} />
+                      <TextField label="Pangkat" value={editForm.dosen.pangkat} onChange={(v) => updateDosenField('pangkat', v)} />
+                      <TextField label="Golongan" value={editForm.dosen.golongan} onChange={(v) => updateDosenField('golongan', v)} />
+                      <TextField label="Pendidikan Terakhir" value={editForm.dosen.pendidikan_terakhir} onChange={(v) => updateDosenField('pendidikan_terakhir', v)} />
+                      <TextField label="Tempat Lahir" value={editForm.dosen.tempat_lahir} onChange={(v) => updateDosenField('tempat_lahir', v)} />
+                      <TextField label="Tanggal Lahir" type="date" value={editForm.dosen.birth_date} onChange={(v) => updateDosenField('birth_date', v)} />
+                      <SelectField label="Gender" value={editForm.dosen.gender} options={[{ value: '', label: '-' }, { value: 'L', label: 'Laki-laki' }, { value: 'P', label: 'Perempuan' }]} onChange={(v) => updateDosenField('gender', v)} />
+                      <TextField label="Status Aktif" value={editForm.dosen.status_aktif} onChange={(v) => updateDosenField('status_aktif', v)} />
+                      <TextField label="Status Pegawai" value={editForm.dosen.status_pegawai} onChange={(v) => updateDosenField('status_pegawai', v)} />
+                      <NumberField label="Fakultas ID" value={editForm.dosen.fakultas_id} onChange={(v) => updateDosenField('fakultas_id', v)} />
+                      <div className="sm:col-span-2">
+                        <TextField label="Alamat" value={editForm.dosen.alamat} onChange={(v) => updateDosenField('alamat', v)} />
+                      </div>
+                      <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                        <input
+                          type="checkbox"
+                          checked={!!editForm.dosen.is_cpns}
+                          onChange={(e) => updateDosenField('is_cpns', e.target.checked)}
+                        />
+                        CPNS
+                      </label>
+                      <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                        <input
+                          type="checkbox"
+                          checked={!!editForm.dosen.is_tugas_belajar}
+                          onChange={(e) => updateDosenField('is_tugas_belajar', e.target.checked)}
+                        />
+                        Tugas Belajar
+                      </label>
+                    </div>
+                  </section>
+                )}
+              </>
+            )}
+
+            <div className="flex gap-3 justify-end pt-3 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => { setEditingId(null); setEditForm(EMPTY_EDIT); }}
+                className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                disabled={editMutation.isPending || detailLoading}
+                className="px-4 py-2 bg-cyan-600 text-white rounded-xl text-xs font-black hover:bg-cyan-700 disabled:opacity-50"
+              >
+                {editMutation.isPending ? 'Menyimpan...' : 'Simpan Perubahan'}
+              </button>
             </div>
           </form>
         </div>
       )}
     </div>
+  );
+}
+
+/* ─── Field components ──────────────────────────────────────────────── */
+
+function TextField({
+  label,
+  value,
+  onChange,
+  placeholder,
+  type = 'text',
+}: {
+  label: string;
+  value: string | null | undefined;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  type?: string;
+}) {
+  return (
+    <label className="block">
+      <span className="text-[10px] font-black text-slate-400 uppercase">{label}</span>
+      <input
+        type={type}
+        value={value ?? ''}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1"
+      />
+    </label>
+  );
+}
+
+function NumberField({
+  label,
+  value,
+  onChange,
+  step = 1,
+}: {
+  label: string;
+  value: number | null | undefined;
+  onChange: (v: number | null) => void;
+  step?: number;
+}) {
+  return (
+    <label className="block">
+      <span className="text-[10px] font-black text-slate-400 uppercase">{label}</span>
+      <input
+        type="number"
+        step={step}
+        value={value === null || value === undefined ? '' : value}
+        onChange={(e) => onChange(e.target.value === '' ? null : Number(e.target.value))}
+        className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1"
+      />
+    </label>
+  );
+}
+
+function SelectField({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: string | null | undefined;
+  options: { value: string; label: string }[];
+  onChange: (v: string) => void;
+}) {
+  return (
+    <label className="block">
+      <span className="text-[10px] font-black text-slate-400 uppercase">{label}</span>
+      <select
+        value={value ?? ''}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1"
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </label>
   );
 }

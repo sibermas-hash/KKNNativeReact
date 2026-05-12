@@ -13,8 +13,10 @@ use App\Models\KKN\Dosen;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use App\Models\User;
+use App\Services\AuditService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
@@ -54,34 +56,182 @@ class UserController extends Controller
         return $this->success(new UserResource($user->refresh()), 'Status pengguna berhasil diubah.');
     }
 
+    /**
+     * Detail user + mahasiswa/dosen payload untuk modal "Ubah Data" di admin.
+     * Superadmin only. Return union struct dengan relasi optional.
+     */
+    public function show(User $user): JsonResponse
+    {
+        if (! auth()->user()?->hasRole('superadmin')) {
+            return $this->forbidden('Hanya superadmin yang dapat melihat detail pengguna.');
+        }
+
+        $user->load(['roles', 'fakultas']);
+        $mahasiswa = Mahasiswa::where('user_id', $user->id)->with(['fakultas', 'prodi'])->first();
+        $dosen = Dosen::where('user_id', $user->id)->with(['fakultas'])->first();
+
+        return $this->success([
+            'user' => new UserResource($user),
+            'mahasiswa' => $mahasiswa !== null ? new MahasiswaResource($mahasiswa) : null,
+            'dosen' => $dosen !== null ? new DosenResource($dosen) : null,
+        ]);
+    }
+
     public function update(Request $request, User $user): JsonResponse
     {
         if (! auth()->user()?->hasRole('superadmin')) {
             return $this->forbidden('Hanya superadmin yang dapat mengubah data pengguna.');
         }
 
+        // User-level fields (berlaku untuk semua role).
         $validated = $request->validate([
-            'username' => ['required', 'string', 'max:255', Rule::unique('users', 'username')->ignore($user->id)],
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', Rule::unique('users', 'email')->ignore($user->id)],
-            'is_active' => ['nullable', 'boolean'],
-            'fakultas_id' => ['nullable', 'exists:fakultas,id'],
+            'username' => ['sometimes', 'string', 'max:255', Rule::unique('users', 'username')->ignore($user->id)],
+            'name' => ['sometimes', 'string', 'max:255'],
+            'email' => ['sometimes', 'nullable', 'email', Rule::unique('users', 'email')->ignore($user->id)],
+            'is_active' => ['sometimes', 'boolean'],
+            'fakultas_id' => ['sometimes', 'nullable', 'exists:fakultas,id'],
         ]);
 
-        $user->fill([
-            'username' => $validated['username'],
-            'name' => $validated['name'],
-            'email' => $validated['email'] ?? null,
-            'fakultas_id' => $validated['fakultas_id'] ?? null,
+        // Mahasiswa fields — NIM di-LOCK, tidak boleh diubah lewat endpoint ini.
+        $mahasiswaValidated = $request->validate([
+            'mahasiswa.nama' => ['sometimes', 'string', 'max:255'],
+            'mahasiswa.nik' => ['sometimes', 'nullable', 'string', 'regex:/^\d{16}$/'],
+            'mahasiswa.mother_name' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'mahasiswa.birth_place' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'mahasiswa.birth_date' => ['sometimes', 'nullable', 'date'],
+            'mahasiswa.gender' => ['sometimes', 'nullable', Rule::in(['L', 'P'])],
+            'mahasiswa.shirt_size' => ['sometimes', 'nullable', 'string', 'max:10'],
+            'mahasiswa.marital_status' => ['sometimes', 'nullable', 'string', 'max:20'],
+            'mahasiswa.phone' => ['sometimes', 'nullable', 'string', 'max:30'],
+            'mahasiswa.alamat' => ['sometimes', 'nullable', 'string'],
+            'mahasiswa.api_email' => ['sometimes', 'nullable', 'email'],
+            'mahasiswa.fakultas_id' => ['sometimes', 'nullable', 'exists:fakultas,id'],
+            'mahasiswa.prodi_id' => ['sometimes', 'nullable', 'exists:prodi,id'],
+            'mahasiswa.batch_year' => ['sometimes', 'nullable', 'integer', 'min:2000', 'max:'.((int) date('Y') + 1)],
+            'mahasiswa.semester' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:20'],
+            'mahasiswa.sks_completed' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:250'],
+            'mahasiswa.gpa' => ['sometimes', 'nullable', 'numeric', 'min:0', 'max:4'],
+            'mahasiswa.is_paid_ukt' => ['sometimes', 'boolean'],
+            'mahasiswa.status_bta_ppi' => ['sometimes', 'nullable', 'string', 'max:50'],
+            'mahasiswa.status_aktif' => ['sometimes', 'nullable', 'string', 'max:50'],
         ]);
 
-        if (array_key_exists('is_active', $validated)) {
-            $user->is_active = (bool) $validated['is_active'];
+        // Dosen fields — NIP di-LOCK, tidak boleh diubah lewat endpoint ini.
+        $dosenValidated = $request->validate([
+            'dosen.nama' => ['sometimes', 'string', 'max:255'],
+            'dosen.nama_gelar' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'dosen.nidn' => ['sometimes', 'nullable', 'string', 'max:20'],
+            'dosen.nik' => ['sometimes', 'nullable', 'string', 'regex:/^\d{16}$/'],
+            'dosen.phone' => ['sometimes', 'nullable', 'string', 'max:30'],
+            'dosen.jabatan' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'dosen.pangkat' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'dosen.golongan' => ['sometimes', 'nullable', 'string', 'max:20'],
+            'dosen.pendidikan_terakhir' => ['sometimes', 'nullable', 'string', 'max:100'],
+            'dosen.birth_date' => ['sometimes', 'nullable', 'date'],
+            'dosen.tempat_lahir' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'dosen.gender' => ['sometimes', 'nullable', Rule::in(['L', 'P'])],
+            'dosen.alamat' => ['sometimes', 'nullable', 'string'],
+            'dosen.status_aktif' => ['sometimes', 'nullable', 'string', 'max:50'],
+            'dosen.status_pegawai' => ['sometimes', 'nullable', 'string', 'max:50'],
+            'dosen.is_cpns' => ['sometimes', 'boolean'],
+            'dosen.is_tugas_belajar' => ['sometimes', 'boolean'],
+            'dosen.fakultas_id' => ['sometimes', 'nullable', 'exists:fakultas,id'],
+        ]);
+
+        // Audit fix (2026-05-12): superadmin bisa edit SEMUA field user + relasi
+        // (mahasiswa/dosen) KECUALI NIM/NIP yang di-LOCK karena dipakai sebagai
+        // upsert key di sync SIAKAD dan updateOrCreate di banyak path.
+        $userFieldsChanged = [];
+        $mahasiswaFieldsChanged = [];
+        $dosenFieldsChanged = [];
+        $oldValues = [];
+        $newValues = [];
+
+        DB::transaction(function () use (
+            $user,
+            $validated,
+            $mahasiswaValidated,
+            $dosenValidated,
+            &$userFieldsChanged,
+            &$mahasiswaFieldsChanged,
+            &$dosenFieldsChanged,
+            &$oldValues,
+            &$newValues,
+        ) {
+            // User-level updates.
+            foreach (['username', 'name', 'email', 'is_active', 'fakultas_id'] as $field) {
+                if (array_key_exists($field, $validated)) {
+                    $oldValues["user.{$field}"] = $user->{$field};
+                    $user->{$field} = $validated[$field];
+                    $newValues["user.{$field}"] = $validated[$field];
+                    $userFieldsChanged[] = $field;
+                }
+            }
+            if ($userFieldsChanged !== []) {
+                $user->save();
+                $user->lockFields($userFieldsChanged);
+            }
+
+            // Mahasiswa-level updates (kalau user punya mahasiswa record).
+            if (! empty($mahasiswaValidated['mahasiswa'])) {
+                $mahasiswa = Mahasiswa::where('user_id', $user->id)->first();
+                if ($mahasiswa !== null) {
+                    $updates = $mahasiswaValidated['mahasiswa'];
+                    foreach ($updates as $field => $value) {
+                        $oldValues["mahasiswa.{$field}"] = $mahasiswa->{$field};
+                        $mahasiswa->{$field} = $value;
+                        $newValues["mahasiswa.{$field}"] = $value;
+                        $mahasiswaFieldsChanged[] = $field;
+                    }
+                    if ($mahasiswaFieldsChanged !== []) {
+                        $mahasiswa->save();
+                        $mahasiswa->lockFields($mahasiswaFieldsChanged);
+                    }
+                }
+            }
+
+            // Dosen-level updates.
+            if (! empty($dosenValidated['dosen'])) {
+                $dosen = Dosen::where('user_id', $user->id)->first();
+                if ($dosen !== null) {
+                    $updates = $dosenValidated['dosen'];
+                    foreach ($updates as $field => $value) {
+                        $oldValues["dosen.{$field}"] = $dosen->{$field};
+                        $dosen->{$field} = $value;
+                        $newValues["dosen.{$field}"] = $value;
+                        $dosenFieldsChanged[] = $field;
+                    }
+                    if ($dosenFieldsChanged !== []) {
+                        $dosen->save();
+                        $dosen->lockFields($dosenFieldsChanged);
+                    }
+                }
+            }
+        });
+
+        // Audit log eksplisit supaya investigator bisa trace sumber perubahan
+        // tanpa bergantung ke AuditObserver (yang mask PII values).
+        if ($userFieldsChanged !== [] || $mahasiswaFieldsChanged !== [] || $dosenFieldsChanged !== []) {
+            AuditService::log(
+                'SUPERADMIN_EDIT_USER',
+                sprintf(
+                    'Superadmin edit user id=%d (%s): %d field user, %d field mahasiswa, %d field dosen',
+                    $user->id,
+                    $user->username,
+                    count($userFieldsChanged),
+                    count($mahasiswaFieldsChanged),
+                    count($dosenFieldsChanged),
+                ),
+                $user,
+                $oldValues,
+                $newValues,
+            );
         }
 
-        $user->save();
-
-        return $this->success(new UserResource($user->refresh()->load(['roles', 'fakultas'])), 'Data pengguna berhasil diperbarui.');
+        return $this->success(
+            new UserResource($user->refresh()->load(['roles', 'fakultas'])),
+            'Data pengguna berhasil diperbarui.'
+        );
     }
 
     public function resetTemporaryPassword(User $user): JsonResponse

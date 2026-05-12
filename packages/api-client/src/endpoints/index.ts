@@ -252,6 +252,7 @@ export function adminEndpoints(client: AxiosInstance) {
 
     users: {
       index: (params?: Record<string, unknown>) => client.get('/admin/pengguna', { params }),
+      show: (id: number) => client.get(`/admin/pengguna/${id}`),
       store: (data: Record<string, unknown>) => client.post('/admin/pengguna', data),
       update: (id: number, data: Record<string, unknown>) => client.patch(`/admin/pengguna/${id}`, data),
       toggleStatus: (id: number) => client.patch(`/admin/pengguna/${id}/ubah-status`),

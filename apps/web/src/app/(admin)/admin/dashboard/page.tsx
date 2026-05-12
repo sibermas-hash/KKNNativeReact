@@ -380,7 +380,7 @@ export default function AdminDashboardPage(): React.JSX.Element {
           {phaseContext?.counters?.length ? (
             <motion.div variants={ENTER} className="bg-white rounded-xl border border-slate-100 p-4">
               <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-3 font-sans">Fokus Fase</p>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 {phaseContext.counters.map((item) => (
                   <div key={item.label} className="rounded-lg bg-slate-50 p-3">
                     <p className="text-[10px] font-semibold text-slate-400 font-sans">{item.label}</p>

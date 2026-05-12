@@ -27,6 +27,7 @@ LOG_DIR="/var/log/sibermas"
 WEB_IP="${JAIL_WEB_IP:-127.0.0.1}"
 API_IP="${JAIL_API_IP:-127.0.0.1}"
 WEB_PORT="${WEB_PORT:-3000}"
+WEB_CLUSTER_PORTS="${WEB_CLUSTER_PORTS:-3000}"
 HEALTH_RETRIES="${HEALTH_RETRIES:-12}"
 HEALTH_INTERVAL="${HEALTH_INTERVAL:-5}"
 
@@ -118,15 +119,22 @@ else
   supervisorctl restart workers:*
 fi
 
-echo "  Waiting for web (${WEB_IP}:${WEB_PORT})..."
+echo "  Waiting for web cluster (${WEB_IP}:${WEB_CLUSTER_PORTS//,/:,}:)..."
 for i in $(seq 1 "${HEALTH_RETRIES}"); do
   sleep "${HEALTH_INTERVAL}"
-  if curl -sf "http://${WEB_IP}:${WEB_PORT}/" > /dev/null 2>&1; then
-    echo "  ✅ Web responded OK (attempt ${i})"
+  ALL_OK=true
+  for port in ${WEB_CLUSTER_PORTS//,/ }; do
+    if ! curl -sf "http://${WEB_IP}:${port}/" > /dev/null 2>&1; then
+      ALL_OK=false
+      break
+    fi
+  done
+  if $ALL_OK; then
+    echo "  ✅ Web cluster responded OK (attempt ${i})"
     break
   fi
   if [ "${i}" -eq "${HEALTH_RETRIES}" ]; then
-    echo "  ❌ Web did not respond after ${HEALTH_RETRIES} attempts"
+    echo "  ❌ Web cluster did not respond after ${HEALTH_RETRIES} attempts"
     echo "  ⚠️  RUNNING, but health check failed. Check logs:"
     echo "     tail -f ${LOG_DIR}/web.log"
     echo ""

@@ -82,7 +82,7 @@ export default function AdminDailyReportsPage(): React.JSX.Element {
         <EmptyState icon={<FileText size={48} />} title="Belum Ada Laporan" description="Laporan harian mahasiswa akan muncul di sini" />
       ) : (
         <>
-          <DataTable columns={['Tanggal', 'Mahasiswa', 'Kelompok', 'Judul', 'Status', 'Aksi']}>
+          <DataTable columns={['Tanggal', 'Mahasiswa', <span key="kel" className="hidden md:inline">Kelompok</span>, 'Judul', 'Status', 'Aksi']}>
             {reports.map((r) => (
               <tr key={String(r.id)} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
                 <td className="p-4 text-xs font-bold text-slate-500 whitespace-nowrap">
@@ -92,7 +92,7 @@ export default function AdminDailyReportsPage(): React.JSX.Element {
                   <p className="text-sm font-bold text-slate-900">{String((r.student as Record<string, unknown>)?.name ?? '-')}</p>
                   <p className="text-xs text-slate-400">{String((r.student as Record<string, unknown>)?.nim ?? '')}</p>
                 </td>
-                <td className="p-4 text-xs text-slate-600">{String((r.group as Record<string, unknown>)?.name ?? '-')}</td>
+                <td className="p-4 text-xs text-slate-600 hidden md:table-cell">{String((r.group as Record<string, unknown>)?.name ?? '-')}</td>
                 <td className="p-4 text-sm text-slate-700 max-w-[200px] truncate">{String(r.title ?? '-')}</td>
                 <td className="p-4">
                   <StatusBadge status={String(r.status ?? 'pending')} />

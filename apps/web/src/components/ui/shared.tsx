@@ -82,18 +82,104 @@ export function PageHeader({ title, subtitle, actions }: { title: string; subtit
   );
 }
 
-export function DataTable({ columns, children }: { columns: string[]; children: React.ReactNode }): React.JSX.Element {
+export function DataTable({ columns, children }: { columns: React.ReactNode[]; children: React.ReactNode }): React.JSX.Element {
   return (
     <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-slate-100 text-left text-xs text-slate-500">
-            {columns.map((col) => <th key={col} className="p-4 font-black uppercase tracking-wider">{col}</th>)}
+            {columns.map((col, idx) => <th key={idx} className="p-4 font-black uppercase tracking-wider">{col}</th>)}
           </tr>
         </thead>
         <tbody>{children}</tbody>
       </table>
     </div>
+  );
+}
+
+type ResponsiveColumn<T> = {
+  key: string;
+  label: string;
+  hideOnMobile?: boolean;
+  render: (row: T) => React.ReactNode;
+};
+
+export function ResponsiveTable<T>({ columns, data, keyExtractor, rowActions, onRowClick }: {
+  columns: ResponsiveColumn<T>[];
+  data: T[];
+  keyExtractor: (row: T) => string | number;
+  rowActions?: (row: T) => React.ReactNode;
+  onRowClick?: (row: T) => void;
+}): React.JSX.Element {
+  const visibleCols = columns.filter((c) => !c.hideOnMobile);
+
+  return (
+    <>
+      {/* Desktop table */}
+      <div className="hidden md:block overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-slate-100 text-left text-xs text-slate-500">
+              {columns.map((col) => (
+                <th key={col.key} className={clsx('p-4 font-black uppercase tracking-wider', col.hideOnMobile && 'hidden lg:table-cell')}>
+                  {col.label}
+                </th>
+              ))}
+              {rowActions && <th className="p-4 font-black uppercase tracking-wider text-xs text-slate-500">Aksi</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((row) => (
+              <tr
+                key={keyExtractor(row)}
+                onClick={() => onRowClick?.(row)}
+                className={clsx(
+                  'border-b border-slate-50 transition-colors',
+                  onRowClick && 'cursor-pointer hover:bg-slate-50/50'
+                )}
+              >
+                {columns.map((col) => (
+                  <td key={col.key} className={clsx('p-4', col.hideOnMobile && 'hidden lg:table-cell')}>
+                    {col.render(row)}
+                  </td>
+                ))}
+                {rowActions && <td className="p-4">{rowActions(row)}</td>}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="md:hidden space-y-3">
+        {data.map((row) => (
+          <div
+            key={keyExtractor(row)}
+            onClick={() => onRowClick?.(row)}
+            className={clsx(
+              'rounded-2xl bg-white shadow-sm ring-1 ring-slate-200 p-4 space-y-3',
+              onRowClick && 'cursor-pointer active:bg-slate-50'
+            )}
+          >
+            {visibleCols.map((col) => (
+              <div key={col.key} className="flex items-start justify-between gap-3">
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider shrink-0 min-w-[80px]">
+                  {col.label}
+                </span>
+                <span className="text-sm text-slate-800 text-right">
+                  {col.render(row)}
+                </span>
+              </div>
+            ))}
+            {rowActions && (
+              <div className="pt-2 border-t border-slate-100 flex justify-end">
+                {rowActions(row)}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
 

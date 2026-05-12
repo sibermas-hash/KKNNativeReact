@@ -1,230 +1,172 @@
-# KKN UIN SAIZU Portal
+# KKN UIN SAIZU Portal (SIBERMAS)
 
-Sistem Informasi KKN (Kuliah Kerja Nyata) untuk UIN Prof. K.H. Saifuddin Zuhri Purwokerto.
+Sistem Informasi KKN untuk UIN Prof. K.H. Saifuddin Zuhri Purwokerto.
 
-## 📖 Deskripsi
+**Platform:** FreeBSD 14.x · Monorepo (pnpm + Turbo) · Laravel 13 · Next.js 15
 
-Aplikasi ini mengelola seluruh siklus KKN:
+---
 
-- Pendaftaran & penempatan mahasiswa
-- Pembagian kelompok & penugasan DPL
-- Pelaporan kegiatan harian (dengan GPS)
-- Program kerja & laporan akhir
-- Penilaian & sertifikat
-- Workshop & absensi QR code
+## 📚 Dokumentasi Lengkap
 
-## 🛠️ Tech Stack
+| Dokumen | Isi |
+|---------|-----|
+| [`docs/DEPLOY_FREEBSD.md`](docs/DEPLOY_FREEBSD.md) | Deploy manual single-server di FreeBSD native |
+| [`docs/JAILS_MIGRATION.md`](docs/JAILS_MIGRATION.md) | **Migrasi ke FreeBSD Jails** — arsitektur Multi-Jails VNET, two-nginx, nullfs, data migration, turborepo workaround, verifikasi checklist (1165 baris) |
+| [`docs/SCALING_5000.md`](docs/SCALING_5000.md) | Scaling untuk 5000 concurrent users — PHP-FPM 200, Next.js cluster ×4, pgbouncer, PostgreSQL tuning, sysctl |
 
-- **Backend**: Laravel 13 (PHP 8.4) + PostgreSQL 16 + Redis 7
-- **Frontend**: React 19 + TypeScript + Inertia.js + Tailwind CSS 4
-- **Mobile**: Expo 53 / React Native (Android)
-- **Testing**: Pest PHP + Vitest
-- **CI/CD**: GitHub Actions
+---
 
-## 🚀 Instalasi
+## 🏗️ Arsitektur
 
-### Prasyarat
+### Production: Multi-Jails VNET (4 jail terisolasi)
 
-- PHP 8.4+
-- Composer
-- Node.js 20+
-- PostgreSQL 16
-- Redis 7
-
-### Langkah Instalasi
-
-```bash
-# 1. Clone repository
-git clone <repository-url>
-cd kknuinsaizu
-
-# 2. Install dependencies
-composer install
-npm install
-
-# 3. Setup environment
-cp .env.example .env
-php artisan key:generate
-
-# 4. Setup database
-php artisan migrate
-php artisan db:seed
-
-# 5. Build assets
-npm run build
-
-# 6. Jalankan aplikasi
-php artisan serve
-npm run dev
+```
+                  Internet (port 80/443)
+                         |
+          [Jail: nginx-proxy] 10.0.0.10
+                nginx reverse proxy
+               /                  \
+              /                    \
+  [Jail: web] 10.0.0.11     [Jail: api] 10.0.0.12
+  Next.js ×4 (cluster)      Nginx :8080 → PHP-FPM (socket)
+  :3000,3001,3002,3003       Queue workers (10+4+2)
+              \                    /
+               \                  /
+          [Jail: data-services] 10.0.0.13
+          PostgreSQL 18 + pgbouncer :6432
+          Redis 8
 ```
 
-## 📚 Dokumentasi
+### Single-Server (alternatif)
 
-Dokumentasi lengkap tersedia di folder `docs/`:
-
-- [📋 Dokumentasi Index](docs/INDEX.md) - Indeks seluruh dokumentasi
-- [📘 API Reference](docs/API_REFERENCE.md) - Referensi API lengkap (V1)
-- [🏗️ Arsitektur](docs/ARCHITECTURE.md) - Gambaran arsitektur sistem
-- [🔧 Setup Guide](docs/SETUP.md) - Panduan setup & pengembangan lokal
-- [📋 Audit Status](docs/AUDIT_STATUS.md) - Temuan audit & status terkini
-- [🖥️ FreeBSD Deployment](docs/FREEBSD_DEPLOYMENT.md) - Panduan deploy ke production
-- [🛠️ Workshop System](docs/workshop-system.md) - Sistem workshop & sertifikat DPL
-- [🚀 Roadmap](docs/pengembangan_lanjutan.md) - Rencana pengembangan lanjutan
-
-## 🧪 Testing
-
-```bash
-# Backend tests
-php artisan test
-
-# Frontend tests
-npm run test
-
-# Code quality
-php artisan phpstan
-npm run lint
+```
+Nginx → Next.js :3000 + PHP-FPM (socket) + PostgreSQL + Redis
+Semua di satu mesin FreeBSD. Cocok untuk development/staging.
 ```
 
-## 🐳 Docker
+---
+
+## 🚀 Quick Start
+
+### Setup Production (Multi-Jails)
 
 ```bash
-# Build dan jalankan dengan Docker Compose
-docker-compose up -d
-
-# Run migrations
-docker-compose exec app php artisan migrate
+# Di host FreeBSD sebagai root:
+sh jail_setup.sh --multi
 ```
 
-## 🖥️ Deployment FreeBSD
+Script akan otomatis:
+1. Setup bridge network (`bridge0` + pf NAT)
+2. Generate `/etc/jail.conf` (VNET + epair)
+3. Bootstrap 4 jail + install paket sesuai peran
 
-### Prasyarat FreeBSD
-- FreeBSD 14.x
-- PHP 8.4 (`php84` via pkg)
-- PostgreSQL 16 (`postgresql16-server`)
-- Redis (`redis`)
-- Nginx (`nginx`)
-- Supervisor (`py311-supervisor`)
-- Node.js 22 + pnpm
-
-### Instalasi Otomatis
+### Setup Single-Server (Native)
 
 ```bash
-# Jalankan sebagai root
 sh install-freebsd.sh
 ```
 
-### Instalasi Manual
-
-> ℹ️ **Panduan lengkap:** lihat [`docs/DEPLOY_FREEBSD.md`](docs/DEPLOY_FREEBSD.md).
-> Ringkasan di sini hanya untuk quick-reference.
+### Deploy Aplikasi
 
 ```bash
-# 1. Install dependensi
-pkg install -y php84 php84-extensions php84-pdo_pgsql php84-mbstring \
-    php84-xml php84-curl php84-zip php84-gd php84-redis php84-opcache \
-    php84-pcntl php84-posix composer nginx postgresql16-server redis \
-    node22 npm-node22 py311-supervisor
+# Atomic deploy (zero-downtime):
+bash deploy-atomic.sh
 
-# 2. Aktifkan layanan
-sysrc nginx_enable="YES" postgresql_enable="YES" \
-      redis_enable="YES" supervisord_enable="YES" php_fpm_enable="YES"
+# Remote deploy via SSH:
+DEPLOY_SERVER=user@host bash remote-deploy.sh
 
-# 3. Init & start PostgreSQL
-service postgresql initdb
-service postgresql start
-
-# 4. Buat database
-su -l postgres -c "psql -c \"CREATE USER kkn_app WITH PASSWORD 'password';\""
-su -l postgres -c "psql -c \"CREATE DATABASE kkn_production OWNER kkn_app;\""
-
-# 5. Deploy aplikasi ke /usr/local/www/apache24/data/Sibermas2026
-git clone <repository-url> /usr/local/www/apache24/data/Sibermas2026
-cd /usr/local/www/apache24/data/Sibermas2026/apps/api
-
-# 6. Setup environment
-cp .env.production.example .env
-# Edit .env: APP_KEY, DB_PASSWORD, dll
-
-# 7. Install dependencies & build
-composer install --no-dev --optimize-autoloader
-php artisan key:generate
-php artisan migrate --force
-php artisan storage:link
-php artisan config:cache && php artisan route:cache
-
-cd /usr/local/www/apache24/data/Sibermas2026
-pnpm install --frozen-lockfile && pnpm build
-
-# Next.js standalone output: static/public tidak ikut otomatis — copy manual:
-cp -r apps/web/.next/static  apps/web/.next/standalone/apps/web/.next/static
-cp -r apps/web/public        apps/web/.next/standalone/apps/web/public
-
-# 8. Set permissions (user www = FreeBSD web user)
-chown -R www:www /usr/local/www/apache24/data/Sibermas2026/apps/api/storage
-chown -R www:www /usr/local/www/apache24/data/Sibermas2026/apps/api/bootstrap/cache
-chown -R www:www /usr/local/www/apache24/data/Sibermas2026/apps/web/.next
-
-# 9. Konfigurasi nginx & supervisor (template di-sed oleh install-freebsd.sh)
-cp nginx-freebsd.conf /usr/local/etc/nginx/nginx.conf
-cp apps/api/supervisord.conf /usr/local/etc/supervisord.d/sibermas.conf
-
-# 10. Start semua layanan
-service nginx start
-service redis start
-service php-fpm start
-service supervisord start
+# CI/CD: push ke main → GitHub Actions deploy otomatis
 ```
-
-### Path Penting di FreeBSD
-
-| Komponen | Path |
-|---|---|
-| Web root (app) | `/usr/local/www/apache24/data/Sibermas2026` |
-| Nginx config | `/usr/local/etc/nginx/nginx.conf` |
-| PHP binary | `/usr/local/bin/php` |
-| Supervisor config | `/usr/local/etc/supervisord.d/` |
-| SSL cert (Let's Encrypt) | `/usr/local/etc/letsencrypt/live/` |
-| Log aplikasi | `/var/log/sibermas/` |
-| PostgreSQL data | `/var/db/postgres/data16/` |
-
-### Perbedaan dari Linux
-
-| | Linux (Ubuntu/Debian) | FreeBSD |
-|---|---|---|
-| Web user | `www-data` | `www` |
-| Web root | `/var/www/` | `/usr/local/www/` |
-| Package manager | `apt` | `pkg` |
-| PHP package | `php8.4` | `php84` |
-| Service control | `systemctl` | `service` |
-| SSL path | `/etc/letsencrypt/` | `/usr/local/etc/letsencrypt/` |
-
-## 📱 Mobile App
-
-Aplikasi Android tersedia via Expo React Native:
-
-```bash
-cd apps/mobile
-npx expo prebuild --platform android
-npx expo run:android
-```
-
-## 👥 Role Pengguna
-
-1. **Superadmin** - Akses penuh ke semua fitur
-2. **Faculty Admin** - Manajemen fakultas & mahasiswa
-3. **DPL** - Monitoring kelompok & penilaian
-4. **Mahasiswa** - Pendaftaran, pelaporan, & penilaian
-
-## 🔐 Security
-
-- Role-based access control (RBAC) via Spatie Permission
-- CSRF protection & security headers
-- Rate limiting & API key management
-- Webhook signature verification
-
-## 📄 License
-
-Hak cipta dilindungi undang-undang. UIN Prof. K.H. Saifuddin Zuhri Purwokerto.
 
 ---
-> 🔄 Last deployment test: 2026-04-24 14:22 WIB
+
+## 🗂️ Struktur Project
+
+```
+├── apps/
+│   ├── api/              # Laravel 13 backend
+│   │   ├── supervisord.conf           # Single-server supervisor
+│   │   ├── supervisord.jail-api.conf  # Jails: queue workers (10+4+2)
+│   │   └── .env.production.jail       # Jails: DB_HOST=10.0.0.13
+│   └── web/              # Next.js 15 frontend
+│       ├── supervisord.jail-web.conf  # Jails: cluster ×4 instances
+│       └── .env.production.jail       # Jails: public API URL
+├── packages/             # Shared TS packages (5 packages)
+├── conf/                 # Scaling config files (siap deploy)
+│   ├── php-fpm.www.conf         # max_children=200
+│   ├── php-opcache.ini          # 256MB OPcache
+│   ├── nginx-scaling.conf       # 8192 connections, upstream cluster
+│   ├── postgresql-scaling.conf  # 8GB shared_buffers, 300 conn
+│   ├── pgbouncer.ini            # Connection pooler
+│   ├── supervisord-web-cluster.conf  # Next.js ×4
+│   └── sysctl-scaling.conf      # Kernel tuning (maxfiles, TCP, shm)
+├── scripts/
+│   ├── backup.sh         # Database + storage backup
+│   ├── restore.sh        # Restore from backup
+│   └── ci-guard.mjs      # CI security guard
+├── docs/
+│   ├── JAILS_MIGRATION.md    # Panduan migrasi jails (1165 baris)
+│   ├── SCALING_5000.md       # Panduan scaling 5000 user
+│   └── DEPLOY_FREEBSD.md     # Deploy single-server native
+├── deploy-atomic.sh      # Atomic zero-downtime deploy
+├── jail_setup.sh         # Auto-setup jail + bridge + paket
+├── install-freebsd.sh    # Install single-server native
+├── remote-deploy.sh      # Remote deploy via SSH key
+└── nginx-freebsd.conf    # Template Nginx config
+```
+
+---
+
+## 📱 Mobile Responsif
+
+Semua halaman admin, dosen, dan mahasiswa sudah responsif:
+- **Sidebar:** Mobile overlay + hamburger, desktop fixed (✅)
+- **Tabel:** Card layout di mobile untuk tabel lebar (✅)
+- **Form:** `grid-cols-1 sm:grid-cols-2` untuk semua form modal (✅)
+- **Search:** `w-full sm:w-64` (✅)
+- **Captcha:** `w-20 sm:w-24` (✅)
+
+---
+
+## 🔧 Scaling (5000 Concurrent Users)
+
+| Komponen | Single-Server | 5000 Users |
+|----------|--------------|------------|
+| PHP-FPM | max_children=50 | max_children=200 |
+| Next.js | 1 instance | 4 instance (cluster) |
+| Queue | 4 workers | 16 workers (10+4+2) |
+| PostgreSQL | 100 connections | 300 + pgbouncer |
+| RAM | 8 GB | 32 GB |
+| CPU | 4 core | 8+ core |
+
+Detail: [`docs/SCALING_5000.md`](docs/SCALING_5000.md)
+
+---
+
+## 🔥 Perintah Penting
+
+```bash
+# Jails
+jexec api supervisorctl restart workers:*   # Restart queue
+jexec web supervisorctl restart sibermas-web # Restart Next.js
+jexec nginx-proxy service nginx reload      # Reload nginx
+service jail start <name>                    # Start jail
+
+# Logs
+jexec api tail -f /var/log/sibermas/worker-default.log
+jexec web tail -f /var/log/sibermas/web.log
+
+# Status
+jexec api supervisorctl status
+curl -s https://sibermas.uinsaizu.ac.id/api/health | jq .
+```
+
+---
+
+## 👥 Kontribusi
+
+1. Fork repository
+2. Buat branch: `git checkout -b fitur-xxx`
+3. Commit: `git commit -m "feat: ..."`
+4. Push: `git push origin fitur-xxx`
+5. Buat Pull Request

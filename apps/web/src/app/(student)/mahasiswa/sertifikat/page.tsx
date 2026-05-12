@@ -31,7 +31,7 @@ export default function CertificatesPage(): React.JSX.Element {
           {scores.length > 0 && (
             <div className="space-y-4"><h2 className="text-lg font-black text-slate-700">Nilai KKN</h2>
               {scores.map((s) => (
-                <div key={String(s.id)} className="bg-white rounded-2xl p-6 ring-1 ring-slate-200 shadow-sm grid grid-cols-3 gap-4">
+                <div key={String(s.id)} className="bg-white rounded-2xl p-4 sm:p-6 ring-1 ring-slate-200 shadow-sm grid grid-cols-3 gap-2 sm:gap-4">
                   <div><p className="text-[10px] font-black text-slate-400 uppercase">Total Skor</p><p className="text-2xl font-black text-emerald-600">{String(s.total_score || '-')}</p></div>
                   <div><p className="text-[10px] font-black text-slate-400 uppercase">Grade</p><p className="text-2xl font-black text-amber-600">{String(s.letter_grade || '-')}</p></div>
                   <div><p className="text-[10px] font-black text-slate-400 uppercase">Status</p><StatusBadge status={s.is_finalized ? 'approved' : 'pending'} size="md" /></div>

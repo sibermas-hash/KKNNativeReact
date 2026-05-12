@@ -60,7 +60,7 @@ export default function AdminChatListPage() {
       />
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div className="rounded-xl bg-amber-50 p-4 ring-1 ring-amber-200">
           <p className="text-[11px] font-bold uppercase text-amber-700">Menunggu</p>
           <p className="mt-1 text-2xl font-bold text-amber-900">{summary.open}</p>

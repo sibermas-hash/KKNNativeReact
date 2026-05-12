@@ -75,50 +75,83 @@ export default function AdminRekapitulasiPage(): React.JSX.Element {
         {rows.length === 0 ? (
           <div className="p-8 text-center text-sm text-slate-400">Belum ada data rekapitulasi</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="bg-slate-50 text-left text-[10px] font-black text-slate-500 uppercase tracking-wider">
-                  <th className="p-3">No</th>
-                  <th className="p-3">Uraian Kegiatan</th>
-                  <th className="p-3">Satuan</th>
-                  <th className="p-3 text-right">Vol</th>
-                  <th className="p-3 text-right">Swadaya Mhs</th>
-                  <th className="p-3 text-right">Swadaya Masy</th>
-                  <th className="p-3 text-right">Bantuan Pem</th>
-                  <th className="p-3 text-right">Donatur</th>
-                  <th className="p-3 text-right">Jumlah</th>
-                  <th className="p-3">Ket</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rows.map((row, i) => (
-                  <tr key={row.id} className="border-t border-slate-50 hover:bg-slate-50/50">
-                    <td className="p-3 text-slate-400">{i + 1}</td>
-                    <td className="p-3 font-medium text-slate-900">{row.uraian_kegiatan}</td>
-                    <td className="p-3 text-slate-500">{row.satuan}</td>
-                    <td className="p-3 text-right tabular-nums">{row.volume}</td>
-                    <td className="p-3 text-right tabular-nums">{fmt(row.swadaya_mhs)}</td>
-                    <td className="p-3 text-right tabular-nums">{fmt(row.swadaya_masyarakat)}</td>
-                    <td className="p-3 text-right tabular-nums">{fmt(row.bantuan_pemerintah)}</td>
-                    <td className="p-3 text-right tabular-nums">{fmt(row.donatur_lain)}</td>
-                    <td className="p-3 text-right tabular-nums font-bold text-slate-900">{fmt(row.jumlah)}</td>
-                    <td className="p-3 text-slate-400 italic">{row.keterangan ?? '-'}</td>
+          <>
+            {/* Desktop table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-slate-50 text-left text-[10px] font-black text-slate-500 uppercase tracking-wider">
+                    <th className="p-3">No</th>
+                    <th className="p-3">Uraian Kegiatan</th>
+                    <th className="p-3">Satuan</th>
+                    <th className="p-3 text-right">Vol</th>
+                    <th className="p-3 text-right">Swadaya Mhs</th>
+                    <th className="p-3 text-right">Swadaya Masy</th>
+                    <th className="p-3 text-right">Bantuan Pem</th>
+                    <th className="p-3 text-right">Donatur</th>
+                    <th className="p-3 text-right">Jumlah</th>
+                    <th className="p-3">Ket</th>
                   </tr>
-                ))}
-                {/* Total row */}
-                <tr className="border-t-2 border-slate-200 bg-slate-50 font-black text-xs">
-                  <td colSpan={4} className="p-3 text-right uppercase tracking-wider text-slate-500">Total</td>
-                  <td className="p-3 text-right tabular-nums">{fmt(totals.mhs)}</td>
-                  <td className="p-3 text-right tabular-nums">{fmt(totals.masy)}</td>
-                  <td className="p-3 text-right tabular-nums">{fmt(totals.bant)}</td>
-                  <td className="p-3 text-right tabular-nums">{fmt(totals.don)}</td>
-                  <td className="p-3 text-right tabular-nums bg-emerald-600 text-white">{fmt(totals.total)}</td>
-                  <td className="p-3" />
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {rows.map((row, i) => (
+                    <tr key={row.id} className="border-t border-slate-50 hover:bg-slate-50/50">
+                      <td className="p-3 text-slate-400">{i + 1}</td>
+                      <td className="p-3 font-medium text-slate-900">{row.uraian_kegiatan}</td>
+                      <td className="p-3 text-slate-500">{row.satuan}</td>
+                      <td className="p-3 text-right tabular-nums">{row.volume}</td>
+                      <td className="p-3 text-right tabular-nums">{fmt(row.swadaya_mhs)}</td>
+                      <td className="p-3 text-right tabular-nums">{fmt(row.swadaya_masyarakat)}</td>
+                      <td className="p-3 text-right tabular-nums">{fmt(row.bantuan_pemerintah)}</td>
+                      <td className="p-3 text-right tabular-nums">{fmt(row.donatur_lain)}</td>
+                      <td className="p-3 text-right tabular-nums font-bold text-slate-900">{fmt(row.jumlah)}</td>
+                      <td className="p-3 text-slate-400 italic">{row.keterangan ?? '-'}</td>
+                    </tr>
+                  ))}
+                  {/* Total row */}
+                  <tr className="border-t-2 border-slate-200 bg-slate-50 font-black text-xs">
+                    <td colSpan={4} className="p-3 text-right uppercase tracking-wider text-slate-500">Total</td>
+                    <td className="p-3 text-right tabular-nums">{fmt(totals.mhs)}</td>
+                    <td className="p-3 text-right tabular-nums">{fmt(totals.masy)}</td>
+                    <td className="p-3 text-right tabular-nums">{fmt(totals.bant)}</td>
+                    <td className="p-3 text-right tabular-nums">{fmt(totals.don)}</td>
+                    <td className="p-3 text-right tabular-nums bg-emerald-600 text-white">{fmt(totals.total)}</td>
+                    <td className="p-3" />
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile cards */}
+            <div className="md:hidden space-y-2">
+              {rows.map((row, i) => (
+                <div key={row.id} className="rounded-xl bg-white border border-slate-100 p-4 space-y-2 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-slate-900">{row.uraian_kegiatan}</span>
+                    <span className="text-[10px] text-slate-400">#{i + 1}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div><span className="text-slate-400">Satuan:</span> <span className="font-medium">{row.satuan}</span></div>
+                    <div><span className="text-slate-400">Vol:</span> <span className="font-medium">{row.volume}</span></div>
+                    <div><span className="text-slate-400">Mhs:</span> <span className="font-medium">{fmt(row.swadaya_mhs)}</span></div>
+                    <div><span className="text-slate-400">Masy:</span> <span className="font-medium">{fmt(row.swadaya_masyarakat)}</span></div>
+                    <div><span className="text-slate-400">Bantuan:</span> <span className="font-medium">{fmt(row.bantuan_pemerintah)}</span></div>
+                    <div><span className="text-slate-400">Donatur:</span> <span className="font-medium">{fmt(row.donatur_lain)}</span></div>
+                    {row.keterangan && <div className="col-span-2"><span className="text-slate-400">Ket:</span> <span className="italic">{row.keterangan}</span></div>}
+                  </div>
+                  <div className="pt-2 border-t border-slate-100 flex justify-between items-center">
+                    <span className="text-[10px] text-slate-400">Jumlah</span>
+                    <span className="text-base font-black text-emerald-700">{fmt(row.jumlah)}</span>
+                  </div>
+                </div>
+              ))}
+              {/* Total card */}
+              <div className="rounded-xl bg-emerald-50 border border-emerald-200 p-4 flex items-center justify-between">
+                <span className="text-xs font-black text-emerald-800 uppercase">Total Keseluruhan</span>
+                <span className="text-lg font-black text-emerald-700">{fmt(totals.total)}</span>
+              </div>
+            </div>
+          </>
         )}
       </div>
     );

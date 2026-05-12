@@ -145,8 +145,8 @@ export default function ActivityLogPage() {
                   <th className="p-3 text-left">User</th>
                   <th className="p-3 text-left">Aksi</th>
                   <th className="p-3 text-left">Status</th>
-                  <th className="p-3 text-left">IP</th>
-                  <th className="p-3 text-left">Detail</th>
+                  <th className="p-3 text-left hidden lg:table-cell">IP</th>
+                  <th className="p-3 text-left hidden md:table-cell">Detail</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -177,8 +177,8 @@ export default function ActivityLogPage() {
                         </span>
                       )}
                     </td>
-                    <td className="p-3 text-xs font-mono text-slate-500">{log.ip_address ?? '-'}</td>
-                    <td className="p-3 text-[11px] text-slate-500">
+                    <td className="p-3 text-xs font-mono text-slate-500 hidden lg:table-cell">{log.ip_address ?? '-'}</td>
+                    <td className="p-3 text-[11px] text-slate-500 hidden md:table-cell">
                       {log.metadata ? (
                         <details>
                           <summary className="cursor-pointer hover:text-slate-700">Lihat</summary>

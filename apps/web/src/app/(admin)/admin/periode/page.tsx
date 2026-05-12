@@ -183,7 +183,7 @@ export default function PeriodsPage(): React.JSX.Element {
                   Periode = <strong>Tahun Akademik</strong> + <strong>Jenis KKN</strong> + Angkatan. Pilih keduanya lalu isi detail jadwal.
                 </div>
                 {/* Tahun Akademik + Jenis KKN */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tahun Akademik *</label>
                     <select value={form.academic_year_id} onChange={e => setForm(f => ({ ...f, academic_year_id: Number(e.target.value) }))} className={`${INPUT} ${fieldErrors.academic_year_id ? 'border-rose-400 ring-1 ring-rose-200' : ''}`} required>
@@ -208,7 +208,7 @@ export default function PeriodsPage(): React.JSX.Element {
                   <FieldError error={fieldErrors.name} />
                 </div>
                 {/* Angkatan + Kuota */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Angkatan *</label>
                     <input type="number" min={1} value={form.periode} onChange={e => setForm(f => ({ ...f, periode: Number(e.target.value) }))} className={`${INPUT} ${fieldErrors.periode ? 'border-rose-400 ring-1 ring-rose-200' : ''}`} required />
@@ -221,7 +221,7 @@ export default function PeriodsPage(): React.JSX.Element {
                   </div>
                 </div>
                 {/* Pendaftaran dates */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Mulai Pendaftaran *</label>
                     <input type="date" value={form.registration_start}
@@ -259,7 +259,7 @@ export default function PeriodsPage(): React.JSX.Element {
                   </div>
                 </div>
                 {/* Pelaksanaan dates */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tanggal Mulai KKN *</label>
                     <input type="date" value={form.start_date}
@@ -289,7 +289,7 @@ export default function PeriodsPage(): React.JSX.Element {
                 <p className="text-[10px] text-slate-400">Catatan: Jarak minimal antara Tutup Pendaftaran dan Mulai KKN adalah 7 hari (untuk proses verifikasi admin).</p>
 
                 {/* Fase + Publikasi */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Fase Operasional</label>
                     <select value={form.current_phase} onChange={e => setForm(f => ({ ...f, current_phase: e.target.value }))} className={INPUT}>

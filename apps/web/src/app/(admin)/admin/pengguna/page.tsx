@@ -106,7 +106,7 @@ export default function AdminUsersPage(): React.JSX.Element {
           }}
           className="bg-white rounded-2xl p-6 ring-1 ring-slate-200 shadow-sm space-y-4"
         >
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-[10px] font-black text-slate-400 uppercase">Username</label>
               <input title="Username" placeholder="Username" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1" required />

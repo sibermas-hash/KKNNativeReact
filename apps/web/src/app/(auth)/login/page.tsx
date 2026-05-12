@@ -340,7 +340,7 @@ export default function LoginPage(): React.JSX.Element {
                       inputMode="numeric"
                       autoComplete="off"
                       onChange={(e) => setValue('captcha_answer', e.target.value.replace(/[^0-9]/g, ''))}
-                      className="w-24 h-12 bg-white/60 border border-white focus:bg-white rounded-xl text-center text-base font-bold text-emerald-950 placeholder:text-emerald-800/40 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none shadow-sm"
+                      className="w-20 sm:w-24 h-12 bg-white/60 border border-white focus:bg-white rounded-xl text-center text-base font-bold text-emerald-950 placeholder:text-emerald-800/40 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all outline-none shadow-sm"
                       placeholder="???"
                     />
                   </div>

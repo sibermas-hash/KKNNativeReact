@@ -131,7 +131,8 @@ const nextConfig: NextConfig = {
         return '';
       }
     })();
-    const connectSrc = ['\'self\'', apiUrlOrigin, sentryOrigin].filter(Boolean).join(' ');
+    const mapTilesOrigin = 'https://*.basemaps.cartocdn.com';
+    const connectSrc = ['\'self\'', apiUrlOrigin, sentryOrigin, mapTilesOrigin].filter(Boolean).join(' ');
     const isDev = process.env.NODE_ENV !== 'production';
     const csp = [
       "default-src 'self'",

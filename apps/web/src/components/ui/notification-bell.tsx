@@ -111,20 +111,17 @@ export function NotificationBell({ className }: { className?: string }): React.J
 
       es.addEventListener('close', () => {
         es?.close();
-        // Browser will reconnect via EventSource's default backoff when
-        // we re-assign, but we cap the min wait at 500ms.
         if (!aborted) {
+          if (reconnectTimer) clearTimeout(reconnectTimer);
           reconnectTimer = setTimeout(connect, 500);
         }
       });
 
       es.addEventListener('error', () => {
-        // Browser auto-reconnects by default. If the endpoint is
-        // genuinely unavailable (401, 5xx), `readyState` will cycle and
-        // eventually fail. Close + fall back to polling.
         setSseConnected(false);
-        if (es?.readyState === EventSource.CLOSED) {
-          if (!aborted) reconnectTimer = setTimeout(connect, 5_000);
+        if (es?.readyState === EventSource.CLOSED && !aborted) {
+          if (reconnectTimer) clearTimeout(reconnectTimer);
+          reconnectTimer = setTimeout(connect, 5_000);
         }
       });
     };

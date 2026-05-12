@@ -54,13 +54,12 @@ class NotificationController extends Controller
         $ciOp = $driver === 'pgsql' ? 'ILIKE' : 'LIKE';
 
         if (! empty($validated['priority'])) {
-            // Exact match on the quoted string value in the serialized JSON.
-            $query->where('data', 'LIKE', '%"priority":"'.$validated['priority'].'"%');
+            $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $validated['priority']);
+            $query->where('data', 'LIKE', '%"priority":"'.$escaped.'"%');
         }
         if (! empty($validated['type'])) {
-            $needle = '%"type":"'.str_replace('%', '\\%', $validated['type']).'%';
-            // Partial match on type — case-insensitive where supported.
-            $query->where('data', $ciOp, $needle);
+            $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $validated['type']);
+            $query->where('data', $ciOp, '%"type":"'.$escaped.'"%');
         }
         if (! empty($validated['date_from'])) {
             $query->where('created_at', '>=', $validated['date_from']);

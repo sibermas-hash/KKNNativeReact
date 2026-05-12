@@ -133,7 +133,7 @@ export default function LoginPage(): React.JSX.Element {
         if (axiosErr.response?.status === 423 && axiosErr.response.data?.error?.code === 'TWO_FACTOR_REQUIRED') {
           const token = axiosErr.response.data.error.challenge_token;
           if (token) {
-            sessionStorage.setItem('sibermas_2fa_challenge', token);
+            try { sessionStorage.setItem('sibermas_2fa_challenge', token); } catch { /* private browsing */ }
             router.push('/login/2fa');
             return;
           }

@@ -9,9 +9,17 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SERVER="${DEPLOY_SERVER:-kampelmas@172.16.2.70}"
-PORT="${DEPLOY_PORT:-1977}"
-APP_DIR="/usr/local/www/apache24/data/Sibermas2026"
+SERVER="${DEPLOY_SERVER:?DEPLOY_SERVER tidak di-set (contoh: user@host)}"
+PORT="${DEPLOY_PORT:-22}"
+APP_DIR="${APP_DIR:-/usr/local/www/sibermas}"
+
+# Jails mode: set JAIL_WEB_IP / JAIL_API_IP / JAIL_PROXY_IP to use per-jail restart.
+# CATATAN: jails mode membutuhkan SSH server aktif di setiap jail, ATAU
+# jalankan script ini dari FreeBSD host (bukan remote) agar bisa pakai jexec.
+# Lihat docs/JAILS_MIGRATION.md untuk detail arsitektur two-nginx.
+JAIL_WEB_IP="${JAIL_WEB_IP:-}"
+JAIL_API_IP="${JAIL_API_IP:-}"
+JAIL_PROXY_IP="${JAIL_PROXY_IP:-}"
 
 COMMIT_MSG="${1:-deploy: update dari $(whoami)@$(hostname 2>/dev/null || echo 'unknown')}"
 
@@ -42,7 +50,7 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" << ENDSSH
   APP_DIR="$APP_DIR"
 
   echo "  [a] Pulling latest code..."
-  cd "\$APP_DIR"
+  cd "\${APP_DIR}"
   git pull origin main
 
   echo "  [b] Installing dependencies..."
@@ -59,7 +67,17 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" << ENDSSH
   chown -R www:www apps/web/.next
 
   echo "  [f] Restarting services..."
-  supervisorctl restart workers:*
+  if [ -n "${JAIL_WEB_IP}" ]; then
+    echo "  → Jails mode: restart per jail"
+    jexec api supervisorctl restart workers:* 2>/dev/null || \
+      ssh "${JAIL_API_IP}" supervisorctl restart workers:*
+    jexec web supervisorctl restart sibermas-web 2>/dev/null || \
+      ssh "${JAIL_WEB_IP}" supervisorctl restart sibermas-web
+    jexec nginx-proxy service nginx reload 2>/dev/null || \
+      ssh "${JAIL_PROXY_IP:-10.0.0.10}" service nginx reload
+  else
+    supervisorctl restart workers:*
+  fi
 
   echo ""
   echo "  ✅ Deploy selesai!"

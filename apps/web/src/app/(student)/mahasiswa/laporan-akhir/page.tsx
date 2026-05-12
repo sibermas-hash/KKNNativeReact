@@ -167,7 +167,11 @@ export default function FinalReportPage(): React.JSX.Element {
                 type="file" 
                 className="hidden" 
                 accept=".pdf"
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
+                onChange={(e) => {
+                  const f = e.target.files?.[0] || null;
+                  if (f && f.size > 10 * 1024 * 1024) { toast.error('File maksimal 10MB'); e.target.value = ''; return; }
+                  setFile(f);
+                }}
               />
               <div className="px-8 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all">
                 {file ? 'Ganti File' : 'Cari File PDF'}

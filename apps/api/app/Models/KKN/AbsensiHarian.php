@@ -7,9 +7,12 @@ namespace App\Models\KKN;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class AbsensiHarian extends Model
 {
+    use HasFactory, SoftDeletes;
+
     protected $table = 'absensi_harian';
 
     protected $fillable = [
@@ -24,8 +27,6 @@ class AbsensiHarian extends Model
         'tanggal' => 'date',
         'status' => 'string',
     ];
-
-    use HasFactory;
 
     public function mahasiswa(): BelongsTo
     {

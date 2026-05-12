@@ -430,7 +430,7 @@ export default function ProfilePage(): React.JSX.Element {
   };
 
   const _closeTutorial = () => {
-    window.localStorage.setItem(profileTutorialKey(user), '1');
+    try { window.localStorage.setItem(profileTutorialKey(user), '1'); } catch { /* private browsing */ }
     setShowTutorial(false);
   };
 
@@ -448,7 +448,7 @@ export default function ProfilePage(): React.JSX.Element {
       doneBtnText: 'Selesai',
       popoverClass: 'sibermas-profile-tour',
       onDestroyed: () => {
-        window.localStorage.setItem(profileTutorialKey(user), '1');
+        try { window.localStorage.setItem(profileTutorialKey(user), '1'); } catch { /* private browsing */ }
         setShowTutorial(false);
       },
       steps: PROFILE_TUTORIAL_STEPS.map((step) => ({

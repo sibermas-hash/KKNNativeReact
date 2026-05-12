@@ -19,7 +19,8 @@ export default function TwoFactorVerifyPage() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    const token = sessionStorage.getItem('sibermas_2fa_challenge');
+    let token: string | null = null;
+    try { token = sessionStorage.getItem('sibermas_2fa_challenge'); } catch { /* private browsing */ }
     if (!token) {
       router.replace('/login');
       return;
@@ -42,7 +43,7 @@ export default function TwoFactorVerifyPage() {
       }) as { user: User; token?: string; recovery_code_used?: boolean };
 
       if (result?.user) {
-        sessionStorage.removeItem('sibermas_2fa_challenge');
+        try { sessionStorage.removeItem('sibermas_2fa_challenge'); } catch { /* private browsing */ }
         if (result.token) setAuthToken(result.token);
         setPasswordChangedCookie(result.user.password_changed_at ?? null);
         setUser(result.user);

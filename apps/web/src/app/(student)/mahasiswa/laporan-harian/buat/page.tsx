@@ -158,7 +158,12 @@ export default function CreateDailyReportPage(): React.JSX.Element {
               type="file" 
               multiple 
               accept=".jpg,.jpeg,.png,.pdf" 
-              onChange={(e) => setFiles(Array.from(e.target.files || []))} 
+              onChange={(e) => {
+                const selected = Array.from(e.target.files || []);
+                if (selected.length > 10) { toast.error('Maksimal 10 file'); e.target.value = ''; return; }
+                if (selected.some(f => f.size > 10 * 1024 * 1024)) { toast.error('Setiap file maksimal 10MB'); e.target.value = ''; return; }
+                setFiles(selected);
+              }} 
               className="w-full text-sm text-slate-500 mt-2 file:mr-4 file:rounded-xl file:border-0 file:bg-emerald-50 file:px-4 file:py-2 file:text-sm file:font-bold file:text-emerald-700" 
             />
           </div>

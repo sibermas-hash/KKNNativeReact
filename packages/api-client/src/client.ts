@@ -68,10 +68,6 @@ export function createWebClient(baseURL?: string): AxiosInstance {
     },
   });
 
-  client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
-    return config;
-  });
-
   client.interceptors.response.use(
     (response: AxiosResponse) => handleResponse(response),
     (error) => {

@@ -5,6 +5,10 @@ node_modules/
 **/.DS_Store
 *.log
 
+# ── Generated files (should not be committed) ───────
+nginx-freebsd.rendered.conf
+deploy_success.txt
+
 # ── Debug/diagnostic files ──────────────────────────
 pest_results.txt
 route_list.txt

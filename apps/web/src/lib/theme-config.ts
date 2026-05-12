@@ -295,19 +295,20 @@ export const STORAGE_KEY = 'sibermas_theme';
 
 export function getStoredTheme(): ThemeKey {
   if (typeof window === 'undefined') return 'default';
-  const stored = window.localStorage.getItem(STORAGE_KEY);
-  if (stored && stored in THEMES) return stored as ThemeKey;
-  // Migrate from old profile-only key
-  const legacy = window.localStorage.getItem('sibermas_profile_theme');
-  if (legacy && legacy in THEMES) {
-    window.localStorage.setItem(STORAGE_KEY, legacy);
-    window.localStorage.removeItem('sibermas_profile_theme');
-    return legacy as ThemeKey;
-  }
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (stored && stored in THEMES) return stored as ThemeKey;
+    const legacy = window.localStorage.getItem('sibermas_profile_theme');
+    if (legacy && legacy in THEMES) {
+      window.localStorage.setItem(STORAGE_KEY, legacy);
+      window.localStorage.removeItem('sibermas_profile_theme');
+      return legacy as ThemeKey;
+    }
+  } catch { /* private browsing / quota */ }
   return 'default';
 }
 
 export function storeTheme(theme: ThemeKey): void {
   if (typeof window === 'undefined') return;
-  window.localStorage.setItem(STORAGE_KEY, theme);
+  try { window.localStorage.setItem(STORAGE_KEY, theme); } catch { /* private browsing */ }
 }

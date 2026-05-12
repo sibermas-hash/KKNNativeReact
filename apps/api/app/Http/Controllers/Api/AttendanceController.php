@@ -226,8 +226,10 @@ class AttendanceController extends Controller
         $user = auth()->user();
 
         $retryLogs = AttendanceSyncLog::where('user_id', $user->id)
-            ->where('status', 'retry_pending')
-            ->orWhere('status', 'manual_intervention_needed')
+            ->where(function ($q) {
+                $q->where('status', 'retry_pending')
+                  ->orWhere('status', 'manual_intervention_needed');
+            })
             ->limit(50)
             ->get();
 

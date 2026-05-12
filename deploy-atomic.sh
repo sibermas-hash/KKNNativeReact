@@ -14,7 +14,9 @@
 set -euo pipefail
 
 # ─── Config ────────────────────────────────────────────────────────────────
-APP_DIR="/usr/local/www/apache24/data/Sibermas2026"
+# Single-server mode (default) — all services on one machine.
+# For jails mode, set JAIL_WEB_IP / JAIL_API_IP / JAIL_PROXY_IP env vars.
+APP_DIR="${APP_DIR:-/usr/local/www/sibermas}"
 RELEASES_DIR="${APP_DIR}/releases"
 CURRENT_LINK="${APP_DIR}/current"
 WEB_USER="www"
@@ -22,6 +24,8 @@ TIMESTAMP=$(date '+%Y%m%d_%H%M%S')
 RELEASE_DIR="${RELEASES_DIR}/${TIMESTAMP}"
 LOG_DIR="/var/log/sibermas"
 
+WEB_IP="${JAIL_WEB_IP:-127.0.0.1}"
+API_IP="${JAIL_API_IP:-127.0.0.1}"
 WEB_PORT="${WEB_PORT:-3000}"
 HEALTH_RETRIES="${HEALTH_RETRIES:-12}"
 HEALTH_INTERVAL="${HEALTH_INTERVAL:-5}"
@@ -71,8 +75,13 @@ cp .env.production.example .env
 if [ -L "${CURRENT_LINK}" ] && [ -f "${CURRENT_LINK}/apps/api/.env" ]; then
   cp "${CURRENT_LINK}/apps/api/.env" .env
   echo "  ℹ️  .env copied from previous release"
+else
+  echo "  ⚠️  No previous .env found! Copy from template and edit manually."
+  cp .env.production.example .env
 fi
-php artisan key:generate --force
+if ! grep -q '^APP_KEY=base64' .env 2>/dev/null; then
+  php artisan key:generate --force
+fi
 php artisan migrate --force
 php artisan storage:link --force
 php artisan config:cache
@@ -89,17 +98,30 @@ find "${RELEASE_DIR}/apps/api/storage" -type f -exec chmod 664 {} \;
 # ─── Step 6: Switch symlink (atomic) ──────────────────────────────────────
 echo "[6/7] Switching symlink..."
 ln -sfn "${RELEASE_DIR}" "${CURRENT_LINK}.new"
-mv -Tf "${CURRENT_LINK}.new" "${CURRENT_LINK}"
+# FreeBSD mv tidak punya -T (GNU extension), jadi pakai rm + mv
+rm -f "${CURRENT_LINK}" && mv "${CURRENT_LINK}.new" "${CURRENT_LINK}"
 echo "  ✅ current → ${RELEASE_DIR}"
 
 # ─── Step 7: Restart & health check ───────────────────────────────────────
 echo "[7/7] Restarting services & health check..."
-supervisorctl restart workers:*
 
-echo "  Waiting for web (port ${WEB_PORT})..."
+if [ -n "${JAIL_WEB_IP:-}" ]; then
+  # Jails mode — restart via jexec
+  jexec api supervisorctl restart workers:* 2>/dev/null || \
+    ssh "${API_IP}" supervisorctl restart workers:*
+  jexec web supervisorctl restart sibermas-web 2>/dev/null || \
+    ssh "${WEB_IP}" supervisorctl restart sibermas-web
+  jexec nginx-proxy service nginx reload 2>/dev/null || \
+    ssh "${JAIL_PROXY_IP:-10.0.0.10}" service nginx reload
+else
+  # Single-server mode
+  supervisorctl restart workers:*
+fi
+
+echo "  Waiting for web (${WEB_IP}:${WEB_PORT})..."
 for i in $(seq 1 "${HEALTH_RETRIES}"); do
   sleep "${HEALTH_INTERVAL}"
-  if curl -sf "http://127.0.0.1:${WEB_PORT}/" > /dev/null 2>&1; then
+  if curl -sf "http://${WEB_IP}:${WEB_PORT}/" > /dev/null 2>&1; then
     echo "  ✅ Web responded OK (attempt ${i})"
     break
   fi
@@ -120,9 +142,12 @@ done
 # Prune old releases (keep last 3)
 echo ""
 echo "Pruning old releases (keeping last 3)..."
-ls -t "${RELEASES_DIR}" | tail -n +4 | while read -r old; do
-  rm -rf "${RELEASES_DIR}/${old}"
-  echo "  🗑️  Removed: ${old}"
+# Use stat + sort for FreeBSD compatibility — handles spaces in names
+find "${RELEASES_DIR}" -maxdepth 1 -type d ! -name "$(basename "${RELEASES_DIR}")" -exec \
+  sh -c 'for d; do echo "$(stat -f "%m" "$d") $d"; done' _ {} + | \
+  sort -rn | tail -n +4 | while read -r _ old; do
+  rm -rf "${old}"
+  echo "  🗑️  Removed: ${old##*/}"
 done
 
 echo ""

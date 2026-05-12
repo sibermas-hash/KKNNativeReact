@@ -27,8 +27,6 @@ class ItemEvaluasi extends Model
 
     use HasFactory;
 
-    public $timestamps = false;
-
     public function evaluasi(): BelongsTo
     {
         return $this->belongsTo(Evaluasi::class, 'evaluasi_id');

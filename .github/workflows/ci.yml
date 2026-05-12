@@ -131,11 +131,11 @@ jobs:
       - name: Security audit (Composer)
         run: composer audit
 
-  deploy:
-    name: Deploy to FreeBSD
+  deploy-single:
+    name: Deploy to FreeBSD (Single Server)
     needs: [frontend, backend]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.DEPLOY_MODE != 'jails'
     steps:
       - uses: actions/checkout@v4
 
@@ -173,3 +173,66 @@ jobs:
             sleep 5
             curl -sf http://127.0.0.1:8000/api/health || echo "WARNING: API health check failed"
             curl -sf http://127.0.0.1:3000 || echo "WARNING: Web health check failed"
+
+  deploy-jails:
+    name: Deploy to FreeBSD (Jails Mode)
+    needs: [frontend, backend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.DEPLOY_MODE == 'jails'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH ke host
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          script: |
+            RELEASE_DIR="/usr/local/www/sibermas/releases/$(date +%Y%m%d_%H%M%S)"
+            CURRENT_LINK="/usr/local/www/sibermas/current"
+
+            # Clone code
+            git clone --depth=1 https://github.com/anomalyco/kknuinsaizu.git "$RELEASE_DIR"
+
+            # Backend build (di host)
+            cd "$RELEASE_DIR/apps/api"
+            composer install --no-dev --optimize-autoloader --no-interaction
+            cp .env.production.jail .env
+            php artisan key:generate --force
+            php artisan migrate --force
+            php artisan config:cache
+            php artisan route:cache
+            php artisan event:cache
+
+            # Frontend build (di host)
+            cd "$RELEASE_DIR"
+            pnpm install --frozen-lockfile
+            pnpm build
+            cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static
+            cp -r apps/web/public apps/web/.next/standalone/apps/web/public
+            chown -R www:www apps/web/.next apps/api/storage apps/api/bootstrap/cache
+
+            # Switch symlink
+            ln -sfn "$RELEASE_DIR" "${CURRENT_LINK}.new"
+            rm -f "$CURRENT_LINK" && mv "${CURRENT_LINK}.new" "$CURRENT_LINK"
+
+            # Restart services di setiap jail
+            # Opsi: jexec (default) atau SSH (set JAIL_USE_SSH=true)
+            if [ "${JAIL_USE_SSH:-false}" = "true" ]; then
+              ssh 10.0.0.12 supervisorctl restart workers:*
+              ssh 10.0.0.12 service nginx reload
+              ssh 10.0.0.11 supervisorctl restart sibermas-web
+              ssh 10.0.0.10 service nginx reload
+            else
+              jexec api supervisorctl restart workers:* 2>/dev/null || true
+              jexec api service nginx reload 2>/dev/null || true
+              jexec web supervisorctl restart sibermas-web 2>/dev/null || true
+              jexec nginx-proxy service nginx reload 2>/dev/null || true
+            fi
+
+            # Health check via nginx-proxy
+            sleep 5
+            curl -sf https://sibermas.uinsaizu.ac.id/api/health || echo "WARNING: API health check failed"
+            curl -sf https://sibermas.uinsaizu.ac.id/ || echo "WARNING: Web health check failed"

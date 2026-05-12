@@ -5,6 +5,9 @@
 #
 # ASUMSI DEPLOY PROFILE (2026-05):
 #   - Single-domain path-based API (Laravel di /api/*, Next.js di /)
+#   - SINGLE-SERVER MODE: semua service di satu mesin (tidak pakai jail).
+#     Untuk jails mode, lihat docs/JAILS_MIGRATION.md dan gunakan
+#     jail_setup.sh yang sudah diadaptasi per-jail.
 #   - App root di /usr/local/www/apache24/data/Sibermas2026
 #     (path ini bukan karena server pakai Apache; hanya mengikuti layout
 #     folder yang sudah dipakai ops team. Nginx tetap entry point utama.)

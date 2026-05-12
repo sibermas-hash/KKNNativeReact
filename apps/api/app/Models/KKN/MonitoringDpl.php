@@ -8,10 +8,11 @@ use App\Traits\ScopedByPeriode;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class MonitoringDpl extends Model
 {
-    use HasFactory, ScopedByPeriode;
+    use HasFactory, ScopedByPeriode, SoftDeletes;
 
     protected $table = 'monitoring_dpl';
 

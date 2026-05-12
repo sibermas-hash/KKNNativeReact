@@ -58,7 +58,11 @@ export default function CreateIzinPage(): React.JSX.Element {
           </div>
           <div>
             <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Bukti (opsional)</label>
-            <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => setFile(e.target.files?.[0] || null)} className="w-full text-sm mt-2 file:mr-4 file:rounded-xl file:border-0 file:bg-amber-50 file:px-4 file:py-2 file:text-sm file:font-bold file:text-amber-700" />
+            <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => {
+              const f = e.target.files?.[0] || null;
+              if (f && f.size > 10 * 1024 * 1024) { toast.error('File maksimal 10MB'); e.target.value = ''; return; }
+              setFile(f);
+            }} className="w-full text-sm mt-2 file:mr-4 file:rounded-xl file:border-0 file:bg-amber-50 file:px-4 file:py-2 file:text-sm file:font-bold file:text-amber-700" />
           </div>
           <button type="submit" disabled={mutation.isPending} className="w-full h-12 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-black uppercase tracking-widest text-xs disabled:opacity-50">
             {mutation.isPending ? 'Mengirim...' : 'Ajukan Izin'}

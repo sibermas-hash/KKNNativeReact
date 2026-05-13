@@ -3,9 +3,9 @@ import { cookies } from 'next/headers';
 const isProductionBuild = process.env.NEXT_PHASE === 'phase-production-build';
 
 export async function fetchApi<T>(path: string, options?: RequestInit): Promise<T | null> {
+  if (isProductionBuild) return null;
   const API_BASE = process.env.NEXT_PUBLIC_API_URL;
   if (!API_BASE) throw new Error('NEXT_PUBLIC_API_URL is not set');
-  if (isProductionBuild) return null;
 
   try {
     const res = await fetch(`${API_BASE}${path}`, {
@@ -35,9 +35,9 @@ export async function fetchApiStrict<T>(
   path: string,
   options?: RequestInit,
 ): Promise<FetchResult<T>> {
+  if (isProductionBuild) return { kind: 'service_unavailable' };
   const API_BASE = process.env.NEXT_PUBLIC_API_URL;
   if (!API_BASE) throw new Error('NEXT_PUBLIC_API_URL is not set');
-  if (isProductionBuild) return { kind: 'service_unavailable' };
 
   try {
     const res = await fetch(`${API_BASE}${path}`, {
@@ -66,9 +66,9 @@ export async function fetchApiStrict<T>(
 
 /** Authenticated fetch — forwards Bearer token from cookie for protected endpoints */
 export async function fetchApiAuth<T>(path: string, options?: RequestInit): Promise<T | null> {
+  if (isProductionBuild) return null;
   const API_BASE = process.env.NEXT_PUBLIC_API_URL;
   if (!API_BASE) throw new Error('NEXT_PUBLIC_API_URL is not set');
-  if (isProductionBuild) return null;
 
   const cookieStore = await cookies();
   const token = cookieStore.get('sibermas_token')?.value;

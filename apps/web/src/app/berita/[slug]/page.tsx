@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { fetchApi } from '@/lib/server-api';
+import { fetchApi, fetchApiStrict } from '@/lib/server-api';
 import { sanitizeHtml } from '@/lib/sanitize';
 import { notFound } from 'next/navigation';
 
@@ -16,12 +16,18 @@ interface Announcement {
   image_url?: string;
 }
 
-async function getAnnouncement(slug: string): Promise<Announcement | null> {
-  const data = await fetchApi<{ success: boolean; data: Announcement }>(
-    `/public/announcements/${slug}`,
-  );
-  return data?.data || null;
-}
+const formatDate = (iso?: string): string => {
+  if (!iso) return '';
+  try {
+    return new Intl.DateTimeFormat('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    }).format(new Date(iso));
+  } catch {
+    return iso;
+  }
+};
 
 export async function generateMetadata({
   params,
@@ -29,7 +35,10 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const announcement = await getAnnouncement(slug);
+  const data = await fetchApi<{ success: boolean; data: Announcement }>(
+    `/public/announcements/${slug}`,
+  );
+  const announcement = data?.data;
   if (!announcement) return { title: 'Berita Tidak Ditemukan — SIBERMAS' };
   return {
     title: `${announcement.title} — SIBERMAS`,
@@ -74,8 +83,46 @@ export default async function AnnouncementDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const announcement = await getAnnouncement(slug);
 
+  // Audit fix (2026-05-13): bedakan backend-down dari artikel-tidak-ada.
+  // Sebelumnya semua failure treated sebagai 404 → saat backend overload
+  // di 17 Mei, user dapat 404 padahal artikel valid.
+  const result = await fetchApiStrict<{ success: boolean; data: Announcement }>(
+    `/public/announcements/${slug}`,
+  );
+
+  if (result.kind === 'not_found') {
+    notFound();
+  }
+
+  if (result.kind === 'service_unavailable') {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-6">
+        <div className="max-w-md w-full rounded-2xl bg-white p-8 text-center shadow-sm space-y-4">
+          <p className="text-sm font-bold text-amber-700 uppercase tracking-wider">Gagal Memuat Berita</p>
+          <p className="text-sm text-slate-600">
+            Sistem berita sedang mengalami gangguan. Silakan coba muat ulang halaman beberapa saat kemudian.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link
+              href={`/berita/${slug}`}
+              className="rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700"
+            >
+              Muat Ulang
+            </Link>
+            <Link
+              href="/berita"
+              className="rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200"
+            >
+              Kembali ke Daftar Berita
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const announcement = result.data?.data;
   if (!announcement) notFound();
 
   return (
@@ -85,14 +132,14 @@ export default async function AnnouncementDetailPage({
           <Link href="/" className="text-2xl font-bold text-white">
             SIBERMAS
           </Link>
-          <nav className="flex items-center gap-6">
+          <nav className="flex items-center gap-4 sm:gap-6">
             <Link href="/berita" className="text-sm font-semibold text-white">
               Berita
             </Link>
-            <Link href="/lokasi" className="text-sm text-teal-100 hover:text-white">
+            <Link href="/lokasi" className="hidden sm:inline text-sm text-teal-100 hover:text-white">
               Lokasi
             </Link>
-            <Link href="/unduhan" className="text-sm text-teal-100 hover:text-white">
+            <Link href="/unduhan" className="hidden sm:inline text-sm text-teal-100 hover:text-white">
               Unduhan
             </Link>
             <Link
@@ -110,12 +157,14 @@ export default async function AnnouncementDetailPage({
           &larr; Kembali ke Berita
         </Link>
         <article className="rounded-2xl bg-white p-8 shadow-sm">
-          <p className="text-sm text-slate-500">{announcement.published_at || ''}</p>
+          <p className="text-sm text-slate-500">{formatDate(announcement.published_at)}</p>
           <h1 className="mt-2 text-3xl font-bold text-slate-800">{announcement.title}</h1>
           {announcement.image_url ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={announcement.image_url}
               alt={announcement.title}
+              loading="lazy"
               className="mt-6 w-full rounded-xl"
             />
           ) : null}

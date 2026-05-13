@@ -347,10 +347,21 @@ export default function LocationsMap({
   }, [geoLocations]);
 
   // ── Polling realtime: refetch tiap 60 detik ──
+  //
+  // Audit fix (2026-05-13): polling sebelumnya jalan terus walaupun tab
+  // user di background. Ratusan tab idle × polling = traffic parasit ke
+  // endpoint `/public/locations` (query Eloquent berat) di hari paling
+  // padat (17 Mei). Sekarang guard dengan `document.visibilityState`:
+  // kalau tab hidden, skip fetch — restart saat tab visible lagi.
   useEffect(() => {
     let cancelled = false;
 
     async function refresh() {
+      // Skip kalau tab di background — hemat bandwidth + backend load.
+      if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+        return;
+      }
+
       try {
         const res = await fetch('/api/v1/public/locations?per_page=500', {
           cache: 'no-store',
@@ -374,10 +385,19 @@ export default function LocationsMap({
       }
     }
 
+    // Immediate refresh saat tab kembali visible (kalau sudah lama idle).
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        void refresh();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
     const id = window.setInterval(refresh, POLL_INTERVAL_MS);
     return () => {
       cancelled = true;
       window.clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
     };
   }, []);
 

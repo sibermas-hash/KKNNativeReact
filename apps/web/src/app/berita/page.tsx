@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { fetchApi } from '@/lib/server-api';
+import { fetchApiStrict } from '@/lib/server-api';
 import { Navbar } from '@/components/public/navbar';
 import { Footer } from '@/components/public/footer';
 
-export const dynamic = 'force-dynamic';
+// Audit fix (2026-05-13): sebelumnya `force-dynamic` tanpa cache → setiap
+// request hit backend Laravel. /berita akan jadi salah satu halaman
+// terbanyak di-hit 17 Mei. Revalidate 5 menit cukup fresh untuk berita.
+export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -37,15 +40,11 @@ const formatDate = (dateStr?: string) => {
 };
 
 export default async function AnnouncementsPage() {
-  let announcements: Announcement[] = [];
-  try {
-    // Hanya berita — pengumuman (category=PENGUMUMAN) dipisah karena hanya
-    // tampil sebagai popup di home, tidak di halaman list ini.
-    const data = await fetchApi<{ success: boolean; data: Announcement[] }>('/public/berita');
-    announcements = data?.data || [];
-  } catch (error) {
-    console.error('Failed to fetch berita:', error);
-  }
+  // Hanya berita — pengumuman (category=PENGUMUMAN) dipisah karena hanya
+  // tampil sebagai popup di home, tidak di halaman list ini.
+  const result = await fetchApiStrict<{ success: boolean; data: Announcement[] }>('/public/berita');
+  const announcements: Announcement[] = result.kind === 'ok' ? result.data?.data || [] : [];
+  const isServiceDown = result.kind === 'service_unavailable';
 
   return (
     <div className="min-h-screen bg-white text-emerald-950">
@@ -64,7 +63,24 @@ export default async function AnnouncementsPage() {
         </div>
 
         <div className="mt-10">
-          {announcements.length === 0 ? (
+          {isServiceDown ? (
+            <div className="rounded-[1.6rem] border border-dashed border-amber-300 bg-amber-50/60 p-8 text-center">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700">
+                Gagal Memuat Berita
+              </p>
+              <p className="mt-3 text-sm leading-7 text-slate-600">
+                Sistem berita sedang mengalami gangguan. Silakan coba muat ulang halaman beberapa saat kemudian.
+              </p>
+              <div className="mt-4">
+                <Link
+                  href="/berita"
+                  className="inline-block rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700"
+                >
+                  Muat Ulang
+                </Link>
+              </div>
+            </div>
+          ) : announcements.length === 0 ? (
             <div className="rounded-[1.6rem] border border-dashed border-emerald-200 bg-emerald-50/60 p-8 text-center">
               <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
                 Belum ada berita yang dipublikasikan
@@ -83,15 +99,17 @@ export default async function AnnouncementsPage() {
                 >
                   {item.image_url ? (
                     <div className="aspect-[16/10] overflow-hidden bg-emerald-50">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={item.image_url}
                         alt={item.title}
+                        loading="lazy"
                         className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     </div>
                   ) : (
                     <div className="aspect-[16/10] bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center">
-                      <span className="text-4xl">📰</span>
+                      <span className="text-4xl" aria-hidden="true">📰</span>
                     </div>
                   )}
                   <div className="p-5 space-y-3">

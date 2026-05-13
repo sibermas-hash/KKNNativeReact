@@ -10,7 +10,9 @@ import { LandingMapPreview } from '@/components/public/landing-map-preview';
 export const revalidate = 3600; // 1 hour
 
 export const metadata: Metadata = {
-  title: 'Beranda | SIBERMAS KKN UIN SAIZU',
+  // Audit fix: title sebelumnya 'Beranda | SIBERMAS KKN UIN SAIZU' + template
+  // '%s | SIBERMAS' di layout → hasil '... | SIBERMAS' duplikat.
+  title: 'Beranda',
 };
 
 interface Announcement {

@@ -111,10 +111,18 @@ export default async function DownloadsPage() {
 
                   <a
                     href={d.file_url || d.external_url || '#'}
-                    className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-cyan-600 px-4 py-2.5 text-sm font-bold text-white transition-colors hover:bg-cyan-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-700"
+                    aria-disabled={!d.file_url && !d.external_url}
+                    onClick={(e) => {
+                      if (!d.file_url && !d.external_url) e.preventDefault();
+                    }}
+                    className={`mt-5 inline-flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-700 ${
+                      !d.file_url && !d.external_url
+                        ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                        : 'bg-cyan-600 text-white hover:bg-cyan-700'
+                    }`}
                   >
                     <DownloadIcon size={16} />
-                    Unduh APK
+                    {!d.file_url && !d.external_url ? 'URL Tidak Tersedia' : 'Unduh APK'}
                   </a>
                 </div>
               ))}
@@ -166,33 +174,49 @@ export default async function DownloadsPage() {
             </div>
           ) : documents.length === 0 ? null : (
             <div className="space-y-4">
-              {documents.map((d) => (
-                <a
-                  key={d.id}
-                  href={d.file_url || d.external_url || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-between rounded-[1.4rem] border border-emerald-100 bg-white p-5 shadow-[0_12px_35px_rgba(6,78,59,0.04)] hover:shadow-[0_18px_50px_rgba(6,78,59,0.08)] hover:border-emerald-300 transition-all no-underline group"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 group-hover:bg-emerald-200 transition-colors">
-                      <FileText size={18} />
+              {documents.map((d) => {
+                const hasUrl = !!(d.file_url || d.external_url);
+                const Wrapper = hasUrl ? 'a' : 'div';
+                return (
+                  <Wrapper
+                    key={d.id}
+                    {...(hasUrl
+                      ? {
+                          href: d.file_url || d.external_url,
+                          target: '_blank',
+                          rel: 'noopener noreferrer',
+                        }
+                      : { 'aria-disabled': true })}
+                    className={`flex items-center justify-between rounded-[1.4rem] border border-emerald-100 bg-white p-5 shadow-[0_12px_35px_rgba(6,78,59,0.04)] no-underline group transition-all ${
+                      hasUrl
+                        ? 'hover:shadow-[0_18px_50px_rgba(6,78,59,0.08)] hover:border-emerald-300'
+                        : 'opacity-60 cursor-not-allowed'
+                    }`}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700 group-hover:bg-emerald-200 transition-colors">
+                        <FileText size={18} />
+                      </div>
+                      <div>
+                        <p className="font-display font-bold text-emerald-950 group-hover:text-emerald-700 transition-colors">
+                          {d.title}
+                        </p>
+                        <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-600">
+                          {d.file_type || 'Dokumen'} {d.file_name ? `• ${d.file_name}` : ''}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-display font-bold text-emerald-950 group-hover:text-emerald-700 transition-colors">
-                        {d.title}
-                      </p>
-                      <p className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-600">
-                        {d.file_type || 'Dokumen'} {d.file_name ? `• ${d.file_name}` : ''}
-                      </p>
+                    <div className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold shrink-0 transition-colors ${
+                      hasUrl
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700 group-hover:bg-emerald-100'
+                        : 'border-slate-200 bg-slate-100 text-slate-500'
+                    }`}>
+                      <ExternalLink size={14} />
+                      {hasUrl ? 'Unduh' : 'Belum Tersedia'}
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-700 group-hover:bg-emerald-100 transition-colors shrink-0">
-                    <ExternalLink size={14} />
-                    Unduh
-                  </div>
-                </a>
-              ))}
+                  </Wrapper>
+                );
+              })}
             </div>
           )}
         </section>

@@ -40,9 +40,14 @@ export function LandingMapPreview(): React.JSX.Element | null {
 
     (async () => {
       try {
-        const apiBase =
-          (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL) ||
-          'http://localhost:8000/api/v1';
+        // Audit fix (2026-05-13): hapus localhost fallback. Kalau env tidak
+        // set di build prod, fail eksplisit dengan error visible — bukan
+        // diam-diam hit localhost:8000 yang akan timeout di browser user.
+        const apiBase = process.env.NEXT_PUBLIC_API_URL;
+        if (!apiBase) {
+          if (!cancelled) setError('API URL belum dikonfigurasi.');
+          return;
+        }
         const res = await fetch(`${apiBase}/public/locations?per_page=500`, {
           headers: { Accept: 'application/json' },
           signal: controller.signal,

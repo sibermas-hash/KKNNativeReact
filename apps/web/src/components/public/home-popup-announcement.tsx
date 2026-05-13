@@ -62,9 +62,18 @@ export function HomePopupAnnouncement(): React.JSX.Element | null {
     queryKey: ['public', 'popup-announcement'],
     queryFn: async () => {
       try {
-        const apiBase =
-          (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL) ||
-          'http://localhost:8000/api/v1';
+        // Audit fix (2026-05-13): localhost fallback dihapus — kalau env
+        // tidak set di build prod, gagal eksplisit (return null) lebih baik
+        // daripada hit `localhost:8000` dari browser user. Operator akan
+        // melihat "popup tidak muncul" dan investigate; vs sekarang silent
+        // 4xx ke localhost yang gagal silent.
+        const apiBase = process.env.NEXT_PUBLIC_API_URL;
+        if (!apiBase) {
+          if (process.env.NODE_ENV !== 'production') {
+            console.warn('NEXT_PUBLIC_API_URL not set — popup announcement disabled.');
+          }
+          return null;
+        }
         const res = await fetch(`${apiBase}/public/popup-announcement`, {
           credentials: 'omit',
           headers: { Accept: 'application/json' },

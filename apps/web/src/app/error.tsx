@@ -1,9 +1,26 @@
 'use client';
 
 import Link from 'next/link';
+import { useEffect } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import * as Sentry from '@sentry/nextjs';
 
-export default function Error({ error: _error, reset }: { error: Error; reset: () => void }) {
+export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+  // Audit fix (2026-05-13): error sebelumnya di-rename `_error` (diabaikan).
+  // Production bug invisible. Sekarang log ke console + Sentry untuk
+  // forensik — kalau Sentry tidak terkonfigurasi, console.error tetap visible
+  // di browser dev-tools.
+  useEffect(() => {
+    if (error) {
+      console.error('App boundary error:', error);
+      try {
+        Sentry.captureException(error);
+      } catch {
+        // Sentry mungkin belum init — tidak masalah, console sudah cukup.
+      }
+    }
+  }, [error]);
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 px-6 text-center">
       <div className="max-w-md">
@@ -16,8 +33,12 @@ export default function Error({ error: _error, reset }: { error: Error; reset: (
         <p className="mt-2 text-sm text-slate-500 leading-relaxed">
           Mohon maaf, halaman tidak dapat dimuat. Silakan coba lagi atau kembali ke beranda.
         </p>
+        {error?.digest && (
+          <p className="mt-2 text-xs text-slate-400 font-mono">Ref: {error.digest}</p>
+        )}
         <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
+            type="button"
             onClick={reset}
             className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-6 py-2.5 text-sm font-bold text-white hover:bg-emerald-700 transition-colors shadow-sm"
           >

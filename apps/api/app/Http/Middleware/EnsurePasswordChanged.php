@@ -59,12 +59,14 @@ class EnsurePasswordChanged
         $allowedRoutes = [
             'profile.password-change', 'profile.password', 'profile.show', 'profile.avatar',
             'api.v1.profile.show', 'api.v1.profile.update', 'api.v1.profile.avatar', 'api.v1.profile.password',
+            'api.v1.period-context',
             'logout', 'keluar',
         ];
 
         if (($routeName && in_array($routeName, $allowedRoutes, true))
             || str_starts_with($path, 'api/v1/auth/')
-            || str_starts_with($path, 'api/v1/profile')) {
+            || str_starts_with($path, 'api/v1/profile')
+            || str_starts_with($path, 'api/v1/period-context')) {
             return $next($request);
         }
 

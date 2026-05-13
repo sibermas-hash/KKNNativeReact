@@ -108,7 +108,7 @@ export default function ForgotPasswordPage(): React.JSX.Element {
                     <h1 className="text-2xl sm:text-3xl font-black text-emerald-950 tracking-tight leading-none uppercase">
                       Lupa <span className="text-amber-500">Sandi?</span>
                     </h1>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
                       Masukkan email untuk pemulihan akun
                     </p>
                   </div>
@@ -150,7 +150,7 @@ export default function ForgotPasswordPage(): React.JSX.Element {
                 </form>
 
                 <div className="text-center">
-                  <Link href="/login" className="inline-flex items-center gap-2 text-[10px] font-black text-slate-400 hover:text-emerald-600 uppercase tracking-widest transition-all">
+                  <Link href="/login" className="inline-flex items-center gap-2 text-[10px] font-black text-slate-500 hover:text-emerald-600 uppercase tracking-widest transition-all">
                     <ArrowLeft size={14} /> Kembali ke Halaman Login
                   </Link>
                 </div>

@@ -31,7 +31,12 @@ export default function LoginPage(): React.JSX.Element {
   const [serverErrors, setServerErrors] = useState<string[]>([]);
   const [captcha, setCaptcha] = useState<{ captcha_id: string; question: string; expires_at: string } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [currentYear, setCurrentYear] = useState<number | null>(null);
   const refreshCooldown = useRef(false);
+
+  useEffect(() => {
+    setCurrentYear(new Date().getFullYear());
+  }, []);
 
   // Auto-refresh captcha when it expires.
   //
@@ -240,7 +245,7 @@ export default function LoginPage(): React.JSX.Element {
                     Portal <span className="text-sky-500">SIBER</span>
                     <span className="text-emerald-500">MAS.</span>
                   </h1>
-                  <p className="text-[10px] font-black text-slate-400/80 font-display uppercase tracking-[0.2em]">
+                  <p className="text-[10px] font-black text-slate-500 font-display uppercase tracking-[0.2em]">
                     LPPM UIN Profesor Kiai Haji Saifuddin Zuhri Purwokerto
                   </p>
                 </div>
@@ -318,6 +323,9 @@ export default function LoginPage(): React.JSX.Element {
                     </button>
                   </div>
                   {errors.password && <p className="text-[10px] font-bold text-rose-500 ml-1">{errors.password.message}</p>}
+                  <p className="text-[9px] font-bold text-slate-400 ml-1">
+                    Password Default: <span className="font-mono">DDMMYYYY/NIM/NIP</span>
+                  </p>
                 </div>
 
                 {/* Captcha */}
@@ -329,16 +337,16 @@ export default function LoginPage(): React.JSX.Element {
                         {activeCaptchaQuestion}{' '}
                         <span className="text-emerald-500 font-black ml-1 group-hover:text-teal-500 transition-colors">=</span>
                       </span>
-                      <button
-                        type="button"
-                        onClick={fetchCaptcha}
-                        disabled={isRefreshing}
-                        className="p-1.5 text-emerald-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
-                        title="Segarkan CAPTCHA"
-                        aria-label="Segarkan CAPTCHA"
-                      >
-                        <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
-                      </button>
+                <button
+                  type="button"
+                  onClick={fetchCaptcha}
+                  disabled={isRefreshing}
+                  className="p-1.5 text-emerald-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all"
+                  title="Segarkan CAPTCHA"
+                  aria-label="Segarkan CAPTCHA"
+                >
+                  <RefreshCw size={14} className={isRefreshing ? 'animate-spin' : ''} />
+                </button>
                     </div>
                     <input
                       {...register('captcha_answer')}
@@ -351,8 +359,16 @@ export default function LoginPage(): React.JSX.Element {
                       placeholder="???"
                     />
                   </div>
-                  {errors.captcha_answer && <p className="text-[10px] font-bold text-rose-500 ml-1">{errors.captcha_answer.message}</p>}
+                  {!captcha && !isRefreshing && (
+                    <p className="text-[10px] font-bold text-rose-500 mt-1">
+                      Gagal memuat captcha.{' '}
+                      <button type="button" onClick={fetchCaptcha} className="underline hover:text-rose-700">
+                        Muat ulang
+                      </button>
+                    </p>
+                  )}
                 </div>
+                {errors.captcha_answer && <p className="text-[10px] font-bold text-rose-500 ml-1">{errors.captcha_answer.message}</p>}
               </div>
 
               {/* Controls */}
@@ -380,15 +396,15 @@ export default function LoginPage(): React.JSX.Element {
                 <button
                   data-testid="login-submit"
                   type="submit"
-                  disabled={loading || !captcha}
+                  disabled={loading}
                   className="w-full h-12 bg-amber-500 hover:bg-amber-600 text-white rounded-xl flex items-center justify-center gap-2 group transition-all shadow-[0_8px_20px_rgba(245,158,11,0.3)] hover:shadow-[0_8px_25px_rgba(245,158,11,0.4)] hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
                 >
                   {loading ? (
                     <RefreshCw size={18} className="animate-spin text-white" />
                   ) : (
                     <>
-                      <span className="text-[11px] font-bold uppercase tracking-widest">Otentikasi Masuk</span>
-                      <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                      <span className="text-[11px] font-bold uppercase tracking-widest">{!captcha ? 'Memuat Captcha...' : 'Otentikasi Masuk'}</span>
+                      {captcha && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
                     </>
                   )}
                 </button>
@@ -399,8 +415,8 @@ export default function LoginPage(): React.JSX.Element {
 
         {/* Footer */}
         <div className="mt-6 text-center space-y-2">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
-            &copy; {new Date().getFullYear()} LPPM UIN Saizu Purwokerto
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
+            &copy; {currentYear ?? '2026'} LPPM UIN Saizu Purwokerto
           </p>
           <p className="text-[9px] text-slate-400">
             Tidak bisa login?{' '}

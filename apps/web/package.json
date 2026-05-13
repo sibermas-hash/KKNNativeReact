@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "NODE_OPTIONS='--no-experimental-webstorage' ../../node_modules/.bin/next dev",
     "build": "rm -rf node_modules/next && ../../node_modules/.bin/next build",
-    "postbuild": "cp -r .next/static .next/standalone/apps/web/.next/static && cp -r public .next/standalone/apps/web/public",
+    "postbuild": "cp -r .next/static/. .next/standalone/apps/web/.next/static && cp -r public/. .next/standalone/apps/web/public",
     "start": "../../node_modules/.bin/next start",
     "lint": "../../node_modules/.bin/eslint src next.config.ts sentry.client.config.ts sentry.edge.config.ts sentry.server.config.ts vitest.config.ts vitest.setup.ts --config eslint.config.mjs",
     "type-check": "pnpm -w exec tsc -p apps/web/tsconfig.json --noEmit",

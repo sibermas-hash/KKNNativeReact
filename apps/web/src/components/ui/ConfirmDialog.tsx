@@ -28,6 +28,11 @@ export function ConfirmDialog({
     if (!open) return;
     const el = dialogRef.current;
     if (!el) return;
+
+    // Body scroll lock — cegah konten belakang scroll saat modal terbuka.
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
     const focusable = el.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
     focusable[0]?.focus();
     const handleTab = (e: KeyboardEvent) => {
@@ -40,7 +45,10 @@ export function ConfirmDialog({
       }
     };
     el.addEventListener('keydown', handleTab);
-    return () => el.removeEventListener('keydown', handleTab);
+    return () => {
+      el.removeEventListener('keydown', handleTab);
+      document.body.style.overflow = previousOverflow;
+    };
   }, [open]);
 
   return (
@@ -57,15 +65,17 @@ export function ConfirmDialog({
             initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.15 }}
             role="dialog" aria-modal="true" aria-labelledby="confirm-title"
+            aria-describedby={description ? 'confirm-description' : undefined}
             className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 ring-1 ring-slate-200"
           >
             <h2 id="confirm-title" className="text-base font-black text-slate-900 text-center mb-2">{title}</h2>
-            {description && <p className="text-sm text-slate-500 text-center mb-4">{description}</p>}
+            {description && <p id="confirm-description" className="text-sm text-slate-500 text-center mb-4">{description}</p>}
             <div className="flex gap-3 mt-6">
-              <button onClick={onClose} className="flex-1 h-10 rounded-xl border border-slate-200 text-xs font-black text-slate-600 hover:bg-slate-50 transition-colors uppercase tracking-wider">
+              <button type="button" onClick={onClose} className="flex-1 h-10 rounded-xl border border-slate-200 text-xs font-black text-slate-600 hover:bg-slate-50 transition-colors uppercase tracking-wider">
                 Batal
               </button>
               <button
+                type="button"
                 onClick={() => { onConfirm(); onClose(); }}
                 className={clsx('flex-1 h-10 rounded-xl text-white text-xs font-black uppercase tracking-wider transition-all active:scale-[0.98]', CONFIRM_COLORS[variant])}
               >

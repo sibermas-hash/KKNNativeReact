@@ -33,11 +33,18 @@ export default function LoginPage(): React.JSX.Element {
   const [loading, setLoading] = useState(false);
   const refreshCooldown = useRef(false);
 
-  // Auto-refresh captcha when it expires
+  // Auto-refresh captcha when it expires.
+  //
+  // Audit fix (2026-05-13): sebelumnya `Math.max(0, expiresAt - Date.now())`
+  // yang bisa 0 kalau server kirim expires_at yang sudah lewat (clock skew /
+  // network delay) → setTimeout fire seketika → refetch → state update →
+  // effect jalan lagi → infinite loop. Sekarang enforce minimum 5 detik
+  // antar auto-refresh supaya tidak berpotensi DoS server captcha sendiri.
   useEffect(() => {
     if (!captcha?.expires_at) return;
     const expiresAt = new Date(captcha.expires_at).getTime();
-    const timeout = Math.max(0, expiresAt - Date.now());
+    const MIN_REFRESH_DELAY_MS = 5_000;
+    const timeout = Math.max(MIN_REFRESH_DELAY_MS, expiresAt - Date.now());
     const timer = window.setTimeout(() => { void fetchCaptcha(); }, timeout);
     return () => window.clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps

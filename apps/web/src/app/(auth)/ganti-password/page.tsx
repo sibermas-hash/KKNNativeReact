@@ -272,7 +272,7 @@ export default function ChangePasswordPage(): React.JSX.Element {
                     </button>
                   </div>
                   <p className="text-[10px] text-slate-500 ml-1 leading-relaxed">
-                    Kombinasi <span className="font-bold text-emerald-700">huruf besar</span>, <span className="font-bold text-emerald-700">huruf kecil</span>, <span className="font-bold text-emerald-700">angka</span>, dan <span className="font-bold text-emerald-700">simbol</span> (min. 8 karakter). Contoh: <span className="font-mono text-slate-600">Sandi@2025</span>
+                    Minimal 8 karakter dengan kombinasi <span className="font-bold text-emerald-700">huruf besar</span>, <span className="font-bold text-emerald-700">huruf kecil</span>, <span className="font-bold text-emerald-700">angka</span>, dan <span className="font-bold text-emerald-700">simbol</span>. Hindari menggunakan nama, tanggal lahir, atau kata yang mudah ditebak.
                   </p>
                   {errors.password && <p className="text-[10px] font-bold text-rose-500 ml-1">{errors.password.message}</p>}
                 </div>

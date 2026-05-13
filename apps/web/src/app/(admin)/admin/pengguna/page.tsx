@@ -2,10 +2,11 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api';
-import { Users, UserPlus } from 'lucide-react';
+import { Users, UserPlus, Eye, EyeOff, X } from 'lucide-react';
 import { PageHeader, EmptyState } from '@/components/ui/shared';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { toast } from 'sonner';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 interface User {
   id: number;
@@ -84,13 +85,15 @@ export default function AdminUsersPage(): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ username: '', name: '', email: '', role: 'student' });
+  const [showCreatePassword, setShowCreatePassword] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editRole, setEditRole] = useState('student');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<EditForm>(EMPTY_EDIT);
+  const [resetConfirmUser, setResetConfirmUser] = useState<User | null>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: ['admin', 'users', { search }],
     queryFn: async () => {
       const res = await adminApi.users.index({ search });
@@ -98,7 +101,7 @@ export default function AdminUsersPage(): React.JSX.Element {
     },
   });
 
-  const { data: detailData, isLoading: detailLoading } = useQuery({
+  const { data: detailData, isLoading: detailLoading, isError: detailError } = useQuery({
     queryKey: ['admin', 'users', 'detail', editingId],
     queryFn: async () => {
       if (editingId === null) return null;
@@ -109,7 +112,13 @@ export default function AdminUsersPage(): React.JSX.Element {
     enabled: editingId !== null,
   });
 
-  if (detailData && editForm.user.id !== detailData.user?.id) {
+  // Audit fix (2026-05-13): sync detail → form DILAKUKAN di useEffect, bukan
+  // di render body. Sebelumnya `if (detailData && editForm.user.id !== ...) setEditForm()`
+  // dipanggil langsung di body — memicu "setState during render" warning +
+  // potensi infinite loop kalau id comparison tidak stabil.
+  useEffect(() => {
+    if (!detailData || !detailData.user) return;
+
     const { user: u, mahasiswa, dosen } = detailData;
     setEditForm({
       user: {
@@ -169,7 +178,7 @@ export default function AdminUsersPage(): React.JSX.Element {
           }
         : {},
     });
-  }
+  }, [detailData]);
 
   const createMutation = useMutation({
     mutationFn: (data: Record<string, unknown>) => adminApi.users.store(data),
@@ -303,24 +312,42 @@ export default function AdminUsersPage(): React.JSX.Element {
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase">Username</label>
-              <input title="Username" placeholder="Username" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1" required />
+              <label htmlFor="create-username" className="text-[10px] font-black text-slate-500 uppercase">Username</label>
+              <input id="create-username" placeholder="Username" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} autoComplete="username" className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1" required />
             </div>
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase">Nama</label>
-              <input title="Nama" placeholder="Nama Lengkap" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1" required />
+              <label htmlFor="create-name" className="text-[10px] font-black text-slate-500 uppercase">Nama</label>
+              <input id="create-name" placeholder="Nama Lengkap" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1" required />
             </div>
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase">Email</label>
-              <input title="Email" placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1" />
+              <label htmlFor="create-email" className="text-[10px] font-black text-slate-500 uppercase">Email</label>
+              <input id="create-email" placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} autoComplete="email" className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1" />
             </div>
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase">Password</label>
-              <input title="Password" placeholder="Password" type="password" ref={passwordRef} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1" required />
+              <label htmlFor="create-password" className="text-[10px] font-black text-slate-500 uppercase">Password</label>
+              <div className="relative mt-1">
+                <input
+                  id="create-password"
+                  placeholder="Password"
+                  type={showCreatePassword ? 'text' : 'password'}
+                  ref={passwordRef}
+                  autoComplete="new-password"
+                  className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 pr-10 text-sm"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCreatePassword(!showCreatePassword)}
+                  aria-label={showCreatePassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-500 hover:text-slate-700"
+                >
+                  {showCreatePassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
+              </div>
             </div>
             <div>
-              <label className="text-[10px] font-black text-slate-400 uppercase">Role</label>
-              <select title="Pilih Role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1">
+              <label htmlFor="create-role" className="text-[10px] font-black text-slate-500 uppercase">Role</label>
+              <select id="create-role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1">
                 {roleOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </div>
@@ -332,15 +359,30 @@ export default function AdminUsersPage(): React.JSX.Element {
         </form>
       )}
 
-      <input
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Cari pengguna..."
-        className="w-full max-w-sm h-10 bg-white border border-slate-200 rounded-xl px-4 text-sm font-bold"
-      />
+      <div>
+        <label htmlFor="search-users" className="sr-only">Cari pengguna</label>
+        <input
+          id="search-users"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Cari pengguna..."
+          autoComplete="off"
+          className="w-full max-w-sm h-10 bg-white border border-slate-200 rounded-xl px-4 text-sm font-bold"
+        />
+      </div>
 
       {isLoading ? (
         <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-16 animate-pulse rounded-2xl bg-slate-200" />)}</div>
+      ) : isError ? (
+        <div className="rounded-2xl bg-rose-50 border border-rose-200 p-6 text-center space-y-3">
+          <p className="text-sm font-bold text-rose-700">Gagal memuat data pengguna.</p>
+          <button
+            onClick={() => refetch()}
+            className="px-4 py-2 bg-rose-600 text-white rounded-xl text-xs font-black hover:bg-rose-700"
+          >
+            Coba Lagi
+          </button>
+        </div>
       ) : users.length === 0 ? (
         <EmptyState icon={<Users size={40} />} title="Belum ada pengguna" description="Tidak ada pengguna yang ditemukan." />
       ) : (
@@ -371,11 +413,7 @@ export default function AdminUsersPage(): React.JSX.Element {
                   Ubah Role
                 </button>
                 <button
-                  onClick={() => {
-                    if (confirm(`Reset password untuk ${u.name}? Password sementara akan dikirim ke email (jika ada).`)) {
-                      resetPwMutation.mutate(u.id);
-                    }
-                  }}
+                  onClick={() => setResetConfirmUser(u)}
                   className="px-3 py-1.5 rounded-lg text-xs font-black bg-amber-50 text-amber-700 hover:bg-amber-100"
                 >
                   Reset Password
@@ -387,47 +425,73 @@ export default function AdminUsersPage(): React.JSX.Element {
       )}
 
       {editingUser && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl space-y-5">
-            <h3 className="font-black text-slate-900 text-lg">Ubah Role Pengguna</h3>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setEditingUser(null); }}
+          onKeyDown={(e) => { if (e.key === 'Escape') setEditingUser(null); }}
+        >
+          <div
+            className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl space-y-5"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="ubah-role-title"
+          >
+            <h3 id="ubah-role-title" className="font-black text-slate-900 text-lg">Ubah Role Pengguna</h3>
             <div>
               <p className="text-sm font-bold text-slate-700">{editingUser.name}</p>
               <p className="text-xs text-slate-500 mb-3">{editingUser.username}</p>
-              <label className="text-[10px] font-black text-slate-400 uppercase">Role Baru</label>
-              <select title="Ubah Role" value={editRole} onChange={(e) => setEditRole(e.target.value)} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1">
+              <label className="text-[10px] font-black text-slate-500 uppercase" htmlFor="edit-role-select">Role Baru</label>
+              <select
+                id="edit-role-select"
+                value={editRole}
+                onChange={(e) => setEditRole(e.target.value)}
+                className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1"
+              >
                 {roleOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </div>
             <div className="flex gap-3 justify-end">
-              <button onClick={() => setEditingUser(null)} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200">Batal</button>
-              <button onClick={() => roleMutation.mutate({ id: editingUser.id, role: editRole })} disabled={roleMutation.isPending} className="px-4 py-2 bg-cyan-600 text-white rounded-xl text-xs font-black hover:bg-cyan-700 disabled:opacity-50">Simpan</button>
+              <button type="button" onClick={() => setEditingUser(null)} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200">Batal</button>
+              <button type="button" onClick={() => roleMutation.mutate({ id: editingUser.id, role: editRole })} disabled={roleMutation.isPending} className="px-4 py-2 bg-cyan-600 text-white rounded-xl text-xs font-black hover:bg-cyan-700 disabled:opacity-50">Simpan</button>
             </div>
           </div>
         </div>
       )}
 
       {editingId !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto"
+          onClick={(e) => { if (e.target === e.currentTarget) { setEditingId(null); setEditForm(EMPTY_EDIT); } }}
+          onKeyDown={(e) => { if (e.key === 'Escape') { setEditingId(null); setEditForm(EMPTY_EDIT); } }}
+        >
           <form
             onSubmit={handleSubmitEdit}
             className="bg-white rounded-2xl p-6 w-full max-w-3xl shadow-xl space-y-6 my-auto max-h-[90vh] overflow-y-auto"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="edit-data-title"
           >
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="font-black text-slate-900 text-lg">Edit Data Pengguna</h3>
+                <h3 id="edit-data-title" className="font-black text-slate-900 text-lg">Edit Data Pengguna</h3>
                 <p className="text-xs text-slate-500 mt-1">NIM / NIP di-lock (tidak dapat diubah).</p>
               </div>
               <button
                 type="button"
                 onClick={() => { setEditingId(null); setEditForm(EMPTY_EDIT); }}
-                className="text-slate-400 hover:text-slate-600"
+                aria-label="Tutup"
+                className="text-slate-500 hover:text-slate-700"
               >
-                ✕
+                <X size={20} />
               </button>
             </div>
 
             {detailLoading ? (
               <div className="h-48 animate-pulse rounded-xl bg-slate-100" />
+            ) : detailError ? (
+              <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 text-sm text-rose-700">
+                Gagal memuat detail pengguna. Tutup modal ini dan coba lagi.
+              </div>
             ) : (
               <>
                 {/* User-level */}
@@ -579,6 +643,24 @@ export default function AdminUsersPage(): React.JSX.Element {
           </form>
         </div>
       )}
+
+      <ConfirmDialog
+        open={resetConfirmUser !== null}
+        onClose={() => setResetConfirmUser(null)}
+        onConfirm={() => {
+          if (resetConfirmUser !== null) {
+            resetPwMutation.mutate(resetConfirmUser.id);
+          }
+        }}
+        title="Reset Password"
+        description={
+          resetConfirmUser
+            ? `Password sementara akan dibuat untuk ${resetConfirmUser.name} (${resetConfirmUser.username}) dan dikirim ke email jika tersedia.`
+            : ''
+        }
+        confirmText="Reset"
+        variant="warning"
+      />
     </div>
   );
 }

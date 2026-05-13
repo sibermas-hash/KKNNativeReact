@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   AlertCircle, BookOpen, Calendar, CheckCircle2, ChevronDown, ChevronRight,
   Clock, FileText, GraduationCap, MapPin, Shield, Users, XCircle,
@@ -188,8 +189,9 @@ export default function RegistrationFormPage(): React.JSX.Element {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [registeringPeriod, setRegisteringPeriod] = useState<number | null>(null);
+  const [confirmPeriod, setConfirmPeriod] = useState<Period | null>(null);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, refetch } = useQuery({
     queryKey: QUERY_KEYS.student.kknDaftar,
     queryFn: async () => {
       const res = await studentApi.kknDaftar.index();
@@ -219,6 +221,23 @@ export default function RegistrationFormPage(): React.JSX.Element {
     return (
       <div className="mx-auto max-w-4xl space-y-4 px-4 py-8">
         {[1, 2, 3].map((i) => <div key={i} className="h-32 animate-pulse rounded-2xl bg-slate-200" />)}
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="mx-auto max-w-4xl px-4 py-8">
+        <div className="rounded-2xl bg-rose-50 border border-rose-200 p-6 text-center space-y-3">
+          <p className="text-sm font-bold text-rose-700">Gagal memuat data pendaftaran.</p>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="px-4 py-2 bg-rose-600 text-white rounded-xl text-xs font-black hover:bg-rose-700"
+          >
+            Coba Lagi
+          </button>
+        </div>
       </div>
     );
   }
@@ -287,7 +306,7 @@ export default function RegistrationFormPage(): React.JSX.Element {
               <PeriodCard
                 key={period.id}
                 period={period}
-                onRegister={() => registerMutation.mutate(period.id)}
+                onRegister={() => setConfirmPeriod(period)}
                 isRegistering={registeringPeriod === period.id && registerMutation.isPending}
                 disabled={!!registrationStatus?.has_registered || registerMutation.isPending}
               />
@@ -295,6 +314,24 @@ export default function RegistrationFormPage(): React.JSX.Element {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmPeriod !== null}
+        onClose={() => setConfirmPeriod(null)}
+        onConfirm={() => {
+          if (confirmPeriod !== null) {
+            registerMutation.mutate(confirmPeriod.id);
+          }
+        }}
+        title="Konfirmasi Pendaftaran KKN"
+        description={
+          confirmPeriod
+            ? `Daftar ke periode "${confirmPeriod.name}"? Setelah mendaftar, Anda harus membatalkan terlebih dulu untuk memilih periode lain.`
+            : ''
+        }
+        confirmText="Ya, Daftar"
+        variant="info"
+      />
     </div>
   );
 }

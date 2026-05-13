@@ -70,9 +70,13 @@ return Application::configure(basePath: dirname(__DIR__))
             '131.0.72.0/22',
         ]);
 
-        // TestAutoLogin: hanya dipasang di local/testing. Tidak di-global
-        // prepend untuk menghindari risiko misconfig di production.
-        // Gunakan route middleware `test.auto-login` di route group test.
+        // TestAutoLogin: Guard ada di dalam class handle() sendiri (langsung pass-through
+        // jika bukan local/testing). Prepend tanpa conditional karena di Laravel 13
+        // app()->environment() belum tersedia saat closure ini dieksekusi.
+        // Gunakan route middleware `test.auto-login` untuk route-specific pada masa depan.
+        $middleware->prepend([
+            TestAutoLogin::class,
+        ]);
 
         $middleware->web(append: [
             HandleActivePeriod::class,

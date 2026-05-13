@@ -24,7 +24,7 @@ WEB_USER="www"
 TIMESTAMP=$(date '+%Y%m%d_%H%M%S')
 RELEASE_DIR="${RELEASES_DIR}/${TIMESTAMP}"
 LOG_DIR="/var/log/sibermas"
-REPO_URL="${REPO_URL:-https://github.com/anomalyco/kknuinsaizu.git}"
+REPO_URL="${REPO_URL:-https://github.com/putrihati-cmd/KKNNATIVE.git}"
 SKIP_MIGRATE="${SKIP_MIGRATE:-0}"
 
 WEB_IP="${JAIL_WEB_IP:-127.0.0.1}"

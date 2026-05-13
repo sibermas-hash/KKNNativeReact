@@ -37,7 +37,10 @@ jobs:
       - name: Lint
         run: pnpm --filter web lint
 
-      - name: Build
+      - name: Build packages (shared-types → schemas → constants → api-client → hooks)
+        run: pnpm build:packages
+
+      - name: Build web
         run: pnpm --filter web build
         env:
           NEXT_PUBLIC_API_URL: /api/v1

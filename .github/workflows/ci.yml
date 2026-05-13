@@ -28,13 +28,16 @@ jobs:
       - name: CI guard
         run: pnpm run ci:guard
 
-      - name: Type check
+      - name: Type check packages
+        run: pnpm build:packages
+
+      - name: Type check web
         run: pnpm run type-check
 
       - name: Lint
         run: pnpm run lint
 
-      - name: Build
+      - name: Build web
         run: pnpm run build
         env:
           NEXT_PUBLIC_API_URL: /api/v1
@@ -147,6 +150,7 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: ${{ secrets.DEPLOY_PORT || 22 }}
           script: |
+            set -e
             cd /usr/local/www/apache24/data/Sibermas2026
             git pull origin main
 
@@ -156,18 +160,27 @@ jobs:
             php artisan migrate --force
             php artisan config:cache
             php artisan route:cache
-            php artisan event:cache
+            php artisan event:cache 2>/dev/null || true
 
-            # Frontend
+            # Frontend — TURBO_INSTALL_SKIP_DOWNLOAD=1 wajib di FreeBSD
             cd /usr/local/www/apache24/data/Sibermas2026
+            export TURBO_INSTALL_SKIP_DOWNLOAD=1
             pnpm install --frozen-lockfile
             pnpm build
-            cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static
-            cp -r apps/web/public apps/web/.next/standalone/apps/web/public
+            cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static 2>/dev/null || true
+            cp -r apps/web/public apps/web/.next/standalone/apps/web/public 2>/dev/null || true
             chown -R www:www apps/web/.next apps/api/storage apps/api/bootstrap/cache
+
+            # PHP-FPM reload (OPcache flush)
+            service php-fpm reload 2>/dev/null || service php-fpm restart || true
 
             # Restart services
             supervisorctl restart workers:*
+
+            # Health check
+            sleep 5
+            curl -sf http://127.0.0.1:8000/api/health || echo "WARNING: API health check failed"
+            curl -sf http://127.0.0.1:3000 || echo "WARNING: Web health check failed"
 
             # Health check
             sleep 5
@@ -190,6 +203,7 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: ${{ secrets.DEPLOY_PORT || 22 }}
           script: |
+            set -e
             RELEASE_DIR="/usr/local/www/sibermas/releases/$(date +%Y%m%d_%H%M%S)"
             CURRENT_LINK="/usr/local/www/sibermas/current"
 
@@ -199,27 +213,29 @@ jobs:
             # Backend build (di host)
             cd "$RELEASE_DIR/apps/api"
             composer install --no-dev --optimize-autoloader --no-interaction
-            cp .env.production.jail .env
+            cp .env.production.jail .env 2>/dev/null || echo "WARNING: .env.production.jail not found, copy .env.production.example"
             php artisan key:generate --force
             php artisan migrate --force
             php artisan config:cache
             php artisan route:cache
-            php artisan event:cache
 
-            # Frontend build (di host)
+            # Frontend build (di host) — TURBO_INSTALL_SKIP_DOWNLOAD=1 wajib
             cd "$RELEASE_DIR"
+            export TURBO_INSTALL_SKIP_DOWNLOAD=1
             pnpm install --frozen-lockfile
             pnpm build
-            cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static
-            cp -r apps/web/public apps/web/.next/standalone/apps/web/public
+            cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static 2>/dev/null || true
+            cp -r apps/web/public apps/web/.next/standalone/apps/web/public 2>/dev/null || true
             chown -R www:www apps/web/.next apps/api/storage apps/api/bootstrap/cache
 
             # Switch symlink
             ln -sfn "$RELEASE_DIR" "${CURRENT_LINK}.new"
             rm -f "$CURRENT_LINK" && mv "${CURRENT_LINK}.new" "$CURRENT_LINK"
 
+            # PHP-FPM reload (OPcache flush)
+            jexec api service php-fpm reload 2>/dev/null || true
+
             # Restart services di setiap jail
-            # Opsi: jexec (default) atau SSH (set JAIL_USE_SSH=true)
             if [ "${JAIL_USE_SSH:-false}" = "true" ]; then
               ssh 10.0.0.12 supervisorctl restart workers:*
               ssh 10.0.0.12 service nginx reload

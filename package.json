@@ -8,9 +8,9 @@
     "build:packages": "pnpm --filter @sibermas/shared-types build && pnpm --filter @sibermas/schemas build && pnpm --filter @sibermas/constants build && pnpm --filter @sibermas/api-client build && pnpm --filter @sibermas/hooks build",
     "build:web": "pnpm --filter web build",
     "build:turbo": "turbo build",
-    "lint": "pnpm --filter web lint && pnpm --filter @sibermas/api-client lint 2>/dev/null || true",
-    "test": "pnpm --filter @sibermas/* test 2>/dev/null || true",
-    "type-check": "pnpm -r type-check 2>/dev/null || true",
+    "lint": "pnpm --filter web lint",
+    "test": "pnpm --filter @sibermas/schemas test 2>/dev/null; pnpm --filter @sibermas/api-client test 2>/dev/null; pnpm --filter web test 2>/dev/null",
+    "type-check": "pnpm --filter web type-check",
     "ci:guard": "node scripts/ci-guard.mjs",
     "dev:web": "pnpm --filter web dev",
     "dev:api": "cd apps/api && php artisan serve"

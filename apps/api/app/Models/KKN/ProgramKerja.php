@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class ProgramKerja extends Model
 {
     use SoftDeletes;
+
     protected $table = 'program_kerja';
 
     protected $fillable = [
@@ -53,7 +54,9 @@ class ProgramKerja extends Model
 
     public function approvedBy(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'approved_by');
+        // withTrashed: audit trail — tetap tampilkan siapa approve walau
+        // user sudah di-soft-delete.
+        return $this->belongsTo(User::class, 'approved_by')->withTrashed();
     }
 
     public function rekapitulasi(): HasMany

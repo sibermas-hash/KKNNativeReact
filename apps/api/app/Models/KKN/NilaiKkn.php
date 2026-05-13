@@ -168,11 +168,11 @@ class NilaiKkn extends Model
 
     public function dplGradedBy(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'dpl_graded_by');
+        return $this->belongsTo(User::class, 'dpl_graded_by')->withTrashed();
     }
 
     public function adminGradedBy(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'admin_graded_by');
+        return $this->belongsTo(User::class, 'admin_graded_by')->withTrashed();
     }
 }

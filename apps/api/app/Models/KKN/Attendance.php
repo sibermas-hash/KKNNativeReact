@@ -85,7 +85,7 @@ class Attendance extends Model
 
     public function verifiedBy(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'verified_by_user_id');
+        return $this->belongsTo(User::class, 'verified_by_user_id')->withTrashed();
     }
 
     public function photos(): HasMany

@@ -40,7 +40,7 @@ class DispensasiKkn extends Model
 
     public function grantedByUser(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'granted_by');
+        return $this->belongsTo(User::class, 'granted_by')->withTrashed();
     }
 
     /**

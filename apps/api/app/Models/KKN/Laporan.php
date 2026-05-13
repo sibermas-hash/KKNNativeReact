@@ -50,6 +50,8 @@ class Laporan extends Model
 
     public function reviewer(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'reviewed_by');
+        // withTrashed: audit trail reviewer — relation tetap valid walaupun
+        // user soft-deleted.
+        return $this->belongsTo(User::class, 'reviewed_by')->withTrashed();
     }
 }

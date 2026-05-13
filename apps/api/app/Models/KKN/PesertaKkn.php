@@ -78,12 +78,14 @@ class PesertaKkn extends Model
 
     public function approver(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'approved_by');
+        // withTrashed: audit trail — approver bisa saja sudah di-soft-delete,
+        // tapi history siapa yang approve harus tetap terlihat.
+        return $this->belongsTo(User::class, 'approved_by')->withTrashed();
     }
 
     public function rejector(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'last_rejected_by');
+        return $this->belongsTo(User::class, 'last_rejected_by')->withTrashed();
     }
 
     public function attendances(): HasMany

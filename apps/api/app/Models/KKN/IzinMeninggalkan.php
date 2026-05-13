@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class IzinMeninggalkan extends Model
 {
     use SoftDeletes;
+
     protected $table = 'izin_meninggalkan';
 
     protected $fillable = [
@@ -50,6 +51,6 @@ class IzinMeninggalkan extends Model
 
     public function diprosesOleh(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'diproses_oleh');
+        return $this->belongsTo(User::class, 'diproses_oleh')->withTrashed();
     }
 }

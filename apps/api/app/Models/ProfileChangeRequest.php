@@ -33,7 +33,9 @@ class ProfileChangeRequest extends Model
 
     public function reviewer(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'reviewed_by');
+        // withTrashed: audit trail — reviewer bisa saja sudah di-soft-delete,
+        // tapi history siapa yang review harus tetap terlihat.
+        return $this->belongsTo(User::class, 'reviewed_by')->withTrashed();
     }
 
     public function isPending(): bool

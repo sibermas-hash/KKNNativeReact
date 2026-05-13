@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
-import { setAuthToken, setPasswordChangedCookie, useAuthStore } from '@/stores';
+import { setAuthToken, useAuthStore } from '@/stores';
 import { toast } from 'sonner';
 import { Shield, ArrowLeft, Key } from 'lucide-react';
 import type { User } from '@sibermas/shared-types';
@@ -45,7 +45,6 @@ export default function TwoFactorVerifyPage() {
       if (result?.user) {
         try { sessionStorage.removeItem('sibermas_2fa_challenge'); } catch { /* private browsing */ }
         if (result.token) setAuthToken(result.token);
-        setPasswordChangedCookie(result.user.password_changed_at ?? null);
         setUser(result.user);
 
         if (result.recovery_code_used) {

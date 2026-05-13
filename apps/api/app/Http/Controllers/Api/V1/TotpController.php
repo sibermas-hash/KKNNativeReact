@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
+use App\Notifications\GenericNotification;
 use App\Services\ActivityLogger;
 use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
@@ -183,6 +184,16 @@ class TotpController extends Controller
         ]);
 
         ActivityLogger::log('2fa_disable', 'success', $user->id);
+
+        // Kirim notifikasi email bahwa 2FA dinonaktifkan — mencegah silent
+        // disable oleh attacker yang memiliki akses sesi (issue #4 audit).
+        $user->notify(new GenericNotification(
+            title: '2FA Dinonaktifkan',
+            message: 'Autentikasi dua faktor (2FA) pada akun SIBERMAS Anda telah dinonaktifkan. '.
+                'Jika Anda tidak melakukan ini, segera hubungi admin dan ubah kata sandi Anda.',
+            priority: 'warning',
+            type: 'security',
+        ));
 
         return $this->success(['enabled' => false], '2FA dinonaktifkan.');
     }

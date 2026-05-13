@@ -70,13 +70,9 @@ return Application::configure(basePath: dirname(__DIR__))
             '131.0.72.0/22',
         ]);
 
-        // TestAutoLogin: Guard ada di dalam class handle() sendiri (abort 500
-        // jika bukan local/testing). Prepend tanpa conditional karena
-        // app()->environment() belum tersedia saat withMiddleware closure
-        // dieksekusi di Laravel 13 boot sequence.
-        $middleware->prepend([
-            TestAutoLogin::class,
-        ]);
+        // TestAutoLogin: hanya dipasang di local/testing. Tidak di-global
+        // prepend untuk menghindari risiko misconfig di production.
+        // Gunakan route middleware `test.auto-login` di route group test.
 
         $middleware->web(append: [
             HandleActivePeriod::class,
@@ -105,6 +101,7 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         $middleware->alias([
+            'test.auto-login' => TestAutoLogin::class,
             'role' => RoleMiddleware::class,
             'permission' => PermissionMiddleware::class,
             'role_or_permission' => RoleOrPermissionMiddleware::class,

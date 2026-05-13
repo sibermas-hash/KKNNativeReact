@@ -398,28 +398,22 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        $isFirstPasswordChange = $user->must_change_password || is_null($user->password_changed_at);
+        $request->validate([
+            'current_password' => ['required', 'string'],
+            'password' => ['required', 'confirmed', Password::defaults()],
+        ]);
 
-        if ($isFirstPasswordChange) {
-            $request->validate([
-                'password' => ['required', 'confirmed', Password::defaults()],
-            ]);
-        } else {
-            $request->validate([
-                'current_password' => ['required', 'string'],
-                'password' => ['required', 'confirmed', Password::defaults()],
+        if (! Hash::check($request->input('current_password'), $user->password)) {
+            ActivityLogger::log('password_change', 'failed', $user->id, [
+                'reason' => 'invalid_current_password',
             ]);
 
-            if (! Hash::check($request->input('current_password'), $user->password)) {
-                ActivityLogger::log('password_change', 'failed', $user->id, [
-                    'reason' => 'invalid_current_password',
-                ]);
-
-                return $this->error('VALIDATION_ERROR', 'Kata sandi saat ini salah.', 422, [
-                    'current_password' => ['Kata sandi saat ini salah.'],
-                ]);
-            }
+            return $this->error('VALIDATION_ERROR', 'Kata sandi saat ini salah.', 422, [
+                'current_password' => ['Kata sandi saat ini salah.'],
+            ]);
         }
+
+        $isFirstPasswordChange = $user->must_change_password || is_null($user->password_changed_at);
 
         $user->update([
             'password' => Hash::make($request->input('password')),
@@ -431,13 +425,7 @@ class ProfileController extends Controller
             'first_time' => $isFirstPasswordChange,
         ]);
 
-        // X-004 fix (audit follow-up): force Secure flag in production even
-        // when $request->secure() is false (misconfigured reverse proxy
-        // stripping X-Forwarded-Proto). Same pattern as M-007 in AuthController.
-        $isSecure = app()->environment('production') ? true : $request->secure();
-
-        return $this->noContent('Kata sandi berhasil diubah.')
-            ->withCookie(cookie('sibermas_pwd_changed', '1', 60 * 24 * 7, '/', null, $isSecure, false, false, 'Strict'));
+        return $this->noContent('Kata sandi berhasil diubah.');
     }
 
     /**

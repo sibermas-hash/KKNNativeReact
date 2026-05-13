@@ -35,14 +35,6 @@ function clearLegacyRoleCookie() {
   }
 }
 
-export function setPasswordChangedCookie(passwordChangedAt: string | null) {
-  // R11 audit: no-op. Cookie legacy `sibermas_pwd_changed` sudah di-deprecate —
-  // backend tidak lagi set, frontend middleware tidak lagi baca. Password-change
-  // requirement sekarang di-enforce via API response code PASSWORD_CHANGE_REQUIRED.
-  // Placeholder signature tetap dipertahankan untuk backward-compat call sites.
-  void passwordChangedAt;
-}
-
 export function setProfileCompleteCookie(_isComplete: boolean) {
   // R13-FE-009: Deprecated. Middleware now trusts only the HttpOnly
   // `sibermas_token` cookie. Profile completeness is enforced by the backend
@@ -101,7 +93,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           set({ user, isAuthenticated: true, isLoading: false, hasFetched: true });
           const u = user as User & { password_changed_at?: string | null; must_change_password?: boolean; profile_complete?: boolean };
           const isSuperadmin = user.roles?.includes('superadmin');
-          setPasswordChangedCookie(isSuperadmin ? new Date().toISOString() : u.password_changed_at ?? null);
           setProfileCompleteCookie(isSuperadmin || !!u.profile_complete);
           if (!isSuperadmin && !u.password_changed_at) {
             window.dispatchEvent(new Event('auth:require_password_change'));

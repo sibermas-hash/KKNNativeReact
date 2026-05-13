@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { changePasswordSchema, type ChangePasswordFormData } from '@sibermas/schemas';
-import { z } from 'zod';
 import { api, authApi } from '@/lib/api';
-import { resetAuthState, useAuthStore, setPasswordChangedCookie } from '@/stores';
+import { resetAuthState, useAuthStore } from '@/stores';
 import type { User } from '@sibermas/shared-types';
 import { toast } from 'sonner';
 import { Lock, Eye, EyeOff, ShieldCheck, ArrowRight, RefreshCw, AlertCircle, CheckCircle2 } from 'lucide-react';
@@ -18,24 +17,7 @@ const ParticleBackground = dynamic(
 );
 import { motion } from 'framer-motion';
 
-const firstLoginSchema = z.object({
-  current_password: z.string().optional(),
-  password: z.string()
-    .min(8, 'Kata sandi minimal 8 karakter')
-    .regex(/[a-z]/, 'Harus mengandung huruf kecil')
-    .regex(/[A-Z]/, 'Harus mengandung huruf besar')
-    .regex(/[0-9]/, 'Harus mengandung angka')
-    .regex(/[^a-zA-Z0-9]/, 'Harus mengandung simbol'),
-  password_confirmation: z.string().min(1, 'Konfirmasi kata sandi wajib diisi'),
-}).refine((d) => d.password === d.password_confirmation, {
-  message: 'Kata sandi tidak cocok',
-  path: ['password_confirmation'],
-});
 
-function maskPassword(password: string) {
-  if (password.length <= 4) return '•'.repeat(password.length);
-  return `${password.slice(0, 2)}${'•'.repeat(password.length - 4)}${password.slice(-2)}`;
-}
 
 function dashboardPathFor(roles: string[]) {
   if (roles.some((role) => ['superadmin', 'admin', 'faculty_admin'].includes(role))) return '/admin';
@@ -53,7 +35,7 @@ export default function ChangePasswordPage(): React.JSX.Element {
   const [serverErrors, setServerErrors] = useState<string[]>([]);
   const [isFirstLogin, setIsFirstLogin] = useState(true);
   const [checking, setChecking] = useState(true);
-  const [successPasswordMask, setSuccessPasswordMask] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     const checkUser = async () => {
@@ -77,37 +59,25 @@ export default function ChangePasswordPage(): React.JSX.Element {
     register,
     handleSubmit,
     setError,
-    reset,
     formState: { errors },
   } = useForm<ChangePasswordFormData>({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    resolver: zodResolver(isFirstLogin ? firstLoginSchema : changePasswordSchema) as any,
+    resolver: zodResolver(changePasswordSchema),
   });
-
-  // Re-initialize form when isFirstLogin is determined so resolver updates
-  useEffect(() => {
-    if (!checking) reset();
-  }, [isFirstLogin, checking, reset]);
 
   const onSubmit = async (data: ChangePasswordFormData) => {
     setLoading(true);
     setServerErrors([]);
     try {
-      const payload = isFirstLogin
-        ? { password: data.password, password_confirmation: data.password_confirmation }
-        : data;
-      await api.patch('/profile/password', payload);
+      await api.patch('/profile/password', data);
       toast.success('Kata sandi berhasil diperbarui!');
 
       // Re-fetch user so store has must_change_password=false before redirect
-      // (mirrors Inertia's server-side auth.user re-share on every response)
       const freshUser = await authApi.user() as unknown as User | null;
       if (freshUser && typeof freshUser === 'object' && 'id' in freshUser) {
-        setPasswordChangedCookie(freshUser.password_changed_at ?? new Date().toISOString());
         setUser(freshUser);
       }
 
-      setSuccessPasswordMask(maskPassword(data.password));
+      setSuccess(true);
     } catch (err: unknown) {
       const e = err as { response?: { status?: number; data?: { error?: { errors?: Record<string, string[]>; message?: string } } } };
       const errorData = e.response?.data?.error;
@@ -143,7 +113,7 @@ export default function ChangePasswordPage(): React.JSX.Element {
         <ParticleBackground />
       </div>
 
-      {successPasswordMask && (
+      {success && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -165,13 +135,7 @@ export default function ChangePasswordPage(): React.JSX.Element {
             </motion.div>
             <h2 className="text-2xl font-black uppercase tracking-tight text-emerald-950">Berhasil</h2>
             <p className="mt-3 text-sm font-medium leading-7 text-slate-600">
-              Selamat, Anda telah berhasil mengganti password. Password Anda saat ini adalah password baru yang baru saja dibuat:
-            </p>
-            <div className="my-5 rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-3 font-mono text-lg font-black tracking-[0.25em] text-emerald-800">
-              {successPasswordMask}
-            </div>
-            <p className="text-xs font-semibold leading-6 text-amber-700">
-              Catat dan simpan password baru tersebut di tempat yang aman. Jangan membagikannya kepada siapa pun.
+              Selamat, Anda telah berhasil mengganti password. Gunakan password baru Anda untuk login berikutnya.
             </p>
             <button
               type="button"
@@ -229,8 +193,7 @@ export default function ChangePasswordPage(): React.JSX.Element {
             {/* Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div className="space-y-4">
-                {/* Current Password - only show if not first login */}
-                {!isFirstLogin && (
+                {/* Current Password */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Kata Sandi Lama</label>
                   <div className="relative group">
@@ -255,7 +218,6 @@ export default function ChangePasswordPage(): React.JSX.Element {
                   </div>
                   {errors.current_password && <p className="text-[10px] font-bold text-rose-500 ml-1">{errors.current_password.message}</p>}
                 </div>
-                )}
 
                 <div className="h-px bg-slate-100 mx-2" />
 

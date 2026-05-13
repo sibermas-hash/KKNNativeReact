@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, type LoginFormData } from '@sibermas/schemas';
-import { useAuthStore, setAuthToken, setPasswordChangedCookie } from '@/stores';
+import { useAuthStore, setAuthToken } from '@/stores';
 import type { User } from '@sibermas/shared-types';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
@@ -134,7 +134,6 @@ export default function LoginPage(): React.JSX.Element {
       const result = await api.post('/auth/login', data) as { user: User; token?: string };
       if (result?.user) {
         if (result.token) setAuthToken(result.token);
-        setPasswordChangedCookie(result.user.password_changed_at ?? null);
         setUser(result.user);
         toast.success('Login berhasil!');
       }
@@ -324,7 +323,7 @@ export default function LoginPage(): React.JSX.Element {
                   </div>
                   {errors.password && <p className="text-[10px] font-bold text-rose-500 ml-1">{errors.password.message}</p>}
                   <p className="text-[9px] font-bold text-slate-400 ml-1">
-                    Password Default: <span className="font-mono">DDMMYYYY/NIM/NIP</span>
+                    Login awal menggunakan <span className="font-mono">DDMMYYYY</span>, jika tidak ada maka menggunakan <span className="font-mono">NIM</span>
                   </p>
                 </div>
 

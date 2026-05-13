@@ -42,6 +42,14 @@ export default function ResetPasswordPage(): React.JSX.Element {
     if (!token || !email) {
       toast.error('Token atau email tidak valid.');
       router.replace('/login');
+      return;
+    }
+
+    // Bersihkan token dari URL untuk mencegah kebocoran via browser history,
+    // referrer header, atau server log. Gunakan window.location langsung
+    // karena replaceState tidak trigger re-render.
+    if (typeof window !== 'undefined') {
+      window.history.replaceState(null, '', window.location.pathname);
     }
   }, [token, email, setValue, router]);
 

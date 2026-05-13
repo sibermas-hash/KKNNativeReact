@@ -47,6 +47,8 @@ const nextConfig: NextConfig = {
 
   // ── Image Optimization ──────────────────────────────────────────────────
   images: {
+    // FreeBSD jail deploy runs Next standalone without relying on native sharp.
+    unoptimized: true,
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 86400,
     deviceSizes: [640, 750, 828, 1080, 1200, 1920],
@@ -101,10 +103,7 @@ const nextConfig: NextConfig = {
   },
 
   async headers() {
-    // R13-FE-001: Content Security Policy.
-    // Starts in report-only mode for the first deploy cycle so we can gather
-    // violations from real traffic without breaking the app. After 1-2 weeks
-    // of clean reports, flip to `Content-Security-Policy` (enforcing).
+    // R13-FE-001: Content Security Policy (enforcing mode).
     //
     // Allowances rationale:
     // - 'unsafe-inline' on script-src is needed by Next.js hydration scripts

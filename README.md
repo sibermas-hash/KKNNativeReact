@@ -87,14 +87,15 @@ DEPLOY_SERVER=user@host bash remote-deploy.sh
 │   ├── api/              # Laravel 13 backend
 │   │   ├── supervisord.conf           # Single-server supervisor
 │   │   ├── supervisord.jail-api.conf  # Jails: queue workers (10+4+2)
-│   │   └── .env.production.jail       # Jails: DB_HOST=10.0.0.13
+│   │   └── .env.production.example    # Seed /usr/local/www/sibermas/shared/api.env
 │   └── web/              # Next.js 15 frontend
 │       ├── supervisord.jail-web.conf  # Jails: cluster ×4 instances
-│       └── .env.production.jail       # Jails: public API URL
+│       └── next.config.ts             # Standalone build for FreeBSD jails
 ├── packages/             # Shared TS packages (5 packages)
 ├── conf/                 # Scaling config files (siap deploy)
 │   ├── php-fpm.www.conf         # max_children=200
 │   ├── php-opcache.ini          # 256MB OPcache
+│   ├── nginx-api-jail.conf      # API jail Nginx :8080 → php-fpm socket
 │   ├── nginx-scaling.conf       # 8192 connections, upstream cluster
 │   ├── postgresql-scaling.conf  # 8GB shared_buffers, 300 conn
 │   ├── pgbouncer.ini            # Connection pooler

@@ -11,6 +11,7 @@ use App\Models\KKN\ChatMessage;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 
 /**
  * Student/Dosen chat dengan Superadmin (PRD_CHAT_SYSTEM.md).
@@ -34,6 +35,10 @@ class ChatController extends Controller
     {
         $conversations = ChatConversation::where('user_id', $request->user()->id)
             ->with(['messages' => fn ($q) => $q->latest()->limit(1)])
+            ->withCount(['messages as unread_count' => fn ($q) => $q
+                ->where('is_read', false)
+                ->where('sender_id', '!=', $request->user()->id),
+            ])
             ->orderByDesc('last_message_at')
             ->paginate(20);
 
@@ -50,10 +55,7 @@ class ChatController extends Controller
                 'sender_id' => $c->messages->first()->sender_id,
                 'is_read' => $c->messages->first()->is_read,
             ] : null,
-            'unread_count' => $c->messages()
-                ->where('is_read', false)
-                ->where('sender_id', '!=', $request->user()->id)
-                ->count(),
+            'unread_count' => (int) $c->unread_count,
         ]);
 
         return $this->success([
@@ -132,7 +134,11 @@ class ChatController extends Controller
                     'is_self' => $m->sender_id === $request->user()->id,
                 ],
                 'body' => $m->body,
-                'attachment_url' => $m->attachment_path ? asset('storage/'.$m->attachment_path) : null,
+                'attachment_url' => $m->attachment_path ? URL::temporarySignedRoute(
+                    'api.v1.files.chat-attachment',
+                    now()->addMinutes(30),
+                    ['message' => $m->id],
+                ) : null,
                 'attachment_name' => $m->attachment_name,
                 'is_read' => $m->is_read,
                 'created_at' => $m->created_at?->toIso8601String(),
@@ -194,7 +200,11 @@ class ChatController extends Controller
         return $this->created([
             'id' => $message->id,
             'body' => $message->body,
-            'attachment_url' => $attachmentPath ? asset('storage/'.$attachmentPath) : null,
+            'attachment_url' => $attachmentPath ? URL::temporarySignedRoute(
+                'api.v1.files.chat-attachment',
+                now()->addMinutes(30),
+                ['message' => $message->id],
+            ) : null,
             'created_at' => $message->created_at?->toIso8601String(),
         ], 'Pesan terkirim.');
     }

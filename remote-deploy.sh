@@ -12,6 +12,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SERVER="${DEPLOY_SERVER:?DEPLOY_SERVER tidak di-set (contoh: user@host)}"
 PORT="${DEPLOY_PORT:-22}"
 APP_DIR="${APP_DIR:-/usr/local/www/sibermas}"
+PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://sibermas.uinsaizu.ac.id}"
 
 # Jails mode: set JAIL_WEB_IP / JAIL_API_IP / JAIL_PROXY_IP untuk restart per-jail.
 # CATATAN: jails mode membutuhkan SSH server aktif di setiap jail, ATAU
@@ -31,6 +32,7 @@ echo "════════════════════════�
 echo ""
 echo "[1/2] Pushing local changes to GitHub..."
 cd "$SCRIPT_DIR"
+node scripts/ci-guard.mjs
 git add -A
 if ! git diff --cached --quiet; then
   git commit -m "$COMMIT_MSG"
@@ -53,10 +55,12 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
   JAIL_WEB_IP="$JAIL_WEB_IP" \
   JAIL_API_IP="$JAIL_API_IP" \
   JAIL_PROXY_IP="$JAIL_PROXY_IP" \
+  PUBLIC_BASE_URL="$PUBLIC_BASE_URL" \
   bash -s << 'ENDSSH'
   set -euo pipefail
 
   APP_DIR="${APP_DIR:-/usr/local/www/sibermas}"
+  PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://sibermas.uinsaizu.ac.id}"
   JAIL_WEB_IP="${JAIL_WEB_IP:-}"
   JAIL_API_IP="${JAIL_API_IP:-}"
   JAIL_PROXY_IP="${JAIL_PROXY_IP:-10.0.0.10}"
@@ -72,6 +76,9 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
   TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:packages
 
   echo "  [d] Building frontend..."
+  export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-${PUBLIC_BASE_URL%/}/api/v1}"
+  export NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL:-${PUBLIC_BASE_URL%/}}"
+  export NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL:-${PUBLIC_BASE_URL%/}}"
   TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:web
 
   echo "  [e] Copying static & public to standalone..."

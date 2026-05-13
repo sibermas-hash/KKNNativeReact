@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AiAssistantController;
 use App\Http\Controllers\Api\AdminKeyController;
 use App\Http\Controllers\Api\AttendanceController;
 use App\Http\Controllers\Api\NotificationController;
@@ -141,6 +142,9 @@ Route::prefix('v1')->group(function () {
             Route::get('/workshop-certificates/{participant}', [PrivateFileController::class, 'workshopCertificate'])
                 ->middleware('signed')
                 ->name('api.v1.files.workshop-certificate');
+            Route::get('/chat-attachment/{message}', [PrivateFileController::class, 'chatAttachment'])
+                ->middleware('signed')
+                ->name('api.v1.files.chat-attachment');
         });
 
     // Student routes
@@ -151,6 +155,37 @@ Route::prefix('v1')->group(function () {
 
     // Admin routes
     require __DIR__.'/api/v1-admin.php';
+});
+
+// ── Notifications & Attendance (versioned aliases untuk unified client) ────
+Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('v1')->group(function () {
+    Route::prefix('notifications')->name('api.v1.notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::get('/unread', [NotificationController::class, 'unread'])->name('unread');
+        Route::post('/{id}/read', [NotificationController::class, 'markRead'])->name('mark-read');
+        Route::post('/read-all', [NotificationController::class, 'markAllRead'])->name('mark-all-read');
+    });
+
+    Route::get('/notifications/stream', [NotificationStreamController::class, 'stream'])
+        ->middleware('throttle:5,1')
+        ->name('api.v1.notifications.stream');
+
+    Route::post('/device-tokens', [NotificationController::class, 'storeDeviceToken'])->name('api.v1.device-tokens.store');
+
+    Route::prefix('attendance')->name('api.v1.attendance.')->group(function () {
+        Route::post('/', [AttendanceController::class, 'store'])->name('store');
+        Route::get('/', [AttendanceController::class, 'index'])->name('index');
+        Route::get('/sync-status', [AttendanceController::class, 'getSyncStatus'])->name('sync-status');
+        Route::post('/retry-sync', [AttendanceController::class, 'retrySync'])->name('retry-sync');
+        Route::get('/{attendance}', [AttendanceController::class, 'show'])->name('show');
+    });
+});
+
+// ── AI Chat Assistant ──────────────────────────────────────────────────────
+Route::middleware(['auth:sanctum', 'throttle:20,1'])->prefix('v1/ai')->group(function () {
+    Route::get('/history', [AiAssistantController::class, 'history'])->name('api.v1.ai.history');
+    Route::post('/chat', [AiAssistantController::class, 'chat'])->name('api.v1.ai.chat');
+    Route::delete('/clear', [AiAssistantController::class, 'clear'])->name('api.v1.ai.clear');
 });
 
 // ── Legacy API (keep existing routes) ─────────────────────────────────────
@@ -250,3 +285,6 @@ Route::post('/register', [RegistrationController::class, 'register'])
 Route::middleware(['api.key', 'throttle:60,1'])->prefix('v1/data')->name('api.v1.data.')->group(function () {
     Route::get('/{table}', [PublicDataController::class, 'index'])->name('index');
 });
+
+// MCP Server (Laravel AI) — loaded separately for middleware isolation
+require __DIR__.'/ai.php';

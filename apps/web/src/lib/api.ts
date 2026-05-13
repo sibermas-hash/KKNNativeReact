@@ -12,21 +12,15 @@ import {
   attendanceEndpoints,
 } from '@sibermas/api-client';
 
-const getBaseUrl = () => {
-  if (typeof window !== 'undefined') {
-    // Client-side: use env var directly, fallback to Laravel URL
-    const envUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (envUrl) return envUrl;
-    return 'http://localhost:8000/api/v1';
+function getBaseUrl(): string {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (!envUrl) {
+    throw new Error('NEXT_PUBLIC_API_URL is not set. Define it in .env.local or .env.production');
   }
-  // Server-side
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
-};
-
-const getLegacyBaseUrl = () => getBaseUrl().replace(/\/v1\/?$/, '');
+  return envUrl;
+}
 
 export const api = createWebClient(getBaseUrl());
-const legacyApi = createWebClient(getLegacyBaseUrl());
 
 // Singleton endpoint instances — prevents recreation on every render
 export const authApi = authEndpoints(api);
@@ -37,8 +31,8 @@ export const dosenApi = dosenEndpoints(api);
 export const profileApi = profileEndpoints(api);
 export const publicApi = publicEndpoints(api);
 export const periodContextApi = periodContextEndpoints(api);
-export const notificationsApi = notificationsEndpoints(legacyApi);
-export const attendanceApi = attendanceEndpoints(legacyApi);
+export const notificationsApi = notificationsEndpoints(api);
+export const attendanceApi = attendanceEndpoints(api);
 
 export function apiUrl(path: string) {
   if (/^https?:\/\//i.test(path)) return path;

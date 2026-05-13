@@ -7,9 +7,12 @@ namespace App\Models\KKN;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class LogAudit extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'log_audit';
 
     protected $fillable = [
@@ -26,8 +29,8 @@ class LogAudit extends Model
     ];
 
     protected $casts = [
-        'old_values' => 'json',
-        'new_values' => 'json',
+        'old_values' => 'array',
+        'new_values' => 'array',
     ];
 
     public function user(): BelongsTo

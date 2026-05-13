@@ -14,6 +14,12 @@ pest_results.txt
 route_list.txt
 migrate_status.txt
 
+# ── Local SSH/debug helpers (never commit) ──────────
+apps/api/run_ssh.sh
+apps/api/ssh_login.exp
+apps/api/start_tunnel.sh
+apps/api/ai_ssh_output.txt
+
 # ── apps/api (Laravel) ──────────────────────────────
 apps/api/vendor/
 apps/api/node_modules/
@@ -64,6 +70,8 @@ packages/*/dist/
 *.csv
 *.sql
 !template.xlsx
+.db_password.initial
+**/.db_password.initial
 
 # ── Defense-in-depth: blokir semua .env* di seluruh repo, ────────────
 #    kecuali template .example yang memang wajib di-commit.

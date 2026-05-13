@@ -133,11 +133,11 @@ return [
             'label' => env('DEBUGBAR_OPTIONS_ROUTE_LABEL', true),  // Show complete route on bar
         ],
         'session' => [
-            'masked' => [], // List of keys that are masked
+            'masked' => ['password', 'token', 'secret', 'api_key', '_token'], // List of keys that are masked
         ],
         'symfony_request' => [
             'label' => env('DEBUGBAR_OPTIONS_SYMFONY_REQUEST_LABEL', true),  // Show route on bar
-            'masked' => [], // List of keys that are masked
+            'masked' => ['password', 'password_confirmation', 'current_password', 'token', 'secret', 'api_key', 'authorization'], // List of keys that are masked
         ],
         'events' => [
             'data' => env('DEBUGBAR_OPTIONS_EVENTS_DATA', false), // Collect events data
@@ -148,14 +148,14 @@ return [
             'file' => env('DEBUGBAR_OPTIONS_LOGS_FILE'),
         ],
         'config' => [
-            'masked' => [],
+            'masked' => ['app.key', 'app.blind_index_key', 'database.connections.pgsql.password', 'services.gemini', 'services.telegram'],
         ],
         'cache' => [
             'values' => env('DEBUGBAR_OPTIONS_CACHE_VALUES', true), // Collect cache values
             'timeline' => env('DEBUGBAR_OPTIONS_CACHE_TIMELINE', false),  // Add cache events to the timeline
         ],
         'http_client' => [
-            'masked' => [],
+            'masked' => ['authorization', 'x-api-key', 'api-key'],
             'timeline' => env('DEBUGBAR_OPTIONS_HTTP_CLIENT_TIMELINE', true),  // Add requests to the timeline
         ],
     ],

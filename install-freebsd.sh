@@ -22,6 +22,7 @@ APP_USER="www"
 LOG_DIR="/var/log/sibermas"
 PHP_VERSION="84"  # php84
 PG_VERSION="18"   # postgresql18 — selaras dengan jails mode & conf/postgresql-scaling.conf
+NODE_VERSION="${NODE_VERSION:-24}"
 PG_DATA_DIR="/var/db/postgres/data${PG_VERSION}"
 
 # Production domain fallbacks. Override dengan export sebelum jalankan script:
@@ -67,8 +68,8 @@ pkg install -y \
     postgresql${PG_VERSION}-server \
     postgresql${PG_VERSION}-client \
     redis \
-    node22 \
-    npm-node22 \
+    node${NODE_VERSION} \
+    npm-node${NODE_VERSION} \
     py311-supervisor \
     git \
     curl \
@@ -121,7 +122,7 @@ pass in proto tcp to port { 80 443 1977 }
 block in log proto tcp to port { 5432 6379 }
 EOPF
   sysrc pf_enable="YES"
-  service pf start 2>/dev/null || service pf enable 2>/dev/null || true
+  service pf start 2>/dev/null || true
 fi
 
 echo "==> Memulai PHP-FPM..."
@@ -135,7 +136,7 @@ chown -R ${APP_USER}:${APP_USER} "${LOG_DIR}"
 echo "==> Menginstal pnpm..."
 # Prioritaskan FreeBSD package jika tersedia, fallback ke npm
 if ! pkg install -y pnpm 2>/dev/null; then
-  npm install -g --user root pnpm
+  npm install -g pnpm@10
 fi
 
 echo "==> Menyalin konfigurasi supervisord..."
@@ -184,7 +185,11 @@ echo "  7. php artisan migrate --force"
 echo "  8. KKN_SUPERADMIN_PASSWORD='<strong-pw>' php artisan db:seed --class=SuperAdminSeeder --force"
 echo "  9. php artisan storage:link"
 echo " 10. php artisan config:cache && php artisan route:cache"
-echo " 11. cd ${APP_DIR} && pnpm install --frozen-lockfile && pnpm build"
+echo " 11. cd ${APP_DIR} && export TURBO_INSTALL_SKIP_DOWNLOAD=1"
+echo "     export NEXT_PUBLIC_API_URL=https://${WEB_DOMAIN}/api/v1"
+echo "     export NEXT_PUBLIC_APP_URL=https://${WEB_DOMAIN}"
+echo "     export NEXT_PUBLIC_SITE_URL=https://${WEB_DOMAIN}"
+echo "     pnpm install --frozen-lockfile && pnpm build"
 echo " 12. # Next.js standalone: salin static + public ke direktori standalone"
 echo "     cp -r ${APP_DIR}/apps/web/.next/static \\"
 echo "        ${APP_DIR}/apps/web/.next/standalone/apps/web/.next/static"

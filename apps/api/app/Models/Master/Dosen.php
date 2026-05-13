@@ -18,7 +18,7 @@ class Dosen extends Model
         'nip',
         'nama',
         'email',
-        'telepon',
+        'phone',
         'gelar_depan',
         'gelar_belakang',
         'jabatan',
@@ -26,8 +26,15 @@ class Dosen extends Model
         'status',
     ];
 
+    protected $hidden = [
+        'phone',
+    ];
+
     protected $casts = [
         'status' => 'string',
+        'phone' => 'encrypted',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

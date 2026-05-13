@@ -1,6 +1,6 @@
 # Backend Documentation — KKN UIN SAIZU API
 
-> Laravel 13 · PHP 8.4 · PostgreSQL 16 · Redis 7  
+> Laravel 13 · PHP 8.4 · PostgreSQL 18 · Redis 8
 > Last updated: 2026-05-07
 
 ---

@@ -7,9 +7,11 @@ namespace App\Models\KKN;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class FileKegiatanKkn extends Model
 {
+    use SoftDeletes;
     protected $table = 'file_kegiatan_kkn';
 
     protected $fillable = [

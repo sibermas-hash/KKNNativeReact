@@ -253,6 +253,13 @@ return [
             'temperature' => 0.1,
             'timeout' => 60,
         ],
+
+        // Activity logbook reviewer — default alibaba/qwen-plus (cost-effective)
+        // Override via env when switching to Gemini or OpenAI
+        'activity_reviewer' => [
+            'provider' => env('AI_ACTIVITY_REVIEWER_PROVIDER', 'alibaba'),
+            'model' => env('AI_ACTIVITY_REVIEWER_MODEL', 'qwen-plus'),
+        ],
     ],
 
 ];

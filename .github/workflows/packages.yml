@@ -47,4 +47,7 @@ jobs:
         run: pnpm --filter @sibermas/hooks exec tsc --noEmit --skipLibCheck
 
       - name: Run package tests
-        run: pnpm --filter './packages/*' test --passWithNoTests
+        run: |
+          pnpm --filter @sibermas/shared-types test
+          pnpm --filter @sibermas/schemas test
+          pnpm --filter @sibermas/api-client test

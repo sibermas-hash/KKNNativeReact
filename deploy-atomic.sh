@@ -20,12 +20,15 @@ set -euo pipefail
 APP_DIR="${APP_DIR:-/usr/local/www/sibermas}"
 RELEASES_DIR="${APP_DIR}/releases"
 CURRENT_LINK="${APP_DIR}/current"
+SHARED_DIR="${APP_DIR}/shared"
+SHARED_ENV="${SHARED_DIR}/api.env"
 WEB_USER="www"
 TIMESTAMP=$(date '+%Y%m%d_%H%M%S')
 RELEASE_DIR="${RELEASES_DIR}/${TIMESTAMP}"
 LOG_DIR="/var/log/sibermas"
 REPO_URL="${REPO_URL:-https://github.com/putrihati-cmd/KKNNATIVE.git}"
 SKIP_MIGRATE="${SKIP_MIGRATE:-0}"
+PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://${WEB_DOMAIN:-sibermas.uinsaizu.ac.id}}"
 
 WEB_IP="${JAIL_WEB_IP:-127.0.0.1}"
 API_IP="${JAIL_API_IP:-127.0.0.1}"
@@ -45,7 +48,7 @@ if [ "$(id -u)" -ne 0 ] && [ "$(id -u)" -ne "$(id -u "${WEB_USER}")" ]; then
   exit 1
 fi
 
-mkdir -p "${RELEASES_DIR}" "${LOG_DIR}"
+mkdir -p "${RELEASES_DIR}" "${SHARED_DIR}" "${LOG_DIR}"
 
 # ─── Step 1: Get code ─────────────────────────────────────────────────────
 if [ -n "${1:-}" ] && [ -f "$1" ]; then
@@ -68,6 +71,9 @@ composer install --no-dev --optimize-autoloader --no-interaction
 # (bukan turbo), jadi turbo tidak pernah di-invoke.
 echo "[3/8] Installing frontend dependencies & building..."
 cd "${RELEASE_DIR}"
+export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-${PUBLIC_BASE_URL%/}/api/v1}"
+export NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL:-${PUBLIC_BASE_URL%/}}"
+export NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL:-${PUBLIC_BASE_URL%/}}"
 # NOTE: devDependencies DIBUTUHKAN untuk Next.js build (typescript, postcss).
 # Hanya remove setelah build selesai.
 TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm install --frozen-lockfile
@@ -93,16 +99,19 @@ echo "[4/8] Configuring Laravel .env..."
 cd "${RELEASE_DIR}/apps/api"
 if [ -L "${CURRENT_LINK}" ] && [ -f "${CURRENT_LINK}/apps/api/.env" ]; then
   cp "${CURRENT_LINK}/apps/api/.env" .env
+  cp .env "${SHARED_ENV}"
+  chmod 600 "${SHARED_ENV}"
   echo "  ℹ️  .env copied from previous release"
+elif [ -f "${SHARED_ENV}" ]; then
+  cp "${SHARED_ENV}" .env
+  echo "  ℹ️  .env copied from ${SHARED_ENV}"
 else
-  if [ -n "${JAIL_WEB_IP:-}" ] && [ -f ".env.production.jail" ]; then
-    cp .env.production.jail .env
-    echo "  ⚠️  First deploy (jails mode) — copied .env.production.jail."
-  elif [ -f ".env.production.example" ]; then
-    cp .env.production.example .env
-    echo "  ⚠️  First deploy — copied .env.production.example."
+  if [ -f ".env.production.example" ]; then
+    cp .env.production.example "${SHARED_ENV}"
+    chmod 600 "${SHARED_ENV}"
+    echo "  ⚠️  First deploy — seeded ${SHARED_ENV} from .env.production.example."
   fi
-  echo "  ❗ EDIT ${RELEASE_DIR}/apps/api/.env SEKARANG, lalu re-run deploy."
+  echo "  ❗ EDIT ${SHARED_ENV} SEKARANG, lalu re-run deploy."
   echo "     Isi: APP_KEY, DB_PASSWORD, MASTER_WEBHOOK_SECRET, API_ADMIN_SECRET, APP_BLIND_INDEX_KEY"
   exit 1
 fi

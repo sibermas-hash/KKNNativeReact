@@ -86,8 +86,6 @@ class Dosen extends Model
         'npwp' => 'encrypted',
     ];
 
-    use HasFactory;
-
     /**
      * Blind-index map consumed by HasBlindIndex trait.
      * NIP stays plaintext during transition; `nip_bidx` is auto-populated

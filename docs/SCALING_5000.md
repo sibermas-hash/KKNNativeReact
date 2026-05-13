@@ -130,7 +130,8 @@ http {
         # API → api cluster
         location ^~ /api/ {
             limit_req zone=api_limit burst=100 nodelay;
-            proxy_pass http://api_cluster/;
+            # No trailing slash: preserve /api prefix for Laravel routes.
+            proxy_pass http://api_cluster;
             proxy_http_version 1.1;
             proxy_set_header Connection "";
             proxy_set_header Host $host;

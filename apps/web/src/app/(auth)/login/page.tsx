@@ -322,9 +322,6 @@ export default function LoginPage(): React.JSX.Element {
                     </button>
                   </div>
                   {errors.password && <p className="text-[10px] font-bold text-rose-500 ml-1">{errors.password.message}</p>}
-                  <p className="text-[9px] font-bold text-slate-400 ml-1">
-                    Login awal menggunakan <span className="font-mono">DDMMYYYY</span>, jika tidak ada maka menggunakan <span className="font-mono">NIM</span>
-                  </p>
                 </div>
 
                 {/* Captcha */}

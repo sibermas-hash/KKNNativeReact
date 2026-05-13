@@ -16,6 +16,6 @@ use Laravel\Mcp\Facades\Mcp;
  *   guard against accidental or malicious abuse of the Gemini-backed MCP.
  *   Per-user token budgets should additionally be enforced inside AI services.
  */
-Route::middleware(['auth:sanctum', 'role:admin|superadmin', 'throttle:20,1'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:superadmin', 'throttle:20,1'])->group(function () {
     Mcp::web('/mcp', AppServer::class);
 });

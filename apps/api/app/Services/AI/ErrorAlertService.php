@@ -157,8 +157,38 @@ class ErrorAlertService
         return $sent;
     }
 
+    private function scrubContext(array $context): array
+    {
+        $scrubbed = $context;
+
+        // Remove path segments that may contain passwords
+        if (isset($scrubbed['message'])) {
+            $scrubbed['message'] = preg_replace(
+                ['/password=\S+/i', '/secret=\S+/i', '/token=\S+/i', '/key=\S+/i', '/api[_-]?key=\S+/i'],
+                ['password=***', 'secret=***', 'token=***', 'key=***', 'api_key=***'],
+                $scrubbed['message']
+            );
+        }
+
+        // Remove user_id from context sent to external AI
+        unset($scrubbed['user_id']);
+
+        // Scrub query params in URL
+        if (isset($scrubbed['url'])) {
+            $scrubbed['url'] = preg_replace('/\?.*/', '?[query_redacted]', (string) $scrubbed['url']);
+        }
+
+        // Truncate trace to remove sensitive vendor paths
+        if (isset($scrubbed['trace_snippet'])) {
+            $scrubbed['trace_snippet'] = (string) mb_substr((string) $scrubbed['trace_snippet'], 0, 200);
+        }
+
+        return $scrubbed;
+    }
+
     private function analyzeError(array $context): string
     {
+        $context = $this->scrubContext($context);
         $tiers = $this->loadAiTiers();
 
         $prompt = 'Analisis error berikut dari sistem KKN (SIBERMAS). '

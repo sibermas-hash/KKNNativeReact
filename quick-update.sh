@@ -8,6 +8,7 @@ set -euo pipefail
 APP_DIR="${APP_DIR:-/usr/local/www/sibermas}"
 CURRENT_LINK="${APP_DIR}/current"
 WEB_USER="www"
+PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://${WEB_DOMAIN:-sibermas.uinsaizu.ac.id}}"
 
 if [ ! -L "${CURRENT_LINK}" ]; then
   echo "❌ ${CURRENT_LINK} tidak ditemukan. Jalankan deploy-atomic.sh dulu."
@@ -29,13 +30,16 @@ git pull origin main
 
 # Rebuild web only
 echo "[2/4] Building web..."
-cd apps/web
+cd "${RELEASE_DIR}"
+export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-${PUBLIC_BASE_URL%/}/api/v1}"
+export NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL:-${PUBLIC_BASE_URL%/}}"
+export NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL:-${PUBLIC_BASE_URL%/}}"
 TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:web
 
 # Copy static files to standalone
 echo "[3/4] Copying static files..."
-cp -r .next/static/. .next/standalone/apps/web/.next/static 2>/dev/null || true
-cp -r public/. .next/standalone/apps/web/public 2>/dev/null || true
+cp -r apps/web/.next/static/. apps/web/.next/standalone/apps/web/.next/static 2>/dev/null || true
+cp -r apps/web/public/.       apps/web/.next/standalone/apps/web/public 2>/dev/null || true
 
 # Restart web service
 echo "[4/4] Restarting web service..."

@@ -9,7 +9,7 @@
 #
 # Jalankan sebagai root di host FreeBSD.
 #
-# Versi Runtime:
+# Versi Runtime default:
 #   Node.js 24, PHP 8.4, PostgreSQL 18, Redis 8
 
 set -e
@@ -17,11 +17,15 @@ set -e
 # ─── Config ────────────────────────────────────────────────────────────
 BRIDGE="jailnet"
 BRIDGE_IP="10.0.0.1/24"
+BRIDGE_GW="${BRIDGE_IP%/*}"
 DOMAIN="${WEB_DOMAIN:-sibermas.uinsaizu.ac.id}"
 CERT_EMAIL="${CERT_EMAIL:-admin@uinsaizu.ac.id}"
 JAIL_ROOT="/usr/local/jails"
 APP_DIR="/usr/local/www/sibermas"
 FREEBSD_RELEASE="${FREEBSD_RELEASE:-14.1-RELEASE}"
+NODE_VERSION="${NODE_VERSION:-24}"
+PHP_VERSION="${PHP_VERSION:-84}"
+PG_VERSION="${PG_VERSION:-18}"
 
 # IP per jail
 NGINX_PROXY_IP="10.0.0.10"
@@ -70,13 +74,23 @@ check_freebsd_version() {
 # ─── Bridge Network ────────────────────────────────────────────────────
 setup_bridge() {
   info "Setup bridge network (external NIC: ${EXT_IF})..."
-  if ! ifconfig bridge0 >/dev/null 2>&1; then
-    sysrc cloned_interfaces+="bridge0"
-    service netif cloneup
+
+  if ! ifconfig "${BRIDGE}" >/dev/null 2>&1; then
+    if ! ifconfig bridge0 >/dev/null 2>&1; then
+      sysrc cloned_interfaces+="bridge0"
+      service netif cloneup
+    fi
+    ifconfig bridge0 name "${BRIDGE}" 2>/dev/null || true
   fi
-  ifconfig bridge0 addm "${EXT_IF}" 2>/dev/null || warn "${EXT_IF} not added to bridge (maybe already added)"
-  ifconfig bridge0 "$BRIDGE_IP" up
-  ifconfig bridge0 name "${BRIDGE}" 2>/dev/null || true
+
+  # NAT topology: keep the jail bridge private and route/NAT through EXT_IF.
+  # Do not add EXT_IF as a bridge member; that would leak 10.0.0.0/24 onto
+  # the external L2 segment and can break host networking on some providers.
+  ifconfig "${BRIDGE}" inet "$BRIDGE_IP" up
+  sysrc gateway_enable="YES"
+  sysrc ifconfig_bridge0_name="${BRIDGE}" 2>/dev/null || true
+  sysrc "ifconfig_${BRIDGE}=inet ${BRIDGE_IP} up" 2>/dev/null || true
+  sysctl net.inet.ip.forwarding=1 >/dev/null 2>&1 || true
   sysctl net.link.bridge.pfil_onlyip=0
   ok "Bridge ${BRIDGE} = $BRIDGE_IP"
 
@@ -92,7 +106,7 @@ nat on \$ext_if from 10.0.0.0/24 to any -> (\$ext_if)
 rdr on \$ext_if proto tcp to port { 80 443 } -> ${NGINX_PROXY_IP}
 EOPF
     sysrc pf_enable="YES"
-    service pf restart 2>/dev/null || service pf enable 2>/dev/null || true
+    service pf restart 2>/dev/null || service pf start 2>/dev/null || true
     ok "pf.conf updated (marker: ${pf_marker})"
   else
     ok "pf.conf already has ${pf_marker}, skipping append"
@@ -172,7 +186,7 @@ setup_data_jail() {
   bootstrap_jail "$j" "$DATA_IP"
   service jail start "$j" 2>/dev/null || true
 
-  pkg_inside "$j" postgresql18-server postgresql18-client redis
+  pkg_inside "$j" "postgresql${PG_VERSION}-server" "postgresql${PG_VERSION}-client" redis
   jexec "$j" sysrc postgresql_enable="YES"
   jexec "$j" sysrc redis_enable="YES"
 
@@ -181,9 +195,9 @@ setup_data_jail() {
 
   # Konfigurasi PostgreSQL
   jexec "$j" sed -i '' "s/^listen_addresses =.*/listen_addresses = '${DATA_IP}'/" \
-    /var/db/postgres/data18/postgresql.conf 2>/dev/null || true
+    "/var/db/postgres/data${PG_VERSION}/postgresql.conf" 2>/dev/null || true
   jexec "$j" sh -c "echo 'host    kkn_production    kkn_app    10.0.0.0/24    md5' >> \
-    /var/db/postgres/data18/pg_hba.conf" 2>/dev/null || true
+    /var/db/postgres/data${PG_VERSION}/pg_hba.conf" 2>/dev/null || true
 
   # Konfigurasi Redis
   jexec "$j" sh -c "echo 'bind ${DATA_IP}' >> /usr/local/etc/redis.conf" 2>/dev/null || true
@@ -200,12 +214,12 @@ setup_api_jail() {
   service jail start "$j" 2>/dev/null || true
 
   pkg_inside "$j" \
-    php84 php84-extensions php84-pdo php84-pdo_pgsql \
-    php84-pgsql php84-mbstring php84-xml php84-curl php84-zip \
-    php84-gd php84-intl php84-bcmath php84-redis php84-opcache \
-    php84-tokenizer php84-fileinfo php84-ctype php84-dom \
-    php84-session php84-simplexml php84-xmlwriter php84-xmlreader \
-    php84-openssl php84-filter php84-sodium php84-pcntl php84-posix \
+    "php${PHP_VERSION}" "php${PHP_VERSION}-extensions" "php${PHP_VERSION}-pdo" "php${PHP_VERSION}-pdo_pgsql" \
+    "php${PHP_VERSION}-pgsql" "php${PHP_VERSION}-mbstring" "php${PHP_VERSION}-xml" "php${PHP_VERSION}-curl" "php${PHP_VERSION}-zip" \
+    "php${PHP_VERSION}-gd" "php${PHP_VERSION}-intl" "php${PHP_VERSION}-bcmath" "php${PHP_VERSION}-redis" "php${PHP_VERSION}-opcache" \
+    "php${PHP_VERSION}-tokenizer" "php${PHP_VERSION}-fileinfo" "php${PHP_VERSION}-ctype" "php${PHP_VERSION}-dom" \
+    "php${PHP_VERSION}-session" "php${PHP_VERSION}-simplexml" "php${PHP_VERSION}-xmlwriter" "php${PHP_VERSION}-xmlreader" \
+    "php${PHP_VERSION}-openssl" "php${PHP_VERSION}-filter" "php${PHP_VERSION}-sodium" "php${PHP_VERSION}-pcntl" "php${PHP_VERSION}-posix" \
     composer nginx py311-supervisor git curl bash
 
   jexec "$j" sysrc nginx_enable="YES"
@@ -233,7 +247,7 @@ setup_web_jail() {
   bootstrap_jail "$j" "$WEB_IP"
   service jail start "$j" 2>/dev/null || true
 
-  pkg_inside "$j" node24 npm-node24 git curl bash
+  pkg_inside "$j" "node${NODE_VERSION}" "npm-node${NODE_VERSION}" git curl bash
 
   ok "$j jail ready — start with: service jail start $j"
 }
@@ -264,14 +278,14 @@ setup_fat_jail() {
 
   # Install semua paket (PostgreSQL 18 — selaras dengan jails mode).
   pkg_inside "$j" \
-    nginx node24 npm-node24 \
-    php84 php84-extensions php84-pdo php84-pdo_pgsql \
-    php84-pgsql php84-mbstring php84-xml php84-curl php84-zip \
-    php84-gd php84-intl php84-bcmath php84-redis php84-opcache \
-    php84-tokenizer php84-fileinfo php84-ctype php84-dom \
-    php84-session php84-simplexml php84-xmlwriter php84-xmlreader \
-    php84-openssl php84-filter php84-sodium php84-pcntl php84-posix \
-    postgresql18-server postgresql18-client \
+    nginx "node${NODE_VERSION}" "npm-node${NODE_VERSION}" \
+    "php${PHP_VERSION}" "php${PHP_VERSION}-extensions" "php${PHP_VERSION}-pdo" "php${PHP_VERSION}-pdo_pgsql" \
+    "php${PHP_VERSION}-pgsql" "php${PHP_VERSION}-mbstring" "php${PHP_VERSION}-xml" "php${PHP_VERSION}-curl" "php${PHP_VERSION}-zip" \
+    "php${PHP_VERSION}-gd" "php${PHP_VERSION}-intl" "php${PHP_VERSION}-bcmath" "php${PHP_VERSION}-redis" "php${PHP_VERSION}-opcache" \
+    "php${PHP_VERSION}-tokenizer" "php${PHP_VERSION}-fileinfo" "php${PHP_VERSION}-ctype" "php${PHP_VERSION}-dom" \
+    "php${PHP_VERSION}-session" "php${PHP_VERSION}-simplexml" "php${PHP_VERSION}-xmlwriter" "php${PHP_VERSION}-xmlreader" \
+    "php${PHP_VERSION}-openssl" "php${PHP_VERSION}-filter" "php${PHP_VERSION}-sodium" "php${PHP_VERSION}-pcntl" "php${PHP_VERSION}-posix" \
+    "postgresql${PG_VERSION}-server" "postgresql${PG_VERSION}-client" \
     redis composer py311-supervisor git curl bash py311-certbot
 
   # Enable services
@@ -295,7 +309,6 @@ generate_jail_conf() {
     info "Generating Multi-Jails VNET config: $file"
     cat > "$file" << JAILCONF
 # Auto-generated by jail_setup.sh — edit with care.
-exec.start  = "/bin/sh /etc/rc";
 exec.stop   = "/bin/sh /etc/rc.shutdown";
 exec.clean;
 mount.devfs;
@@ -303,52 +316,60 @@ mount.devfs;
 path = "/usr/local/jails/\$name";
 
 nginx-proxy {
-    \$ip     = "${NGINX_PROXY_IP}";
-    \$bridge = "${BRIDGE}";
     vnet;
     vnet.interface = "epair0b";
-    ip4.addr = \$ip;
     allow.raw_sockets;
     mount.fstab = "/etc/jails.fstab.nginx-proxy";
-    exec.prestart  = "ifconfig epair0 create up && ifconfig epair0a up";
-    exec.poststart = "ifconfig \$bridge addm epair0a";
-    exec.poststop  = "ifconfig epair0a destroy";
+    exec.prestart  = "/sbin/ifconfig epair0 create up";
+    exec.prestart += "/sbin/ifconfig epair0a up";
+    exec.prestart += "/sbin/ifconfig ${BRIDGE} addm epair0a";
+    exec.start     = "/sbin/ifconfig epair0b inet ${NGINX_PROXY_IP}/24 up";
+    exec.start    += "/sbin/route add default ${BRIDGE_GW}";
+    exec.start    += "/bin/sh /etc/rc";
+    exec.poststop  = "/sbin/ifconfig ${BRIDGE} deletem epair0a 2>/dev/null || true";
+    exec.poststop += "/sbin/ifconfig epair0a destroy 2>/dev/null || true";
 }
 
 web {
-    \$ip     = "${WEB_IP}";
-    \$bridge = "${BRIDGE}";
     vnet;
     vnet.interface = "epair1b";
-    ip4.addr = \$ip;
     mount.fstab = "/etc/jails.fstab.web";
-    exec.prestart  = "ifconfig epair1 create up && ifconfig epair1a up";
-    exec.poststart = "ifconfig \$bridge addm epair1a";
-    exec.poststop  = "ifconfig epair1a destroy";
+    exec.prestart  = "/sbin/ifconfig epair1 create up";
+    exec.prestart += "/sbin/ifconfig epair1a up";
+    exec.prestart += "/sbin/ifconfig ${BRIDGE} addm epair1a";
+    exec.start     = "/sbin/ifconfig epair1b inet ${WEB_IP}/24 up";
+    exec.start    += "/sbin/route add default ${BRIDGE_GW}";
+    exec.start    += "/bin/sh /etc/rc";
+    exec.poststop  = "/sbin/ifconfig ${BRIDGE} deletem epair1a 2>/dev/null || true";
+    exec.poststop += "/sbin/ifconfig epair1a destroy 2>/dev/null || true";
 }
 
 api {
-    \$ip     = "${API_IP}";
-    \$bridge = "${BRIDGE}";
     vnet;
     vnet.interface = "epair2b";
-    ip4.addr = \$ip;
     mount.fstab = "/etc/jails.fstab.api";
-    exec.prestart  = "ifconfig epair2 create up && ifconfig epair2a up";
-    exec.poststart = "ifconfig \$bridge addm epair2a";
-    exec.poststop  = "ifconfig epair2a destroy";
+    exec.prestart  = "/sbin/ifconfig epair2 create up";
+    exec.prestart += "/sbin/ifconfig epair2a up";
+    exec.prestart += "/sbin/ifconfig ${BRIDGE} addm epair2a";
+    exec.start     = "/sbin/ifconfig epair2b inet ${API_IP}/24 up";
+    exec.start    += "/sbin/route add default ${BRIDGE_GW}";
+    exec.start    += "/bin/sh /etc/rc";
+    exec.poststop  = "/sbin/ifconfig ${BRIDGE} deletem epair2a 2>/dev/null || true";
+    exec.poststop += "/sbin/ifconfig epair2a destroy 2>/dev/null || true";
 }
 
 data-services {
-    \$ip     = "${DATA_IP}";
-    \$bridge = "${BRIDGE}";
     vnet;
     vnet.interface = "epair3b";
-    ip4.addr = \$ip;
     mount.fstab = "/etc/jails.fstab.data-services";
-    exec.prestart  = "ifconfig epair3 create up && ifconfig epair3a up";
-    exec.poststart = "ifconfig \$bridge addm epair3a";
-    exec.poststop  = "ifconfig epair3a destroy";
+    exec.prestart  = "/sbin/ifconfig epair3 create up";
+    exec.prestart += "/sbin/ifconfig epair3a up";
+    exec.prestart += "/sbin/ifconfig ${BRIDGE} addm epair3a";
+    exec.start     = "/sbin/ifconfig epair3b inet ${DATA_IP}/24 up";
+    exec.start    += "/sbin/route add default ${BRIDGE_GW}";
+    exec.start    += "/bin/sh /etc/rc";
+    exec.poststop  = "/sbin/ifconfig ${BRIDGE} deletem epair3a 2>/dev/null || true";
+    exec.poststop += "/sbin/ifconfig epair3a destroy 2>/dev/null || true";
 }
 JAILCONF
     ok "Generated $file for multi-jails VNET"

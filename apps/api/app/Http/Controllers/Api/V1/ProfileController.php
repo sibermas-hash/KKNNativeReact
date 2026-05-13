@@ -39,6 +39,8 @@ class ProfileController extends Controller
             ->latest()
             ->first();
 
+        $profileComplete = $this->isProfileComplete($user);
+
         $studentMissing = $mahasiswa ? collect([
             'avatar' => $user->avatar,
             'nik' => $mahasiswa->nik,
@@ -78,6 +80,7 @@ class ProfileController extends Controller
             'address_postal_code' => $user->address_postal_code,
             'address_lat' => $user->address_lat,
             'address_lng' => $user->address_lng,
+            'address_verified_at' => $user->address_verified_at,
         ])->filter(fn ($value) => blank($value))->keys()->values()->all();
 
         return $this->success([
@@ -85,7 +88,7 @@ class ProfileController extends Controller
             'student' => $mahasiswa ? array_merge((new MahasiswaResource($mahasiswa))->resolve($request), [
                 'biodata_complete' => $studentMissing === [],
                 'missing_biodata_fields' => $studentMissing,
-                'address_complete' => $addressMissing === [] && filled($user->address_verified_at),
+                'address_complete' => $addressMissing === [],
                 'address_verified' => filled($user->address_verified_at),
                 'address_verified_at' => $user->address_verified_at?->toIso8601String(),
                 'missing_address_fields' => $addressMissing,
@@ -94,7 +97,8 @@ class ProfileController extends Controller
                 'biodata_complete' => $lecturerMissing === [],
                 'missing_biodata_fields' => $lecturerMissing,
             ]) : null,
-            'is_onboarding' => blank($user->address_verified_at) || $user->must_change_password,
+            'profile_complete' => $profileComplete,
+            'is_onboarding' => $user->must_change_password || ! $profileComplete,
             'pending_change_request' => $pending ? [
                 'id' => $pending->id,
                 'requested_changes' => $pending->requested_changes,
@@ -421,11 +425,35 @@ class ProfileController extends Controller
             'must_change_password' => false,
         ]);
 
+        // Revoke all existing Sanctum tokens so stolen tokens are invalidated
+        $user->tokens()->delete();
+
         ActivityLogger::log('password_change', 'success', $user->id, [
             'first_time' => $isFirstPasswordChange,
         ]);
 
-        return $this->noContent('Kata sandi berhasil diubah.');
+        if ($request->header('X-App-Type') === 'mobile') {
+            $token = $user->createToken('mobile')->plainTextToken;
+            $user->loadMissing(['roles', 'mahasiswa', 'dosen', 'fakultas']);
+
+            return $this->success([
+                'token' => $token,
+                'token_type' => 'Bearer',
+                'user' => new UserResource($user->refresh()),
+            ], 'Kata sandi berhasil diubah.');
+        }
+
+        $response = $this->noContent('Kata sandi berhasil diubah.');
+
+        if ($request->cookie('sibermas_token') || ! $request->hasSession()) {
+            $token = $user->createToken('web')->plainTextToken;
+            $isSecure = app()->environment('production') ? true : $request->secure();
+            $expiry = 60 * 60 * 24 * 7; // 7 days
+
+            return $response->withCookie(cookie('sibermas_token', $token, $expiry / 60, '/', null, $isSecure, true, false, 'Strict'));
+        }
+
+        return $response;
     }
 
     /**

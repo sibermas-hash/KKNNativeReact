@@ -66,8 +66,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
   return (
     <html lang="id" suppressHydrationWarning className={`${inter.variable} ${plusJakarta.variable} ${manrope.variable} ${spaceGrotesk.variable}`}>
       <head>
-        {/* DNS prefetch for API domain in production */}
-        <link rel="dns-prefetch" href="//api.uinsaizu.ac.id" />
+        {/* DNS prefetch for API domain — only in production */}
+        {process.env.NEXT_PUBLIC_API_URL?.startsWith('https://sibermas.uinsaizu.ac.id')
+          ? <link rel="dns-prefetch" href="//api.uinsaizu.ac.id" />
+          : null}
         <link rel="preconnect" href="//fonts.googleapis.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="//fonts.gstatic.com" crossOrigin="anonymous" />
       </head>

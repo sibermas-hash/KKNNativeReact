@@ -309,6 +309,14 @@ pm.max_spare_servers = 8
 ```
 
 **Nginx config** (`/usr/local/etc/nginx/nginx.conf` di api jail):
+
+Gunakan file repo `conf/nginx-api-jail.conf`:
+```sh
+cp /usr/local/www/sibermas/releases/current/conf/nginx-api-jail.conf \
+  /usr/local/jails/api/usr/local/etc/nginx/nginx.conf
+```
+
+Isi intinya:
 ```nginx
 user www;
 worker_processes auto;
@@ -537,7 +545,8 @@ http {
             limit_req zone=api_limit burst=50 nodelay;
             limit_conn conn_limit 20;
 
-            proxy_pass http://10.0.0.12:8080/;
+            # No trailing slash: preserve /api prefix for Laravel routes.
+            proxy_pass http://10.0.0.12:8080;
             proxy_http_version 1.1;
             proxy_set_header Host $host;
             proxy_set_header X-Real-IP $remote_addr;
@@ -971,9 +980,14 @@ cp -r apps/web/public apps/web/.next/standalone/apps/web/public
 # API env
 cd apps/api
 composer install --no-dev --optimize-autoloader
-cp .env.production.jail .env
-# edit DB_HOST=10.0.0.13, REDIS_HOST=10.0.0.13
-php artisan key:generate
+mkdir -p /usr/local/www/sibermas/shared
+if [ ! -f /usr/local/www/sibermas/shared/api.env ]; then
+  cp .env.production.example /usr/local/www/sibermas/shared/api.env
+  chmod 600 /usr/local/www/sibermas/shared/api.env
+  echo "Edit /usr/local/www/sibermas/shared/api.env first, then rerun deploy"
+  exit 1
+fi
+cp /usr/local/www/sibermas/shared/api.env .env
 php artisan migrate --force
 php artisan config:cache
 php artisan route:cache
@@ -1002,9 +1016,9 @@ jexec nginx-proxy service nginx reload
 
 ## Environment Files
 
-### `apps/api/.env.production.jail`
+### `/usr/local/www/sibermas/shared/api.env`
 
-Copy from `.env.production.example` with these overrides:
+Seed from `apps/api/.env.production.example`, then set these jail-specific values:
 ```
 APP_URL=https://sibermas.uinsaizu.ac.id/api
 DB_HOST=10.0.0.13
@@ -1015,12 +1029,17 @@ CACHE_STORE=redis
 QUEUE_CONNECTION=redis
 ```
 
-### `apps/web/.env.production.jail`
+`deploy-atomic.sh` and the jails CI workflow copy this file into each new
+release. Keep `APP_KEY` stable forever after the first production deploy.
 
-Copy from `.env.production.example` with these overrides:
+### Web build environment
+
+The web jail does not need a runtime `.env` file. Build the Next.js standalone
+artifact with these variables:
 ```
 NEXT_PUBLIC_API_URL=https://sibermas.uinsaizu.ac.id/api/v1
 NEXT_PUBLIC_APP_URL=https://sibermas.uinsaizu.ac.id
+NEXT_PUBLIC_SITE_URL=https://sibermas.uinsaizu.ac.id
 ```
 
 ---
@@ -1335,10 +1354,11 @@ Files yang perlu di-backup sebelum migrasi:
 |-------------|------------------|--------|
 | `jail_setup.sh` | Host (root) | Auto-setup jail + bridge + pkg |
 | `docs/JAILS_MIGRATION.md` | — | Dokumentasi migrasi lengkap |
+| `conf/nginx-api-jail.conf` | api jail `/usr/local/etc/nginx/nginx.conf` | HTTP :8080 → PHP-FPM socket |
 | `apps/api/supervisord.jail-api.conf` | api jail `/usr/local/etc/supervisord.d/sibermas.conf` | Queue workers |
 | `apps/web/supervisord.jail-web.conf` | web jail `/usr/local/etc/supervisord.d/sibermas-web.conf` | Next.js server |
-| `apps/api/.env.production.jail` | api jail `.env` | Environment dengan DB_HOST=10.0.0.13 |
-| `apps/web/.env.production.jail` | web jail `.env` | Environment dengan API URL publik |
+| `apps/api/.env.production.example` | host `/usr/local/www/sibermas/shared/api.env` | Seed backend env persisten |
+| `NEXT_PUBLIC_*` env vars | build host | Public API/app URL untuk Next.js standalone |
 | `deploy-atomic.sh` | Host (deploy user) | Atomic zero-downtime deploy |
 | `remote-deploy.sh` | Host (deploy user) | Remote deploy via SSH |
 | `ci.yml` | GitHub Actions | CI/CD dengan step jails-aware |

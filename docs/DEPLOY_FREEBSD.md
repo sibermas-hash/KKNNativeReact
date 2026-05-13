@@ -12,7 +12,7 @@
 |---|---|
 | App root di server | `/usr/local/www/apache24/data/Sibermas2026` |
 | Entry point | **Nginx** (port 80/443) — bukan Apache, walaupun path berada di folder `apache24/data` |
-| API | Laravel 13 behind **PHP-FPM** (socket `/var/run/php84-fpm.sock`) |
+| API | Laravel 13 behind **PHP-FPM** (socket `/var/run/php-fpm.sock`) |
 | Web | Next.js 15 **standalone build** di `127.0.0.1:3000` |
 | Queue | `queue:work` via **Supervisor** (Horizon _tidak_ dipakai — belum ada di `composer.json`) |
 | Domain | **Satu domain**: `sibermas.uinsaizu.ac.id`. API diakses via path `/api/v1/*`. |
@@ -127,7 +127,7 @@ service nginx reload
 /var/log/sibermas/                             # Application logs
 /var/log/nginx/                                # Nginx logs
 /var/backups/sibermas/                         # Database backups
-/var/run/php84-fpm.sock                        # PHP-FPM socket (nginx → Laravel)
+/var/run/php-fpm.sock                          # PHP-FPM socket (nginx → Laravel)
 ```
 
 > **Catatan path:** folder `apache24/data/` adalah default document root pkg
@@ -141,9 +141,9 @@ service nginx reload
 | Service | Port/Socket | Managed By |
 |---|---|---|
 | Nginx | 80, 443 | rc.d |
-| PHP-FPM (php84) | `/var/run/php84-fpm.sock` | rc.d |
-| PostgreSQL 16 | 5432 | rc.d |
-| Redis 7 | 6379 | rc.d |
+| PHP-FPM (php84) | `/var/run/php-fpm.sock` | rc.d |
+| PostgreSQL 18 | 5432 | rc.d |
+| Redis 8 | 6379 | rc.d |
 | Next.js (Node) | `127.0.0.1:3000` | Supervisor (`sibermas-web`) |
 | Queue worker default/critical/high | — | Supervisor (`sibermas-worker-default`, 2 proc) |
 | Queue worker low | — | Supervisor (`sibermas-worker-low`, 1 proc) |
@@ -197,8 +197,8 @@ Template lengkap di `apps/api/.env.production.example`. Bagian paling kritis:
 APP_ENV=production
 APP_DEBUG=false
 APP_KEY=                                    # php artisan key:generate
-APP_URL=http://sibermas.uinsaizu.ac.id/api  # path-based; ganti https:// setelah SSL
-APP_FRONTEND_URL=http://sibermas.uinsaizu.ac.id
+APP_URL=https://sibermas.uinsaizu.ac.id/api # path-based; public backend URL
+APP_FRONTEND_URL=https://sibermas.uinsaizu.ac.id
 
 DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
@@ -215,10 +215,10 @@ QUEUE_CONNECTION=redis
 SESSION_DRIVER=database
 
 SESSION_DOMAIN=sibermas.uinsaizu.ac.id      # tanpa leading-dot (single domain)
-SESSION_SECURE_COOKIE=false                 # set true setelah HTTPS aktif
+SESSION_SECURE_COOKIE=true                  # wajib true di HTTPS production
 
 # === CORS / SANCTUM === (single-domain deploy)
-CORS_ALLOWED_ORIGINS=http://sibermas.uinsaizu.ac.id
+CORS_ALLOWED_ORIGINS=https://sibermas.uinsaizu.ac.id
 SANCTUM_STATEFUL_DOMAINS=sibermas.uinsaizu.ac.id
 
 # === AI (minimal 1 tier) ===
@@ -242,8 +242,9 @@ DEBUGBAR_ENABLED=false
 Template `apps/web/.env.production.example`:
 
 ```env
-NEXT_PUBLIC_API_URL=http://sibermas.uinsaizu.ac.id/api/v1
-NEXT_PUBLIC_APP_URL=http://sibermas.uinsaizu.ac.id
+NEXT_PUBLIC_API_URL=https://sibermas.uinsaizu.ac.id/api/v1
+NEXT_PUBLIC_APP_URL=https://sibermas.uinsaizu.ac.id
+NEXT_PUBLIC_SITE_URL=https://sibermas.uinsaizu.ac.id
 NEXT_PUBLIC_SENTRY_DSN=
 ```
 
@@ -318,7 +319,7 @@ tail -50 /var/log/sibermas/web.log
 ### `502 Bad Gateway` di `/api/*`
 ```bash
 service php-fpm status
-ls -la /var/run/php84-fpm.sock  # Socket harus ada + owned by www
+ls -la /var/run/php-fpm.sock  # Socket harus ada + owned by www
 tail -50 /var/log/php-fpm.log
 tail -50 /var/log/nginx/sibermas-error.log
 ```

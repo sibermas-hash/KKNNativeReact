@@ -11,6 +11,7 @@ set -u
 
 PHP_VERSION="${PHP_VERSION:-84}"
 PG_VERSION="${PG_VERSION:-18}"
+NODE_VERSION="${NODE_VERSION:-24}"
 APP_DIR="${APP_DIR:-/usr/local/www/apache24/data/Sibermas2026}"
 
 # ─── Counters ──────────────────────────────────────────────────────────
@@ -163,8 +164,8 @@ if command -v pkg >/dev/null 2>&1; then
   pkg_check "postgresql${PG_VERSION}-client"
   pkg_check "redis"
   pkg_check "nginx"
-  pkg_check "node22"
-  pkg_check "npm-node22"
+  pkg_check "node${NODE_VERSION}"
+  pkg_check "npm-node${NODE_VERSION}"
   pkg_check "py311-supervisor"
   pkg_check "composer"
   pkg_check "git"

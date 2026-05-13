@@ -29,7 +29,17 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: |
+          cat > pnpm-workspace.yaml <<'EOF'
+          packages:
+            - "apps/api"
+            - "apps/web"
+            - "apps/mobile"
+            - "packages/*"
+          EOF
+          # Root production workspace intentionally excludes apps/mobile for
+          # FreeBSD deploy, so CI resolves the mobile graph in this temp profile.
+          pnpm install --no-frozen-lockfile
 
       - name: CI guard
         run: pnpm run ci:guard

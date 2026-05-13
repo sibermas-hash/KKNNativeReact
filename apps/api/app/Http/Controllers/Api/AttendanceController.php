@@ -49,8 +49,8 @@ class AttendanceController extends Controller
             'timestamp_gps' => 'nullable|date_format:Y-m-d\TH:i:s.000\Z',
             'activity_type' => 'required|in:absen_masuk,absen_keluar,logbook_activity,workshop_attendance,meeting_attendance',
             'proof_photo_base64' => 'nullable|string|max:5000000', // ~5MB
-            'device_signature' => 'nullable|string',
-            'user_agent' => 'nullable|string',
+            'device_signature' => 'nullable|string|max:255',
+            'user_agent' => 'nullable|string|max:500',
         ]);
 
         $user = auth()->user();

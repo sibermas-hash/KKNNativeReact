@@ -15,10 +15,6 @@ export function setAuthToken(token: string | null) {
 export function resetAuthState() {
   setAuthToken(null);
   _fetchUserPromise = null;
-  if (typeof document !== 'undefined') {
-    document.cookie = 'sibermas_role=; path=/; max-age=0; SameSite=Strict';
-    document.cookie = 'sibermas_profile_complete=; path=/; max-age=0; SameSite=Strict';
-  }
   useAuthStore.setState({ user: null, isAuthenticated: false, isLoading: false, hasFetched: true });
   usePeriodStore.setState({ activePeriod: null, availablePeriods: [], currentPhase: 'upcoming', isLoading: false, hasFetched: true });
 }
@@ -26,13 +22,8 @@ export function resetAuthState() {
 function clearLegacyRoleCookie() {
   // R13-FE-008: middleware now trusts only the HttpOnly `sibermas_token`, so
   // the client-readable `sibermas_role` cookie that previously existed adds no
-  // security value and leaks the role to any script on the page. On every
-  // auth state change we best-effort clear it so existing sessions shed the
-  // legacy marker after one cycle.
-  if (typeof document === 'undefined') return;
-  if (document.cookie.includes('sibermas_role=')) {
-    document.cookie = 'sibermas_role=; path=/; max-age=0; SameSite=Strict';
-  }
+  // security value and leaks the role to any script on the page. The legacy
+  // cookie is no longer written — this function kept as no-op for call sites.
 }
 
 export function setProfileCompleteCookie(_isComplete: boolean) {

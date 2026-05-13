@@ -37,6 +37,13 @@ function maskPassword(password: string) {
   return `${password.slice(0, 2)}${'•'.repeat(password.length - 4)}${password.slice(-2)}`;
 }
 
+function dashboardPathFor(roles: string[]) {
+  if (roles.some((role) => ['superadmin', 'admin', 'faculty_admin'].includes(role))) return '/admin';
+  if (roles.some((role) => ['dosen', 'dpl'].includes(role))) return '/dosen';
+  if (roles.includes('student')) return '/mahasiswa';
+  return '/';
+}
+
 export default function ChangePasswordPage(): React.JSX.Element {
   const router = useRouter();
   const { setUser } = useAuthStore();
@@ -168,10 +175,14 @@ export default function ChangePasswordPage(): React.JSX.Element {
             </p>
             <button
               type="button"
-              onClick={() => router.replace('/profil')}
+              onClick={() => {
+                const u = useAuthStore.getState().user;
+                const target = isFirstLogin ? '/profil' : dashboardPathFor(u?.roles ?? []);
+                router.replace(target);
+              }}
               className="mt-7 inline-flex h-12 w-full items-center justify-center rounded-xl bg-emerald-600 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-emerald-100 transition hover:bg-emerald-700"
             >
-              Oke, Lanjut ke Profil
+              Oke, {isFirstLogin ? 'Lanjut ke Profil' : 'Lanjut ke Dashboard'}
             </button>
           </motion.div>
         </motion.div>

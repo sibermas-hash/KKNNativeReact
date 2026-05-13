@@ -196,7 +196,7 @@ export default function ChangePasswordPage(): React.JSX.Element {
                 <h1 className="text-2xl sm:text-3xl font-black text-emerald-950 tracking-tight leading-none">
                   PEMBARUAN <span className="text-sky-500">SANDI</span>
                 </h1>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">
                   Wajib Dilakukan Saat Login Pertama Kali
                 </p>
               </div>
@@ -318,7 +318,7 @@ export default function ChangePasswordPage(): React.JSX.Element {
 
         {/* Footer */}
         <div className="mt-6 text-center">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em]">
             LPPM UIN Saizu Purwokerto
           </p>
         </div>

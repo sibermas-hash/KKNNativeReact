@@ -68,17 +68,20 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
   echo "  [b] Installing dependencies..."
   TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm install --frozen-lockfile
 
-  echo "  [c] Building frontend..."
+  echo "  [c] Building packages dependency chain..."
+  TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:packages
+
+  echo "  [d] Building frontend..."
   TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:web
 
-  echo "  [d] Copying static & public to standalone..."
-  cp -r apps/web/.next/static   apps/web/.next/standalone/apps/web/.next/static
-  cp -r apps/web/public         apps/web/.next/standalone/apps/web/public
+  echo "  [e] Copying static & public to standalone..."
+  cp -r apps/web/.next/static   apps/web/.next/standalone/apps/web/.next/static 2>/dev/null || true
+  cp -r apps/web/public         apps/web/.next/standalone/apps/web/public 2>/dev/null || true
 
-  echo "  [e] Fixing permissions..."
+  echo "  [f] Fixing permissions..."
   chown -R www:www apps/web/.next apps/api/storage apps/api/bootstrap/cache
 
-  echo "  [f] Reloading PHP-FPM (OPcache reset)..."
+  echo "  [g] Reloading PHP-FPM (OPcache reset)..."
   if [ -n "${JAIL_WEB_IP}" ]; then
     echo "  → Jails mode: restart per jail"
     jexec api service php-fpm reload 2>/dev/null || \

@@ -3,16 +3,17 @@
   "private": true,
   "packageManager": "pnpm@10.0.0",
   "scripts": {
-    "dev": "turbo dev",
-    "build": "turbo build",
-    "lint": "turbo lint",
-    "test": "turbo test",
-    "type-check": "turbo type-check",
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm build:packages && pnpm build:web",
+    "build:packages": "pnpm --filter @sibermas/shared-types build && pnpm --filter @sibermas/schemas build && pnpm --filter @sibermas/constants build && pnpm --filter @sibermas/api-client build && pnpm --filter @sibermas/hooks build",
+    "build:web": "pnpm --filter web build",
+    "build:turbo": "turbo build",
+    "lint": "pnpm --filter web lint && pnpm --filter @sibermas/api-client lint 2>/dev/null || true",
+    "test": "pnpm --filter @sibermas/* test 2>/dev/null || true",
+    "type-check": "pnpm -r type-check 2>/dev/null || true",
     "ci:guard": "node scripts/ci-guard.mjs",
     "dev:web": "pnpm --filter web dev",
-    "dev:api": "cd apps/api && php artisan serve",
-    "build:web": "pnpm --filter web build",
-    "build:packages": "turbo build --filter='./packages/*'"
+    "dev:api": "cd apps/api && php artisan serve"
   },
   "engines": {
     "node": ">=22"

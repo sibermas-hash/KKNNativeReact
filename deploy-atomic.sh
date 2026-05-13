@@ -63,17 +63,24 @@ cd "${RELEASE_DIR}/apps/api"
 composer install --no-dev --optimize-autoloader --no-interaction
 
 # ─── Step 3: Build frontend ───────────────────────────────────────────────
-# TURBO_INSTALL_SKIP_DOWNLOAD=1 wajib di FreeBSD — tidak ada turbo binary native.
+# TURBO_INSTALL_SKIP_DOWNLOAD=1 wajib di FreeBSD — tidak ada turbo binary
+# native. Script root package.json `build:web` sekarang pakai pnpm langsung
+# (bukan turbo), jadi turbo tidak pernah di-invoke.
 echo "[3/8] Installing frontend dependencies & building..."
 cd "${RELEASE_DIR}"
 # NOTE: devDependencies DIBUTUHKAN untuk Next.js build (typescript, postcss).
 # Hanya remove setelah build selesai.
 TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm install --frozen-lockfile
+# Build packages dependency chain dulu (shared-types, schemas, etc), lalu web.
+TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:packages
 TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:web
 
-# Copy static & public ke standalone (required for FreeBSD)
-cp -r apps/web/.next/static   apps/web/.next/standalone/apps/web/.next/static
-cp -r apps/web/public         apps/web/.next/standalone/apps/web/public
+# Copy static & public ke standalone (required for FreeBSD).
+# NOTE: apps/web/package.json postbuild sudah melakukan ini, tapi kita
+# ulang di sini untuk defensive — kalau postbuild gagal atau build
+# jalan tanpa postbuild hook.
+cp -r apps/web/.next/static   apps/web/.next/standalone/apps/web/.next/static 2>/dev/null || true
+cp -r apps/web/public         apps/web/.next/standalone/apps/web/public 2>/dev/null || true
 
 # Prune devDependencies setelah build selesai untuk hemat disk.
 TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm prune --prod || true

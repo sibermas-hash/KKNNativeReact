@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { dplEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
+import { unwrapList } from '@/lib/api-helpers';
 import {
   colors, radius, spacing, Screen, SectionTitle, SurfaceCard,
   PrimaryButton, SecondaryButton, StatusPill, LoadingState, EmptyState,
@@ -34,7 +35,7 @@ export function DplFinalReportsScreen() {
     queryKey: ['dpl', 'final-reports'],
     queryFn: async () => {
       const res = await endpoints.finalReports.index();
-      return (res as unknown as { data?: FinalReport[] })?.data || res as unknown as FinalReport[];
+      return unwrapList<FinalReport>(res);
     },
   });
 

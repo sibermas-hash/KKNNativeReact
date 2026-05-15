@@ -50,10 +50,10 @@ class DatabaseSyncMonitoringService
             $host = DB::connection($connection)->getConfig('host');
             $port = DB::connection($connection)->getConfig('port');
 
-            // Get table count
+            // Get table count (PostgreSQL uses 'public' schema, not database name)
             $tableCount = DB::connection($connection)
                 ->table('information_schema.tables')
-                ->where('table_schema', $database)
+                ->where('table_schema', 'public')
                 ->count();
 
             return [

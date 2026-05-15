@@ -26,7 +26,11 @@ export default function CreateIzinPage(): React.JSX.Element {
 
   const onSubmit = (data: CreateLeaveRequestFormData) => {
     const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => { if (value !== undefined) formData.append(key, String(value)); });
+    // Map FE field names to backend expected names
+    formData.append('tanggal_mulai', data.start_date);
+    formData.append('tanggal_kembali', data.end_date);
+    formData.append('alasan', data.reason);
+    if (data.type) formData.append('jenis', data.type);
     if (file) formData.append('file_bukti', file);
     mutation.mutate(formData);
   };
@@ -60,7 +64,7 @@ export default function CreateIzinPage(): React.JSX.Element {
             <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Bukti (opsional)</label>
             <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={(e) => {
               const f = e.target.files?.[0] || null;
-              if (f && f.size > 10 * 1024 * 1024) { toast.error('File maksimal 10MB'); e.target.value = ''; return; }
+              if (f && f.size > 5 * 1024 * 1024) { toast.error('File maksimal 5MB'); e.target.value = ''; return; }
               setFile(f);
             }} className="w-full text-sm mt-2 file:mr-4 file:rounded-xl file:border-0 file:bg-amber-50 file:px-4 file:py-2 file:text-sm file:font-bold file:text-amber-700" />
           </div>

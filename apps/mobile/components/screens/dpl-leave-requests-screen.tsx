@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { dplEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
+import { unwrapList } from '@/lib/api-helpers';
 import {
   colors, spacing, Screen, SectionTitle, SurfaceCard,
   PrimaryButton, SecondaryButton, StatusPill, LoadingState, EmptyState,
@@ -34,7 +35,7 @@ export function DplLeaveRequestsScreen() {
     queryKey: ['dpl', 'leave-requests'],
     queryFn: async () => {
       const res = await endpoints.leaveRequests.index();
-      return (res as unknown as { data?: LeaveRequest[] })?.data || res as unknown as LeaveRequest[];
+      return unwrapList<LeaveRequest>(res);
     },
   });
 

@@ -254,6 +254,13 @@ class RegistrationApprovalService
      */
     public function reject(PesertaKkn $registration, string $reason, int $rejectedBy): void
     {
+        // R-05 fix: guard against rejecting non-pending registrations
+        if (! in_array($registration->status, ['pending', 'document_submitted', 'document_verified'])) {
+            throw ValidationException::withMessages([
+                'status' => "Pendaftaran dengan status '{$registration->status}' tidak dapat ditolak.",
+            ]);
+        }
+
         DB::transaction(function () use ($registration, $reason, $rejectedBy) {
             $registration->update([
                 'status' => 'rejected',

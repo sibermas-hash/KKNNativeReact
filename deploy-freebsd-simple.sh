@@ -82,6 +82,24 @@ require_command() {
   command -v "$1" >/dev/null 2>&1 || die "Command '$1' belum tersedia. Jalankan sh install-freebsd.sh dulu."
 }
 
+validate_rendered_nginx() {
+  [ -f "${NGINX_DEST}" ] || die "Nginx config tidak ditemukan: ${NGINX_DEST}"
+  grep -q 'map \$http_x_forwarded_proto \$forwarded_proto' "${NGINX_DEST}" \
+    || die "Nginx config belum preserve X-Forwarded-Proto. Set RENDER_NGINX=1 untuk render ulang."
+  grep -q 'proxy_set_header X-Forwarded-Proto \$forwarded_proto' "${NGINX_DEST}" \
+    || die "Nginx config masih overwrite X-Forwarded-Proto. Deploy dibatalkan untuk mencegah login/session error."
+}
+
+public_health_check() {
+  [ "${PUBLIC_HEALTH_CHECK:-0}" = "1" ] || return 0
+  step "Public reverse-proxy health check"
+  curl -fsS -m 15 "${PUBLIC_BASE_URL%/}/api/health" >/dev/null \
+    || die "Public health check gagal: ${PUBLIC_BASE_URL%/}/api/health. Cek Cloudflare/reverse proxy/vhost."
+  curl -fsS -m 15 "${PUBLIC_BASE_URL%/}/api/v1/auth/captcha" >/dev/null \
+    || die "Public login preflight gagal: ${PUBLIC_BASE_URL%/}/api/v1/auth/captcha."
+  echo "OK: public reverse-proxy path healthy."
+}
+
 if [ "$(id -u)" -ne 0 ]; then
   die "Jalankan sebagai root: sudo bash deploy-freebsd-simple.sh"
 fi
@@ -136,7 +154,7 @@ set_env CORS_ALLOWED_ORIGINS "${PUBLIC_BASE_URL%/}"
 set_env SANCTUM_STATEFUL_DOMAINS "${WEB_DOMAIN}"
 
 if [ "$(env_value DB_PASSWORD)" = "" ]; then
-  set_env DB_PASSWORD "${DB_PASSWORD:-kknuinsaizu2026native}"
+  set_env DB_PASSWORD "${DB_PASSWORD:-$(generate_secret)}"
   echo "Filled DB_PASSWORD from DB_PASSWORD env/default native password"
 fi
 
@@ -188,10 +206,11 @@ if [ "${SKIP_FRONTEND_BUILD}" != "1" ]; then
   cd "${APP_DIR}"
   export TURBO_INSTALL_SKIP_DOWNLOAD=1
   export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-${PUBLIC_BASE_URL%/}/api/v1}"
+  export SERVER_API_URL="${SERVER_API_URL:-http://127.0.0.1/api/v1}"
   export NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL:-${PUBLIC_BASE_URL%/}}"
   export NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL:-${PUBLIC_BASE_URL%/}}"
 
-  pnpm install --frozen-lockfile
+  pnpm install --frozen-lockfile --filter web...
   pnpm build:packages
   pnpm build:web
 
@@ -231,10 +250,11 @@ find "${API_DIR}/storage" -type d -exec chmod 2775 {} +
 find "${API_DIR}/storage" -type f -exec chmod 0664 {} +
 chmod 0775 "${API_DIR}/bootstrap/cache"
 
-step "Restarting services"
-service php-fpm restart
+step "Reloading services"
+service php-fpm reload 2>/dev/null || service php-fpm restart
 
 if nginx -t; then
+  validate_rendered_nginx
   service nginx status >/dev/null 2>&1 && service nginx reload || service nginx start
 else
   die "nginx -t gagal. Periksa ${NGINX_DEST}."
@@ -254,6 +274,7 @@ for i in $(seq 1 12); do
   if curl -sf -m 5 "http://127.0.0.1/api/health" >/dev/null \
     && curl -sf -m 5 "http://127.0.0.1:3000/" >/dev/null; then
     echo "OK: API and web are healthy."
+    public_health_check
     echo ""
     echo "Deploy complete: ${PUBLIC_BASE_URL%/}"
     exit 0

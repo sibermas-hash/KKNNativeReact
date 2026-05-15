@@ -38,23 +38,6 @@ export default function LoginPage(): React.JSX.Element {
     setCurrentYear(new Date().getFullYear());
   }, []);
 
-  // Auto-refresh captcha when it expires.
-  //
-  // Audit fix (2026-05-13): sebelumnya `Math.max(0, expiresAt - Date.now())`
-  // yang bisa 0 kalau server kirim expires_at yang sudah lewat (clock skew /
-  // network delay) → setTimeout fire seketika → refetch → state update →
-  // effect jalan lagi → infinite loop. Sekarang enforce minimum 5 detik
-  // antar auto-refresh supaya tidak berpotensi DoS server captcha sendiri.
-  useEffect(() => {
-    if (!captcha?.expires_at) return;
-    const expiresAt = new Date(captcha.expires_at).getTime();
-    const MIN_REFRESH_DELAY_MS = 5_000;
-    const timeout = Math.max(MIN_REFRESH_DELAY_MS, expiresAt - Date.now());
-    const timer = window.setTimeout(() => { void fetchCaptcha(); }, timeout);
-    return () => window.clearTimeout(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [captcha?.expires_at]);
-
   const {
     register,
     handleSubmit,
@@ -77,17 +60,35 @@ export default function LoginPage(): React.JSX.Element {
       const data = await api.get('/auth/captcha') as { captcha_id: string; question: string; expires_at: string };
       if (data?.captcha_id) {
         setCaptcha(data);
-        setValue('captcha_id', data.captcha_id);
-        setValue('captcha_answer', '');
+        setValue('captcha_id', data.captcha_id, { shouldValidate: false });
+        setValue('captcha_answer', '', { shouldValidate: false });
+        clearErrors(['captcha_id', 'captcha_answer']);
       }
     } catch {
       toast.error('Gagal memuat CAPTCHA');
     } finally {
       setIsRefreshing(false);
     }
-  }, [setValue]);
+  }, [clearErrors, setValue]);
+
+  const refetchCaptchaSoon = useCallback(() => {
+    refreshCooldown.current = false;
+    setCaptcha(null);
+    setValue('captcha_id', '', { shouldValidate: false });
+    window.setTimeout(() => fetchCaptcha(), 100);
+  }, [fetchCaptcha, setValue]);
 
   useEffect(() => { fetchCaptcha(); }, [fetchCaptcha]);
+
+  // Auto-refresh captcha when it expires, with a minimum delay to avoid
+  // tight loops if client/server clocks drift.
+  useEffect(() => {
+    if (!captcha?.expires_at) return;
+    const expiresAt = new Date(captcha.expires_at).getTime();
+    const timeout = Math.max(5_000, expiresAt - Date.now());
+    const timer = window.setTimeout(() => { void fetchCaptcha(); }, timeout);
+    return () => window.clearTimeout(timer);
+  }, [captcha?.expires_at, fetchCaptcha]);
 
   useEffect(() => {
     if (isAuthenticated && user) {
@@ -126,12 +127,24 @@ export default function LoginPage(): React.JSX.Element {
   }, [isAuthenticated, redirectTo, user, router]);
 
   const onSubmit = async (data: LoginFormData) => {
+    if (!captcha?.captcha_id) {
+      setError('captcha_answer', { message: 'CAPTCHA belum siap. Silakan muat ulang.' });
+      refetchCaptchaSoon();
+      return;
+    }
+
     setLoading(true);
     setServerErrors([]);
     try {
       // handleResponse in client.ts already extracts response.data.data,
       // so the result is { user, token } directly.
-      const result = await api.post('/auth/login', data) as { user: User; token?: string };
+      const payload: LoginFormData = {
+        ...data,
+        login: data.login.trim(),
+        captcha_id: captcha.captcha_id,
+        captcha_answer: data.captcha_answer.trim(),
+      };
+      const result = await api.post('/auth/login', payload) as { user: User; token?: string };
       if (result?.user) {
         if (result.token) setAuthToken(result.token);
         setUser(result.user);
@@ -139,10 +152,13 @@ export default function LoginPage(): React.JSX.Element {
       }
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'response' in err) {
-        const axiosErr = err as { response?: { status?: number; data?: { error?: { code?: string; message?: string; errors?: Record<string, string[]>; challenge_token?: string; expires_in?: number } } } };
+        const axiosErr = err as { response?: { status?: number; data?: { error?: { code?: string; message?: string; errors?: Record<string, string[] | string | number>; challenge_token?: string; expires_in?: number } } } };
         // 2FA required — navigate to 2FA verification
         if (axiosErr.response?.status === 423 && axiosErr.response.data?.error?.code === 'TWO_FACTOR_REQUIRED') {
-          const token = axiosErr.response.data.error.challenge_token;
+          const errorPayload = axiosErr.response.data.error;
+          const token =
+            errorPayload.challenge_token ??
+            (typeof errorPayload.errors?.challenge_token === 'string' ? errorPayload.errors.challenge_token : undefined);
           if (token) {
             try { sessionStorage.setItem('sibermas_2fa_challenge', token); } catch { /* private browsing */ }
             router.push('/login/2fa');
@@ -155,27 +171,29 @@ export default function LoginPage(): React.JSX.Element {
             setServerErrors(['Verifikasi keamanan kedaluwarsa atau salah.']);
             setValue('captcha_answer', '');
             clearErrors('captcha_answer');
-            setTimeout(() => fetchCaptcha(), 100);
+            refetchCaptchaSoon();
             toast.error('Captcha diperbarui. Silakan coba lagi.');
           } else if (errorData?.code === 'CREDENTIALS_INVALID') {
             setError('login', { message: 'NIM/NIP/username atau kata sandi salah' });
             setValue('captcha_answer', '');
             clearErrors('captcha_answer');
-            setTimeout(() => fetchCaptcha(), 100);
+            refetchCaptchaSoon();
           } else if (errorData?.errors) {
             Object.entries(errorData.errors).forEach(([field, messages]) => {
-              setError(field as keyof LoginFormData, { message: messages[0] });
+              if (Array.isArray(messages)) {
+                setError(field as keyof LoginFormData, { message: messages[0] });
+              }
             });
           } else {
             setServerErrors([errorData?.message || 'Terjadi kesalahan']);
           }
         } else {
           setServerErrors(['Terjadi kesalahan server. Silakan coba lagi.']);
-          fetchCaptcha();
+          refetchCaptchaSoon();
         }
       } else {
         setServerErrors(['Terjadi kesalahan. Silakan coba lagi.']);
-        fetchCaptcha();
+        refetchCaptchaSoon();
       }
     } finally {
       setLoading(false);
@@ -188,13 +206,13 @@ export default function LoginPage(): React.JSX.Element {
     .trim();
 
   return (
-    <div className="relative min-h-screen flex flex-col sm:justify-center items-center overflow-hidden font-sans selection:bg-cyan-500/30 bg-slate-950">
+    <div className="relative min-h-[100dvh] flex flex-col sm:justify-center items-center overflow-x-hidden overflow-y-auto font-sans selection:bg-cyan-500/30 bg-slate-950">
       {/* Background Layers */}
       {/* Background Layers */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         {/* Large Cinematic Glows */}
-        <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-emerald-500/10 rounded-full blur-[150px] mix-blend-screen animate-pulse [animation-duration:10s]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[900px] h-[900px] bg-cyan-500/10 rounded-full blur-[180px] mix-blend-screen animate-pulse [animation-duration:15s]" />
+        <div className="absolute top-[-20%] left-[-10%] w-[400px] sm:w-[800px] h-[400px] sm:h-[800px] bg-emerald-500/10 rounded-full blur-[150px] mix-blend-screen animate-pulse [animation-duration:10s]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[400px] sm:w-[900px] h-[400px] sm:h-[900px] bg-cyan-500/10 rounded-full blur-[180px] mix-blend-screen animate-pulse [animation-duration:15s]" />
         <div className="absolute top-[40%] left-[20%] w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[100px] mix-blend-screen" />
       </div>
 
@@ -226,7 +244,7 @@ export default function LoginPage(): React.JSX.Element {
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        className="relative z-10 w-full max-w-[420px] min-w-[320px] px-4 py-8 sm:px-6 sm:py-12"
+        className="relative z-10 w-full max-w-[420px] px-4 py-8 sm:px-6 sm:py-12"
       >
         <div className="backdrop-blur-2xl bg-white/70 border border-white p-6 sm:p-10 rounded-2xl sm:rounded-[2rem] shadow-[0_20px_60px_-15px_rgba(6,182,212,0.25)] relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-transparent pointer-events-none" />
@@ -235,9 +253,9 @@ export default function LoginPage(): React.JSX.Element {
             <div className="space-y-6 flex flex-col items-center">
               <div className="flex flex-col items-center gap-5">
                 <div className="flex items-center gap-3 sm:gap-4">
-                  <Image src="/images/logo_uinsaizu.png" alt="Logo UIN SAIZU" width={120} height={120} className="h-10 sm:h-12 w-auto object-contain drop-shadow-sm" />
+                  <Image src="/images/logo_uinsaizu.png" alt="Logo UIN SAIZU" width={120} height={120} className="h-10 sm:h-12 w-auto object-contain drop-shadow-sm" priority />
                   <div className="w-px h-7 sm:h-8 bg-emerald-200" />
-                  <Image src="/images/Logo_SIBERMAS.png" alt="Logo SIBERMAS" width={360} height={120} className="h-10 sm:h-12 w-auto object-contain drop-shadow-sm" />
+                  <Image src="/images/Logo_SIBERMAS.png" alt="Logo SIBERMAS" width={360} height={120} className="h-10 sm:h-12 w-auto object-contain drop-shadow-sm" priority />
                 </div>
                 <div className="text-center space-y-2">
                   <h1 className="text-4xl sm:text-[2.5rem] font-black text-emerald-950 tracking-tight font-display leading-none uppercase">
@@ -274,6 +292,7 @@ export default function LoginPage(): React.JSX.Element {
             {/* Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-5">
+                <input type="hidden" {...register('captcha_id')} />
                 {/* Username */}
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">NIM / NIP / Username</label>
@@ -392,7 +411,7 @@ export default function LoginPage(): React.JSX.Element {
                 <button
                   data-testid="login-submit"
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || !captcha || isRefreshing}
                   className="w-full h-12 bg-amber-500 hover:bg-amber-600 text-white rounded-xl flex items-center justify-center gap-2 group transition-all shadow-[0_8px_20px_rgba(245,158,11,0.3)] hover:shadow-[0_8px_25px_rgba(245,158,11,0.4)] hover:-translate-y-0.5 active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
                 >
                   {loading ? (

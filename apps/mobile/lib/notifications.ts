@@ -2,6 +2,16 @@ import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
+import { router } from 'expo-router';
+
+const notificationRoutes: Record<string, string> = {
+  reports: '/(tabs)/reports',
+  final_report: '/(tabs)/reports/final',
+  registration: '/(tabs)/registration',
+  certificate: '/(tabs)/certificate',
+  leave_requests: '/(tabs)/leave-requests',
+  dpl_reports: '/(dpl-tabs)/reports',
+};
 
 export async function registerForPushNotifications(): Promise<string | null> {
   if (!Device.isDevice) {
@@ -56,11 +66,21 @@ export async function setupAndroidChannels(): Promise<void> {
 }
 
 export function handleNotificationReceived(notification: Notifications.Notification): void {
-  console.log('Notification received:', notification.request.content.title, notification.request.content.body);
+  if (__DEV__) {
+    console.log('Notification received:', notification.request.content.title, notification.request.content.body);
+  }
 }
 
 export function handleNotificationResponse(response: Notifications.NotificationResponse): void {
   const screen = response.notification.request.content.data?.screen;
-  console.log('Notification tapped, target screen:', screen);
-  // TODO: navigate to screen in Phase 6
+  if (__DEV__) {
+    console.log('Notification tapped, target screen:', screen);
+  }
+
+  if (typeof screen === 'string') {
+    const route = notificationRoutes[screen] ?? (screen.startsWith('/') ? screen : null);
+    if (route) {
+      router.push(route as never);
+    }
+  }
 }

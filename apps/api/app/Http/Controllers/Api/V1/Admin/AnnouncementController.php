@@ -101,7 +101,9 @@ class AnnouncementController extends Controller
                 title: '📢 '.$announcement->title,
                 message: $announcement->excerpt_text,
                 priority: 'info',
-                action: '/berita/'.$announcement->slug,
+                action: Announcement::resolveType($announcement->category) === Announcement::TYPE_PENGUMUMAN
+                    ? '/pengumuman/'.$announcement->slug
+                    : '/berita/'.$announcement->slug,
                 type: 'announcement',
                 target: 'role:student',
                 userIds: [],

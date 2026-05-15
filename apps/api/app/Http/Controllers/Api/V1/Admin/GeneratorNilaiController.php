@@ -11,6 +11,7 @@ use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\PesertaKkn;
 use App\Services\GradeExportService;
+use App\Services\GradingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -79,10 +80,14 @@ class GeneratorNilaiController extends Controller
                 continue; // Skip unauthorized entries silently
             }
 
-            NilaiKkn::updateOrCreate(
+            $score = NilaiKkn::updateOrCreate(
                 ['user_id' => $item['user_id'], 'kelompok_id' => $item['kelompok_id']],
                 array_merge($item['scores'], ['admin_graded_by' => auth()->id(), 'admin_graded_at' => now()])
             );
+
+            // G-05 fix: recalc after batch save
+            app(GradingService::class)->calculateFinalGrade($score);
+
             $saved++;
         }
 
@@ -160,12 +165,21 @@ class GeneratorNilaiController extends Controller
             ->get()
             ->keyBy('user_id');
 
-        return $registrations->map(fn ($reg) => [
-            'user_id' => $reg->mahasiswa->user_id,
-            'name' => $reg->mahasiswa->nama,
-            'nim' => $reg->mahasiswa->nim,
-            'discipline' => $scores->get($reg->mahasiswa->user_id)?->discipline_score,
-            'attitude' => $scores->get($reg->mahasiswa->user_id)?->attitude_score,
-        ])->values()->toArray();
+        return $registrations
+            ->filter(fn (PesertaKkn $reg) => $reg->mahasiswa !== null)
+            ->map(function (PesertaKkn $reg) use ($scores) {
+                $mahasiswa = $reg->mahasiswa;
+                $score = $scores->get($mahasiswa->user_id);
+
+                return [
+                    'user_id' => $mahasiswa->user_id,
+                    'name' => $mahasiswa->nama,
+                    'nim' => $mahasiswa->nim,
+                    'discipline' => $score?->discipline_score,
+                    'attitude' => $score?->attitude_score,
+                    'total_score' => $score?->total_score,
+                    'letter_grade' => $score?->letter_grade,
+                ];
+            })->values()->toArray();
     }
 }

@@ -34,6 +34,33 @@ function statusTone(status: string) {
   return 'slate' as const;
 }
 
+function EditableSection({
+  title,
+  value,
+  onChangeText,
+  multiline = false,
+}: {
+  title: string;
+  value: string;
+  onChangeText: (text: string) => void;
+  multiline?: boolean;
+}) {
+  return (
+    <View style={styles.formGroup}>
+      <FieldLabel>{title}</FieldLabel>
+      <TextInput
+        style={[formStyles.input, multiline && formStyles.textarea]}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={`Tulis ${title.toLowerCase()} di sini`}
+        placeholderTextColor={colors.textSubtle}
+        multiline={multiline}
+        numberOfLines={multiline ? 4 : 1}
+      />
+    </View>
+  );
+}
+
 export default function FinalReportScreen() {
   const queryClient = useQueryClient();
   const [formData, setFormData] = useState({
@@ -136,21 +163,6 @@ export default function FinalReportScreen() {
     );
   };
 
-  const EditableSection = ({ title, field, multiline = false }: { title: string; field: keyof typeof formData; multiline?: boolean }) => (
-    <View style={styles.formGroup}>
-      <FieldLabel>{title}</FieldLabel>
-      <TextInput
-        style={[formStyles.input, multiline && formStyles.textarea]}
-        value={formData[field]}
-        onChangeText={(text) => setFormData({ ...formData, [field]: text })}
-        placeholder={`Tulis ${title.toLowerCase()} di sini`}
-        placeholderTextColor={colors.textSubtle}
-        multiline={multiline}
-        numberOfLines={multiline ? 4 : 1}
-      />
-    </View>
-  );
-
   if (isLoading) {
     return <LoadingState label="Memuat laporan akhir..." />;
   }
@@ -243,10 +255,10 @@ export default function FinalReportScreen() {
       />
 
       <SurfaceCard style={styles.form}>
-        <EditableSection title="Judul Laporan" field="title" />
-        <EditableSection title="Abstrak" field="abstract" multiline />
-        <EditableSection title="Link Video" field="video_link" />
-        <EditableSection title="Link Berita" field="news_link" />
+        <EditableSection title="Judul Laporan" value={formData.title} onChangeText={(text) => setFormData((prev) => ({ ...prev, title: text }))} />
+        <EditableSection title="Abstrak" value={formData.abstract} onChangeText={(text) => setFormData((prev) => ({ ...prev, abstract: text }))} multiline />
+        <EditableSection title="Link Video" value={formData.video_link} onChangeText={(text) => setFormData((prev) => ({ ...prev, video_link: text }))} />
+        <EditableSection title="Link Berita" value={formData.news_link} onChangeText={(text) => setFormData((prev) => ({ ...prev, news_link: text }))} />
 
         <View style={styles.formGroup}>
           <FieldLabel required>File Laporan PDF</FieldLabel>

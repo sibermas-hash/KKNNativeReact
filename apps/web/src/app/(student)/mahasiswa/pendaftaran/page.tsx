@@ -125,6 +125,7 @@ function PeriodCard({ period, onRegister, isRegistering, disabled }: { period: P
           <button
             onClick={onRegister}
             disabled={disabled || !period.can_register || isRegistering}
+            title={!period.can_register ? (period.ineligible_reasons?.[0] || 'Pendaftaran tidak tersedia untuk periode ini') : undefined}
             className="shrink-0 rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-teal-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:shadow-sm"
           >
             {isRegistering ? 'Memproses...' : 'Daftar KKN'}
@@ -165,7 +166,7 @@ function PeriodCard({ period, onRegister, isRegistering, disabled }: { period: P
         onClick={toggleGroups}
         className="flex w-full items-center justify-between px-6 py-3 text-sm font-semibold text-slate-600 transition-colors hover:bg-slate-50"
       >
-        <span className="flex items-center gap-2"><MapPin size={14} /> Lihat Kelompok & Lokasi</span>
+        <span className="flex items-center gap-2"><MapPin size={14} /> Lihat Informasi Kelompok/Lokasi</span>
         {loadingGroups ? <Clock size={14} className="animate-spin" /> : showGroups ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
       </button>
 
@@ -179,6 +180,7 @@ function PeriodCard({ period, onRegister, isRegistering, disabled }: { period: P
               {groups.map((g) => <GroupCard key={g.id} group={g} />)}
             </div>
           )}
+          <p className="mt-2 text-[11px] text-slate-400">Penempatan kelompok final ditentukan oleh sistem/admin setelah pendaftaran disetujui.</p>
         </div>
       )}
     </div>

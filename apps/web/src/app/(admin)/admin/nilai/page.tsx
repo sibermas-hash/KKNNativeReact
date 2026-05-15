@@ -56,7 +56,7 @@ export default function AdminGradesPage(): React.JSX.Element {
                 <tr key={s.id as number} className="border-b border-slate-50">
                   <td className="p-4">{((s.user as Record<string, unknown>)?.name as string) || '-'}</td>
                   <td className="p-4">{((s.kelompok as Record<string, unknown>)?.nama_kelompok as string) || '-'}</td>
-                  <td className="p-4 font-semibold">{(s.total_score as number)?.toFixed(1) || '-'}</td>
+                  <td className="p-4 font-semibold">{Number.isFinite(Number(s.total_score)) ? Number(s.total_score).toFixed(1) : '-'}</td>
                   <td className="p-4 font-semibold text-amber-600">{(s.letter_grade as string) || '-'}</td>
                   <td className="p-4">
                     {s.is_finalized ? (

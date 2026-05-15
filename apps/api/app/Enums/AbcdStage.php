@@ -30,10 +30,10 @@ enum AbcdStage: string
         return match ($this) {
             self::DISCOVERY => 1,
             self::DREAM => 2,
-            self::DESIGN => 2,
-            self::DEFINE => 3,
-            self::DESTINY => 4,
-            self::REFLECTION => 5, // Laporan Akhir
+            self::DESIGN => 3,
+            self::DEFINE => 4,
+            self::DESTINY => 5,
+            self::REFLECTION => 6,
         };
     }
 }

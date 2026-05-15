@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -75,6 +76,22 @@ class SyncMasterData extends Command
     }
 
     public function handle(): int
+    {
+        $lock = Cache::lock('sync:master-data:global', 7200);
+        if (! $lock->get()) {
+            $this->error('Sync lain sedang berjalan. Coba lagi setelah proses selesai.');
+
+            return 1;
+        }
+
+        try {
+            return $this->runLocked();
+        } finally {
+            optional($lock)->release();
+        }
+    }
+
+    private function runLocked(): int
     {
         $type = $this->normalizeSyncType((string) $this->option('type'));
 
@@ -207,7 +224,7 @@ class SyncMasterData extends Command
         $now = now();
         $this->info('Fetched '.count($orgs).' organizations from API.');
         if (count($orgs) > 0) {
-            $this->info('Sample data: '.json_encode($orgs[0]));
+            $this->info('First organization keys: '.implode(', ', array_keys($orgs[0])));
         }
 
         foreach ($orgs as $orgData) {
@@ -226,13 +243,9 @@ class SyncMasterData extends Command
                     continue;
                 }
 
-                // Sync ALL organizations from the API as fakultas.
-                // Use 'api_id' as the master_id and 'code' as the unique key.
                 $normalizedMasterId = $apiId ?? $code;
 
-                // Check if faculty with same name already exists to handle API inconsistencies
-                // The API may return same faculty with different IDs but same name
-                $existingFaculty = Fakultas::where('nama', $name)->where('deleted_at', null)->first();
+                $existingFaculty = Fakultas::where('master_id', $normalizedMasterId)->first();
 
                 if ($existingFaculty) {
                     // Faculty exists - update it with the most consistent data
@@ -282,7 +295,9 @@ class SyncMasterData extends Command
             'finished_at' => $endTime,
         ]);
 
-        SystemSetting::set('last_sync_fakultas', $now->toIso8601String());
+        if ($stats['total_errors'] === 0) {
+            SystemSetting::set('last_sync_fakultas', $now->toIso8601String());
+        }
 
         $this->info("  {$stats['total_fetched']} organizations processed ({$stats['total_created']} faculties created, {$stats['total_updated']} updated)");
     }
@@ -405,7 +420,9 @@ class SyncMasterData extends Command
             'finished_at' => $endTime,
         ]);
 
-        SystemSetting::set('last_sync_program', $now->toIso8601String());
+        if ($stats['total_errors'] === 0) {
+            SystemSetting::set('last_sync_program', $now->toIso8601String());
+        }
 
         $this->info("  {$stats['total_fetched']} programs synced ({$stats['total_created']} created, {$stats['total_updated']} updated) in {$duration}s");
     }
@@ -678,7 +695,9 @@ class SyncMasterData extends Command
             'finished_at' => $endTime,
         ]);
 
-        SystemSetting::set('last_sync_dosen', $now->toIso8601String());
+        if ($stats['total_errors'] === 0) {
+            SystemSetting::set('last_sync_dosen', $now->toIso8601String());
+        }
 
         $this->info("  {$stats['total_fetched']} lecturers synced ({$stats['total_created']} created, {$stats['total_updated']} updated) in {$duration}s");
         if ($stats['total_skipped'] > 0) {
@@ -731,7 +750,7 @@ class SyncMasterData extends Command
             $processedCount++;
 
             if ($processedCount <= 1) {
-                $this->info('First student raw data: '.json_encode($stud));
+                $this->info('First student raw keys: '.implode(', ', array_keys((array) $stud)));
             }
 
             try {
@@ -856,6 +875,8 @@ class SyncMasterData extends Command
                     $user = User::firstOrNew(['username' => $username]);
                     $isNewUser = ! $user->exists;
 
+                    $birthDateDefaultPassword = PasswordHelper::fromBirthDate($studData['tanggal_lahir'] ?? $studData['birth_date'] ?? null);
+
                     if ($isNewUser) {
                         $emailToUse = null;
                         if (! empty($incomingEmail)) {
@@ -865,9 +886,8 @@ class SyncMasterData extends Command
                             $emailToUse = $emailTaken ? null : $incomingEmail;
                         }
                         $user->email = $emailToUse;
-                        // C-002 fix: random unguessable password + reset link
-                        // dispatched after commit (see below).
-                        $user->password = Hash::make(PasswordHelper::generateSecureDefault());
+                        $defaultPassword = $birthDateDefaultPassword ?? PasswordHelper::generateSecureDefault();
+                        $user->password = Hash::make($defaultPassword);
                         $user->must_change_password = true;
                     } elseif (empty($user->email) && ! empty($incomingEmail)) {
                         $emailTaken = User::where('email', $incomingEmail)
@@ -876,6 +896,11 @@ class SyncMasterData extends Command
                         if (! $emailTaken) {
                             $user->email = $incomingEmail;
                         }
+                    }
+
+                    if (! $isNewUser && $birthDateDefaultPassword && ($user->must_change_password || is_null($user->password_changed_at))) {
+                        $user->password = Hash::make($birthDateDefaultPassword);
+                        $user->must_change_password = true;
                     }
 
                     $user->username = $username;
@@ -982,7 +1007,9 @@ class SyncMasterData extends Command
             'finished_at' => $endTime,
         ]);
 
-        SystemSetting::set('last_sync_mahasiswa', $now->toIso8601String());
+        if ($stats['total_errors'] === 0) {
+            SystemSetting::set('last_sync_mahasiswa', $now->toIso8601String());
+        }
 
         $this->info("  {$stats['total_fetched']} students synced ({$stats['total_created']} created, {$stats['total_updated']} updated) in {$duration}s");
         if ($stats['total_skipped'] > 0) {

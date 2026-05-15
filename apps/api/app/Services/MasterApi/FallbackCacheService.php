@@ -42,6 +42,7 @@ class FallbackCacheService
 
     private function getKey(string $endpoint, array $params): string
     {
+        ksort($params);
         $paramsHash = md5(json_encode($params));
 
         return $this->prefix.md5($endpoint).'_'.$paramsHash;

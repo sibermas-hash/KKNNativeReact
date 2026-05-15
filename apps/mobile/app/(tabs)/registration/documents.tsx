@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { View, Text, Alert, StyleSheet } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as DocumentPicker from 'expo-document-picker';
@@ -57,6 +57,63 @@ function isImageRequirement(field: string): boolean {
   return field.includes('photo') || field.includes('poster') || field.includes('pas_foto');
 }
 
+function DocumentItem({
+  title,
+  required,
+  description,
+  document,
+  state,
+  templateUrl,
+  uploading,
+  onPickDocument,
+  onScanQRCode,
+}: {
+  title: string;
+  required: boolean;
+  description: string;
+  document: string;
+  state?: ExistingDocument;
+  templateUrl?: string | null;
+  uploading: boolean;
+  onPickDocument: (document: string) => void;
+  onScanQRCode: () => void;
+}) {
+  const isUploaded = Boolean(state?.exists);
+
+  return (
+    <SurfaceCard style={styles.documentItem}>
+      <View style={styles.documentHeader}>
+        <View style={styles.titleSection}>
+          <Text style={styles.documentTitle}>{title}</Text>
+          {required ? <StatusPill label="Wajib" tone="amber" /> : <StatusPill label="Opsional" tone="slate" />}
+        </View>
+        {isUploaded ? <StatusPill label="Terunggah" tone="teal" /> : null}
+      </View>
+      <Text style={styles.documentDescription}>{description}</Text>
+      {state?.file_name ? (
+        <Text style={styles.fileNameText} numberOfLines={1} selectable>{state.file_name}</Text>
+      ) : null}
+      {templateUrl ? <InlineAlert tone="blue" description="Template tersedia di versi web." /> : null}
+      <View style={styles.documentActions}>
+        <PrimaryButton
+          label={isUploaded ? 'Terunggah' : 'Upload'}
+          onPress={() => onPickDocument(document)}
+          disabled={isUploaded || uploading}
+          style={styles.actionButton}
+        />
+        {required ? (
+          <SecondaryButton
+            label="Scan QR"
+            onPress={onScanQRCode}
+            disabled={uploading}
+            style={styles.actionButtonSmall}
+          />
+        ) : null}
+      </View>
+    </SurfaceCard>
+  );
+}
+
 export default function RegistrationDocumentsScreen() {
   const queryClient = useQueryClient();
   const [scanning, setScanning] = useState(false);
@@ -78,8 +135,8 @@ export default function RegistrationDocumentsScreen() {
   const registrations = ((statusData as RegistrationStatusResponse | undefined)?.registrations ?? []);
   const registration = registrations[0] ?? null;
   const periodeId = registration?.periode_id ?? null;
-  const requirements = (((formData as RegistrationFormResponse | undefined)?.document_requirements ?? [])
-    .find((entry) => entry.periode_id === periodeId)?.requirements ?? []);
+  const requirements = useMemo(() => (((formData as RegistrationFormResponse | undefined)?.document_requirements ?? [])
+    .find((entry) => entry.periode_id === periodeId)?.requirements ?? []), [formData, periodeId]);
 
   useEffect(() => {
     if (requirements.length === 0) {
@@ -184,56 +241,6 @@ export default function RegistrationDocumentsScreen() {
     }
   };
 
-  const DocumentItem = ({
-    title,
-    required,
-    description,
-    document,
-  }: {
-    title: string;
-    required: boolean;
-    description: string;
-    document: string;
-  }) => {
-    const state = uploadedDocs[document];
-    const isUploaded = Boolean(state?.exists);
-
-    return (
-      <SurfaceCard style={styles.documentItem}>
-        <View style={styles.documentHeader}>
-          <View style={styles.titleSection}>
-            <Text style={styles.documentTitle}>{title}</Text>
-            {required ? <StatusPill label="Wajib" tone="amber" /> : <StatusPill label="Opsional" tone="slate" />}
-          </View>
-          {isUploaded ? <StatusPill label="Terunggah" tone="teal" /> : null}
-        </View>
-        <Text style={styles.documentDescription}>{description}</Text>
-        {state?.file_name ? (
-          <Text style={styles.fileNameText} numberOfLines={1} selectable>{state.file_name}</Text>
-        ) : null}
-        {requirements.find((item) => item.field === document)?.template_url ? (
-          <InlineAlert tone="blue" description="Template tersedia di versi web." />
-        ) : null}
-        <View style={styles.documentActions}>
-          <PrimaryButton
-            label={isUploaded ? 'Terunggah' : 'Upload'}
-            onPress={() => handlePickDocument(document)}
-            disabled={isUploaded || uploading}
-            style={styles.actionButton}
-          />
-          {required ? (
-            <SecondaryButton
-              label="Scan QR"
-              onPress={scanQRCode}
-              disabled={uploading}
-              style={styles.actionButtonSmall}
-            />
-          ) : null}
-        </View>
-      </SurfaceCard>
-    );
-  };
-
   if (isLoading) {
     return <LoadingState label="Memuat dokumen pendaftaran..." />;
   }
@@ -274,6 +281,11 @@ export default function RegistrationDocumentsScreen() {
                 required={requirement.required}
                 description={requirement.description}
                 document={requirement.field}
+                state={uploadedDocs[requirement.field]}
+                templateUrl={requirement.template_url}
+                uploading={uploading}
+                onPickDocument={handlePickDocument}
+                onScanQRCode={scanQRCode}
               />
             ))}
 
@@ -284,10 +296,15 @@ export default function RegistrationDocumentsScreen() {
                   <DocumentItem
                     key={requirement.field}
                     title={requirement.label}
-                    required={requirement.required}
-                    description={requirement.description}
-                    document={requirement.field}
-                  />
+                  required={requirement.required}
+                  description={requirement.description}
+                  document={requirement.field}
+                  state={uploadedDocs[requirement.field]}
+                  templateUrl={requirement.template_url}
+                  uploading={uploading}
+                  onPickDocument={handlePickDocument}
+                  onScanQRCode={scanQRCode}
+                />
                 ))}
               </>
             ) : null}

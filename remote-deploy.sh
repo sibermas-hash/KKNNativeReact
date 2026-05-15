@@ -70,13 +70,14 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
   git pull origin main
 
   echo "  [b] Installing dependencies..."
-  TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm install --frozen-lockfile
+  TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm install --frozen-lockfile --filter web...
 
   echo "  [c] Building packages dependency chain..."
   TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:packages
 
   echo "  [d] Building frontend..."
   export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-${PUBLIC_BASE_URL%/}/api/v1}"
+  export SERVER_API_URL="${SERVER_API_URL:-http://127.0.0.1/api/v1}"
   export NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL:-${PUBLIC_BASE_URL%/}}"
   export NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL:-${PUBLIC_BASE_URL%/}}"
   TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:web

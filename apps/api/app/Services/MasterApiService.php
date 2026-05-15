@@ -65,7 +65,7 @@ class MasterApiService
         $params = $since ? ['since' => $since] : [];
         $this->client->setToken($this->tokenService->getToken() ?? '');
 
-        return $this->client->yieldAllPages('/sync/mahasiswa', $params);
+        return $this->client->yieldAllPages('/sync/mahasiswa', $params, 300);
     }
 
     public function yieldSyncDosen(?string $since = null): \Generator
@@ -73,7 +73,7 @@ class MasterApiService
         $params = $since ? ['since' => $since] : [];
         $this->client->setToken($this->tokenService->getToken() ?? '');
 
-        return $this->client->yieldAllPages('/sync/dosen', $params);
+        return $this->client->yieldAllPages('/sync/dosen', $params, 300);
     }
 
     public function getStudentsByNimList(array $nimList): array

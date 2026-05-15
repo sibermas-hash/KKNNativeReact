@@ -21,6 +21,8 @@ class SyncMahasiswaJob implements ShouldBeUnique, ShouldQueue
 
     public int $backoff = 30;
 
+    public int $timeout = 7200;
+
     // M-004 fix: was 3600 (1 hour). A stuck/failed job would hold the lock
     // for the full hour, blocking operator retries. 600s roughly matches the
     // longest reasonable sync run time; failed() below also releases eagerly.
@@ -28,7 +30,7 @@ class SyncMahasiswaJob implements ShouldBeUnique, ShouldQueue
 
     public function uniqueId(): string
     {
-        return $this->mahasiswaId ?? 'all';
+        return 'sync-mahasiswa:'.($this->mahasiswaId ?? 'all');
     }
 
     public function __construct(
@@ -110,7 +112,7 @@ class SyncMahasiswaJob implements ShouldBeUnique, ShouldQueue
      */
     public function failed(\Throwable $e): void
     {
-        Cache::forget('laravel_unique_job:'.$this->uniqueId());
+        Cache::forget('laravel_unique_job:'.self::class.':'.$this->uniqueId());
 
         Log::warning('SyncMahasiswaJob failed — released unique lock', [
             'id' => $this->mahasiswaId,

@@ -46,11 +46,11 @@ export default async function LocationsPage() {
 
   const totalsOnServer = locations.reduce(
     (acc, loc) => {
-      acc.groups += loc.group_count ?? loc.groups?.length ?? 0;
+      acc.groups += loc.group_count ?? (loc.groups?.length ?? 0);
       acc.students +=
         loc.students_count ??
-        loc.groups?.reduce((sum, g) => sum + (g.peserta_count ?? 0), 0) ??
-        0;
+        (loc.groups?.reduce((sum, g) => sum + (g.peserta_count ?? 0), 0) ??
+          0);
       return acc;
     },
     { groups: 0, students: 0 },

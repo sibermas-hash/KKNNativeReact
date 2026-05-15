@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import Link from 'next/link';
-import * as Sentry from '@sentry/nextjs';
 
 export default function BeritaSlugError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   // Audit fix (2026-05-13): heading sebelumnya "Berita Tidak Ditemukan" —
@@ -12,11 +11,6 @@ export default function BeritaSlugError({ error, reset }: { error: Error & { dig
   useEffect(() => {
     if (error) {
       console.error('Berita slug render error:', error);
-      try {
-        Sentry.captureException(error);
-      } catch {
-        /* Sentry mungkin belum init */
-      }
     }
   }, [error]);
 

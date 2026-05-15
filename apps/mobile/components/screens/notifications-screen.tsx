@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl } fr
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationsEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
+import { unwrapPaginated } from '@/lib/api-helpers';
 import { colors, radius, spacing, LoadingState, EmptyState, StatusPill, type Tone } from '@/components/ui/primitives';
 
 type Notification = {
@@ -40,7 +41,7 @@ export function NotificationsScreen() {
     queryKey: ['notifications', filter],
     queryFn: async () => {
       const res = await endpoints.index({ status: filter, per_page: 50 });
-      return res as unknown as { data: Notification[]; meta?: { total?: number } };
+      return unwrapPaginated<Notification>(res);
     },
   });
 

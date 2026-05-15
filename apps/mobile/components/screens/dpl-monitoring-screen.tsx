@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { dplEndpoints } from '@sibermas/api-client';
 import * as ImagePicker from 'expo-image-picker';
 import { api } from '@/lib/api';
+import { unwrapList } from '@/lib/api-helpers';
 import {
   colors, spacing, Screen, SectionTitle, SurfaceCard,
   PrimaryButton, SecondaryButton, LoadingState, EmptyState,
@@ -32,7 +33,7 @@ export function DplMonitoringScreen() {
     queryKey: ['dpl', 'monitoring'],
     queryFn: async () => {
       const res = await endpoints.monitoring.index();
-      return (res as unknown as { data?: MonitoringVisit[] })?.data || res as unknown as MonitoringVisit[];
+      return unwrapList<MonitoringVisit>(res);
     },
   });
 

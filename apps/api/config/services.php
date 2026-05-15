@@ -83,7 +83,7 @@ return [
      | Set to true (default) for normal incremental syncs.
      */
     'sync' => [
-        'send_welcome_email' => env('SYNC_SEND_WELCOME_EMAIL', true),
+        'send_welcome_email' => filter_var(env('SYNC_SEND_WELCOME_EMAIL', true), FILTER_VALIDATE_BOOLEAN),
     ],
 
 ];

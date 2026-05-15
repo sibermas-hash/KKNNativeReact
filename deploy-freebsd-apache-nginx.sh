@@ -107,6 +107,24 @@ render_template() {
       "${src}" > "${dest}"
 }
 
+validate_rendered_nginx() {
+  [ -f "${NGINX_DEST}" ] || die "Nginx config tidak ditemukan: ${NGINX_DEST}"
+  grep -q 'map \$http_x_forwarded_proto \$forwarded_proto' "${NGINX_DEST}" \
+    || die "Nginx config belum preserve X-Forwarded-Proto. Render template terbaru dulu."
+  grep -q 'proxy_set_header X-Forwarded-Proto \$forwarded_proto' "${NGINX_DEST}" \
+    || die "Nginx config masih overwrite X-Forwarded-Proto. Deploy dibatalkan untuk mencegah login/session error."
+}
+
+public_health_check() {
+  [ "${PUBLIC_HEALTH_CHECK:-0}" = "1" ] || return 0
+  step "Public reverse-proxy health check"
+  curl -fsS -m 15 "${PUBLIC_BASE_URL%/}/api/health" >/dev/null \
+    || die "Public health check gagal: ${PUBLIC_BASE_URL%/}/api/health. Cek Cloudflare/reverse proxy/vhost."
+  curl -fsS -m 15 "${PUBLIC_BASE_URL%/}/api/v1/auth/captcha" >/dev/null \
+    || die "Public login preflight gagal: ${PUBLIC_BASE_URL%/}/api/v1/auth/captcha."
+  echo "OK: public reverse-proxy path healthy."
+}
+
 enable_apache_module() {
   local module="$1"
   [ -f "${APACHE_HTTPD_CONF}" ] || return 0
@@ -233,7 +251,7 @@ set_env SESSION_SAME_SITE strict
 set_env TRUSTED_PROXIES "127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
 
 if [ "$(env_value DB_PASSWORD)" = "" ]; then
-  set_env DB_PASSWORD "${DB_PASSWORD:-kknuinsaizu2026native}"
+  set_env DB_PASSWORD "${DB_PASSWORD:-$(generate_secret)}"
   echo "Filled DB_PASSWORD from DB_PASSWORD env/default native password"
 fi
 
@@ -285,10 +303,11 @@ if [ "${SKIP_FRONTEND_BUILD}" != "1" ]; then
   cd "${APP_DIR}"
   export TURBO_INSTALL_SKIP_DOWNLOAD=1
   export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-${API_V1_PUBLIC_URL%/}}"
+  export SERVER_API_URL="${SERVER_API_URL:-http://127.0.0.1/api/v1}"
   export NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL:-${PUBLIC_BASE_URL%/}}"
   export NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL:-${PUBLIC_BASE_URL%/}}"
 
-  pnpm install --frozen-lockfile
+  pnpm install --frozen-lockfile --filter web...
   pnpm build:packages
   pnpm build:web
 
@@ -321,6 +340,7 @@ sysrc php_fpm_enable="YES"
 sysrc sibermas_web_enable="YES"
 sysrc sibermas_web_app_dir="${APP_DIR}"
 sysrc sibermas_web_public_api_url="${API_V1_PUBLIC_URL%/}"
+sysrc sibermas_web_server_api_url="${SERVER_API_URL:-http://127.0.0.1/api/v1}"
 sysrc sibermas_web_public_app_url="${PUBLIC_BASE_URL%/}"
 sysrc sibermas_queue_enable="YES"
 sysrc sibermas_queue_app_dir="${APP_DIR}"
@@ -356,15 +376,16 @@ find "${API_DIR}/storage" -type f -exec chmod 0664 {} +
 chmod 0775 "${API_DIR}/bootstrap/cache"
 
 step "Testing service configuration"
+validate_rendered_nginx
 apachectl configtest
 nginx -t
 
-step "Restarting services"
-service php-fpm restart
-service apache24 restart
+step "Reloading services"
+service php-fpm reload 2>/dev/null || service php-fpm restart
+apachectl graceful 2>/dev/null || service apache24 restart
 service sibermas_web restart
 service sibermas_queue restart
-service nginx restart
+service nginx status >/dev/null 2>&1 && service nginx reload || service nginx start
 
 assert_port_ownership
 
@@ -375,6 +396,7 @@ for i in $(seq 1 12); do
     && curl -sf -m 5 "http://127.0.0.1/api/v1/auth/captcha" >/dev/null \
     && curl -sf -m 5 "http://127.0.0.1:3000/" >/dev/null; then
     echo "OK: Apache API backend, login preflight, Nginx edge, and Next.js are healthy."
+    public_health_check
     echo ""
     echo "Deploy complete: ${PUBLIC_BASE_URL%/}"
     exit 0

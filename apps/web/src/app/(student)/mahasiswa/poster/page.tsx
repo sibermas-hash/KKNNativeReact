@@ -125,7 +125,7 @@ export default function StudentPosterPage(): React.JSX.Element {
           <AlertCircle size={16} className="text-amber-600 shrink-0 mt-0.5" />
           <div className="text-xs text-amber-700 space-y-1">
             <p className="font-bold">Format yang diterima: {poster?.allowed_types?.join(', ') || 'JPG, PNG, PDF'}</p>
-            <p>Ukuran maksimal: {poster?.max_size || '10MB'}</p>
+            <p>Ukuran maksimal: {(poster as Record<string, unknown>)?.max_size_mb ? `${(poster as Record<string, unknown>).max_size_mb}MB` : '5MB'}</p>
           </div>
         </div>
 
@@ -157,7 +157,7 @@ export default function StudentPosterPage(): React.JSX.Element {
           )}
           <input
             type="file"
-            accept=".jpg,.jpeg,.png,.webp,.pdf"
+            accept=".jpg,.jpeg,.png,.pdf"
             className="hidden"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           />

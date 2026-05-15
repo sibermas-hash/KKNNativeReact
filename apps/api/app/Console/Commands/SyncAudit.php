@@ -59,30 +59,30 @@ class SyncAudit extends Command
             $o[] = "  ID={$p->id} | master={$p->master_id} | fak={$p->fakultas_id} | {$p->nama}";
         }
 
-        // FK integrity: mahasiswa → fakultas
+        // FK integrity: mahasiswa → fakultas (exclude NULL — legitimately unassigned)
         $orphansFak = DB::select('
             SELECT m.fakultas_id, COUNT(*) as cnt
             FROM mahasiswa m
-            LEFT JOIN fakultas f ON f.id = m.fakultas_id
-            WHERE f.id IS NULL
+            LEFT JOIN fakultas f ON f.id = m.fakultas_id AND f.deleted_at IS NULL
+            WHERE m.fakultas_id IS NOT NULL AND f.id IS NULL
             GROUP BY m.fakultas_id
         ');
 
-        // FK integrity: mahasiswa → prodi
+        // FK integrity: mahasiswa → prodi (exclude NULL)
         $orphansProdi = DB::select('
             SELECT m.prodi_id, COUNT(*) as cnt
             FROM mahasiswa m
-            LEFT JOIN prodi p ON p.id = m.prodi_id
-            WHERE p.id IS NULL
+            LEFT JOIN prodi p ON p.id = m.prodi_id AND p.deleted_at IS NULL
+            WHERE m.prodi_id IS NOT NULL AND p.id IS NULL
             GROUP BY m.prodi_id
         ');
 
-        // FK integrity: dosen → fakultas
+        // FK integrity: dosen → fakultas (exclude NULL — external lecturers)
         $orphansDosen = DB::select('
             SELECT d.fakultas_id, COUNT(*) as cnt
             FROM dosen d
-            LEFT JOIN fakultas f ON f.id = d.fakultas_id
-            WHERE f.id IS NULL
+            LEFT JOIN fakultas f ON f.id = d.fakultas_id AND f.deleted_at IS NULL
+            WHERE d.fakultas_id IS NOT NULL AND f.id IS NULL
             GROUP BY d.fakultas_id
         ');
 

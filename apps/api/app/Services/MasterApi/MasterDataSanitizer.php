@@ -98,7 +98,7 @@ class MasterDataSanitizer
 
         $value = (float) $raw;
 
-        if ($value < 0 || $value > 4.01) {
+        if ($value < 0 || $value > 4.0) {
             $clamped = max(0.0, min(4.0, $value));
             self::$stats['gpa_clamped']++;
             // keep at most 10 samples for ops to inspect, to cap memory

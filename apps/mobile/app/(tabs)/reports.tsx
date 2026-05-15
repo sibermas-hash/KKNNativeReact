@@ -3,15 +3,8 @@ import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
+import { unwrapList } from '@/lib/api-helpers';
 import { colors, EmptyState, HeroCard, LoadingState, PrimaryButton, Screen, SectionTitle, StatusPill, SurfaceCard } from '@/components/ui/primitives';
-
-type DailyReportsResponse = {
-  data?: Record<string, unknown>[];
-};
-
-function isDailyReportsResponse(value: unknown): value is DailyReportsResponse {
-  return typeof value === 'object' && value !== null && 'data' in value;
-}
 
 export default function ReportsScreen() {
   const router = useRouter();
@@ -21,13 +14,11 @@ export default function ReportsScreen() {
     queryKey: ['student', 'daily-reports'],
     queryFn: async () => {
       const result = await endpoints.dailyReports.index();
-      return isDailyReportsResponse(result) ? result : { data: [] };
+      return unwrapList(result);
     },
   });
 
-  const reports = Array.isArray(data?.data)
-    ? data.data
-    : [];
+  const reports = data ?? [];
 
   const statusLabels: Record<string, string> = { draft: 'Draft', submitted: 'Menunggu', approved: 'Disetujui', revision: 'Revisi' };
 

@@ -111,20 +111,27 @@ class IzinService
     private function updateAbsensiUntukIzin(IzinMeninggalkan $izin): void
     {
         $tanggal = $izin->tanggal_mulai->copy();
-        $end = $izin->tanggal_kembali->copy();
+        $end = $izin->tanggal_kembali->copy()->subDay(); // A-15 fix: tanggal_kembali is return day, not leave day
 
         while ($tanggal <= $end) {
-            AbsensiHarian::updateOrCreate(
-                [
-                    'mahasiswa_id' => $izin->mahasiswa_id,
-                    'kelompok_id' => $izin->kelompok_id,
-                    'tanggal' => $tanggal,
-                ],
-                [
-                    'status' => 'izin',
-                    'izin_id' => $izin->id,
-                ]
-            );
+            // A-05 fix: only set 'izin' if not already 'hadir' (logbook submitted)
+            $existing = AbsensiHarian::where('mahasiswa_id', $izin->mahasiswa_id)
+                ->where('tanggal', $tanggal)
+                ->first();
+
+            if (! $existing || $existing->status !== 'hadir') {
+                AbsensiHarian::updateOrCreate(
+                    [
+                        'mahasiswa_id' => $izin->mahasiswa_id,
+                        'kelompok_id' => $izin->kelompok_id,
+                        'tanggal' => $tanggal,
+                    ],
+                    [
+                        'status' => 'izin',
+                        'izin_id' => $izin->id,
+                    ]
+                );
+            }
 
             $tanggal->addDay();
         }

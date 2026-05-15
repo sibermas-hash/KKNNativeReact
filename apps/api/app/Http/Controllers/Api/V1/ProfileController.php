@@ -432,9 +432,10 @@ class ProfileController extends Controller
             'first_time' => $isFirstPasswordChange,
         ]);
 
+        $user->loadMissing(['roles', 'mahasiswa', 'dosen', 'fakultas']);
+
         if ($request->header('X-App-Type') === 'mobile') {
             $token = $user->createToken('mobile')->plainTextToken;
-            $user->loadMissing(['roles', 'mahasiswa', 'dosen', 'fakultas']);
 
             return $this->success([
                 'token' => $token,
@@ -443,17 +444,17 @@ class ProfileController extends Controller
             ], 'Kata sandi berhasil diubah.');
         }
 
-        $response = $this->noContent('Kata sandi berhasil diubah.');
+        // Web: return 200 with user data + new cookie (not 204)
+        // 204 No Content can cause browsers to skip Set-Cookie processing,
+        // breaking the auth flow after password change.
+        $token = $user->createToken('web')->plainTextToken;
+        $isSecure = app()->environment('production') ? true : $request->secure();
+        $expiry = 60 * 60 * 24 * 7;
 
-        if ($request->cookie('sibermas_token') || ! $request->hasSession()) {
-            $token = $user->createToken('web')->plainTextToken;
-            $isSecure = app()->environment('production') ? true : $request->secure();
-            $expiry = 60 * 60 * 24 * 7; // 7 days
-
-            return $response->withCookie(cookie('sibermas_token', $token, $expiry / 60, '/', null, $isSecure, true, false, 'Strict'));
-        }
-
-        return $response;
+        return $this->success([
+            'user' => new UserResource($user->refresh()),
+        ], 'Kata sandi berhasil diubah.')
+            ->withCookie(cookie('sibermas_token', $token, $expiry / 60, '/', null, $isSecure, true, false, 'Strict'));
     }
 
     /**

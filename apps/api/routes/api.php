@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\PublicController;
 use App\Http\Controllers\Api\V1\Student\ChatController;
 use App\Http\Controllers\Api\V1\TotpController;
+use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\HealthController;
 use App\Services\AI\ErrorAlertService;
 use Illuminate\Http\Request;
@@ -288,3 +289,13 @@ Route::middleware(['api.key', 'throttle:60,1'])->prefix('v1/data')->name('api.v1
 
 // MCP Server (Laravel AI) — loaded separately for middleware isolation
 require __DIR__.'/ai.php';
+
+// ── SIAKAD Master API Webhooks ────────────────────────────────────────────
+// HMAC-signed push events from SIAKAD. No auth required — verified by
+// webhook.signature middleware (X-Hub-Signature + X-Webhook-Timestamp).
+Route::prefix('webhooks')
+    ->middleware(['webhook.signature', 'throttle:60,1'])
+    ->group(function () {
+        Route::post('/master', [WebhookController::class, 'handle'])
+            ->name('api.webhooks.master');
+    });

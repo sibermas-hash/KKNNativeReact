@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import * as DocumentPicker from 'expo-document-picker';
 import { api } from '@/lib/api';
+import { unwrapList } from '@/lib/api-helpers';
 import {
   colors, radius, spacing, Screen, SectionTitle, SurfaceCard,
   PrimaryButton, SecondaryButton, StatusPill, EmptyState, LoadingState,
@@ -37,7 +38,7 @@ export function LeaveRequestsScreen() {
     queryKey: ['student', 'leave-requests'],
     queryFn: async () => {
       const res = await endpoints.leaveRequests.index();
-      return (res as unknown as { data?: LeaveRequest[] })?.data || res as unknown as LeaveRequest[];
+      return unwrapList<LeaveRequest>(res);
     },
   });
 

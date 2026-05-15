@@ -22,9 +22,12 @@ class WebhookEvent extends Model
 
     public const STATE_FAILED = 'failed';
 
+    public const MAX_RETRY_COUNT = 10;
+
     protected $fillable = [
         'webhook_id',
         'event',
+        'payload',
         'state',
         'retry_count',
         'error_message',
@@ -32,9 +35,15 @@ class WebhookEvent extends Model
     ];
 
     protected $casts = [
+        'payload' => 'array',
         'retry_count' => 'integer',
         'processed_at' => 'datetime',
     ];
+
+    public function hasExceededMaxRetries(): bool
+    {
+        return $this->retry_count >= self::MAX_RETRY_COUNT;
+    }
 
     /**
      * Consider a row stuck in 'processing' as crashed after this many seconds.

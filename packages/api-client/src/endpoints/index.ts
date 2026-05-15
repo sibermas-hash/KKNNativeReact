@@ -5,6 +5,8 @@ export function authEndpoints(client: AxiosInstance) {
     captcha: () => client.get('/auth/captcha'),
     login: (data: { login: string; password: string; captcha_id: string; captcha_answer: string; remember?: boolean }) =>
       client.post('/auth/login', data),
+    twoFactorVerify: (data: { challenge_token: string; code: string }) =>
+      client.post('/auth/2fa-verify', data),
     logout: () => client.post('/auth/logout'),
     user: () => client.get('/auth/user'),
     forgotPassword: (data: { email: string }) => client.post('/auth/lupa-kata-sandi', data),
@@ -509,6 +511,8 @@ export function profileEndpoints(client: AxiosInstance) {
     update: (data: Record<string, unknown>) => client.patch('/profile', data),
     updateAvatar: (data: FormData) => client.post('/profile/avatar', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
     changePassword: (data: Record<string, unknown>) => client.patch('/profile/password', data),
+    notificationPreferences: () => client.get('/profile/notification-preferences'),
+    updateNotificationPreferences: (data: Record<string, unknown>) => client.patch('/profile/notification-preferences', data),
   };
 }
 
@@ -521,6 +525,7 @@ export function publicEndpoints(client: AxiosInstance) {
     pengumuman: (page = 1) => client.get(`/public/pengumuman?page=${page}`),
     downloads: () => client.get('/public/downloads'),
     locations: () => client.get('/public/locations'),
+    popupAnnouncement: () => client.get('/public/popup-announcement'),
     certificate: (token: string) => client.get(`/public/verify-certificate/${token}`),
   };
 }

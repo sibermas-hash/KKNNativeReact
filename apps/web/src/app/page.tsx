@@ -4,7 +4,6 @@ import { Navbar } from '@/components/public/navbar';
 import { Footer } from '@/components/public/footer';
 import { HeroTitle } from '@/components/public/hero-title';
 import { Showcase3D, HomeContent } from '@/components/public/lazy';
-import { HomePopupAnnouncement } from '@/components/public/home-popup-announcement';
 import { LandingMapPreview } from '@/components/public/landing-map-preview';
 
 export const revalidate = 3600; // 1 hour
@@ -80,7 +79,6 @@ export default async function LandingPage() {
   return (
     <div className="min-h-screen bg-white text-emerald-950">
       <Navbar overlayNav={true} />
-      <HomePopupAnnouncement />
 
       {/* --- HERO SECTION --- */}
       <section className="relative z-0 h-screen min-h-[100svh] overflow-hidden bg-emerald-950">

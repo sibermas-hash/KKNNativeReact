@@ -22,4 +22,17 @@ class PasswordHelper
     {
         return Str::password(24, letters: true, numbers: true, symbols: true, spaces: false);
     }
+
+    public static function fromBirthDate(mixed $birthDate): ?string
+    {
+        if (empty($birthDate)) {
+            return null;
+        }
+
+        try {
+            return \Carbon\Carbon::parse((string) $birthDate)->format('dmY');
+        } catch (\Throwable) {
+            return null;
+        }
+    }
 }

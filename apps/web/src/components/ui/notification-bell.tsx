@@ -5,7 +5,7 @@ import * as Popover from '@radix-ui/react-popover';
 import { Bell, BellRing, CheckCheck, AlertTriangle, CheckCircle2, Info, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { notificationsApi } from '@/lib/api';
 import { showNotificationPopup, desktopPermissionState } from '@/lib/notify';
 import { useAuthStore } from '@/stores';
@@ -63,9 +63,9 @@ export function NotificationBell({ className }: { className?: string }): React.J
   // (cleared on logout / page reload).
   const seenPopupIds = useRef<Set<string>>(new Set());
 
-  const handleNotificationAction = (actionUrl: string) => {
+  const handleNotificationAction = useCallback((actionUrl: string) => {
     router.push(actionUrl);
-  };
+  }, [router]);
 
   // SSE realtime — fire & forget. Keeps the query cache fresh as soon as
   // a notification is created server-side (no waiting for the next poll).
@@ -136,7 +136,7 @@ export function NotificationBell({ className }: { className?: string }): React.J
       es?.close();
       setSseConnected(false);
     };
-  }, [isAuthenticated, qc]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [handleNotificationAction, isAuthenticated, qc]);
 
   const { data } = useQuery<UnreadPayload>({
     queryKey: ['notifications', 'unread'],
@@ -182,7 +182,7 @@ export function NotificationBell({ className }: { className?: string }): React.J
         enableDesktop: desktopPermissionState() === 'granted',
       });
     }
-  }, [data]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [data, handleNotificationAction]);
 
   // Prefetch the full-page history when user hovers the bell — makes
   // "Lihat semua" feel instant.

@@ -81,10 +81,10 @@ class StudentTransferService
             throw new \Exception('Tidak dapat memindahkan peserta ke periode yang lebih lama.');
         }
 
-        // Check quota on target period
+        // R-07 fix: exclude cancelled, completed, and transferred from quota count
         if ($targetPeriod->kuota) {
             $currentCount = PesertaKkn::where('periode_id', $targetPeriod->id)
-                ->whereNotIn('status', ['rejected', 'transferred'])
+                ->whereIn('status', ['pending', 'approved', 'document_submitted', 'document_verified'])
                 ->count();
             if ($currentCount >= $targetPeriod->kuota) {
                 throw new \Exception('Kuota periode tujuan sudah penuh.');

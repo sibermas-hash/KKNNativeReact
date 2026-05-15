@@ -40,13 +40,14 @@ class AbcdReportingService
             return ['can_advance' => false, 'reason' => 'Tahapan terakhir (Reflection) sudah tercapai.'];
         }
 
-        // Logic check: Minimum activities submitted in current stage
+        // C-05 fix: count activities for the CURRENT stage only, not globally
         $activitiesCount = KegiatanKkn::where('kelompok_id', $program->kelompok_id)
+            ->where('abcd_stage', $currentStage->value)
             ->workflowApproved()
             ->count();
 
-        // Dynamic threshold based on stage week
-        $threshold = $currentStage->weekNumber() * 7;
+        // Threshold per stage: minimum 3 approved activities per stage
+        $threshold = 3;
 
         if ($activitiesCount < $threshold) {
             return [

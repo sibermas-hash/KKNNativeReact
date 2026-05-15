@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Menu, X, CircleHelp } from 'lucide-react';
 import { useScroll, useTransform, motion, AnimatePresence } from 'framer-motion';
@@ -136,16 +137,22 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
           {/* Logo (Kiri) */}
           <div className="flex-1 flex justify-start">
             <Link href="/" className="flex items-center gap-2.5 no-underline shrink-0 py-1">
-              <img
+              <Image
                 src="/images/logo_uinsaizu.png"
                 alt="Logo UIN SAIZU"
+                width={44}
+                height={44}
                 className="h-9 max-h-11 w-auto object-contain sm:h-11"
+                priority
               />
               <div className="w-px h-6 bg-emerald-200/50 mx-0.5" />
-              <img
+              <Image
                 src="/images/Logo_SIBERMAS.png"
                 alt="Logo SIBERMAS"
+                width={132}
+                height={44}
                 className="h-9 max-h-11 w-auto object-contain sm:h-11"
+                priority
               />
             </Link>
           </div>

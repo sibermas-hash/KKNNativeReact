@@ -55,7 +55,7 @@ class ChatController extends Controller
                 'sender_id' => $c->messages->first()->sender_id,
                 'is_read' => $c->messages->first()->is_read,
             ] : null,
-            'unread_count' => (int) $c->unread_count,
+            'unread_count' => (int) $c->getAttribute('unread_count'),
         ]);
 
         return $this->success([

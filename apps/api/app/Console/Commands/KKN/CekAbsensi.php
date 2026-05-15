@@ -50,9 +50,10 @@ class CekAbsensi extends Command
             $status = 'tanpa_keterangan';
             $izinId = null;
 
-            // 1. Check for logbook
+            // 1. Check for approved/submitted logbook (A-06 fix: exclude draft/rejected)
             $hasLogbook = KegiatanKkn::where('mahasiswa_id', $peserta->mahasiswa_id)
                 ->where('date', $date)
+                ->whereIn('status', ['submitted', 'approved', 'verified'])
                 ->exists();
 
             if ($hasLogbook) {

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\NilaiKknResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\NilaiKkn;
+use App\Services\GradingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -60,16 +61,19 @@ class GradeController extends Controller
             'scores' => ['required', 'array'],
         ]);
 
-        return $this->success(
-            new NilaiKknResource(
-                NilaiKkn::updateOrCreate(
+        $score = NilaiKkn::updateOrCreate(
                     ['user_id' => $validated['user_id'], 'kelompok_id' => $validated['kelompok_id']],
                     array_merge($validated['scores'], [
                         'admin_graded_by' => auth()->id(),
                         'admin_graded_at' => now(),
                     ]),
-                )
-            ),
+                );
+
+        // G-04 fix: recalc after save
+        app(GradingService::class)->calculateFinalGrade($score);
+
+        return $this->success(
+            new NilaiKknResource($score->fresh()),
             'Nilai berhasil disimpan.'
         );
     }

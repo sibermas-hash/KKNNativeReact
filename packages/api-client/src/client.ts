@@ -92,8 +92,12 @@ export function createWebClient(baseURL?: string): AxiosInstance {
 }
 
 export function createMobileClient(getToken: () => Promise<string | null>, baseURL?: string): AxiosInstance {
+  if (!baseURL) {
+    throw new Error('Mobile API baseURL is required. Set EXPO_PUBLIC_API_URL or pass baseURL explicitly.');
+  }
+
   const client = axios.create({
-    baseURL: baseURL || (typeof process !== 'undefined' && process.env?.EXPO_PUBLIC_API_URL) || undefined,
+    baseURL,
     headers: {
       'Content-Type': 'application/json',
       Accept: 'application/json',
@@ -101,9 +105,13 @@ export function createMobileClient(getToken: () => Promise<string | null>, baseU
   });
 
   client.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
-    const token = await getToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    try {
+      const token = await getToken();
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch {
+      delete config.headers.Authorization;
     }
     return config;
   });
@@ -111,9 +119,15 @@ export function createMobileClient(getToken: () => Promise<string | null>, baseU
   client.interceptors.response.use(
     (response: AxiosResponse) => handleResponse(response),
     (error) => {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
-        if (typeof globalThis !== 'undefined') {
-          globalThis.dispatchEvent?.(new CustomEvent('auth:logout'));
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 401) {
+          if (typeof globalThis !== 'undefined') {
+            globalThis.dispatchEvent?.(new CustomEvent('auth:logout'));
+          }
+        } else if (error.response?.status === 403 && error.response?.data?.error?.code === 'PASSWORD_CHANGE_REQUIRED') {
+          globalThis.dispatchEvent?.(new CustomEvent('auth:require_password_change'));
+        } else if (error.response?.status === 403 && error.response?.data?.error?.code === 'PROFILE_INCOMPLETE') {
+          globalThis.dispatchEvent?.(new CustomEvent('auth:profile_incomplete'));
         }
       }
       return handleError(error);

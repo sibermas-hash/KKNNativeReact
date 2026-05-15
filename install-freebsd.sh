@@ -93,7 +93,7 @@ echo "==> Membuat database dan user PostgreSQL..."
 # Native DB names intentionally match local and server environments.
 DB_PASS_FILE="${APP_DIR}/.db_password.initial"
 if [ ! -f "${DB_PASS_FILE}" ]; then
-    DB_PASS="${DB_PASSWORD:-kknuinsaizu2026native}"
+    DB_PASS="${DB_PASSWORD:-$(openssl rand -base64 24 | tr -d '\n')}"
     umask 077
     mkdir -p "${APP_DIR}"
     echo "${DB_PASS}" > "${DB_PASS_FILE}"

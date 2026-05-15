@@ -43,12 +43,12 @@ export default function ForgotPasswordPage(): React.JSX.Element {
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col sm:justify-center items-center overflow-hidden font-sans selection:bg-cyan-500/30 bg-slate-950">
+    <div className="relative min-h-[100dvh] flex flex-col sm:justify-center items-center overflow-x-hidden overflow-y-auto font-sans selection:bg-cyan-500/30 bg-slate-950">
       {/* Background Layers */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         {/* Large Cinematic Glows */}
-        <div className="absolute top-[-20%] left-[-10%] w-[800px] h-[800px] bg-emerald-500/10 rounded-full blur-[150px] mix-blend-screen animate-pulse [animation-duration:10s]" />
-        <div className="absolute bottom-[-20%] right-[-10%] w-[900px] h-[900px] bg-cyan-500/10 rounded-full blur-[180px] mix-blend-screen animate-pulse [animation-duration:15s]" />
+        <div className="absolute top-[-20%] left-[-10%] w-[400px] sm:w-[800px] h-[400px] sm:h-[800px] bg-emerald-500/10 rounded-full blur-[150px] mix-blend-screen animate-pulse [animation-duration:10s]" />
+        <div className="absolute bottom-[-20%] right-[-10%] w-[400px] sm:w-[900px] h-[400px] sm:h-[900px] bg-cyan-500/10 rounded-full blur-[180px] mix-blend-screen animate-pulse [animation-duration:15s]" />
       </div>
 
       <div className="fixed inset-0 z-[1] pointer-events-none">
@@ -76,7 +76,7 @@ export default function ForgotPasswordPage(): React.JSX.Element {
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 0.8 }}
-        className="relative z-10 w-full max-w-[420px] min-w-[320px] px-4 py-8 sm:px-6 sm:py-12"
+        className="relative z-10 w-full max-w-[420px] px-4 py-8 sm:px-6 sm:py-12"
       >
         <div className="backdrop-blur-2xl bg-white/70 border border-white p-6 sm:p-10 rounded-2xl sm:rounded-[2rem] shadow-2xl relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-white/60 to-transparent pointer-events-none" />

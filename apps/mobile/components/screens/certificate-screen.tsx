@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, Linking } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
+import { unwrapList } from '@/lib/api-helpers';
 import {
   colors, radius, spacing, Screen, SectionTitle, SurfaceCard,
   PrimaryButton, LoadingState, EmptyState, StatusPill, InlineAlert,
@@ -24,11 +25,11 @@ export function CertificateScreen() {
     queryKey: ['student', 'certificates'],
     queryFn: async () => {
       const res = await endpoints.certificates.index();
-      return res as unknown as { data?: Certificate[] } | Certificate[];
+      return unwrapList<Certificate>(res);
     },
   });
 
-  const certs = Array.isArray(data) ? data : (data as { data?: Certificate[] })?.data || [];
+  const certs = data ?? [];
 
   if (isLoading) return <LoadingState label="Memuat sertifikat..." />;
   if (!certs.length) return (

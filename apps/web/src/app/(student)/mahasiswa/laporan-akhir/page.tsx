@@ -151,7 +151,7 @@ export default function FinalReportPage(): React.JSX.Element {
             </div>
             <div className="space-y-1">
               <h3 className="text-xl font-bold text-emerald-950">Pilih File Laporan</h3>
-              <p className="text-sm text-slate-400">Format PDF, Maksimal 10MB</p>
+              <p className="text-sm text-slate-400">Format PDF/DOC/DOCX, Maksimal 20MB</p>
             </div>
 
             <input
@@ -166,10 +166,10 @@ export default function FinalReportPage(): React.JSX.Element {
               <input 
                 type="file" 
                 className="hidden" 
-                accept=".pdf"
+                accept=".pdf,.doc,.docx"
                 onChange={(e) => {
                   const f = e.target.files?.[0] || null;
-                  if (f && f.size > 10 * 1024 * 1024) { toast.error('File maksimal 10MB'); e.target.value = ''; return; }
+                  if (f && f.size > 20 * 1024 * 1024) { toast.error('File maksimal 20MB'); e.target.value = ''; return; }
                   setFile(f);
                 }}
               />

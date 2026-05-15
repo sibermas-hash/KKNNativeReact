@@ -11,19 +11,10 @@ class MasterApiTokenService
 {
     private string $staticToken;
 
-    private bool $verifySsl;
-
-    private string $baseUrl;
-
     public function __construct()
     {
         // Priority: SystemSetting (admin UI) → config/env fallback
-        $this->baseUrl = rtrim(
-            (string) (SystemSetting::get('master_api_url') ?: config('services.master_api.url', '')),
-            '/'
-        );
         $this->staticToken = (string) (SystemSetting::get('master_api_token') ?: config('services.master_api.token', ''));
-        $this->verifySsl = config('app.env') !== 'local';
     }
 
     public function getToken(): ?string

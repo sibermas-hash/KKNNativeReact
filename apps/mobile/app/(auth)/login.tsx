@@ -62,10 +62,14 @@ export default function LoginScreen() {
     setCaptchaError(null);
     setIsCaptchaLoading(true);
 
-    console.log('[SIBERMAS] fetchCaptcha starting...');
+    if (__DEV__) {
+      console.log('[SIBERMAS] fetchCaptcha starting...');
+    }
     try {
       const data = await api.get('/auth/captcha') as { captcha_id: string; question: string };
-      console.log('[SIBERMAS] captcha response:', JSON.stringify(data));
+      if (__DEV__) {
+        console.log('[SIBERMAS] captcha response:', JSON.stringify(data));
+      }
       if (!data?.captcha_id) {
         throw new Error('CAPTCHA tidak tersedia');
       }
@@ -74,7 +78,9 @@ export default function LoginScreen() {
       setValue('captcha_answer', '');
       setCaptchaQuestion(data.question);
     } catch (err) {
-      console.warn('[SIBERMAS] fetchCaptcha failed:', err);
+      if (__DEV__) {
+        console.warn('[SIBERMAS] fetchCaptcha failed:', err);
+      }
       setCaptchaQuestion(null);
       setCaptchaError('CAPTCHA belum dapat dimuat. Periksa koneksi API lalu coba muat ulang.');
     } finally {

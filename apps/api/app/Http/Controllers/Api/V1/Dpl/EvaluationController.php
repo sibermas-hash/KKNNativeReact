@@ -55,15 +55,15 @@ class EvaluationController extends Controller
                 'group_name' => $p->kelompok?->nama_kelompok ?? '-',
             ]);
 
-        $config = KonfigurasiPenilaian::when($periodId, fn ($q) => $q->where('periode_id', $periodId))->first();
+        $configs = KonfigurasiPenilaian::pluck('percentage', 'config_key');
 
         return $this->success([
             'evaluations' => NilaiKknResource::collection($scores),
             'students' => $students,
-            'config' => $config ? [
-                'dpl_weight' => $config->dpl_weight,
-                'village_weight' => $config->village_weight,
-                'lppm_weight' => $config->lppm_weight,
+            'config' => $configs->isNotEmpty() ? [
+                'dpl_weight' => $configs['weight_main_dpl'] ?? 40,
+                'village_weight' => $configs['weight_main_village'] ?? 20,
+                'lppm_weight' => $configs['weight_main_lppm'] ?? 40,
             ] : null,
         ]);
     }
@@ -177,8 +177,9 @@ class EvaluationController extends Controller
         $imported = 0;
         if (! empty($validRows)) {
             DB::transaction(function () use ($validRows, &$imported) {
+                $gradingService = app(GradingService::class);
                 foreach ($validRows as $row) {
-                    NilaiKkn::updateOrCreate(
+                    $score = NilaiKkn::updateOrCreate(
                         ['user_id' => $row['user_id'], 'kelompok_id' => $row['kelompok_id']],
                         [
                             'dpl_relevansi_score' => $row['relevansi'] ?? 0,
@@ -190,6 +191,10 @@ class EvaluationController extends Controller
                             'dpl_graded_at' => now(),
                         ]
                     );
+
+                    // G-06 fix: recalc after import
+                    $gradingService->calculateFinalGrade($score);
+
                     $imported++;
                 }
             });

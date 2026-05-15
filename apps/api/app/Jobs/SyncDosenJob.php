@@ -9,6 +9,7 @@ use App\Models\KKN\Dosen;
 use App\Models\KKN\Fakultas;
 use App\Models\User;
 use App\Services\MasterApiService;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
@@ -16,13 +17,22 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 
-class SyncDosenJob implements ShouldQueue
+class SyncDosenJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
     public int $tries = 3;
 
     public int $backoff = 30;
+
+    public int $timeout = 7200;
+
+    public int $uniqueFor = 7200;
+
+    public function uniqueId(): string
+    {
+        return 'sync-dosen:'.($this->dosenId ?? 'all');
+    }
 
     public function __construct(
         protected ?string $dosenId = null,
@@ -146,27 +156,41 @@ class SyncDosenJob implements ShouldQueue
             }
 
             $user->username = $username;
-            $user->name = $data['nama'] ?? $data['name'] ?? 'Unknown';
+            // Respect field locks — admin may have corrected name from SIAKAD
+            $candidateName = $data['nama'] ?? $data['name'] ?? 'Unknown';
+            if ($isNewUser || ! $user->isFieldLocked('name')) {
+                $user->name = $candidateName;
+            }
             $user->save();
 
             if (! $user->hasRole('dosen')) {
                 $user->assignRole('dosen');
             }
 
+            // Load existing dosen for field-lock check
+            $existingDosen = Dosen::whereBlind('nip', (string) $nip)->first();
+
+            $dosenPayload = [
+                'user_id' => $user->id,
+                'nama' => $data['nama'] ?? $data['name'] ?? 'Unknown',
+                'fakultas_id' => $facultyId,
+                'phone' => $data['phone'] ?? $data['telepon'] ?? null,
+                'gender' => $data['gender'] ?? $data['jenis_kelamin'] ?? 'L',
+                'birth_date' => $data['birth_date'] ?? $data['tanggal_lahir'] ?? null,
+                'is_cpns' => str_contains(strtoupper($data['status_pegawai'] ?? $data['employment_status'] ?? ''), 'CPNS'),
+                'is_tugas_belajar' => str_contains(strtoupper($data['status_aktif'] ?? $data['active_status'] ?? 'AKTIF'), 'TUGAS BELAJAR'),
+                'master_id' => $this->normalizeMasterId($data['id'] ?? $data['master_id'] ?? null),
+                'master_synced_at' => now(),
+            ];
+
+            // Respect per-dosen field locks on existing records
+            if ($existingDosen) {
+                $dosenPayload = $existingDosen->filterLockedFields($dosenPayload);
+            }
+
             Dosen::updateOrCreate(
                 ['nip' => $nip],
-                [
-                    'user_id' => $user->id,
-                    'nama' => $data['nama'] ?? $data['name'] ?? 'Unknown',
-                    'fakultas_id' => $facultyId,
-                    'phone' => $data['phone'] ?? $data['telepon'] ?? null,
-                    'gender' => $data['gender'] ?? $data['jenis_kelamin'] ?? 'L',
-                    'birth_date' => $data['birth_date'] ?? $data['tanggal_lahir'] ?? null,
-                    'is_cpns' => str_contains(strtoupper($data['status_pegawai'] ?? $data['employment_status'] ?? ''), 'CPNS'),
-                    'is_tugas_belajar' => str_contains(strtoupper($data['status_aktif'] ?? $data['active_status'] ?? 'AKTIF'), 'TUGAS BELAJAR'),
-                    'master_id' => $this->normalizeMasterId($data['id'] ?? $data['master_id'] ?? null),
-                    'master_synced_at' => now(),
-                ]
+                $dosenPayload
             );
 
             // C-002 follow-up: reset-link dispatch after commit.

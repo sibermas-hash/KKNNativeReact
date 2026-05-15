@@ -7,6 +7,7 @@ import { Toaster } from 'sonner';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { SmoothScrollProvider } from '@/components/providers/smooth-scroll';
 import { ThemeProvider } from '@/components/ui/theme-provider';
+import { PopupAnnouncement } from '@/components/public/home-popup-announcement';
 import { resetAuthState, useAuthStore, usePeriodStore } from '@/stores';
 import { initAuthToken } from '@/stores';
 
@@ -28,8 +29,9 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
   }
 }
 
-const PUBLIC_PATHS = ['/', '/login', '/lupa-kata-sandi', '/atur-ulang-kata-sandi', '/ganti-password', '/berita', '/lokasi', '/unduhan', '/verify-certificate', '/phase-blocked'];
+const PUBLIC_PATHS = ['/', '/login', '/lupa-kata-sandi', '/atur-ulang-kata-sandi', '/ganti-password', '/berita', '/lokasi', '/unduhan', '/verify-certificate', '/phase-blocked', '/pengumuman', '/support'];
 const PROTECTED_PREFIXES = ['/admin', '/mahasiswa', '/dosen', '/profil', '/ganti-password'];
+const POPUP_PATHS = ['/', '/berita', '/lokasi', '/unduhan', '/pengumuman', '/support'];
 
 export function Providers({ children }: { children: ReactNode }): React.JSX.Element {
   const initialized = useRef(false);
@@ -93,6 +95,7 @@ export function Providers({ children }: { children: ReactNode }): React.JSX.Elem
           <TooltipPrimitive.Provider delayDuration={200}>
             <SmoothScrollProvider>
               {children}
+              <PublicPopupWrapper />
             </SmoothScrollProvider>
           </TooltipPrimitive.Provider>
           <Toaster position="top-right" toastOptions={{ duration: 4000 }} theme="light" richColors />
@@ -100,4 +103,17 @@ export function Providers({ children }: { children: ReactNode }): React.JSX.Elem
       </QueryClientProvider>
     </ErrorBoundary>
   );
+}
+
+function PublicPopupWrapper(): React.JSX.Element | null {
+  const [isPublicRoute, setIsPublicRoute] = useState(false);
+
+  useEffect(() => {
+    const path = window.location.pathname;
+    const isPopupRoute = POPUP_PATHS.some((p) => path === p || path.startsWith(p + '/'));
+    setIsPublicRoute(isPopupRoute);
+  }, []);
+
+  if (!isPublicRoute) return null;
+  return <PopupAnnouncement />;
 }

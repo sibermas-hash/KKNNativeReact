@@ -48,7 +48,7 @@ it('superadmin dapat membuat pengumuman + langsung muncul sebagai popup di home 
     $popup->assertOk();
     $popup->assertJsonPath('data.title', 'Pengumuman Penting UTS');
     $popup->assertJsonPath('data.popup_dismissable', true);
-    expect($popup->json('data.read_more_url'))->toStartWith('/berita/pengumuman-penting-uts');
+    expect($popup->json('data.read_more_url'))->toStartWith('/pengumuman/pengumuman-penting-uts');
 });
 
 it('menolak kategori yang tidak ada di CATEGORY_OPTIONS', function () {

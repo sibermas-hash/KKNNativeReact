@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { dplEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
+import { unwrapList } from '@/lib/api-helpers';
 import {
   colors,
   EmptyState,
@@ -15,14 +16,6 @@ import {
   SurfaceCard,
 } from '@/components/ui/primitives';
 
-type DplReportsResponse = {
-  data?: Record<string, unknown>[];
-};
-
-function isDplReportsResponse(value: unknown): value is DplReportsResponse {
-  return typeof value === 'object' && value !== null && 'data' in value;
-}
-
 export default function DplReportsScreen() {
   const endpoints = dplEndpoints(api);
   const queryClient = useQueryClient();
@@ -32,7 +25,7 @@ export default function DplReportsScreen() {
     queryKey: ['dpl', 'daily-reports'],
     queryFn: async () => {
       const result = await endpoints.dailyReports.index({ status: 'submitted' });
-      return isDplReportsResponse(result) ? result : { data: [] };
+      return unwrapList(result);
     },
   });
 
@@ -41,7 +34,7 @@ export default function DplReportsScreen() {
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['dpl', 'daily-reports'] }); },
   });
 
-  const reports = Array.isArray(data?.data) ? data.data : [];
+  const reports = data ?? [];
 
   const handleApprove = (id: number, title: string) => {
     Alert.alert('Setujui Laporan', `Setujui "${title}"?`, [

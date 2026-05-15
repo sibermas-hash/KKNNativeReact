@@ -87,7 +87,7 @@ class FraudDetectionService
         }
 
         // Calculate distance and time
-        $distance = $attendance->haversineDistance(
+        $distance = $this->haversineDistance(
             $previousAttendance->latitude,
             $previousAttendance->longitude,
             $attendance->latitude,
@@ -95,6 +95,19 @@ class FraudDetectionService
         );
 
         $timeDiff = $attendance->timestamp_client->diffInSeconds($previousAttendance->timestamp_client);
+
+        // A-08 fix: guard against division by zero (2 submits in same second)
+        if ($timeDiff <= 0) {
+            return [
+                'risk' => 35,
+                'indicator' => [
+                    'type' => 'zero_time_diff',
+                    'severity' => 'high',
+                    'message' => 'Dua absensi dalam waktu bersamaan — kemungkinan submit otomatis',
+                ],
+            ];
+        }
+
         $requiredSpeed = $distance / $timeDiff; // m/s
 
         // Max reasonable speed: 50 m/s (180 km/h - highway speed)

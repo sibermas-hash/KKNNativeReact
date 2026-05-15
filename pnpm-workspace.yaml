@@ -1,8 +1,7 @@
 packages:
-  # Deploy-profile: hanya backend + web + shared packages.
-  # `apps/mobile` sengaja tidak di-include supaya `pnpm install --frozen-lockfile`
-  # di server FreeBSD tidak menarik Expo/RN toolchain (~1+ GB) yang tidak
-  # dipakai oleh Next.js standalone build.
+  # Deploy-profile: scripts deploy memakai filtered install agar server FreeBSD
+  # tidak menarik Expo/RN toolchain dari apps/mobile.
   - "apps/api"
+  - "apps/mobile"
   - "apps/web"
   - "packages/*"

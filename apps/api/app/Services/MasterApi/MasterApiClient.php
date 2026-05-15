@@ -95,7 +95,7 @@ class MasterApiClient
     {
         $page = 1;
         $consecutiveFailures = 0;
-        $maxConsecutiveFailures = 2;
+        $maxConsecutiveFailures = 5;
 
         while (true) {
             try {
@@ -105,14 +105,13 @@ class MasterApiClient
                     Log::debug("API Request: GET {$url}", ['page' => $page]);
                 }
 
-                $payload = $this->request($endpoint, array_merge($params, [
+                $payload = $this->requestOrFail($endpoint, array_merge($params, [
                     'page' => $page,
                     'per_page' => $perPage,
                 ]));
 
                 if (! $payload) {
-                    Log::warning("API Response: Empty payload for {$endpoint} page {$page}");
-                    break;
+                    throw new Exception("Empty payload for {$endpoint} page {$page}");
                 }
 
                 // Format 1 — Laravel Resource Collection (SIAKAD aktual):
@@ -134,7 +133,7 @@ class MasterApiClient
                     $pagination = $payload['pagination'] ?? $payload['meta']['pagination'] ?? null;
                     $lastPage = $pagination ? (int) ($pagination['last_page'] ?? 1) : 1;
                 } else {
-                    break;
+                    throw new Exception("Unsupported pagination payload for {$endpoint} page {$page}");
                 }
 
                 $consecutiveFailures = 0;
@@ -156,13 +155,36 @@ class MasterApiClient
                 ]);
 
                 if ($consecutiveFailures >= $maxConsecutiveFailures) {
-                    Log::error('Too many consecutive failures, stopping pagination');
-                    break;
+                    throw new Exception("Too many consecutive failures while fetching {$endpoint} page {$page}");
                 }
 
-                usleep(500000);
+                usleep(min(5_000_000, $consecutiveFailures * 1_000_000));
             }
         }
+    }
+
+    private function requestOrFail(string $endpoint, array $params = []): array
+    {
+        if (! $this->token) {
+            throw new Exception("Master API token missing for GET {$endpoint}");
+        }
+
+        $response = Http::withToken($this->token)
+            ->withHeaders(['Accept' => 'application/json'])
+            ->withOptions(['verify' => $this->verifySsl])
+            ->timeout($this->timeoutSeconds)
+            ->get($this->baseUrl.$endpoint, $params);
+
+        if (! $response->successful()) {
+            throw new Exception("GET {$endpoint} failed with status {$response->status()}: ".substr($response->body(), 0, 200));
+        }
+
+        $payload = $response->json();
+        if (! \is_array($payload)) {
+            throw new Exception("GET {$endpoint} returned non-JSON payload");
+        }
+
+        return $payload;
     }
 
     public function healthCheck(): array

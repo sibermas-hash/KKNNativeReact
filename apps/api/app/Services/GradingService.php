@@ -109,47 +109,43 @@ class GradingService
             throw $e;
         }
 
-        // 1. Calculate Component A (DPL)
-        // DPL has 3 indicators: Laporan (dpl_administrasi_score), Pelaksanaan (dpl_ketercapaian_score), Artikel (dpl_artikel_score)
-        $dplReportWeight = floatval($configs['weight_dpl_report'] ?? 30) / 100;
-        $dplExecutionWeight = floatval($configs['weight_dpl_execution'] ?? 40) / 100;
-        $dplArticleWeight = floatval($configs['weight_dpl_article'] ?? 30) / 100;
+        // 1. Calculate Component A (DPL) — all 5 criteria × 20% each (Hal 42)
+        $dplRaw = (
+            floatval($score->dpl_relevansi_score ?? 0) +
+            floatval($score->dpl_ketercapaian_score ?? 0) +
+            floatval($score->dpl_inovasi_score ?? 0) +
+            floatval($score->dpl_administrasi_score ?? 0) +
+            floatval($score->dpl_artikel_score ?? 0)
+        ) / 5;
 
-        $reportPart = floatval($score->dpl_administrasi_score ?? 0);
-        $executionPart = floatval($score->dpl_ketercapaian_score ?? 0); // No longer averaged with relevansi & inovasi
-        $articlePart = floatval($score->dpl_artikel_score ?? 0);
-
-        $aRaw = ($reportPart * $dplReportWeight) + ($executionPart * $dplExecutionWeight) + ($articlePart * $dplArticleWeight);
-
-        // 2. Calculate Component B (Village/Mitra)
-        // Desa has 2 indicators: Sikap (desa_interaksi_score), Kedisiplinan (desa_disiplin_score)
-        $villageAttitudeWeight = floatval($configs['weight_village_attitude'] ?? 50) / 100;
-        $villageDisciplineWeight = floatval($configs['weight_village_discipline'] ?? 50) / 100;
-
-        $attitudePart = floatval($score->desa_interaksi_score ?? 0);
-        $disciplinePart = floatval($score->desa_disiplin_score ?? 0); // No longer averaged with kinerja
-
-        $bRaw = ($attitudePart * $villageAttitudeWeight) + ($disciplinePart * $villageDisciplineWeight);
+        // 2. Calculate Component B (Village/Mitra) — all 3 criteria (Hal 41)
+        $villageRaw = (
+            floatval($score->desa_interaksi_score ?? 0) * 0.30 +
+            floatval($score->desa_disiplin_score ?? 0) * 0.40 +
+            floatval($score->desa_kinerja_score ?? 0) * 0.30
+        );
 
         // 3. Calculate Component C (LPPM)
-        // LPPM component is 100% based on Administration Score (administration_score)
-        $cRaw = floatval($score->administration_score ?? 0);
+        $lppmRaw = floatval($score->administration_score ?? 0);
 
         // 4. Apply Main Weights
         $dplWeight = floatval($configs['weight_main_dpl'] ?? 40) / 100;
         $villageWeight = floatval($configs['weight_main_village'] ?? 20) / 100;
         $lppmWeight = floatval($configs['weight_main_lppm'] ?? 40) / 100;
 
-        $totalScore = ($aRaw * $dplWeight) + ($bRaw * $villageWeight) + ($cRaw * $lppmWeight);
+        $totalScore = ($dplRaw * $dplWeight) + ($villageRaw * $villageWeight) + ($lppmRaw * $lppmWeight);
+
+        // G-10 fix: clamp to [0, 100]
+        $totalScore = max(0.0, min(100.0, $totalScore));
 
         // Determine letter grade from centralized service
         $gradeData = GradeConversionService::convert($totalScore);
 
         // Update score record
         NilaiKkn::where('id', $score->id)->update([
-            'dpl_weighted_score' => round($aRaw, 2),
-            'village_weighted_score' => round($bRaw, 2),
-            'lppm_weighted_score' => round($cRaw, 2),
+            'dpl_weighted_score' => round($dplRaw, 2),
+            'village_weighted_score' => round($villageRaw, 2),
+            'lppm_weighted_score' => round($lppmRaw, 2),
             'total_score' => round($totalScore, 2),
             'letter_grade' => $gradeData['grade'],
             // Sync legacy fields

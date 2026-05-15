@@ -1,10 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@sibermas/constants';
 import { studentApi } from '@/lib/api';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/ui/shared';
 import {
   AlertCircle, Calendar, CheckCircle2, Clock, FileCheck, FileUp,
   MapPin, RefreshCw, Trash2, Users, XCircle,
@@ -180,6 +182,7 @@ function RegistrationCard({ reg, onCancel, isCancelling }: { reg: Registration; 
 
 export default function RegistrationStatusPage(): React.JSX.Element {
   const queryClient = useQueryClient();
+  const [cancelTarget, setCancelTarget] = useState<number | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.registration.status,
@@ -240,16 +243,27 @@ export default function RegistrationStatusPage(): React.JSX.Element {
             <RegistrationCard
               key={reg.id}
               reg={reg}
-              onCancel={() => {
-                if (confirm('Yakin ingin membatalkan pendaftaran ini?')) {
-                  cancelMutation.mutate(reg.periode_id);
-                }
-              }}
+              onCancel={() => setCancelTarget(reg.periode_id)}
               isCancelling={cancelMutation.isPending}
             />
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={cancelTarget !== null}
+        onClose={() => setCancelTarget(null)}
+        title="Batalkan Pendaftaran"
+        description="Yakin ingin membatalkan pendaftaran ini? Tindakan ini tidak dapat diurungkan."
+        confirmText="Ya, Batalkan"
+        variant="danger"
+        onConfirm={() => {
+          if (cancelTarget !== null) {
+            cancelMutation.mutate(cancelTarget);
+            setCancelTarget(null);
+          }
+        }}
+      />
     </div>
   );
 }

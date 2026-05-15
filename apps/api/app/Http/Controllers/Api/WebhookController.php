@@ -60,6 +60,7 @@ class WebhookController extends Controller
                 $record = WebhookEvent::create([
                     'webhook_id' => $webhookId,
                     'event' => $event,
+                    'payload' => $data,
                     'state' => WebhookEvent::STATE_PROCESSING,
                 ]);
             } catch (UniqueConstraintViolationException $e) {
@@ -96,6 +97,18 @@ class WebhookController extends Controller
 
             // Either state='failed' or state='processing' but stale (worker died).
             // Fall through and re-attempt by flipping state back to processing.
+            if ($existing->hasExceededMaxRetries()) {
+                Log::warning('Webhook exceeded max retries, giving up', [
+                    'webhook_id' => $webhookId, 'event' => $event,
+                    'retry_count' => $existing->retry_count,
+                ]);
+
+                return response()->json([
+                    'status' => 'max_retries_exceeded',
+                    'webhook_id' => $webhookId,
+                ], 422);
+            }
+
             $existing->update([
                 'state' => WebhookEvent::STATE_PROCESSING,
                 'retry_count' => ($existing->retry_count ?? 0) + 1,

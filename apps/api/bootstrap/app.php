@@ -16,6 +16,7 @@ use App\Http\Middleware\RestrictDebugbarAccess;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\TestAutoLogin;
 use App\Http\Middleware\ValidateApiKey;
+use App\Http\Middleware\VerifyWebhookSignature;
 use App\Services\AI\ErrorAlertService;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Console\Scheduling\Schedule;
@@ -122,6 +123,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'not_locked' => CheckPeriodLock::class,
             'admin.auth' => EnsureAdminAuthorization::class,
             '2fa.enforced' => EnforceTwoFactor::class,
+            'webhook.signature' => VerifyWebhookSignature::class,
         ]);
 
         $middleware->redirectGuestsTo('/login');

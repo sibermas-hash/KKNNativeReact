@@ -30,6 +30,11 @@ export default function CreateDailyReportPage(): React.JSX.Element {
   });
 
   const getGPS = () => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      toast.error('Geolocation tidak tersedia di browser ini');
+      return;
+    }
+
     setGpsLoading(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {

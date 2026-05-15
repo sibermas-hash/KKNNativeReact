@@ -144,9 +144,9 @@ function buildPopupHtml(loc: MapLocation): string {
   const district = loc.district_name ? escapeHtml(loc.district_name) : '';
   const regency = loc.regency_name ? escapeHtml(loc.regency_name) : '';
   const subtitle = [district ? `Kec. ${district}` : null, regency].filter(Boolean).join(', ');
-  const groupCount = loc.group_count ?? loc.groups?.length ?? 0;
+  const groupCount = loc.group_count ?? (loc.groups?.length ?? 0);
   const studentCount =
-    loc.students_count ?? loc.groups?.reduce((s, g) => s + (g.peserta_count ?? 0), 0) ?? 0;
+    loc.students_count ?? (loc.groups?.reduce((s, g) => s + (g.peserta_count ?? 0), 0) ?? 0);
 
   const groupsList = (loc.groups ?? [])
     .map(
@@ -217,15 +217,15 @@ export default function LocationsMap({
 
   const totals = useMemo(() => {
     const totalGroups = geoLocations.reduce(
-      (sum, loc) => sum + (loc.group_count ?? loc.groups?.length ?? 0),
+      (sum, loc) => sum + (loc.group_count ?? (loc.groups?.length ?? 0)),
       0,
     );
     const totalStudents = geoLocations.reduce(
       (sum, loc) =>
         sum +
         (loc.students_count ??
-          loc.groups?.reduce((s, g) => s + (g.peserta_count ?? 0), 0) ??
-          0),
+          (loc.groups?.reduce((s, g) => s + (g.peserta_count ?? 0), 0) ??
+            0)),
       0,
     );
     return { totalLocations: geoLocations.length, totalGroups, totalStudents };

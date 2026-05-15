@@ -4,18 +4,23 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 
-class SyncMasterDataJob implements ShouldQueue
+class SyncMasterDataJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
 
     public int $tries = 3;
 
     public int $backoff = 30;
+
+    public int $timeout = 7200;
+
+    public int $uniqueFor = 7200;
 
     public function __construct(
         protected string $syncType = 'all',
@@ -47,5 +52,10 @@ class SyncMasterDataJob implements ShouldQueue
         }
 
         Log::info('SyncMasterDataJob: sync completed', ['type' => $this->syncType]);
+    }
+
+    public function uniqueId(): string
+    {
+        return 'sync-master-data:'.$this->syncType;
     }
 }

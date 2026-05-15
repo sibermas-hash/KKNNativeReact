@@ -104,14 +104,18 @@ class AutoSyncPeriodePhase extends Command
 
     private function getTriggerDate(Periode $period, string $currentPhase): ?Carbon
     {
-        $phase = $currentPhase === 'upcoming' ? 'registration' : $currentPhase;
-
-        return match ($phase) {
-            'registration' => $period->registration_start,
-            'placement' => $period->registration_end,
-            'execution' => $period->start_date,
-            'grading' => $period->end_date,
-            'finished' => $period->grading_end,
+        // C-04 fix: trigger date = when the NEXT phase should START
+        // upcoming→registration: fires at registration_start
+        // registration→placement: fires at registration_end
+        // placement→execution: fires at start_date (KKN execution start)
+        // execution→grading: fires at end_date (KKN execution end)
+        // grading→finished: fires at grading_end
+        return match ($currentPhase) {
+            'upcoming' => $period->registration_start,
+            'registration' => $period->registration_end,
+            'placement' => $period->start_date,
+            'execution' => $period->end_date,
+            'grading' => $period->grading_end,
             default => null,
         };
     }

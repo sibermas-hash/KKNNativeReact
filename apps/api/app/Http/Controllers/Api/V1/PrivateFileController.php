@@ -110,8 +110,9 @@ class PrivateFileController extends Controller
         $user = $request->user();
 
         $message->loadMissing('conversation');
+        $conversation = $message->conversation;
 
-        $isOwner = $message->conversation->user_id === $user->id;
+        $isOwner = $conversation?->getAttribute('user_id') === $user->id;
         $isAdmin = $user->hasAnyRole(['superadmin', 'admin']);
 
         if (! $isOwner && ! $isAdmin) {

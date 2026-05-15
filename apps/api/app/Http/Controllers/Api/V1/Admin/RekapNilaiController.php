@@ -30,12 +30,13 @@ class RekapNilaiController extends Controller
 
     public function finalize(NilaiKkn $score): JsonResponse
     {
-        // Audit R11-REGULER-016 fix: pastikan kelompok sudah punya min 4 sesi
-        // bimbingan 'completed' sebelum nilai difinalisasi. Superadmin bisa
-        // bypass dengan ?force=1 untuk kasus edge (DPL gagal input karena IT issue).
         if ($deny = $this->enforceBimbinganRequirement($score)) {
             return $deny;
         }
+
+        // G-08 fix: recalc before finalization to ensure total_score is current
+        app(\App\Services\GradingService::class)->calculateFinalGrade($score);
+        $score->refresh();
 
         $score->update(['is_finalized' => true, 'admin_graded_by' => auth()->id(), 'admin_graded_at' => now()]);
 
@@ -153,7 +154,11 @@ class RekapNilaiController extends Controller
     {
         abort_unless($score->is_finalized, 422, 'Nilai belum difinalisasi. Sertifikat belum dapat diterbitkan.');
 
-        return app(CertificateService::class)->generateWordForStudent($score);
+        $tempFile = app(CertificateService::class)->generateWordForStudent($score);
+        $userName = $score->relationLoaded('user') ? ($score->user->name ?? '') : '';
+        $name = 'Sertifikat_KKN_'.($userName ?: $score->user_id).'.docx';
+
+        return response()->download($tempFile, $name)->deleteFileAfterSend(true);
     }
 
     /**
@@ -175,7 +180,8 @@ class RekapNilaiController extends Controller
         }
 
         $pdf = app(CertificateService::class)->generateForStudent($score);
-        $name = 'Sertifikat_KKN_'.($score->user?->name ?? $score->user_id).'.pdf';
+        $userName = $score->relationLoaded('user') ? ($score->user->name ?? '') : '';
+        $name = 'Sertifikat_KKN_'.($userName ?: $score->user_id).'.pdf';
 
         return $pdf->download($name);
     }

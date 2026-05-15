@@ -75,7 +75,7 @@ class GenerateBulkCertificatesJob implements ShouldQueue
             }
 
             foreach ($nilaiRecords as $nilai) {
-                $pdf = $service->generateCertificatePdf($nilai);
+                    $pdf = $service->generateForStudent($nilai);
                 $fileName = 'Sertifikat_'.str_replace(' ', '_', $nilai->mahasiswa->nama)."_{$nilai->mahasiswa->nim}.pdf";
                 $zip->addFromString($fileName, $pdf->output());
             }
@@ -100,6 +100,6 @@ class GenerateBulkCertificatesJob implements ShouldQueue
      */
     public function failed(\Throwable $e): void
     {
-        Log::error("GenerateBulkCertificatesJob exhausted retries for period {$this->periodId}: ".$e->getMessage());
+        Log::error("GenerateBulkCertificatesJob exhausted retries for period {$this->periodeId}: ".$e->getMessage());
     }
 }

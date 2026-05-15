@@ -50,21 +50,23 @@ class NilaiAkhirService
                 return KonfigurasiPenilaian::getForType($kknType)->pluck('percentage', 'config_key');
             });
 
-            // 1. Calculate Komponen A (DPL) - Weighted sum
+            // 1. Calculate Komponen A (DPL) — all 5 criteria × 20% each
             $dplWeighted = (
-                (floatval($nilai->final_report_score ?? 0) * (floatval($configs['weight_dpl_report'] ?? 30) / 100)) +
-                (floatval($nilai->execution_score ?? 0) * (floatval($configs['weight_dpl_execution'] ?? 40) / 100)) +
-                (floatval($nilai->article_score ?? 0) * (floatval($configs['weight_dpl_article'] ?? 30) / 100))
-            );
+                floatval($nilai->dpl_relevansi_score ?? 0) +
+                floatval($nilai->dpl_ketercapaian_score ?? 0) +
+                floatval($nilai->dpl_inovasi_score ?? 0) +
+                floatval($nilai->dpl_administrasi_score ?? 0) +
+                floatval($nilai->dpl_artikel_score ?? 0)
+            ) / 5;
 
-            // 2. Calculate Komponen B (Village/Mitra) - Weighted sum
+            // 2. Calculate Komponen B (Village/Mitra) — 3 criteria weighted
             $villageWeighted = (
-                (floatval($nilai->attitude_score ?? 0) * (floatval($configs['weight_village_attitude'] ?? 50) / 100)) +
-                (floatval($nilai->discipline_score ?? 0) * (floatval($configs['weight_village_discipline'] ?? 50) / 100))
+                floatval($nilai->desa_interaksi_score ?? 0) * 0.30 +
+                floatval($nilai->desa_disiplin_score ?? 0) * 0.40 +
+                floatval($nilai->desa_kinerja_score ?? 0) * 0.30
             );
 
-            // 3. Calculate Komponen C (LPPM) - Weighted sum
-            // SURGICAL CLEANUP: LPPM component is now 100% based on Administration Score
+            // 3. Calculate Komponen C (LPPM)
             $lppmWeighted = floatval($nilai->administration_score ?? 0);
 
             // 4. Apply main weights: DPL 40%, Village 20%, LPPM 40% (with defensive zero check)
@@ -77,6 +79,9 @@ class NilaiAkhirService
                 ($villageWeighted * ($villageWeight > 0 ? $villageWeight / 100 : 0)) +
                 ($lppmWeighted * ($lppmWeight > 0 ? $lppmWeight / 100 : 0))
             );
+
+            // G-10 fix: clamp to [0, 100]
+            $totalScore = max(0.0, min(100.0, $totalScore));
 
             // 5. Map to Grade & Index
             $gradeData = GradeConversionService::convert($totalScore);

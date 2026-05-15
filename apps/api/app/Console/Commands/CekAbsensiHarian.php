@@ -15,7 +15,7 @@ use Illuminate\Console\Command;
 
 class CekAbsensiHarian extends Command
 {
-    protected $signature = 'kkn:cek-absensi {--date= : Tanggal yang dicek (default: kemarin)}';
+    protected $signature = 'kkn:cek-absensi-harian {--date= : Tanggal yang dicek (default: kemarin)}';
 
     protected $description = 'Cek absensi harian mahasiswa KKN dan catat yang tidak mengisi logbook atau izin';
 

@@ -81,7 +81,7 @@ return [
          */
         'blocklist_fakultas_ids' => array_filter(array_map(
             'trim',
-            explode(',', (string) env('SIAKAD_STUDENT_BLOCKLIST_FAKULTAS_IDS', '1'))
+            explode(',', (string) env('SIAKAD_STUDENT_BLOCKLIST_FAKULTAS_IDS', ''))
         )),
     ],
 

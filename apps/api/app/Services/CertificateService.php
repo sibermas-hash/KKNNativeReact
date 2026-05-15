@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\KKN\LaporanAkhir;
 use App\Models\KKN\NilaiKkn;
+use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\SertifikatKkn;
 use App\Models\KKN\SystemSetting;
 use App\Services\KKN\KonfigurasiSertifikatService;
@@ -26,6 +27,8 @@ class CertificateService
      */
     public function generateForStudent(NilaiKkn $score)
     {
+        $this->guardEligibility($score);
+
         $data = $this->prepareCertificateData($score);
 
         return Pdf::loadView('reports.certificate', $data)
@@ -37,6 +40,7 @@ class CertificateService
      */
     public function generateWordForStudent(NilaiKkn $score)
     {
+        $this->guardEligibility($score);
         $data = $this->prepareCertificateData($score);
 
         // Path to Word template
@@ -300,6 +304,30 @@ class CertificateService
         ]);
 
         return $sertifikat->fresh();
+    }
+
+    /**
+     * C-01 fix: Guard certificate generation — gugur/cancelled students must not receive certificates.
+     */
+    private function guardEligibility(NilaiKkn $score): void
+    {
+        if (! $score->is_finalized) {
+            throw new RuntimeException('Nilai belum difinalisasi. Sertifikat tidak dapat digenerate.');
+        }
+
+        $score->loadMissing('mahasiswa');
+        $mahasiswa = $score->mahasiswa;
+        $mahasiswaId = $mahasiswa?->getKey();
+
+        if ($mahasiswaId && $score->kelompok_id) {
+            $peserta = PesertaKkn::where('mahasiswa_id', $mahasiswaId)
+                ->where('kelompok_id', $score->kelompok_id)
+                ->first();
+
+            if ($peserta && in_array($peserta->status, ['gugur', 'cancelled', 'rejected', 'transferred'])) {
+                throw new RuntimeException("Mahasiswa dengan status '{$peserta->status}' tidak berhak menerima sertifikat.");
+            }
+        }
     }
 
     /**

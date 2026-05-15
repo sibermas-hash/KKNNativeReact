@@ -215,7 +215,10 @@ class PublicController extends Controller
             'published_at' => $announcement->published_at?->toIso8601String(),
             'popup_until' => $announcement->popup_until?->toIso8601String(),
             'popup_dismissable' => (bool) $announcement->popup_dismissable,
-            'read_more_url' => '/berita/'.$announcement->slug,
+            'read_more_url' => Announcement::resolveType($announcement->category) === Announcement::TYPE_PENGUMUMAN
+                ? '/pengumuman/'.$announcement->slug
+                : '/berita/'.$announcement->slug,
+            'updated_at' => $announcement->updated_at?->toIso8601String(),
         ]);
     }
 }

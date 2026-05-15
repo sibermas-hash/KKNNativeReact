@@ -17,23 +17,26 @@ interface PopupPayload {
   popup_until?: string | null;
   popup_dismissable: boolean;
   read_more_url?: string;
+  updated_at?: string | null;
 }
 
 const LOCAL_STORAGE_PREFIX = 'sibermas_popup_dismissed_v1_';
 
-function isPermanentlyDismissed(id: number): boolean {
+function isPermanentlyDismissed(id: number, updatedAt?: string | null): boolean {
   if (typeof window === 'undefined') return false;
   try {
-    return window.localStorage.getItem(LOCAL_STORAGE_PREFIX + id) === '1';
+    const key = LOCAL_STORAGE_PREFIX + id + (updatedAt ? '_' + updatedAt : '');
+    return window.localStorage.getItem(key) === '1';
   } catch {
     return false;
   }
 }
 
-function setPermanentlyDismissed(id: number): void {
+function setPermanentlyDismissed(id: number, updatedAt?: string | null): void {
   if (typeof window === 'undefined') return;
   try {
-    window.localStorage.setItem(LOCAL_STORAGE_PREFIX + id, '1');
+    const key = LOCAL_STORAGE_PREFIX + id + (updatedAt ? '_' + updatedAt : '');
+    window.localStorage.setItem(key, '1');
   } catch {
     /* quota / privacy mode — silent failure acceptable */
   }
@@ -55,7 +58,7 @@ function setPermanentlyDismissed(id: number): void {
  *     User can still close via X, but every refresh re-surfaces. Used for
  *     emergency notices.
  */
-export function HomePopupAnnouncement(): React.JSX.Element | null {
+export function PopupAnnouncement(): React.JSX.Element | null {
   const [open, setOpen] = useState(false);
 
   const { data } = useQuery<PopupPayload | null>({
@@ -94,14 +97,14 @@ export function HomePopupAnnouncement(): React.JSX.Element | null {
   // Auto-open when data arrives + not permanently dismissed.
   useEffect(() => {
     if (!data) return;
-    if (isPermanentlyDismissed(data.id)) return;
+    if (isPermanentlyDismissed(data.id, data.updated_at)) return;
     setOpen(true);
   }, [data]);
 
   if (!data) return null;
 
   const handleDismissForever = () => {
-    setPermanentlyDismissed(data.id);
+    setPermanentlyDismissed(data.id, data.updated_at);
     setOpen(false);
   };
 

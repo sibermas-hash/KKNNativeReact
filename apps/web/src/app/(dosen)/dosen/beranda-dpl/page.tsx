@@ -70,7 +70,7 @@ export default function DplDashboardPage(): React.JSX.Element {
             <span className="text-[10px] font-black text-emerald-700 uppercase tracking-[0.2em]">Sistem Monitoring DPL</span>
           </div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-            Selamat Datang, {user?.name?.split(',')[0] || 'DPL'}. 👋
+            Selamat Datang, {user?.name?.split(',')[0] || 'DPL'}.
           </h1>
         </div>
         <div className="flex items-center gap-4 bg-white ring-1 ring-slate-200 rounded-lg px-4 py-3 shadow-sm">

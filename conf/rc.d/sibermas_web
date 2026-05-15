@@ -22,6 +22,7 @@ load_rc_config "$name"
 : ${sibermas_web_host:="127.0.0.1"}
 : ${sibermas_web_port:="3000"}
 : ${sibermas_web_public_api_url:="https://sibermas.uinsaizu.ac.id/api/v1"}
+: ${sibermas_web_server_api_url:="http://127.0.0.1/api/v1"}
 : ${sibermas_web_public_app_url:="https://sibermas.uinsaizu.ac.id"}
 : ${sibermas_web_logfile:="/var/log/sibermas/web.log"}
 : ${sibermas_web_pidfile:="/var/run/sibermas-web.pid"}
@@ -33,7 +34,7 @@ procname="/usr/sbin/daemon"
 server_js="${sibermas_web_app_dir}/apps/web/.next/standalone/apps/web/server.js"
 required_files="${server_js}"
 start_precmd="sibermas_web_precmd"
-command_args="-f -P ${sibermas_web_pidfile} -p ${sibermas_web_child_pidfile} -u ${sibermas_web_user} -o ${sibermas_web_logfile} -t sibermas-web -r -R 5 /usr/bin/env NODE_ENV=production PORT=${sibermas_web_port} HOSTNAME=${sibermas_web_host} NEXT_PUBLIC_API_URL=${sibermas_web_public_api_url} NEXT_PUBLIC_APP_URL=${sibermas_web_public_app_url} NEXT_PUBLIC_SITE_URL=${sibermas_web_public_app_url} UMASK=0002 ${sibermas_web_node} ${server_js}"
+command_args="-f -P ${sibermas_web_pidfile} -p ${sibermas_web_child_pidfile} -u ${sibermas_web_user} -o ${sibermas_web_logfile} -t sibermas-web -r -R 5 /usr/bin/env NODE_ENV=production PORT=${sibermas_web_port} HOSTNAME=${sibermas_web_host} NEXT_PUBLIC_API_URL=${sibermas_web_public_api_url} SERVER_API_URL=${sibermas_web_server_api_url} NEXT_PUBLIC_APP_URL=${sibermas_web_public_app_url} NEXT_PUBLIC_SITE_URL=${sibermas_web_public_app_url} UMASK=0002 ${sibermas_web_node} ${server_js}"
 
 sibermas_web_precmd()
 {

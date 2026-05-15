@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@sibermas/constants';
@@ -84,21 +84,20 @@ export default function StudentDashboard(): React.JSX.Element {
   const shouldShowPopup = isApproved && registration && !registration.notification_shown;
   useEffect(() => { if (shouldShowPopup) setShowPopup(true); }, [shouldShowPopup]);
 
+  const handleClosePopup = useCallback(() => {
+    setShowPopup(false);
+    if (registration?.id && !registration.notification_shown) {
+      notificationMutation.mutate(registration.id as number);
+    }
+  }, [notificationMutation, registration?.id, registration?.notification_shown]);
+
   // Escape key handler for modal accessibility
   useEffect(() => {
     if (!showPopup) return;
     const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClosePopup(); };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showPopup]);
-
-  const handleClosePopup = () => {
-    setShowPopup(false);
-    if (registration?.id && !registration.notification_shown) {
-      notificationMutation.mutate(registration.id as number);
-    }
-  };
+  }, [handleClosePopup, showPopup]);
 
   if (isLoading) {
     return (
@@ -168,7 +167,7 @@ export default function StudentDashboard(): React.JSX.Element {
               <span className="text-[10px] font-black text-emerald-700 uppercase tracking-[0.2em]">Sistem Informasi KKN</span>
             </div>
             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
-              Halo, {user?.name?.split(' ')[0] || 'Mahasiswa'}. 👋
+              Selamat Datang, {user?.name?.split(' ')[0] || 'Mahasiswa'}.
             </h1>
           </div>
           <div className="flex items-center gap-4 bg-white ring-1 ring-slate-200 rounded-lg px-4 py-3">

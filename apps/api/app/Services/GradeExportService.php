@@ -106,8 +106,8 @@ class GradeExportService
 
         // === TABLE HEADER ===
         $headerRow = 10;
-        $headers = ['NO', 'NAMA MAHASISWA', 'NIM', 'DISIPLIN', 'SIKAP', 'TOTAL NILAI'];
-        $cols = ['A', 'B', 'C', 'D', 'E', 'F'];
+        $headers = ['NO', 'NAMA MAHASISWA', 'NIM', 'DISIPLIN', 'SIKAP', 'TOTAL NILAI', 'HURUF'];
+        $cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
 
         foreach ($headers as $i => $h) {
             $col = $cols[$i];
@@ -130,11 +130,11 @@ class GradeExportService
                 $sheet->setCellValue("E{$currentRow}", $student['attitude']);
             }
 
-            if ($student['discipline'] !== null && $student['attitude'] !== null) {
-                $total = round(($student['discipline'] + $student['attitude']) / 2);
-                $sheet->setCellValue("F{$currentRow}", $total);
-            }
-            $sheet->getStyle("A{$currentRow}:F{$currentRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+            // G-07 fix: use DB total_score, not avg of 2 components
+            $sheet->setCellValue("F{$currentRow}", $student['total_score'] ?? '');
+            $sheet->setCellValue("G{$currentRow}", $student['letter_grade'] ?? '');
+
+            $sheet->getStyle("A{$currentRow}:G{$currentRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
             $currentRow++;
         }
 
@@ -167,8 +167,8 @@ class GradeExportService
         $sheet->getStyle('A2')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
         $headerRow = 5;
-        $headers = ['NO', 'KELOMPOK', 'NAMA MAHASISWA', 'NIM', 'DISIPLIN', 'SIKAP', 'TOTAL NILAI'];
-        $cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+        $headers = ['NO', 'KELOMPOK', 'NAMA MAHASISWA', 'NIM', 'DISIPLIN', 'SIKAP', 'TOTAL NILAI', 'HURUF'];
+        $cols = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
 
         foreach ($headers as $i => $h) {
             $col = $cols[$i];
@@ -186,11 +186,11 @@ class GradeExportService
             $sheet->setCellValue("E{$currentRow}", $student['discipline']);
             $sheet->setCellValue("F{$currentRow}", $student['attitude']);
 
-            if ($student['discipline'] !== null && $student['attitude'] !== null) {
-                $total = round(($student['discipline'] + $student['attitude']) / 2);
-                $sheet->setCellValue("G{$currentRow}", $total);
-            }
-            $sheet->getStyle("A{$currentRow}:G{$currentRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
+            // G-07 fix: use DB total_score, not avg of 2 components
+            $sheet->setCellValue("G{$currentRow}", $student['total_score'] ?? '');
+            $sheet->setCellValue("H{$currentRow}", $student['letter_grade'] ?? '');
+
+            $sheet->getStyle("A{$currentRow}:H{$currentRow}")->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
             $currentRow++;
         }
     }

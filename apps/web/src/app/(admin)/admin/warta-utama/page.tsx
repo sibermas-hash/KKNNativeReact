@@ -174,6 +174,8 @@ export default function WartaUtamaPage(): React.JSX.Element {
     fd.append('popup_dismissable', form.popup_dismissable ? '1' : '0');
     if (showAsPopup && form.popup_until) {
       fd.append('popup_until', form.popup_until);
+    } else if (!showAsPopup) {
+      fd.append('popup_until', '');
     }
 
     if (form.image_file) {

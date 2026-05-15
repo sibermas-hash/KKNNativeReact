@@ -36,7 +36,7 @@ export default function WorkProgramCreatePage(): React.JSX.Element {
       // Upload proposal file if provided
       if (proposalFile && id) {
         const fd = new FormData();
-        fd.append('proposal_file', proposalFile);
+        fd.append('proposal', proposalFile);
         await studentApi.workPrograms.uploadProposal(id, fd);
       }
 

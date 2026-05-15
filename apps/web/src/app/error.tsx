@@ -3,7 +3,6 @@
 import Link from 'next/link';
 import { useEffect } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
-import * as Sentry from '@sentry/nextjs';
 
 export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
   // Audit fix (2026-05-13): error sebelumnya di-rename `_error` (diabaikan).
@@ -13,11 +12,6 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
   useEffect(() => {
     if (error) {
       console.error('App boundary error:', error);
-      try {
-        Sentry.captureException(error);
-      } catch {
-        // Sentry mungkin belum init — tidak masalah, console sudah cukup.
-      }
     }
   }, [error]);
 

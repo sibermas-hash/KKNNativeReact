@@ -80,9 +80,11 @@ class CircuitBreakerService
 
     public function recordFailure(): void
     {
-        $failures = (int) Cache::get($this->key, 0) + 1;
+        if (! Cache::has($this->key)) {
+            Cache::put($this->key, 0, $this->timeout * 2);
+        }
 
-        Cache::put($this->key, $failures, $this->timeout * 2);
+        $failures = (int) Cache::increment($this->key);
         Cache::put($this->key.'_time', now()->timestamp, $this->timeout * 2);
 
         if ($failures >= $this->threshold) {
@@ -93,7 +95,8 @@ class CircuitBreakerService
     public function recordSuccess(): void
     {
         $wasOpen = $this->isOpen();
-        Cache::put($this->key, 0, $this->timeout * 2);
+        Cache::forget($this->key);
+        Cache::forget($this->key.'_time');
 
         if ($wasOpen) {
             Log::info('Circuit breaker: CLOSED — SIAKAD connection restored, exiting degradation mode');

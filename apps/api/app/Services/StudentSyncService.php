@@ -146,7 +146,8 @@ class StudentSyncService
                 Log::warning("Student {$data['nim']} has unmapped prodi_id: {$programMasterId}. Skipping prodi assignment.");
             }
 
-            $password = PasswordHelper::generateSecureDefault();
+            $password = PasswordHelper::fromBirthDate($data['tanggal_lahir'] ?? $data['birth_date'] ?? null)
+                ?? PasswordHelper::generateSecureDefault();
 
             $email = $this->normalizeMasterEmail($data['email'] ?? null);
             $isNewUser = ! User::where('username', $data['nim'])->exists();
@@ -178,6 +179,13 @@ class StudentSyncService
 
             if ($user->isDirty()) {
                 $user->save();
+            }
+
+            if (! $isNewUser && $password && ($user->must_change_password || is_null($user->password_changed_at))) {
+                $user->forceFill([
+                    'password' => Hash::make($password),
+                    'must_change_password' => true,
+                ])->save();
             }
 
             if (! $user->hasRole('student')) {
@@ -223,10 +231,8 @@ class StudentSyncService
                 $mahasiswaUpdates
             );
 
-            // C-002 fix: new student accounts carry an unguessable random
-            // password. Send a password-reset link so they can claim the
-            // account through their SIAKAD email. If no email is present,
-            // log for manual provisioning.
+            // Student accounts use DDMMYYYY from SIAKAD birth date as the
+            // first-login password, then must rotate it immediately.
             // R-001 fix (audit): dispatch AFTER commit to avoid emailing
             // rolled-back users or queueing notifications from inside the tx.
             // SYNC_SEND_WELCOME_EMAIL=false disables this during bulk sync

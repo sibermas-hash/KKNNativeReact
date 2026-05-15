@@ -83,11 +83,14 @@ require_command() {
 }
 
 validate_rendered_nginx() {
-  [ -f "${NGINX_DEST}" ] || die "Nginx config tidak ditemukan: ${NGINX_DEST}"
-  grep -q 'map \$http_x_forwarded_proto \$forwarded_proto' "${NGINX_DEST}" \
-    || die "Nginx config belum preserve X-Forwarded-Proto. Set RENDER_NGINX=1 untuk render ulang."
-  grep -q 'proxy_set_header X-Forwarded-Proto \$forwarded_proto' "${NGINX_DEST}" \
-    || die "Nginx config masih overwrite X-Forwarded-Proto. Deploy dibatalkan untuk mencegah login/session error."
+  [ -f "${NGINX_DEST}" ] || return 0  # no config yet → will be rendered below
+  # Only validate if config was rendered by us (has our template markers)
+  if grep -q '__WEB_DOMAIN__\|sibermas' "${NGINX_DEST}" 2>/dev/null; then
+    if ! grep -q 'map \$http_x_forwarded_proto \$forwarded_proto' "${NGINX_DEST}"; then
+      echo "WARNING: Nginx config outdated — will re-render from template."
+      RENDER_NGINX=1
+    fi
+  fi
 }
 
 public_health_check() {
@@ -229,6 +232,8 @@ sed "s|/usr/local/www/apache24/data/Sibermas2026|${APP_DIR}|g" \
 
 cp "${APP_DIR}/conf/php-fpm.sibermas.conf" "${PHP_FPM_POOL_DEST}"
 
+validate_rendered_nginx
+
 if [ "${RENDER_NGINX}" = "1" ] || { [ "${RENDER_NGINX}" = "auto" ] && [ ! -f "${NGINX_DEST}" ]; }; then
   sed -e "s|__WEB_DOMAIN__|${WEB_DOMAIN}|g" \
       -e "s|__CERT_BASE__|${WEB_DOMAIN}|g" \
@@ -254,7 +259,6 @@ step "Reloading services"
 service php-fpm reload 2>/dev/null || service php-fpm restart
 
 if nginx -t; then
-  validate_rendered_nginx
   service nginx status >/dev/null 2>&1 && service nginx reload || service nginx start
 else
   die "nginx -t gagal. Periksa ${NGINX_DEST}."

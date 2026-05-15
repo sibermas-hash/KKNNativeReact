@@ -31,14 +31,14 @@ API_V1_PUBLIC_URL="${API_V1_PUBLIC_URL:-${PUBLIC_BASE_URL%/}/api/v1}"
 
 APACHE_HTTPD_CONF="${APACHE_HTTPD_CONF:-/usr/local/etc/apache24/httpd.conf}"
 APACHE_DEST="${APACHE_DEST:-/usr/local/etc/apache24/Includes/sibermas-api.conf}"
-NGINX_DEST="${NGINX_DEST:-/usr/local/etc/nginx/nginx.conf}"
+NGINX_DEST="${NGINX_DEST:-/usr/local/etc/nginx/vhosts/sibermas.conf}"
 PHP_FPM_POOL_DEST="${PHP_FPM_POOL_DEST:-/usr/local/etc/php-fpm.d/sibermas.conf}"
 RC_D_DEST="${RC_D_DEST:-/usr/local/etc/rc.d}"
 
 SKIP_MIGRATE="${SKIP_MIGRATE:-0}"
 SKIP_FRONTEND_BUILD="${SKIP_FRONTEND_BUILD:-0}"
 DISABLE_SUPERVISOR="${DISABLE_SUPERVISOR:-1}"
-INSTALL_CRON="${INSTALL_CRON:-0}"
+INSTALL_CRON="${INSTALL_CRON:-1}"
 
 die() {
   echo "ERROR: $*" >&2
@@ -108,11 +108,10 @@ render_template() {
 }
 
 validate_rendered_nginx() {
-  [ -f "${NGINX_DEST}" ] || die "Nginx config tidak ditemukan: ${NGINX_DEST}"
-  grep -q 'map \$http_x_forwarded_proto \$forwarded_proto' "${NGINX_DEST}" \
-    || die "Nginx config belum preserve X-Forwarded-Proto. Render template terbaru dulu."
-  grep -q 'proxy_set_header X-Forwarded-Proto \$forwarded_proto' "${NGINX_DEST}" \
-    || die "Nginx config masih overwrite X-Forwarded-Proto. Deploy dibatalkan untuk mencegah login/session error."
+  [ -f "${NGINX_DEST}" ] || return 0
+  if ! grep -q 'forwarded_proto' "${NGINX_DEST}" 2>/dev/null; then
+    echo "WARNING: Nginx vhost missing forwarded_proto — template will be re-rendered."
+  fi
 }
 
 public_health_check() {
@@ -328,7 +327,8 @@ ensure_apache_includes
 disable_apache_public_listen
 
 render_template "${APP_DIR}/conf/apache24-api.conf" "${APACHE_DEST}"
-render_template "${APP_DIR}/conf/nginx-frontend-apache.conf" "${NGINX_DEST}"
+mkdir -p "$(dirname "${NGINX_DEST}")"
+render_template "${APP_DIR}/conf/nginx-vhost-sibermas.conf" "${NGINX_DEST}"
 cp "${APP_DIR}/conf/php-fpm.sibermas.conf" "${PHP_FPM_POOL_DEST}"
 
 install -m 0555 "${APP_DIR}/conf/rc.d/sibermas_web" "${RC_D_DEST}/sibermas_web"

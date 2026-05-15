@@ -47,7 +47,11 @@ DB_HOST="${DB_HOST:-127.0.0.1}"
 DB_PORT="${DB_PORT:-5432}"
 DB_DATABASE="${DB_DATABASE:-kknnative}"
 DB_USERNAME="${DB_USERNAME:-kknuinsaizunative}"
-DB_PASSWORD="${DB_PASSWORD:-kknuinsaizu2026native}"
+DB_PASSWORD="${DB_PASSWORD:-}"
+if [ -z "${DB_PASSWORD}" ]; then
+  echo "ERROR: DB_PASSWORD tidak di-set dan tidak ditemukan di .env. Restore dibatalkan." >&2
+  exit 1
+fi
 
 echo "== SIBERMAS Restore =="
 echo "Target DB:    ${DB_USERNAME}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}"
@@ -118,4 +122,4 @@ php artisan route:clear 2>&1 | tail -1
 echo ""
 echo "== Restore complete =="
 echo "Safety snapshot (pre-restore): ${SAFETY_DUMP}"
-echo "Verify app health at: https://sibermas.uinsaizu.ac.id/health"
+echo "Verify app health at: http://127.0.0.1/api/health (local) or https://sibermas.uinsaizu.ac.id/api/health (public)"

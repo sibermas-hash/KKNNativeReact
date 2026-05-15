@@ -69,27 +69,45 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
   cd "${APP_DIR}"
   git pull origin main
 
-  echo "  [b] Installing dependencies..."
+  echo "  [b] Installing PHP dependencies..."
+  cd "${APP_DIR}/apps/api"
+  composer install --no-dev --optimize-autoloader --no-interaction
+  cd "${APP_DIR}"
+
+  echo "  [c] Running migrations..."
+  cd "${APP_DIR}/apps/api"
+  php artisan migrate --force
+  cd "${APP_DIR}"
+
+  echo "  [d] Caching Laravel config/routes..."
+  cd "${APP_DIR}/apps/api"
+  php artisan config:cache
+  php artisan route:cache
+  php artisan event:cache 2>/dev/null || true
+  cd "${APP_DIR}"
+
+  echo "  [e] Installing JS dependencies..."
   TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm install --frozen-lockfile --filter web...
 
-  echo "  [c] Building packages dependency chain..."
+  echo "  [f] Building packages dependency chain..."
   TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:packages
 
-  echo "  [d] Building frontend..."
+  echo "  [g] Building frontend..."
   export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-${PUBLIC_BASE_URL%/}/api/v1}"
   export SERVER_API_URL="${SERVER_API_URL:-http://127.0.0.1/api/v1}"
   export NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL:-${PUBLIC_BASE_URL%/}}"
   export NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL:-${PUBLIC_BASE_URL%/}}"
+  echo "  [h] Building web..."
   TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:web
 
-  echo "  [e] Copying static & public to standalone..."
+  echo "  [i] Copying static & public to standalone..."
   cp -r apps/web/.next/static   apps/web/.next/standalone/apps/web/.next/static 2>/dev/null || true
   cp -r apps/web/public         apps/web/.next/standalone/apps/web/public 2>/dev/null || true
 
-  echo "  [f] Fixing permissions..."
+  echo "  [j] Fixing permissions..."
   chown -R www:www apps/web/.next apps/api/storage apps/api/bootstrap/cache
 
-  echo "  [g] Reloading PHP-FPM (OPcache reset)..."
+  echo "  [k] Reloading services..."
   if [ -n "${JAIL_WEB_IP}" ]; then
     echo "  → Jails mode: restart per jail"
     jexec api service php-fpm reload 2>/dev/null || \
@@ -102,7 +120,9 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
       (command -v ssh >/dev/null && ssh "${JAIL_PROXY_IP}" service nginx reload) || true
   else
     service php-fpm reload 2>/dev/null || service php-fpm restart || true
-    supervisorctl restart "workers:*"
+    # Restart web (Next.js standalone) — rc.d or supervisord
+    service sibermas_web restart 2>/dev/null || supervisorctl restart sibermas-web 2>/dev/null || true
+    supervisorctl restart "workers:*" 2>/dev/null || true
     service nginx reload 2>/dev/null || true
   fi
 

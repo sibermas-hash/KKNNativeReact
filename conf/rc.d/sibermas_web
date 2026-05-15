@@ -1,0 +1,44 @@
+#!/bin/sh
+#
+# PROVIDE: sibermas_web
+# REQUIRE: NETWORKING LOGIN
+# KEYWORD: shutdown
+#
+# rc.conf:
+#   sibermas_web_enable="YES"
+#   sibermas_web_app_dir="/usr/local/www/apache24/data/Sibermas2026"
+
+. /etc/rc.subr
+
+name="sibermas_web"
+rcvar="sibermas_web_enable"
+
+load_rc_config "$name"
+
+: ${sibermas_web_enable:="NO"}
+: ${sibermas_web_app_dir:="/usr/local/www/apache24/data/Sibermas2026"}
+: ${sibermas_web_user:="www"}
+: ${sibermas_web_node:="/usr/local/bin/node"}
+: ${sibermas_web_host:="127.0.0.1"}
+: ${sibermas_web_port:="3000"}
+: ${sibermas_web_public_api_url:="https://sibermas.uinsaizu.ac.id/api/v1"}
+: ${sibermas_web_public_app_url:="https://sibermas.uinsaizu.ac.id"}
+: ${sibermas_web_logfile:="/var/log/sibermas/web.log"}
+: ${sibermas_web_pidfile:="/var/run/sibermas-web.pid"}
+: ${sibermas_web_child_pidfile:="/var/run/sibermas-web.child.pid"}
+
+pidfile="${sibermas_web_pidfile}"
+command="/usr/sbin/daemon"
+procname="/usr/sbin/daemon"
+server_js="${sibermas_web_app_dir}/apps/web/.next/standalone/apps/web/server.js"
+required_files="${server_js}"
+start_precmd="sibermas_web_precmd"
+command_args="-f -P ${sibermas_web_pidfile} -p ${sibermas_web_child_pidfile} -u ${sibermas_web_user} -o ${sibermas_web_logfile} -t sibermas-web -r -R 5 /usr/bin/env NODE_ENV=production PORT=${sibermas_web_port} HOSTNAME=${sibermas_web_host} NEXT_PUBLIC_API_URL=${sibermas_web_public_api_url} NEXT_PUBLIC_APP_URL=${sibermas_web_public_app_url} NEXT_PUBLIC_SITE_URL=${sibermas_web_public_app_url} UMASK=0002 ${sibermas_web_node} ${server_js}"
+
+sibermas_web_precmd()
+{
+    mkdir -p /var/log/sibermas
+    chown "${sibermas_web_user}:${sibermas_web_user}" /var/log/sibermas 2>/dev/null || true
+}
+
+run_rc_command "$1"

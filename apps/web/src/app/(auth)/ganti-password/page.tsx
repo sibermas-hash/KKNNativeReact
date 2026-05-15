@@ -65,10 +65,18 @@ export default function ChangePasswordPage(): React.JSX.Element {
   });
 
   const onSubmit = async (data: ChangePasswordFormData) => {
+    if (!isFirstLogin && !data.current_password) {
+      setError('current_password', { message: 'Kata sandi saat ini wajib diisi' });
+      return;
+    }
+
     setLoading(true);
     setServerErrors([]);
     try {
-      await api.patch('/profile/password', data);
+      const payload = isFirstLogin
+        ? { password: data.password, password_confirmation: data.password_confirmation }
+        : data;
+      await api.patch('/profile/password', payload);
       toast.success('Kata sandi berhasil diperbarui!');
 
       // Re-fetch user so store has must_change_password=false before redirect
@@ -77,7 +85,11 @@ export default function ChangePasswordPage(): React.JSX.Element {
         setUser(freshUser);
       }
 
-      setSuccess(true);
+      if (isFirstLogin || !freshUser?.profile_complete) {
+        router.replace('/profil');
+      } else {
+        setSuccess(true);
+      }
     } catch (err: unknown) {
       const e = err as { response?: { status?: number; data?: { error?: { errors?: Record<string, string[]>; message?: string } } } };
       const errorData = e.response?.data?.error;
@@ -193,33 +205,37 @@ export default function ChangePasswordPage(): React.JSX.Element {
             {/* Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div className="space-y-4">
-                {/* Current Password */}
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Kata Sandi Lama</label>
-                  <div className="relative group">
-                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400 group-focus-within:text-emerald-600 transition-colors">
-                      <Lock size={16} />
+                {!isFirstLogin && (
+                  <>
+                    {/* Current Password */}
+                    <div className="space-y-2">
+                      <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Kata Sandi Saat Ini</label>
+                      <div className="relative group">
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400 group-focus-within:text-emerald-600 transition-colors">
+                          <Lock size={16} />
+                        </div>
+                        <input
+                          {...register('current_password')}
+                          type={showCurrentPassword ? 'text' : 'password'}
+                          className="w-full h-12 bg-white/60 border border-white focus:bg-white rounded-xl pl-[3.2rem] pr-11 text-sm font-bold text-emerald-950 placeholder:text-emerald-800/40 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none"
+                          placeholder="Masukkan sandi saat ini"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                          aria-label={showCurrentPassword ? 'Sembunyikan kata sandi saat ini' : 'Tampilkan kata sandi saat ini'}
+                          aria-pressed={showCurrentPassword}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-400 hover:text-emerald-600"
+                        >
+                          {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                      {errors.current_password && <p className="text-[10px] font-bold text-rose-500 ml-1">{errors.current_password.message}</p>}
                     </div>
-                    <input
-                      {...register('current_password')}
-                      type={showCurrentPassword ? 'text' : 'password'}
-                      className="w-full h-12 bg-white/60 border border-white focus:bg-white rounded-xl pl-[3.2rem] pr-11 text-sm font-bold text-emerald-950 placeholder:text-emerald-800/40 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none"
-                      placeholder="Masukkan sandi lama"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                      aria-label={showCurrentPassword ? 'Sembunyikan kata sandi lama' : 'Tampilkan kata sandi lama'}
-                      aria-pressed={showCurrentPassword}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-emerald-400 hover:text-emerald-600"
-                    >
-                      {showCurrentPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                  {errors.current_password && <p className="text-[10px] font-bold text-rose-500 ml-1">{errors.current_password.message}</p>}
-                </div>
 
-                <div className="h-px bg-slate-100 mx-2" />
+                    <div className="h-px bg-slate-100 mx-2" />
+                  </>
+                )}
 
                 {/* New Password */}
                 <div className="space-y-2">

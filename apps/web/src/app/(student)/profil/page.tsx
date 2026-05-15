@@ -536,11 +536,16 @@ export default function ProfilePage(): React.JSX.Element {
       await profileApi.update(payload);
       toast.success(profileComplete ? 'Permintaan perubahan profil dikirim. Menunggu persetujuan superadmin.' : 'Profil berhasil disimpan. Pastikan semua data sudah valid.');
       setIsEditing(false);
-      const res = await profileApi.get() as unknown as { student?: StudentProfile; lecturer?: LecturerProfile; pending_change_request?: ChangeRequest; user?: { biodata_complete?: boolean; address_complete?: boolean } };
+      const res = await profileApi.get() as unknown as { student?: StudentProfile; lecturer?: LecturerProfile; pending_change_request?: ChangeRequest; profile_complete?: boolean; user?: { biodata_complete?: boolean; address_complete?: boolean } };
       setProfileData({ student: res?.student ?? null, lecturer: res?.lecturer ?? null, pending: res?.pending_change_request ?? null });
-      await fetchUser();
-      const complete = !!(res?.student?.biodata_complete && res?.user?.address_complete) || !!res?.lecturer?.biodata_complete;
+      await fetchUser(true);
+      const complete = !!res?.profile_complete || !!(res?.student?.biodata_complete && res?.student?.address_complete) || !!res?.lecturer?.biodata_complete;
       setProfileCompleteCookie(complete);
+      if (complete) {
+        const freshUser = useAuthStore.getState().user;
+        toast.success('Profil lengkap. Mengarahkan ke dashboard...');
+        router.replace(dashboardPathFor(freshUser?.roles ?? []));
+      }
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: { errors?: Record<string, string[]>; message?: string } } } };
       const apiErrors = e?.response?.data?.error?.errors;

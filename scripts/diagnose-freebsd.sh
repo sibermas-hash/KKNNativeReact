@@ -51,16 +51,25 @@ check_service() {
 }
 
 check_service nginx
+check_service apache24
 check_service "php-fpm"
 check_service postgresql
 check_service redis
 check_service supervisord
+check_service sibermas_web
+check_service sibermas_queue
 check_service pf
 
 # ─── 3. Listening Ports ────────────────────────────────────────────────
 section "3. Listening Ports"
 echo "Port  | Process"
 sockstat -4 -l 2>/dev/null | awk 'NR>1 {print $6, "|", $2"("$3")"}' | sort -u | head -20 || echo "  (sockstat unavailable)"
+PUBLIC_HTTPD=$(sockstat -4 -l 2>/dev/null | awk '$2 ~ /^(httpd|apache|apache24)$/ && ($6 ~ /:(80|443)$/) {print}' || true)
+if [ -n "$PUBLIC_HTTPD" ]; then
+  echo ""
+  echo "  [FAIL] Apache/httpd listen di port publik 80/443. Untuk profile ini Nginx harus owns 80/443; Apache24 hanya 127.0.0.1:8080."
+  echo "$PUBLIC_HTTPD" | sed 's/^/    /'
+fi
 
 # ─── 4. App Directory ──────────────────────────────────────────────────
 section "4. App Directory"
@@ -76,7 +85,11 @@ if [ -d "$APP_DIR" ]; then
       echo "APP_KEY set:    $(grep -c '^APP_KEY=base64:' "$APP_DIR/apps/api/.env" 2>/dev/null || echo 0) (>0 = set)"
       echo "APP_ENV:        $(grep '^APP_ENV=' "$APP_DIR/apps/api/.env" 2>/dev/null | cut -d= -f2)"
       echo "DB_CONNECTION:  $(grep '^DB_CONNECTION=' "$APP_DIR/apps/api/.env" 2>/dev/null | cut -d= -f2)"
+      echo "DB_HOST:        $(grep '^DB_HOST=' "$APP_DIR/apps/api/.env" 2>/dev/null | cut -d= -f2)"
+      echo "DB_PORT:        $(grep '^DB_PORT=' "$APP_DIR/apps/api/.env" 2>/dev/null | cut -d= -f2)"
       echo "DB_DATABASE:    $(grep '^DB_DATABASE=' "$APP_DIR/apps/api/.env" 2>/dev/null | cut -d= -f2)"
+      echo "DB_USERNAME:    $(grep '^DB_USERNAME=' "$APP_DIR/apps/api/.env" 2>/dev/null | cut -d= -f2)"
+      echo "DB_SSLMODE:     $(grep '^DB_SSLMODE=' "$APP_DIR/apps/api/.env" 2>/dev/null | cut -d= -f2)"
     fi
   fi
   if [ -f "$APP_DIR/apps/web/.next/standalone/apps/web/server.js" ]; then
@@ -176,16 +189,34 @@ if [ -f /usr/local/etc/nginx/nginx.conf ]; then
   tail -10 "$NGINX_LOG_DIR/sibermas-error.log" 2>/dev/null | sed 's/^/  /' || echo "  (log tidak ada)"
 fi
 
-# ─── 9. Supervisord ────────────────────────────────────────────────────
-section "9. Supervisord"
+# ─── 9. Apache24 / rc.d Runtime ────────────────────────────────────────
+section "9. Apache24 / rc.d Runtime"
+if [ -f /usr/local/etc/apache24/Includes/sibermas-api.conf ]; then
+  echo "Apache API config: /usr/local/etc/apache24/Includes/sibermas-api.conf"
+  echo "Test config:"
+  apachectl configtest 2>&1 | sed 's/^/  /'
+  echo ""
+  echo "Last 10 Apache API error log entries:"
+  tail -10 "$LOG_DIR/apache-api-error.log" 2>/dev/null | sed 's/^/  /' || echo "  (log tidak ada)"
+fi
+
+if service sibermas_web status >/dev/null 2>&1; then
+  service sibermas_web status 2>&1 | sed 's/^/  /'
+fi
+if service sibermas_queue status >/dev/null 2>&1; then
+  service sibermas_queue status 2>&1 | sed 's/^/  /'
+fi
+
+# ─── 10. Supervisord ───────────────────────────────────────────────────
+section "10. Supervisord"
 if command -v supervisorctl >/dev/null 2>&1; then
   supervisorctl status 2>&1 | sed 's/^/  /'
 else
   echo "  supervisorctl tidak ditemukan"
 fi
 
-# ─── 10. Application Logs ──────────────────────────────────────────────
-section "10. Application Logs"
+# ─── 11. Application Logs ──────────────────────────────────────────────
+section "11. Application Logs"
 if [ -d "$LOG_DIR" ]; then
   echo "Log dir: $LOG_DIR"
   ls -la "$LOG_DIR" 2>/dev/null | tail -10 | sed 's/^/  /'
@@ -204,25 +235,36 @@ if [ -f "$APP_DIR/apps/api/storage/logs/laravel.log" ]; then
   tail -20 "$APP_DIR/apps/api/storage/logs/laravel.log" 2>/dev/null | sed 's/^/  /'
 fi
 
-# ─── 11. HTTP Health Check ─────────────────────────────────────────────
-section "11. HTTP Health Check"
+# ─── 12. HTTP Health Check ─────────────────────────────────────────────
+section "12. HTTP Health Check"
 echo "Test localhost:80 (Nginx):"
 curl -sI -m 5 http://127.0.0.1/ 2>&1 | head -5 | sed 's/^/  /' || echo "  curl gagal"
+echo ""
+echo "Test localhost:8080 (Apache API backend):"
+curl -sI -m 5 http://127.0.0.1:8080/api/health 2>&1 | head -5 | sed 's/^/  /' || echo "  curl gagal"
 echo ""
 echo "Test localhost:3000 (Next.js):"
 curl -sI -m 5 http://127.0.0.1:3000/ 2>&1 | head -5 | sed 's/^/  /' || echo "  curl gagal"
 echo ""
 echo "Test API health:"
 curl -s -m 5 http://127.0.0.1/api/health 2>&1 | head -5 | sed 's/^/  /' || echo "  curl gagal"
+echo ""
+echo "Test login preflight (captcha endpoint):"
+curl -s -m 5 http://127.0.0.1/api/v1/auth/captcha 2>&1 | head -5 | sed 's/^/  /' || echo "  curl gagal"
 
-# ─── 12. Most Common Issues Quick Check ────────────────────────────────
-section "12. Common Issues Quick Check"
+# ─── 13. Most Common Issues Quick Check ────────────────────────────────
+section "13. Common Issues Quick Check"
 
 # A. APP_KEY kosong
 if [ -f "$APP_DIR/apps/api/.env" ]; then
   if ! grep -qE '^APP_KEY=base64:[A-Za-z0-9+/=]{44,}' "$APP_DIR/apps/api/.env" 2>/dev/null; then
     echo "  [WARN] APP_KEY belum di-set di .env — jalankan: php artisan key:generate --force"
   fi
+  echo ""
+  echo "Login/session env:"
+  for k in APP_URL APP_FRONTEND_URL SESSION_DOMAIN SANCTUM_STATEFUL_DOMAINS CORS_ALLOWED_ORIGINS SESSION_SECURE_COOKIE SESSION_SAME_SITE; do
+    grep "^${k}=" "$APP_DIR/apps/api/.env" 2>/dev/null | sed 's/^/  /'
+  done
 fi
 
 # B. Migration belum jalan

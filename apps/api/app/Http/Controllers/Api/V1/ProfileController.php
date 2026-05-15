@@ -345,14 +345,14 @@ class ProfileController extends Controller
             'avatar' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'mimetypes:image/jpeg,image/png,image/webp', 'max:5120'],
         ]);
 
-        $path = $request->file('avatar')->store('avatars', config('filesystems.default'));
+        $path = $request->file('avatar')->store('avatars', 'public');
 
         // Layer 3: AI Validation (background merah + jas almamater + pose formal)
         $aiResult = $validator->validateAvatar($path);
 
         // Layer 3 AI tegas menolak (tidak butuh manual review) — tolak instan
         if (! $aiResult['is_valid'] && ! $aiResult['requires_manual_review']) {
-            Storage::disk(config('filesystems.default'))->delete($path);
+            Storage::disk('public')->delete($path);
 
             ActivityLogger::log('avatar_rejected', 'failed', $user->id, [
                 'reason' => $aiResult['reason'],
@@ -372,7 +372,7 @@ class ProfileController extends Controller
             : null;
 
         if ($user->avatar) {
-            Storage::disk(config('filesystems.default'))->delete($user->avatar);
+            Storage::disk('public')->delete($user->avatar);
         }
 
         $user->update([
@@ -402,12 +402,14 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
+        $isFirstPasswordChange = $user->must_change_password || is_null($user->password_changed_at);
+
         $request->validate([
-            'current_password' => ['required', 'string'],
+            'current_password' => [$isFirstPasswordChange ? 'nullable' : 'required', 'string'],
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
 
-        if (! Hash::check($request->input('current_password'), $user->password)) {
+        if (! $isFirstPasswordChange && ! Hash::check($request->input('current_password'), $user->password)) {
             ActivityLogger::log('password_change', 'failed', $user->id, [
                 'reason' => 'invalid_current_password',
             ]);
@@ -416,8 +418,6 @@ class ProfileController extends Controller
                 'current_password' => ['Kata sandi saat ini salah.'],
             ]);
         }
-
-        $isFirstPasswordChange = $user->must_change_password || is_null($user->password_changed_at);
 
         $user->update([
             'password' => Hash::make($request->input('password')),

@@ -1,0 +1,160 @@
+#!/bin/sh
+#
+# PROVIDE: sibermas_queue
+# REQUIRE: NETWORKING LOGIN redis postgresql
+# KEYWORD: shutdown
+#
+# rc.conf:
+#   sibermas_queue_enable="YES"
+#   sibermas_queue_app_dir="/usr/local/www/apache24/data/Sibermas2026"
+#   sibermas_queue_default_procs="2"
+#   sibermas_queue_low_procs="1"
+#   sibermas_queue_long_procs="1"
+
+. /etc/rc.subr
+
+name="sibermas_queue"
+rcvar="sibermas_queue_enable"
+start_cmd="sibermas_queue_start"
+stop_cmd="sibermas_queue_stop"
+restart_cmd="sibermas_queue_restart"
+status_cmd="sibermas_queue_status"
+
+load_rc_config "$name"
+
+: ${sibermas_queue_enable:="NO"}
+: ${sibermas_queue_app_dir:="/usr/local/www/apache24/data/Sibermas2026"}
+: ${sibermas_queue_user:="www"}
+: ${sibermas_queue_php:="/usr/local/bin/php"}
+: ${sibermas_queue_log_dir:="/var/log/sibermas"}
+: ${sibermas_queue_pid_dir:="/var/run"}
+: ${sibermas_queue_default_procs:="2"}
+: ${sibermas_queue_low_procs:="1"}
+: ${sibermas_queue_long_procs:="1"}
+
+artisan="${sibermas_queue_app_dir}/apps/api/artisan"
+
+is_running()
+{
+    _pidfile="$1"
+    [ -f "$_pidfile" ] || return 1
+    _pid="$(cat "$_pidfile" 2>/dev/null || true)"
+    [ -n "$_pid" ] || return 1
+    kill -0 "$_pid" 2>/dev/null
+}
+
+start_one()
+{
+    _name="$1"
+    _idx="$2"
+    _queues="$3"
+    _sleep="$4"
+    _tries="$5"
+    _max_time="$6"
+    _pidfile="${sibermas_queue_pid_dir}/sibermas-queue-${_name}-${_idx}.pid"
+    _child_pidfile="${sibermas_queue_pid_dir}/sibermas-queue-${_name}-${_idx}.child.pid"
+    _logfile="${sibermas_queue_log_dir}/worker-${_name}.log"
+
+    if is_running "$_pidfile"; then
+        echo "sibermas_queue ${_name}#${_idx} already running"
+        return 0
+    fi
+
+    /usr/sbin/daemon \
+        -f \
+        -P "$_pidfile" \
+        -p "$_child_pidfile" \
+        -u "$sibermas_queue_user" \
+        -o "$_logfile" \
+        -t "sibermas-queue-${_name}-${_idx}" \
+        -r -R 5 \
+        /usr/bin/env UMASK=0002 "$sibermas_queue_php" "$artisan" queue:work \
+            --queue="$_queues" \
+            --sleep="$_sleep" \
+            --tries="$_tries" \
+            --max-time="$_max_time"
+}
+
+stop_one()
+{
+    _name="$1"
+    _idx="$2"
+    _pidfile="${sibermas_queue_pid_dir}/sibermas-queue-${_name}-${_idx}.pid"
+    _child_pidfile="${sibermas_queue_pid_dir}/sibermas-queue-${_name}-${_idx}.child.pid"
+
+    if is_running "$_pidfile"; then
+        _pid="$(cat "$_pidfile")"
+        echo "Stopping sibermas_queue ${_name}#${_idx} (pid ${_pid})"
+        kill "$_pid" 2>/dev/null || true
+        sleep 1
+    fi
+
+    rm -f "$_pidfile" "$_child_pidfile"
+}
+
+status_one()
+{
+    _name="$1"
+    _idx="$2"
+    _pidfile="${sibermas_queue_pid_dir}/sibermas-queue-${_name}-${_idx}.pid"
+
+    if is_running "$_pidfile"; then
+        echo "sibermas_queue ${_name}#${_idx} is running (pid $(cat "$_pidfile"))"
+    else
+        echo "sibermas_queue ${_name}#${_idx} is not running"
+        return 1
+    fi
+}
+
+each_worker()
+{
+    _action="$1"
+    _failed=0
+    _i=1
+    while [ "$_i" -le "$sibermas_queue_default_procs" ]; do
+        "${_action}_one" "default" "$_i" "default,critical,high" "3" "3" "3600" || _failed=1
+        _i=$((_i + 1))
+    done
+
+    _i=1
+    while [ "$_i" -le "$sibermas_queue_low_procs" ]; do
+        "${_action}_one" "low" "$_i" "low,low-priority" "5" "3" "3600" || _failed=1
+        _i=$((_i + 1))
+    done
+
+    _i=1
+    while [ "$_i" -le "$sibermas_queue_long_procs" ]; do
+        "${_action}_one" "long" "$_i" "long" "10" "1" "7200" || _failed=1
+        _i=$((_i + 1))
+    done
+
+    return "$_failed"
+}
+
+sibermas_queue_start()
+{
+    [ -f "$artisan" ] || err 1 "Missing artisan: $artisan"
+    mkdir -p "$sibermas_queue_log_dir"
+    chown "${sibermas_queue_user}:${sibermas_queue_user}" "$sibermas_queue_log_dir" 2>/dev/null || true
+    each_worker start
+}
+
+sibermas_queue_stop()
+{
+    each_worker stop
+}
+
+sibermas_queue_restart()
+{
+    sibermas_queue_stop
+    sibermas_queue_start
+}
+
+sibermas_queue_status()
+{
+    _failed=0
+    each_worker status || _failed=1
+    return "$_failed"
+}
+
+run_rc_command "$1"

@@ -11,7 +11,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SERVER="${DEPLOY_SERVER:?DEPLOY_SERVER tidak di-set (contoh: user@host)}"
 PORT="${DEPLOY_PORT:-22}"
-APP_DIR="${APP_DIR:-/usr/local/www/sibermas}"
+APP_DIR="${APP_DIR:-/usr/local/www/apache24/data/Sibermas2026}"
 PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://sibermas.uinsaizu.ac.id}"
 
 # Jails mode: set JAIL_WEB_IP / JAIL_API_IP / JAIL_PROXY_IP untuk restart per-jail.
@@ -59,7 +59,7 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
   bash -s << 'ENDSSH'
   set -euo pipefail
 
-  APP_DIR="${APP_DIR:-/usr/local/www/sibermas}"
+  APP_DIR="${APP_DIR:-/usr/local/www/apache24/data/Sibermas2026}"
   PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://sibermas.uinsaizu.ac.id}"
   JAIL_WEB_IP="${JAIL_WEB_IP:-}"
   JAIL_API_IP="${JAIL_API_IP:-}"

@@ -66,7 +66,7 @@ class AnnouncementController extends Controller
             $validated['category'] = 'PENGUMUMAN';
         }
 
-        $disk = config('filesystems.default');
+        $disk = 'public';
 
         // Handle image upload
         $imagePath = null;
@@ -139,7 +139,7 @@ class AnnouncementController extends Controller
             }
         }
 
-        $disk = config('filesystems.default');
+        $disk = 'public';
 
         // Handle image replacement
         if ($request->hasFile('image')) {
@@ -187,7 +187,7 @@ class AnnouncementController extends Controller
 
     public function destroy(Announcement $announcement): JsonResponse
     {
-        $disk = config('filesystems.default');
+        $disk = 'public';
 
         if ($announcement->image) {
             Storage::disk($disk)->delete($announcement->image);

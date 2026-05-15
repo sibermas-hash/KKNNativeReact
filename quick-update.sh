@@ -5,17 +5,19 @@
 
 set -euo pipefail
 
-APP_DIR="${APP_DIR:-/usr/local/www/sibermas}"
+APP_DIR="${APP_DIR:-/usr/local/www/apache24/data/Sibermas2026}"
 CURRENT_LINK="${APP_DIR}/current"
 WEB_USER="www"
 PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://${WEB_DOMAIN:-sibermas.uinsaizu.ac.id}}"
 
-if [ ! -L "${CURRENT_LINK}" ]; then
-  echo "❌ ${CURRENT_LINK} tidak ditemukan. Jalankan deploy-atomic.sh dulu."
+if [ -L "${CURRENT_LINK}" ]; then
+  RELEASE_DIR=$(readlink "${CURRENT_LINK}")
+elif [ -f "${APP_DIR}/package.json" ]; then
+  RELEASE_DIR="${APP_DIR}"
+else
+  echo "❌ Tidak menemukan app di ${APP_DIR} atau symlink atomic ${CURRENT_LINK}."
   exit 1
 fi
-
-RELEASE_DIR=$(readlink "${CURRENT_LINK}")
 echo "═══════════════════════════════════════════════"
 echo "  Quick Update — $(date '+%Y%m%d_%H%M%S')"
 echo "  Target: ${RELEASE_DIR}"

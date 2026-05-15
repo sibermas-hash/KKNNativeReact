@@ -42,9 +42,9 @@ fi
 
 DB_HOST="${DB_HOST:-127.0.0.1}"
 DB_PORT="${DB_PORT:-5432}"
-DB_DATABASE="${DB_DATABASE:-sibermas}"
-DB_USERNAME="${DB_USERNAME:-postgres}"
-DB_PASSWORD="${DB_PASSWORD:-}"
+DB_DATABASE="${DB_DATABASE:-kknnative}"
+DB_USERNAME="${DB_USERNAME:-kknuinsaizunative}"
+DB_PASSWORD="${DB_PASSWORD:-kknuinsaizu2026native}"
 
 mkdir -p "${OUTPUT_DIR}"
 

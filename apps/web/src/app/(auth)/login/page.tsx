@@ -98,8 +98,8 @@ export default function LoginPage(): React.JSX.Element {
         return;
       }
 
-      // Never changed password → must go to /ganti-password first
-      if (!user.password_changed_at) {
+      // First/default password → must go to /ganti-password first
+      if (user.must_change_password || !user.password_changed_at) {
         router.replace('/ganti-password');
         return;
       }

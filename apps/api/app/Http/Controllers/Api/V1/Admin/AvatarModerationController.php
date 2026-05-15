@@ -108,7 +108,7 @@ class AvatarModerationController extends Controller
         ]);
 
         if ($user->avatar) {
-            Storage::disk(config('filesystems.default'))->delete($user->avatar);
+            Storage::disk('public')->delete($user->avatar);
         }
 
         $user->update([

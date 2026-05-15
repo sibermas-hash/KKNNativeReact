@@ -61,9 +61,12 @@ class AuthController extends Controller
 
         // Verify captcha first
         if (! $this->captchaService->verify($request->input('captcha_id'), $request->input('captcha_answer'))) {
-            throw ValidationException::withMessages([
-                'captcha_answer' => 'Verifikasi keamanan kedaluwarsa atau salah.',
-            ]);
+            return $this->error(
+                'CAPTCHA_INVALID',
+                'Verifikasi keamanan kedaluwarsa atau salah.',
+                422,
+                ['captcha_answer' => ['Verifikasi keamanan kedaluwarsa atau salah.']]
+            );
         }
 
         // Rate limiting

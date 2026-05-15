@@ -33,7 +33,7 @@ export const resetPasswordSchema = z.object({
 });
 
 export const changePasswordSchema = z.object({
-  current_password: z.string().min(1, 'Kata sandi saat ini wajib diisi'),
+  current_password: z.string().optional(),
   password: passwordValidation,
   password_confirmation: z.string().min(1, 'Konfirmasi kata sandi wajib diisi'),
 }).refine((data) => data.password === data.password_confirmation, {

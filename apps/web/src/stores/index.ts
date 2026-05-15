@@ -85,7 +85,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           const u = user as User & { password_changed_at?: string | null; must_change_password?: boolean; profile_complete?: boolean };
           const isSuperadmin = user.roles?.includes('superadmin');
           setProfileCompleteCookie(isSuperadmin || !!u.profile_complete);
-          if (!isSuperadmin && !u.password_changed_at) {
+          if (!isSuperadmin && (u.must_change_password || !u.password_changed_at)) {
             window.dispatchEvent(new Event('auth:require_password_change'));
           } else if (!isSuperadmin && (!u.profile_complete || u.must_change_password)) {
             window.dispatchEvent(new Event('auth:profile_incomplete'));

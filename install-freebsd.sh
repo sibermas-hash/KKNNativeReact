@@ -16,7 +16,7 @@
 
 set -e
 
-APP_DIR="/usr/local/www/apache24/data/Sibermas2026"
+APP_DIR="${APP_DIR:-/usr/local/www/apache24/data/Sibermas2026}"
 PF_CONF="/etc/pf.conf"
 APP_USER="www"
 LOG_DIR="/var/log/sibermas"
@@ -71,6 +71,7 @@ pkg install -y \
     node${NODE_VERSION} \
     npm-node${NODE_VERSION} \
     py311-supervisor \
+    py311-certbot \
     git \
     curl \
     bash
@@ -89,12 +90,10 @@ fi
 service postgresql start
 
 echo "==> Membuat database dan user PostgreSQL..."
-# Generate a strong random password. Only applies on first-run (CREATE USER
-# will fail silently via || true on re-run, yang memang yang kita mau — tidak
-# overwrite existing passwords).
+# Native DB names intentionally match local and server environments.
 DB_PASS_FILE="${APP_DIR}/.db_password.initial"
 if [ ! -f "${DB_PASS_FILE}" ]; then
-    DB_PASS=$(openssl rand -base64 33 | tr -d '/+=' | cut -c1-32)
+    DB_PASS="${DB_PASSWORD:-kknuinsaizu2026native}"
     umask 077
     mkdir -p "${APP_DIR}"
     echo "${DB_PASS}" > "${DB_PASS_FILE}"
@@ -105,8 +104,10 @@ else
 fi
 
 # Gunakan pipe (bukan cmdline) untuk hindari leak password di ps aux
-echo "CREATE USER kkn_app WITH PASSWORD '${DB_PASS}';" | su -l postgres -c psql 2>/dev/null || true
-echo "CREATE DATABASE kkn_production OWNER kkn_app;" | su -l postgres -c psql 2>/dev/null || true
+echo "CREATE USER kknuinsaizunative WITH PASSWORD '${DB_PASS}';" | su -l postgres -c psql 2>/dev/null || true
+echo "ALTER USER kknuinsaizunative WITH PASSWORD '${DB_PASS}';" | su -l postgres -c psql 2>/dev/null || true
+echo "CREATE DATABASE kknnative OWNER kknuinsaizunative;" | su -l postgres -c psql 2>/dev/null || true
+echo "ALTER DATABASE kknnative OWNER TO kknuinsaizunative;" | su -l postgres -c psql 2>/dev/null || true
 
 echo "==> Memulai Redis..."
 service redis start
@@ -166,56 +167,38 @@ echo "================================================================"
 echo " Instalasi dependensi selesai!"
 echo "================================================================"
 echo ""
-echo " DB password for kkn_app user saved to:"
+echo " DB password for kknuinsaizunative user saved to:"
 echo "   ${DB_PASS_FILE} (mode 0600, owned by root)"
 echo ""
-echo " → Copy it into apps/api/.env as DB_PASSWORD, then delete the file."
+echo " → deploy script akan memakai password native yang sama untuk apps/api/.env."
 echo ""
 echo "Langkah selanjutnya:"
-echo "  1. Clone/upload kode ke ${APP_DIR}"
-echo "  2. cd ${APP_DIR}/apps/api"
-echo "  3. cp .env.production.example .env"
-echo "  4. Edit .env: DB_PASSWORD=<see ${DB_PASS_FILE}>, APP_KEY, MASTER_WEBHOOK_SECRET, GEMINI_API_KEY"
-echo "     Filter SIAKAD defaults already set:"
-echo "       - Pascasarjana (fakultas ID 1) otomatis diblokir"
-echo "       - Dosen non-NIP (LB-xxxx) otomatis diblokir"
-echo "  5. composer install --no-dev --optimize-autoloader"
-echo "  6. php artisan key:generate"
-echo "  7. php artisan migrate --force"
-echo "  8. KKN_SUPERADMIN_PASSWORD='<strong-pw>' php artisan db:seed --class=SuperAdminSeeder --force"
-echo "  9. php artisan storage:link"
-echo " 10. php artisan config:cache && php artisan route:cache"
-echo " 11. cd ${APP_DIR} && export TURBO_INSTALL_SKIP_DOWNLOAD=1"
-echo "     export NEXT_PUBLIC_API_URL=https://${WEB_DOMAIN}/api/v1"
-echo "     export NEXT_PUBLIC_APP_URL=https://${WEB_DOMAIN}"
-echo "     export NEXT_PUBLIC_SITE_URL=https://${WEB_DOMAIN}"
-echo "     pnpm install --frozen-lockfile && pnpm build"
-echo " 12. # Next.js standalone: salin static + public ke direktori standalone"
-echo "     cp -r ${APP_DIR}/apps/web/.next/static \\"
-echo "        ${APP_DIR}/apps/web/.next/standalone/apps/web/.next/static"
-echo "     cp -r ${APP_DIR}/apps/web/public \\"
-echo "        ${APP_DIR}/apps/web/.next/standalone/apps/web/public"
-echo " 13. chown -R ${APP_USER}:${APP_USER} ${APP_DIR}/apps/api/storage"
-echo " 14. chown -R ${APP_USER}:${APP_USER} ${APP_DIR}/apps/api/bootstrap/cache"
-echo " 15. chown -R ${APP_USER}:${APP_USER} ${APP_DIR}/apps/web/.next"
+echo "  1. Pastikan kode sudah ada di ${APP_DIR}"
+echo "  2. cd ${APP_DIR}"
+echo "  3. Jalankan deploy sederhana:"
+echo "       KKN_SUPERADMIN_PASSWORD='<strong-pw>' bash deploy-freebsd-simple.sh"
+echo ""
+echo "     Script deploy akan otomatis:"
+echo "       - seed apps/api/.env dari .env.production.example jika belum ada"
+echo "       - set DB_DATABASE/DB_USERNAME/DB_PASSWORD native"
+echo "       - generate APP_KEY dan secret lokal yang kosong"
+echo "       - composer install, migrate, build Next.js standalone"
+echo "       - pasang config PHP-FPM, Supervisor, dan Nginx jika belum ada"
+echo "       - restart service dan menjalankan health check"
 echo ""
 echo " 🔥 Pastikan PostgreSQL dan Redis hanya listen di localhost:"
 echo "     sed -i '' 's/^listen_addresses =.*/listen_addresses = '\''127.0.0.1'\''/' ${PG_DATA_DIR}/postgresql.conf"
 echo "     echo 'bind 127.0.0.1' >> /usr/local/etc/redis.conf"
 echo "     service postgresql restart && service redis restart"
 echo ""
-echo " 16. (Setelah app hidup di HTTP) issue SSL single-domain:"
-echo "       pkg install -y py311-certbot"
+echo " 4. (Setelah app hidup di HTTP) issue SSL single-domain:"
 echo "       certbot certonly --webroot \\"
 echo "         -w ${APP_DIR}/apps/api/public \\"
 echo "         -d ${WEB_DOMAIN} \\"
 echo "         --cert-name ${CERT_BASE} \\"
 echo "         -m admin@uinsaizu.ac.id --agree-tos -n"
-echo "     Lalu aktifkan block HTTPS di nginx-freebsd.conf dan reload:"
+echo "     Lalu aktifkan block HTTPS di /usr/local/etc/nginx/nginx.conf dan reload:"
 echo "       service nginx reload"
-echo ""
-echo " 17. service nginx start"
-echo " 18. service supervisord start"
 echo ""
 echo "Cek log:"
 echo "  tail -f ${LOG_DIR}/worker-default.log ${LOG_DIR}/web.log"

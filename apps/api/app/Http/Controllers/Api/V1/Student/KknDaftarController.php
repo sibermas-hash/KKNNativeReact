@@ -38,6 +38,7 @@ class KknDaftarController extends Controller
             $existingRegistration = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
                 ->whereNotIn('status', ['rejected', 'cancelled'])
                 ->with('periode.jenisKkn')
+                ->latest('created_at')
                 ->first();
             $hasRegistered = (bool) $existingRegistration;
         }
@@ -48,7 +49,10 @@ class KknDaftarController extends Controller
             ->orderByDesc('registration_start')
             ->get()
             ->map(function ($p) use ($mahasiswa, $hasRegistered) {
-                $canRegister = in_array($p->current_phase, ['registration', 'placement']);
+                // Route submit registration dikunci middleware phase:registration.
+                // Jangan tampilkan can_register=true pada placement karena user
+                // akan klik daftar lalu pasti gagal 403 PHASE_BLOCKED.
+                $canRegister = $p->current_phase === 'registration';
                 $eligibility = $this->checkEligibility($mahasiswa, $p);
                 $documentRequirements = $this->documentService->requirementsForPeriod($p);
 

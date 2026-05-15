@@ -2,7 +2,7 @@
 
 Sistem Informasi KKN untuk UIN Prof. K.H. Saifuddin Zuhri Purwokerto.
 
-**Platform:** FreeBSD 14.x · Monorepo (pnpm + Turbo) · Laravel 13 · Next.js 15
+**Platform:** FreeBSD 14.x · Monorepo (pnpm) · Laravel 13 · Next.js 15
 
 ---
 
@@ -10,15 +10,32 @@ Sistem Informasi KKN untuk UIN Prof. K.H. Saifuddin Zuhri Purwokerto.
 
 | Dokumen | Isi |
 |---------|-----|
-| [`docs/DEPLOY_FREEBSD.md`](docs/DEPLOY_FREEBSD.md) | Deploy manual single-server di FreeBSD native |
-| [`docs/JAILS_MIGRATION.md`](docs/JAILS_MIGRATION.md) | **Migrasi ke FreeBSD Jails** — arsitektur Multi-Jails VNET, two-nginx, nullfs, data migration, turborepo workaround, verifikasi checklist (1165 baris) |
+| [`docs/DEPLOY_FREEBSD.md`](docs/DEPLOY_FREEBSD.md) | Jalur paling sederhana: single-server FreeBSD native + `deploy-freebsd-simple.sh` |
+| [`docs/DEPLOY_APACHE24_NGINX.md`](docs/DEPLOY_APACHE24_NGINX.md) | Profile Apache24 backend + Nginx frontend + `rc.d` tanpa Supervisor |
+| [`docs/FREEBSD_AUDIT.md`](docs/FREEBSD_AUDIT.md) | Audit deploy FreeBSD dan keputusan simplifikasi |
+| [`docs/JAILS_MIGRATION.md`](docs/JAILS_MIGRATION.md) | Migrasi lanjutan ke FreeBSD Jails |
 | [`docs/SCALING_5000.md`](docs/SCALING_5000.md) | Scaling untuk 5000 concurrent users — PHP-FPM 200, Next.js cluster ×4, pgbouncer, PostgreSQL tuning, sysctl |
 
 ---
 
 ## 🏗️ Arsitektur
 
-### Production: Multi-Jails VNET (4 jail terisolasi)
+### Production sederhana: Single-Server Native
+
+```
+Internet (80/443)
+      |
+    Nginx
+   /     \
+Next.js  Laravel API
+:3000    PHP-FPM socket
+   \     /
+PostgreSQL + Redis lokal
+```
+
+Ini jalur utama untuk deploy awal dan maintenance harian.
+
+### Opsi lanjutan: Multi-Jails VNET
 
 ```
                   Internet (port 80/443)
@@ -37,45 +54,29 @@ Sistem Informasi KKN untuk UIN Prof. K.H. Saifuddin Zuhri Purwokerto.
           Redis 8
 ```
 
-### Single-Server (alternatif)
-
-```
-Nginx → Next.js :3000 + PHP-FPM (socket) + PostgreSQL + Redis
-Semua di satu mesin FreeBSD. Cocok untuk development/staging.
-```
-
 ---
 
 ## 🚀 Quick Start
 
-### Setup Production (Multi-Jails)
+### Setup Single-Server Native
 
 ```bash
-# Di host FreeBSD sebagai root:
-sh jail_setup.sh --multi
-```
+# Di server FreeBSD sebagai root:
+git clone https://github.com/putrihati-cmd/KKNNATIVE.git \
+  /usr/local/www/apache24/data/Sibermas2026
+cd /usr/local/www/apache24/data/Sibermas2026
 
-Script akan otomatis:
-1. Setup bridge network (`bridge0` + pf NAT)
-2. Generate `/etc/jail.conf` (VNET + epair)
-3. Bootstrap 4 jail + install paket sesuai peran
-
-### Setup Single-Server (Native)
-
-```bash
+sh scripts/preflight-freebsd.sh
 sh install-freebsd.sh
+KKN_SUPERADMIN_PASSWORD='password-kuat' bash deploy-freebsd-simple.sh
 ```
 
-### Deploy Aplikasi
+### Deploy Ulang
 
 ```bash
-# Atomic deploy (zero-downtime):
-bash deploy-atomic.sh
-
-# Remote deploy via SSH:
-DEPLOY_SERVER=user@host bash remote-deploy.sh
-
-# CI/CD: push ke main → GitHub Actions deploy otomatis
+cd /usr/local/www/apache24/data/Sibermas2026
+git pull origin main
+bash deploy-freebsd-simple.sh
 ```
 
 ---
@@ -87,12 +88,13 @@ DEPLOY_SERVER=user@host bash remote-deploy.sh
 │   ├── api/              # Laravel 13 backend
 │   │   ├── supervisord.conf           # Single-server supervisor
 │   │   ├── supervisord.jail-api.conf  # Jails: queue workers (10+4+2)
-│   │   └── .env.production.example    # Seed /usr/local/www/sibermas/shared/api.env
+│   │   └── .env.production.example    # Template production env
 │   └── web/              # Next.js 15 frontend
 │       ├── supervisord.jail-web.conf  # Jails: cluster ×4 instances
-│       └── next.config.ts             # Standalone build for FreeBSD jails
+│       └── next.config.ts             # Standalone build for FreeBSD
 ├── packages/             # Shared TS packages (5 packages)
-├── conf/                 # Scaling config files (siap deploy)
+├── conf/                 # FreeBSD config files
+│   ├── php-fpm.sibermas.conf   # PHP-FPM pool single-server sederhana
 │   ├── php-fpm.www.conf         # max_children=200
 │   ├── php-opcache.ini          # 256MB OPcache
 │   ├── nginx-api-jail.conf      # API jail Nginx :8080 → php-fpm socket
@@ -106,10 +108,12 @@ DEPLOY_SERVER=user@host bash remote-deploy.sh
 │   ├── restore.sh        # Restore from backup
 │   └── ci-guard.mjs      # CI security guard
 ├── docs/
+│   ├── FREEBSD_AUDIT.md      # Audit + simplifikasi deploy FreeBSD
 │   ├── JAILS_MIGRATION.md    # Panduan migrasi jails (1165 baris)
 │   ├── SCALING_5000.md       # Panduan scaling 5000 user
 │   └── DEPLOY_FREEBSD.md     # Deploy single-server native
 ├── deploy-atomic.sh      # Atomic zero-downtime deploy
+├── deploy-freebsd-simple.sh # Deploy/redeploy single-server native
 ├── jail_setup.sh         # Auto-setup jail + bridge + paket
 ├── install-freebsd.sh    # Install single-server native
 ├── remote-deploy.sh      # Remote deploy via SSH key

@@ -113,7 +113,7 @@ class RegistrationService
                 $activeInOtherPeriod = PesertaKkn::query()
                     ->where('mahasiswa_id', $mahasiswa->id)
                     ->where('periode_id', '!=', $periodeId)
-                    ->whereIn('status', ['pending', 'approved'])
+                    ->whereIn('status', ['pending', 'document_submitted', 'document_verified', 'approved'])
                     ->exists();
 
                 if ($activeInOtherPeriod) {

@@ -164,6 +164,7 @@ if command -v pkg >/dev/null 2>&1; then
   pkg_check "postgresql${PG_VERSION}-client"
   pkg_check "redis"
   pkg_check "nginx"
+  pkg_check "apache24"
   pkg_check "node${NODE_VERSION}"
   pkg_check "npm-node${NODE_VERSION}"
   pkg_check "py311-supervisor"
@@ -214,9 +215,14 @@ else
   info "Redis belum terinstall"
 fi
 
-# Apache konflik — port 80
+# Apache konflik — port 80. Untuk profile Apache-backend + Nginx-frontend,
+# Apache harus listen internal saja (127.0.0.1:8080), bukan 80/443.
 if pkg info apache24 >/dev/null 2>&1; then
-  warn "Apache24 terinstall — akan konflik dengan Nginx di port 80. service apache24 onestop + sysrc apache24_enable=NO"
+  if [ "${APACHE_BACKEND:-0}" = "1" ]; then
+    ok "Apache24 terinstall untuk backend internal (pastikan Listen 127.0.0.1:8080)"
+  else
+    warn "Apache24 terinstall — konflik jika masih listen port 80. Untuk profile Apache backend jalankan: APACHE_BACKEND=1 sh scripts/preflight-freebsd.sh"
+  fi
 fi
 
 # ─── 8. Ports availability ─────────────────────────────────────────────
@@ -235,6 +241,7 @@ check_port() {
 
 check_port 80 "nginx HTTP"
 check_port 443 "nginx HTTPS"
+check_port 8080 "Apache24 API backend"
 check_port 3000 "Next.js"
 check_port 5432 "PostgreSQL"
 check_port 6379 "Redis"
@@ -262,7 +269,7 @@ if [ -d "$APP_DIR" ]; then
   fi
 else
   info "App directory BELUM ada: $APP_DIR — clone kode dulu"
-  info "  git clone <repo> $APP_DIR"
+  info "  git clone https://github.com/putrihati-cmd/KKNNATIVE.git $APP_DIR"
 fi
 
 # ─── Summary ───────────────────────────────────────────────────────────
@@ -283,6 +290,7 @@ if [ "$FAILS" -eq 0 ]; then
   echo "  Next:"
   echo "    1. Clone kode ke $APP_DIR (kalau belum)"
   echo "    2. sh install-freebsd.sh"
+  echo "    3. bash deploy-freebsd-simple.sh"
   exit 0
 else
   printf "  %s Server BELUM siap — fix $FAILS FAIL items di atas\n" "$(red '✘')"

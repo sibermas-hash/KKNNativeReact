@@ -49,7 +49,7 @@ class DownloadController extends Controller
             'is_active' => ['nullable', 'boolean'],
         ]);
 
-        $filePath = $request->hasFile('file') ? $request->file('file')->store('downloads', config('filesystems.default')) : null;
+        $filePath = $request->hasFile('file') ? $request->file('file')->store('downloads', 'public') : null;
 
         $download = Download::create(array_merge($validated, [
             'file_path' => $filePath,
@@ -69,7 +69,7 @@ class DownloadController extends Controller
     public function destroy(Download $download): JsonResponse
     {
         if ($download->file_path) {
-            Storage::disk(config('filesystems.default'))->delete($download->file_path);
+            Storage::disk('public')->delete($download->file_path);
         }
         $download->delete();
 

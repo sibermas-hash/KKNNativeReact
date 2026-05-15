@@ -85,8 +85,9 @@ TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:web
 # NOTE: apps/web/package.json postbuild sudah melakukan ini, tapi kita
 # ulang di sini untuk defensive — kalau postbuild gagal atau build
 # jalan tanpa postbuild hook.
-cp -r apps/web/.next/static/. apps/web/.next/standalone/apps/web/.next/static 2>/dev/null || true
-cp -r apps/web/public/.       apps/web/.next/standalone/apps/web/public 2>/dev/null || true
+mkdir -p apps/web/.next/standalone/apps/web/.next/static apps/web/.next/standalone/apps/web/public
+cp -r apps/web/.next/static/. apps/web/.next/standalone/apps/web/.next/static
+cp -r apps/web/public/.       apps/web/.next/standalone/apps/web/public
 
 # Prune devDependencies setelah build selesai untuk hemat disk.
 TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm prune --prod || true

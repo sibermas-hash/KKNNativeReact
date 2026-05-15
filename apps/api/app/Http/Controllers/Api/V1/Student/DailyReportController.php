@@ -69,7 +69,7 @@ class DailyReportController extends Controller
         $mahasiswa = auth()->user()?->mahasiswa;
         abort_if(! $mahasiswa, 403, 'Profil mahasiswa tidak ditemukan.');
 
-        $pendaftaran = $mahasiswa->peserta()->where('status', 'approved')->with(['kelompok.lokasi', 'kelompok.posko'])->first();
+        $pendaftaran = $mahasiswa->peserta()->where('status', 'approved')->with(['kelompok.lokasi', 'kelompok.posko'])->latest('created_at')->first();
         abort_if(! $pendaftaran || ! $pendaftaran->kelompok_id, 403, 'Anda belum ditempatkan di kelompok.');
 
         $validated = $request->validated();

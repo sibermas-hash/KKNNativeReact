@@ -127,8 +127,22 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
   fi
 
   echo ""
-  echo "  ✅ Deploy selesai!"
-  echo "  🌐 Cek di: https://sibermas.uinsaizu.ac.id"
+  echo "  [l] Health check..."
+  sleep 3
+  HC_OK=0
+  for i in 1 2 3 4 5; do
+    if curl -sf -m 5 "http://127.0.0.1/api/health" >/dev/null 2>&1; then
+      HC_OK=1
+      break
+    fi
+    echo "    waiting... ($i/5)"
+    sleep 3
+  done
+  if [ "$HC_OK" = "1" ]; then
+    echo "  ✅ Deploy selesai — health check OK"
+  else
+    echo "  ⚠️  Deploy selesai tapi health check gagal. Cek service secara manual."
+  fi
 ENDSSH
 
 echo ""

@@ -44,6 +44,23 @@ return [
 
     'blind_index_key' => env('APP_BLIND_INDEX_KEY'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Bootstrap Superadmin
+    |--------------------------------------------------------------------------
+    |
+    | SuperAdminSeeder must read from config, not raw env(), so it still works
+    | when production uses `php artisan config:cache`.
+    |
+    */
+
+    'bootstrap_superadmin' => [
+        'username' => env('KKN_SUPERADMIN_USERNAME', 'superadmin'),
+        'name' => env('KKN_SUPERADMIN_NAME', 'Super Administrator SIBERMAS'),
+        'email' => env('KKN_SUPERADMIN_EMAIL', 'superadmin@sibermas.uinsaizu.ac.id'),
+        'password' => env('KKN_SUPERADMIN_PASSWORD'),
+    ],
+
     'maintenance' => [
         'driver' => 'file',
     ],

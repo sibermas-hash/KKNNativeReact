@@ -20,8 +20,9 @@ use Spatie\Permission\Models\Role;
  * Cara pakai:
  *   php artisan db:seed --class=SuperAdminSeeder
  *
- * Opsional: set env KKN_SUPERADMIN_PASSWORD untuk menentukan password.
- *   KKN_SUPERADMIN_PASSWORD=RahasiaBanget123! php artisan db:seed --class=SuperAdminSeeder
+ * Opsional: set KKN_SUPERADMIN_* di .env untuk menentukan akun bootstrap.
+ * Seeder membaca nilainya via config('app.bootstrap_superadmin') supaya tetap
+ * bekerja saat production memakai `php artisan config:cache`.
  */
 class SuperAdminSeeder extends Seeder
 {
@@ -100,15 +101,17 @@ class SuperAdminSeeder extends Seeder
      */
     private function createSuperAdmin(): void
     {
-        $envPassword = env('KKN_SUPERADMIN_PASSWORD');
-        $username = env('KKN_SUPERADMIN_USERNAME', self::SUPERADMIN_USERNAME);
-        $email = env('KKN_SUPERADMIN_EMAIL', self::SUPERADMIN_EMAIL);
-        $name = env('KKN_SUPERADMIN_NAME', self::SUPERADMIN_NAME);
+        $bootstrap = (array) config('app.bootstrap_superadmin', []);
+        $envPassword = $bootstrap['password'] ?? null;
+        $username = $bootstrap['username'] ?? self::SUPERADMIN_USERNAME;
+        $email = $bootstrap['email'] ?? self::SUPERADMIN_EMAIL;
+        $name = $bootstrap['name'] ?? self::SUPERADMIN_NAME;
 
         // L-001 fix: In production, do NOT allow creating a new superadmin
         // with an auto-generated password printed to stdout — deploy logs
         // may be captured/shipped to aggregators. Require the operator to
-        // set KKN_SUPERADMIN_PASSWORD explicitly.
+        // set KKN_SUPERADMIN_PASSWORD explicitly. Read from cached config
+        // rather than raw env() so the guard still works after config:cache.
         $existing = User::where('email', $email)->orWhere('username', $username)->exists();
 
         if (app()->environment('production') && ! $existing && ! $envPassword) {

@@ -162,6 +162,12 @@ return [
     |--------------------------------------------------------------------------
     |
     | 3-tier failover via SumoPod (https://ai.sumopod.com/v1) yang OpenAI-compatible.
+    |
+    | Behavior tanpa env:
+    |   - Tier tanpa API key di-skip otomatis (AvatarValidationService).
+    |   - Jika SEMUA tier kosong, avatar diterima tanpa AI check (manual review).
+    |   - Tidak ada error/crash — fitur AI gracefully disabled.
+    |
     | Model picks per 2026-05-11:
     |   Primary:  gemini/gemini-2.5-pro    → 1M ctx, 64K out, smartest vision
     |   Fallback: gemini/gemini-2.5-flash  → 1M ctx, faster, masih kuat vision

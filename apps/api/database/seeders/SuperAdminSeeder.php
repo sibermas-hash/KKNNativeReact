@@ -101,12 +101,15 @@ class SuperAdminSeeder extends Seeder
     private function createSuperAdmin(): void
     {
         $envPassword = env('KKN_SUPERADMIN_PASSWORD');
+        $username = env('KKN_SUPERADMIN_USERNAME', self::SUPERADMIN_USERNAME);
+        $email = env('KKN_SUPERADMIN_EMAIL', self::SUPERADMIN_EMAIL);
+        $name = env('KKN_SUPERADMIN_NAME', self::SUPERADMIN_NAME);
 
         // L-001 fix: In production, do NOT allow creating a new superadmin
         // with an auto-generated password printed to stdout — deploy logs
         // may be captured/shipped to aggregators. Require the operator to
         // set KKN_SUPERADMIN_PASSWORD explicitly.
-        $existing = User::where('email', self::SUPERADMIN_EMAIL)->exists();
+        $existing = User::where('email', $email)->orWhere('username', $username)->exists();
 
         if (app()->environment('production') && ! $existing && ! $envPassword) {
             $this->command?->error(
@@ -119,14 +122,15 @@ class SuperAdminSeeder extends Seeder
 
         $plainPassword = $envPassword ?: Str::password(16);
 
-        $user = User::firstOrNew(['email' => self::SUPERADMIN_EMAIL]);
+        $user = User::firstOrNew(['username' => $username]);
         $isNewUser = ! $user->exists;
 
         $user->fill([
-            'username' => self::SUPERADMIN_USERNAME,
-            'name' => self::SUPERADMIN_NAME,
+            'username' => $username,
+            'email' => $email,
+            'name' => $name,
             'is_active' => true,
-            'must_change_password' => ! $envPassword, // Wajib ganti jika password auto-generated
+            'must_change_password' => ! $envPassword,
         ]);
 
         // Set password hanya jika: (1) user baru, atau (2) password diberikan via env
@@ -150,18 +154,18 @@ class SuperAdminSeeder extends Seeder
 
         if ($isNewUser) {
             $this->command?->warn('║  Status  : BARU DIBUAT                           ║');
-            $this->command?->warn('║  Email   : '.self::SUPERADMIN_EMAIL.'   ║');
-            $this->command?->warn('║  Username: '.self::SUPERADMIN_USERNAME.'                        ║');
+            $this->command?->warn("║  Email   : {$email}");
+            $this->command?->warn("║  Username: {$username}");
             $this->command?->warn("║  Password: {$plainPassword}                   ║");
             if (! $envPassword) {
                 $this->command?->error('║  ⚠ CATAT PASSWORD DI ATAS — tidak ditampilkan lagi! ║');
             }
         } elseif ($envPassword) {
             $this->command?->info('║  Status  : PASSWORD DIPERBARUI                   ║');
-            $this->command?->info('║  Email   : '.self::SUPERADMIN_EMAIL.'   ║');
+            $this->command?->info("║  Email   : {$email}");
         } else {
             $this->command?->info('║  Status  : SUDAH ADA (tidak diubah)              ║');
-            $this->command?->info('║  Email   : '.self::SUPERADMIN_EMAIL.'   ║');
+            $this->command?->info("║  Email   : {$email}");
         }
 
         $this->command?->info('╚══════════════════════════════════════════════════╝');

@@ -12,6 +12,9 @@ set -u
 PHP_VERSION="${PHP_VERSION:-84}"
 PG_VERSION="${PG_VERSION:-18}"
 APP_DIR="${APP_DIR:-/usr/local/www/apache24/data/Sibermas2026}"
+WEB_DOMAIN="${WEB_DOMAIN:-sibermas.uinsaizu.ac.id}"
+CERT_BASE="${CERT_BASE:-$WEB_DOMAIN}"
+EDGE_REVERSE_PROXY="${EDGE_REVERSE_PROXY:-0}"
 PG_DATA_DIR="/var/db/postgres/data${PG_VERSION}"
 LOG_DIR="/var/log/sibermas"
 NGINX_LOG_DIR="/var/log/nginx"
@@ -24,6 +27,80 @@ echo "════════════════════════�
 section() {
   echo ""
   echo "═══ $1 ═══"
+}
+
+resolve_records() {
+  record_type="$1"
+  name="$2"
+  case "${RESOLVER:-}" in
+    drill)
+      drill "$record_type" "$name" 2>/dev/null | awk -v t="$record_type" '$4 == t {print $5}' | sort -u
+      ;;
+    dig)
+      dig +short "$record_type" "$name" 2>/dev/null | sed '/^$/d' | sort -u
+      ;;
+    host)
+      host -t "$record_type" "$name" 2>/dev/null | awk '
+        / has address / {print $4}
+        / IPv6 address / {print $5}
+      ' | sort -u
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+global_ipv6_list() {
+  if command -v ifconfig >/dev/null 2>&1; then
+    ifconfig 2>/dev/null | awk '
+      /inet6 / {
+        split($2, addr, "%")
+        if (addr[1] != "::1" && addr[1] !~ /^fe80:/) {
+          print addr[1]
+        }
+      }
+    ' | sort -u
+  fi
+}
+
+resolve_path() {
+  path="$1"
+  if command -v realpath >/dev/null 2>&1; then
+    realpath "$path" 2>/dev/null || readlink "$path" 2>/dev/null || printf '%s\n' "$path"
+  else
+    readlink "$path" 2>/dev/null || printf '%s\n' "$path"
+  fi
+}
+
+hosts_has_domain() {
+  domain="$1"
+  awk -v domain="$domain" '
+    /^[[:space:]]*#/ {next}
+    {
+      for (i = 2; i <= NF; i++) {
+        if ($i == domain) {
+          found = 1
+        }
+      }
+    }
+    END { exit(found ? 0 : 1) }
+  ' /etc/hosts 2>/dev/null
+}
+
+show_hosts_domain_lines() {
+  domain="$1"
+  awk -v domain="$domain" '
+    /^[[:space:]]*#/ {next}
+    {
+      for (i = 2; i <= NF; i++) {
+        if ($i == domain) {
+          print NR ":" $0
+          break
+        }
+      }
+    }
+  ' /etc/hosts 2>/dev/null
 }
 
 # ─── 1. System Info ────────────────────────────────────────────────────
@@ -252,8 +329,81 @@ echo ""
 echo "Test login preflight (captcha endpoint):"
 curl -s -m 5 http://127.0.0.1/api/v1/auth/captcha 2>&1 | head -5 | sed 's/^/  /' || echo "  curl gagal"
 
-# ─── 13. Most Common Issues Quick Check ────────────────────────────────
-section "13. Common Issues Quick Check"
+# ─── 13. Public DNS / TLS sanity ───────────────────────────────────────
+section "13. Public DNS / TLS sanity"
+
+if [ -f /etc/hosts ] && hosts_has_domain "$WEB_DOMAIN"; then
+  echo "  [WARN] /etc/hosts override terdeteksi untuk $WEB_DOMAIN:"
+  show_hosts_domain_lines "$WEB_DOMAIN" | sed 's/^/    /'
+else
+  echo "  [OK] Tidak ada override /etc/hosts untuk $WEB_DOMAIN"
+fi
+
+if command -v drill >/dev/null 2>&1; then
+  RESOLVER="drill"
+elif command -v dig >/dev/null 2>&1; then
+  RESOLVER="dig"
+elif command -v host >/dev/null 2>&1; then
+  RESOLVER="host"
+else
+  RESOLVER=""
+fi
+
+if [ -n "$RESOLVER" ]; then
+  A_RECORDS="$(resolve_records A "$WEB_DOMAIN" | tr '\n' ' ' | sed 's/[[:space:]]*$//')"
+  AAAA_RECORDS="$(resolve_records AAAA "$WEB_DOMAIN" | tr '\n' ' ' | sed 's/[[:space:]]*$//')"
+  echo "Public A:         ${A_RECORDS:-<none>}"
+  echo "Public AAAA:      ${AAAA_RECORDS:-<none>}"
+else
+  echo "Resolver tool:    <none>"
+fi
+
+GLOBAL_IPV6="$(global_ipv6_list | tr '\n' ' ' | sed 's/[[:space:]]*$//')"
+echo "Origin global IPv6: ${GLOBAL_IPV6:-<none>}"
+if [ -n "${AAAA_RECORDS:-}" ] && [ -z "$GLOBAL_IPV6" ]; then
+  echo "  [WARN] AAAA publik ada tapi origin ini tidak punya global IPv6"
+fi
+
+echo ""
+echo "Strict HTTPS check ke https://$WEB_DOMAIN/:"
+if command -v curl >/dev/null 2>&1; then
+  curl -sSI -m 10 "https://$WEB_DOMAIN/" 2>&1 | head -10 | sed 's/^/  /' || echo "  curl gagal"
+else
+  echo "  curl tidak ditemukan"
+fi
+
+if [ "${EDGE_REVERSE_PROXY}" = "1" ]; then
+  echo "Origin cert file: <skipped> EDGE_REVERSE_PROXY=1 (TLS terminates at frontend/gateway)"
+else
+  CERT_FILE="/usr/local/etc/letsencrypt/live/${CERT_BASE}/fullchain.pem"
+  if [ -f "$CERT_FILE" ]; then
+    RESOLVED_CERT="$(resolve_path "$CERT_FILE")"
+    echo ""
+    echo "Origin cert file: $CERT_FILE"
+    echo "Resolved path:    $RESOLVED_CERT"
+    case "$RESOLVED_CERT" in
+      *selfsigned*|*/nginx/ssl/*)
+        echo "  [WARN] Cert path mengarah ke self-signed/internal cert"
+        ;;
+    esac
+
+    if command -v openssl >/dev/null 2>&1; then
+      CERT_SUBJECT="$(openssl x509 -in "$CERT_FILE" -noout -subject -nameopt RFC2253 2>/dev/null | sed 's/^subject=//')"
+      CERT_ISSUER="$(openssl x509 -in "$CERT_FILE" -noout -issuer -nameopt RFC2253 2>/dev/null | sed 's/^issuer=//')"
+      CERT_SAN="$(openssl x509 -in "$CERT_FILE" -noout -ext subjectAltName 2>/dev/null | sed '1d' | tr '\n' ' ' | sed 's/[[:space:]]*$//')"
+      echo "Subject:          ${CERT_SUBJECT:-<unreadable>}"
+      echo "Issuer:           ${CERT_ISSUER:-<unreadable>}"
+      echo "SAN:              ${CERT_SAN:-<missing>}"
+    else
+      echo "openssl:          <not installed>"
+    fi
+  else
+    echo "Origin cert file: <missing> $CERT_FILE"
+  fi
+fi
+
+# ─── 14. Most Common Issues Quick Check ────────────────────────────────
+section "14. Common Issues Quick Check"
 
 # A. APP_KEY kosong
 if [ -f "$APP_DIR/apps/api/.env" ]; then

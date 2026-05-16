@@ -13,6 +13,9 @@ PHP_VERSION="${PHP_VERSION:-84}"
 PG_VERSION="${PG_VERSION:-18}"
 NODE_VERSION="${NODE_VERSION:-24}"
 APP_DIR="${APP_DIR:-/usr/local/www/apache24/data/Sibermas2026}"
+WEB_DOMAIN="${WEB_DOMAIN:-sibermas.uinsaizu.ac.id}"
+CERT_BASE="${CERT_BASE:-$WEB_DOMAIN}"
+EDGE_REVERSE_PROXY="${EDGE_REVERSE_PROXY:-0}"
 
 # ─── Counters ──────────────────────────────────────────────────────────
 FAILS=0
@@ -31,6 +34,80 @@ info() { printf "  [%s] %s\n" "     " "$1"; }
 section() {
   echo ""
   echo "═══ $1 ═══"
+}
+
+resolve_records() {
+  record_type="$1"
+  name="$2"
+  case "${RESOLVER:-}" in
+    drill)
+      drill "$record_type" "$name" 2>/dev/null | awk -v t="$record_type" '$4 == t {print $5}' | sort -u
+      ;;
+    dig)
+      dig +short "$record_type" "$name" 2>/dev/null | sed '/^$/d' | sort -u
+      ;;
+    host)
+      host -t "$record_type" "$name" 2>/dev/null | awk '
+        / has address / {print $4}
+        / IPv6 address / {print $5}
+      ' | sort -u
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+global_ipv6_list() {
+  if command -v ifconfig >/dev/null 2>&1; then
+    ifconfig 2>/dev/null | awk '
+      /inet6 / {
+        split($2, addr, "%")
+        if (addr[1] != "::1" && addr[1] !~ /^fe80:/) {
+          print addr[1]
+        }
+      }
+    ' | sort -u
+  fi
+}
+
+resolve_path() {
+  path="$1"
+  if command -v realpath >/dev/null 2>&1; then
+    realpath "$path" 2>/dev/null || readlink "$path" 2>/dev/null || printf '%s\n' "$path"
+  else
+    readlink "$path" 2>/dev/null || printf '%s\n' "$path"
+  fi
+}
+
+hosts_has_domain() {
+  domain="$1"
+  awk -v domain="$domain" '
+    /^[[:space:]]*#/ {next}
+    {
+      for (i = 2; i <= NF; i++) {
+        if ($i == domain) {
+          found = 1
+        }
+      }
+    }
+    END { exit(found ? 0 : 1) }
+  ' /etc/hosts 2>/dev/null
+}
+
+show_hosts_domain_lines() {
+  domain="$1"
+  awk -v domain="$domain" '
+    /^[[:space:]]*#/ {next}
+    {
+      for (i = 2; i <= NF; i++) {
+        if ($i == domain) {
+          print NR ":" $0
+          break
+        }
+      }
+    }
+  ' /etc/hosts 2>/dev/null
 }
 
 # ─── 1. OS & Privilege ─────────────────────────────────────────────────
@@ -78,6 +155,19 @@ if [ -n "$RESOLVER" ]; then
   else
     fail "DNS tidak bisa resolve pkg.freebsd.org — cek /etc/resolv.conf"
   fi
+
+  DOMAIN_A="$(resolve_records A "$WEB_DOMAIN" | tr '\n' ' ' | sed 's/[[:space:]]*$//')"
+  DOMAIN_AAAA="$(resolve_records AAAA "$WEB_DOMAIN" | tr '\n' ' ' | sed 's/[[:space:]]*$//')"
+  if [ -n "$DOMAIN_A" ]; then
+    ok "Public A $WEB_DOMAIN -> $DOMAIN_A"
+  else
+    warn "Public A $WEB_DOMAIN tidak ditemukan"
+  fi
+  if [ -n "$DOMAIN_AAAA" ]; then
+    warn "Public AAAA $WEB_DOMAIN -> $DOMAIN_AAAA"
+  else
+    info "Public AAAA $WEB_DOMAIN tidak ada"
+  fi
 else
   warn "Tidak ada resolver tool (drill/dig/host) — skip DNS test"
 fi
@@ -93,6 +183,24 @@ if [ -n "$EXT_IF" ]; then
   ok "Default external NIC: $EXT_IF"
 else
   fail "Tidak ada default route — server offline?"
+fi
+
+if [ -f /etc/hosts ] && hosts_has_domain "$WEB_DOMAIN"; then
+  warn "/etc/hosts override terdeteksi untuk $WEB_DOMAIN"
+  show_hosts_domain_lines "$WEB_DOMAIN" | sed 's/^/       /'
+else
+  ok "Tidak ada override /etc/hosts untuk $WEB_DOMAIN"
+fi
+
+GLOBAL_IPV6="$(global_ipv6_list | tr '\n' ' ' | sed 's/[[:space:]]*$//')"
+if [ -n "$GLOBAL_IPV6" ]; then
+  ok "Global IPv6 origin: $GLOBAL_IPV6"
+else
+  info "Origin tidak punya global IPv6"
+fi
+
+if [ -n "${DOMAIN_AAAA:-}" ] && [ -z "$GLOBAL_IPV6" ]; then
+  warn "$WEB_DOMAIN punya AAAA publik tapi origin ini tidak punya global IPv6 — rawan ACME/edge failure"
 fi
 
 # ─── 3. Disk Space ─────────────────────────────────────────────────────
@@ -270,6 +378,47 @@ if [ -d "$APP_DIR" ]; then
 else
   info "App directory BELUM ada: $APP_DIR — clone kode dulu"
   info "  git clone https://github.com/putrihati-cmd/KKNNATIVE.git $APP_DIR"
+fi
+
+# ─── 11. TLS certificate sanity ────────────────────────────────────────
+section "11. TLS certificate sanity"
+
+if [ "${EDGE_REVERSE_PROXY}" = "1" ]; then
+  info "EDGE_REVERSE_PROXY=1 -> skip cert lokal; TLS terminate di frontend/gateway"
+else
+  CERT_FILE="/usr/local/etc/letsencrypt/live/${CERT_BASE}/fullchain.pem"
+  if [ -f "$CERT_FILE" ]; then
+    RESOLVED_CERT="$(resolve_path "$CERT_FILE")"
+    ok "Cert file ada: $CERT_FILE"
+    if [ "$RESOLVED_CERT" != "$CERT_FILE" ]; then
+      info "Resolved path: $RESOLVED_CERT"
+    fi
+    case "$RESOLVED_CERT" in
+      *selfsigned*|*/nginx/ssl/*)
+        warn "Cert path mengarah ke self-signed/internal cert"
+        ;;
+    esac
+
+    if command -v openssl >/dev/null 2>&1; then
+      CERT_SUBJECT="$(openssl x509 -in "$CERT_FILE" -noout -subject -nameopt RFC2253 2>/dev/null | sed 's/^subject=//')"
+      CERT_SAN="$(openssl x509 -in "$CERT_FILE" -noout -ext subjectAltName 2>/dev/null | sed '1d' | tr '\n' ' ' | sed 's/[[:space:]]*$//')"
+
+      [ -n "$CERT_SUBJECT" ] && info "Subject: $CERT_SUBJECT"
+      [ -n "$CERT_SAN" ] && info "SAN: $CERT_SAN"
+
+      if printf '%s\n' "$CERT_SAN" | grep -Fq "DNS:${WEB_DOMAIN}"; then
+        ok "Cert SAN mencakup $WEB_DOMAIN"
+      elif printf '%s\n' "$CERT_SUBJECT" | grep -Fq "CN=${WEB_DOMAIN}"; then
+        ok "Cert CN cocok $WEB_DOMAIN"
+      else
+        warn "Cert tidak memuat identitas $WEB_DOMAIN"
+      fi
+    else
+      warn "openssl tidak tersedia — skip subject/SAN check"
+    fi
+  else
+    info "Cert belum ada di $CERT_FILE"
+  fi
 fi
 
 # ─── Summary ───────────────────────────────────────────────────────────

@@ -10,6 +10,8 @@
 #
 # Run on the FreeBSD server from the repository root:
 #   KKN_SUPERADMIN_PASSWORD='strong-password' bash deploy-freebsd-apache-nginx.sh
+# Optional behind-gateway mode:
+#   EDGE_REVERSE_PROXY=1 bash deploy-freebsd-apache-nginx.sh
 
 set -euo pipefail
 
@@ -39,6 +41,7 @@ SKIP_MIGRATE="${SKIP_MIGRATE:-0}"
 SKIP_FRONTEND_BUILD="${SKIP_FRONTEND_BUILD:-0}"
 DISABLE_SUPERVISOR="${DISABLE_SUPERVISOR:-1}"
 INSTALL_CRON="${INSTALL_CRON:-1}"
+EDGE_REVERSE_PROXY="${EDGE_REVERSE_PROXY:-0}"
 
 die() {
   echo "ERROR: $*" >&2
@@ -111,6 +114,14 @@ validate_rendered_nginx() {
   [ -f "${NGINX_DEST}" ] || return 0
   if ! grep -q 'forwarded_proto' "${NGINX_DEST}" 2>/dev/null; then
     echo "WARNING: Nginx vhost missing forwarded_proto — template will be re-rendered."
+  fi
+}
+
+nginx_template_path() {
+  if [ "${EDGE_REVERSE_PROXY}" = "1" ]; then
+    printf '%s' "${APP_DIR}/conf/nginx-vhost-sibermas-http.conf"
+  else
+    printf '%s' "${APP_DIR}/conf/nginx-vhost-sibermas.conf"
   fi
 }
 
@@ -207,6 +218,13 @@ echo "============================================================"
 echo " SIBERMAS FreeBSD Deploy: Apache24 backend + Nginx frontend"
 echo " APP_DIR: ${APP_DIR}"
 echo " DOMAIN : ${WEB_DOMAIN}"
+if [ "${EDGE_REVERSE_PROXY}" = "1" ]; then
+  echo " MODE   : backend HTTP only behind upstream reverse proxy"
+  echo " TLS    : terminated at upstream gateway"
+else
+  echo " MODE   : direct-public Nginx vhost"
+  echo " TLS    : terminated locally on this host"
+fi
 echo "============================================================"
 
 step "Preparing directories"
@@ -221,9 +239,11 @@ mkdir -p \
 chown -R "${WEB_USER}:${WEB_USER}" "${LOG_DIR}"
 
 step "Preparing Laravel .env"
+ENV_WAS_SEEDED=0
 if [ ! -f "${ENV_FILE}" ]; then
   cp "${API_DIR}/.env.production.example" "${ENV_FILE}"
   chmod 600 "${ENV_FILE}"
+  ENV_WAS_SEEDED=1
   echo "Seeded ${ENV_FILE} from .env.production.example"
 fi
 
@@ -249,9 +269,10 @@ set_env SESSION_HTTP_ONLY true
 set_env SESSION_SAME_SITE strict
 set_env TRUSTED_PROXIES "127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"
 
-if [ "$(env_value DB_PASSWORD)" = "" ]; then
+LEGACY_TEMPLATE_DB_PASSWORD="kknuinsaizu2026native"
+if [ "$(env_value DB_PASSWORD)" = "" ] || { [ "${ENV_WAS_SEEDED}" = "1" ] && [ "$(env_value DB_PASSWORD)" = "${LEGACY_TEMPLATE_DB_PASSWORD}" ]; }; then
   set_env DB_PASSWORD "${DB_PASSWORD:-$(generate_secret)}"
-  echo "Filled DB_PASSWORD from DB_PASSWORD env/default native password"
+  echo "Filled DB_PASSWORD with a generated secret for this deployment"
 fi
 
 for key in APP_BLIND_INDEX_KEY API_ADMIN_SECRET MASTER_WEBHOOK_SECRET; do
@@ -328,7 +349,7 @@ disable_apache_public_listen
 
 render_template "${APP_DIR}/conf/apache24-api.conf" "${APACHE_DEST}"
 mkdir -p "$(dirname "${NGINX_DEST}")"
-render_template "${APP_DIR}/conf/nginx-vhost-sibermas.conf" "${NGINX_DEST}"
+render_template "$(nginx_template_path)" "${NGINX_DEST}"
 cp "${APP_DIR}/conf/php-fpm.sibermas.conf" "${PHP_FPM_POOL_DEST}"
 
 install -m 0555 "${APP_DIR}/conf/rc.d/sibermas_web" "${RC_D_DEST}/sibermas_web"
@@ -339,11 +360,16 @@ sysrc nginx_enable="YES"
 sysrc php_fpm_enable="YES"
 sysrc sibermas_web_enable="YES"
 sysrc sibermas_web_app_dir="${APP_DIR}"
+sysrc sibermas_web_user="${WEB_USER}"
 sysrc sibermas_web_public_api_url="${API_V1_PUBLIC_URL%/}"
 sysrc sibermas_web_server_api_url="${SERVER_API_URL:-http://127.0.0.1/api/v1}"
 sysrc sibermas_web_public_app_url="${PUBLIC_BASE_URL%/}"
+sysrc sibermas_web_pidfile="${LOG_DIR}/sibermas-web.pid"
+sysrc sibermas_web_child_pidfile="${LOG_DIR}/sibermas-web.child.pid"
 sysrc sibermas_queue_enable="YES"
 sysrc sibermas_queue_app_dir="${APP_DIR}"
+sysrc sibermas_queue_user="${WEB_USER}"
+sysrc sibermas_queue_pid_dir="${LOG_DIR}"
 
 if [ "${DISABLE_SUPERVISOR}" = "1" ]; then
   step "Disabling Supervisor for this no-supervisor profile"

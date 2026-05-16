@@ -2,11 +2,16 @@
 
 Profile ini untuk target operasional:
 
-- Nginx publik di port `80/443`
+- Nginx frontend di host aplikasi: direct-public di `80/443`, atau backend-only
+  di `80` saat `EDGE_REVERSE_PROXY=1`
 - Apache24 backend internal di `127.0.0.1:8080`
 - Laravel API di `apps/api/public` lewat PHP-FPM socket `/var/run/php-fpm.sock`
 - Next.js standalone di `127.0.0.1:3000`
 - Tanpa Supervisor; proses Next.js dan queue Laravel dikelola `rc.d` + `daemon(8)`
+
+Untuk `sibermas.uinsaizu.ac.id`, topologi live saat ini memakai SSL
+frontend/gateway. Di app server, gunakan `EDGE_REVERSE_PROXY=1` agar vhost
+backend tetap HTTP-only dan tidak memuat sertifikat lokal.
 
 ## Arsitektur
 
@@ -61,6 +66,31 @@ APACHE_BACKEND=1 sh scripts/preflight-freebsd.sh
 
 KKN_SUPERADMIN_PASSWORD='password-kuat' \
 bash deploy-freebsd-apache-nginx.sh
+```
+
+### Opsi: di balik reverse proxy/gateway kampus
+
+Kalau Nginx publik/gateway lain sudah terminate TLS dan meneruskan request ke
+app server via HTTP, gunakan mode eksplisit ini:
+
+```sh
+EDGE_REVERSE_PROXY=1 \
+KKN_SUPERADMIN_PASSWORD='password-kuat' \
+bash deploy-freebsd-apache-nginx.sh
+```
+
+Mode ini merender:
+
+```text
+conf/nginx-vhost-sibermas-http.conf -> /usr/local/etc/nginx/vhosts/sibermas.conf
+```
+
+Ini mode yang cocok untuk host backend Sibermas saat ini.
+
+Template gateway publik tetap ada di:
+
+```text
+conf/revproxy-sibermas.uinsaizu.ac.id.conf
 ```
 
 Untuk staging:
@@ -134,6 +164,13 @@ certbot certonly --webroot \
 
 Lalu aktifkan server block HTTPS di `/usr/local/etc/nginx/nginx.conf` dan ubah
 server block port 80 menjadi redirect.
+
+Jika host hanya berperan sebagai backend di balik gateway, bagian SSL lokal ini
+tidak dipakai. Dalam mode itu yang wajib dijaga adalah header:
+
+- `X-Forwarded-Proto`
+- `X-Forwarded-Port`
+- `X-Forwarded-For`
 
 ## Health Check
 

@@ -1,6 +1,9 @@
 import axios, { type AxiosInstance, type AxiosResponse, type InternalAxiosRequestConfig } from 'axios';
 import type { ApiResponse } from '@sibermas/shared-types';
 
+const METHOD_SPOOF_HEADER = 'x-sibermas-method-spoofed';
+const METHODS_TO_SPOOF = new Set(['put', 'patch', 'delete']);
+
 function handleResponse<T = unknown>(response: AxiosResponse<ApiResponse<T>>): T {
   if (response.config.responseType === 'blob' || response.config.responseType === 'arraybuffer') {
     return response.data as T;
@@ -57,6 +60,62 @@ function emitLogout(): void {
   } catch { /* noop */ }
 }
 
+function isFormData(value: unknown): value is FormData {
+  return typeof FormData !== 'undefined' && value instanceof FormData;
+}
+
+function isUrlSearchParams(value: unknown): value is URLSearchParams {
+  return typeof URLSearchParams !== 'undefined' && value instanceof URLSearchParams;
+}
+
+function withSpoofedMethodPayload(data: unknown, method: string): unknown {
+  const spoofedMethod = method.toUpperCase();
+
+  if (isFormData(data)) {
+    if (typeof data.set === 'function') {
+      data.set('_method', spoofedMethod);
+    } else {
+      data.append('_method', spoofedMethod);
+    }
+    return data;
+  }
+
+  if (isUrlSearchParams(data)) {
+    data.set('_method', spoofedMethod);
+    return data;
+  }
+
+  if (!data) {
+    return { _method: spoofedMethod };
+  }
+
+  if (typeof data === 'object' && !Array.isArray(data)) {
+    return { ...data, _method: spoofedMethod };
+  }
+
+  return { _method: spoofedMethod, payload: data };
+}
+
+function installRestMethodSpoofing(client: AxiosInstance): void {
+  client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+    const method = config.method?.toLowerCase();
+    if (!method || !METHODS_TO_SPOOF.has(method)) {
+      return config;
+    }
+
+    const alreadySpoofed = String(config.headers?.get?.(METHOD_SPOOF_HEADER) ?? '') === '1';
+    if (alreadySpoofed) {
+      return config;
+    }
+
+    config.data = withSpoofedMethodPayload(config.data, method);
+    config.method = 'post';
+    config.headers.set(METHOD_SPOOF_HEADER, '1');
+
+    return config;
+  });
+}
+
 export function createWebClient(baseURL?: string): AxiosInstance {
   const client = axios.create({
     baseURL: baseURL || (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL) || '/api/v1',
@@ -67,6 +126,8 @@ export function createWebClient(baseURL?: string): AxiosInstance {
       Accept: 'application/json',
     },
   });
+
+  installRestMethodSpoofing(client);
 
   client.interceptors.response.use(
     (response: AxiosResponse) => handleResponse(response),
@@ -103,6 +164,8 @@ export function createMobileClient(getToken: () => Promise<string | null>, baseU
       Accept: 'application/json',
     },
   });
+
+  installRestMethodSpoofing(client);
 
   client.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
     try {

@@ -129,6 +129,11 @@ test('PATCH /api/v1/profile requires auth', function () {
         ->assertStatus(401);
 });
 
+test('POST /api/v1/profile with _method PATCH requires auth', function () {
+    $this->postJson('/api/v1/profile', ['_method' => 'PATCH'])
+        ->assertStatus(401);
+});
+
 test('POST /api/v1/profile/avatar requires auth', function () {
     $this->postJson('/api/v1/profile/avatar')
         ->assertStatus(401);
@@ -141,6 +146,26 @@ test('PATCH /api/v1/profile/password requires auth', function () {
 
 test('POST /api/v1/profile/password requires auth', function () {
     $this->postJson('/api/v1/profile/password', [])
+        ->assertStatus(401);
+});
+
+test('POST /api/v1/profile/notification-preferences with _method PATCH requires auth', function () {
+    $this->postJson('/api/v1/profile/notification-preferences', ['_method' => 'PATCH'])
+        ->assertStatus(401);
+});
+
+test('POST /api/v1/admin/chat/1/close with _method PATCH requires auth', function () {
+    $this->postJson('/api/v1/admin/chat/1/close', ['_method' => 'PATCH'])
+        ->assertStatus(401);
+});
+
+test('POST /api/v1/admin/jenis-kkn/1 with _method PUT requires auth', function () {
+    $this->postJson('/api/v1/admin/jenis-kkn/1', ['_method' => 'PUT'])
+        ->assertStatus(401);
+});
+
+test('POST /api/v1/admin/dispensasi/1 with _method DELETE requires auth', function () {
+    $this->postJson('/api/v1/admin/dispensasi/1', ['_method' => 'DELETE'])
         ->assertStatus(401);
 });
 

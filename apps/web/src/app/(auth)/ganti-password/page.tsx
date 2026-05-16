@@ -21,6 +21,11 @@ function dashboardPathFor(roles: string[]) {
   return '/';
 }
 
+function maskPassword(value: string) {
+  if (value.length <= 5) return `${value.slice(0, 1)}${'x'.repeat(Math.max(0, value.length - 2))}${value.slice(-1)}`;
+  return `${value.slice(0, 3)}${'x'.repeat(Math.max(0, value.length - 5))}${value.slice(-2)}`;
+}
+
 export default function ChangePasswordPage(): React.JSX.Element {
   const router = useRouter();
   const { setUser } = useAuthStore();
@@ -33,6 +38,8 @@ export default function ChangePasswordPage(): React.JSX.Element {
   const [isFirstLogin, setIsFirstLogin] = useState(true);
   const [checking, setChecking] = useState(true);
   const [success, setSuccess] = useState(false);
+  const [maskedPassword, setMaskedPassword] = useState('');
+  const [successRedirectPath, setSuccessRedirectPath] = useState('/profil');
 
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
@@ -89,7 +96,9 @@ export default function ChangePasswordPage(): React.JSX.Element {
       }
 
       const result = await api.post('/profile/password', payload) as { user?: User } | null;
-      toast.success('Kata sandi berhasil diperbarui!');
+      const masked = maskPassword(password);
+      setMaskedPassword(masked);
+      toast.success(`Selamat, password berhasil diubah: ${masked}`);
 
       // Backend returns user data + new cookie — no need to re-fetch
       const freshUser = (result?.user ?? null) as User | null;
@@ -97,11 +106,10 @@ export default function ChangePasswordPage(): React.JSX.Element {
         setUser(freshUser);
       }
 
-      if (isFirstLogin || !freshUser?.profile_complete) {
-        router.replace('/profil');
-      } else {
-        setSuccess(true);
-      }
+      const redirectPath = (isFirstLogin || !freshUser?.profile_complete) ? '/profil' : dashboardPathFor(freshUser?.roles ?? []);
+      setSuccessRedirectPath(redirectPath);
+      setSuccess(true);
+      setTimeout(() => router.replace(redirectPath), 3500);
     } catch (err: unknown) {
       const e = err as { response?: { status?: number; data?: { error?: { errors?: Record<string, string[]>; message?: string } } } };
       const errorData = e.response?.data?.error;
@@ -162,17 +170,17 @@ export default function ChangePasswordPage(): React.JSX.Element {
             </div>
             <h2 className="text-2xl font-black uppercase tracking-tight text-emerald-950">Berhasil</h2>
             <p className="mt-3 text-sm font-medium leading-7 text-slate-600">
-              Kata sandi berhasil diperbarui. Gunakan kata sandi baru untuk login berikutnya.
+              Selamat, password berhasil diubah menjadi <span className="font-black text-emerald-700">{maskedPassword}</span>.
+              <br />Sistem akan mengarahkan Anda ke halaman profil.
             </p>
             <button
               type="button"
               onClick={() => {
-                const u = useAuthStore.getState().user;
-                router.replace(dashboardPathFor(u?.roles ?? []));
+                router.replace(successRedirectPath);
               }}
               className="mt-7 inline-flex h-12 w-full items-center justify-center rounded-xl bg-emerald-600 text-xs font-black uppercase tracking-widest text-white shadow-lg transition hover:bg-emerald-700"
             >
-              Lanjut ke Dashboard
+              Lanjutkan
             </button>
           </motion.div>
         </motion.div>

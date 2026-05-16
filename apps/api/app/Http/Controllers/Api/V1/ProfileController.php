@@ -16,6 +16,7 @@ use App\Models\KKN\SystemSetting;
 use App\Models\ProfileChangeRequest;
 use App\Models\User;
 use App\Services\ActivityLogger;
+use App\Services\AvatarValidationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -115,6 +116,7 @@ class ProfileController extends Controller
 
         $validated = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
+            'email' => ['nullable', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'phone' => ['nullable', 'string', 'max:20'],
             'address' => ['nullable', 'string', 'max:500'],
             'address_village_name' => ['nullable', 'string', 'max:150'],
@@ -155,6 +157,7 @@ class ProfileController extends Controller
 
         $userMap = [
             'name' => $user->name,
+            'email' => $user->email,
             'phone' => $user->phone,
             'address' => $user->address,
             'address_village_name' => $user->address_village_name,
@@ -296,7 +299,7 @@ class ProfileController extends Controller
 
     private function applyProfileChanges(User $user, array $changes, ?Mahasiswa $mahasiswa, ?Dosen $dosen): void
     {
-        $userFields = ['name', 'phone', 'address', 'address_village_name', 'address_district_name', 'address_regency_name', 'address_postal_code', 'address_lat', 'address_lng', 'address_registered_at', 'address_verified_at'];
+        $userFields = ['name', 'email', 'phone', 'address', 'address_village_name', 'address_district_name', 'address_regency_name', 'address_postal_code', 'address_lat', 'address_lng', 'address_registered_at', 'address_verified_at'];
         $mahasiswaFields = ['nik', 'mother_name', 'gender', 'shirt_size', 'birth_place', 'birth_date'];
         $dosenFields = ['nama_gelar', 'nidn', 'dosen_nik', 'jabatan', 'kelas_jabatan', 'tugas_tambahan', 'golongan', 'pangkat', 'no_rekening', 'nama_bank', 'npwp', 'gender', 'birth_date', 'dosen_alamat'];
 
@@ -347,6 +350,10 @@ class ProfileController extends Controller
         ]);
 
         $path = $request->file('avatar')->store('avatars', 'public');
+        if (! is_string($path) || $path === '' || $path === '0') {
+            return $this->error('Gagal menyimpan file foto. Silakan coba lagi atau hubungi admin.', 500);
+        }
+
         $queueBackedValidation = config('queue.default') !== 'sync';
         $reason = $queueBackedValidation
             ? 'Sedang diverifikasi otomatis oleh sistem.'
@@ -367,10 +374,30 @@ class ProfileController extends Controller
         if ($queueBackedValidation) {
             ValidateAvatarUploadJob::dispatch($user->id, $path)->onQueue('long');
         } else {
-            Log::warning('Avatar upload skipped automatic validation because queue.default=sync', [
-                'user_id' => $user->id,
-                'avatar' => $path,
-            ]);
+            $result = app(AvatarValidationService::class)->validateAvatar($path);
+            $user->refresh();
+
+            if ($user->avatar === $path && $user->avatar_moderation_status === 'pending') {
+                if (! $result['is_valid'] && ! $result['requires_manual_review']) {
+                    Storage::disk('public')->delete($path);
+                    $user->forceFill([
+                        'avatar' => null,
+                        'avatar_moderation_status' => 'rejected',
+                        'avatar_moderation_reason' => $result['reason'] ?? 'Foto ditolak oleh sistem AI.',
+                        'avatar_moderation_reviewed_at' => now(),
+                        'avatar_moderation_reviewed_by' => null,
+                    ])->save();
+                } else {
+                    $user->forceFill([
+                        'avatar_moderation_status' => $result['requires_manual_review'] ? 'pending' : 'approved',
+                        'avatar_moderation_reason' => $result['requires_manual_review']
+                            ? 'Server AI tidak tersedia, menunggu verifikasi admin.'
+                            : null,
+                        'avatar_moderation_reviewed_at' => $result['requires_manual_review'] ? null : now(),
+                        'avatar_moderation_reviewed_by' => null,
+                    ])->save();
+                }
+            }
         }
 
         ActivityLogger::log('avatar_upload', 'success', $user->id, [

@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { mutationErrorHandler } from '@/lib/utils';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
@@ -27,7 +28,7 @@ export default function JenisKknDetailPage(): React.JSX.Element {
     if (!numericId) router.replace('/admin/jenis-kkn');
   }, [numericId, router]);
 
-  const { data, isLoading } = useQuery<JenisKknDetail>({
+  const { data, isLoading, isError, error } = useQuery<JenisKknDetail>({
     queryKey: ['admin', 'jenis-kkn', numericId],
     queryFn: async () => {
       const res = await api.get(`/admin/jenis-kkn/${numericId}`);
@@ -37,6 +38,14 @@ export default function JenisKknDetailPage(): React.JSX.Element {
   });
 
   if (!numericId || isLoading) return <div className="h-32 animate-pulse rounded-2xl bg-slate-100" />;
+  if (isError) {
+    return (
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-900 shadow-sm">
+        <p className="text-sm font-bold">Detail jenis KKN belum bisa dimuat.</p>
+        <p className="mt-1 text-sm text-amber-800">{mutationErrorHandler(error)}</p>
+      </div>
+    );
+  }
   if (!data) return <div className="text-center text-slate-500 py-12">Jenis KKN tidak ditemukan</div>;
 
   return (

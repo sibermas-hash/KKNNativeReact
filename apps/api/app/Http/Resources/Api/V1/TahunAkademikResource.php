@@ -15,6 +15,7 @@ class TahunAkademikResource extends JsonResource
             'id' => $this->id,
             'year' => $this->year,
             'is_active' => $this->is_active,
+            'created_at' => $this->created_at?->toIso8601String(),
         ];
     }
 }

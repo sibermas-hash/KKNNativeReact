@@ -2,8 +2,9 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { mutationErrorHandler } from '@/lib/utils';
 import { PageHeader, ConfirmDialog } from '@/components/ui/shared';
-import { Plus, Pencil, Trash2, CheckCircle, XCircle, X, RefreshCw, Settings, CheckCircle2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, CheckCircle, XCircle, X, RefreshCw, Settings, CheckCircle2, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -51,13 +52,6 @@ interface FormState {
   color: string; is_active: boolean; sort_order: number;
   requirements_config: ReqConfig; attendance_config: AttConfig;
 }
-
-const toHexColor = (value?: string | null): string => {
-  if (!value) return "#10b981";
-  if (/^#[0-9a-fA-F]{6}$/.test(value)) return value;
-  const map: Record<string, string> = { emerald: "#10b981", blue: "#3b82f6", amber: "#f59e0b", indigo: "#6366f1", slate: "#64748b", cyan: "#06b6d4" };
-  return map[value] ?? "#10b981";
-};
 
 const DEFAULT_FORM: FormState = {
   code: '', name: '', description: '',
@@ -195,7 +189,7 @@ export default function JenisKknPage(): React.JSX.Element {
   const [editingRequirementId, setEditingRequirementId] = useState<number | null>(null);
   const cancelRef = useRef<HTMLButtonElement>(null);
 
-  const { data, isLoading } = useQuery<JenisKkn[]>({
+  const { data, isLoading, isError, error } = useQuery<JenisKkn[]>({
     queryKey: ['admin', 'jenis-kkn'],
     queryFn: async () => {
       const res = await api.get('/admin/jenis-kkn');
@@ -203,7 +197,7 @@ export default function JenisKknPage(): React.JSX.Element {
     },
   });
 
-
+  const errorMessage = isError ? mutationErrorHandler(error) : null;
 
   const toggleActive = useMutation({
     mutationFn: ({ id, is_active }: { id: number; is_active: boolean }) =>
@@ -215,7 +209,10 @@ export default function JenisKknPage(): React.JSX.Element {
         old?.map((j) => j.id === id ? { ...j, is_active } : j) ?? []);
       return { prev };
     },
-    onError: (_e, _v, ctx) => { qc.setQueryData(['admin', 'jenis-kkn'], ctx?.prev); toast.error('Gagal memperbarui status'); },
+    onError: (err, _v, ctx) => {
+      qc.setQueryData(['admin', 'jenis-kkn'], ctx?.prev);
+      toast.error(mutationErrorHandler(err));
+    },
     onSettled: () => qc.invalidateQueries({ queryKey: ['admin', 'jenis-kkn'] }),
   });
 
@@ -228,13 +225,13 @@ export default function JenisKknPage(): React.JSX.Element {
       toast.success(editingId ? 'Jenis KKN diperbarui' : 'Jenis KKN ditambahkan');
       closeModal();
     },
-    onError: () => toast.error('Gagal menyimpan'),
+    onError: (err: unknown) => toast.error(mutationErrorHandler(err)),
   });
 
   const destroy = useMutation({
     mutationFn: (id: number) => api.delete(`/admin/jenis-kkn/${id}`),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['admin', 'jenis-kkn'] }); toast.success('Jenis KKN dihapus'); },
-    onError: () => toast.error('Gagal menghapus — masih digunakan oleh periode'),
+    onError: (err: unknown) => toast.error(mutationErrorHandler(err)),
   });
 
   const addDocumentRequirement = useMutation({
@@ -378,8 +375,19 @@ export default function JenisKknPage(): React.JSX.Element {
                   {/* Kode + Nama */}
                   <div className="grid grid-cols-3 gap-4">
                     <Field label="Kode Skema">
-                      <input value={form.code} onChange={e => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
-                        className={INPUT} placeholder="REGULER" required />
+                      <div className="space-y-1.5">
+                        <input
+                          value={form.code}
+                          onChange={e => setForm(f => ({ ...f, code: e.target.value.toUpperCase() }))}
+                          disabled={editingId !== null}
+                          className={`${INPUT} ${editingId !== null ? 'cursor-not-allowed opacity-70' : ''}`}
+                          placeholder="REGULER"
+                          required
+                        />
+                        {editingId !== null && (
+                          <p className="text-[10px] text-slate-400">Kode skema dikunci setelah data dibuat agar referensi sistem tetap stabil.</p>
+                        )}
+                      </div>
                     </Field>
                     <div className="col-span-2">
                       <Field label="Nama Program">
@@ -507,7 +515,20 @@ export default function JenisKknPage(): React.JSX.Element {
                                   </div>
                                 </div>
                                 <div className="mt-3 rounded-lg bg-white px-3 py-2 text-xs text-slate-600">
-                                  Template default: {req.default_template ? `${req.default_template.name} (${req.default_template.file_name})` : 'Belum diatur'}
+                                  <div className="flex items-center justify-between gap-3">
+                                    <span>Template default: {req.default_template ? `${req.default_template.name} (${req.default_template.file_name})` : 'Belum diatur'}</span>
+                                    {req.default_template?.download_url && (
+                                      <a
+                                        href={req.default_template.download_url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex items-center gap-1 rounded-lg bg-cyan-50 px-2.5 py-1 font-semibold text-cyan-700 hover:bg-cyan-100"
+                                      >
+                                        <Download size={12} />
+                                        Unduh
+                                      </a>
+                                    )}
+                                  </div>
                                 </div>
                               </div>
                             ))
@@ -556,7 +577,7 @@ export default function JenisKknPage(): React.JSX.Element {
                   <div className="flex items-center gap-6 flex-wrap">
                     <Field label="Warna">
                       <div className="flex items-center gap-2">
-                        <input type="color" value={toHexColor(form.color)} onChange={e => setForm(f => ({ ...f, color: e.target.value }))}
+                        <input type="color" value={form.color} onChange={e => setForm(f => ({ ...f, color: e.target.value }))}
                           className="h-11 w-14 cursor-pointer rounded-xl border-2 border-slate-100" />
                         <span className="font-mono text-sm text-slate-500">{form.color}</span>
                       </div>
@@ -594,6 +615,11 @@ export default function JenisKknPage(): React.JSX.Element {
       {/* ── Table ── */}
       {isLoading ? (
         <div className="space-y-3">{[...Array(4)].map((_, i) => <div key={i} className="h-16 animate-pulse rounded-2xl bg-slate-100" />)}</div>
+      ) : errorMessage ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-900 shadow-sm">
+          <p className="text-sm font-bold">Data jenis KKN belum bisa dimuat.</p>
+          <p className="mt-1 text-sm text-amber-800">{errorMessage}</p>
+        </div>
       ) : list.length === 0 ? (
         <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
           <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Belum ada jenis KKN</p>

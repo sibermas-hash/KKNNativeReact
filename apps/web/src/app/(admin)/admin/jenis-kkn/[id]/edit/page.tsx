@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { mutationErrorHandler } from '@/lib/utils';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -46,13 +47,6 @@ const DEFAULT_REQ: ReqConfig = {
   require_not_married: false,
   require_parent_permission: false,
   require_health_cert: false,
-};
-
-const toHexColor = (value?: string | null): string => {
-  if (!value) return "#10b981";
-  if (/^#[0-9a-fA-F]{6}$/.test(value)) return value;
-  const map: Record<string, string> = { emerald: "#10b981", blue: "#3b82f6", amber: "#f59e0b", indigo: "#6366f1", slate: "#64748b", cyan: "#06b6d4" };
-  return map[value] ?? "#10b981";
 };
 
 const DEFAULT_ATT: AttConfig = {
@@ -103,7 +97,7 @@ export default function JenisKknEditPage(): React.JSX.Element {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['admin', 'jenis-kkn', id],
     queryFn: async () => {
       const res = await api.get(`/admin/jenis-kkn/${id}`);
@@ -147,7 +141,7 @@ export default function JenisKknEditPage(): React.JSX.Element {
       toast.success('Jenis KKN berhasil disimpan');
       router.push('/admin/jenis-kkn');
     },
-    onError: () => toast.error('Gagal menyimpan'),
+    onError: (err: unknown) => toast.error(mutationErrorHandler(err)),
   });
 
   const setReq = (key: keyof ReqConfig, value: unknown) =>
@@ -157,6 +151,14 @@ export default function JenisKknEditPage(): React.JSX.Element {
     setForm((f) => ({ ...f, attendance_config: { ...f.attendance_config, [key]: value } }));
 
   if (isLoading) return <div className="h-64 animate-pulse rounded-2xl bg-slate-100" />;
+  if (isError) {
+    return (
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-900 shadow-sm">
+        <p className="text-sm font-bold">Data jenis KKN belum bisa dimuat.</p>
+        <p className="mt-1 text-sm text-amber-800">{mutationErrorHandler(error)}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -240,7 +242,7 @@ export default function JenisKknEditPage(): React.JSX.Element {
               <div className="flex items-center gap-2">
                 <input
                   type="color"
-                  value={toHexColor(form.color)}
+                  value={form.color}
                   onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
                   className="h-9 w-12 cursor-pointer rounded-lg border border-slate-200"
                 />

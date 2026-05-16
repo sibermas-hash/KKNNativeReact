@@ -99,6 +99,7 @@ interface StudentAddressSectionProps {
 }
 
 const FIELD_LABELS: Record<string, string> = {
+  email: 'Email Sistem',
   nik: 'NIK (KTP)',
   mother_name: 'Nama Ibu Kandung',
   birth_place: 'Tempat Lahir',
@@ -211,11 +212,15 @@ function composeAddress(displayName?: string, address?: ReverseGeocodeAddress) {
   return parts.length > 0 ? parts.join(', ') : displayName ?? '';
 }
 
-function composeAddressQuery(village?: string, district?: string, regency?: string) {
-  return [village, district, regency, 'Jawa Tengah', 'Indonesia']
+function composeAddressQuery(address?: string, village?: string, district?: string, regency?: string, postalCode?: string) {
+  return [address, village, district, regency, postalCode, 'Jawa Tengah', 'Indonesia']
     .map((value) => (value ?? '').trim())
     .filter(Boolean)
     .join(', ');
+}
+
+function isLikelyIndonesia(point: { lat: number; lng: number }) {
+  return point.lat >= -11 && point.lat <= 6 && point.lng >= 95 && point.lng <= 142;
 }
 
 function focusProfileField(field: string) {
@@ -327,7 +332,7 @@ function StudentAddressSection({ register, errors, isEditing, typography, addres
       <TextArea label="Alamat Lengkap sesuai KTP" registration={register('address')} disabled={!isEditing} error={errors.address?.message} />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"><TextInput label="Desa/Kelurahan KTP" registration={register('address_village_name')} disabled={!isEditing} /><TextInput label="Kecamatan KTP" registration={register('address_district_name')} disabled={!isEditing} /><TextInput label="Kabupaten/Kota KTP" registration={register('address_regency_name')} disabled={!isEditing} /><TextInput label="Kode Pos KTP" registration={register('address_postal_code')} disabled={!isEditing} /></div>
       <button type="button" onClick={onSyncMap} disabled={!isEditing || forwardGeocoding} className={cx('inline-flex rounded-lg px-4 py-2 disabled:opacity-50', typography.button, primaryClass)}>{forwardGeocoding ? 'Mencari Lokasi...' : 'Sesuaikan Peta dari Alamat KTP'}</button>
-      <div className="space-y-2"><p className={`${typography.label} text-[color:var(--profile-text)]`}>Titik Koordinat Alamat KTP</p><AddressMapPicker value={typeof addressLat === 'number' && typeof addressLng === 'number' ? { lat: addressLat, lng: addressLng } : null} disabled={!isEditing || reverseGeocoding} onChange={onMapChange} /><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>{reverseGeocoding ? 'Membaca alamat dari titik peta...' : 'Alamat KTP dan peta saling tersinkron. Jika titik kurang tepat, klik/geser pin pada peta untuk koreksi.'}</p><input type="hidden" {...register('address_lat', { valueAsNumber: true })} /><input type="hidden" {...register('address_lng', { valueAsNumber: true })} />{(errors.address_lat || errors.address_lng) && <p className="text-xs font-semibold text-rose-600">Titik koordinat alamat KTP wajib dipilih pada peta.</p>}</div>
+      <div className="space-y-2"><p className={`${typography.label} text-[color:var(--profile-text)]`}>Titik Koordinat Alamat KTP</p><AddressMapPicker value={typeof addressLat === 'number' && typeof addressLng === 'number' ? { lat: addressLat, lng: addressLng } : null} disabled={!isEditing || reverseGeocoding} onChange={onMapChange} /><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>{reverseGeocoding ? 'Membaca alamat dari titik peta...' : 'Klik/geser pin atau tekan Lokasi Saya hanya mengubah titik koordinat, tidak mengubah alamat yang sudah diketik.'}</p><input type="hidden" {...register('address_lat', { valueAsNumber: true })} /><input type="hidden" {...register('address_lng', { valueAsNumber: true })} />{(errors.address_lat || errors.address_lng) && <p className="text-xs font-semibold text-rose-600">Titik koordinat alamat KTP wajib dipilih pada peta.</p>}</div>
       <label className={`flex gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] transition-colors ${typography.body}`}><input type="checkbox" {...register('address_verified')} disabled={!isEditing} className="mt-1 accent-[color:var(--profile-primary)]" /> Saya menyatakan alamat asli sesuai KTP dan titik peta di atas benar adanya. Data ini digunakan sebagai rujukan alamat resmi pada dashboard profil dan proses KKN.</label>
     </section>
   );
@@ -371,6 +376,8 @@ export default function ProfilePage(): React.JSX.Element {
   const villageValue = watch('address_village_name');
   const districtValue = watch('address_district_name');
   const regencyValue = watch('address_regency_name');
+  const addressValue = watch('address');
+  const postalCodeValue = watch('address_postal_code');
 
   const setTutorialTargetRef = (target: TutorialTarget) => (node: HTMLElement | null) => {
     tutorialTargets.current[target] = node;
@@ -391,13 +398,8 @@ export default function ProfilePage(): React.JSX.Element {
       if (!response.ok) throw new Error('Reverse geocoding failed');
       const data = await response.json() as { display_name?: string; address?: ReverseGeocodeAddress };
       const address = data.address ?? {};
-      setValue('address', composeAddress(data.display_name, address), { shouldDirty: true });
-      setValue('address_village_name', cleanAdminName(address.village || address.suburb || address.neighbourhood || address.town), { shouldDirty: true });
-      setValue('address_district_name', cleanAdminName(address.municipality || address.county || address.state_district), { shouldDirty: true });
-      setValue('address_regency_name', cleanAdminName(address.city || address.county || address.state_district), { shouldDirty: true });
-      setValue('address_postal_code', address.postcode ?? '', { shouldDirty: true });
-      setLastMapSyncedAddress(composeAddressQuery(cleanAdminName(address.village || address.suburb || address.neighbourhood || address.town), cleanAdminName(address.municipality || address.county || address.state_district), cleanAdminName(address.city || address.county || address.state_district)));
-      toast.success('Alamat KTP otomatis diisi dari titik peta');
+      setLastMapSyncedAddress(composeAddressQuery(composeAddress(data.display_name, address), cleanAdminName(address.village || address.suburb || address.neighbourhood || address.town), cleanAdminName(address.municipality || address.county || address.state_district), cleanAdminName(address.city || address.county || address.state_district), address.postcode ?? ''));
+      toast.success('Titik peta tersimpan. Alamat manual tetap dipertahankan.');
     } catch {
       toast.warning('Titik tersimpan. Alamat otomatis gagal dibaca, silakan lengkapi manual.');
     } finally {
@@ -406,19 +408,22 @@ export default function ProfilePage(): React.JSX.Element {
   };
 
   const syncMapFromAddress = async () => {
-    const query = composeAddressQuery(villageValue, districtValue, regencyValue);
+    const query = composeAddressQuery(addressValue, villageValue, districtValue, regencyValue, postalCodeValue);
     if (!query || query === lastMapSyncedAddress) return;
     setForwardGeocoding(true);
     try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(query)}`, {
+      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=id&addressdetails=1&q=${encodeURIComponent(query)}`;
+      const response = await fetch(url, {
         headers: { Accept: 'application/json' },
       });
       if (!response.ok) throw new Error('Forward geocoding failed');
       const results = await response.json() as Array<{ lat: string; lon: string }>;
-      const first = results[0];
+      const first = results.find((item) => isLikelyIndonesia({ lat: Number(item.lat), lng: Number(item.lon) })) ?? results[0];
       if (!first) throw new Error('Location not found');
-      setValue('address_lat', Number(first.lat), { shouldDirty: true });
-      setValue('address_lng', Number(first.lon), { shouldDirty: true });
+      const point = { lat: Number(first.lat), lng: Number(first.lon) };
+      if (!isLikelyIndonesia(point)) throw new Error('Location outside Indonesia bounds');
+      setValue('address_lng', point.lng, { shouldDirty: true });
+      setValue('address_lat', point.lat, { shouldDirty: true });
       setLastMapSyncedAddress(query);
       toast.success('Peta alamat KTP disesuaikan dari alamat');
     } catch {
@@ -474,12 +479,13 @@ export default function ProfilePage(): React.JSX.Element {
   useEffect(() => {
     if (!user) return;
     profileApi.get().then((res: unknown) => {
-      const r = res as { student?: StudentProfile; lecturer?: LecturerProfile; user?: { phone?: string; address?: string; address_village_name?: string; address_district_name?: string; address_regency_name?: string; address_postal_code?: string; address_verified_at?: string; address_lat?: number; address_lng?: number; mahasiswa?: StudentProfile; dosen?: LecturerProfile }; pending_change_request?: ChangeRequest };
+      const r = res as { student?: StudentProfile; lecturer?: LecturerProfile; user?: { email?: string; phone?: string; address?: string; address_village_name?: string; address_district_name?: string; address_regency_name?: string; address_postal_code?: string; address_verified_at?: string; address_lat?: number; address_lng?: number; mahasiswa?: StudentProfile; dosen?: LecturerProfile }; pending_change_request?: ChangeRequest };
       const nextStudent = r?.student ?? r?.user?.mahasiswa ?? null;
       const nextLecturer = r?.lecturer ?? r?.user?.dosen ?? null;
       setProfileData({ student: nextStudent, lecturer: nextLecturer, pending: r?.pending_change_request ?? null });
       reset({
         name: user.name ?? '',
+        email: (r?.user?.email ?? user.email ?? '') as string,
         phone: (r?.user?.phone ?? (user as unknown as { phone?: string }).phone ?? '') as string,
         address: (r?.user?.address ?? (user as unknown as { address?: string }).address ?? '') as string,
         address_village_name: (r?.user?.address_village_name ?? (user as unknown as { address_village_name?: string }).address_village_name ?? '') as string,
@@ -535,9 +541,24 @@ export default function ProfilePage(): React.JSX.Element {
       await profileApi.update(payload);
       toast.success(profileComplete ? 'Permintaan perubahan profil dikirim. Menunggu persetujuan superadmin.' : 'Profil berhasil disimpan. Pastikan semua data sudah valid.');
       setIsEditing(false);
-      const res = await profileApi.get() as unknown as { student?: StudentProfile; lecturer?: LecturerProfile; pending_change_request?: ChangeRequest; profile_complete?: boolean; user?: { biodata_complete?: boolean; address_complete?: boolean } };
+      const res = await profileApi.get() as unknown as { student?: StudentProfile; lecturer?: LecturerProfile; pending_change_request?: ChangeRequest; profile_complete?: boolean; user?: { email?: string; phone?: string; address?: string; address_village_name?: string; address_district_name?: string; address_regency_name?: string; address_postal_code?: string; address_verified_at?: string; address_lat?: number; address_lng?: number; biodata_complete?: boolean; address_complete?: boolean } };
       setProfileData({ student: res?.student ?? null, lecturer: res?.lecturer ?? null, pending: res?.pending_change_request ?? null });
       await fetchUser(true);
+      const freshUserForForm = useAuthStore.getState().user;
+      reset({
+        ...data,
+        name: freshUserForForm?.name ?? data.name,
+        email: res?.user?.email ?? freshUserForForm?.email ?? data.email,
+        phone: res?.user?.phone ?? data.phone,
+        address: res?.user?.address ?? data.address,
+        address_village_name: res?.user?.address_village_name ?? data.address_village_name,
+        address_district_name: res?.user?.address_district_name ?? data.address_district_name,
+        address_regency_name: res?.user?.address_regency_name ?? data.address_regency_name,
+        address_postal_code: res?.user?.address_postal_code ?? data.address_postal_code,
+        address_verified: !!res?.user?.address_verified_at,
+        address_lat: res?.user?.address_lat != null ? Number(res.user.address_lat) : data.address_lat,
+        address_lng: res?.user?.address_lng != null ? Number(res.user.address_lng) : data.address_lng,
+      });
       const complete = !!res?.profile_complete || !!(res?.student?.biodata_complete && res?.student?.address_complete) || !!res?.lecturer?.biodata_complete;
       setProfileCompleteCookie(complete);
       if (complete) {
@@ -719,7 +740,7 @@ export default function ProfilePage(): React.JSX.Element {
             <section className="space-y-4">
               <h2 className={`flex items-center gap-2 ${typography.label} text-[color:var(--profile-text)]`}><IdCard size={16} /> Data Pribadi & Kontak</h2>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <TextInput label="Email Sistem" value={user.email ?? '-'} disabled />
+                <TextInput label="Email Sistem" registration={register('email')} disabled={!isEditing} error={errors.email?.message} />
                 <TextInput label="Nama Lengkap" registration={register('name')} disabled={!isEditing} error={errors.name?.message} />
                 <TextInput label="Nomor HP / WA" registration={register('phone')} disabled={!isEditing} error={errors.phone?.message} />
                 {isStudent && <TextInput label="NIK (KTP)" registration={register('nik')} disabled={!isEditing} error={errors.nik?.message} />}

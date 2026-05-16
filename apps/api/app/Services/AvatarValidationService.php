@@ -139,7 +139,7 @@ class AvatarValidationService
                 ],
             ],
             'response_format' => ['type' => 'json_object'],
-            'max_tokens' => 900,
+            'max_tokens' => 4096,
             'temperature' => 0.1,
         ];
     }
@@ -150,15 +150,38 @@ class AvatarValidationService
         $endpoint = rtrim($baseUrl, '/').'/chat/completions';
 
         $response = Http::withToken($apiKey)
-            ->timeout(20) // Vision API kadang lambat
+            ->timeout(90) // Vision API kadang lambat
             ->post($endpoint, $payload);
 
         if (! $response->successful()) {
             throw new Exception("HTTP {$response->status()}: ".$response->body());
         }
 
+        $body = (string) $response->body();
         $jsonResponse = $response->json();
-        $content = $jsonResponse['choices'][0]['message']['content'] ?? '{}';
+        $content = $jsonResponse['choices'][0]['message']['content'] ?? null;
+
+        // Some OpenAI-compatible gateways (including router.rizquna.id) may
+        // return SSE chunks even when stream=false. Merge delta.content chunks.
+        if ($content === null && str_starts_with(ltrim($body), 'data:')) {
+            $content = '';
+            foreach (preg_split('/\R/', $body) as $line) {
+                $line = trim((string) $line);
+                if ($line === '' || ! str_starts_with($line, 'data:')) {
+                    continue;
+                }
+                $data = trim(substr($line, 5));
+                if ($data === '[DONE]') {
+                    break;
+                }
+                $chunk = json_decode($data, true);
+                if (is_array($chunk)) {
+                    $content .= $chunk['choices'][0]['delta']['content'] ?? '';
+                }
+            }
+        }
+
+        $content = $content ?? '{}';
 
         // Bersihkan ```json ... ``` kalau AI kirim dengan markdown wrapper
         $content = preg_replace('/```json\s*/', '', $content);

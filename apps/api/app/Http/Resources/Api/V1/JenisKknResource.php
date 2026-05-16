@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V1;
 
+use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -22,6 +23,7 @@ class JenisKknResource extends JsonResource
             'placement_mode_label' => $this->placementModeLabel(),
             'color' => $this->color,
             'is_active' => $this->is_active,
+            'sort_order' => $this->sort_order,
             'attendance_config' => $this->getAttendanceConfig(),
             'requirements_config' => $this->requirements_config,
             'document_requirements' => $this->whenLoaded('documentRequirements', fn () => $this->documentRequirements->map(fn ($requirement) => [
@@ -31,10 +33,14 @@ class JenisKknResource extends JsonResource
                 'description' => $requirement->description,
                 'is_required' => $requirement->is_required,
                 'sort_order' => $requirement->sort_order,
+                'default_template_id' => $requirement->default_template_id,
                 'default_template' => $requirement->defaultTemplate ? [
                     'id' => $requirement->defaultTemplate->id,
                     'name' => $requirement->defaultTemplate->name,
                     'file_name' => $requirement->defaultTemplate->file_name,
+                    'download_url' => Route::has('api.v1.admin.document-templates.download')
+                        ? route('api.v1.admin.document-templates.download', $requirement->defaultTemplate)
+                        : null,
                 ] : null,
             ])->values()),
         ];

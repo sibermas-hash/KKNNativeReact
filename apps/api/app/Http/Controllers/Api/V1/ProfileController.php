@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Jobs\ValidateAvatarUploadJob;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\DosenResource;
 use App\Http\Resources\Api\V1\MahasiswaResource;
@@ -15,11 +16,11 @@ use App\Models\KKN\SystemSetting;
 use App\Models\ProfileChangeRequest;
 use App\Models\User;
 use App\Services\ActivityLogger;
-use App\Services\AvatarValidationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 
@@ -337,7 +338,7 @@ class ProfileController extends Controller
         }
     }
 
-    public function updateAvatar(Request $request, AvatarValidationService $validator): JsonResponse
+    public function updateAvatar(Request $request): JsonResponse
     {
         $user = $request->user();
 
@@ -346,30 +347,10 @@ class ProfileController extends Controller
         ]);
 
         $path = $request->file('avatar')->store('avatars', 'public');
-
-        // Layer 3: AI Validation (background merah + jas almamater + pose formal)
-        $aiResult = $validator->validateAvatar($path);
-
-        // Layer 3 AI tegas menolak (tidak butuh manual review) — tolak instan
-        if (! $aiResult['is_valid'] && ! $aiResult['requires_manual_review']) {
-            Storage::disk('public')->delete($path);
-
-            ActivityLogger::log('avatar_rejected', 'failed', $user->id, [
-                'reason' => $aiResult['reason'],
-            ]);
-
-            return $this->error('VALIDATION_ERROR', $aiResult['reason'] ?? 'Foto ditolak oleh sistem AI.', 422, [
-                'avatar' => [$aiResult['reason']],
-            ]);
-        }
-
-        // Layer 4: tentukan status moderasi
-        // - approved: AI lolos tegas → foto langsung bisa dipakai
-        // - pending : AI tidak tersedia/ragu → butuh review admin
-        $status = $aiResult['requires_manual_review'] ? 'pending' : 'approved';
-        $reason = $aiResult['requires_manual_review']
-            ? 'Server AI tidak tersedia, menunggu verifikasi admin.'
-            : null;
+        $queueBackedValidation = config('queue.default') !== 'sync';
+        $reason = $queueBackedValidation
+            ? 'Sedang diverifikasi otomatis oleh sistem.'
+            : 'Validasi otomatis belum tersedia; menunggu verifikasi admin.';
 
         if ($user->avatar) {
             Storage::disk('public')->delete($user->avatar);
@@ -377,23 +358,32 @@ class ProfileController extends Controller
 
         $user->update([
             'avatar' => $path,
-            'avatar_moderation_status' => $status,
+            'avatar_moderation_status' => 'pending',
             'avatar_moderation_reason' => $reason,
-            'avatar_moderation_reviewed_at' => $status === 'approved' ? now() : null,
+            'avatar_moderation_reviewed_at' => null,
             'avatar_moderation_reviewed_by' => null,
         ]);
 
+        if ($queueBackedValidation) {
+            ValidateAvatarUploadJob::dispatch($user->id, $path)->onQueue('long');
+        } else {
+            Log::warning('Avatar upload skipped automatic validation because queue.default=sync', [
+                'user_id' => $user->id,
+                'avatar' => $path,
+            ]);
+        }
+
         ActivityLogger::log('avatar_upload', 'success', $user->id, [
-            'moderation_status' => $status,
+            'moderation_status' => 'pending',
         ]);
 
-        $msg = $status === 'pending'
-            ? 'Foto berhasil diunggah namun butuh persetujuan Admin karena server AI sedang sibuk.'
-            : 'Foto profil berhasil diperbarui.';
+        $msg = $queueBackedValidation
+            ? 'Foto berhasil diunggah dan sedang diverifikasi otomatis.'
+            : 'Foto berhasil diunggah dan menunggu verifikasi admin.';
 
         return $this->success([
             'avatar_url' => asset('storage/'.$path),
-            'moderation_status' => $status,
+            'moderation_status' => 'pending',
             'moderation_reason' => $reason,
         ], $msg);
     }

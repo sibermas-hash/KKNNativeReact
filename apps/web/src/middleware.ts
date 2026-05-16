@@ -33,6 +33,26 @@ import { NextRequest, NextResponse } from 'next/server';
 const PROTECTED_PREFIXES = ['/admin', '/mahasiswa', '/dosen', '/profil', '/ganti-password', '/notifikasi'];
 const AUTH_PAGES = ['/login', '/lupa-kata-sandi', '/atur-ulang-kata-sandi'];
 
+function getPublicAppOrigin(): string {
+  const explicitOrigin = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL;
+  if (explicitOrigin) {
+    return explicitOrigin.replace(/\/+$/, '');
+  }
+
+  return process.env.NODE_ENV === 'production'
+    ? 'https://sibermas.uinsaizu.ac.id'
+    : '';
+}
+
+function buildRedirectUrl(path: string, request: NextRequest): URL {
+  const origin = getPublicAppOrigin();
+  if (origin) {
+    return new URL(path, `${origin}/`);
+  }
+
+  return new URL(path, request.url);
+}
+
 function hasAuthToken(request: NextRequest): boolean {
   // Only trust the HttpOnly cookie. The legacy `sibermas_session` marker is
   // non-HttpOnly and easily forged, so it is no longer sufficient on its own.
@@ -41,6 +61,14 @@ function hasAuthToken(request: NextRequest): boolean {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const publicOrigin = getPublicAppOrigin();
+  const isCanonicalLoginPath = pathname === '/login';
+
+  if (publicOrigin && isCanonicalLoginPath && request.nextUrl.origin !== publicOrigin) {
+    const canonicalLoginUrl = buildRedirectUrl('/login', request);
+    request.nextUrl.searchParams.forEach((value, key) => canonicalLoginUrl.searchParams.set(key, value));
+    return NextResponse.redirect(canonicalLoginUrl, 308);
+  }
 
   const isProtected = PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(prefix + '/')
@@ -48,9 +76,9 @@ export function middleware(request: NextRequest) {
 
   // (1) Anonymous user trying to reach a protected page → /login.
   if (isProtected && !hasAuthToken(request)) {
-    const loginUrl = new URL('/login', request.url);
+    const loginUrl = buildRedirectUrl('/login', request);
     loginUrl.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(loginUrl);
+    return NextResponse.redirect(loginUrl, 308);
   }
 
   // (2) Already-authenticated user on an auth page → send to dashboard.

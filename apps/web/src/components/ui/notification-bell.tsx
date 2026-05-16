@@ -33,6 +33,7 @@ interface UnreadPayload {
  *   - Polls `/notifications/unread` every 60s (axios returns raw
  *     { notifications, unread_count } because the endpoint doesn't use the
  *     ApiResponse envelope — handled by client.ts fallback).
+ *   - SSE is opt-in via `NEXT_PUBLIC_ENABLE_NOTIFICATION_SSE=true`.
  *   - Click a notification → mark read → navigate to `action` URL if present.
  *   - "Tandai semua dibaca" → POST /notifications/read-all, then refetch.
  *   - When unauthenticated or during initial load, nothing renders
@@ -67,11 +68,18 @@ export function NotificationBell({ className }: { className?: string }): React.J
     router.push(actionUrl);
   }, [router]);
 
+  const sseEnabled = process.env.NEXT_PUBLIC_ENABLE_NOTIFICATION_SSE === 'true';
+
   // SSE realtime — fire & forget. Keeps the query cache fresh as soon as
   // a notification is created server-side (no waiting for the next poll).
-  // Falls back to polling silently when the browser / network blocks SSE.
+  // Disabled by default because the current backend implementation uses a
+  // long-lived PHP worker per connection.
   const [sseConnected, setSseConnected] = useState(false);
   useEffect(() => {
+    if (!sseEnabled) {
+      setSseConnected(false);
+      return;
+    }
     if (!isAuthenticated || typeof window === 'undefined') return;
     if (typeof EventSource === 'undefined') return;
 
@@ -136,7 +144,7 @@ export function NotificationBell({ className }: { className?: string }): React.J
       es?.close();
       setSseConnected(false);
     };
-  }, [handleNotificationAction, isAuthenticated, qc]);
+  }, [handleNotificationAction, isAuthenticated, qc, sseEnabled]);
 
   const { data } = useQuery<UnreadPayload>({
     queryKey: ['notifications', 'unread'],

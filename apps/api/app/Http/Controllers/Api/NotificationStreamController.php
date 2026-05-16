@@ -41,6 +41,7 @@ class NotificationStreamController extends Controller
     {
         $user = $request->user();
         abort_if($user === null, 401);
+        abort_unless((bool) config('notifications.stream.enabled', false), 404);
 
         // Snapshot the highest-seen notification created_at so we only emit
         // deltas from this point forward. Avoids flooding the client with

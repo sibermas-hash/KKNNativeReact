@@ -18,6 +18,30 @@ interface NavItem {
   href: string;
 }
 
+function getPublicAppOrigin(): string {
+  const explicitOrigin = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL;
+  if (explicitOrigin) {
+    return explicitOrigin.replace(/\/+$/, '');
+  }
+
+  return process.env.NODE_ENV === 'production'
+    ? 'https://sibermas.uinsaizu.ac.id'
+    : '';
+}
+
+function toPublicUrl(path: string): string {
+  const origin = getPublicAppOrigin();
+  if (!origin) {
+    return path;
+  }
+
+  try {
+    return new URL(path, `${origin}/`).toString();
+  } catch {
+    return path;
+  }
+}
+
 export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.JSX.Element {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const pathname = usePathname();
@@ -80,7 +104,7 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
     : 'Login';
 
   const authHref = !hasMounted
-    ? '/login'
+    ? toPublicUrl('/login')
     : isAuthenticated
       ? (() => {
           const roles = user?.roles || [];
@@ -89,9 +113,11 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
           if (roles.includes('student')) return '/mahasiswa';
           return '/';
         })()
-      : pathname === '/login'
-        ? '/login'
-        : `/login?redirect=${encodeURIComponent(pathname)}`;
+      : toPublicUrl(
+          pathname === '/login'
+            ? '/login'
+            : `/login?redirect=${encodeURIComponent(pathname)}`
+        );
 
   // Same number of items on every render — only label/href change post-hydration
   const allNavItems: NavItem[] = [

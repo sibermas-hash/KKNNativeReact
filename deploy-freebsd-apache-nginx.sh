@@ -168,6 +168,36 @@ disable_apache_public_listen() {
   fi
 }
 
+disable_legacy_apache_vhosts() {
+  local legacy_dir="/usr/local/etc/apache24/Vhosts"
+  local legacy_file
+  local placeholder="${legacy_dir}/000-disabled-placeholder.conf"
+
+  [ -d "${legacy_dir}" ] || return 0
+
+  while IFS= read -r legacy_file; do
+    [ -f "${legacy_file}" ] || continue
+
+    if ! grep -qE "Server(Name|Alias)[[:space:]]+${WEB_DOMAIN//./\\.}" "${legacy_file}" 2>/dev/null; then
+      continue
+    fi
+
+    if ! grep -qE '<VirtualHost[[:space:]]+([^>]*:)?(80|443)>' "${legacy_file}" 2>/dev/null; then
+      continue
+    fi
+
+    mv "${legacy_file}" "${legacy_file}.disabled"
+    echo "Disabled legacy Apache vhost: ${legacy_file}"
+  done < <(find "${legacy_dir}" -maxdepth 1 -type f -name '*.conf' | sort)
+
+  if ! find "${legacy_dir}" -maxdepth 1 -type f -name '*.conf' | grep -q .; then
+    cat > "${placeholder}" <<'EOF'
+# Placeholder file to keep Apache wildcard Include happy when all legacy
+# vhosts have been disabled by SIBERMAS deploy automation.
+EOF
+  fi
+}
+
 ensure_modsecurity_rest_methods() {
   [ -f "${MODSECURITY_CRS_SETUP}" ] || return 0
 
@@ -356,6 +386,7 @@ if [ "${SKIP_FRONTEND_BUILD}" != "1" ]; then
   export SERVER_API_URL="${SERVER_API_URL:-http://127.0.0.1/api/v1}"
   export NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL:-${PUBLIC_BASE_URL%/}}"
   export NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL:-${PUBLIC_BASE_URL%/}}"
+  export NEXT_PUBLIC_ENABLE_NOTIFICATION_SSE="${NEXT_PUBLIC_ENABLE_NOTIFICATION_SSE:-false}"
 
   rm -rf "${WEB_DIR}/.next"
   pnpm install --frozen-lockfile --filter web...
@@ -377,6 +408,7 @@ for module in rewrite proxy proxy_fcgi headers setenvif; do
 done
 ensure_apache_includes
 disable_apache_public_listen
+disable_legacy_apache_vhosts
 ensure_modsecurity_rest_methods
 
 render_template "${APP_DIR}/conf/apache24-api.conf" "${APACHE_DEST}"

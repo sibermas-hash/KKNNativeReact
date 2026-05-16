@@ -188,3 +188,11 @@ it('GenericNotification.via omits mail channel when user has no email', function
 it('SSE stream endpoint requires authentication', function () {
     $this->getJson('/api/notifications/stream')->assertStatus(401);
 });
+
+it('SSE stream endpoint is disabled by default for authenticated users', function () {
+    $user = createUserWithRole('superadmin');
+
+    $this->actingAs($user)
+        ->get('/api/notifications/stream')
+        ->assertStatus(404);
+});

@@ -28,9 +28,22 @@ class UserController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = User::with(['fakultas', 'roles'])->when($request->input('search'), fn ($q, $s) => $q->where('name', 'like', "%{$s}%")->orWhere('username', 'like', "%{$s}%"))->when($request->input('role'), fn ($q, $r) => $q->role($r))->orderByDesc('created_at');
+        $perPage = max(1, min((int) $request->input('per_page', 25), 100));
 
-        return $this->successCollection(UserResource::collection($query->paginate(25)));
+        $query = User::with(['fakultas', 'roles'])
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $search = trim((string) $request->input('search'));
+
+                $q->where(function ($inner) use ($search) {
+                    $inner->where('name', 'like', "%{$search}%")
+                        ->orWhere('username', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->input('role'), fn ($q, $r) => $q->role($r))
+            ->orderByDesc('created_at');
+
+        return $this->successCollection(UserResource::collection($query->paginate($perPage)->withQueryString()));
     }
 
     public function store(Request $request): JsonResponse

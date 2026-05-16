@@ -393,11 +393,9 @@ class EligibilityService
             }
         }
 
-        if ($jkkn->require_parent_permission) {
-            if (empty($mahasiswa->parent_permission_path)) {
-                $failures[] = 'Surat izin orang tua/wali wajib diunggah untuk program ini.';
-            }
-        }
+        // Dokumen izin orang tua/wali adalah berkas administratif.
+        // Tidak boleh menjadi filter kelayakan otomatis sebelum admin LPPM/Superadmin memvalidasi.
+        // Requirement dokumen tetap muncul di halaman upload dokumen setelah pendaftaran.
 
         if ($failures === []) {
             $notices = [];
@@ -405,7 +403,7 @@ class EligibilityService
                 $notices[] = 'Belum Menikah';
             }
             if ($jkkn->require_parent_permission) {
-                $notices[] = 'Izin Orang Tua';
+                $notices[] = 'Izin Orang Tua/Wali wajib diunggah setelah pendaftaran';
             }
 
             return [
@@ -452,12 +450,17 @@ class EligibilityService
             ->values()
             ->all();
 
-        $passed = $missingDocuments === [];
+        // Dokumen (Surat Sehat, Izin Ortu, dan dokumen lain) hanya dicek kelengkapan upload,
+        // bukan validitas substansi. Validasi/approval dokumen dilakukan manual oleh admin LPPM/Superadmin.
+        // Karena itu dokumen tidak boleh memblokir tombol Daftar KKN.
+        $passed = true;
 
         return [
-            'passed' => $passed,
+            'passed' => true,
             'key' => 'documents',
-            'message' => $passed ? 'Dokumen persyaratan lengkap' : 'Dokumen persyaratan belum lengkap.',
+            'message' => $missingDocuments === []
+                ? 'Dokumen persyaratan sudah diunggah; menunggu validasi admin jika diperlukan.'
+                : 'Dokumen persyaratan dapat diunggah setelah pendaftaran. Validasi dilakukan admin LPPM/Superadmin.',
             'details' => collect($requirements)->mapWithKeys(function (array $requirement) use ($existing) {
                 $field = (string) $requirement['field'];
 

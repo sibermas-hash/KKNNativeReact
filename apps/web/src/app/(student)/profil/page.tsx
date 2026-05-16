@@ -213,10 +213,22 @@ function composeAddress(displayName?: string, address?: ReverseGeocodeAddress) {
 }
 
 function composeAddressQuery(address?: string, village?: string, district?: string, regency?: string, postalCode?: string) {
-  return [address, village, district, regency, postalCode, 'Jawa Tengah', 'Indonesia']
+  return [address, village, district, regency, postalCode, 'Indonesia']
     .map((value) => (value ?? '').trim())
     .filter(Boolean)
     .join(', ');
+}
+
+function hasEnoughAddressForGeocode(address?: string, village?: string, district?: string, regency?: string) {
+  return [address, village, district, regency].some((value) => (value ?? '').trim().length >= 3);
+}
+
+function addressMatchScore(result: { display_name?: string }, parts: Array<string | undefined>) {
+  const haystack = (result.display_name ?? '').toLowerCase();
+  return parts
+    .map((part) => (part ?? '').trim().toLowerCase())
+    .filter((part) => part.length >= 3)
+    .reduce((score, part) => score + (haystack.includes(part) ? 1 : 0), 0);
 }
 
 function isLikelyIndonesia(point: { lat: number; lng: number }) {
@@ -331,7 +343,7 @@ function StudentAddressSection({ register, errors, isEditing, typography, addres
       </div>
       <TextArea label="Alamat Lengkap sesuai KTP" registration={register('address')} disabled={!isEditing} error={errors.address?.message} />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"><TextInput label="Desa/Kelurahan KTP" registration={register('address_village_name')} disabled={!isEditing} /><TextInput label="Kecamatan KTP" registration={register('address_district_name')} disabled={!isEditing} /><TextInput label="Kabupaten/Kota KTP" registration={register('address_regency_name')} disabled={!isEditing} /><TextInput label="Kode Pos KTP" registration={register('address_postal_code')} disabled={!isEditing} /></div>
-      <button type="button" onClick={onSyncMap} disabled={!isEditing || forwardGeocoding} className={cx('inline-flex rounded-lg px-4 py-2 disabled:opacity-50', typography.button, primaryClass)}>{forwardGeocoding ? 'Mencari Lokasi...' : 'Sesuaikan Peta dari Alamat KTP'}</button>
+      <div className="space-y-2"><button type="button" onClick={onSyncMap} disabled={!isEditing || forwardGeocoding} className={cx('inline-flex rounded-lg px-4 py-2 disabled:opacity-50', typography.button, primaryClass)}>{forwardGeocoding ? 'Mencari Lokasi...' : 'Sesuaikan Peta dari Alamat KTP'}</button><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>Gunakan tombol ini untuk mencari titik dari alamat yang diketik. Tombol Lokasi Saya hanya menggeser pin dan tidak mengubah teks alamat.</p></div>
       <div className="space-y-2"><p className={`${typography.label} text-[color:var(--profile-text)]`}>Titik Koordinat Alamat KTP</p><AddressMapPicker value={typeof addressLat === 'number' && typeof addressLng === 'number' ? { lat: addressLat, lng: addressLng } : null} disabled={!isEditing || reverseGeocoding} onChange={onMapChange} /><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>{reverseGeocoding ? 'Membaca alamat dari titik peta...' : 'Klik/geser pin atau tekan Lokasi Saya hanya mengubah titik koordinat, tidak mengubah alamat yang sudah diketik.'}</p><input type="hidden" {...register('address_lat', { valueAsNumber: true })} /><input type="hidden" {...register('address_lng', { valueAsNumber: true })} />{(errors.address_lat || errors.address_lng) && <p className="text-xs font-semibold text-rose-600">Titik koordinat alamat KTP wajib dipilih pada peta.</p>}</div>
       <label className={`flex gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] transition-colors ${typography.body}`}><input type="checkbox" {...register('address_verified')} disabled={!isEditing} className="mt-1 accent-[color:var(--profile-primary)]" /> Saya menyatakan alamat asli sesuai KTP dan titik peta di atas benar adanya. Data ini digunakan sebagai rujukan alamat resmi pada dashboard profil dan proses KKN.</label>
     </section>
@@ -399,7 +411,7 @@ export default function ProfilePage(): React.JSX.Element {
       const data = await response.json() as { display_name?: string; address?: ReverseGeocodeAddress };
       const address = data.address ?? {};
       setLastMapSyncedAddress(composeAddressQuery(composeAddress(data.display_name, address), cleanAdminName(address.village || address.suburb || address.neighbourhood || address.town), cleanAdminName(address.municipality || address.county || address.state_district), cleanAdminName(address.city || address.county || address.state_district), address.postcode ?? ''));
-      toast.success('Titik peta tersimpan. Alamat manual tetap dipertahankan.');
+      toast.success('Titik peta tersimpan. Alamat manual tidak diubah.');
     } catch {
       toast.warning('Titik tersimpan. Alamat otomatis gagal dibaca, silakan lengkapi manual.');
     } finally {
@@ -409,7 +421,10 @@ export default function ProfilePage(): React.JSX.Element {
 
   const syncMapFromAddress = async () => {
     const query = composeAddressQuery(addressValue, villageValue, districtValue, regencyValue, postalCodeValue);
-    if (!query || query === lastMapSyncedAddress) return;
+    if (!hasEnoughAddressForGeocode(addressValue, villageValue, districtValue, regencyValue)) {
+      toast.warning('Isi alamat/desa/kecamatan/kabupaten terlebih dahulu.');
+      return;
+    }
     setForwardGeocoding(true);
     try {
       const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&countrycodes=id&addressdetails=1&q=${encodeURIComponent(query)}`;
@@ -417,15 +432,17 @@ export default function ProfilePage(): React.JSX.Element {
         headers: { Accept: 'application/json' },
       });
       if (!response.ok) throw new Error('Forward geocoding failed');
-      const results = await response.json() as Array<{ lat: string; lon: string }>;
-      const first = results.find((item) => isLikelyIndonesia({ lat: Number(item.lat), lng: Number(item.lon) })) ?? results[0];
+      const results = await response.json() as Array<{ lat: string; lon: string; display_name?: string }>;
+      const validResults = results.filter((item) => isLikelyIndonesia({ lat: Number(item.lat), lng: Number(item.lon) }));
+      validResults.sort((a, b) => addressMatchScore(b, [addressValue, villageValue, districtValue, regencyValue, postalCodeValue]) - addressMatchScore(a, [addressValue, villageValue, districtValue, regencyValue, postalCodeValue]));
+      const first = validResults[0] ?? results[0];
       if (!first) throw new Error('Location not found');
       const point = { lat: Number(first.lat), lng: Number(first.lon) };
       if (!isLikelyIndonesia(point)) throw new Error('Location outside Indonesia bounds');
-      setValue('address_lng', point.lng, { shouldDirty: true });
-      setValue('address_lat', point.lat, { shouldDirty: true });
+      setValue('address_lat', point.lat, { shouldDirty: true, shouldValidate: true });
+      setValue('address_lng', point.lng, { shouldDirty: true, shouldValidate: true });
       setLastMapSyncedAddress(query);
-      toast.success('Peta alamat KTP disesuaikan dari alamat');
+      toast.success('Peta berhasil disesuaikan dari alamat KTP. Cek/geser pin jika kurang presisi.');
     } catch {
       toast.warning('Lokasi tidak ditemukan dari alamat. Silakan pilih titik pada peta.');
     } finally {

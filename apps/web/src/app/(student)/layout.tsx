@@ -57,6 +57,8 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     el.style.background = themeConfig.backdrop;
   }, [themeConfig]);
   const isProfilePage = pathname === '/profil';
+  const currentNavItem = NAV_ITEMS.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
+  const isPhaseAllowed = !currentNavItem?.phases || currentNavItem.phases.includes(currentPhase || '');
 
   useEffect(() => {
     if (isLoading) return;
@@ -65,9 +67,12 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
       if (!user.password_changed_at) { router.replace('/ganti-password'); return; }
       if ((!user.profile_complete || user.must_change_password) && !isProfilePage) { router.replace('/profil'); return; }
       if (isProfilePage) return;
-      if (!user.roles?.includes('student')) router.replace('/');
+      if (!user.roles?.includes('student')) { router.replace('/'); return; }
+      if (!isPhaseAllowed && currentNavItem) {
+        router.replace(`/phase-blocked?phase=${encodeURIComponent(currentPhase || 'pre_registration')}&required=${encodeURIComponent(currentNavItem.phases?.join(',') || '')}`);
+      }
     }
-  }, [isLoading, isAuthenticated, isProfilePage, user, router]);
+  }, [isLoading, isAuthenticated, isProfilePage, user, router, isPhaseAllowed, currentNavItem, currentPhase]);
 
   if (isLoading || !isAuthenticated || !user) {
     return (

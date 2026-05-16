@@ -25,6 +25,8 @@ class MahasiswaResource extends JsonResource
             'user_id' => $this->user_id,
             'nim' => $this->nim,
             'nama' => $this->nama,
+            'fakultas_id' => $this->fakultas_id,
+            'prodi_id' => $this->prodi_id,
 
             // R13-SEC-005 + R9-H01 refinement: identity-theft vector protection
             'nik' => $this->when($isSensitiveVisible, $this->nik),
@@ -34,6 +36,10 @@ class MahasiswaResource extends JsonResource
             'shirt_size' => $this->shirt_size,
             'birth_place' => $this->birth_place,
             'birth_date' => $this->birth_date?->toDateString(),
+            'marital_status' => $this->marital_status,
+            'phone' => $this->when($isSensitiveVisible, $this->phone),
+            'alamat' => $this->when($isSensitiveVisible, $this->alamat),
+            'api_email' => $this->when($isSensitiveVisible, $this->api_email),
             'semester' => $this->semester,
             'sks_completed' => $this->sks_completed,
             'gpa' => $this->gpa,

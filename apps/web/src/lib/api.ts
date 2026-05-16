@@ -1,3 +1,4 @@
+import axios from 'axios';
 import {
   createWebClient,
   authEndpoints,
@@ -21,6 +22,15 @@ function getBaseUrl(): string {
 }
 
 export const api = createWebClient(getBaseUrl());
+export const rawApi = axios.create({
+  baseURL: getBaseUrl(),
+  withCredentials: true,
+  withXSRFToken: true,
+  headers: {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  },
+});
 
 // Singleton endpoint instances — prevents recreation on every render
 export const authApi = authEndpoints(api);

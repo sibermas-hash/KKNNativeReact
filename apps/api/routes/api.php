@@ -105,7 +105,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/', [ProfileController::class, 'show'])->name('api.v1.profile.show');
             Route::patch('/', [ProfileController::class, 'update'])->name('api.v1.profile.update');
             Route::post('/avatar', [ProfileController::class, 'updateAvatar'])->name('api.v1.profile.avatar');
-            Route::patch('/password', [ProfileController::class, 'changePassword'])->name('api.v1.profile.password');
+            Route::match(['patch', 'post'], '/password', [ProfileController::class, 'changePassword'])->name('api.v1.profile.password');
             Route::get('/notification-preferences', [ProfileController::class, 'notificationPreferences'])->name('api.v1.profile.notification-preferences.show');
             Route::patch('/notification-preferences', [ProfileController::class, 'updateNotificationPreferences'])->name('api.v1.profile.notification-preferences.update');
         });

@@ -510,7 +510,9 @@ export function profileEndpoints(client: AxiosInstance) {
     get: () => client.get('/profile'),
     update: (data: Record<string, unknown>) => client.patch('/profile', data),
     updateAvatar: (data: FormData) => client.post('/profile/avatar', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
-    changePassword: (data: Record<string, unknown>) => client.patch('/profile/password', data),
+    // Keep password change on POST as a compatibility path for gateways that
+    // still block PATCH before the request reaches the origin.
+    changePassword: (data: Record<string, unknown>) => client.post('/profile/password', data),
     notificationPreferences: () => client.get('/profile/notification-preferences'),
     updateNotificationPreferences: (data: Record<string, unknown>) => client.patch('/profile/notification-preferences', data),
   };

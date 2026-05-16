@@ -33,6 +33,7 @@ API_V1_PUBLIC_URL="${API_V1_PUBLIC_URL:-${PUBLIC_BASE_URL%/}/api/v1}"
 
 APACHE_HTTPD_CONF="${APACHE_HTTPD_CONF:-/usr/local/etc/apache24/httpd.conf}"
 APACHE_DEST="${APACHE_DEST:-/usr/local/etc/apache24/Includes/sibermas-api.conf}"
+MODSECURITY_CRS_SETUP="${MODSECURITY_CRS_SETUP:-/usr/local/etc/modsecurity-crs/crs-setup.conf}"
 NGINX_DEST="${NGINX_DEST:-/usr/local/etc/nginx/vhosts/sibermas.conf}"
 PHP_FPM_POOL_DEST="${PHP_FPM_POOL_DEST:-/usr/local/etc/php-fpm.d/sibermas.conf}"
 RC_D_DEST="${RC_D_DEST:-/usr/local/etc/rc.d}"
@@ -165,6 +166,35 @@ disable_apache_public_listen() {
       's|^Listen[[:space:]]+([^#[:space:]]+:)?(80|443)([[:space:]]*)$|# &  # disabled by SIBERMAS; Nginx owns public 80/443|' \
       "${APACHE_HTTPD_CONF}"
   fi
+}
+
+ensure_modsecurity_rest_methods() {
+  [ -f "${MODSECURITY_CRS_SETUP}" ] || return 0
+
+  if grep -q "tx.allowed_methods=.*PATCH" "${MODSECURITY_CRS_SETUP}" 2>/dev/null \
+    && grep -q "tx.allowed_methods=.*PUT" "${MODSECURITY_CRS_SETUP}" 2>/dev/null \
+    && grep -q "tx.allowed_methods=.*DELETE" "${MODSECURITY_CRS_SETUP}" 2>/dev/null; then
+    echo "ModSecurity CRS already allows REST methods."
+    return 0
+  fi
+
+  backup_file "${MODSECURITY_CRS_SETUP}"
+  cat >> "${MODSECURITY_CRS_SETUP}" <<'EOF'
+
+# SIBERMAS compatibility override:
+# Apache + ModSecurity CRS defaults to GET/HEAD/POST/OPTIONS only, which
+# blocks Laravel REST endpoints such as PATCH /api/v1/profile/password.
+SecAction \
+    "id:1000200,\
+    phase:1,\
+    pass,\
+    t:none,\
+    nolog,\
+    tag:'SIBERMAS',\
+    ver:'local',\
+    setvar:'tx.allowed_methods=GET HEAD POST PUT PATCH DELETE OPTIONS'"
+EOF
+  echo "Applied ModSecurity CRS REST-method override."
 }
 
 assert_port_ownership() {
@@ -346,6 +376,7 @@ for module in rewrite proxy proxy_fcgi headers setenvif; do
 done
 ensure_apache_includes
 disable_apache_public_listen
+ensure_modsecurity_rest_methods
 
 render_template "${APP_DIR}/conf/apache24-api.conf" "${APACHE_DEST}"
 mkdir -p "$(dirname "${NGINX_DEST}")"

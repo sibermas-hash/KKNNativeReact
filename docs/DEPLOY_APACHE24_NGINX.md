@@ -181,6 +181,10 @@ curl -I http://127.0.0.1:3000/            # Next.js
 curl -I http://127.0.0.1/                 # Nginx -> Next.js
 ```
 
+Jika Apache memakai ModSecurity CRS, pastikan method REST tidak diblokir.
+Minimal `PATCH /api/v1/profile/password` harus mencapai Laravel dan membalas
+`401/422`, bukan `403`.
+
 Diagnostik lengkap:
 
 ```sh

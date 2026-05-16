@@ -66,8 +66,17 @@ describe('Profile & Period Context (E2E)', function () {
     it('password change succeeds with valid data', function () {
         $user = createUserWithRole('student');
 
-        // Note: changePassword returns noContent (204) on success
         $this->actingAs($user)->patchJson('/api/v1/profile/password', [
+            'current_password' => 'Test1234!',
+            'password' => 'NewSecure1234!',
+            'password_confirmation' => 'NewSecure1234!',
+        ])->assertSuccessful();
+    });
+
+    it('password change also succeeds via post for gateway compatibility', function () {
+        $user = createUserWithRole('student');
+
+        $this->actingAs($user)->postJson('/api/v1/profile/password', [
             'current_password' => 'Test1234!',
             'password' => 'NewSecure1234!',
             'password_confirmation' => 'NewSecure1234!',

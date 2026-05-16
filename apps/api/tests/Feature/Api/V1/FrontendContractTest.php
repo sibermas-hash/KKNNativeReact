@@ -139,6 +139,11 @@ test('PATCH /api/v1/profile/password requires auth', function () {
         ->assertStatus(401);
 });
 
+test('POST /api/v1/profile/password requires auth', function () {
+    $this->postJson('/api/v1/profile/password', [])
+        ->assertStatus(401);
+});
+
 // ─── NOTIFICATIONS & DEVICE TOKENS ───────────────────────────────────────────
 
 test('POST /api/device-tokens requires auth', function () {

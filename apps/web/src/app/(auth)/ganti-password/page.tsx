@@ -88,7 +88,7 @@ export default function ChangePasswordPage(): React.JSX.Element {
         payload.current_password = currentPassword;
       }
 
-      const result = await api.patch('/profile/password', payload) as { user?: User } | null;
+      const result = await api.post('/profile/password', payload) as { user?: User } | null;
       toast.success('Kata sandi berhasil diperbarui!');
 
       // Backend returns user data + new cookie — no need to re-fetch

@@ -61,14 +61,6 @@ function hasAuthToken(request: NextRequest): boolean {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const publicOrigin = getPublicAppOrigin();
-  const isCanonicalLoginPath = pathname === '/login';
-
-  if (publicOrigin && isCanonicalLoginPath && request.nextUrl.origin !== publicOrigin) {
-    const canonicalLoginUrl = buildRedirectUrl('/login', request);
-    request.nextUrl.searchParams.forEach((value, key) => canonicalLoginUrl.searchParams.set(key, value));
-    return NextResponse.redirect(canonicalLoginUrl, 308);
-  }
 
   const isProtected = PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(prefix + '/')
@@ -90,7 +82,7 @@ export function middleware(request: NextRequest) {
   );
 
   if (isAuthPage && hasAuthToken(request)) {
-    return NextResponse.redirect(new URL('/', request.url));
+    return NextResponse.redirect(buildRedirectUrl('/', request));
   }
 
   return NextResponse.next();

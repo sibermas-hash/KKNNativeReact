@@ -48,6 +48,13 @@ const DEFAULT_REQ: ReqConfig = {
   require_health_cert: false,
 };
 
+const toHexColor = (value?: string | null): string => {
+  if (!value) return "#10b981";
+  if (/^#[0-9a-fA-F]{6}$/.test(value)) return value;
+  const map: Record<string, string> = { emerald: "#10b981", blue: "#3b82f6", amber: "#f59e0b", indigo: "#6366f1", slate: "#64748b", cyan: "#06b6d4" };
+  return map[value] ?? "#10b981";
+};
+
 const DEFAULT_ATT: AttConfig = {
   geofence_enabled: true,
   radius_meters: 500,
@@ -233,7 +240,7 @@ export default function JenisKknEditPage(): React.JSX.Element {
               <div className="flex items-center gap-2">
                 <input
                   type="color"
-                  value={form.color}
+                  value={toHexColor(form.color)}
                   onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))}
                   className="h-9 w-12 cursor-pointer rounded-lg border border-slate-200"
                 />

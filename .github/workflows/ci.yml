@@ -152,7 +152,8 @@ jobs:
           script: |
             set -e
             cd /usr/local/www/apache24/data/Sibermas2026
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
 
             # Backend
             cd apps/api
@@ -169,20 +170,22 @@ jobs:
             export NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL:-https://sibermas.uinsaizu.ac.id}"
             export NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL:-https://sibermas.uinsaizu.ac.id}"
             pnpm install --frozen-lockfile
-            pnpm build
-            cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static 2>/dev/null || true
-            cp -r apps/web/public apps/web/.next/standalone/apps/web/public 2>/dev/null || true
+            pnpm --filter web build
+            cp -r apps/web/.next/static/. apps/web/.next/standalone/apps/web/.next/static 2>/dev/null || true
+            cp -r apps/web/public/. apps/web/.next/standalone/apps/web/public 2>/dev/null || true
             chown -R www:www apps/web/.next apps/api/storage apps/api/bootstrap/cache
 
             # PHP-FPM reload (OPcache flush)
             service php-fpm reload 2>/dev/null || service php-fpm restart || true
 
             # Restart services
-            supervisorctl restart workers:*
+            service sibermas_web restart
+            service apache24 restart
+            service sibermas_queue restart 2>/dev/null || true
 
             # Health check
             sleep 5
-            curl -sf http://127.0.0.1/api/health || echo "WARNING: API health check failed"
+            curl -sf http://127.0.0.1:3000/api/health || echo "WARNING: API health check failed"
             curl -sf http://127.0.0.1:3000 || echo "WARNING: Web health check failed"
 
   deploy-jails:
@@ -208,7 +211,7 @@ jobs:
             SHARED_ENV="${APP_DIR}/shared/api.env"
 
             # Clone code
-            git clone --depth=1 https://github.com/anomalyco/kknuinsaizu.git "$RELEASE_DIR"
+            git clone --depth=1 git@github.com:putrihati-cmd/KKNNATIVE.git "$RELEASE_DIR"
 
             # Backend build (di host)
             cd "$RELEASE_DIR/apps/api"
@@ -236,9 +239,9 @@ jobs:
             export NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL:-https://sibermas.uinsaizu.ac.id}"
             export NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL:-https://sibermas.uinsaizu.ac.id}"
             pnpm install --frozen-lockfile
-            pnpm build
-            cp -r apps/web/.next/static apps/web/.next/standalone/apps/web/.next/static 2>/dev/null || true
-            cp -r apps/web/public apps/web/.next/standalone/apps/web/public 2>/dev/null || true
+            pnpm --filter web build
+            cp -r apps/web/.next/static/. apps/web/.next/standalone/apps/web/.next/static 2>/dev/null || true
+            cp -r apps/web/public/. apps/web/.next/standalone/apps/web/public 2>/dev/null || true
             chown -R www:www apps/web/.next apps/api/storage apps/api/bootstrap/cache
 
             # Switch symlink
@@ -250,12 +253,12 @@ jobs:
 
             # Restart services di setiap jail
             if [ "${JAIL_USE_SSH:-false}" = "true" ]; then
-              ssh 10.0.0.12 supervisorctl restart workers:*
+              ssh 10.0.0.12 service sibermas_queue restart 2>/dev/null || true
               ssh 10.0.0.12 service nginx reload
               ssh 10.0.0.11 supervisorctl restart sibermas-web
               ssh 10.0.0.10 service nginx reload
             else
-              jexec api supervisorctl restart workers:* 2>/dev/null || true
+              jexec api service sibermas_queue restart 2>/dev/null || true
               jexec api service nginx reload 2>/dev/null || true
               jexec web supervisorctl restart sibermas-web 2>/dev/null || true
               jexec nginx-proxy service nginx reload 2>/dev/null || true

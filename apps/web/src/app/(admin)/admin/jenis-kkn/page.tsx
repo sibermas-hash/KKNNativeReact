@@ -52,6 +52,13 @@ interface FormState {
   requirements_config: ReqConfig; attendance_config: AttConfig;
 }
 
+const toHexColor = (value?: string | null): string => {
+  if (!value) return "#10b981";
+  if (/^#[0-9a-fA-F]{6}$/.test(value)) return value;
+  const map: Record<string, string> = { emerald: "#10b981", blue: "#3b82f6", amber: "#f59e0b", indigo: "#6366f1", slate: "#64748b", cyan: "#06b6d4" };
+  return map[value] ?? "#10b981";
+};
+
 const DEFAULT_FORM: FormState = {
   code: '', name: '', description: '',
   registration_mode: 'open', placement_mode: 'automatic_after_approval',
@@ -549,7 +556,7 @@ export default function JenisKknPage(): React.JSX.Element {
                   <div className="flex items-center gap-6 flex-wrap">
                     <Field label="Warna">
                       <div className="flex items-center gap-2">
-                        <input type="color" value={form.color} onChange={e => setForm(f => ({ ...f, color: e.target.value }))}
+                        <input type="color" value={toHexColor(form.color)} onChange={e => setForm(f => ({ ...f, color: e.target.value }))}
                           className="h-11 w-14 cursor-pointer rounded-xl border-2 border-slate-100" />
                         <span className="font-mono text-sm text-slate-500">{form.color}</span>
                       </div>

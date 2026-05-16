@@ -22,8 +22,14 @@ class EnsureProfileCompleted
             return $next($request);
         }
 
-        // Bypass auth routes — user must be able to fetch their own data
-        if ($request->is('api/v1/auth/*') || $request->is('api/v1/profile*') || $request->is('api/v1/period-context')) {
+        // Bypass auth + security onboarding routes — user must be able to
+        // fetch profile data and complete 2FA setup from the profile page.
+        if (
+            $request->is('api/v1/auth/*')
+            || $request->is('api/v1/profile*')
+            || $request->is('api/v1/2fa*')
+            || $request->is('api/v1/period-context')
+        ) {
             return $next($request);
         }
 

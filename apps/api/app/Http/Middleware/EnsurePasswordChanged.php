@@ -51,7 +51,8 @@ class EnsurePasswordChanged
             return $next($request);
         }
 
-        // Allow access to password change page, profile, auth routes, and logout
+        // Allow access to password change page, profile / 2FA onboarding,
+        // auth routes, and logout.
         $routeName = $request->route()?->getName();
         $path = $request->path();
 
@@ -59,6 +60,7 @@ class EnsurePasswordChanged
         $allowedRoutes = [
             'profile.password-change', 'profile.password', 'profile.show', 'profile.avatar',
             'api.v1.profile.show', 'api.v1.profile.update', 'api.v1.profile.avatar', 'api.v1.profile.password',
+            'api.v1.2fa.status', 'api.v1.2fa.setup', 'api.v1.2fa.confirm', 'api.v1.2fa.disable', 'api.v1.2fa.regenerate-recovery',
             'api.v1.period-context',
             'logout', 'keluar',
         ];
@@ -66,6 +68,7 @@ class EnsurePasswordChanged
         if (($routeName && in_array($routeName, $allowedRoutes, true))
             || str_starts_with($path, 'api/v1/auth/')
             || str_starts_with($path, 'api/v1/profile')
+            || str_starts_with($path, 'api/v1/2fa')
             || str_starts_with($path, 'api/v1/period-context')) {
             return $next($request);
         }

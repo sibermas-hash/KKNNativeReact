@@ -9,14 +9,21 @@ import { Users } from 'lucide-react';
 export default function EligibilityCheckPage(): React.JSX.Element {
   const [search, setSearch] = useState('');
 
-  const { data, isLoading } = useQuery<unknown[]>({
+  const { data, isLoading } = useQuery<unknown>({
     queryKey: ['admin', 'eligibility', { search }],
     queryFn: async () => {
       return await api.get('/admin/audit-kualifikasi', { params: { search } });
     },
   });
 
-  const students = data ?? [];
+  const payload = (data ?? {}) as Record<string, unknown>;
+  const students = Array.isArray(data)
+    ? data
+    : Array.isArray(payload.students)
+      ? payload.students
+      : Array.isArray((payload.data as Record<string, unknown> | undefined)?.students)
+        ? ((payload.data as Record<string, unknown>).students as unknown[])
+        : [];
 
   return (
     <div className="space-y-6">

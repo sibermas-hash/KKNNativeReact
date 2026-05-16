@@ -23,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 
 // Dosen routes (all dosen can access)
 Route::prefix('dosen')
-    ->middleware(['auth:sanctum', 'role:dosen|dpl|superadmin', '2fa.enforced', 'not_locked'])
+    ->middleware(['auth:sanctum', 'role:dosen|dpl|superadmin', 'not_locked'])
     ->group(function () {
         Route::get('/dashboard', [DosenDashboardController::class, 'index'])->name('api.v1.dosen.dashboard');
 
@@ -42,7 +42,7 @@ Route::prefix('dosen')
 
 // DPL routes (only approved DPL can access)
 Route::prefix('dpl')
-    ->middleware(['auth:sanctum', 'role:dpl|superadmin', '2fa.enforced', 'not_locked'])
+    ->middleware(['auth:sanctum', 'role:dpl|superadmin', 'not_locked'])
     ->group(function () {
         // Dashboard
         Route::get('/dashboard', [DplDashboardController::class, 'index'])->name('api.v1.dpl.dashboard');

@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Log;
  * Dipanggil otomatis dari `KegiatanKkn::booted()` saat create (via `defer()`)
  * atau manual via `ProcessActivityAiAnalysis::dispatch($kegiatan)`.
  *
- * Memakai `LogbookAnalyzer` service yang pakai SumoPod 3-tier failover.
+ * Memakai `LogbookAnalyzer` service yang pakai AI gateway 3-tier failover.
  * Hasil analisis disimpan ke `kegiatan_kkn.ai_summary` + `ai_analysis` (JSON).
  *
  * Auto-flag behavior:

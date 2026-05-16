@@ -15,7 +15,6 @@ NODE_VERSION="${NODE_VERSION:-24}"
 APP_DIR="${APP_DIR:-/usr/local/www/apache24/data/Sibermas2026}"
 WEB_DOMAIN="${WEB_DOMAIN:-sibermas.uinsaizu.ac.id}"
 CERT_BASE="${CERT_BASE:-$WEB_DOMAIN}"
-EDGE_REVERSE_PROXY="${EDGE_REVERSE_PROXY:-0}"
 
 # ─── Counters ──────────────────────────────────────────────────────────
 FAILS=0
@@ -383,42 +382,38 @@ fi
 # ─── 11. TLS certificate sanity ────────────────────────────────────────
 section "11. TLS certificate sanity"
 
-if [ "${EDGE_REVERSE_PROXY}" = "1" ]; then
-  info "EDGE_REVERSE_PROXY=1 -> skip cert lokal; TLS terminate di frontend/gateway"
-else
-  CERT_FILE="/usr/local/etc/letsencrypt/live/${CERT_BASE}/fullchain.pem"
-  if [ -f "$CERT_FILE" ]; then
-    RESOLVED_CERT="$(resolve_path "$CERT_FILE")"
-    ok "Cert file ada: $CERT_FILE"
-    if [ "$RESOLVED_CERT" != "$CERT_FILE" ]; then
-      info "Resolved path: $RESOLVED_CERT"
-    fi
-    case "$RESOLVED_CERT" in
-      *selfsigned*|*/nginx/ssl/*)
-        warn "Cert path mengarah ke self-signed/internal cert"
-        ;;
-    esac
+CERT_FILE="/usr/local/etc/letsencrypt/live/${CERT_BASE}/fullchain.pem"
+if [ -f "$CERT_FILE" ]; then
+  RESOLVED_CERT="$(resolve_path "$CERT_FILE")"
+  ok "Cert file ada: $CERT_FILE"
+  if [ "$RESOLVED_CERT" != "$CERT_FILE" ]; then
+    info "Resolved path: $RESOLVED_CERT"
+  fi
+  case "$RESOLVED_CERT" in
+    *selfsigned*|*/nginx/ssl/*)
+      warn "Cert path mengarah ke self-signed/internal cert"
+      ;;
+  esac
 
-    if command -v openssl >/dev/null 2>&1; then
-      CERT_SUBJECT="$(openssl x509 -in "$CERT_FILE" -noout -subject -nameopt RFC2253 2>/dev/null | sed 's/^subject=//')"
-      CERT_SAN="$(openssl x509 -in "$CERT_FILE" -noout -ext subjectAltName 2>/dev/null | sed '1d' | tr '\n' ' ' | sed 's/[[:space:]]*$//')"
+  if command -v openssl >/dev/null 2>&1; then
+    CERT_SUBJECT="$(openssl x509 -in "$CERT_FILE" -noout -subject -nameopt RFC2253 2>/dev/null | sed 's/^subject=//')"
+    CERT_SAN="$(openssl x509 -in "$CERT_FILE" -noout -ext subjectAltName 2>/dev/null | sed '1d' | tr '\n' ' ' | sed 's/[[:space:]]*$//')"
 
-      [ -n "$CERT_SUBJECT" ] && info "Subject: $CERT_SUBJECT"
-      [ -n "$CERT_SAN" ] && info "SAN: $CERT_SAN"
+    [ -n "$CERT_SUBJECT" ] && info "Subject: $CERT_SUBJECT"
+    [ -n "$CERT_SAN" ] && info "SAN: $CERT_SAN"
 
-      if printf '%s\n' "$CERT_SAN" | grep -Fq "DNS:${WEB_DOMAIN}"; then
-        ok "Cert SAN mencakup $WEB_DOMAIN"
-      elif printf '%s\n' "$CERT_SUBJECT" | grep -Fq "CN=${WEB_DOMAIN}"; then
-        ok "Cert CN cocok $WEB_DOMAIN"
-      else
-        warn "Cert tidak memuat identitas $WEB_DOMAIN"
-      fi
+    if printf '%s\n' "$CERT_SAN" | grep -Fq "DNS:${WEB_DOMAIN}"; then
+      ok "Cert SAN mencakup $WEB_DOMAIN"
+    elif printf '%s\n' "$CERT_SUBJECT" | grep -Fq "CN=${WEB_DOMAIN}"; then
+      ok "Cert CN cocok $WEB_DOMAIN"
     else
-      warn "openssl tidak tersedia — skip subject/SAN check"
+      warn "Cert tidak memuat identitas $WEB_DOMAIN"
     fi
   else
-    info "Cert belum ada di $CERT_FILE"
+    warn "openssl tidak tersedia — skip subject/SAN check"
   fi
+else
+  info "Cert belum ada di $CERT_FILE"
 fi
 
 # ─── Summary ───────────────────────────────────────────────────────────

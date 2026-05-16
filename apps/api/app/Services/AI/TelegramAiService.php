@@ -135,7 +135,7 @@ class TelegramAiService
     }
 
     /**
-     * Generate AI summary using the project's 3-tier failover.
+     * Generate AI summary using the project's AI gateway failover.
      */
     private function generateAiSummary(string $context, array $data): string
     {
@@ -152,6 +152,7 @@ class TelegramAiService
                     ->timeout(30)
                     ->post(rtrim($tier['url'], '/').'/chat/completions', [
                         'model' => $tier['model'],
+                        'stream' => false,
                         'messages' => [
                             ['role' => 'system', 'content' => 'Anda adalah asisten monitoring KKN. Berikan analisis singkat, actionable, dalam Bahasa Indonesia. Maksimal 3-4 kalimat. Fokus pada insight dan rekomendasi.'],
                             ['role' => 'user', 'content' => $prompt],
@@ -207,7 +208,10 @@ class TelegramAiService
             'active_students' => DB::table('peserta_kkn')->where('status', 'approved')->count(),
             'queue_pending' => DB::table('jobs')->count(),
             'failed_jobs' => DB::table('failed_jobs')->count(),
-            'ai_analyses_today' => DB::table('kegiatan_kkn')->whereDate('created_at', $today)->whereNotNull('ai_quality_score')->count(),
+            'ai_analyses_today' => DB::table('kegiatan_kkn')
+                ->whereDate('created_at', $today)
+                ->whereRaw("(ai_analysis->>'quality_score') IS NOT NULL")
+                ->count(),
         ];
     }
 
@@ -216,8 +220,14 @@ class TelegramAiService
         $weekAgo = now()->subWeek();
 
         $totalReports = DB::table('kegiatan_kkn')->where('created_at', '>=', $weekAgo)->count();
-        $avgQuality = DB::table('kegiatan_kkn')->where('created_at', '>=', $weekAgo)->whereNotNull('ai_quality_score')->avg('ai_quality_score');
-        $flagged = DB::table('kegiatan_kkn')->where('created_at', '>=', $weekAgo)->where('ai_flagged', true)->count();
+        $avgQuality = DB::table('kegiatan_kkn')
+            ->where('created_at', '>=', $weekAgo)
+            ->selectRaw("AVG((ai_analysis->>'quality_score')::numeric) as avg_quality_score")
+            ->value('avg_quality_score');
+        $flagged = DB::table('kegiatan_kkn')
+            ->where('created_at', '>=', $weekAgo)
+            ->whereRaw("COALESCE((ai_analysis->>'flagged')::boolean, false) = true")
+            ->count();
 
         $mostActiveGroup = DB::table('kegiatan_kkn')
             ->join('peserta_kkn', 'kegiatan_kkn.mahasiswa_id', '=', 'peserta_kkn.mahasiswa_id')
@@ -270,7 +280,10 @@ class TelegramAiService
 
         // 2. High flag rate
         $recentReports = DB::table('kegiatan_kkn')->whereDate('created_at', $today)->count();
-        $flaggedToday = DB::table('kegiatan_kkn')->whereDate('created_at', $today)->where('ai_flagged', true)->count();
+        $flaggedToday = DB::table('kegiatan_kkn')
+            ->whereDate('created_at', $today)
+            ->whereRaw("COALESCE((ai_analysis->>'flagged')::boolean, false) = true")
+            ->count();
         if ($recentReports > 5 && ($flaggedToday / max(1, $recentReports)) > 0.3) {
             $anomalies['high_flag_rate'] = "{$flaggedToday}/{$recentReports} laporan hari ini di-flag AI (>30%)";
         }

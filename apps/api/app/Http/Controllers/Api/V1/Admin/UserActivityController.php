@@ -197,7 +197,7 @@ class UserActivityController extends Controller
             ->select('ip_address', DB::raw('COUNT(*) as attempts'), DB::raw('MAX(created_at) as last_attempt'))
             ->whereNotNull('ip_address')
             ->groupBy('ip_address')
-            ->having('attempts', '>=', 5)
+            ->havingRaw('COUNT(*) >= ?', [5])
             ->orderByDesc('attempts')
             ->limit(10)
             ->get()

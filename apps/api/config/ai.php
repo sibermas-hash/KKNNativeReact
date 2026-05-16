@@ -161,27 +161,27 @@ return [
     | Failover AI Providers (Avatar Validation + AI Playground)
     |--------------------------------------------------------------------------
     |
-    | 3-tier failover via SumoPod (https://ai.sumopod.com/v1) yang OpenAI-compatible.
+    | Primary gateway menggunakan Rizquna Router
+    | (https://router.rizquna.id/v1) yang OpenAI-compatible.
     |
     | Behavior tanpa env:
     |   - Tier tanpa API key di-skip otomatis (AvatarValidationService).
     |   - Jika SEMUA tier kosong, avatar diterima tanpa AI check (manual review).
     |   - Tidak ada error/crash — fitur AI gracefully disabled.
     |
-    | Model picks per 2026-05-11:
-    |   Primary:  gemini/gemini-2.5-pro    → 1M ctx, 64K out, smartest vision
-    |   Fallback: gemini/gemini-2.5-flash  → 1M ctx, faster, masih kuat vision
-    |   Tertiary: gpt-4o                    → 128K ctx, classic OpenAI vision
-    |              (cross-vendor — berbeda family dari primary+fallback)
+    | Default picks per 2026-05-16:
+    |   Primary:  ag/gemini-3-flash        → verified live on Rizquna, vision-capable
+    |   Fallback: gemini/gemini-2.5-flash  → secondary gateway / legacy config
+    |   Tertiary: gpt-4o                   → secondary gateway / cross-vendor fallback
     |
     | Urutan: Primary → Fallback → Tertiary → manual review (Layer 4).
     |
     */
     'failover' => [
         'primary' => [
-            'url' => env('AI_PRIMARY_URL', 'https://ai.sumopod.com/v1'),
+            'url' => env('AI_PRIMARY_URL', 'https://router.rizquna.id/v1'),
             'key' => env('AI_PRIMARY_KEY'),
-            'model' => env('AI_PRIMARY_MODEL', 'gemini/gemini-2.5-pro'),
+            'model' => env('AI_PRIMARY_MODEL', 'ag/gemini-3-flash'),
         ],
         'fallback' => [
             'url' => env('AI_FALLBACK_URL', 'https://ai.sumopod.com/v1'),
@@ -193,7 +193,7 @@ return [
             'key' => env('AI_TERTIARY_KEY'),
             'model' => env('AI_TERTIARY_MODEL', 'gpt-4o'),
         ],
-        // Direct provider fallback — bypass SumoPod jika token habis/gateway down.
+        // Direct provider fallback — bypass gateway jika token habis/gateway down.
         // Langsung ke API resmi masing-masing provider.
         'direct_gemini' => [
             'url' => env('GEMINI_DIRECT_URL', 'https://generativelanguage.googleapis.com/v1beta/openai'),
@@ -222,7 +222,7 @@ return [
     'routing' => [
         // Real-time error alerting — prioritas: speed + cost
         'alerting' => [
-            'model' => env('AI_ALERTING_MODEL', 'gemini/gemini-2.5-flash'),
+            'model' => env('AI_ALERTING_MODEL', 'ag/gemini-3-flash'),
             'max_tokens' => 200,
             'temperature' => 0.1,
             'timeout' => 10,
@@ -230,15 +230,15 @@ return [
 
         // Logbook analysis — prioritas: accuracy + structured output
         'analysis' => [
-            'model' => env('AI_ANALYSIS_MODEL', 'gemini/gemini-2.5-pro'),
-            'max_tokens' => 800,
+            'model' => env('AI_ANALYSIS_MODEL', 'ag/gemini-3-flash'),
+            'max_tokens' => 1400,
             'temperature' => 0.2,
             'timeout' => 45,
         ],
 
         // Daily digest / weekly report — prioritas: reasoning + summarization
         'digest' => [
-            'model' => env('AI_DIGEST_MODEL', 'gemini/gemini-2.5-pro'),
+            'model' => env('AI_DIGEST_MODEL', 'ag/gemini-3-flash'),
             'max_tokens' => 400,
             'temperature' => 0.3,
             'timeout' => 30,
@@ -246,7 +246,7 @@ return [
 
         // Avatar validation — prioritas: vision accuracy
         'vision' => [
-            'model' => env('AI_VISION_MODEL', 'gemini/gemini-2.5-pro'),
+            'model' => env('AI_VISION_MODEL', 'ag/gemini-3-flash'),
             'max_tokens' => 500,
             'temperature' => 0.1,
             'timeout' => 30,
@@ -254,7 +254,7 @@ return [
 
         // Code analysis (CodeGuardian) — prioritas: code understanding
         'code' => [
-            'model' => env('AI_CODE_MODEL', 'gemini/gemini-2.5-pro'),
+            'model' => env('AI_CODE_MODEL', 'cx/gpt-5.3-codex'),
             'max_tokens' => 1000,
             'temperature' => 0.1,
             'timeout' => 60,

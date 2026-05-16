@@ -19,7 +19,7 @@ class SystemSettingController extends Controller
 
     public function index(): JsonResponse
     {
-        return $this->success(['settings' => SystemSetting::pluck('value', 'key')]);
+        return $this->success(['settings' => SystemSetting::pluck('value', 'config_key')]);
     }
 
     public function update(Request $request): JsonResponse

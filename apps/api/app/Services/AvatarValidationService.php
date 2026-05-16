@@ -12,17 +12,17 @@ use Illuminate\Support\Facades\Log;
 /**
  * Memvalidasi foto profil menggunakan AI Vision (Graceful Degradation 4 Lapis).
  *
- * Failover strategy — 3 Google AI Studio free-tier keys:
- *   1. Primary   (AI_PRIMARY_KEY)
- *   2. Fallback  (AI_FALLBACK_KEY)
- *   3. Tertiary  (AI_TERTIARY_KEY)
+ * Failover strategy — gateway terlebih dahulu, lalu direct provider:
+ *   1. Primary        (AI_PRIMARY_KEY / gateway)
+ *   2. Fallback       (AI_FALLBACK_KEY / gateway)
+ *   3. Tertiary       (AI_TERTIARY_KEY / gateway)
+ *   4. Direct Gemini  (GEMINI_API_KEY / official API)
+ *   5. Direct OpenAI  (OPENAI_API_KEY / official API)
  *
- * Masing-masing key punya quota gratis sendiri (15 RPM, 1500 RPD
- * untuk gemini-2.0-flash). 3 key dirotasi → efektif 45 RPM, 4500 RPD.
- *
- * Urutan percobaan: Primary → Fallback → Tertiary → manual review.
- * Jika ketiganya mati/habis saldo, foto tetap tersimpan dengan flag
- * `requires_manual_review=true` untuk Layer 4 (Human-in-the-Loop).
+ * Urutan percobaan: Primary → Fallback → Tertiary → Direct Gemini
+ * → Direct OpenAI → manual review. Jika seluruh tier gagal / quota habis,
+ * foto tetap tersimpan dengan flag `requires_manual_review=true` untuk
+ * Layer 4 (Human-in-the-Loop).
  */
 class AvatarValidationService
 {
@@ -97,6 +97,18 @@ class AvatarValidationService
                 'key' => config('ai.failover.tertiary.key') ?: SystemSetting::get('ai_tertiary_key'),
                 'model' => config('ai.failover.tertiary.model') ?: SystemSetting::get('ai_tertiary_model', 'gemini-2.0-flash'),
             ],
+            [
+                'label' => 'direct_gemini',
+                'url' => config('ai.failover.direct_gemini.url') ?: SystemSetting::get('gemini_direct_url', 'https://generativelanguage.googleapis.com/v1beta/openai'),
+                'key' => config('ai.failover.direct_gemini.key') ?: SystemSetting::get('gemini_api_key'),
+                'model' => config('ai.failover.direct_gemini.model') ?: SystemSetting::get('gemini_direct_model', 'gemini-2.0-flash'),
+            ],
+            [
+                'label' => 'direct_openai',
+                'url' => config('ai.failover.direct_openai.url') ?: SystemSetting::get('openai_direct_url', 'https://api.openai.com/v1'),
+                'key' => config('ai.failover.direct_openai.key') ?: SystemSetting::get('openai_api_key'),
+                'model' => config('ai.failover.direct_openai.model') ?: SystemSetting::get('openai_direct_model', 'gpt-4o-mini'),
+            ],
         ];
     }
 
@@ -111,6 +123,7 @@ class AvatarValidationService
             '{"is_valid": true/false, "reason": "Kosongkan jika true. Jika false, sebutkan secara singkat dalam bahasa Indonesia mengapa ditolak."}';
 
         return [
+            'stream' => false,
             'messages' => [
                 [
                     'role' => 'user',
@@ -126,7 +139,7 @@ class AvatarValidationService
                 ],
             ],
             'response_format' => ['type' => 'json_object'],
-            'max_tokens' => 200,
+            'max_tokens' => 900,
             'temperature' => 0.1,
         ];
     }

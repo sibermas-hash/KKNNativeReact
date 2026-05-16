@@ -24,7 +24,6 @@ const ParticleBackground = dynamic(
 
 // NotificationPreferencesCard — hidden from student profile, managed via admin dashboard
 // import { NotificationPreferencesCard } from '@/components/profile/notification-preferences-card';
-import { TwoFactorCard } from '@/components/profile/two-factor-card';
 
 type ReverseGeocodeAddress = {
   road?: string;
@@ -740,10 +739,6 @@ export default function ProfilePage(): React.JSX.Element {
             {isEditing && <button type="submit" disabled={isSubmitting || !isDirty || (!!pendingRequest && profileComplete)} className={cx('flex h-11 items-center justify-center gap-2 rounded-lg px-6 disabled:opacity-50', typography.button, primaryClass)}>{isSubmitting ? 'Menyimpan...' : profileComplete ? 'Ajukan Perubahan' : 'Simpan & Lanjutkan'}<Save size={16} /></button>}
           </form>
 
-          <div className="mt-6">
-            {/* NotificationPreferencesCard hidden — managed via admin dashboard */}
-            <TwoFactorCard />
-          </div>
         </div>
       </div>
       </div>

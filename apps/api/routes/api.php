@@ -13,7 +13,6 @@ use App\Http\Controllers\Api\V1\PrivateFileController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\PublicController;
 use App\Http\Controllers\Api\V1\Student\ChatController;
-use App\Http\Controllers\Api\V1\TotpController;
 use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\HealthController;
 use App\Services\AI\ErrorAlertService;
@@ -72,10 +71,6 @@ Route::prefix('v1')->group(function () {
             ->middleware('throttle:auth_challenge')
             ->name('api.v1.auth.login');
 
-        Route::post('/2fa-verify', [AuthController::class, 'twoFactorVerify'])
-            ->middleware('throttle:auth_challenge')
-            ->name('api.v1.auth.2fa-verify');
-
         Route::post('/logout', [AuthController::class, 'logout'])
             ->middleware('auth:sanctum')
             ->name('api.v1.auth.logout');
@@ -118,17 +113,6 @@ Route::prefix('v1')->group(function () {
             Route::post('/', [ChatController::class, 'store'])->middleware('throttle:10,1');
             Route::get('/{conversation}', [ChatController::class, 'show']);
             Route::post('/{conversation}/messages', [ChatController::class, 'sendMessage'])->middleware('throttle:20,1');
-        });
-
-    // 2FA (TOTP) — Google Authenticator compatible
-    Route::prefix('2fa')
-        ->middleware('auth:sanctum')
-        ->group(function () {
-            Route::get('/status', [TotpController::class, 'status'])->name('api.v1.2fa.status');
-            Route::post('/setup', [TotpController::class, 'setup'])->name('api.v1.2fa.setup');
-            Route::post('/confirm', [TotpController::class, 'confirm'])->name('api.v1.2fa.confirm');
-            Route::post('/disable', [TotpController::class, 'disable'])->name('api.v1.2fa.disable');
-            Route::post('/regenerate-recovery', [TotpController::class, 'regenerateRecovery'])->name('api.v1.2fa.regenerate-recovery');
         });
 
     // Private file downloads (X-002 + X-003): attendance photos & workshop

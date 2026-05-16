@@ -209,6 +209,7 @@ class ErrorAlertService
                     ->timeout(15)
                     ->post(rtrim($tier['url'], '/').'/chat/completions', [
                         'model' => $tier['model'],
+                        'stream' => false,
                         'messages' => [
                             ['role' => 'system', 'content' => 'Anda adalah DevOps engineer untuk sistem KKN universitas. Analisis error singkat dan actionable dalam Bahasa Indonesia. Max 3 kalimat.'],
                             ['role' => 'user', 'content' => $prompt],

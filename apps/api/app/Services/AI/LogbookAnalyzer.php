@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 /**
  * LogbookAnalyzer — analisis AI untuk laporan harian KKN.
  *
- * Memanfaatkan 3-tier SumoPod failover dari `config/ai.php` (sama seperti
+ * Memanfaatkan 3-tier AI gateway failover dari `config/ai.php` (sama seperti
  * AvatarValidationService). Output structured JSON:
  *   - summary: ringkasan 1-2 kalimat
  *   - quality_score: 1-10 kualitas narasi & refleksi
@@ -86,9 +86,11 @@ class LogbookAnalyzer
         return [
             [
                 'label' => 'primary',
-                'url' => config('ai.failover.primary.url') ?: SystemSetting::get('ai_primary_url', 'https://ai.sumopod.com/v1'),
+                'url' => config('ai.failover.primary.url') ?: SystemSetting::get('ai_primary_url', 'https://router.rizquna.id/v1'),
                 'key' => config('ai.failover.primary.key') ?: SystemSetting::get('ai_primary_key'),
-                'model' => config('ai.failover.primary.model') ?: SystemSetting::get('ai_primary_model', 'gemini/gemini-2.5-pro'),
+                'model' => config('ai.routing.analysis.model')
+                    ?: config('ai.failover.primary.model')
+                    ?: SystemSetting::get('ai_primary_model', 'ag/gemini-3-flash'),
             ],
             [
                 'label' => 'fallback',
@@ -139,12 +141,13 @@ PROMPT;
         );
 
         return [
+            'stream' => false,
             'messages' => [
                 ['role' => 'system', 'content' => $systemPrompt],
                 ['role' => 'user', 'content' => $userPrompt],
             ],
-            'temperature' => 0.2,
-            'max_tokens' => 800,
+            'temperature' => (float) config('ai.routing.analysis.temperature', 0.2),
+            'max_tokens' => (int) config('ai.routing.analysis.max_tokens', 1400),
             'response_format' => ['type' => 'json_object'],
         ];
     }
@@ -158,7 +161,7 @@ PROMPT;
         $endpoint = rtrim($baseUrl, '/').'/chat/completions';
 
         $response = Http::withToken($apiKey)
-            ->timeout(45)
+            ->timeout((int) config('ai.routing.analysis.timeout', 45))
             ->retry(2, 1000, throw: false)
             ->post($endpoint, [
                 'model' => $model,

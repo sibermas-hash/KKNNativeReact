@@ -41,6 +41,11 @@ return [
         'timeout' => env('MASTER_API_TIMEOUT', 30),
         'circuit_breaker_threshold' => env('MASTER_API_CIRCUIT_BREAKER_THRESHOLD', 5),
         'circuit_breaker_timeout' => env('MASTER_API_CIRCUIT_BREAKER_TIMEOUT', 300),
+        // WARNING: current SIAKAD ignores the server-side NIM filter, so this
+        // path streams the mahasiswa feed client-side. Keep disabled unless
+        // the first-login provisioning tradeoff is explicitly accepted.
+        'auto_provision_login' => filter_var(env('MASTER_API_AUTO_PROVISION_LOGIN', false), FILTER_VALIDATE_BOOLEAN),
+        'auto_provision_cooldown_seconds' => max(60, (int) env('MASTER_API_AUTO_PROVISION_COOLDOWN_SECONDS', 900)),
         'webhook_secret' => env('MASTER_WEBHOOK_SECRET'),
         'webhook_window_seconds' => env('MASTER_WEBHOOK_WINDOW_SECONDS', 600),
     ],

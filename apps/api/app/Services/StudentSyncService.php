@@ -92,7 +92,7 @@ class StudentSyncService
      * (see config/siakad_filters.php). Callers should treat false as
      * "skipped, not an error".
      */
-    public function upsertStudent(array $data, bool $useCachedMaps = true): bool
+    public function upsertStudent(array $data, bool $useCachedMaps = true, bool $dispatchWelcomeEmail = true): bool
     {
         // Pre-DB filter — config/siakad_filters.php rules decide whether
         // this SIAKAD record should even enter the database.
@@ -237,7 +237,7 @@ class StudentSyncService
             // rolled-back users or queueing notifications from inside the tx.
             // SYNC_SEND_WELCOME_EMAIL=false disables this during bulk sync
             // to prevent Gmail SMTP rate-limit (454 Too many login attempts).
-            if ($isNewUser && config('services.sync.send_welcome_email', true)) {
+            if ($isNewUser && $dispatchWelcomeEmail && config('services.sync.send_welcome_email', true)) {
                 if (! empty($user->email)) {
                     $userEmail = $user->email;
                     $nim = $data['nim'];
@@ -256,7 +256,7 @@ class StudentSyncService
                         'nim' => $data['nim'],
                     ]);
                 }
-            } elseif ($isNewUser && ! config('services.sync.send_welcome_email', true)) {
+            } elseif ($isNewUser && (! $dispatchWelcomeEmail || ! config('services.sync.send_welcome_email', true))) {
                 Log::info('Mahasiswa created without welcome email (SYNC_SEND_WELCOME_EMAIL=false)', [
                     'nim' => $data['nim'],
                 ]);

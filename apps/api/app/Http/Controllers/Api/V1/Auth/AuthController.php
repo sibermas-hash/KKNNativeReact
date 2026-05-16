@@ -10,6 +10,7 @@ use App\Models\KKN\PesertaKkn;
 use App\Models\User;
 use App\Services\ActivityLogger;
 use App\Services\CaptchaService;
+use App\Services\MasterLoginProvisioningService;
 use App\Services\PeriodContextService;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Auth\Events\PasswordReset;
@@ -32,6 +33,7 @@ class AuthController extends Controller
     public function __construct(
         private readonly CaptchaService $captchaService,
         private readonly PeriodContextService $periodContextService,
+        private readonly MasterLoginProvisioningService $masterLoginProvisioning,
     ) {}
 
     /**
@@ -99,12 +101,24 @@ class AuthController extends Controller
         ];
 
         // Attempt authentication
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
+        $remember = $request->boolean('remember');
+        $authenticated = Auth::attempt($credentials, $remember);
+        $masterProvisioned = false;
+
+        if (! $authenticated && ! User::withTrashed()->where('username', $loginValue)->exists()) {
+            $masterProvisioned = $this->masterLoginProvisioning->provisionStudentForLogin($loginValue);
+            if ($masterProvisioned) {
+                $authenticated = Auth::attempt($credentials, $remember);
+            }
+        }
+
+        if (! $authenticated) {
             RateLimiter::hit($throttleKey);
 
             ActivityLogger::log('login', 'failed', null, [
                 'attempted_username' => $loginValue,
                 'reason' => 'invalid_credentials',
+                'master_auto_provisioned' => $masterProvisioned,
             ]);
 
             return $this->error(

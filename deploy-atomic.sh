@@ -177,6 +177,7 @@ if [ -n "${JAIL_WEB_IP:-}" ]; then
 else
   # Single-server mode.
   service php-fpm reload 2>/dev/null || service php-fpm restart || true
+  service sibermas_web restart 2>/dev/null || supervisorctl restart sibermas-web 2>/dev/null || true
   supervisorctl restart workers:*
   service nginx reload 2>/dev/null || true
 fi

@@ -357,6 +357,7 @@ if [ "${SKIP_FRONTEND_BUILD}" != "1" ]; then
   export NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL:-${PUBLIC_BASE_URL%/}}"
   export NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL:-${PUBLIC_BASE_URL%/}}"
 
+  rm -rf "${WEB_DIR}/.next"
   pnpm install --frozen-lockfile --filter web...
   pnpm build:packages
   pnpm build:web
@@ -384,12 +385,16 @@ render_template "$(nginx_template_path)" "${NGINX_DEST}"
 cp "${APP_DIR}/conf/php-fpm.sibermas.conf" "${PHP_FPM_POOL_DEST}"
 
 install -m 0555 "${APP_DIR}/conf/rc.d/sibermas_web" "${RC_D_DEST}/sibermas_web"
+install -m 0555 "${APP_DIR}/conf/rc.d/sibermas_nginx_watchdog" "${RC_D_DEST}/sibermas_nginx_watchdog"
 install -m 0555 "${APP_DIR}/conf/rc.d/sibermas_queue" "${RC_D_DEST}/sibermas_queue"
+install -m 0555 "${APP_DIR}/conf/bin/sibermas_nginx_watchdog.sh" "/usr/local/libexec/sibermas_nginx_watchdog.sh"
 
 sysrc apache24_enable="YES"
 sysrc nginx_enable="YES"
 sysrc php_fpm_enable="YES"
 sysrc sibermas_web_enable="YES"
+sysrc sibermas_nginx_watchdog_enable="YES"
+sysrc sibermas_nginx_watchdog_interval="5"
 sysrc sibermas_web_app_dir="${APP_DIR}"
 sysrc sibermas_web_user="${WEB_USER}"
 sysrc sibermas_web_public_api_url="${API_V1_PUBLIC_URL%/}"
@@ -427,6 +432,8 @@ chown -R "${WEB_USER}:${WEB_USER}" \
   "${API_DIR}/bootstrap/cache"
 if [ -d "${WEB_DIR}/.next" ]; then
   chown -R "${WEB_USER}:${WEB_USER}" "${WEB_DIR}/.next"
+  find "${WEB_DIR}/.next/standalone" -type d -exec chmod 2775 {} + 2>/dev/null || true
+  find "${WEB_DIR}/.next/standalone" -type f -exec chmod u+rw,g+r {} + 2>/dev/null || true
 fi
 find "${API_DIR}/storage" -type d -exec chmod 2775 {} +
 find "${API_DIR}/storage" -type f -exec chmod 0664 {} +
@@ -443,6 +450,7 @@ apachectl graceful 2>/dev/null || service apache24 restart
 service sibermas_web restart
 service sibermas_queue restart
 service nginx status >/dev/null 2>&1 && service nginx reload || service nginx start
+service sibermas_nginx_watchdog restart
 
 assert_port_ownership
 

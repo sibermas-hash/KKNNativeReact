@@ -98,14 +98,17 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
   export NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL:-${PUBLIC_BASE_URL%/}}"
   export NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL:-${PUBLIC_BASE_URL%/}}"
   echo "  [h] Building web..."
+  rm -rf apps/web/.next
   TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:web
 
   echo "  [i] Copying static & public to standalone..."
-  cp -r apps/web/.next/static   apps/web/.next/standalone/apps/web/.next/static 2>/dev/null || true
-  cp -r apps/web/public         apps/web/.next/standalone/apps/web/public 2>/dev/null || true
+  cp -r apps/web/.next/static/. apps/web/.next/standalone/apps/web/.next/static 2>/dev/null || true
+  cp -r apps/web/public/.       apps/web/.next/standalone/apps/web/public 2>/dev/null || true
 
   echo "  [j] Fixing permissions..."
   chown -R www:www apps/web/.next apps/api/storage apps/api/bootstrap/cache
+  find apps/web/.next/standalone -type d -exec chmod 2775 {} + 2>/dev/null || true
+  find apps/web/.next/standalone -type f -exec chmod u+rw,g+r {} + 2>/dev/null || true
 
   echo "  [k] Reloading services..."
   if [ -n "${JAIL_WEB_IP}" ]; then

@@ -92,7 +92,7 @@ type FacultyOption = {
   nama: string;
 };
 
-const EMPTY_CREATE_FORM = { username: '', name: '', email: '', role: 'student' };
+const EMPTY_CREATE_FORM = { username: '', name: '', email: '', role: 'student', fakultas_id: '' };
 const EMPTY_EDIT: EditForm = { user: {}, mahasiswa: {}, dosen: {} };
 
 export default function AdminUsersPage(): React.JSX.Element {
@@ -445,18 +445,21 @@ export default function AdminUsersPage(): React.JSX.Element {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            createMutation.mutate({ ...form, password: passwordRef.current?.value || '' });
+            createMutation.mutate({ ...form, fakultas_id: form.fakultas_id ? Number(form.fakultas_id) : null, password: passwordRef.current?.value || '' });
           }}
           className="bg-white rounded-2xl p-6 ring-1 ring-slate-200 shadow-sm space-y-4"
         >
+          <div className="rounded-xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-xs text-cyan-900">
+            <b>Tambah pengguna:</b> untuk akun mahasiswa, isi <b>Username dengan NIM</b>, pilih role <b>Mahasiswa</b>, dan fakultas bila perlu. Password wajib minimal 8 karakter serta mengandung huruf besar, huruf kecil, angka, dan simbol.
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label htmlFor="create-username" className="text-[10px] font-black text-slate-500 uppercase">Username</label>
-              <input id="create-username" placeholder="Username" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} autoComplete="username" className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1" required />
+              <input id="create-username" placeholder={form.role === 'student' ? 'NIM / username mahasiswa' : 'Username'} value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} autoComplete="username" className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1" required />
             </div>
             <div>
               <label htmlFor="create-name" className="text-[10px] font-black text-slate-500 uppercase">Nama</label>
-              <input id="create-name" placeholder="Nama Lengkap" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1" required />
+              <input id="create-name" placeholder={form.role === 'student' ? 'Nama mahasiswa' : 'Nama lengkap'} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1" required />
             </div>
             <div>
               <label htmlFor="create-email" className="text-[10px] font-black text-slate-500 uppercase">Email</label>
@@ -474,6 +477,7 @@ export default function AdminUsersPage(): React.JSX.Element {
                   className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 pr-10 text-sm"
                   required
                 />
+                <p className="mt-1 text-[10px] text-slate-500">Contoh valid: <code>Abcd1234!</code></p>
                 <button
                   type="button"
                   onClick={() => setShowCreatePassword(!showCreatePassword)}
@@ -488,6 +492,18 @@ export default function AdminUsersPage(): React.JSX.Element {
               <label htmlFor="create-role" className="text-[10px] font-black text-slate-500 uppercase">Role</label>
               <select id="create-role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1">
                 {roleOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="create-fakultas" className="text-[10px] font-black text-slate-500 uppercase">Fakultas</label>
+              <select
+                id="create-fakultas"
+                value={form.fakultas_id}
+                onChange={(e) => setForm({ ...form, fakultas_id: e.target.value })}
+                className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1"
+              >
+                <option value="">Tidak diset / Semua Fakultas</option>
+                {faculties.map((f) => <option key={f.id} value={f.id}>{f.nama}</option>)}
               </select>
             </div>
           </div>

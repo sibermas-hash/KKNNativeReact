@@ -91,12 +91,47 @@ class UserController extends Controller
             'username' => ['required', 'string', 'max:255', 'unique:users,username'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'unique:users,email'],
-            'password' => ['required', 'string', User::PASSWORD_REQUIREMENTS],
+            'password' => ['required', 'string', ...User::PASSWORD_REQUIREMENTS],
             'role' => ['required', 'string', Rule::in(['superadmin', 'admin', 'faculty_admin', 'dosen', 'dpl', 'student'])],
             'fakultas_id' => ['nullable', 'exists:fakultas,id'],
         ]);
-        $user = User::create(['username' => $validated['username'], 'name' => $validated['name'], 'email' => $validated['email'] ?? null, 'password' => $validated['password'], 'must_change_password' => true, 'is_active' => true, 'fakultas_id' => $validated['fakultas_id'] ?? null]);
-        $user->assignRole($validated['role']);
+        $user = DB::transaction(function () use ($validated) {
+            $existingMahasiswa = null;
+            if (($validated['role'] ?? null) === 'student') {
+                $existingMahasiswa = Mahasiswa::where('nim', $validated['username'])->first();
+                if ($existingMahasiswa && $existingMahasiswa->user_id) {
+                    abort(response()->json([
+                        'success' => false,
+                        'message' => 'NIM sudah terhubung dengan akun pengguna lain.',
+                        'errors' => ['username' => ['NIM sudah terhubung dengan akun pengguna lain.']],
+                    ], 422));
+                }
+            }
+
+            $user = User::create([
+                'username' => $validated['username'],
+                'name' => $validated['name'],
+                'email' => $validated['email'] ?? null,
+                'password' => $validated['password'],
+                'must_change_password' => true,
+                'is_active' => true,
+                'fakultas_id' => $validated['fakultas_id'] ?? null,
+            ]);
+            $user->assignRole($validated['role']);
+
+            if (($validated['role'] ?? null) === 'student') {
+                if ($existingMahasiswa) {
+                    $existingMahasiswa->update([
+                        'user_id' => $user->id,
+                        'nama' => $validated['name'],
+                        'fakultas_id' => $validated['fakultas_id'] ?? $existingMahasiswa->fakultas_id,
+
+                    ]);
+                }
+            }
+
+            return $user;
+        });
 
         AuditService::log(
             'SUPERADMIN_CREATE_USER',

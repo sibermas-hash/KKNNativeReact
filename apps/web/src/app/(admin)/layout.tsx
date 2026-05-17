@@ -101,7 +101,7 @@ const getNavGroups = (pathname: string, roles: string[]) => {
 export default function AdminLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isAuthenticated, isLoading, clearUser } = useAuthStore();
+  const { user, isAuthenticated, isLoading, clearUser, fetchUser } = useAuthStore();
   const { activePeriod } = usePeriodStore();
   const { config: themeConfig } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -113,7 +113,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (isLoading) return;
-    if (!isAuthenticated) { router.replace('/login'); return; }
+    if (!isAuthenticated) {
+      void fetchUser(true).then((result) => {
+        if (result !== 'authenticated') router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
+      });
+      return;
+    }
     if (user) {
       const r = user.roles || [];
       const isSuperadmin = r.includes('superadmin');
@@ -122,7 +127,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       if (!r.includes('superadmin') && !r.includes('admin') && !r.includes('faculty_admin')) router.replace('/');
       if (!isSuperadmin && isSystem) { router.replace('/admin'); return; }
     }
-  }, [isLoading, isAuthenticated, user, router]);
+  }, [isLoading, isAuthenticated, user, router, pathname, isSystem, fetchUser]);
 
   const roles = user?.roles || [];
   const hasAdminRole = roles.includes('superadmin') || roles.includes('admin') || roles.includes('faculty_admin');

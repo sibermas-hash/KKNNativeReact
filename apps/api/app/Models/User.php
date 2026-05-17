@@ -160,7 +160,7 @@ class User extends Authenticatable
      * Password policy: Minimum 8 characters, mixed case, numbers, and symbols.
      * Apply this across all password validation rules for consistency.
      */
-    public const PASSWORD_REQUIREMENTS = 'min:8|mixed_case|numbers|symbols';
+    public const PASSWORD_REQUIREMENTS = ['min:8', 'regex:/[a-z]/', 'regex:/[A-Z]/', 'regex:/[0-9]/', 'regex:/[@$!%*#?&]/'];
 
     public function fakultas(): BelongsTo
     {

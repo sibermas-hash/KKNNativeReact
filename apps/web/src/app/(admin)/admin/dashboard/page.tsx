@@ -126,7 +126,8 @@ export default function AdminDashboardPage(): React.JSX.Element {
   const phaseContext = d?.phase_context as { hint?: string; counters?: Array<{ label: string; value: number; color?: string }>; actions?: Array<{ label: string; route?: string; href?: string; color?: string }> } | undefined;
   const trendData  = (d?.weekly_trend as Array<{ day: string; daftar: number; validasi: number }> | undefined);
   const phaseKey   = (d?.current_phase as string) || (period?.current_phase as string) || currentPhase || 'registration';
-  const phaseIdx   = PHASES.findIndex(p => p.id === phaseKey);
+  const rawPhaseIdx = PHASES.findIndex(p => p.id === phaseKey);
+  const phaseIdx   = rawPhaseIdx >= 0 ? rawPhaseIdx : 0;
   const periodId   = period?.id != null ? Number(period.id) : undefined;
 
   const totalStudents    = stats?.total_students        ?? 0;
@@ -135,12 +136,16 @@ export default function AdminDashboardPage(): React.JSX.Element {
   const totalGroups      = stats?.total_groups          ?? 0;
   const assignedStudents = stats?.assigned_students     ?? 0;
   const reportedPosko    = stats?.reported_posko        ?? 0;
+  const studentAccountsTotal = stats?.student_accounts_total ?? 0;
+  const studentNotLoggedIn = stats?.student_not_logged_in ?? 0;
+  const studentLoggedIncomplete = stats?.student_logged_in_profile_incomplete ?? 0;
+  const studentProfileComplete = stats?.student_profile_complete ?? 0;
 
   const poskoPct = totalGroups   > 0 ? Math.round((reportedPosko    / totalGroups)   * 100) : 0;
   const alokPct  = totalStudents > 0 ? Math.round((assignedStudents / totalStudents) * 100) : 0;
 
   const STAT_CARDS = useMemo(() => [
-    { label: 'Total Mahasiswa',   value: totalStudents,  icon: Users,         color: '#3b82f6', bg: '#eff6ff', href: undefined,            alert: false },
+    { label: 'Pendaftar Periode', value: totalStudents,  icon: Users,         color: '#3b82f6', bg: '#eff6ff', href: '/admin/pendaftaran', alert: false },
     { label: 'Menunggu Review',   value: pendingCount,   icon: Clock,         color: '#f59e0b', bg: '#fffbeb', href: '/admin/pendaftaran', alert: pendingCount > 0 },
     { label: 'Belum Ditempatkan', value: unassignedCount,icon: AlertTriangle, color: '#ef4444', bg: '#fef2f2', href: undefined,            alert: unassignedCount > 0 },
     { label: 'Total Kelompok',    value: totalGroups,    icon: LayoutGrid,    color: '#10b981', bg: '#ecfdf5', href: '/admin/kelompok',    alert: false },
@@ -256,6 +261,39 @@ export default function AdminDashboardPage(): React.JSX.Element {
           return c.href ? <Link key={c.label} href={c.href}>{card}</Link> : card;
         })}
       </div>
+
+      <motion.div variants={ENTER} className="bg-white rounded-xl border border-slate-100 p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+          <div>
+            <p className="text-sm font-semibold text-slate-700">Status Onboarding Mahasiswa</p>
+            <p className="text-[11px] text-slate-400 font-sans">Akun mahasiswa keseluruhan, bukan hanya peserta periode aktif.</p>
+          </div>
+          <Link href="/admin/mahasiswa" className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 font-sans flex items-center gap-1">
+            Lihat mahasiswa <ArrowRight size={10} />
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          {[
+            { label: 'Total Akun', value: studentAccountsTotal, color: '#0f172a', bg: '#f8fafc' },
+            { label: 'Belum Login', value: studentNotLoggedIn, color: '#ef4444', bg: '#fef2f2' },
+            { label: 'Login Belum Lengkap', value: studentLoggedIncomplete, color: '#f59e0b', bg: '#fffbeb' },
+            { label: 'Profil Lengkap', value: studentProfileComplete, color: '#10b981', bg: '#ecfdf5' },
+          ].map(item => (
+            <div key={item.label} className="rounded-xl border border-slate-100 p-3" style={{ background: item.bg }}>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 font-sans">{item.label}</p>
+              <p className="mt-1 text-2xl font-black tabular-nums" style={{ color: item.color }}>
+                {isLoading ? <span className="inline-block h-7 w-12 animate-pulse rounded bg-white/70" /> : item.value.toLocaleString('id-ID')}
+              </p>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      {totalStudents === 0 && !isLoading && (
+        <motion.div variants={ENTER} className="rounded-xl border border-amber-100 bg-amber-50 px-4 py-3 text-sm text-amber-800 font-sans">
+          Periode terpilih belum memiliki pendaftar/peserta. Angka operasional periode akan tetap 0 sampai pendaftaran dibuka atau data peserta masuk. Gunakan panel onboarding di atas untuk memantau seluruh akun mahasiswa.
+        </motion.div>
+      )}
 
       {/* ── Main grid ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">

@@ -96,7 +96,7 @@ export default function LoginPage(): React.JSX.Element {
       const isSuperadmin = user.roles?.includes('superadmin');
 
       if (isSuperadmin) {
-        router.replace('/admin');
+        router.replace(isSafePostLoginRedirect(redirectTo) ? redirectTo : '/admin');
         return;
       }
 
@@ -108,7 +108,7 @@ export default function LoginPage(): React.JSX.Element {
 
       const isAdmin = ['admin', 'faculty_admin'].some(r => user.roles?.includes(r));
       if (isAdmin) {
-        router.replace('/admin');
+        router.replace(isSafePostLoginRedirect(redirectTo) ? redirectTo : '/admin');
         return;
       }
 

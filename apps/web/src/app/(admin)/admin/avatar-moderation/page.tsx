@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ApiResponse, PaginationMeta } from '@sibermas/shared-types';
 import { api, rawApi } from '@/lib/api';
@@ -80,14 +80,16 @@ function normalizeAvatarModerationResponse(payload: unknown): PaginatedAvatarRes
 export default function AvatarModerationPage() {
   const qc = useQueryClient();
   const [filter, setFilter] = useState<FilterStatus>('pending');
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(20);
   const [rejectingId, setRejectingId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState('');
 
-  const { data, isLoading } = useQuery<PaginatedAvatarResponse>({
-    queryKey: ['admin', 'avatar-moderation', filter],
+  const { data, isLoading, isFetching } = useQuery<PaginatedAvatarResponse>({
+    queryKey: ['admin', 'avatar-moderation', filter, page, perPage],
     queryFn: async () => {
       const response = await rawApi.get<ApiResponse<AvatarModerationPayload>>('/admin/avatar-moderation', {
-        params: { status: filter },
+        params: { status: filter, page, per_page: perPage },
       });
       return normalizeAvatarModerationResponse(response.data.data);
     },
@@ -119,6 +121,18 @@ export default function AvatarModerationPage() {
 
   const avatars = data?.data ?? [];
   const meta = data?.meta;
+  const currentPage = meta?.current_page ?? 1;
+  const lastPage = meta?.last_page ?? 1;
+  const totalPhotos = meta?.total ?? avatars.length;
+  const batchLabel = meta
+    ? `Menampilkan ${meta.from ?? 0}-${meta.to ?? 0} dari ${totalPhotos} foto`
+    : `Menampilkan ${avatars.length} foto`;
+
+  useEffect(() => {
+    if (page > lastPage) {
+      setPage(lastPage);
+    }
+  }, [lastPage, page]);
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
@@ -143,7 +157,10 @@ export default function AvatarModerationPage() {
         {(['pending', 'approved', 'rejected', 'all'] as FilterStatus[]).map((s) => (
           <button
             key={s}
-            onClick={() => setFilter(s)}
+            onClick={() => {
+              setFilter(s);
+              setPage(1);
+            }}
             className={`px-4 py-2 text-sm font-semibold transition-colors border-b-2 -mb-[2px] ${
               filter === s
                 ? 'border-teal-600 text-teal-700'
@@ -153,6 +170,33 @@ export default function AvatarModerationPage() {
             {STATUS_LABELS[s]}
           </button>
         ))}
+      </div>
+
+      <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div className="w-full sm:w-48">
+            <label htmlFor="avatars-per-batch" className="text-[10px] font-black uppercase text-slate-500">
+              Per Batch
+            </label>
+            <select
+              id="avatars-per-batch"
+              value={perPage}
+              onChange={(e) => {
+                setPerPage(Number(e.target.value));
+                setPage(1);
+              }}
+              className="mt-1 h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-bold"
+            >
+              {[20, 50, 100].map((size) => (
+                <option key={size} value={size}>{size} foto</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="text-xs font-semibold text-slate-500">
+            {isFetching && !isLoading ? 'Memuat batch baru...' : batchLabel}
+          </div>
+        </div>
       </div>
 
       {isLoading ? (
@@ -268,10 +312,29 @@ export default function AvatarModerationPage() {
         </div>
       )}
 
-      {(meta?.total ?? 0) > 0 && (
-        <p className="text-center text-xs text-slate-500">
-          Menampilkan {avatars.length} dari {meta?.total ?? avatars.length} foto
-        </p>
+      {lastPage > 1 && (
+        <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:flex-row sm:items-center sm:justify-between">
+          <span className="text-xs font-semibold text-slate-500">{batchLabel}</span>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <button
+              onClick={() => setPage((currentPage) => Math.max(1, currentPage - 1))}
+              disabled={currentPage <= 1}
+              className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+            >
+              {'<'} Sebelumnya
+            </button>
+            <span className="text-xs font-black text-slate-500">
+              Halaman {currentPage} / {lastPage}
+            </span>
+            <button
+              onClick={() => setPage((currentPage) => Math.min(lastPage, currentPage + 1))}
+              disabled={currentPage >= lastPage}
+              className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+            >
+              Berikutnya {'>'}
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

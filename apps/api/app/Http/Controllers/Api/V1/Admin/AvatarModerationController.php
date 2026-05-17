@@ -33,6 +33,7 @@ class AvatarModerationController extends Controller
     public function index(Request $request): JsonResponse
     {
         $status = $request->query('status', 'pending');
+        $perPage = max(10, min((int) $request->input('per_page', 20), 100));
         $allowed = ['pending', 'approved', 'rejected', 'all'];
         if (! in_array($status, $allowed, true)) {
             $status = 'pending';
@@ -61,7 +62,8 @@ class AvatarModerationController extends Controller
         // Pending first so admin sees backlog immediately
         $users = $query->orderByRaw("CASE avatar_moderation_status WHEN 'pending' THEN 0 WHEN 'rejected' THEN 1 ELSE 2 END")
             ->orderByDesc('updated_at')
-            ->paginate(20);
+            ->paginate($perPage)
+            ->withQueryString();
 
         $users->getCollection()->transform(function (User $u) {
             $mhs = $u->mahasiswa;
@@ -88,6 +90,8 @@ class AvatarModerationController extends Controller
                 'last_page' => $users->lastPage(),
                 'per_page' => $users->perPage(),
                 'total' => $users->total(),
+                'from' => $users->firstItem(),
+                'to' => $users->lastItem(),
             ],
             'counts' => [
                 'pending' => User::where('avatar_moderation_status', 'pending')->whereNotNull('avatar')->count(),

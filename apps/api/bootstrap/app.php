@@ -4,7 +4,6 @@ use App\Http\Middleware\AuthenticateWithCookieToken;
 use App\Http\Middleware\CheckPeriodLock;
 use App\Http\Middleware\CspHeaders;
 use App\Http\Middleware\DisableDebugbar;
-use App\Http\Middleware\EnforceTwoFactor;
 use App\Http\Middleware\EnsureAdminAuthorization;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\EnsurePhase;
@@ -131,7 +130,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'phase' => EnsurePhase::class,
             'not_locked' => CheckPeriodLock::class,
             'admin.auth' => EnsureAdminAuthorization::class,
-            '2fa.enforced' => EnforceTwoFactor::class,
             'webhook.signature' => VerifyWebhookSignature::class,
         ]);
 

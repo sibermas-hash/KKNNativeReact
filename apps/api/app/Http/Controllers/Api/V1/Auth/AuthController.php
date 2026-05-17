@@ -17,14 +17,12 @@ use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\Validation\ValidationException;
-use PragmaRX\Google2FA\Google2FA;
 
 class AuthController extends Controller
 {
@@ -136,40 +134,7 @@ class AuthController extends Controller
         // Detect mobile platform
         $isMobile = $request->header('X-App-Type') === 'mobile';
 
-        // 2FA challenge — if user has TOTP enabled, don't issue token yet.
-        // Instead, generate a short-lived challenge token (5 min) that the
-        // client must present along with the 6-digit code to /auth/2fa-verify.
-        if ($user->hasTwoFactorEnabled()) {
-            // Log the first-factor success separately from full login
-            ActivityLogger::log('login', 'success', $user->id, [
-                'method' => $isMobile ? 'mobile' : 'web',
-                'stage' => 'first_factor',
-            ]);
-
-            $challengeToken = Str::random(64);
-            Cache::put(
-                "2fa-challenge:{$challengeToken}",
-                ['user_id' => $user->id, 'is_mobile' => $isMobile, 'remember' => $request->boolean('remember')],
-                now()->addMinutes(5)
-            );
-
-            // Logout the Laravel auth user — they're not fully authenticated yet
-            Auth::guard('web')->logout();
-
-            return $this->error(
-                'TWO_FACTOR_REQUIRED',
-                'Masukkan kode 2FA untuk menyelesaikan login.',
-                423,
-                ['challenge_token' => $challengeToken, 'expires_in' => 300]
-            );
-        }
-
-        ActivityLogger::log('login', 'success', $user->id, [
-            'method' => $isMobile ? 'mobile' : 'web',
-        ]);
-
         if ($isMobile) {
-            // Mobile: return Bearer token
             $token = $user->createToken('mobile')->plainTextToken;
 
             return $this->success([
@@ -199,131 +164,6 @@ class AuthController extends Controller
 
         return $this->success([
             'user' => $this->buildUserData($user),
-        ], 'Login berhasil.')
-            ->withCookie(cookie('sibermas_token', $token, $expiry / 60, '/', null, $isSecure, true, false, 'Strict'));
-    }
-
-    /**
-     * POST /api/v1/auth/2fa-verify
-     *
-     * Second factor of login flow. Client presents the challenge_token
-     * (from first-factor login 423 response) + 6-digit TOTP code.
-     * On success: issue the real Sanctum token & cookies (same as regular login).
-     */
-    public function twoFactorVerify(Request $request): JsonResponse
-    {
-        $data = $request->validate([
-            'challenge_token' => ['required', 'string', 'size:64'],
-            'code' => ['required', 'string', 'min:6', 'max:20'], // 6 digits or recovery code (SHORT-SHORT)
-        ]);
-
-        // R11 fix: per-challenge-token throttle. Attacker dengan IP rotator masih
-        // tunduk pada 5 attempts / TTL 5 menit per specific challenge token. Burn
-        // token setelah 5× gagal — paksa user login ulang.
-        $throttleKey = "2fa-verify:{$data['challenge_token']}";
-        $attempts = Cache::get($throttleKey, 0);
-        if ($attempts >= 5) {
-            Cache::forget("2fa-challenge:{$data['challenge_token']}");
-            Cache::forget($throttleKey);
-
-            return $this->error(
-                'TWO_FACTOR_CHALLENGE_EXPIRED',
-                'Terlalu banyak percobaan 2FA. Silakan login ulang.',
-                429
-            );
-        }
-
-        $challenge = Cache::get("2fa-challenge:{$data['challenge_token']}");
-
-        if (! $challenge || ! isset($challenge['user_id'])) {
-            return $this->error('TWO_FACTOR_CHALLENGE_EXPIRED', 'Sesi 2FA kedaluwarsa. Silakan login ulang.', 401);
-        }
-
-        $user = User::find($challenge['user_id']);
-        if (! $user || ! $user->hasTwoFactorEnabled()) {
-            return $this->error('TWO_FACTOR_INVALID', 'User tidak valid atau 2FA tidak aktif.', 401);
-        }
-
-        $code = trim($data['code']);
-        $isValidCode = false;
-        $usedRecovery = false;
-
-        // Try TOTP first (6 digits)
-        if (preg_match('/^[0-9]{6}$/', $code)) {
-            $g2fa = new Google2FA;
-            $isValidCode = $g2fa->verifyKey($user->two_factor_secret, $code);
-        }
-
-        // Try recovery code (format XXXX-XXXX)
-        if (! $isValidCode && $user->two_factor_recovery_codes) {
-            $codes = $user->two_factor_recovery_codes;
-            foreach ($codes as $i => $hashed) {
-                if (Hash::check($code, $hashed)) {
-                    $isValidCode = true;
-                    $usedRecovery = true;
-                    // Remove used recovery code
-                    unset($codes[$i]);
-                    $user->update(['two_factor_recovery_codes' => array_values($codes)]);
-                    break;
-                }
-            }
-        }
-
-        if (! $isValidCode) {
-            // Increment per-challenge-token throttle counter (TTL 5 min, same as challenge)
-            Cache::put(
-                $throttleKey,
-                $attempts + 1,
-                now()->addMinutes(5)
-            );
-
-            ActivityLogger::log('2fa_verify', 'failed', $user->id, [
-                'reason' => 'invalid_code',
-                'attempts' => $attempts + 1,
-            ]);
-
-            return $this->error('TWO_FACTOR_INVALID', 'Kode 2FA tidak valid.', 422);
-        }
-
-        // Success! Burn the challenge + throttle counter, issue real token
-        Cache::forget("2fa-challenge:{$data['challenge_token']}");
-        Cache::forget($throttleKey);
-
-        ActivityLogger::log('2fa_verify', 'success', $user->id, [
-            'used_recovery_code' => $usedRecovery,
-            'recovery_codes_remaining' => $user->two_factor_recovery_codes ? count($user->two_factor_recovery_codes) : 0,
-        ]);
-
-        Auth::login($user, (bool) ($challenge['remember'] ?? false));
-        $isMobile = (bool) ($challenge['is_mobile'] ?? false);
-
-        if ($isMobile) {
-            $token = $user->createToken('mobile')->plainTextToken;
-
-            return $this->success([
-                'token' => $token,
-                'token_type' => 'Bearer',
-                'user' => $this->buildUserData($user),
-                'recovery_code_used' => $usedRecovery,
-            ], 'Login berhasil.');
-        }
-
-        if ($request->hasSession()) {
-            $request->session()->regenerate();
-
-            return $this->success([
-                'user' => $this->buildUserData($user),
-                'recovery_code_used' => $usedRecovery,
-            ], 'Login berhasil.');
-        }
-
-        $token = $user->createToken('web')->plainTextToken;
-        $isSecure = app()->environment('production') ? true : $request->secure();
-        $expiry = 60 * 60 * 24 * 7;
-
-        return $this->success([
-            'user' => $this->buildUserData($user),
-            'recovery_code_used' => $usedRecovery,
         ], 'Login berhasil.')
             ->withCookie(cookie('sibermas_token', $token, $expiry / 60, '/', null, $isSecure, true, false, 'Strict'));
     }
@@ -450,8 +290,6 @@ class AuthController extends Controller
             'avatar_url' => $user->avatar ? asset('storage/'.$user->avatar) : null,
             'avatar_moderation_status' => $user->avatar_moderation_status,
             'avatar_moderation_reason' => $user->avatar_moderation_reason,
-            'two_factor_enabled' => $user->hasTwoFactorEnabled(),
-            'two_factor_required' => $user->requiresTwoFactor(),
             'nim' => $user->mahasiswa?->nim,
             'password_changed_at' => $user->password_changed_at?->toIso8601String(),
             'must_change_password' => $user->hasRole('superadmin') ? false : $user->must_change_password,

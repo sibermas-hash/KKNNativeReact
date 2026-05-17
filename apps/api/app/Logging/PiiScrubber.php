@@ -41,7 +41,7 @@ class PiiScrubber
 
         // Scrub simple keys in context too (top-level only; keep it cheap).
         $context = $record->context;
-        foreach (['password', 'password_confirmation', 'current_password', 'token', 'api_token', 'access_token', 'secret', 'two_factor_secret'] as $sensitive) {
+        foreach (['password', 'password_confirmation', 'current_password', 'token', 'api_token', 'access_token', 'secret', 'secret'] as $sensitive) {
             if (array_key_exists($sensitive, $context)) {
                 $context[$sensitive] = '[REDACTED]';
             }

@@ -32,9 +32,6 @@ class ActivityLogger
         'registration',
         'ai_playground',
         'pii_export',       // R11: PII export audit trail (biodata/bpjs/document)
-        '2fa_verify',       // R11: 2FA flow events
-        '2fa_enable',
-        '2fa_disable',
     ];
 
     /**

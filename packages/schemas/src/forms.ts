@@ -62,6 +62,7 @@ export const evaluationSchema = z.object({
 
 export const updateProfileSchema = z.object({
   name: z.string().min(1, 'Nama wajib diisi').max(255).optional(),
+  email: z.string().email('Format email tidak valid').max(255).optional().or(z.literal('')),
   phone: z.string().max(20).optional(),
   address: z.string().max(500).optional(),
   address_village_name: z.string().max(255).optional(),

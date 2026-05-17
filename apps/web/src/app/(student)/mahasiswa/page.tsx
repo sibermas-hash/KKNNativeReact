@@ -28,7 +28,7 @@ function normalizeStatus(status?: string): string | undefined {
 
 export default function StudentDashboard(): React.JSX.Element {
   const { user } = useAuthStore();
-  const { activePeriod } = usePeriodStore();
+  const { currentPhase, activePeriod } = usePeriodStore();
   const queryClient = useQueryClient();
   const [showPopup, setShowPopup] = useState(false);
 
@@ -57,6 +57,7 @@ export default function StudentDashboard(): React.JSX.Element {
   const isPending = normalizedStatus === 'pending';
   const isRejected = normalizedStatus === 'rejected';
   const isGroupPinned = isApproved && !!group;
+  const showKknTools = isApproved || isCompleted;
 
   const groupName = (group?.name as string) || 'Belum Ditentukan';
   const groupLocation = ((group?.location as Record<string, unknown>)?.name as string) || '-';
@@ -70,6 +71,16 @@ export default function StudentDashboard(): React.JSX.Element {
   const jenisKknCode = periodData?.jenis_code || '';
   // Audit F-13 fix: ambil dari backend SystemSetting (key `min_daily_reports`, default 30).
   const minLogbook = Number(data?.min_daily_reports) || 30;
+  const phaseOrder = ['pre_registration', 'registration', 'placement', 'execution', 'grading', 'finished'];
+  const phaseRank = phaseOrder.indexOf(String(currentPhase || activePeriod?.current_phase || 'pre_registration'));
+  const isPhaseAtLeast = (phase: string) => phaseRank >= phaseOrder.indexOf(phase);
+  const dashboardNavItems = [
+    { href: '/mahasiswa/laporan-harian', icon: ClipboardList, label: 'Logbook Harian', minPhase: 'execution', lockReason: 'Aktif saat fase pelaksanaan KKN.' },
+    { href: '/mahasiswa/program-kerja', icon: Presentation, label: 'Program Kerja', minPhase: 'execution', lockReason: 'Aktif saat fase pelaksanaan KKN.' },
+    { href: '/mahasiswa/posko', icon: MapPin, label: 'Detail Posko', minPhase: 'placement', lockReason: 'Aktif setelah fase penempatan.' },
+    { href: '/mahasiswa/laporan-akhir', icon: ScrollText, label: 'Laporan Akhir', minPhase: 'grading', lockReason: 'Aktif saat fase pelaporan/penilaian.' },
+    { href: '/mahasiswa/sertifikat', icon: Activity, label: 'Sertifikat & Nilai', minPhase: 'grading', lockReason: 'Aktif setelah penilaian dibuka.' },
+  ];
 
   const phases = [
     { id: 1, label: 'Registrasi', done: isApproved, active: isPending || !registration },
@@ -191,7 +202,7 @@ export default function StudentDashboard(): React.JSX.Element {
           {/* MAIN */}
           <div className="lg:col-span-8 space-y-6">
             {/* PROGRESS */}
-            <div className="bg-white ring-1 ring-slate-200 rounded-xl p-6 shadow-sm overflow-hidden relative">
+            {showKknTools && <div className="bg-white ring-1 ring-slate-200 rounded-xl p-6 shadow-sm overflow-hidden relative">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                   <Target size={16} className="text-emerald-600" /> Milestone Pengabdian
@@ -215,10 +226,10 @@ export default function StudentDashboard(): React.JSX.Element {
                   </div>
                 ))}
               </div>
-            </div>
+            </div>}
 
             {/* STATS */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {showKknTools && <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-white ring-1 ring-slate-200 rounded-xl p-5 flex items-center gap-5 shadow-sm">
                 <div className="h-12 w-12 rounded-lg flex items-center justify-center shrink-0 bg-emerald-50 text-emerald-600">
                   <ClipboardList size={24} />
@@ -243,10 +254,10 @@ export default function StudentDashboard(): React.JSX.Element {
                   </div>
                 </div>
               </div>
-            </div>
+            </div>}
 
             {/* ACTION CALLOUT */}
-            {!isApproved && (
+            {!showKknTools && (
               <div className="bg-slate-900 rounded-xl p-8 text-white relative overflow-hidden shadow-xl">
                 <div className="absolute right-0 top-0 p-8 opacity-10 rotate-12 -mr-10 -mt-10">
                   <GraduationCap size={160} />
@@ -319,23 +330,47 @@ export default function StudentDashboard(): React.JSX.Element {
               <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
                 <LayoutGrid size={16} className="text-emerald-600" /> Menu Navigasi
               </h3>
+              {!showKknTools ? (
+                <div className="rounded-lg border border-amber-100 bg-amber-50 p-4 text-xs font-semibold text-amber-800">
+                  Fitur KKN seperti Logbook, Program Kerja, Posko, Laporan Akhir, dan Sertifikat akan dibuka setelah pendaftaran disetujui dan fase sesuai.
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Link href={registration ? '/mahasiswa/cek-pendaftaran' : '/mahasiswa/pendaftaran'} className="rounded-lg bg-amber-600 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-white hover:bg-amber-700">{registration ? 'Cek Status' : 'Daftar KKN'}</Link>
+                    <Link href="/profil" className="rounded-lg bg-white px-3 py-2 text-[10px] font-black uppercase tracking-wider text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100">Lengkapi Profil</Link>
+                  </div>
+                </div>
+              ) : (
               <div className="grid gap-2">
-                {[
-                  { href: '/mahasiswa/laporan-harian', icon: ClipboardList, label: 'Logbook Harian' },
-                  { href: '/mahasiswa/program-kerja', icon: Presentation, label: 'Program Kerja' },
-                  { href: '/mahasiswa/posko', icon: MapPin, label: 'Detail Posko' },
-                  { href: '/mahasiswa/laporan-akhir', icon: ScrollText, label: 'Laporan Akhir' },
-                  { href: '/mahasiswa/sertifikat', icon: Activity, label: 'Sertifikat & Nilai' },
-                ].map((item) => (
-                  <Link key={item.href} href={item.href} className="flex items-center gap-3 p-3 rounded-lg border border-transparent hover:border-emerald-100 hover:bg-emerald-50 transition-all group">
-                    <div className="p-2 bg-slate-50 text-slate-400 rounded-md group-hover:bg-emerald-600 group-hover:text-white transition-all">
-                      <item.icon size={16} />
-                    </div>
-                    <span className="text-xs font-bold text-slate-700 group-hover:text-emerald-900 transition-colors uppercase tracking-tight">{item.label}</span>
-                    <ArrowRight size={14} className="ml-auto text-slate-200 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
-                  </Link>
-                ))}
+                {dashboardNavItems.map((item) => {
+                  const locked = !isPhaseAtLeast(item.minPhase);
+                  const content = (
+                    <>
+                      <div className={clsx('p-2 rounded-md transition-all', locked ? 'bg-slate-100 text-slate-300' : 'bg-slate-50 text-slate-400 group-hover:bg-emerald-600 group-hover:text-white')}>
+                        <item.icon size={16} />
+                      </div>
+                      <div className="min-w-0">
+                        <span className={clsx('block text-xs font-bold uppercase tracking-tight transition-colors', locked ? 'text-slate-400' : 'text-slate-700 group-hover:text-emerald-900')}>{item.label}</span>
+                        {locked && <span className="block text-[10px] font-semibold text-slate-400 normal-case">Terkunci — {item.lockReason}</span>}
+                      </div>
+                      {locked ? <ShieldCheck size={14} className="ml-auto text-slate-300" /> : <ArrowRight size={14} className="ml-auto text-slate-200 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />}
+                    </>
+                  );
+
+                  if (locked) {
+                    return (
+                      <div key={item.href} title={item.lockReason} className="flex cursor-not-allowed items-center gap-3 rounded-lg border border-slate-100 bg-slate-50/70 p-3 opacity-80">
+                        {content}
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <Link key={item.href} href={item.href} className="flex items-center gap-3 p-3 rounded-lg border border-transparent hover:border-emerald-100 hover:bg-emerald-50 transition-all group">
+                      {content}
+                    </Link>
+                  );
+                })}
               </div>
+              )}
             </div>
 
             <div className="bg-emerald-50/50 ring-1 ring-emerald-100 rounded-xl p-6">

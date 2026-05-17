@@ -24,7 +24,6 @@ const ParticleBackground = dynamic(
 
 // NotificationPreferencesCard — hidden from student profile, managed via admin dashboard
 // import { NotificationPreferencesCard } from '@/components/profile/notification-preferences-card';
-import { TwoFactorCard } from '@/components/profile/two-factor-card';
 
 type ReverseGeocodeAddress = {
   house_number?: string;
@@ -113,6 +112,7 @@ interface StudentAddressSectionProps {
 }
 
 const FIELD_LABELS: Record<string, string> = {
+  email: 'Email Sistem',
   nik: 'NIK (KTP)',
   mother_name: 'Nama Ibu Kandung',
   birth_place: 'Tempat Lahir',
@@ -656,12 +656,13 @@ export default function ProfilePage(): React.JSX.Element {
   useEffect(() => {
     if (!user) return;
     profileApi.get().then((res: unknown) => {
-      const r = res as { student?: StudentProfile; lecturer?: LecturerProfile; user?: { phone?: string; address?: string; address_village_name?: string; address_district_name?: string; address_regency_name?: string; address_postal_code?: string; address_verified_at?: string; address_lat?: number; address_lng?: number; mahasiswa?: StudentProfile; dosen?: LecturerProfile }; pending_change_request?: ChangeRequest };
+      const r = res as { student?: StudentProfile; lecturer?: LecturerProfile; user?: { email?: string; phone?: string; address?: string; address_village_name?: string; address_district_name?: string; address_regency_name?: string; address_postal_code?: string; address_verified_at?: string; address_lat?: number; address_lng?: number; mahasiswa?: StudentProfile; dosen?: LecturerProfile }; pending_change_request?: ChangeRequest };
       const nextStudent = r?.student ?? r?.user?.mahasiswa ?? null;
       const nextLecturer = r?.lecturer ?? r?.user?.dosen ?? null;
       setProfileData({ student: nextStudent, lecturer: nextLecturer, pending: r?.pending_change_request ?? null });
       reset({
         name: user.name ?? '',
+        email: (r?.user?.email ?? user.email ?? '') as string,
         phone: (r?.user?.phone ?? (user as unknown as { phone?: string }).phone ?? '') as string,
         address: (r?.user?.address ?? (user as unknown as { address?: string }).address ?? '') as string,
         address_village_name: (r?.user?.address_village_name ?? (user as unknown as { address_village_name?: string }).address_village_name ?? '') as string,
@@ -717,9 +718,24 @@ export default function ProfilePage(): React.JSX.Element {
       await profileApi.update(payload);
       toast.success(profileComplete ? 'Permintaan perubahan profil dikirim. Menunggu persetujuan superadmin.' : 'Profil berhasil disimpan. Pastikan semua data sudah valid.');
       setIsEditing(false);
-      const res = await profileApi.get() as unknown as { student?: StudentProfile; lecturer?: LecturerProfile; pending_change_request?: ChangeRequest; profile_complete?: boolean; user?: { biodata_complete?: boolean; address_complete?: boolean } };
+      const res = await profileApi.get() as unknown as { student?: StudentProfile; lecturer?: LecturerProfile; pending_change_request?: ChangeRequest; profile_complete?: boolean; user?: { email?: string; phone?: string; address?: string; address_village_name?: string; address_district_name?: string; address_regency_name?: string; address_postal_code?: string; address_verified_at?: string; address_lat?: number; address_lng?: number; biodata_complete?: boolean; address_complete?: boolean } };
       setProfileData({ student: res?.student ?? null, lecturer: res?.lecturer ?? null, pending: res?.pending_change_request ?? null });
       await fetchUser(true);
+      const freshUserForForm = useAuthStore.getState().user;
+      reset({
+        ...data,
+        name: freshUserForForm?.name ?? data.name,
+        email: res?.user?.email ?? freshUserForForm?.email ?? data.email,
+        phone: res?.user?.phone ?? data.phone,
+        address: res?.user?.address ?? data.address,
+        address_village_name: res?.user?.address_village_name ?? data.address_village_name,
+        address_district_name: res?.user?.address_district_name ?? data.address_district_name,
+        address_regency_name: res?.user?.address_regency_name ?? data.address_regency_name,
+        address_postal_code: res?.user?.address_postal_code ?? data.address_postal_code,
+        address_verified: !!res?.user?.address_verified_at,
+        address_lat: res?.user?.address_lat != null ? Number(res.user.address_lat) : data.address_lat,
+        address_lng: res?.user?.address_lng != null ? Number(res.user.address_lng) : data.address_lng,
+      });
       const complete = !!res?.profile_complete || !!(res?.student?.biodata_complete && res?.student?.address_complete) || !!res?.lecturer?.biodata_complete;
       setProfileCompleteCookie(complete);
       if (complete) {
@@ -910,7 +926,7 @@ export default function ProfilePage(): React.JSX.Element {
             <section className="space-y-4">
               <h2 className={`flex items-center gap-2 ${typography.label} text-[color:var(--profile-text)]`}><IdCard size={16} /> Data Pribadi & Kontak</h2>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <TextInput label="Email Sistem" value={user.email ?? '-'} disabled />
+                <TextInput label="Email Sistem" registration={register('email')} disabled={!isEditing} error={errors.email?.message} />
                 <TextInput label="Nama Lengkap" registration={register('name')} disabled={!isEditing} error={errors.name?.message} />
                 <TextInput label="Nomor HP / WA" registration={register('phone')} disabled={!isEditing} error={errors.phone?.message} />
                 {isStudent && <TextInput label="NIK (KTP)" registration={register('nik')} disabled={!isEditing} error={errors.nik?.message} />}
@@ -930,10 +946,6 @@ export default function ProfilePage(): React.JSX.Element {
             {isEditing && <button type="submit" disabled={isSubmitting || !isDirty || (!!pendingRequest && profileComplete)} className={cx('flex h-11 items-center justify-center gap-2 rounded-lg px-6 disabled:opacity-50', typography.button, primaryClass)}>{isSubmitting ? 'Menyimpan...' : profileComplete ? 'Ajukan Perubahan' : 'Simpan & Lanjutkan'}<Save size={16} /></button>}
           </form>
 
-          <div className="mt-6">
-            {/* NotificationPreferencesCard hidden — managed via admin dashboard */}
-            <TwoFactorCard />
-          </div>
         </div>
       </div>
       </div>

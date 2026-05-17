@@ -14,7 +14,6 @@ PG_VERSION="${PG_VERSION:-18}"
 APP_DIR="${APP_DIR:-/usr/local/www/apache24/data/Sibermas2026}"
 WEB_DOMAIN="${WEB_DOMAIN:-sibermas.uinsaizu.ac.id}"
 CERT_BASE="${CERT_BASE:-$WEB_DOMAIN}"
-EDGE_REVERSE_PROXY="${EDGE_REVERSE_PROXY:-0}"
 PG_DATA_DIR="/var/db/postgres/data${PG_VERSION}"
 LOG_DIR="/var/log/sibermas"
 NGINX_LOG_DIR="/var/log/nginx"
@@ -380,34 +379,30 @@ else
   echo "  curl tidak ditemukan"
 fi
 
-if [ "${EDGE_REVERSE_PROXY}" = "1" ]; then
-  echo "Origin cert file: <skipped> EDGE_REVERSE_PROXY=1 (TLS terminates at frontend/gateway)"
-else
-  CERT_FILE="/usr/local/etc/letsencrypt/live/${CERT_BASE}/fullchain.pem"
-  if [ -f "$CERT_FILE" ]; then
-    RESOLVED_CERT="$(resolve_path "$CERT_FILE")"
-    echo ""
-    echo "Origin cert file: $CERT_FILE"
-    echo "Resolved path:    $RESOLVED_CERT"
-    case "$RESOLVED_CERT" in
-      *selfsigned*|*/nginx/ssl/*)
-        echo "  [WARN] Cert path mengarah ke self-signed/internal cert"
-        ;;
-    esac
+CERT_FILE="/usr/local/etc/letsencrypt/live/${CERT_BASE}/fullchain.pem"
+if [ -f "$CERT_FILE" ]; then
+  RESOLVED_CERT="$(resolve_path "$CERT_FILE")"
+  echo ""
+  echo "Origin cert file: $CERT_FILE"
+  echo "Resolved path:    $RESOLVED_CERT"
+  case "$RESOLVED_CERT" in
+    *selfsigned*|*/nginx/ssl/*)
+      echo "  [WARN] Cert path mengarah ke self-signed/internal cert"
+      ;;
+  esac
 
-    if command -v openssl >/dev/null 2>&1; then
-      CERT_SUBJECT="$(openssl x509 -in "$CERT_FILE" -noout -subject -nameopt RFC2253 2>/dev/null | sed 's/^subject=//')"
-      CERT_ISSUER="$(openssl x509 -in "$CERT_FILE" -noout -issuer -nameopt RFC2253 2>/dev/null | sed 's/^issuer=//')"
-      CERT_SAN="$(openssl x509 -in "$CERT_FILE" -noout -ext subjectAltName 2>/dev/null | sed '1d' | tr '\n' ' ' | sed 's/[[:space:]]*$//')"
-      echo "Subject:          ${CERT_SUBJECT:-<unreadable>}"
-      echo "Issuer:           ${CERT_ISSUER:-<unreadable>}"
-      echo "SAN:              ${CERT_SAN:-<missing>}"
-    else
-      echo "openssl:          <not installed>"
-    fi
+  if command -v openssl >/dev/null 2>&1; then
+    CERT_SUBJECT="$(openssl x509 -in "$CERT_FILE" -noout -subject -nameopt RFC2253 2>/dev/null | sed 's/^subject=//')"
+    CERT_ISSUER="$(openssl x509 -in "$CERT_FILE" -noout -issuer -nameopt RFC2253 2>/dev/null | sed 's/^issuer=//')"
+    CERT_SAN="$(openssl x509 -in "$CERT_FILE" -noout -ext subjectAltName 2>/dev/null | sed '1d' | tr '\n' ' ' | sed 's/[[:space:]]*$//')"
+    echo "Subject:          ${CERT_SUBJECT:-<unreadable>}"
+    echo "Issuer:           ${CERT_ISSUER:-<unreadable>}"
+    echo "SAN:              ${CERT_SAN:-<missing>}"
   else
-    echo "Origin cert file: <missing> $CERT_FILE"
+    echo "openssl:          <not installed>"
   fi
+else
+  echo "Origin cert file: <missing> $CERT_FILE"
 fi
 
 # ─── 14. Most Common Issues Quick Check ────────────────────────────────

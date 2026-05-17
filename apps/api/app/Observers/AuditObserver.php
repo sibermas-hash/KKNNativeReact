@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\Model;
  *             audit viewer immediately useful ("what changed?").
  *   - DELETE: store old_values (snapshot at deletion time)
  *
- * Sensitive fields are redacted by name match (password, tokens, 2FA) AND
+ * Sensitive fields are redacted by name match (password, tokens, sensitive fields) AND
  * PII (NIK, NIP, NIM, phone, birth_date, email, password_changed_at). This
  * aligns with the Sentry PII scrubbing in config/sentry.php so audit log
  * + error log never expose the same data.
@@ -40,8 +40,6 @@ class AuditObserver
         'current_password',
         'remember_token',
         'api_token',
-        'two_factor_secret',
-        'two_factor_recovery_codes',
 
         // Government / institutional IDs
         'nik',

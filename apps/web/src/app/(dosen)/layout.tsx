@@ -80,7 +80,7 @@ export default function DosenLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="min-h-screen font-sans transition-colors duration-500" style={{ ...themeConfig.vars, background: themeConfig.backdrop }}>
+    <div className="app-readable min-h-screen font-sans transition-colors duration-500" style={{ ...themeConfig.vars, background: themeConfig.backdrop }}>
       {/* Sidebar overlay mobile */}
       {sidebarOpen && (
         <div

@@ -287,9 +287,8 @@ export default function RegistrationFormPage(): React.JSX.Element {
             <EligibilityBadge label={`SKS: ${userEligibility.sks_completed}`} passed={userEligibility.sks_completed >= (userEligibility.thresholds?.min_sks ?? 100)} />
             <EligibilityBadge label={`IPK: ${userEligibility.gpa}`} passed={userEligibility.gpa >= (userEligibility.thresholds?.min_gpa ?? 2.0)} />
             <EligibilityBadge label="BTA/PPI" passed={userEligibility.bta_ppi_passed} />
-            <EligibilityBadge label="Surat Sehat" passed={userEligibility.has_health_certificate} />
-            <EligibilityBadge label="Izin Ortu" passed={userEligibility.has_parent_permission} />
           </div>
+          <p className="mt-3 text-xs font-medium text-slate-500">Surat Sehat dan Izin Ortu tidak menjadi filter kelayakan otomatis di halaman ini. Dokumen diunggah setelah pendaftaran dan divalidasi manual oleh LPPM/Superadmin.</p>
         </div>
       )}
 

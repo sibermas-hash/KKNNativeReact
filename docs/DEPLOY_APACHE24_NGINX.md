@@ -2,16 +2,14 @@
 
 Profile ini untuk target operasional:
 
-- Nginx frontend di host aplikasi: direct-public di `80/443`, atau backend-only
-  di `80` saat `EDGE_REVERSE_PROXY=1`
+- Nginx publik di port `80/443`
 - Apache24 backend internal di `127.0.0.1:8080`
 - Laravel API di `apps/api/public` lewat PHP-FPM socket `/var/run/php-fpm.sock`
 - Next.js standalone di `127.0.0.1:3000`
 - Tanpa Supervisor; proses Next.js dan queue Laravel dikelola `rc.d` + `daemon(8)`
 
-Untuk `sibermas.uinsaizu.ac.id`, topologi live saat ini memakai SSL
-frontend/gateway. Di app server, gunakan `EDGE_REVERSE_PROXY=1` agar vhost
-backend tetap HTTP-only dan tidak memuat sertifikat lokal.
+Fakta live app server saat ini tetap memakai terminasi TLS lokal di Nginx
+backend. Jadi mode default script tetap direct-public.
 
 ## Arsitektur
 
@@ -84,8 +82,6 @@ Mode ini merender:
 ```text
 conf/nginx-vhost-sibermas-http.conf -> /usr/local/etc/nginx/vhosts/sibermas.conf
 ```
-
-Ini mode yang cocok untuk host backend Sibermas saat ini.
 
 Template gateway publik tetap ada di:
 
@@ -190,10 +186,6 @@ curl -i http://127.0.0.1/api/health       # Nginx -> Apache
 curl -I http://127.0.0.1:3000/            # Next.js
 curl -I http://127.0.0.1/                 # Nginx -> Next.js
 ```
-
-Jika Apache memakai ModSecurity CRS, pastikan method REST tidak diblokir.
-Minimal `PATCH /api/v1/profile/password` harus mencapai Laravel dan membalas
-`401/422`, bukan `403`.
 
 Diagnostik lengkap:
 

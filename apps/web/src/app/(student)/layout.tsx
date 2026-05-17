@@ -36,7 +36,6 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/mahasiswa/laporan-akhir', label: 'Laporan Akhir', icon: BookOpen, phases: ['grading', 'finished'] },
   { href: '/mahasiswa/evaluasi-dpl', label: 'Evaluasi DPL', icon: Star, phases: ['grading', 'finished'] },
   { href: '/mahasiswa/sertifikat', label: 'Sertifikat', icon: Award, phases: ['grading', 'finished'] },
-  { href: '/mahasiswa/chat', label: 'Chat Admin', icon: MessageCircle, phases: null },
   { href: '/profil', label: 'Profil', icon: UserCircle, phases: null },
 ];
 
@@ -57,6 +56,8 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     el.style.background = themeConfig.backdrop;
   }, [themeConfig]);
   const isProfilePage = pathname === '/profil';
+  const currentNavItem = NAV_ITEMS.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
+  const isPhaseAllowed = !currentNavItem?.phases || currentNavItem.phases.includes(currentPhase || '');
 
   useEffect(() => {
     if (isLoading) return;
@@ -65,9 +66,12 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
       if (!user.password_changed_at) { router.replace('/ganti-password'); return; }
       if ((!user.profile_complete || user.must_change_password) && !isProfilePage) { router.replace('/profil'); return; }
       if (isProfilePage) return;
-      if (!user.roles?.includes('student')) router.replace('/');
+      if (!user.roles?.includes('student')) { router.replace('/'); return; }
+      if (!isPhaseAllowed && currentNavItem) {
+        router.replace(`/phase-blocked?phase=${encodeURIComponent(currentPhase || 'pre_registration')}&required=${encodeURIComponent(currentNavItem.phases?.join(',') || '')}`);
+      }
     }
-  }, [isLoading, isAuthenticated, isProfilePage, user, router]);
+  }, [isLoading, isAuthenticated, isProfilePage, user, router, isPhaseAllowed, currentNavItem, currentPhase]);
 
   if (isLoading || !isAuthenticated || !user) {
     return (
@@ -88,7 +92,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   };
 
   return (
-    <div ref={rootRef} className="min-h-screen font-sans transition-colors duration-500">
+    <div ref={rootRef} className="app-readable min-h-screen font-sans transition-colors duration-500">
       {/* Sidebar overlay mobile */}
       {sidebarOpen && (
         <div
@@ -231,6 +235,19 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
         <main className="flex-1 p-4 lg:p-8 text-[color:var(--profile-text)]">{children}</main>
       </div>
+
+      {pathname !== '/mahasiswa/chat' && (
+        <Link
+          href="/mahasiswa/chat"
+          aria-label="Chat Admin"
+          title="Chat Admin"
+          className="fixed bottom-5 right-5 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-2xl shadow-emerald-900/25 ring-4 ring-white transition-all hover:-translate-y-0.5 hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 md:bottom-6 md:right-6"
+        >
+          <MessageCircle className="h-6 w-6" strokeWidth={2.5} />
+          <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full border-2 border-white bg-rose-500" />
+          <span className="sr-only">Chat Admin</span>
+        </Link>
+      )}
     </div>
   );
 }

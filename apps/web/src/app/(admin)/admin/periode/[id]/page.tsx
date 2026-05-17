@@ -22,6 +22,13 @@ export default function PeriodDetailPage(): React.JSX.Element {
   if (isLoading) return <div className="h-32 animate-pulse rounded-2xl bg-slate-200" />;
   if (!data) return <div className="text-center text-slate-500">Periode tidak ditemukan</div>;
 
+  const periodId = String(data.id ?? id);
+  const periodName = String(data.name || 'Detail Periode');
+  const periodQuery = {
+    periode_id: periodId,
+    periode_name: periodName,
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -71,21 +78,21 @@ export default function PeriodDetailPage(): React.JSX.Element {
 
       {/* Quick Links */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Link href="/admin/kelompok" className="flex items-center gap-3 rounded-xl bg-white p-4 ring-1 ring-slate-200 shadow-sm hover:ring-cyan-200 transition-all">
+        <Link href={{ pathname: '/admin/kelompok', query: periodQuery }} className="flex items-center gap-3 rounded-xl bg-white p-4 ring-1 ring-slate-200 shadow-sm hover:ring-cyan-200 transition-all">
           <Users size={20} className="text-cyan-600" />
           <div>
             <p className="text-sm font-bold text-slate-800">Kelompok</p>
             <p className="text-xs text-slate-500">Kelola kelompok periode ini</p>
           </div>
         </Link>
-        <Link href="/admin/pendaftaran" className="flex items-center gap-3 rounded-xl bg-white p-4 ring-1 ring-slate-200 shadow-sm hover:ring-cyan-200 transition-all">
+        <Link href={{ pathname: '/admin/pendaftaran', query: periodQuery }} className="flex items-center gap-3 rounded-xl bg-white p-4 ring-1 ring-slate-200 shadow-sm hover:ring-cyan-200 transition-all">
           <Layers size={20} className="text-emerald-600" />
           <div>
             <p className="text-sm font-bold text-slate-800">Pendaftaran</p>
             <p className="text-xs text-slate-500">Review pendaftaran mahasiswa</p>
           </div>
         </Link>
-        <Link href="/admin/dosen/penugasan" className="flex items-center gap-3 rounded-xl bg-white p-4 ring-1 ring-slate-200 shadow-sm hover:ring-cyan-200 transition-all">
+        <Link href={{ pathname: '/admin/dosen/penugasan', query: periodQuery }} className="flex items-center gap-3 rounded-xl bg-white p-4 ring-1 ring-slate-200 shadow-sm hover:ring-cyan-200 transition-all">
           <MapPin size={20} className="text-amber-600" />
           <div>
             <p className="text-sm font-bold text-slate-800">Penugasan DPL</p>

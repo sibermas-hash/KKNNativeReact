@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import type { ApiResponse, PaginationMeta } from '@sibermas/shared-types';
+import { rawApi } from '@/lib/api';
 import { PageHeader } from '@/components/ui/shared';
 import { CheckCircle2, XCircle } from 'lucide-react';
 
@@ -15,6 +16,11 @@ type ActivityLog = {
   ip_address: string | null;
   user_agent: string | null;
   created_at: string;
+};
+
+type PaginatedActivityLogResponse = {
+  data: ActivityLog[];
+  meta?: Partial<PaginationMeta>;
 };
 
 const ACTION_LABELS: Record<string, string> = {
@@ -42,7 +48,7 @@ export default function ActivityLogPage() {
   const [filters, setFilters] = useState<Filters>({ action: '', status: '', ip: '', date_from: '', date_to: '', user_id: '' });
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<PaginatedActivityLogResponse>({
     queryKey: ['admin', 'activity-log', filters, page],
     queryFn: async () => {
       const params: Record<string, string | number> = { page, per_page: 25 };
@@ -52,16 +58,16 @@ export default function ActivityLogPage() {
       if (filters.date_from) params.date_from = filters.date_from;
       if (filters.date_to) params.date_to = filters.date_to;
       if (filters.user_id) params.user_id = filters.user_id;
-      const res = await api.get('/admin/activity-log', { params });
-      const response = (res as unknown as { data?: Record<string, unknown>; meta?: Record<string, unknown> });
-      return (response.data ?? response) as Record<string, unknown>;
+      const response = await rawApi.get<ApiResponse<ActivityLog[]>>('/admin/activity-log', { params });
+      return {
+        data: response.data.data ?? [],
+        meta: response.data.meta,
+      };
     },
   });
 
-  const logs: ActivityLog[] = (data?.data ?? []) as ActivityLog[];
-  const meta = data?.meta as
-    | { current_page: number; last_page: number; total: number }
-    | undefined;
+  const logs = data?.data ?? [];
+  const meta = data?.meta;
 
   const updateFilter = (key: keyof Filters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
@@ -196,15 +202,15 @@ export default function ActivityLogPage() {
         )}
 
         {/* Pagination */}
-        {meta && meta.last_page > 1 && (
+        {(meta?.last_page ?? 1) > 1 && (
           <div className="flex items-center justify-between p-4 border-t border-slate-100 text-xs text-slate-600">
-            <span>Halaman {meta.current_page} dari {meta.last_page} ({meta.total} aktivitas)</span>
+            <span>Halaman {meta?.current_page ?? 1} dari {meta?.last_page ?? 1} ({meta?.total ?? logs.length} aktivitas)</span>
             <div className="flex gap-2">
-              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={meta.current_page === 1}
+              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={(meta?.current_page ?? 1) === 1}
                 className="rounded-lg bg-slate-100 px-3 py-1.5 font-semibold disabled:opacity-50 hover:bg-slate-200">
                 « Prev
               </button>
-              <button onClick={() => setPage((p) => p + 1)} disabled={meta.current_page >= meta.last_page}
+              <button onClick={() => setPage((p) => p + 1)} disabled={(meta?.current_page ?? 1) >= (meta?.last_page ?? 1)}
                 className="rounded-lg bg-slate-100 px-3 py-1.5 font-semibold disabled:opacity-50 hover:bg-slate-200">
                 Next »
               </button>

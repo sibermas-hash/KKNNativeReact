@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Log;
 /**
  * LogbookAnalyzer — analisis AI untuk laporan harian KKN.
  *
- * Memanfaatkan 3-tier SumoPod failover dari `config/ai.php` (sama seperti
+ * Memanfaatkan 3-tier AI gateway failover dari `config/ai.php` (sama seperti
  * AvatarValidationService). Output structured JSON:
  *   - summary: ringkasan 1-2 kalimat
  *   - quality_score: 1-10 kualitas narasi & refleksi
@@ -83,24 +83,34 @@ class LogbookAnalyzer
      */
     private function loadTiers(): array
     {
+        $rizqunaUrl = config('ai.providers.rizquna.url')
+            ?: SystemSetting::get('rizquna_url', 'https://router.rizquna.id/v1');
+        $rizqunaKey = config('ai.providers.rizquna.key')
+            ?: SystemSetting::get('rizquna_api_key');
+        $rizqunaAnalysisModel = config('ai.routing.analysis.model')
+            ?: config('ai.providers.rizquna.models.text.default')
+            ?: 'ag/gemini-3-flash';
+
         return [
             [
                 'label' => 'primary',
-                'url' => config('ai.failover.primary.url') ?: SystemSetting::get('ai_primary_url', 'https://ai.sumopod.com/v1'),
-                'key' => config('ai.failover.primary.key') ?: SystemSetting::get('ai_primary_key'),
-                'model' => config('ai.failover.primary.model') ?: SystemSetting::get('ai_primary_model', 'gemini/gemini-2.5-pro'),
+                'url' => config('ai.failover.primary.url') ?: SystemSetting::get('ai_primary_url', $rizqunaUrl),
+                'key' => config('ai.failover.primary.key') ?: SystemSetting::get('ai_primary_key', $rizqunaKey),
+                'model' => config('ai.routing.analysis.model')
+                    ?: config('ai.failover.primary.model')
+                    ?: SystemSetting::get('ai_primary_model', $rizqunaAnalysisModel),
             ],
             [
                 'label' => 'fallback',
-                'url' => config('ai.failover.fallback.url') ?: SystemSetting::get('ai_fallback_url', 'https://ai.sumopod.com/v1'),
+                'url' => config('ai.failover.fallback.url') ?: SystemSetting::get('ai_fallback_url', $rizqunaUrl),
                 'key' => config('ai.failover.fallback.key') ?: SystemSetting::get('ai_fallback_key'),
-                'model' => config('ai.failover.fallback.model') ?: SystemSetting::get('ai_fallback_model', 'gemini/gemini-2.5-flash'),
+                'model' => config('ai.failover.fallback.model') ?: SystemSetting::get('ai_fallback_model', $rizqunaAnalysisModel),
             ],
             [
                 'label' => 'tertiary',
-                'url' => config('ai.failover.tertiary.url') ?: SystemSetting::get('ai_tertiary_url', 'https://ai.sumopod.com/v1'),
+                'url' => config('ai.failover.tertiary.url') ?: SystemSetting::get('ai_tertiary_url', $rizqunaUrl),
                 'key' => config('ai.failover.tertiary.key') ?: SystemSetting::get('ai_tertiary_key'),
-                'model' => config('ai.failover.tertiary.model') ?: SystemSetting::get('ai_tertiary_model', 'gpt-4o'),
+                'model' => config('ai.failover.tertiary.model') ?: SystemSetting::get('ai_tertiary_model', $rizqunaAnalysisModel),
             ],
         ];
     }
@@ -139,12 +149,13 @@ PROMPT;
         );
 
         return [
+            'stream' => false,
             'messages' => [
                 ['role' => 'system', 'content' => $systemPrompt],
                 ['role' => 'user', 'content' => $userPrompt],
             ],
-            'temperature' => 0.2,
-            'max_tokens' => 800,
+            'temperature' => (float) config('ai.routing.analysis.temperature', 0.2),
+            'max_tokens' => (int) config('ai.routing.analysis.max_tokens', 1400),
             'response_format' => ['type' => 'json_object'],
         ];
     }
@@ -158,7 +169,7 @@ PROMPT;
         $endpoint = rtrim($baseUrl, '/').'/chat/completions';
 
         $response = Http::withToken($apiKey)
-            ->timeout(45)
+            ->timeout((int) config('ai.routing.analysis.timeout', 45))
             ->retry(2, 1000, throw: false)
             ->post($endpoint, [
                 'model' => $model,

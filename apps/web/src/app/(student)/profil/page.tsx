@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
-import { AlertCircle, BadgeCheck, Camera, GraduationCap, IdCard, Info, Lock, LogOut, Medal, RefreshCw, Save, User as UserIcon } from 'lucide-react';
+import { AlertCircle, BadgeCheck, Camera, GraduationCap, IdCard, Info, LayoutDashboard, Lock, LogOut, MapPinned, Medal, PencilLine, RefreshCw, Save, User as UserIcon } from 'lucide-react';
 import type { User } from '@sibermas/shared-types';
 import { useTheme } from '@/components/ui/theme-provider';
 import { THEMES, THEME_KEYS, THEME_TYPOGRAPHY, SOFT_CLASS, PRIMARY_CLASS, MUTED_TEXT_CLASS, ACCENT_TEXT_CLASS, FIELD_CLASS, type ThemeKey, type ThemeDefinition } from '@/lib/theme-config';
@@ -27,7 +27,10 @@ const ParticleBackground = dynamic(
 import { TwoFactorCard } from '@/components/profile/two-factor-card';
 
 type ReverseGeocodeAddress = {
+  house_number?: string;
   road?: string;
+  hamlet?: string;
+  quarter?: string;
   neighbourhood?: string;
   suburb?: string;
   village?: string;
@@ -38,6 +41,16 @@ type ReverseGeocodeAddress = {
   state_district?: string;
   state?: string;
   postcode?: string;
+};
+
+type ForwardGeocodeResult = {
+  lat: string;
+  lon: string;
+  class?: string;
+  type?: string;
+  addresstype?: string;
+  importance?: number;
+  display_name?: string;
 };
 
 const AddressMapPicker = dynamic(() => import('@/components/profile/address-map-picker'), {
@@ -207,16 +220,108 @@ function cleanAdminName(value?: string | null) {
   return (value ?? '').replace(/^(Kabupaten|Kab\.|Kota|Kecamatan)\s+/i, '').trim();
 }
 
-function composeAddress(displayName?: string, address?: ReverseGeocodeAddress) {
-  const parts = [address?.road, address?.neighbourhood || address?.suburb, address?.village || address?.town].filter(Boolean);
-  return parts.length > 0 ? parts.join(', ') : displayName ?? '';
+function normalizeAddressSegment(value?: string | null) {
+  return (value ?? '').replace(/\s+/g, ' ').trim();
 }
 
-function composeAddressQuery(village?: string, district?: string, regency?: string) {
-  return [village, district, regency, 'Jawa Tengah', 'Indonesia']
-    .map((value) => (value ?? '').trim())
+function composeAddress(displayName?: string, address?: ReverseGeocodeAddress) {
+  const roadLine = [address?.road, address?.house_number].filter(Boolean).join(' ');
+  const parts = [
+    roadLine,
+    address?.hamlet || address?.quarter || address?.neighbourhood || address?.suburb,
+    address?.village || address?.town || address?.city,
+  ]
+    .map((value) => normalizeAddressSegment(value))
+    .filter(Boolean);
+  return parts.length > 0 ? parts.join(', ') : normalizeAddressSegment(displayName);
+}
+
+function joinAddressParts(parts: Array<string | null | undefined>) {
+  return parts
+    .map((value) => normalizeAddressSegment(value))
     .filter(Boolean)
     .join(', ');
+}
+
+function buildAddressQueries({
+  fullAddress,
+  village,
+  district,
+  regency,
+  postalCode,
+}: {
+  fullAddress?: string | null;
+  village?: string | null;
+  district?: string | null;
+  regency?: string | null;
+  postalCode?: string | null;
+}) {
+  const queries = [
+    joinAddressParts([fullAddress, village, district, regency, postalCode, 'Jawa Tengah', 'Indonesia']),
+    joinAddressParts([fullAddress, village, district, regency, 'Jawa Tengah', 'Indonesia']),
+    joinAddressParts([village, district, regency, postalCode, 'Jawa Tengah', 'Indonesia']),
+    joinAddressParts([village, district, regency, 'Jawa Tengah', 'Indonesia']),
+    joinAddressParts([district, regency, 'Jawa Tengah', 'Indonesia']),
+  ];
+
+  return Array.from(new Set(queries.filter(Boolean)));
+}
+
+const ADDRESS_STOP_WORDS = new Set([
+  'jalan',
+  'jln',
+  'rt',
+  'rw',
+  'desa',
+  'kelurahan',
+  'kecamatan',
+  'kabupaten',
+  'kota',
+  'provinsi',
+  'jawa',
+  'tengah',
+  'indonesia',
+]);
+
+function addressTokens(value: string) {
+  return normalizeAddressSegment(value)
+    .toLowerCase()
+    .split(/[^a-z0-9]+/i)
+    .filter((token) => token.length >= 3 && !ADDRESS_STOP_WORDS.has(token));
+}
+
+function scoreForwardGeocodeResult(result: ForwardGeocodeResult, tokens: string[]) {
+  const addresstype = normalizeAddressSegment(result.addresstype).toLowerCase();
+  const type = normalizeAddressSegment(result.type).toLowerCase();
+  const resultClass = normalizeAddressSegment(result.class).toLowerCase();
+  const displayName = (result.display_name ?? '').toLowerCase();
+
+  let score = Number(result.importance ?? 0) * 20;
+
+  if (resultClass === 'boundary') score -= 60;
+  if (['administrative', 'county', 'city', 'state', 'region'].includes(addresstype) || ['administrative', 'county', 'city', 'state', 'region'].includes(type)) {
+    score -= 60;
+  }
+  if (['building', 'house', 'residential', 'road', 'street', 'service', 'amenity', 'premise'].includes(addresstype) || ['building', 'house', 'residential', 'road', 'street', 'service'].includes(type)) {
+    score += 40;
+  }
+  if (['building', 'amenity', 'highway'].includes(resultClass)) {
+    score += 18;
+  } else if (resultClass === 'place') {
+    score += 8;
+  }
+
+  score += tokens.reduce((total, token) => total + (displayName.includes(token) ? 4 : 0), 0);
+  return score;
+}
+
+function pickBestForwardGeocodeResult(results: ForwardGeocodeResult[], query: string) {
+  const tokens = addressTokens(query);
+  const ranked = results
+    .map((result) => ({ result, score: scoreForwardGeocodeResult(result, tokens) }))
+    .sort((left, right) => right.score - left.score);
+
+  return ranked[0] && ranked[0].score > 0 ? ranked[0].result : null;
 }
 
 function focusProfileField(field: string) {
@@ -257,6 +362,8 @@ function StatusRow({ label, complete, subtitle, typography }: { label: string; c
 }
 
 function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, surfaceClass, isLecturer, profileComplete, isEditing, pendingRequest, onThemeChange, onDashboard, onToggleEdit, onLogout }: ProfileHeaderProps) {
+  const dashboardDisabled = !profileComplete;
+
   return (
     <div ref={refTarget} className={cx('flex flex-col gap-4 rounded-2xl p-5 sm:flex-row sm:items-end sm:justify-between', themeConfig.frame, surfaceClass, themeConfig.shadow)}>
       <div className="space-y-1">
@@ -264,8 +371,8 @@ function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, su
         <h1 className={`${typography.heading} drop-shadow-sm`}>Pusat Data Profil</h1>
         <p className={`max-w-xl ${typography.body} ${mutedTextClass} drop-shadow-sm`}>{isLecturer ? 'Pastikan data kepegawaian dan kontak Anda valid untuk keperluan pembimbingan KKN.' : 'Lengkapi data pribadi, alamat asli sesuai KTP, peta alamat KTP, dan foto formal HD untuk kelancaran proses KKN.'}</p>
       </div>
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        <div ref={themeRef} className={cx('flex rounded-xl p-1 shadow-inner', themeConfig.frame, softClass)} aria-label="Pilihan tema profil">
+      <div className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:max-w-[34rem] sm:items-end">
+        <div ref={themeRef} className={cx('flex w-full flex-wrap rounded-xl p-1 shadow-inner sm:w-auto', themeConfig.frame, softClass)} aria-label="Pilihan tema profil">
           {THEME_KEYS.map((key) => (
             <TooltipPrimitive.Root key={key}>
               <TooltipPrimitive.Trigger asChild><button type="button" onClick={() => onThemeChange(key)} aria-label={`Pilih tema ${THEMES[key].label} - ${THEMES[key].strength}`} aria-pressed={theme === key} className={cx('group relative flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-300', theme === key ? primaryClass : 'opacity-70 hover:bg-white/25 hover:opacity-100')}><span className={`h-5 w-5 rounded-full bg-gradient-to-br ${THEMES[key].preview} ring-1 ring-white/60 transition-transform group-hover:scale-125`} />{theme === key && <span className="absolute -bottom-0.5 h-1 w-4 rounded-full bg-white/80 shadow-[0_0_14px_rgba(255,255,255,0.8)]" />}</button></TooltipPrimitive.Trigger>
@@ -273,15 +380,33 @@ function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, su
             </TooltipPrimitive.Root>
           ))}
         </div>
-        {profileComplete && <button onClick={onDashboard} className={cx('rounded-lg px-4 py-2', typography.button, themeConfig.frame, softClass)}>Dashboard</button>}
-        <button onClick={onToggleEdit} disabled={!!pendingRequest && profileComplete} className={cx('rounded-lg px-4 py-2 disabled:opacity-50', typography.button, primaryClass)}>{isEditing ? 'Batal' : profileComplete ? 'Edit Profil' : 'Lengkapi Profil'}</button>
-        <button onClick={onLogout} aria-label="Keluar dari akun" title="Keluar" className="rounded-lg border border-rose-200 bg-[color:var(--profile-danger)] px-4 py-2 text-sm font-semibold text-[color:var(--profile-danger-text)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"><LogOut size={16} /></button>
+        <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+          <button
+            type="button"
+            onClick={onDashboard}
+            disabled={dashboardDisabled}
+            title={dashboardDisabled ? 'Dashboard aktif setelah biodata dan alamat KTP lengkap.' : 'Buka dashboard'}
+            className={cx('inline-flex h-11 items-center justify-center gap-2 rounded-lg px-4 py-2 text-center transition disabled:cursor-not-allowed disabled:opacity-55', typography.button, themeConfig.frame, softClass, dashboardDisabled && 'border border-dashed border-[color:var(--profile-border)]')}
+          >
+            <LayoutDashboard size={16} />
+            Dashboard
+          </button>
+          <button type="button" onClick={onToggleEdit} disabled={!!pendingRequest && profileComplete} className={cx('inline-flex h-11 items-center justify-center gap-2 rounded-lg px-4 py-2 disabled:opacity-50', typography.button, primaryClass)}><PencilLine size={16} />{isEditing ? 'Batal' : profileComplete ? 'Edit Profil' : 'Lengkapi Profil'}</button>
+          <button type="button" onClick={onLogout} aria-label="Keluar dari akun" title="Keluar" className="inline-flex h-11 items-center justify-center rounded-lg border border-rose-200 bg-[color:var(--profile-danger)] px-4 py-2 text-sm font-semibold text-[color:var(--profile-danger-text)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"><LogOut size={16} /></button>
+        </div>
+        {dashboardDisabled && <p className={cx('text-left sm:text-right', typography.meta, mutedTextClass)}>Dashboard akan aktif setelah biodata dan alamat KTP lengkap.</p>}
       </div>
     </div>
   );
 }
 
 function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, lecturer, isStudent, isLecturer, avatarLoading, typography, themeConfig, surfaceStrongClass, onAvatarChange }: ProfileSidebarProps) {
+  const avatarModerationStatus = user.avatar_moderation_status;
+  const avatarModerationReason = user.avatar_moderation_reason?.trim() || null;
+  const avatarNeedsManualReview = avatarModerationStatus === 'pending'
+    && !!avatarModerationReason
+    && /server ai tidak tersedia|menunggu verifikasi admin|manual/i.test(avatarModerationReason);
+
   return (
     <div className="space-y-5">
       <div ref={avatarRef} className={cx('flex flex-col items-center gap-4 rounded-xl p-5 text-center', themeConfig.frame, surfaceStrongClass, themeConfig.shadow)}>
@@ -293,14 +418,24 @@ function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, l
         <div className="space-y-2">
           <button type="button" onClick={() => avatarInputRef.current?.click()} className={cx('inline-flex items-center gap-2 rounded-lg px-3 py-2', typography.meta, themeConfig.frame, softClass)}><Camera size={14} /> Upload Foto Formal HD</button>
           <p className={`${typography.meta} max-w-64 text-[color:var(--profile-muted)]`}>Foto ini akan dicetak di sertifikat. Gunakan pas foto formal HD dengan <strong>latar merah polos</strong> dan <strong>jas almamater</strong>. Sistem memvalidasi otomatis via AI.</p>
-          {(user as unknown as { avatar_moderation_status?: string }).avatar_moderation_status === 'pending' && (
-            <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900">
-              ⏳ Foto menunggu verifikasi admin (server AI sedang sibuk)
+          {avatarModerationStatus === 'pending' && (
+            <div className={cx(
+              'rounded-lg border px-3 py-2 text-[11px] font-semibold',
+              avatarNeedsManualReview
+                ? 'border-amber-300 bg-amber-50 text-amber-900'
+                : 'border-sky-300 bg-sky-50 text-sky-900',
+            )}>
+              Status foto: {avatarModerationReason || 'Sedang diverifikasi otomatis oleh sistem.'}
             </div>
           )}
-          {(user as unknown as { avatar_moderation_status?: string; avatar_moderation_reason?: string }).avatar_moderation_status === 'rejected' && (
+          {avatarModerationStatus === 'approved' && user.avatar_url && (
+            <div className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-[11px] font-semibold text-emerald-900">
+              Status foto: Lolos verifikasi dan siap dipakai pada sertifikat.
+            </div>
+          )}
+          {avatarModerationStatus === 'rejected' && (
             <div className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-[11px] font-semibold text-rose-900">
-              ✗ Foto ditolak: {(user as unknown as { avatar_moderation_reason?: string }).avatar_moderation_reason || 'silakan upload ulang'}
+              Status foto: Ditolak. {avatarModerationReason || 'Silakan upload ulang.'}
             </div>
           )}
         </div>
@@ -327,8 +462,14 @@ function StudentAddressSection({ register, errors, isEditing, typography, addres
       </div>
       <TextArea label="Alamat Lengkap sesuai KTP" registration={register('address')} disabled={!isEditing} error={errors.address?.message} />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"><TextInput label="Desa/Kelurahan KTP" registration={register('address_village_name')} disabled={!isEditing} /><TextInput label="Kecamatan KTP" registration={register('address_district_name')} disabled={!isEditing} /><TextInput label="Kabupaten/Kota KTP" registration={register('address_regency_name')} disabled={!isEditing} /><TextInput label="Kode Pos KTP" registration={register('address_postal_code')} disabled={!isEditing} /></div>
-      <button type="button" onClick={onSyncMap} disabled={!isEditing || forwardGeocoding} className={cx('inline-flex rounded-lg px-4 py-2 disabled:opacity-50', typography.button, primaryClass)}>{forwardGeocoding ? 'Mencari Lokasi...' : 'Sesuaikan Peta dari Alamat KTP'}</button>
-      <div className="space-y-2"><p className={`${typography.label} text-[color:var(--profile-text)]`}>Titik Koordinat Alamat KTP</p><AddressMapPicker value={typeof addressLat === 'number' && typeof addressLng === 'number' ? { lat: addressLat, lng: addressLng } : null} disabled={!isEditing || reverseGeocoding} onChange={onMapChange} /><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>{reverseGeocoding ? 'Membaca alamat dari titik peta...' : 'Alamat KTP dan peta saling tersinkron. Jika titik kurang tepat, klik/geser pin pada peta untuk koreksi.'}</p><input type="hidden" {...register('address_lat', { valueAsNumber: true })} /><input type="hidden" {...register('address_lng', { valueAsNumber: true })} />{(errors.address_lat || errors.address_lng) && <p className="text-xs font-semibold text-rose-600">Titik koordinat alamat KTP wajib dipilih pada peta.</p>}</div>
+      <div className="flex flex-col gap-3 rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <p className={`${typography.label} text-[color:var(--profile-text)]`}>Sinkronkan peta dari alamat tertulis</p>
+          <p className={`${typography.meta} text-[color:var(--profile-muted)]`}>Masukkan alamat lengkap dan kode pos agar titik awal lebih presisi, lalu koreksi pin di peta bila perlu.</p>
+        </div>
+        <button type="button" onClick={onSyncMap} disabled={!isEditing || forwardGeocoding} className={cx('inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 sm:w-auto disabled:opacity-50', typography.button, primaryClass)}><MapPinned size={16} />{forwardGeocoding ? 'Mencari Lokasi...' : 'Sesuaikan Peta dari Alamat KTP'}</button>
+      </div>
+      <div className="space-y-2"><p className={`${typography.label} text-[color:var(--profile-text)]`}>Titik Koordinat Alamat KTP</p><AddressMapPicker value={typeof addressLat === 'number' && typeof addressLng === 'number' ? { lat: addressLat, lng: addressLng } : null} disabled={!isEditing || reverseGeocoding} onChange={onMapChange} /><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>{reverseGeocoding ? 'Membaca alamat dari titik peta...' : 'Alamat KTP dan peta saling tersinkron. Jika titik kurang tepat, klik/geser pin pada peta untuk koreksi. Gunakan mode Satelit bila perlu agar posisi rumah lebih presisi.'}</p><input type="hidden" {...register('address_lat', { valueAsNumber: true })} /><input type="hidden" {...register('address_lng', { valueAsNumber: true })} />{(errors.address_lat || errors.address_lng) && <p className="text-xs font-semibold text-rose-600">Titik koordinat alamat KTP wajib dipilih pada peta.</p>}</div>
       <label className={`flex gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] transition-colors ${typography.body}`}><input type="checkbox" {...register('address_verified')} disabled={!isEditing} className="mt-1 accent-[color:var(--profile-primary)]" /> Saya menyatakan alamat asli sesuai KTP dan titik peta di atas benar adanya. Data ini digunakan sebagai rujukan alamat resmi pada dashboard profil dan proses KKN.</label>
     </section>
   );
@@ -345,7 +486,7 @@ export default function ProfilePage(): React.JSX.Element {
   const [showTutorial, setShowTutorial] = useState(false);
   const [reverseGeocoding, setReverseGeocoding] = useState(false);
   const [forwardGeocoding, setForwardGeocoding] = useState(false);
-  const [lastMapSyncedAddress, setLastMapSyncedAddress] = useState('');
+  const lastMapSyncedQueryRef = useRef('');
   const tutorialTargets = useRef<Record<TutorialTarget, HTMLElement | null>>({ intro: null, theme: null, avatar: null, status: null, form: null });
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -367,11 +508,13 @@ export default function ProfilePage(): React.JSX.Element {
   const roles = user?.roles ?? [];
   const isStudent = !!student;
   const isLecturer = !!lecturer;
+  const addressValue = watch('address');
   const addressLat = watch('address_lat');
   const addressLng = watch('address_lng');
   const villageValue = watch('address_village_name');
   const districtValue = watch('address_district_name');
   const regencyValue = watch('address_regency_name');
+  const postalCodeValue = watch('address_postal_code');
 
   const setTutorialTargetRef = (target: TutorialTarget) => (node: HTMLElement | null) => {
     tutorialTargets.current[target] = node;
@@ -392,12 +535,24 @@ export default function ProfilePage(): React.JSX.Element {
       if (!response.ok) throw new Error('Reverse geocoding failed');
       const data = await response.json() as { display_name?: string; address?: ReverseGeocodeAddress };
       const address = data.address ?? {};
-      setValue('address', composeAddress(data.display_name, address), { shouldDirty: true });
-      setValue('address_village_name', cleanAdminName(address.village || address.suburb || address.neighbourhood || address.town), { shouldDirty: true });
-      setValue('address_district_name', cleanAdminName(address.municipality || address.county || address.state_district), { shouldDirty: true });
-      setValue('address_regency_name', cleanAdminName(address.city || address.county || address.state_district), { shouldDirty: true });
-      setValue('address_postal_code', address.postcode ?? '', { shouldDirty: true });
-      setLastMapSyncedAddress(composeAddressQuery(cleanAdminName(address.village || address.suburb || address.neighbourhood || address.town), cleanAdminName(address.municipality || address.county || address.state_district), cleanAdminName(address.city || address.county || address.state_district)));
+      const nextAddress = composeAddress(data.display_name, address);
+      const nextVillage = cleanAdminName(address.village || address.suburb || address.neighbourhood || address.town);
+      const nextDistrict = cleanAdminName(address.municipality || address.county || address.state_district);
+      const nextRegency = cleanAdminName(address.city || address.county || address.state_district);
+      const nextPostalCode = address.postcode ?? '';
+
+      setValue('address', nextAddress, { shouldDirty: true });
+      setValue('address_village_name', nextVillage, { shouldDirty: true });
+      setValue('address_district_name', nextDistrict, { shouldDirty: true });
+      setValue('address_regency_name', nextRegency, { shouldDirty: true });
+      setValue('address_postal_code', nextPostalCode, { shouldDirty: true });
+      lastMapSyncedQueryRef.current = buildAddressQueries({
+        fullAddress: nextAddress,
+        village: nextVillage,
+        district: nextDistrict,
+        regency: nextRegency,
+        postalCode: nextPostalCode,
+      })[0] ?? '';
       toast.success('Alamat KTP otomatis diisi dari titik peta');
     } catch {
       toast.warning('Titik tersimpan. Alamat otomatis gagal dibaca, silakan lengkapi manual.');
@@ -407,23 +562,49 @@ export default function ProfilePage(): React.JSX.Element {
   };
 
   const syncMapFromAddress = async () => {
-    const query = composeAddressQuery(villageValue, districtValue, regencyValue);
-    if (!query || query === lastMapSyncedAddress) return;
+    const queries = buildAddressQueries({
+      fullAddress: addressValue,
+      village: villageValue,
+      district: districtValue,
+      regency: regencyValue,
+      postalCode: postalCodeValue,
+    });
+    const primaryQuery = queries[0];
+
+    if (!primaryQuery) {
+      toast.warning('Lengkapi alamat KTP terlebih dahulu sebelum mencari titik peta.');
+      return;
+    }
+    if (primaryQuery === lastMapSyncedQueryRef.current && typeof addressLat === 'number' && typeof addressLng === 'number') {
+      return;
+    }
+
     setForwardGeocoding(true);
     try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=${encodeURIComponent(query)}`, {
-        headers: { Accept: 'application/json' },
-      });
-      if (!response.ok) throw new Error('Forward geocoding failed');
-      const results = await response.json() as Array<{ lat: string; lon: string }>;
-      const first = results[0];
-      if (!first) throw new Error('Location not found');
-      setValue('address_lat', Number(first.lat), { shouldDirty: true });
-      setValue('address_lng', Number(first.lon), { shouldDirty: true });
-      setLastMapSyncedAddress(query);
-      toast.success('Peta alamat KTP disesuaikan dari alamat');
+      let bestResult: ForwardGeocodeResult | null = null;
+      let matchedQuery = '';
+
+      for (const query of queries) {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&countrycodes=id&limit=5&q=${encodeURIComponent(query)}`, {
+          headers: { Accept: 'application/json', 'Accept-Language': 'id,en' },
+        });
+        if (!response.ok) throw new Error('Forward geocoding failed');
+        const results = await response.json() as ForwardGeocodeResult[];
+        const candidate = pickBestForwardGeocodeResult(results, query);
+        if (candidate) {
+          bestResult = candidate;
+          matchedQuery = query;
+          break;
+        }
+      }
+
+      if (!bestResult) throw new Error('Location not found');
+      setValue('address_lat', Number(bestResult.lat), { shouldDirty: true });
+      setValue('address_lng', Number(bestResult.lon), { shouldDirty: true });
+      lastMapSyncedQueryRef.current = matchedQuery;
+      toast.success('Peta alamat KTP disesuaikan dari alamat terdekat');
     } catch {
-      toast.warning('Lokasi tidak ditemukan dari alamat. Silakan pilih titik pada peta.');
+      toast.warning('Lokasi tidak ditemukan dari alamat. Lengkapi alamat lebih detail atau pilih titik pada peta.');
     } finally {
       setForwardGeocoding(false);
     }
@@ -593,12 +774,14 @@ export default function ProfilePage(): React.JSX.Element {
 
     let uploadSucceeded = false;
     let moderationStatus: 'approved' | 'pending' | null = null;
+    let moderationReason: string | null = null;
 
     try {
       // Step 1: the actual upload. Only a throw HERE means the upload failed.
       const uploadRes = await profileApi.updateAvatar(formData) as unknown as Record<string, unknown> & { data?: Record<string, unknown> };
       uploadSucceeded = true;
       moderationStatus = ((uploadRes?.data?.moderation_status ?? uploadRes?.moderation_status) as 'approved' | 'pending' | null) ?? null;
+      moderationReason = ((uploadRes?.data?.moderation_reason ?? uploadRes?.moderation_reason) as string | null | undefined)?.trim() || null;
     } catch (error: unknown) {
       // R-008 fix: only rollback the preview when the UPLOAD itself failed.
       if (user) {
@@ -636,7 +819,14 @@ export default function ProfilePage(): React.JSX.Element {
 
     if (uploadSucceeded) {
       if (moderationStatus === 'pending') {
-        toast.warning('Foto terunggah dan menunggu verifikasi admin (server AI sedang sibuk).');
+        const pendingMessage = moderationReason || 'Sedang diverifikasi otomatis oleh sistem.';
+        const manualReview = /server ai tidak tersedia|menunggu verifikasi admin|manual/i.test(pendingMessage);
+
+        if (manualReview) {
+          toast.warning(`Foto terunggah. ${pendingMessage}`);
+        } else {
+          toast.message(`Foto terunggah. ${pendingMessage}`);
+        }
       } else {
         toast.success('Foto profil diperbarui');
       }

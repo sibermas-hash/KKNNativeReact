@@ -103,65 +103,7 @@ const nextConfig: NextConfig = {
   },
 
   async headers() {
-    // R13-FE-001: Content Security Policy (enforcing mode).
-    //
-    // Allowances rationale:
-    // - 'unsafe-inline' on script-src is needed by Next.js hydration scripts
-    //   until we migrate to nonce-based CSP (app router supports nonces but
-    //   existing pages use inline bootstrap). Tracked for removal.
-    // - 'unsafe-inline' on style-src is needed by framer-motion and some
-    //   Radix primitives that inject inline styles.
-    // - connect-src allows the API URL and Sentry.
-    const sentryOrigin = (() => {
-      try {
-        return process.env.NEXT_PUBLIC_SENTRY_DSN
-          ? new URL(process.env.NEXT_PUBLIC_SENTRY_DSN).origin
-          : '';
-      } catch {
-        return '';
-      }
-    })();
-    const apiUrlOrigin = (() => {
-      try {
-        return process.env.NEXT_PUBLIC_API_URL
-          ? new URL(process.env.NEXT_PUBLIC_API_URL).origin
-          : '';
-      } catch {
-        return '';
-      }
-    })();
-    const mapTilesOrigin = 'https://*.basemaps.cartocdn.com';
-    const arcGisOrigin = 'https://server.arcgisonline.com';
-    const nominatimOrigin = 'https://nominatim.openstreetmap.org';
-    const connectSrc = ['\'self\'', apiUrlOrigin, sentryOrigin, mapTilesOrigin, arcGisOrigin, nominatimOrigin].filter(Boolean).join(' ');
-    const isDev = process.env.NODE_ENV !== 'production';
-    const csp = [
-      "default-src 'self'",
-      `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "img-src 'self' data: blob: https://*.basemaps.cartocdn.com https://server.arcgisonline.com",
-      "font-src 'self' data: https://fonts.gstatic.com",
-      "worker-src 'self' blob:",
-      `connect-src ${connectSrc}`,
-      "frame-ancestors 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-      "object-src 'none'",
-      "upgrade-insecure-requests",
-    ].join('; ');
-
     return [
-      {
-        source: '/:path*',
-        headers: [
-          { key: 'X-Frame-Options', value: 'DENY' },
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-          { key: 'X-DNS-Prefetch-Control', value: 'on' },
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(self)' },
-          { key: 'Content-Security-Policy', value: csp },
-        ],
-      },
       {
         source: '/',
         headers: [{ key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, max-age=0' }],

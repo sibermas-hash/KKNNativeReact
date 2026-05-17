@@ -10,6 +10,16 @@ CURRENT_LINK="${APP_DIR}/current"
 WEB_USER="www"
 PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://${WEB_DOMAIN:-sibermas.uinsaizu.ac.id}}"
 
+restart_native_web() {
+  if [ -x /usr/local/etc/rc.d/sibermas_web ]; then
+    service sibermas_web restart
+    return
+  fi
+
+  supervisorctl restart sibermas-web 2>/dev/null || \
+    supervisorctl restart web:* 2>/dev/null
+}
+
 if [ -L "${CURRENT_LINK}" ]; then
   RELEASE_DIR=$(readlink "${CURRENT_LINK}")
 elif [ -f "${APP_DIR}/package.json" ]; then
@@ -55,10 +65,7 @@ if [ -n "${JAIL_WEB_IP:-}" ]; then
   jexec web supervisorctl restart sibermas-web 2>/dev/null || \
     echo "  ⚠️  restart sibermas-web gagal"
 else
-  service sibermas_web restart 2>/dev/null || \
-    supervisorctl restart sibermas-web 2>/dev/null || \
-    supervisorctl restart web:* 2>/dev/null || \
-    echo "  ⚠️  restart web service gagal — restart manual"
+  restart_native_web
 fi
 
 echo ""

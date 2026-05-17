@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import type { ApiResponse, PaginationMeta } from '@sibermas/shared-types';
+import { rawApi } from '@/lib/api';
 import { MessageCircle, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import { PageHeader } from '@/components/ui/shared';
 
@@ -20,6 +21,12 @@ type Conversation = {
 };
 
 type StatusFilter = 'all' | 'open' | 'replied' | 'closed';
+type ChatSummary = { open: number; replied: number; closed: number };
+type ChatListPayload = {
+  data: Conversation[];
+  meta?: Partial<PaginationMeta>;
+  summary?: ChatSummary;
+};
 
 const STATUS_STYLES: Record<string, { bg: string; text: string; label: string; icon: typeof Clock | typeof CheckCircle2 | typeof XCircle }> = {
   open: { bg: 'bg-amber-100', text: 'text-amber-900', label: 'Menunggu', icon: Clock },
@@ -35,22 +42,23 @@ function formatTime(iso: string | null): string {
 export default function AdminChatListPage() {
   const [filter, setFilter] = useState<StatusFilter>('open');
   const [priorityFilter, setPriorityFilter] = useState<string>('');
+  const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'chat', 'conversations', filter, priorityFilter],
+  const { data, isLoading } = useQuery<ChatListPayload>({
+    queryKey: ['admin', 'chat', 'conversations', filter, priorityFilter, page],
     queryFn: async () => {
-      const params: Record<string, string> = {};
+      const params: Record<string, string | number> = { page };
       if (filter !== 'all') params.status = filter;
       if (priorityFilter) params.priority = priorityFilter;
-      const res = await api.get('/admin/chat', { params });
-      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
+      const response = await rawApi.get<ApiResponse<ChatListPayload>>('/admin/chat', { params });
+      return response.data.data ?? { data: [] };
     },
     refetchInterval: 30_000,
   });
 
-  const typed = data as { data?: Conversation[]; summary?: { open: number; replied: number; closed: number } } | undefined;
-  const conversations: Conversation[] = typed?.data ?? [];
-  const summary = typed?.summary ?? { open: 0, replied: 0, closed: 0 };
+  const conversations = data?.data ?? [];
+  const summary = data?.summary ?? { open: 0, replied: 0, closed: 0 };
+  const meta = data?.meta;
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
@@ -78,14 +86,14 @@ export default function AdminChatListPage() {
       {/* Filter tabs */}
       <div className="flex flex-wrap items-center gap-2 border-b border-slate-200">
         {(['open', 'replied', 'closed', 'all'] as StatusFilter[]).map((s) => (
-          <button key={s} onClick={() => setFilter(s)}
+          <button key={s} onClick={() => { setFilter(s); setPage(1); }}
             className={`px-4 py-2 text-sm font-semibold transition-colors border-b-2 -mb-[2px] ${
               filter === s ? 'border-teal-600 text-teal-700' : 'border-transparent text-slate-500 hover:text-slate-700'
             }`}>
             {s === 'open' ? 'Menunggu' : s === 'replied' ? 'Dibalas' : s === 'closed' ? 'Ditutup' : 'Semua'}
           </button>
         ))}
-        <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)}
+        <select value={priorityFilter} onChange={(e) => { setPriorityFilter(e.target.value); setPage(1); }}
           className="ml-auto h-8 rounded-lg border border-slate-200 px-2 text-xs">
           <option value="">Semua prioritas</option>
           <option value="normal">Normal</option>
@@ -135,6 +143,32 @@ export default function AdminChatListPage() {
             );
           })}
         </ul>
+      )}
+
+      {(meta?.last_page ?? 1) > 1 && (
+        <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-xs text-slate-500">
+            Halaman {meta?.current_page ?? page} dari {meta?.last_page ?? 1} • {meta?.total ?? conversations.length} percakapan
+          </p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+              disabled={(meta?.current_page ?? page) <= 1}
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+            >
+              ← Sebelumnya
+            </button>
+            <button
+              type="button"
+              onClick={() => setPage((current) => current + 1)}
+              disabled={(meta?.current_page ?? page) >= (meta?.last_page ?? 1)}
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+            >
+              Berikutnya →
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );

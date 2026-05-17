@@ -23,8 +23,8 @@ class SelfHealerService
                 instructions: 'Anda adalah sistem Self-Healing. Berikan HANYA kode PHP lengkap yang sudah diperbaiki, tanpa penjelasan, tanpa markdown.',
             )->prompt(
                 prompt: "Error: {$e->getMessage()} di baris {$e->getLine()}. File: ".File::get($filePath),
-                provider: 'alibaba',
-                model: 'qwen-plus'
+                provider: (string) config('ai.routing.self_healer.provider', config('ai.default', 'rizquna')),
+                model: (string) config('ai.routing.self_healer.model', config('ai.routing.code.model', 'cx/gpt-5.3-codex'))
             );
 
             $newCode = trim($response->text);

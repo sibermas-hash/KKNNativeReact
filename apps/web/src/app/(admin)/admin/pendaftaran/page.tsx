@@ -8,6 +8,7 @@ import { ClipboardList, CheckCircle2, XCircle, X } from 'lucide-react';
 import { StatusBadge, PageHeader, EmptyState } from '@/components/ui/shared';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { toast } from 'sonner';
+import { useSearchParams } from 'next/navigation';
 
 interface Registration {
   id: number;
@@ -22,6 +23,7 @@ interface Registration {
 
 export default function AdminRegistrationsPage(): React.JSX.Element {
   const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
   const [status, setStatus] = useState('');
   const [search, setSearch] = useState('');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
@@ -29,12 +31,18 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
   const [bulkApproveConfirm, setBulkApproveConfirm] = useState(false);
   const [rejectTarget, setRejectTarget] = useState<Registration | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const periodeId = searchParams.get('periode_id') ?? '';
+  const periodeName = (searchParams.get('periode_name') ?? '').trim();
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['admin', 'registrations', { status, search }],
+    queryKey: ['admin', 'registrations', { status, search, periodeId }],
     queryFn: async () => {
-      const res = await adminApi.registrations.index({ status, search });
-      return (res as unknown as { data?: Registration[] }).data ?? [];
+      const res = await adminApi.registrations.index({
+        status,
+        search,
+        periode_id: periodeId || undefined,
+      });
+      return ((res as unknown as { data?: Registration[] }).data ?? res) as Registration[];
     },
   });
 
@@ -85,6 +93,19 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       <PageHeader title="Pendaftaran KKN" subtitle="Kelola pendaftaran mahasiswa" />
+
+      {periodeId && (
+        <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-sm text-cyan-800">
+          <span className="font-semibold">
+            Filter periode aktif:
+            {' '}
+            {periodeName || `#${periodeId}`}
+          </span>
+          <Link href="/admin/pendaftaran" className="rounded-lg bg-white px-3 py-1 text-xs font-bold text-cyan-700 ring-1 ring-cyan-200 hover:bg-cyan-100">
+            Tampilkan semua
+          </Link>
+        </div>
+      )}
 
       <div className="flex flex-wrap items-center gap-3">
         <label htmlFor="search-pendaftaran" className="sr-only">Cari pendaftaran</label>

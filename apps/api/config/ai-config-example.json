@@ -1,7 +1,7 @@
 {
   "ai_config": {
-    "default_provider": "gemini",
-    "fallback_provider": "openai",
+    "default_provider": "rizquna",
+    "fallback_provider": "rizquna",
     "enable_ai": true,
     "cache_ttl_hours": 1,
     "timeout_seconds": 15,
@@ -85,12 +85,12 @@
       "primary": false
     },
 
-    "alibaba": {
-      "name": "alibaba",
-      "api_key": "...",
-      "enabled": false,
-      "primary": false,
-      "api_url": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+    "rizquna": {
+      "name": "rizquna",
+      "api_key": "sk-rizquna-...",
+      "enabled": true,
+      "primary": true,
+      "api_url": "https://router.rizquna.id/v1"
     }
   },
 
@@ -426,53 +426,53 @@
       }
     },
 
-    "alibaba": {
+    "rizquna": {
       "text": {
         "type": "text",
-        "default": "qwen-plus",
-        "cheapest": "qwen-turbo",
-        "smartest": "qwen-max",
+        "default": "ag/gemini-3-flash",
+        "cheapest": "ag/gemini-3-flash",
+        "smartest": "ag/gemini-3.1-pro-low",
         "models": [
           {
-            "id": "qwen-max",
-            "name": "Qwen Max",
+            "id": "ag/gemini-3.1-pro-low",
+            "name": "Gemini 3.1 Pro Low",
             "tier": "pro",
-            "latency_ms": 1200,
-            "accuracy_score": 95,
-            "cost_per_1m_tokens": 0.2,
-            "context_window": 32000,
+            "latency_ms": 1800,
+            "accuracy_score": 97,
+            "cost_per_1m_tokens": 0.18,
+            "context_window": 1048576,
             "supported": true,
             "use_cases": [
-              "Most capable",
-              "Complex reasoning"
+              "High-accuracy reasoning",
+              "Structured analysis"
             ]
           },
           {
-            "id": "qwen-plus",
-            "name": "Qwen Plus",
+            "id": "ag/gemini-3-flash",
+            "name": "Gemini 3 Flash",
             "tier": "standard",
-            "latency_ms": 800,
-            "accuracy_score": 92,
+            "latency_ms": 700,
+            "accuracy_score": 95,
             "cost_per_1m_tokens": 0.08,
-            "context_window": 32000,
+            "context_window": 1048576,
             "supported": true,
             "use_cases": [
-              "Balanced",
-              "Recommended"
+              "General purpose",
+              "Recommended default"
             ]
           },
           {
-            "id": "qwen-turbo",
-            "name": "Qwen Turbo",
+            "id": "cx/gpt-5.3-codex",
+            "name": "GPT-5.3 Codex",
             "tier": "lite",
-            "latency_ms": 300,
-            "accuracy_score": 88,
-            "cost_per_1m_tokens": 0.02,
-            "context_window": 6000,
+            "latency_ms": 900,
+            "accuracy_score": 96,
+            "cost_per_1m_tokens": 0.12,
+            "context_window": 256000,
             "supported": true,
             "use_cases": [
-              "Speed priority",
-              "Budget"
+              "Code review",
+              "Automated fixes"
             ]
           }
         ]

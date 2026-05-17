@@ -5,7 +5,7 @@
             "key": "baseUrl",
             "type": "string",
             "name": "string",
-            "value": "http:\/\/localhost:8000"
+            "value": "https:\/\/sibermas.uinsaizu.ac.id"
         }
     ],
     "info": {
@@ -210,7 +210,7 @@
                                 }
                             ],
                             "code": 200,
-                            "body": "{\"success\":true,\"message\":\"OK\",\"data\":[],\"meta\":{\"current_page\":1,\"last_page\":1,\"per_page\":12,\"total\":0,\"from\":null,\"to\":null},\"links\":{\"first\":\"http:\\\/\\\/localhost:8000\\\/api\\\/v1\\\/public\\\/announcements?page=1\",\"last\":\"http:\\\/\\\/localhost:8000\\\/api\\\/v1\\\/public\\\/announcements?page=1\",\"prev\":null,\"next\":null}}",
+                            "body": "{\"success\":true,\"message\":\"OK\",\"data\":[],\"meta\":{\"current_page\":1,\"last_page\":1,\"per_page\":12,\"total\":0,\"from\":null,\"to\":null},\"links\":{\"first\":\"https:\\\/\\\/sibermas.uinsaizu.ac.id\\\/api\\\/v1\\\/public\\\/announcements?page=1\",\"last\":\"https:\\\/\\\/sibermas.uinsaizu.ac.id\\\/api\\\/v1\\\/public\\\/announcements?page=1\",\"prev\":null,\"next\":null}}",
                             "name": ""
                         }
                     ]
@@ -324,7 +324,7 @@
                                 }
                             ],
                             "code": 200,
-                            "body": "{\"success\":true,\"message\":\"OK\",\"data\":[],\"meta\":{\"current_page\":1,\"last_page\":1,\"per_page\":100,\"total\":0,\"from\":null,\"to\":null},\"links\":{\"first\":\"http:\\\/\\\/localhost:8000\\\/api\\\/v1\\\/public\\\/locations?page=1\",\"last\":\"http:\\\/\\\/localhost:8000\\\/api\\\/v1\\\/public\\\/locations?page=1\",\"prev\":null,\"next\":null}}",
+                            "body": "{\"success\":true,\"message\":\"OK\",\"data\":[],\"meta\":{\"current_page\":1,\"last_page\":1,\"per_page\":100,\"total\":0,\"from\":null,\"to\":null},\"links\":{\"first\":\"https:\\\/\\\/sibermas.uinsaizu.ac.id\\\/api\\\/v1\\\/public\\\/locations?page=1\",\"last\":\"https:\\\/\\\/sibermas.uinsaizu.ac.id\\\/api\\\/v1\\\/public\\\/locations?page=1\",\"prev\":null,\"next\":null}}",
                             "name": ""
                         }
                     ]

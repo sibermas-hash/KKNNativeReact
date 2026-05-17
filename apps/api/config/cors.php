@@ -1,5 +1,23 @@
 <?php
 
+$frontendUrl = trim((string) env('APP_FRONTEND_URL', env('FRONTEND_URL', '')));
+$appUrl = trim((string) env('APP_URL', ''));
+$productionOrigin = $frontendUrl !== '' ? rtrim($frontendUrl, '/') : '';
+
+if ($productionOrigin === '' && $appUrl !== '') {
+    $scheme = parse_url($appUrl, PHP_URL_SCHEME);
+    $host = parse_url($appUrl, PHP_URL_HOST);
+    $port = parse_url($appUrl, PHP_URL_PORT);
+
+    if (is_string($scheme) && $scheme !== '' && is_string($host) && $host !== '') {
+        $productionOrigin = sprintf('%s://%s%s', $scheme, $host, is_int($port) ? ':'.$port : '');
+    }
+}
+
+$defaultAllowedOrigins = env('APP_ENV') === 'production'
+    ? ($productionOrigin !== '' ? $productionOrigin : 'https://sibermas.uinsaizu.ac.id')
+    : 'http://localhost:3000,http://localhost:8000,capacitor://localhost,http://localhost';
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -18,7 +36,10 @@ return [
 
     'allowed_methods' => ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
 
-    'allowed_origins' => explode(',', env('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:8000')),
+    'allowed_origins' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('CORS_ALLOWED_ORIGINS', $defaultAllowedOrigins))
+    ))),
 
     'allowed_origins_patterns' => [],
 

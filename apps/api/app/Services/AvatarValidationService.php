@@ -10,19 +10,17 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Memvalidasi foto profil menggunakan AI Vision (Graceful Degradation 4 Lapis).
+ * Memvalidasi foto profil menggunakan AI Vision Rizquna (Graceful Degradation 4 Lapis).
  *
- * Failover strategy — 3 Google AI Studio free-tier keys:
- *   1. Primary   (AI_PRIMARY_KEY)
- *   2. Fallback  (AI_FALLBACK_KEY)
- *   3. Tertiary  (AI_TERTIARY_KEY)
- *
- * Masing-masing key punya quota gratis sendiri (15 RPM, 1500 RPD
- * untuk gemini-2.0-flash). 3 key dirotasi → efektif 45 RPM, 4500 RPD.
+ * Failover strategy — tetap di Rizquna Router:
+ *   1. Primary        (AI_PRIMARY_KEY / gateway)
+ *   2. Fallback       (AI_FALLBACK_KEY / gateway)
+ *   3. Tertiary       (AI_TERTIARY_KEY / gateway)
  *
  * Urutan percobaan: Primary → Fallback → Tertiary → manual review.
- * Jika ketiganya mati/habis saldo, foto tetap tersimpan dengan flag
- * `requires_manual_review=true` untuk Layer 4 (Human-in-the-Loop).
+ * Jika seluruh tier gagal / quota habis,
+ * foto tetap tersimpan dengan flag `requires_manual_review=true` untuk
+ * Layer 4 (Human-in-the-Loop).
  */
 class AvatarValidationService
 {
@@ -78,24 +76,31 @@ class AvatarValidationService
      */
     private function loadTiers(): array
     {
+        $rizqunaUrl = config('ai.providers.rizquna.url')
+            ?: SystemSetting::get('rizquna_url', 'https://router.rizquna.id/v1');
+        $rizqunaKey = config('ai.providers.rizquna.key')
+            ?: SystemSetting::get('rizquna_api_key');
+        $rizqunaVisionModel = config('ai.providers.rizquna.models.vision.default')
+            ?: config('ai.routing.vision.model', 'ag/gemini-3-flash');
+
         return [
             [
                 'label' => 'primary',
-                'url' => config('ai.failover.primary.url') ?: SystemSetting::get('ai_primary_url', 'https://generativelanguage.googleapis.com/v1beta/openai'),
-                'key' => config('ai.failover.primary.key') ?: SystemSetting::get('ai_primary_key'),
-                'model' => config('ai.failover.primary.model') ?: SystemSetting::get('ai_primary_model', 'gemini-2.0-flash'),
+                'url' => config('ai.failover.primary.url') ?: SystemSetting::get('ai_primary_url', $rizqunaUrl),
+                'key' => config('ai.failover.primary.key') ?: SystemSetting::get('ai_primary_key', $rizqunaKey),
+                'model' => config('ai.failover.primary.model') ?: SystemSetting::get('ai_primary_model', $rizqunaVisionModel),
             ],
             [
                 'label' => 'fallback',
-                'url' => config('ai.failover.fallback.url') ?: SystemSetting::get('ai_fallback_url', 'https://generativelanguage.googleapis.com/v1beta/openai'),
+                'url' => config('ai.failover.fallback.url') ?: SystemSetting::get('ai_fallback_url', $rizqunaUrl),
                 'key' => config('ai.failover.fallback.key') ?: SystemSetting::get('ai_fallback_key'),
-                'model' => config('ai.failover.fallback.model') ?: SystemSetting::get('ai_fallback_model', 'gemini-2.0-flash'),
+                'model' => config('ai.failover.fallback.model') ?: SystemSetting::get('ai_fallback_model', $rizqunaVisionModel),
             ],
             [
                 'label' => 'tertiary',
-                'url' => config('ai.failover.tertiary.url') ?: SystemSetting::get('ai_tertiary_url', 'https://generativelanguage.googleapis.com/v1beta/openai'),
+                'url' => config('ai.failover.tertiary.url') ?: SystemSetting::get('ai_tertiary_url', $rizqunaUrl),
                 'key' => config('ai.failover.tertiary.key') ?: SystemSetting::get('ai_tertiary_key'),
-                'model' => config('ai.failover.tertiary.model') ?: SystemSetting::get('ai_tertiary_model', 'gemini-2.0-flash'),
+                'model' => config('ai.failover.tertiary.model') ?: SystemSetting::get('ai_tertiary_model', $rizqunaVisionModel),
             ],
         ];
     }
@@ -111,6 +116,7 @@ class AvatarValidationService
             '{"is_valid": true/false, "reason": "Kosongkan jika true. Jika false, sebutkan secara singkat dalam bahasa Indonesia mengapa ditolak."}';
 
         return [
+            'stream' => false,
             'messages' => [
                 [
                     'role' => 'user',
@@ -126,7 +132,7 @@ class AvatarValidationService
                 ],
             ],
             'response_format' => ['type' => 'json_object'],
-            'max_tokens' => 200,
+            'max_tokens' => 900,
             'temperature' => 0.1,
         ];
     }

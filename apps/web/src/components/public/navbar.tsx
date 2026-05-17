@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { Menu, X, CircleHelp } from 'lucide-react';
 import { useScroll, useTransform, motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/stores';
+import { buildLoginHref, dashboardPathForRoles } from '@/lib/auth-routing';
 
 // Assign motion components to local constants. Workaround untuk Next.js 15 SWC
 // yang kadang gagal parse JSX member expressions seperti <motion.nav>.
@@ -16,30 +17,6 @@ const MotionDiv = motion.div;
 interface NavItem {
   label: string;
   href: string;
-}
-
-function getPublicAppOrigin(): string {
-  const explicitOrigin = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL;
-  if (explicitOrigin) {
-    return explicitOrigin.replace(/\/+$/, '');
-  }
-
-  return process.env.NODE_ENV === 'production'
-    ? 'https://sibermas.uinsaizu.ac.id'
-    : '';
-}
-
-function toPublicUrl(path: string): string {
-  const origin = getPublicAppOrigin();
-  if (!origin) {
-    return path;
-  }
-
-  try {
-    return new URL(path, `${origin}/`).toString();
-  } catch {
-    return path;
-  }
 }
 
 export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.JSX.Element {
@@ -104,20 +81,10 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
     : 'Login';
 
   const authHref = !hasMounted
-    ? toPublicUrl('/login')
+    ? '/login'
     : isAuthenticated
-      ? (() => {
-          const roles = user?.roles || [];
-          if (roles.some((role) => ['superadmin', 'admin', 'faculty_admin'].includes(role))) return '/admin';
-          if (roles.some((role) => ['dosen', 'dpl'].includes(role))) return '/dosen';
-          if (roles.includes('student')) return '/mahasiswa';
-          return '/';
-        })()
-      : toPublicUrl(
-          pathname === '/login'
-            ? '/login'
-            : `/login?redirect=${encodeURIComponent(pathname)}`
-        );
+      ? dashboardPathForRoles(user?.roles)
+      : buildLoginHref(pathname);
 
   // Same number of items on every render — only label/href change post-hydration
   const allNavItems: NavItem[] = [

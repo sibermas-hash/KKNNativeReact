@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Command } from 'cmdk';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuthStore } from '@/stores';
 import {
   LayoutDashboard, Users, ClipboardList, MapPin, FileText,
   BarChart3, Settings, BookOpen, GraduationCap, Search,
@@ -20,12 +21,14 @@ const ITEMS = [
   { label: 'Jenis KKN',         href: '/admin/jenis-kkn',          icon: GraduationCap,   group: 'Master Data' },
   { label: 'Periode',           href: '/admin/periode',            icon: LayoutDashboard, group: 'Master Data' },
   { label: 'Pengaturan Sistem', href: '/admin/pengaturan/sistem',  icon: Settings,        group: 'Sistem' },
-  { label: 'Manajemen Pengguna',href: '/admin/pengguna',           icon: Users,           group: 'Sistem' },
+  { label: 'Manajemen Pengguna',href: '/admin/pengguna',           icon: Users,           group: 'Sistem', superadminOnly: true },
 ];
 
 export function CommandPalette(): React.JSX.Element {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const roles = useAuthStore((state) => state.user?.roles ?? []);
+  const visibleItems = ITEMS.filter((item) => !item.superadminOnly || roles.includes('superadmin'));
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -43,7 +46,7 @@ export function CommandPalette(): React.JSX.Element {
     router.push(href);
   };
 
-  const groups = [...new Set(ITEMS.map(i => i.group))];
+  const groups = [...new Set(visibleItems.map(i => i.group))];
 
   return (
     <AnimatePresence>
@@ -82,7 +85,7 @@ export function CommandPalette(): React.JSX.Element {
                 {groups.map(group => (
                   <Command.Group key={group} heading={group}
                     className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-[10px] [&_[cmdk-group-heading]]:font-bold [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-widest [&_[cmdk-group-heading]]:text-slate-400">
-                    {ITEMS.filter(i => i.group === group).map(item => (
+                    {visibleItems.filter(i => i.group === group).map(item => (
                       <Command.Item
                         key={item.href}
                         value={item.label}

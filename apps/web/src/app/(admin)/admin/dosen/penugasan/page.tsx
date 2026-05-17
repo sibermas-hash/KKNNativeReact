@@ -1,21 +1,28 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { api, adminApi } from '@/lib/api';
 import { toast } from 'sonner';
 import { useState, useRef } from 'react';
 import { Upload, UserCheck } from 'lucide-react';
 import { PageHeader, StatusBadge, EmptyState } from '@/components/ui/shared';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 export default function DplAssignmentPage(): React.JSX.Element {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const searchParams = useSearchParams();
+  const periodeId = searchParams.get('periode_id') ?? '';
+  const periodeName = (searchParams.get('periode_name') ?? '').trim();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'dosen', 'penugasan'],
+    queryKey: ['admin', 'dosen', 'penugasan', { periodeId }],
     queryFn: async () => {
-      const res = await api.get('/admin/dosen/penugasan');
+      const res = await adminApi.dpl.assignments({
+        periode_id: periodeId || undefined,
+      });
       return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
   });
@@ -27,9 +34,13 @@ export default function DplAssignmentPage(): React.JSX.Element {
       return api.post('/admin/dosen/import', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
     },
     onSuccess: (res: unknown) => {
-      const result = (res as { data: { activated: number; group_assigned: number; skipped: number } }).data;
+      const result = ((res as { data?: { activated: number; group_assigned: number; skipped: number } })?.data ?? res) as {
+        activated: number;
+        group_assigned: number;
+        skipped: number;
+      };
       toast.success(`Import selesai: ${result.activated} diaktifkan, ${result.group_assigned} ditugaskan`);
-      queryClient.invalidateQueries({ queryKey: ['admin', 'dpl-assignment'] });
+      queryClient.invalidateQueries({ queryKey: ['admin', 'dosen', 'penugasan'] });
       setIsImporting(false);
     },
     onError: () => { toast.error('Gagal import'); setIsImporting(false); },
@@ -61,6 +72,19 @@ export default function DplAssignmentPage(): React.JSX.Element {
           </>
         }
       />
+
+      {periodeId && (
+        <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-sm text-cyan-800">
+          <span className="font-semibold">
+            Filter periode aktif:
+            {' '}
+            {periodeName || `#${periodeId}`}
+          </span>
+          <Link href="/admin/dosen/penugasan" className="rounded-lg bg-white px-3 py-1 text-xs font-bold text-cyan-700 ring-1 ring-cyan-200 hover:bg-cyan-100">
+            Tampilkan semua
+          </Link>
+        </div>
+      )}
 
       <p className="text-sm text-slate-500 rounded-2xl bg-white ring-1 ring-slate-200 px-4 py-3">
         Format kolom Excel: NIP, periode, max_kelompok, kode_kelompok, kecamatan

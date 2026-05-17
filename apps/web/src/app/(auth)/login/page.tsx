@@ -14,6 +14,7 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
+import { dashboardPathForRoles, isSafePostLoginRedirect } from '@/lib/auth-routing';
 
 const ParticleBackground = dynamic(
   () => import('@/components/ui/particle-background').then((m) => ({ default: m.ParticleBackground })),
@@ -117,12 +118,8 @@ export default function LoginPage(): React.JSX.Element {
         return;
       }
 
-      const roleRedirect: Record<string, string> = {
-        dosen: '/dosen', dpl: '/dosen', student: '/mahasiswa',
-      };
-      const target = roleRedirect[user.roles?.[0] as string] || '/';
-      const invalidRedirect = !redirectTo || redirectTo.startsWith('/login') || redirectTo.startsWith('/admin') || redirectTo === '/';
-      router.replace(invalidRedirect ? target : redirectTo);
+      const target = dashboardPathForRoles(user.roles);
+      router.replace(isSafePostLoginRedirect(redirectTo) ? redirectTo : target);
     }
   }, [isAuthenticated, redirectTo, user, router]);
 
@@ -435,7 +432,7 @@ export default function LoginPage(): React.JSX.Element {
           </p>
           <p className="text-[9px] text-slate-400">
             Tidak bisa login?{' '}
-            <a href="/api/clear-session" className="underline hover:text-slate-600 transition-colors">
+            <a href="/clear-session" className="underline hover:text-slate-600 transition-colors">
               Reset sesi browser
             </a>
           </p>

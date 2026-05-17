@@ -11,6 +11,7 @@ use App\Models\KKN\JenisKkn;
 use App\Models\KKN\JenisKknDocumentRequirement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class JenisKknDocumentRequirementController extends Controller
 {
@@ -28,13 +29,21 @@ class JenisKknDocumentRequirementController extends Controller
     public function store(Request $request, JenisKkn $jenisKkn): JsonResponse
     {
         $validated = $request->validate([
-            'document_key' => ['required', 'string', 'max:120'],
+            'document_key' => [
+                'required',
+                'string',
+                'max:120',
+                Rule::unique('jenis_kkn_document_requirements', 'document_key')
+                    ->where(fn ($query) => $query->where('jenis_kkn_id', $jenisKkn->id)),
+            ],
             'document_label' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'is_required' => ['nullable', 'boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'default_template_id' => ['nullable', 'exists:document_templates,id'],
             'template_file' => ['nullable', 'file', 'mimes:doc,docx,pdf,xls,xlsx', 'max:10240'],
+        ], [
+            'document_key.unique' => 'Kunci dokumen sudah digunakan pada jenis KKN ini.',
         ]);
 
         // If file uploaded, create DocumentTemplate automatically
@@ -66,13 +75,22 @@ class JenisKknDocumentRequirementController extends Controller
         abort_if($requirement->jenis_kkn_id !== $jenisKkn->id, 404);
 
         $validated = $request->validate([
-            'document_key' => ['sometimes', 'string', 'max:120'],
+            'document_key' => [
+                'sometimes',
+                'string',
+                'max:120',
+                Rule::unique('jenis_kkn_document_requirements', 'document_key')
+                    ->where(fn ($query) => $query->where('jenis_kkn_id', $jenisKkn->id))
+                    ->ignore($requirement->id),
+            ],
             'document_label' => ['sometimes', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'is_required' => ['nullable', 'boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
             'default_template_id' => ['nullable', 'exists:document_templates,id'],
             'template_file' => ['nullable', 'file', 'mimes:doc,docx,pdf,xls,xlsx', 'max:10240'],
+        ], [
+            'document_key.unique' => 'Kunci dokumen sudah digunakan pada jenis KKN ini.',
         ]);
 
         // If file uploaded, create/replace DocumentTemplate

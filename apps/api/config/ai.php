@@ -13,12 +13,12 @@ return [
     |
     */
 
-    'default' => env('AI_PROVIDER', 'gemini'),
-    'default_for_images' => 'gemini',
-    'default_for_audio' => 'openai',
-    'default_for_transcription' => 'openai',
-    'default_for_embeddings' => 'openai',
-    'default_for_reranking' => 'cohere',
+    'default' => env('AI_PROVIDER', 'rizquna'),
+    'default_for_images' => env('AI_IMAGE_PROVIDER', env('AI_PROVIDER', 'rizquna')),
+    'default_for_audio' => env('AI_AUDIO_PROVIDER', env('AI_PROVIDER', 'rizquna')),
+    'default_for_transcription' => env('AI_TRANSCRIPTION_PROVIDER', env('AI_PROVIDER', 'rizquna')),
+    'default_for_embeddings' => env('AI_EMBEDDINGS_PROVIDER', env('AI_PROVIDER', 'rizquna')),
+    'default_for_reranking' => env('AI_RERANKING_PROVIDER', env('AI_PROVIDER', 'rizquna')),
 
     /*
     |--------------------------------------------------------------------------
@@ -130,6 +130,31 @@ return [
             'key' => env('OPENROUTER_API_KEY'),
         ],
 
+        'rizquna' => [
+            'driver' => 'openai',
+            'key' => env('RIZQUNA_API_KEY', env('AI_PRIMARY_KEY')),
+            'url' => env('RIZQUNA_URL', env('AI_PRIMARY_URL', 'https://router.rizquna.id/v1')),
+            'type' => 'chat',
+            'models' => [
+                'text' => [
+                    'default' => env('RIZQUNA_MODEL', env('AI_PRIMARY_MODEL', 'ag/gemini-3-flash')),
+                    'cheapest' => env('RIZQUNA_FAST_MODEL', 'ag/gemini-3-flash'),
+                    'smartest' => env('RIZQUNA_SMARTEST_MODEL', 'ag/gemini-3.1-pro-low'),
+                ],
+                'vision' => [
+                    'default' => env('RIZQUNA_VISION_MODEL', env('AI_VISION_MODEL', env('RIZQUNA_MODEL', env('AI_PRIMARY_MODEL', 'ag/gemini-3-flash')))),
+                    'smartest' => env('RIZQUNA_VISION_SMARTEST_MODEL', 'ag/gemini-3.1-pro-low'),
+                ],
+                'code' => [
+                    'default' => env('RIZQUNA_CODE_MODEL', env('AI_CODE_MODEL', 'cx/gpt-5.3-codex')),
+                    'smartest' => env('RIZQUNA_CODE_SMARTEST_MODEL', 'cx/gpt-5.1-codex-max'),
+                ],
+                'embeddings' => [
+                    'default' => env('RIZQUNA_EMBEDDINGS_MODEL', 'text-embedding-3-small'),
+                ],
+            ],
+        ],
+
         'voyageai' => [
             'driver' => 'voyageai',
             'key' => env('VOYAGEAI_API_KEY'),
@@ -140,20 +165,6 @@ return [
             'key' => env('XAI_API_KEY'),
             'url' => env('XAI_URL', 'https://api.x.ai/v1'),
         ],
-
-        'alibaba' => [
-            'driver' => 'openai',
-            'key' => env('ALIBABA_API_KEY'),
-            'url' => env('ALIBABA_URL', 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1'),
-            'type' => 'chat',
-            'models' => [
-                'text' => [
-                    'default' => 'qwen-plus',
-                    'cheapest' => 'qwen-turbo',
-                    'smartest' => 'qwen-max',
-                ],
-            ],
-        ],
     ],
 
     /*
@@ -161,49 +172,35 @@ return [
     | Failover AI Providers (Avatar Validation + AI Playground)
     |--------------------------------------------------------------------------
     |
-    | 3-tier failover via SumoPod (https://ai.sumopod.com/v1) yang OpenAI-compatible.
+    | Primary gateway menggunakan Rizquna Router
+    | (https://router.rizquna.id/v1) yang OpenAI-compatible.
+    |
+    | Semua tier default ke Rizquna Router. Fallback dan tertiary opsional:
+    | isi key terpisah bila ingin retry dengan token/model Rizquna lain.
     |
     | Behavior tanpa env:
-    |   - Tier tanpa API key di-skip otomatis (AvatarValidationService).
-    |   - Jika SEMUA tier kosong, avatar diterima tanpa AI check (manual review).
-    |   - Tidak ada error/crash — fitur AI gracefully disabled.
-    |
-    | Model picks per 2026-05-11:
-    |   Primary:  gemini/gemini-2.5-pro    → 1M ctx, 64K out, smartest vision
-    |   Fallback: gemini/gemini-2.5-flash  → 1M ctx, faster, masih kuat vision
-    |   Tertiary: gpt-4o                    → 128K ctx, classic OpenAI vision
-    |              (cross-vendor — berbeda family dari primary+fallback)
+    |   - Tier tanpa API key di-skip otomatis.
+    |   - Jika SEMUA tier kosong, fitur AI masuk graceful fallback/manual review.
+    |   - Tidak ada hard dependency ke provider lain.
     |
     | Urutan: Primary → Fallback → Tertiary → manual review (Layer 4).
     |
     */
     'failover' => [
         'primary' => [
-            'url' => env('AI_PRIMARY_URL', 'https://ai.sumopod.com/v1'),
-            'key' => env('AI_PRIMARY_KEY'),
-            'model' => env('AI_PRIMARY_MODEL', 'gemini/gemini-2.5-pro'),
+            'url' => env('AI_PRIMARY_URL', 'https://router.rizquna.id/v1'),
+            'key' => env('AI_PRIMARY_KEY', env('RIZQUNA_API_KEY')),
+            'model' => env('AI_PRIMARY_MODEL', env('RIZQUNA_MODEL', 'ag/gemini-3-flash')),
         ],
         'fallback' => [
-            'url' => env('AI_FALLBACK_URL', 'https://ai.sumopod.com/v1'),
+            'url' => env('AI_FALLBACK_URL', 'https://router.rizquna.id/v1'),
             'key' => env('AI_FALLBACK_KEY'),
-            'model' => env('AI_FALLBACK_MODEL', 'gemini/gemini-2.5-flash'),
+            'model' => env('AI_FALLBACK_MODEL', 'ag/gemini-3-flash'),
         ],
         'tertiary' => [
-            'url' => env('AI_TERTIARY_URL', 'https://ai.sumopod.com/v1'),
+            'url' => env('AI_TERTIARY_URL', 'https://router.rizquna.id/v1'),
             'key' => env('AI_TERTIARY_KEY'),
-            'model' => env('AI_TERTIARY_MODEL', 'gpt-4o'),
-        ],
-        // Direct provider fallback — bypass SumoPod jika token habis/gateway down.
-        // Langsung ke API resmi masing-masing provider.
-        'direct_gemini' => [
-            'url' => env('GEMINI_DIRECT_URL', 'https://generativelanguage.googleapis.com/v1beta/openai'),
-            'key' => env('GEMINI_API_KEY'),
-            'model' => env('GEMINI_DIRECT_MODEL', 'gemini-2.0-flash'),
-        ],
-        'direct_openai' => [
-            'url' => env('OPENAI_DIRECT_URL', 'https://api.openai.com/v1'),
-            'key' => env('OPENAI_API_KEY'),
-            'model' => env('OPENAI_DIRECT_MODEL', 'gpt-4o-mini'),
+            'model' => env('AI_TERTIARY_MODEL', 'ag/gemini-3-flash'),
         ],
     ],
 
@@ -220,9 +217,17 @@ return [
     |
     */
     'routing' => [
+        'assistant' => [
+            'provider' => env('AI_ASSISTANT_PROVIDER', env('AI_PROVIDER', 'rizquna')),
+            'model' => env('AI_ASSISTANT_MODEL', env('RIZQUNA_MODEL', env('AI_PRIMARY_MODEL', 'ag/gemini-3-flash'))),
+            'max_tokens' => 800,
+            'temperature' => 0.3,
+            'timeout' => 30,
+        ],
+
         // Real-time error alerting — prioritas: speed + cost
         'alerting' => [
-            'model' => env('AI_ALERTING_MODEL', 'gemini/gemini-2.5-flash'),
+            'model' => env('AI_ALERTING_MODEL', 'ag/gemini-3-flash'),
             'max_tokens' => 200,
             'temperature' => 0.1,
             'timeout' => 10,
@@ -230,15 +235,15 @@ return [
 
         // Logbook analysis — prioritas: accuracy + structured output
         'analysis' => [
-            'model' => env('AI_ANALYSIS_MODEL', 'gemini/gemini-2.5-pro'),
-            'max_tokens' => 800,
+            'model' => env('AI_ANALYSIS_MODEL', 'ag/gemini-3-flash'),
+            'max_tokens' => 1400,
             'temperature' => 0.2,
             'timeout' => 45,
         ],
 
         // Daily digest / weekly report — prioritas: reasoning + summarization
         'digest' => [
-            'model' => env('AI_DIGEST_MODEL', 'gemini/gemini-2.5-pro'),
+            'model' => env('AI_DIGEST_MODEL', 'ag/gemini-3-flash'),
             'max_tokens' => 400,
             'temperature' => 0.3,
             'timeout' => 30,
@@ -246,7 +251,7 @@ return [
 
         // Avatar validation — prioritas: vision accuracy
         'vision' => [
-            'model' => env('AI_VISION_MODEL', 'gemini/gemini-2.5-pro'),
+            'model' => env('AI_VISION_MODEL', 'ag/gemini-3-flash'),
             'max_tokens' => 500,
             'temperature' => 0.1,
             'timeout' => 30,
@@ -254,17 +259,25 @@ return [
 
         // Code analysis (CodeGuardian) — prioritas: code understanding
         'code' => [
-            'model' => env('AI_CODE_MODEL', 'gemini/gemini-2.5-pro'),
+            'provider' => env('AI_CODE_PROVIDER', env('AI_PROVIDER', 'rizquna')),
+            'model' => env('AI_CODE_MODEL', 'cx/gpt-5.3-codex'),
             'max_tokens' => 1000,
             'temperature' => 0.1,
             'timeout' => 60,
         ],
 
-        // Activity logbook reviewer — default alibaba/qwen-plus (cost-effective)
-        // Override via env when switching to Gemini or OpenAI
+        'self_healer' => [
+            'provider' => env('AI_SELF_HEALER_PROVIDER', env('AI_PROVIDER', 'rizquna')),
+            'model' => env('AI_SELF_HEALER_MODEL', env('AI_CODE_MODEL', 'cx/gpt-5.3-codex')),
+            'max_tokens' => 1800,
+            'temperature' => 0.1,
+            'timeout' => 60,
+        ],
+
+        // Activity logbook reviewer — Rizquna-first.
         'activity_reviewer' => [
-            'provider' => env('AI_ACTIVITY_REVIEWER_PROVIDER', 'alibaba'),
-            'model' => env('AI_ACTIVITY_REVIEWER_MODEL', 'qwen-plus'),
+            'provider' => env('AI_ACTIVITY_REVIEWER_PROVIDER', env('AI_PROVIDER', 'rizquna')),
+            'model' => env('AI_ACTIVITY_REVIEWER_MODEL', env('AI_ANALYSIS_MODEL', 'ag/gemini-3-flash')),
         ],
     ],
 

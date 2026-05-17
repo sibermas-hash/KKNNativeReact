@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { User, Period } from '@sibermas/shared-types';
-import { api, authApi, periodContextApi } from '@/lib/api';
+import { api, apiUrl, periodContextApi } from '@/lib/api';
 
 export function setAuthToken(token: string | null) {
   if (token) {
@@ -15,8 +15,8 @@ export function setAuthToken(token: string | null) {
 export function resetAuthState() {
   setAuthToken(null);
   _fetchUserPromise = null;
-  useAuthStore.setState({ user: null, isAuthenticated: false, isLoading: false, hasFetched: true });
-  usePeriodStore.setState({ activePeriod: null, availablePeriods: [], currentPhase: 'upcoming', isLoading: false, hasFetched: true });
+  useAuthStore.setState({ user: null, isAuthenticated: false, isLoading: false, hasFetched: false });
+  usePeriodStore.setState({ activePeriod: null, availablePeriods: [], currentPhase: 'upcoming', isLoading: false, hasFetched: false });
 }
 
 function clearLegacyRoleCookie() {
@@ -44,7 +44,53 @@ export function initAuthToken() {
 
 // Module-level in-flight promise to deduplicate concurrent fetchUser calls (FE-H1)
 // Safe: this module is only evaluated client-side (stores are not used in SSR paths)
-let _fetchUserPromise: Promise<void> | null = null;
+let _fetchUserPromise: Promise<AuthFetchOutcome> | null = null;
+
+type AuthFetchOutcome = 'authenticated' | 'anonymous' | 'error';
+
+type CurrentUserProbeResult =
+  | { kind: 'authenticated'; user: User }
+  | { kind: 'anonymous' }
+  | { kind: 'error' };
+
+async function fetchCurrentUserSilently(): Promise<CurrentUserProbeResult> {
+  try {
+    const response = await fetch(apiUrl('/auth/user'), {
+      credentials: 'include',
+      cache: 'no-store',
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+
+    if (response.status === 401) {
+      return { kind: 'anonymous' };
+    }
+
+    if (!response.ok) {
+      return { kind: 'error' };
+    }
+
+    const contentType = response.headers.get('content-type') ?? '';
+    if (!contentType.includes('application/json')) {
+      return { kind: 'error' };
+    }
+
+    const payload = await response.json() as { data?: unknown } | User | null;
+    const maybeUser =
+      payload && typeof payload === 'object' && 'data' in payload
+        ? payload.data
+        : payload;
+
+    if (maybeUser && typeof maybeUser === 'object' && 'id' in maybeUser) {
+      return { kind: 'authenticated', user: maybeUser as User };
+    }
+
+    return { kind: 'error' };
+  } catch {
+    return { kind: 'error' };
+  }
+}
 
 interface AuthState {
   user: User | null;
@@ -53,7 +99,7 @@ interface AuthState {
   hasFetched: boolean;
   setUser: (user: User | null) => void;
   clearUser: () => void;
-  fetchUser: (force?: boolean) => Promise<void>;
+  fetchUser: (force?: boolean) => Promise<AuthFetchOutcome>;
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -73,13 +119,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   fetchUser: (force = false) => {
-    if (get().hasFetched && !force) return Promise.resolve();
+    if (get().hasFetched && !force) {
+      return Promise.resolve(get().isAuthenticated ? 'authenticated' : 'anonymous');
+    }
     // Deduplicate concurrent calls (FE-H1)
     if (_fetchUserPromise) return _fetchUserPromise;
+    set({ isLoading: true });
     _fetchUserPromise = (async () => {
       try {
-        const user = await authApi.user() as unknown as User | null;
-        if (user && typeof user === 'object' && 'id' in user) {
+        const result = await fetchCurrentUserSilently();
+
+        if (result.kind === 'authenticated') {
+          const user = result.user;
           clearLegacyRoleCookie();
           set({ user, isAuthenticated: true, isLoading: false, hasFetched: true });
           const u = user as User & { password_changed_at?: string | null; must_change_password?: boolean; profile_complete?: boolean };
@@ -90,11 +141,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           } else if (!isSuperadmin && (!u.profile_complete || u.must_change_password)) {
             window.dispatchEvent(new Event('auth:profile_incomplete'));
           }
+          return 'authenticated' as const;
+        }
+
+        if (result.kind === 'anonymous') {
+          set({ user: null, isAuthenticated: false, isLoading: false, hasFetched: true });
+          return 'anonymous' as const;
         } else {
           set({ user: null, isAuthenticated: false, isLoading: false, hasFetched: true });
+          return 'error' as const;
         }
       } catch {
         set({ user: null, isAuthenticated: false, isLoading: false, hasFetched: true });
+        return 'error' as const;
       } finally {
         _fetchUserPromise = null;
       }

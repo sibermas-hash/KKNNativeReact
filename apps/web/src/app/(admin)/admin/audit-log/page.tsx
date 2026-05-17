@@ -1,7 +1,8 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { adminApi } from '@/lib/api';
+import type { ApiResponse, PaginationMeta } from '@sibermas/shared-types';
+import { rawApi } from '@/lib/api';
 import Link from 'next/link';
 import { useState } from 'react';
 import { PageHeader } from '@/components/ui/shared';
@@ -21,6 +22,11 @@ interface AuditLogRow {
   user?: { id?: number; name?: string } | null;
 }
 
+type PaginatedAuditLogResponse = {
+  data: AuditLogRow[];
+  meta?: Partial<PaginationMeta>;
+};
+
 const SEVERITY_META: Record<Exclude<Severity, ''>, { label: string; icon: typeof Shield; cls: string }> = {
   low:    { label: 'Low',    icon: Shield,       cls: 'bg-slate-100 text-slate-600' },
   medium: { label: 'Medium', icon: ShieldCheck,  cls: 'bg-amber-100 text-amber-700' },
@@ -37,7 +43,7 @@ export default function AuditLogPage(): React.JSX.Element {
 
   const filtersActive = severity || modelType || action || dateFrom || dateTo;
 
-  const { data, isLoading, isFetching } = useQuery({
+  const { data, isLoading, isFetching } = useQuery<PaginatedAuditLogResponse>({
     queryKey: ['admin', 'audit-log', { severity, modelType, action, dateFrom, dateTo, page }],
     queryFn: async () => {
       const params: Record<string, string | number> = { page, per_page: 25 };
@@ -46,13 +52,16 @@ export default function AuditLogPage(): React.JSX.Element {
       if (action) params.action = action;
       if (dateFrom) params.date_from = dateFrom;
       if (dateTo) params.date_to = dateTo;
-      const res = await adminApi.auditLog.index(params);
-      return (res as { data?: unknown }).data ?? res;
+      const response = await rawApi.get<ApiResponse<AuditLogRow[]>>('/admin/audit-log', { params });
+      return {
+        data: response.data.data ?? [],
+        meta: response.data.meta,
+      };
     },
   });
 
-  const logs: AuditLogRow[] = (data as { data?: AuditLogRow[] })?.data ?? [];
-  const meta = (data as { meta?: { total?: number; last_page?: number; current_page?: number } })?.meta ?? {};
+  const logs = data?.data ?? [];
+  const meta = data?.meta ?? {};
 
   const resetFilters = () => {
     setSeverity('');

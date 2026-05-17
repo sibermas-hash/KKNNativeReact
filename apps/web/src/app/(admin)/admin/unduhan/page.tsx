@@ -47,6 +47,9 @@ export default function AdminUnduhanPage(): React.JSX.Element {
     queryKey: ['admin', 'downloads'],
     queryFn: async () => {
       const res = await adminApi.downloads.index();
+      if (Array.isArray(res)) {
+        return res as DownloadItem[];
+      }
       return isDownloadsIndex(res) ? res.data ?? [] : [];
     },
   });

@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import type { ApiResponse, PaginationMeta } from '@sibermas/shared-types';
+import { api, rawApi } from '@/lib/api';
 import { toast } from 'sonner';
 import { CheckCircle2, XCircle, Camera, AlertCircle, Clock } from 'lucide-react';
 import { PageHeader } from '@/components/ui/shared';
@@ -17,6 +18,11 @@ type PendingAvatar = {
   reason: string | null;
   reviewed_at: string | null;
   updated_at: string;
+};
+
+type PaginatedAvatarResponse = {
+  data: PendingAvatar[];
+  meta?: Partial<PaginationMeta>;
 };
 
 type FilterStatus = 'pending' | 'approved' | 'rejected' | 'all';
@@ -34,11 +40,16 @@ export default function AvatarModerationPage() {
   const [rejectingId, setRejectingId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState('');
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<PaginatedAvatarResponse>({
     queryKey: ['admin', 'avatar-moderation', filter],
     queryFn: async () => {
-      const res = await api.get('/admin/avatar-moderation', { params: { status: filter } });
-      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
+      const response = await rawApi.get<ApiResponse<PendingAvatar[]>>('/admin/avatar-moderation', {
+        params: { status: filter },
+      });
+      return {
+        data: response.data.data ?? [],
+        meta: response.data.meta,
+      };
     },
   });
 
@@ -66,8 +77,8 @@ export default function AvatarModerationPage() {
     },
   });
 
-  const avatars: PendingAvatar[] = ((data as { data?: unknown })?.data ?? []) as PendingAvatar[];
-  const meta = (data as { meta?: { current_page: number; last_page: number; total: number } })?.meta;
+  const avatars = data?.data ?? [];
+  const meta = data?.meta;
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
@@ -217,9 +228,9 @@ export default function AvatarModerationPage() {
         </div>
       )}
 
-      {meta && meta.total > 0 && (
+      {(meta?.total ?? 0) > 0 && (
         <p className="text-center text-xs text-slate-500">
-          Menampilkan {avatars.length} dari {meta.total} foto
+          Menampilkan {avatars.length} dari {meta?.total ?? avatars.length} foto
         </p>
       )}
     </div>

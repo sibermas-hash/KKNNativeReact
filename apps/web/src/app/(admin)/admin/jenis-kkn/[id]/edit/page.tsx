@@ -2,6 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { mutationErrorHandler } from '@/lib/utils';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
@@ -96,7 +97,7 @@ export default function JenisKknEditPage(): React.JSX.Element {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['admin', 'jenis-kkn', id],
     queryFn: async () => {
       const res = await api.get(`/admin/jenis-kkn/${id}`);
@@ -140,7 +141,7 @@ export default function JenisKknEditPage(): React.JSX.Element {
       toast.success('Jenis KKN berhasil disimpan');
       router.push('/admin/jenis-kkn');
     },
-    onError: () => toast.error('Gagal menyimpan'),
+    onError: (err: unknown) => toast.error(mutationErrorHandler(err)),
   });
 
   const setReq = (key: keyof ReqConfig, value: unknown) =>
@@ -150,6 +151,14 @@ export default function JenisKknEditPage(): React.JSX.Element {
     setForm((f) => ({ ...f, attendance_config: { ...f.attendance_config, [key]: value } }));
 
   if (isLoading) return <div className="h-64 animate-pulse rounded-2xl bg-slate-100" />;
+  if (isError) {
+    return (
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-900 shadow-sm">
+        <p className="text-sm font-bold">Data jenis KKN belum bisa dimuat.</p>
+        <p className="mt-1 text-sm text-amber-800">{mutationErrorHandler(error)}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

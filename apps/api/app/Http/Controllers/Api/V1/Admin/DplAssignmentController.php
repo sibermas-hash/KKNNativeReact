@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\ApiResponse;
 use App\Http\Resources\Api\V1\DosenResource;
 use App\Http\Resources\Api\V1\DplPeriodResource;
 use App\Http\Resources\Api\V1\KelompokKknResource;
@@ -23,6 +24,8 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class DplAssignmentController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         private readonly DplAssignmentService $assignmentService,
         private readonly DplEligibilityService $eligibilityService,

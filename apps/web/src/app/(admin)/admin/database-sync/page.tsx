@@ -3,12 +3,19 @@
 export const dynamic = 'force-dynamic';
 
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { api, adminApi } from '@/lib/api';
+import type { ApiResponse, PaginationMeta } from '@sibermas/shared-types';
+import { adminApi, rawApi } from '@/lib/api';
 import Link from 'next/link';
 import { RefreshCw, CheckCircle, XCircle, Clock, Eye, Upload, Users, GraduationCap } from 'lucide-react';
 import { PageHeader } from '@/components/ui/shared';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
+
+type SyncLogRow = Record<string, unknown>;
+type PaginatedSyncLogsResponse = {
+  data: SyncLogRow[];
+  meta?: Partial<PaginationMeta>;
+};
 
 function ImportSection() {
   const dosenFileRef = useRef<HTMLInputElement>(null);
@@ -85,16 +92,21 @@ function ImportSection() {
 export default function DatabaseSyncPage(): React.JSX.Element {
   const [page, setPage] = useState(1);
 
-  const { data, isLoading, refetch, isFetching } = useQuery({
+  const { data, isLoading, refetch, isFetching } = useQuery<PaginatedSyncLogsResponse>({
     queryKey: ['admin', 'database-sync', page],
     queryFn: async () => {
-      const res = await api.get('/admin/database-sync', { params: { page, per_page: 20 } });
-      return (res as { data?: unknown }).data ?? res;
+      const response = await rawApi.get<ApiResponse<SyncLogRow[]>>('/admin/database-sync', {
+        params: { page, per_page: 20 },
+      });
+      return {
+        data: response.data.data ?? [],
+        meta: response.data.meta,
+      };
     },
   });
 
-  const logs = (data as { data?: Record<string, unknown>[] })?.data ?? [];
-  const meta = (data as { meta?: { total?: number; last_page?: number } })?.meta ?? {};
+  const logs = data?.data ?? [];
+  const meta = data?.meta ?? {};
 
   const statusIcon = (status: string) => {
     if (status === 'success') return <CheckCircle size={14} className="text-emerald-500" />;

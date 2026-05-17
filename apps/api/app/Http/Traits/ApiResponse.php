@@ -64,14 +64,28 @@ trait ApiResponse
                 'to' => $paginator->lastItem(),
             ];
             $response['links'] = [
-                'first' => $paginator->url(1),
-                'last' => $paginator->url($paginator->lastPage()),
-                'prev' => $paginator->previousPageUrl(),
-                'next' => $paginator->nextPageUrl(),
+                'first' => $this->paginationLink(1),
+                'last' => $this->paginationLink(max(1, $paginator->lastPage())),
+                'prev' => $paginator->currentPage() > 1
+                    ? $this->paginationLink($paginator->currentPage() - 1)
+                    : null,
+                'next' => $paginator->hasMorePages()
+                    ? $this->paginationLink($paginator->currentPage() + 1)
+                    : null,
             ];
         }
 
         return response()->json($response);
+    }
+
+    private function paginationLink(int $page): string
+    {
+        $url = request()->fullUrlWithQuery(['page' => $page]);
+
+        // Reverse-proxy deployments may surface the API app under `/api`
+        // while Laravel still sees a path that already starts with `api/...`,
+        // which can leak `/api/api/...` into paginator links.
+        return preg_replace('#/api/api/#', '/api/', $url, 1) ?? $url;
     }
 
     /**

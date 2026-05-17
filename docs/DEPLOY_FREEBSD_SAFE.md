@@ -190,15 +190,19 @@ php-fpm -t
 service php-fpm reload || service php-fpm start
 ```
 
-## 8. Supervisor
+## 8. Process Manager
 
-Single server:
+Single server native:
 
 ```sh
-cp apps/api/supervisord.conf /usr/local/etc/supervisord.d/sibermas.conf
-service supervisord restart
-supervisorctl reread
-supervisorctl update
+install -m 0555 conf/rc.d/sibermas_web /usr/local/etc/rc.d/sibermas_web
+install -m 0555 conf/rc.d/sibermas_queue /usr/local/etc/rc.d/sibermas_queue
+sysrc sibermas_web_enable="YES"
+sysrc sibermas_queue_enable="YES"
+sysrc sibermas_web_host="127.0.0.1"
+sysrc sibermas_web_port="3000"
+service sibermas_web restart
+service sibermas_queue restart
 ```
 
 Jail/cluster mode:
@@ -335,8 +339,8 @@ php artisan config:clear
 php artisan config:cache
 php artisan route:cache
 php artisan queue:restart
-supervisorctl restart sibermas-web
-supervisorctl restart workers:*
+service sibermas_web restart
+service sibermas_queue restart
 nginx -t && service nginx reload
 ```
 

@@ -10,6 +10,7 @@ use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Services\ActivityLogger;
+use App\Services\AI\HasAiFailover;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,26 +20,27 @@ use Illuminate\Support\Facades\Log;
 /**
  * PlaygroundController — AI Playground untuk Superadmin (PRD_AI_PLAYGROUND.md).
  *
- * Memanfaatkan 3-tier Google AI Studio failover dari `config/ai.php`.
+ * Memanfaatkan 3-tier AI gateway failover dari `config/ai.php`.
  * Support pemilihan provider + model dinamis, injeksi konteks SIBERMAS,
  * dan riwayat chat lokal (stateless — history di-manage di client).
  */
 class PlaygroundController extends Controller
 {
     use ApiResponse;
+    use HasAiFailover;
 
     /**
      * GET /admin/playground/models
      *
-     * Daftar provider & model yang tersedia berdasarkan .env config.
+     * Daftar provider & model yang tersedia berdasarkan runtime config aktif.
      */
     public function models(): JsonResponse
     {
-        $tiers = config('ai.failover');
+        $tiers = $this->loadAiTierMap();
         $providers = [];
 
-        // Semua 3 tier biasanya pakai SumoPod yang sama — kita group jadi 1 "provider"
-        // dengan daftar model dari SumoPod yang cocok untuk general chat + vision.
+        // Semua 3 tier biasanya pakai gateway yang sama — kita group jadi 1 "provider"
+        // dengan daftar model yang disesuaikan dengan gateway primary aktif.
         $hasAnyKey = false;
         foreach (['primary', 'fallback', 'tertiary'] as $key) {
             if (! empty($tiers[$key]['key'] ?? null)) {
@@ -49,52 +51,41 @@ class PlaygroundController extends Controller
 
         if ($hasAnyKey) {
             // Primary tier (display purpose)
-            $tier = $tiers['primary'] ?? $tiers['fallback'] ?? $tiers['tertiary'];
+            $tier = $tiers['primary'];
+            foreach (['primary', 'fallback', 'tertiary'] as $tierKey) {
+                if (! empty($tiers[$tierKey]['key'] ?? null)) {
+                    $tier = $tiers[$tierKey];
+                    break;
+                }
+            }
+            $isRizquna = str_contains((string) ($tier['url'] ?? ''), 'router.rizquna.id');
             $providers[] = [
                 'id' => 'primary',
-                'name' => 'SumoPod',
+                'name' => $isRizquna ? 'Rizquna Router' : 'Primary AI Gateway',
                 'base_url' => $tier['url'],
                 'has_key' => true,
                 'default_model' => $tier['model'],
-                'models' => [
-                    // ── VISION-CAPABLE (untuk avatar validation + konsultasi foto/dokumen) ──
+                'models' => $isRizquna ? [
+                    ['id' => 'ag/gemini-3.1-pro-high', 'name' => 'Gemini 3.1 Pro High', 'category' => 'vision'],
+                    ['id' => 'ag/gemini-3.1-pro-low', 'name' => 'Gemini 3.1 Pro Low', 'category' => 'vision'],
+                    ['id' => 'ag/gemini-3-flash', 'name' => 'Gemini 3 Flash', 'category' => 'vision'],
+                    ['id' => 'ag/claude-sonnet-4-6', 'name' => 'Claude Sonnet 4.6', 'category' => 'smartest'],
+                    ['id' => 'ag/claude-opus-4-6-thinking', 'name' => 'Claude Opus 4.6 Thinking', 'category' => 'smartest'],
+                    ['id' => 'ag/gpt-oss-120b-medium', 'name' => 'GPT OSS 120B Medium', 'category' => 'smart'],
+                    ['id' => 'cx/gpt-5.5', 'name' => 'GPT-5.5', 'category' => 'smartest'],
+                    ['id' => 'cx/gpt-5.4', 'name' => 'GPT-5.4', 'category' => 'smart'],
+                    ['id' => 'cx/gpt-5.2', 'name' => 'GPT-5.2', 'category' => 'smart'],
+                    ['id' => 'cx/gpt-5.1', 'name' => 'GPT-5.1', 'category' => 'smart'],
+                    ['id' => 'cx/gpt-5.3-codex', 'name' => 'GPT-5.3 Codex', 'category' => 'code'],
+                    ['id' => 'cx/gpt-5.2-codex', 'name' => 'GPT-5.2 Codex', 'category' => 'code'],
+                    ['id' => 'cx/gpt-5.1-codex', 'name' => 'GPT-5.1 Codex', 'category' => 'code'],
+                    ['id' => 'cx/gpt-5.1-codex-max', 'name' => 'GPT-5.1 Codex Max', 'category' => 'code'],
+                    ['id' => 'cx/gpt-5.1-codex-mini', 'name' => 'GPT-5.1 Codex Mini', 'category' => 'fast'],
+                    ['id' => 'cx/gpt-5-codex-mini', 'name' => 'GPT-5 Codex Mini', 'category' => 'fast'],
+                ] : [
                     ['id' => 'gemini/gemini-2.5-pro', 'name' => 'Gemini 2.5 Pro (vision)', 'category' => 'vision'],
-                    ['id' => 'gemini/gemini-3-pro-preview', 'name' => 'Gemini 3 Pro Preview (vision)', 'category' => 'vision'],
                     ['id' => 'gemini/gemini-2.5-flash', 'name' => 'Gemini 2.5 Flash (vision)', 'category' => 'vision'],
-                    ['id' => 'gemini/gemini-3-flash-preview', 'name' => 'Gemini 3 Flash Preview (vision)', 'category' => 'vision'],
                     ['id' => 'gpt-4o', 'name' => 'GPT-4o (vision)', 'category' => 'vision'],
-                    ['id' => 'gpt-4o-mini', 'name' => 'GPT-4o Mini (vision)', 'category' => 'vision'],
-
-                    // ── SMARTEST (high-reasoning untuk analisis kompleks) ──
-                    ['id' => 'claude-opus-4-7', 'name' => 'Claude Opus 4.7 (1M ctx)', 'category' => 'smartest'],
-                    ['id' => 'gpt-5.5-pro', 'name' => 'GPT-5.5 Pro (1M ctx)', 'category' => 'smartest'],
-                    ['id' => 'deepseek-v4-pro', 'name' => 'DeepSeek V4 Pro (1M ctx)', 'category' => 'smartest'],
-                    ['id' => 'claude-sonnet-4-6', 'name' => 'Claude Sonnet 4.6', 'category' => 'smartest'],
-                    ['id' => 'gpt-5.4-pro', 'name' => 'GPT-5.4 Pro (1M ctx)', 'category' => 'smartest'],
-
-                    // ── SMART (balanced general purpose) ──
-                    ['id' => 'gpt-5.4', 'name' => 'GPT-5.4', 'category' => 'smart'],
-                    ['id' => 'gpt-5.1', 'name' => 'GPT-5.1', 'category' => 'smart'],
-                    ['id' => 'gpt-5', 'name' => 'GPT-5', 'category' => 'smart'],
-                    ['id' => 'gpt-5.1-codex', 'name' => 'GPT-5.1 Codex', 'category' => 'smart'],
-                    ['id' => 'deepseek-v3-2', 'name' => 'DeepSeek V3.2', 'category' => 'smart'],
-                    ['id' => 'kimi-k2.6', 'name' => 'Kimi K2.6 (256K ctx)', 'category' => 'smart'],
-                    ['id' => 'qwen3.6-plus', 'name' => 'Qwen 3.6 Plus (262K ctx)', 'category' => 'smart'],
-                    ['id' => 'glm-5', 'name' => 'GLM-5', 'category' => 'smart'],
-
-                    // ── FAST (cepat, untuk respons real-time) ──
-                    ['id' => 'gpt-5.4-mini', 'name' => 'GPT-5.4 Mini', 'category' => 'fast'],
-                    ['id' => 'gpt-5-mini', 'name' => 'GPT-5 Mini', 'category' => 'fast'],
-                    ['id' => 'gpt-4.1-mini', 'name' => 'GPT-4.1 Mini', 'category' => 'fast'],
-                    ['id' => 'claude-haiku-4-5', 'name' => 'Claude Haiku 4.5', 'category' => 'fast'],
-                    ['id' => 'deepseek-v4-flash', 'name' => 'DeepSeek V4 Flash', 'category' => 'fast'],
-                    ['id' => 'qwen3.6-flash', 'name' => 'Qwen 3.6 Flash', 'category' => 'fast'],
-
-                    // ── FASTEST (paling cepat, low-latency) ──
-                    ['id' => 'gpt-5.4-nano', 'name' => 'GPT-5.4 Nano', 'category' => 'fastest'],
-                    ['id' => 'gpt-5-nano', 'name' => 'GPT-5 Nano', 'category' => 'fastest'],
-                    ['id' => 'gemini/gemini-2.5-flash-lite', 'name' => 'Gemini 2.5 Flash Lite', 'category' => 'fastest'],
-                    ['id' => 'gemini/gemini-3.1-flash-lite-preview', 'name' => 'Gemini 3.1 Flash Lite', 'category' => 'fastest'],
                 ],
             ];
         }
@@ -123,7 +114,7 @@ class PlaygroundController extends Controller
             'history.*.content' => ['required_with:history', 'string', 'max:8000'],
         ]);
 
-        $tiers = config('ai.failover');
+        $tiers = $this->loadAiTierMap();
         $providerKey = $data['provider'] ?? 'primary';
         $tier = $tiers[$providerKey] ?? null;
 
@@ -193,6 +184,7 @@ class PlaygroundController extends Controller
 
         $response = Http::withToken($apiKey)->timeout(30)->post($endpoint, [
             'model' => $model,
+            'stream' => false,
             'messages' => $messages,
             'temperature' => $temperature,
             'max_tokens' => $maxTokens,

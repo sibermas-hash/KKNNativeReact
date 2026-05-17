@@ -11,6 +11,15 @@ class KelompokKknResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $lokasi = new LokasiResource($this->whenLoaded('lokasi'));
+        $dosen = DosenResource::collection($this->whenLoaded('dosen'));
+        $periode = new PeriodeResource($this->whenLoaded('periode'));
+        $approvedMemberCount = $this->when(
+            $this->relationLoaded('peserta'),
+            fn () => $this->peserta->where('status', 'approved')->count()
+        );
+        $pesertaCount = $this->peserta_count ?? $approvedMemberCount;
+
         return [
             'id' => $this->id,
             'periode_id' => $this->periode_id,
@@ -18,13 +27,13 @@ class KelompokKknResource extends JsonResource
             'code' => $this->code,
             'capacity' => $this->capacity,
             'status' => $this->status,
-            'location' => new LokasiResource($this->whenLoaded('lokasi')),
-            'dpl' => DosenResource::collection($this->whenLoaded('dosen')),
+            'location' => $lokasi,
+            'lokasi' => $lokasi,
+            'dpl' => $dosen,
+            'dosen' => $dosen,
             'ketua_dpl' => new DosenResource($this->whenLoaded('dosen') ? $this->ketua_dpl : null),
-            'member_count' => $this->when(
-                $this->relationLoaded('peserta'),
-                fn () => $this->peserta->where('status', 'approved')->count()
-            ),
+            'member_count' => $approvedMemberCount,
+            'peserta_count' => $pesertaCount,
             'members' => PesertaKknResource::collection($this->whenLoaded('peserta')),
             'posko' => new PoskoResource($this->whenLoaded('posko')),
             'poster' => [
@@ -32,7 +41,8 @@ class KelompokKknResource extends JsonResource
                 'name' => $this->poster_potensi_desa_name,
                 'type' => $this->poster_potensi_desa_type,
             ],
-            'period' => new PeriodeResource($this->whenLoaded('periode')),
+            'period' => $periode,
+            'periode' => $periode,
         ];
     }
 }

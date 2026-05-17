@@ -18,19 +18,72 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
     use ApiResponse;
 
+    private const AUDIT_MASK = '***MASKED***';
+
+    private const AUDIT_SENSITIVE_FIELDS = [
+        'password',
+        'password_confirmation',
+        'current_password',
+        'remember_token',
+        'api_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'nik',
+        'nip',
+        'nim',
+        'nidn',
+        'npwp',
+        'phone',
+        'no_hp',
+        'telepon',
+        'birth_date',
+        'tanggal_lahir',
+        'mother_name',
+        'nama_ibu',
+        'email',
+        'api_email',
+        'alamat',
+        'address',
+        'birth_place',
+        'tempat_lahir',
+        'no_rekening',
+        'nama_bank',
+    ];
+
     public function index(Request $request): JsonResponse
     {
-        $query = User::with(['fakultas', 'roles'])->when($request->input('search'), fn ($q, $s) => $q->where('name', 'like', "%{$s}%")->orWhere('username', 'like', "%{$s}%"))->when($request->input('role'), fn ($q, $r) => $q->role($r))->orderByDesc('created_at');
+        $perPage = max(1, min((int) $request->input('per_page', 25), 100));
+        $activeFilter = $request->query('is_active');
 
-        return $this->successCollection(UserResource::collection($query->paginate(25)));
+        $query = User::with(['fakultas', 'roles'])
+            ->when($request->filled('search'), function ($q) use ($request) {
+                $search = trim((string) $request->input('search'));
+
+                $q->where(function ($inner) use ($search) {
+                    $inner->where('name', 'like', "%{$search}%")
+                        ->orWhere('username', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
+            })
+            ->when($request->input('role'), fn ($q, $r) => $q->role($r))
+            ->when($request->filled('fakultas_id'), fn ($q, $fakultasId) => $q->where('fakultas_id', (int) $fakultasId))
+            ->when($activeFilter !== null && $activeFilter !== '', function ($q) use ($activeFilter) {
+                $isActive = filter_var($activeFilter, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+                if ($isActive !== null) {
+                    $q->where('is_active', $isActive);
+                }
+            })
+            ->orderByDesc('created_at');
+
+        return $this->successCollection(UserResource::collection($query->paginate($perPage)->withQueryString()));
     }
 
     public function store(Request $request): JsonResponse
@@ -46,12 +99,58 @@ class UserController extends Controller
         $user = User::create(['username' => $validated['username'], 'name' => $validated['name'], 'email' => $validated['email'] ?? null, 'password' => Hash::make($validated['password']), 'must_change_password' => true, 'is_active' => true, 'fakultas_id' => $validated['fakultas_id'] ?? null]);
         $user->assignRole($validated['role']);
 
+        AuditService::log(
+            'SUPERADMIN_CREATE_USER',
+            sprintf(
+                'Superadmin membuat user id=%d (%s) dengan role %s',
+                $user->id,
+                $user->username,
+                $validated['role']
+            ),
+            $user,
+            null,
+            $this->sanitizeAuditPayload([
+                'user' => [
+                    'id' => $user->id,
+                    'username' => $user->username,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'fakultas_id' => $user->fakultas_id,
+                    'is_active' => $user->is_active,
+                    'must_change_password' => $user->must_change_password,
+                ],
+                'role' => $validated['role'],
+            ])
+        );
+
         return $this->created(new UserResource($user->load('roles')), 'Pengguna berhasil ditambahkan.');
     }
 
     public function toggleActive(User $user): JsonResponse
     {
+        if ($user->id === auth()->id() && $user->is_active) {
+            return $this->forbidden('Anda tidak dapat menonaktifkan akun Anda sendiri.');
+        }
+
+        if ($this->wouldRemoveLastActiveSuperadmin($user, false)) {
+            return $this->forbidden('Tidak dapat menonaktifkan superadmin aktif terakhir.');
+        }
+
+        $before = ['is_active' => (bool) $user->is_active];
         $user->update(['is_active' => ! $user->is_active]);
+
+        AuditService::log(
+            'SUPERADMIN_TOGGLE_USER_STATUS',
+            sprintf(
+                'Superadmin mengubah status user id=%d (%s) menjadi %s',
+                $user->id,
+                $user->username,
+                $user->is_active ? 'aktif' : 'nonaktif'
+            ),
+            $user,
+            $before,
+            ['is_active' => (bool) $user->is_active]
+        );
 
         return $this->success(new UserResource($user->refresh()), 'Status pengguna berhasil diubah.');
     }
@@ -81,6 +180,18 @@ class UserController extends Controller
     {
         if (! auth()->user()?->hasRole('superadmin')) {
             return $this->forbidden('Hanya superadmin yang dapat mengubah data pengguna.');
+        }
+
+        if ($request->has('is_active')) {
+            $nextActive = filter_var($request->input('is_active'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+
+            if ($nextActive === false && $user->id === auth()->id() && $user->is_active) {
+                return $this->forbidden('Anda tidak dapat menonaktifkan akun Anda sendiri.');
+            }
+
+            if ($nextActive === false && $this->wouldRemoveLastActiveSuperadmin($user, false)) {
+                return $this->forbidden('Tidak dapat menonaktifkan superadmin aktif terakhir.');
+            }
         }
 
         // User-level fields (berlaku untuk semua role).
@@ -115,6 +226,21 @@ class UserController extends Controller
             'mahasiswa.status_bta_ppi' => ['sometimes', 'nullable', 'string', 'max:50'],
             'mahasiswa.status_aktif' => ['sometimes', 'nullable', 'string', 'max:50'],
         ]);
+
+        // Backward compatibility: older admin UI still sends `mahasiswa.api_email`,
+        // but the canonical storage has moved to `users.email`. Accept it as an
+        // alias and never attempt to persist a non-existent mahasiswa column.
+        if (
+            isset($mahasiswaValidated['mahasiswa'])
+            && is_array($mahasiswaValidated['mahasiswa'])
+            && array_key_exists('api_email', $mahasiswaValidated['mahasiswa'])
+        ) {
+            if (! array_key_exists('email', $validated)) {
+                $validated['email'] = $mahasiswaValidated['mahasiswa']['api_email'];
+            }
+
+            unset($mahasiswaValidated['mahasiswa']['api_email']);
+        }
 
         // Dosen fields — NIP di-LOCK, tidak boleh diubah lewat endpoint ini.
         $dosenValidated = $request->validate([
@@ -223,8 +349,8 @@ class UserController extends Controller
                     count($dosenFieldsChanged),
                 ),
                 $user,
-                $oldValues,
-                $newValues,
+                $this->sanitizeAuditPayload($oldValues),
+                $this->sanitizeAuditPayload($newValues),
             );
         }
 
@@ -240,24 +366,47 @@ class UserController extends Controller
             return $this->forbidden('Hanya superadmin yang dapat mereset password pengguna.');
         }
 
-        $tempPassword = Str::random(12);
-        $user->update(['password' => Hash::make($tempPassword), 'must_change_password' => true]);
-
-        // Send password via email if available; never return plaintext in JSON response
-        if ($user->email) {
-            try {
-                Mail::raw(
-                    "Password sementara akun {$user->username}: {$tempPassword}\n\nSilakan ganti password setelah login.",
-                    fn ($m) => $m->to($user->email)->subject('Password Sementara SIBERMAS')
-                );
-            } catch (\Throwable) {
-                // Mail failure should not block the response
-            }
+        if (! $user->email) {
+            return $this->validationError(
+                ['email' => ['Pengguna belum memiliki email. Tambahkan email terlebih dahulu sebelum mengirim tautan reset password.']],
+                'Pengguna belum memiliki email untuk menerima tautan reset password.'
+            );
         }
 
+        try {
+            $status = Password::sendResetLink(['email' => $user->email]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return $this->serverError('Gagal mengirim tautan reset password. Coba lagi beberapa saat lagi.');
+        }
+
+        if ($status !== Password::RESET_LINK_SENT) {
+            return $this->serverError('Gagal menyiapkan tautan reset password. Coba lagi beberapa saat lagi.');
+        }
+
+        AuditService::log(
+            'SUPERADMIN_TRIGGER_PASSWORD_RESET',
+            sprintf(
+                'Superadmin mengirim tautan reset password untuk user id=%d (%s)',
+                $user->id,
+                $user->username
+            ),
+            $user,
+            null,
+            $this->sanitizeAuditPayload([
+                'delivery' => 'email',
+                'user' => [
+                    'id' => $user->id,
+                    'username' => $user->username,
+                    'email' => $user->email,
+                ],
+            ])
+        );
+
         return $this->success(
-            ['username' => $user->username, 'email_sent' => (bool) $user->email],
-            'Password sementara berhasil dibuat.'.($user->email ? ' Dikirim ke email.' : ' Tidak ada email terdaftar.')
+            ['username' => $user->username, 'delivery' => 'email', 'email_sent' => true],
+            'Tautan reset password berhasil dikirim ke email pengguna.'
         );
     }
 
@@ -276,27 +425,54 @@ class UserController extends Controller
             return $this->error('FORBIDDEN', 'Anda tidak dapat mengubah role superadmin Anda sendiri.', 403);
         }
 
+        if ($validated['role'] !== 'superadmin' && $this->wouldRemoveLastActiveSuperadmin($user, null, $validated['role'])) {
+            return $this->forbidden('Tidak dapat menurunkan role superadmin aktif terakhir.');
+        }
+
+        $oldRoles = $user->getRoleNames()->values()->all();
         $user->syncRoles([$validated['role']]);
+
+        AuditService::log(
+            'SUPERADMIN_UPDATE_USER_ROLE',
+            sprintf(
+                'Superadmin mengubah role user id=%d (%s) dari [%s] menjadi [%s]',
+                $user->id,
+                $user->username,
+                implode(', ', $oldRoles),
+                $validated['role']
+            ),
+            $user,
+            ['roles' => $oldRoles],
+            ['roles' => [$validated['role']]],
+        );
 
         return $this->success(new UserResource($user->refresh()->load('roles')), 'Role pengguna berhasil diperbarui.');
     }
 
     public function mahasiswaIndex(Request $request): JsonResponse
     {
+        $perPage = max(1, min((int) $request->input('per_page', 25), 100));
+
         $query = Mahasiswa::with(['user', 'fakultas', 'prodi'])
             ->when($request->input('search'), function ($q, $s) {
                 // nim encrypted — LIKE won't match ciphertext. Fall back to
                 // nama partial match + exact nim via blind index.
                 $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $s);
-                $q->where('nama', 'like', "%{$escaped}%");
-                if (preg_match('/^\d{6,20}$/', trim($s))) {
-                    $q->orWhere('nim_bidx', Mahasiswa::computeBlindIndex(trim($s)));
-                }
+                $trimmed = trim($s);
+
+                $q->where(function ($inner) use ($escaped, $trimmed) {
+                    $inner->where('nama', 'like', "%{$escaped}%");
+
+                    if (preg_match('/^\d{6,20}$/', $trimmed)) {
+                        $inner->orWhere('nim_bidx', Mahasiswa::computeBlindIndex($trimmed));
+                    }
+                });
             })
             ->when($request->input('fakultas_id'), fn ($q, $id) => $q->where('fakultas_id', $id))
+            ->when($request->input('prodi_id'), fn ($q, $id) => $q->where('prodi_id', $id))
             ->orderByDesc('created_at');
 
-        return $this->successCollection(MahasiswaResource::collection($query->paginate(25)));
+        return $this->successCollection(MahasiswaResource::collection($query->paginate($perPage)->withQueryString()));
     }
 
     public function mahasiswaShow(Mahasiswa $mahasiswa): JsonResponse
@@ -308,18 +484,25 @@ class UserController extends Controller
 
     public function dosenIndex(Request $request): JsonResponse
     {
+        $perPage = max(1, min((int) $request->input('per_page', 25), 100));
+
         $query = Dosen::with(['user', 'fakultas'])
             ->when($request->input('search'), function ($q, $s) {
                 // nip encrypted — same blind-index pattern as mahasiswa.nim.
                 $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $s);
-                $q->where('nama', 'like', "%{$escaped}%");
-                if (preg_match('/^\d{6,20}$/', trim($s))) {
-                    $q->orWhere('nip_bidx', Dosen::computeBlindIndex(trim($s)));
-                }
+                $trimmed = trim($s);
+
+                $q->where(function ($inner) use ($escaped, $trimmed) {
+                    $inner->where('nama', 'like', "%{$escaped}%");
+
+                    if (preg_match('/^\d{6,20}$/', $trimmed)) {
+                        $inner->orWhere('nip_bidx', Dosen::computeBlindIndex($trimmed));
+                    }
+                });
             })
             ->orderBy('nama');
 
-        return $this->successCollection(DosenResource::collection($query->paginate(25)));
+        return $this->successCollection(DosenResource::collection($query->paginate($perPage)->withQueryString()));
     }
 
     public function transfer(Request $request): JsonResponse
@@ -329,5 +512,47 @@ class UserController extends Controller
         $peserta->update(['kelompok_id' => $request->input('target_kelompok_id'), 'joined_group_at' => now()]);
 
         return $this->success(['id' => $peserta->id], 'Mahasiswa berhasil dipindahkan.');
+    }
+
+    private function wouldRemoveLastActiveSuperadmin(User $user, ?bool $nextActive = null, ?string $nextRole = null): bool
+    {
+        if (! $user->hasRole('superadmin') || ! $user->is_active) {
+            return false;
+        }
+
+        $willStaySuperadmin = ($nextRole ?? 'superadmin') === 'superadmin';
+        $willStayActive = $nextActive ?? true;
+
+        if ($willStaySuperadmin && $willStayActive) {
+            return false;
+        }
+
+        return User::role('superadmin')->where('is_active', true)->count() <= 1;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function sanitizeAuditPayload(array $payload): array
+    {
+        $sanitized = [];
+
+        foreach ($payload as $key => $value) {
+            if (is_array($value)) {
+                $sanitized[$key] = $this->sanitizeAuditPayload($value);
+
+                continue;
+            }
+
+            if (in_array((string) $key, self::AUDIT_SENSITIVE_FIELDS, true)) {
+                $sanitized[$key] = self::AUDIT_MASK;
+
+                continue;
+            }
+
+            $sanitized[$key] = $value;
+        }
+
+        return $sanitized;
     }
 }

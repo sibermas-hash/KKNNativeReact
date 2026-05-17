@@ -125,6 +125,16 @@ service sibermas_web status
 service sibermas_queue status
 ```
 
+Port bind yang benar untuk profile ini:
+
+```sh
+sysrc sibermas_web_host="127.0.0.1"
+sysrc sibermas_web_port="3000"
+```
+
+`apps/web` tidak perlu dan tidak sebaiknya bind ke `443`; `443` tetap milik
+Nginx untuk TLS/reverse proxy.
+
 Restart manual:
 
 ```sh

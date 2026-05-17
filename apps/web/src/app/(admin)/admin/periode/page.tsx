@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminApi } from '@/lib/api';
+import type { ApiResponse, PaginationMeta } from '@sibermas/shared-types';
+import { adminApi, rawApi } from '@/lib/api';
 import { toast } from 'sonner';
 import { PageHeader, ConfirmDialog } from '@/components/ui/shared';
 import { Plus, Pencil, Trash2, Calendar, ChevronRight, ArrowRight, Layers } from 'lucide-react';
@@ -26,6 +27,11 @@ interface Period {
   jenis_kkn?: { id: number; name: string; code: string; color?: string };
   participants_count?: number;
 }
+
+type PaginatedPeriodsResponse = {
+  data: Period[];
+  meta?: PaginationMeta;
+};
 
 const PHASE_LABEL: Record<string, string> = {
   upcoming: 'Pra-Pendaftaran', registration: 'Pendaftaran', placement: 'Penempatan',
@@ -57,13 +63,25 @@ export default function PeriodsPage(): React.JSX.Element {
   const [form, setForm] = useState(EMPTY_FORM);
   const [confirmId, setConfirmId] = useState<number | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(25);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'periods'],
+  const { data, isLoading, isFetching } = useQuery<PaginatedPeriodsResponse>({
+    queryKey: ['admin', 'periods', { page, perPage }],
     queryFn: async () => {
-      const res = await adminApi.periods.index();
-      return ((res as { data: unknown })?.data ?? res) as Period[];
+      const response = await rawApi.get<ApiResponse<Period[]>>('/admin/periode', {
+        params: {
+          page,
+          per_page: perPage,
+        },
+      });
+
+      return {
+        data: response.data.data ?? [],
+        meta: response.data.meta,
+      };
     },
+    placeholderData: (previousData) => previousData,
   });
 
   const { data: tahunAkademikList } = useQuery({
@@ -86,6 +104,9 @@ export default function PeriodsPage(): React.JSX.Element {
     mutationFn: () => editingId ? adminApi.periods.update(editingId, form) : adminApi.periods.store(form),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'periods'] });
+      if (editingId === null) {
+        setPage(1);
+      }
       toast.success(editingId ? 'Periode diperbarui' : 'Periode dibuat');
       setOpen(false); setEditingId(null); setForm(EMPTY_FORM); setFieldErrors({});
     },
@@ -125,9 +146,13 @@ export default function PeriodsPage(): React.JSX.Element {
     setOpen(true);
   };
 
-  const periods = data ?? [];
+  const periods = data?.data ?? [];
+  const meta = data?.meta;
   const activePeriods = periods.filter(p => p.is_active);
   const totalPeserta = periods.reduce((sum, p) => sum + (p.participants_count ?? 0), 0);
+  const batchLabel = meta
+    ? `Menampilkan ${meta.from ?? 0}-${meta.to ?? 0} dari ${meta.total} periode`
+    : `Menampilkan ${periods.length} periode`;
 
   return (
     <div className="space-y-6">
@@ -147,14 +172,14 @@ export default function PeriodsPage(): React.JSX.Element {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="rounded-xl bg-white p-4 ring-1 ring-slate-200 shadow-sm">
             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Periode</p>
-            <p className="text-2xl font-black text-slate-800 mt-1">{periods.length}</p>
+            <p className="text-2xl font-black text-slate-800 mt-1">{meta?.total ?? periods.length}</p>
           </div>
           <div className="rounded-xl bg-white p-4 ring-1 ring-slate-200 shadow-sm">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Periode Aktif</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Aktif di Tabel</p>
             <p className="text-2xl font-black text-emerald-600 mt-1">{activePeriods.length}</p>
           </div>
           <div className="rounded-xl bg-white p-4 ring-1 ring-slate-200 shadow-sm">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Pendaftar</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Peserta di Tabel</p>
             <p className="text-2xl font-black text-slate-800 mt-1">{totalPeserta}</p>
           </div>
           <div className="rounded-xl bg-white p-4 ring-1 ring-slate-200 shadow-sm">
@@ -334,7 +359,29 @@ export default function PeriodsPage(): React.JSX.Element {
           <p className="text-sm font-semibold text-slate-400">Belum ada periode</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+        <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+          <div className="flex flex-col gap-3 border-b border-slate-100 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-wider text-slate-500">Data Periode</p>
+              <p className="text-xs text-slate-400">{batchLabel}{isFetching ? ' • memperbarui...' : ''}</p>
+            </div>
+            <label className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+              Per Halaman
+              <select
+                value={perPage}
+                onChange={(event) => {
+                  setPerPage(Number(event.target.value));
+                  setPage(1);
+                }}
+                className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs font-bold text-slate-700"
+              >
+                {[10, 25, 50, 100].map((size) => (
+                  <option key={size} value={size}>{size}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100 text-left text-xs text-slate-500">
@@ -414,6 +461,32 @@ export default function PeriodsPage(): React.JSX.Element {
               })}
             </tbody>
           </table>
+          </div>
+          {meta && meta.last_page > 1 && (
+            <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3">
+              <p className="text-xs font-bold text-slate-500">
+                Halaman {meta.current_page} / {meta.last_page}
+              </p>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPage((current) => Math.max(1, current - 1))}
+                  disabled={meta.current_page <= 1}
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 disabled:opacity-40 hover:bg-slate-50"
+                >
+                  Sebelumnya
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPage((current) => Math.min(meta.last_page, current + 1))}
+                  disabled={meta.current_page >= meta.last_page}
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 disabled:opacity-40 hover:bg-slate-50"
+                >
+                  Berikutnya
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -422,7 +495,7 @@ export default function PeriodsPage(): React.JSX.Element {
         onClose={() => setConfirmId(null)}
         onConfirm={() => { if (confirmId) destroy.mutate(confirmId); }}
         title="Hapus periode ini?"
-        description="Data periode akan dihapus permanen beserta seluruh data terkait."
+        description="Periode akan dihapus dari daftar aktif. Proses ini bisa ditolak jika masih ada data terkait yang bergantung pada periode tersebut."
         confirmText="Ya, Hapus"
         variant="danger"
       />

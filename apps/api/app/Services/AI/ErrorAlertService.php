@@ -189,7 +189,13 @@ class ErrorAlertService
     private function analyzeError(array $context): string
     {
         $context = $this->scrubContext($context);
-        $tiers = $this->loadAiTiers();
+        $tiers = $this->loadAiTiers(
+            (string) config('ai.routing.alerting.model', 'ag/gemini-3-flash'),
+            true
+        );
+        $timeout = (int) config('ai.routing.alerting.timeout', 15);
+        $temperature = (float) config('ai.routing.alerting.temperature', 0.2);
+        $maxTokens = (int) config('ai.routing.alerting.max_tokens', 200);
 
         $prompt = 'Analisis error berikut dari sistem KKN (SIBERMAS). '
             ."Berikan dalam 2-3 kalimat: (1) kemungkinan root cause, (2) dampak ke user, (3) saran fix cepat.\n\n"
@@ -206,15 +212,16 @@ class ErrorAlertService
 
             try {
                 $response = Http::withToken($tier['key'])
-                    ->timeout(15)
+                    ->timeout($timeout)
                     ->post(rtrim($tier['url'], '/').'/chat/completions', [
                         'model' => $tier['model'],
+                        'stream' => false,
                         'messages' => [
                             ['role' => 'system', 'content' => 'Anda adalah DevOps engineer untuk sistem KKN universitas. Analisis error singkat dan actionable dalam Bahasa Indonesia. Max 3 kalimat.'],
                             ['role' => 'user', 'content' => $prompt],
                         ],
-                        'temperature' => 0.2,
-                        'max_tokens' => 200,
+                        'temperature' => $temperature,
+                        'max_tokens' => $maxTokens,
                     ]);
 
                 if ($response->successful()) {

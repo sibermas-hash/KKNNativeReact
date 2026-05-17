@@ -134,8 +134,9 @@ export default function PlaygroundPage() {
         <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-800">
           <p className="font-semibold">⚠️ AI belum terkonfigurasi</p>
           <p className="mt-1">
-            Silakan set minimal satu API key di <code className="bg-amber-100 px-1 rounded">.env</code>: <code className="bg-amber-100 px-1 rounded">AI_PRIMARY_KEY</code>,{' '}
-            <code className="bg-amber-100 px-1 rounded">AI_FALLBACK_KEY</code>, atau <code className="bg-amber-100 px-1 rounded">AI_TERTIARY_KEY</code>.
+            Silakan set minimal satu API key melalui pengaturan AI admin atau <code className="bg-amber-100 px-1 rounded">.env</code>:
+            <code className="bg-amber-100 px-1 rounded">AI_PRIMARY_KEY</code>, <code className="bg-amber-100 px-1 rounded">AI_FALLBACK_KEY</code>, atau{' '}
+            <code className="bg-amber-100 px-1 rounded">AI_TERTIARY_KEY</code>.
           </p>
           <p className="mt-2">Generate key gratis di: <a className="underline" href="https://aistudio.google.com/apikey" target="_blank" rel="noreferrer">Google AI Studio</a></p>
         </div>

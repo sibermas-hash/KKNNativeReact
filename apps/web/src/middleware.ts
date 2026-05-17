@@ -21,42 +21,41 @@ import { NextRequest, NextResponse } from 'next/server';
  *   - `{code: 'PROFILE_INCOMPLETE'}` → client redirects to /profil
  *   - `{code: 'FORBIDDEN'}` → client shows a 403 page
  *
- * This middleware now only handles two cases:
+ * This middleware now only handles one case:
  *   1. Block anonymous access to pages that definitely require a session.
- *   2. Redirect already-authenticated users away from the login page (UX).
  *
  * It deliberately trusts ONLY the HttpOnly `sibermas_token` cookie for the
- * presence check. It does not attempt to validate the token — that is the
- * backend's responsibility when the page makes its first API call.
+ * presence check for protected pages. It does not attempt to validate the
+ * token — that is the backend's responsibility when the page makes its first
+ * API call.
+ *
+ * Important: we intentionally do NOT redirect `/login` away based only on
+ * cookie presence. A stale/expired cookie can still exist in the browser; if
+ * we bounce `/login` -> `/` on mere presence, users get stuck in a loop where
+ * clicking "Login" appears to do nothing.
  */
 
 const PROTECTED_PREFIXES = ['/admin', '/mahasiswa', '/dosen', '/profil', '/ganti-password', '/notifikasi'];
-const AUTH_PAGES = ['/login', '/lupa-kata-sandi', '/atur-ulang-kata-sandi'];
-
-function getPublicAppOrigin(): string {
-  const explicitOrigin = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL;
-  if (explicitOrigin) {
-    return explicitOrigin.replace(/\/+$/, '');
-  }
-
-  return process.env.NODE_ENV === 'production'
-    ? 'https://sibermas.uinsaizu.ac.id'
-    : '';
-}
-
-function buildRedirectUrl(path: string, request: NextRequest): URL {
-  const origin = getPublicAppOrigin();
-  if (origin) {
-    return new URL(path, `${origin}/`);
-  }
-
-  return new URL(path, request.url);
-}
 
 function hasAuthToken(request: NextRequest): boolean {
   // Only trust the HttpOnly cookie. The legacy `sibermas_session` marker is
   // non-HttpOnly and easily forged, so it is no longer sufficient on its own.
   return Boolean(request.cookies.get('sibermas_token')?.value);
+}
+
+function getPublicOrigin(request: NextRequest): string {
+  const explicitOrigin = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL;
+  if (explicitOrigin) {
+    return explicitOrigin.replace(/\/+$/, '');
+  }
+
+  const forwardedProto = request.headers.get('x-forwarded-proto');
+  const forwardedHost = request.headers.get('x-forwarded-host');
+  if (forwardedProto && forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+
+  return request.nextUrl.origin;
 }
 
 export function middleware(request: NextRequest) {
@@ -68,21 +67,9 @@ export function middleware(request: NextRequest) {
 
   // (1) Anonymous user trying to reach a protected page → /login.
   if (isProtected && !hasAuthToken(request)) {
-    const loginUrl = buildRedirectUrl('/login', request);
+    const loginUrl = new URL('/login', `${getPublicOrigin(request)}/`);
     loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl, 308);
-  }
-
-  // (2) Already-authenticated user on an auth page → send to dashboard.
-  //     The real role-based dashboard choice happens client-side once the
-  //     page fetches `/api/v1/auth/user`. The edge only redirects to "/"
-  //     which the authenticated root page resolves correctly.
-  const isAuthPage = AUTH_PAGES.some(
-    (page) => pathname === page || pathname.startsWith(page + '/')
-  );
-
-  if (isAuthPage && hasAuthToken(request)) {
-    return NextResponse.redirect(buildRedirectUrl('/', request));
   }
 
   return NextResponse.next();
@@ -95,9 +82,6 @@ export const config = {
     '/dosen/:path*',
     '/profil/:path*',
     '/ganti-password',
-    '/login',
-    '/lupa-kata-sandi',
-    '/atur-ulang-kata-sandi',
     '/notifikasi/:path*',
   ],
 };

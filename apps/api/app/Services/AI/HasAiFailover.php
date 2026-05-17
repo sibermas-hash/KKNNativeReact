@@ -4,51 +4,152 @@ declare(strict_types=1);
 
 namespace App\Services\AI;
 
+use App\Models\KKN\SystemSetting;
+
 /**
- * Shared trait for 5-tier AI failover across all AI services.
+ * Shared trait for Rizquna-only AI failover across all AI services.
  *
  * Tier order:
- *   1. SumoPod primary (gemini-2.5-pro)
- *   2. SumoPod fallback (gemini-2.5-flash)
- *   3. SumoPod tertiary (gpt-4o)
- *   4. Direct Gemini API (bypass SumoPod)
- *   5. Direct OpenAI API (bypass SumoPod)
+ *   1. Primary gateway
+ *   2. Fallback gateway
+ *   3. Tertiary gateway
  *
- * If SumoPod token is exhausted, tiers 1-3 fail fast and 4-5 take over.
+ * Seluruh tier default ke Rizquna Router, tetapi dapat memakai key/model
+ * berbeda untuk retry yang terisolasi.
  */
 trait HasAiFailover
 {
-    protected function loadAiTiers(): array
+    protected function loadAiTiers(?string $preferredModel = null, bool $forcePreferredModel = false): array
     {
-        $tiers = [];
+        return array_values($this->loadAiTierMap($preferredModel, $forcePreferredModel));
+    }
 
-        // Tier 1-3: via SumoPod gateway
-        $primary = config('ai.failover.primary');
-        if (! empty($primary['key'])) {
-            $tiers[] = ['label' => 'sumopod-primary', 'url' => $primary['url'], 'key' => $primary['key'], 'model' => $primary['model']];
+    /**
+     * @return array<string, array{label: string, url: string, key: string, model: string}>
+     */
+    protected function loadAiTierMap(?string $preferredModel = null, bool $forcePreferredModel = false): array
+    {
+        $defaultUrl = $this->firstFilledString(
+            SystemSetting::get('rizquna_url', null),
+            config('ai.providers.rizquna.url'),
+            'https://router.rizquna.id/v1'
+        ) ?? 'https://router.rizquna.id/v1';
+
+        $defaultKey = $this->stringValue(
+            $this->preferExplicitSetting(
+                SystemSetting::get('rizquna_api_key', null),
+                config('ai.providers.rizquna.key')
+            )
+        ) ?? '';
+
+        $defaultModel = $this->firstFilledString(
+            $preferredModel,
+            SystemSetting::get('ai_model', null),
+            config('ai.providers.rizquna.models.text.default'),
+            'ag/gemini-3-flash'
+        ) ?? 'ag/gemini-3-flash';
+
+        return [
+            'primary' => $this->resolveTier(
+                'primary',
+                'primary-gateway',
+                $defaultUrl,
+                $defaultKey,
+                $defaultModel,
+                $forcePreferredModel
+            ),
+            'fallback' => $this->resolveTier(
+                'fallback',
+                'fallback-gateway',
+                $defaultUrl,
+                $defaultKey,
+                $defaultModel,
+                $forcePreferredModel
+            ),
+            'tertiary' => $this->resolveTier(
+                'tertiary',
+                'tertiary-gateway',
+                $defaultUrl,
+                $defaultKey,
+                $defaultModel,
+                $forcePreferredModel
+            ),
+        ];
+    }
+
+    /**
+     * @return array{label: string, url: string, key: string, model: string}
+     */
+    private function resolveTier(
+        string $tierKey,
+        string $label,
+        string $defaultUrl,
+        string $defaultKey,
+        string $defaultModel,
+        bool $forcePreferredModel
+    ): array {
+        $tierConfig = (array) config("ai.failover.{$tierKey}", []);
+
+        $url = $this->firstFilledString(
+            SystemSetting::get("ai_{$tierKey}_url", null),
+            $tierConfig['url'] ?? null,
+            $defaultUrl
+        ) ?? $defaultUrl;
+
+        $key = $this->stringValue(
+            $this->preferExplicitSetting(
+                SystemSetting::get("ai_{$tierKey}_key", null),
+                $tierConfig['key'] ?? null,
+                $defaultKey
+            )
+        ) ?? '';
+
+        $configuredTierModel = $this->firstFilledString(
+            SystemSetting::get("ai_{$tierKey}_model", null),
+            $tierConfig['model'] ?? null
+        );
+
+        $model = $forcePreferredModel
+            ? $defaultModel
+            : ($configuredTierModel ?? $defaultModel);
+
+        return [
+            'label' => $label,
+            'url' => $url,
+            'key' => $key,
+            'model' => $model,
+        ];
+    }
+
+    private function preferExplicitSetting(mixed ...$values): mixed
+    {
+        foreach ($values as $value) {
+            if ($value !== null && ! is_array($value) && ! is_object($value)) {
+                return $value;
+            }
         }
 
-        $fallback = config('ai.failover.fallback');
-        if (! empty($fallback['key'])) {
-            $tiers[] = ['label' => 'sumopod-fallback', 'url' => $fallback['url'], 'key' => $fallback['key'], 'model' => $fallback['model']];
+        return null;
+    }
+
+    private function firstFilledString(mixed ...$values): ?string
+    {
+        foreach ($values as $value) {
+            $string = $this->stringValue($value);
+            if ($string !== null && $string !== '') {
+                return $string;
+            }
         }
 
-        $tertiary = config('ai.failover.tertiary');
-        if (! empty($tertiary['key'])) {
-            $tiers[] = ['label' => 'sumopod-tertiary', 'url' => $tertiary['url'], 'key' => $tertiary['key'], 'model' => $tertiary['model']];
+        return null;
+    }
+
+    private function stringValue(mixed $value): ?string
+    {
+        if ($value === null || is_array($value) || is_object($value)) {
+            return null;
         }
 
-        // Tier 4-5: direct provider APIs (bypass SumoPod)
-        $directGemini = config('ai.failover.direct_gemini');
-        if (! empty($directGemini['key'])) {
-            $tiers[] = ['label' => 'direct-gemini', 'url' => $directGemini['url'], 'key' => $directGemini['key'], 'model' => $directGemini['model']];
-        }
-
-        $directOpenai = config('ai.failover.direct_openai');
-        if (! empty($directOpenai['key'])) {
-            $tiers[] = ['label' => 'direct-openai', 'url' => $directOpenai['url'], 'key' => $directOpenai['key'], 'model' => $directOpenai['model']];
-        }
-
-        return $tiers;
+        return trim((string) $value);
     }
 }

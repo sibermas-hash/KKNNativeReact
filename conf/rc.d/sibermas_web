@@ -42,6 +42,9 @@ command_args="-f -P ${sibermas_web_pidfile} -p ${sibermas_web_child_pidfile} -o 
 
 sibermas_web_precmd()
 {
+    source_next="${sibermas_web_app_dir}/apps/web/.next"
+    source_static="${source_next}/static"
+    source_public="${sibermas_web_app_dir}/apps/web/public"
     standalone_root="${sibermas_web_app_dir}/apps/web/.next/standalone"
     standalone_app="${standalone_root}/apps/web"
     standalone_next="${standalone_app}/.next"
@@ -54,7 +57,13 @@ sibermas_web_precmd()
     chmod 0775 "${sibermas_web_runtime_dir}" 2>/dev/null || true
 
     if [ -d "${standalone_root}" ]; then
-        mkdir -p "${standalone_next}/cache" "${standalone_app}/public"
+        mkdir -p "${standalone_next}/cache" "${standalone_next}/static" "${standalone_app}/public"
+        if [ -d "${source_static}" ]; then
+            cp -R "${source_static}/." "${standalone_next}/static/" 2>/dev/null || true
+        fi
+        if [ -d "${source_public}" ]; then
+            cp -R "${source_public}/." "${standalone_app}/public/" 2>/dev/null || true
+        fi
         chown -R "${sibermas_web_user}:${sibermas_web_user}" "${standalone_root}" 2>/dev/null || true
         find "${standalone_root}" -type d -exec chmod 2775 {} + 2>/dev/null || true
         find "${standalone_root}" -type f -exec chmod u+rw,g+r {} + 2>/dev/null || true

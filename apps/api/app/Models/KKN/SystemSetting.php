@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Schema;
 
 class SystemSetting extends Model
 {
+    private const AI_RUNTIME_CONFIG_CACHE_KEY = 'ai_runtime_config';
+
     protected $table = 'system_settings';
 
     protected $fillable = [
@@ -31,7 +33,20 @@ class SystemSetting extends Model
     private const SECRET_KEYS = [
         'master_api_client_secret',
         'master_api_token',
+        'rizquna_api_key',
         'gemini_api_key',
+        'openai_api_key',
+        'anthropic_api_key',
+        'azure_openai_api_key',
+        'groq_api_key',
+        'mistral_api_key',
+        'deepseek_api_key',
+        'cohere_api_key',
+        'xai_api_key',
+        'ollama_api_key',
+        'ai_primary_key',
+        'ai_fallback_key',
+        'ai_tertiary_key',
         'storage_secret',
     ];
 
@@ -73,6 +88,7 @@ class SystemSetting extends Model
     {
         // SECURITY: Explicitly cast to string to prevent type confusion
         $stringValue = $value !== null ? (string) $value : '';
+        $isAiRelated = self::isAiRelatedKey($key);
 
         // Encrypt secret values before storing
         $storedValue = $stringValue;
@@ -81,15 +97,65 @@ class SystemSetting extends Model
         }
 
         $setting = self::where('config_key', $key)->first();
+        $attributes = ['value' => $storedValue];
+        if ($isAiRelated) {
+            $attributes['group'] = 'ai_settings';
+        }
+
         if ($setting) {
-            $setting->update(['value' => $storedValue]);
+            $setting->update($attributes);
         } else {
-            self::create([
+            $payload = [
                 'config_key' => $key,
                 'label' => ucwords(str_replace('_', ' ', $key)),
                 'value' => $storedValue,
-            ]);
+            ];
+            if ($isAiRelated) {
+                $payload['group'] = 'ai_settings';
+            }
+
+            self::create($payload);
         }
+
         Cache::forget("system_setting_{$key}");
+        if ($isAiRelated) {
+            Cache::forget(self::AI_RUNTIME_CONFIG_CACHE_KEY);
+        }
+    }
+
+    private static function isAiRelatedKey(string $key): bool
+    {
+        if (str_starts_with($key, 'ai_')) {
+            return true;
+        }
+
+        return in_array($key, [
+            'anthropic_api_key',
+            'anthropic_url',
+            'azure_openai_api_key',
+            'azure_openai_api_version',
+            'azure_openai_deployment',
+            'azure_openai_embedding_deployment',
+            'azure_openai_url',
+            'cohere_api_key',
+            'deepseek_api_key',
+            'gemini_api_key',
+            'gemini_url',
+            'groq_api_key',
+            'groq_url',
+            'mistral_api_key',
+            'mistral_url',
+            'ollama_api_key',
+            'ollama_base_url',
+            'openai_api_key',
+            'openai_url',
+            'rizquna_api_key',
+            'rizquna_url',
+            'rizquna_model',
+            'rizquna_vision_model',
+            'rizquna_code_model',
+            'xai_api_key',
+            'xai_url',
+        ], true);
     }
 }

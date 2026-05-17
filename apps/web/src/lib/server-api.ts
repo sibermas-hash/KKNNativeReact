@@ -2,10 +2,126 @@ import { cookies } from 'next/headers';
 
 const isProductionBuild = process.env.NEXT_PHASE === 'phase-production-build';
 
+type ApiErrorBody = {
+  success?: false;
+  error?: {
+    code?: string;
+    message?: string;
+    errors?: Record<string, string[] | string>;
+  };
+};
+
+type AuthFetchErrorKind =
+  | 'unauthorized'
+  | 'forbidden'
+  | 'not_found'
+  | 'validation_error'
+  | 'service_unavailable';
+
+export type AuthFetchErrorResult = {
+  kind: AuthFetchErrorKind;
+  status?: number;
+  code?: string;
+  message?: string;
+  errors?: Record<string, string[]>;
+};
+
+export type AuthFetchResult<T> =
+  | { kind: 'ok'; data: T; status: number }
+  | AuthFetchErrorResult;
+
 function getServerApiBase(): string {
   const apiBase = process.env.SERVER_API_URL || process.env.NEXT_PUBLIC_API_URL;
   if (!apiBase) throw new Error('SERVER_API_URL or NEXT_PUBLIC_API_URL is not set');
   return apiBase.replace(/\/$/, '');
+}
+
+function isJsonResponse(response: Response): boolean {
+  return response.headers.get('content-type')?.includes('application/json') ?? false;
+}
+
+function normalizeErrorFields(errors: unknown): Record<string, string[]> | undefined {
+  if (!errors || typeof errors !== 'object') return undefined;
+
+  const normalized = Object.entries(errors as Record<string, unknown>).reduce<Record<string, string[]>>(
+    (acc, [field, value]) => {
+      if (Array.isArray(value)) {
+        const messages = value.filter((entry): entry is string => typeof entry === 'string' && entry.trim().length > 0);
+        if (messages.length > 0) acc[field] = messages;
+
+        return acc;
+      }
+
+      if (typeof value === 'string' && value.trim().length > 0) {
+        acc[field] = [value];
+      }
+
+      return acc;
+    },
+    {},
+  );
+
+  return Object.keys(normalized).length > 0 ? normalized : undefined;
+}
+
+function getFirstErrorMessage(errors?: Record<string, string[]>): string | undefined {
+  if (!errors) return undefined;
+
+  for (const messages of Object.values(errors)) {
+    if (messages[0]) return messages[0];
+  }
+
+  return undefined;
+}
+
+function parseApiErrorPayload(payload: unknown): Omit<AuthFetchErrorResult, 'kind' | 'status'> {
+  if (!payload || typeof payload !== 'object') return {};
+
+  const apiError = (payload as ApiErrorBody).error;
+  const errors = normalizeErrorFields(apiError?.errors);
+  const firstErrorMessage = getFirstErrorMessage(errors);
+
+  return {
+    code: apiError?.code,
+    message: firstErrorMessage ?? apiError?.message,
+    errors,
+  };
+}
+
+function mapStatusToAuthErrorKind(status: number): AuthFetchErrorKind {
+  switch (status) {
+    case 401:
+      return 'unauthorized';
+    case 403:
+      return 'forbidden';
+    case 404:
+      return 'not_found';
+    case 422:
+      return 'validation_error';
+    default:
+      return 'service_unavailable';
+  }
+}
+
+export function getAuthFetchErrorMessage(
+  result: AuthFetchErrorResult,
+  fallback = 'Layanan sedang tidak tersedia. Coba beberapa saat lagi.',
+): string {
+  if (result.message) return result.message;
+
+  switch (result.kind) {
+    case 'unauthorized':
+      return 'Sesi Anda tidak valid atau sudah berakhir. Silakan masuk ulang.';
+    case 'forbidden':
+      return 'Akses Anda ditolak untuk operasi ini.';
+    case 'not_found':
+      return 'Endpoint atau data yang diminta tidak ditemukan.';
+    case 'validation_error':
+      return 'Data yang dikirim tidak valid.';
+    case 'service_unavailable':
+    default:
+      return fallback;
+  }
 }
 
 export async function fetchApi<T>(path: string, options?: RequestInit): Promise<T | null> {
@@ -18,7 +134,7 @@ export async function fetchApi<T>(path: string, options?: RequestInit): Promise<
       headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...options?.headers },
       next: { revalidate: 60 },
     });
-    if (!res.ok || !res.headers.get('content-type')?.includes('application/json')) return null;
+    if (!res.ok || !isJsonResponse(res)) return null;
     return res.json() as Promise<T>;
   } catch {
     return null;
@@ -58,7 +174,7 @@ export async function fetchApiStrict<T>(
       return { kind: 'service_unavailable', status: res.status };
     }
 
-    if (!res.headers.get('content-type')?.includes('application/json')) {
+    if (!isJsonResponse(res)) {
       return { kind: 'service_unavailable' };
     }
 
@@ -87,9 +203,55 @@ export async function fetchApiAuth<T>(path: string, options?: RequestInit): Prom
       },
       cache: 'no-store',
     });
-    if (!res.ok || !res.headers.get('content-type')?.includes('application/json')) return null;
+    if (!res.ok || !isJsonResponse(res)) return null;
     return res.json() as Promise<T>;
   } catch {
     return null;
+  }
+}
+
+export async function fetchApiAuthStrict<T>(
+  path: string,
+  options?: RequestInit,
+): Promise<AuthFetchResult<T>> {
+  if (isProductionBuild) return { kind: 'service_unavailable' };
+  const API_BASE = getServerApiBase();
+
+  const cookieStore = await cookies();
+  const token = cookieStore.get('sibermas_token')?.value;
+
+  try {
+    const res = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options?.headers,
+      },
+      cache: 'no-store',
+    });
+
+    if (res.status === 204) {
+      return { kind: 'ok', data: null as T, status: 204 };
+    }
+
+    if (!res.ok) {
+      const parsedError = isJsonResponse(res) ? parseApiErrorPayload(await res.json()) : {};
+
+      return {
+        kind: mapStatusToAuthErrorKind(res.status),
+        status: res.status,
+        ...parsedError,
+      };
+    }
+
+    if (!isJsonResponse(res)) {
+      return { kind: 'service_unavailable', status: res.status };
+    }
+
+    return { kind: 'ok', data: (await res.json()) as T, status: res.status };
+  } catch {
+    return { kind: 'service_unavailable' };
   }
 }

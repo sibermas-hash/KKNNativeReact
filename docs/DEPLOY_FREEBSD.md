@@ -158,8 +158,11 @@ SKIP_FRONTEND_BUILD=1 bash deploy-freebsd-simple.sh
 | PHP-FPM | socket `/var/run/php-fpm.sock`, pool `sibermas` |
 | PostgreSQL | lokal `127.0.0.1:5432` |
 | Redis | lokal `127.0.0.1:6379` |
-| Supervisor `sibermas-web` | Next.js standalone di `127.0.0.1:3000` |
-| Supervisor `workers:*` | Laravel queue workers |
+| `service sibermas_web` | Next.js standalone di `127.0.0.1:3000` |
+| `service sibermas_queue` | Laravel queue workers |
+
+Untuk profile native ini, `443` tetap milik Nginx. Jangan bind `apps/web`
+langsung ke `443`; biarkan Next.js tetap internal di `127.0.0.1:3000`.
 
 ## Cron
 

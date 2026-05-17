@@ -74,6 +74,18 @@ class ValidateAvatarUploadJob implements ShouldQueue
 
     public function failed(\Throwable $e): void
     {
+        $user = User::query()->find($this->userId);
+
+        if ($user instanceof User
+            && $user->avatar === $this->path
+            && $user->avatar_moderation_status === 'pending') {
+            $user->forceFill([
+                'avatar_moderation_reason' => 'Validasi otomatis gagal setelah beberapa percobaan. Menunggu verifikasi admin.',
+                'avatar_moderation_reviewed_at' => null,
+                'avatar_moderation_reviewed_by' => null,
+            ])->save();
+        }
+
         Log::error('ValidateAvatarUploadJob exhausted retries', [
             'user_id' => $this->userId,
             'avatar' => $this->path,

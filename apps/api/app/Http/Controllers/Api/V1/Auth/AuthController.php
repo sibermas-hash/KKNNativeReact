@@ -411,6 +411,7 @@ class AuthController extends Controller
                 $user->forceFill([
                     'password' => Hash::make($password),
                     'password_changed_at' => now(),
+                    'must_change_password' => false,
                 ])->save();
 
                 event(new PasswordReset($user));

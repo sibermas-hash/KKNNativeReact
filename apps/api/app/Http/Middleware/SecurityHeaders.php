@@ -22,11 +22,6 @@ class SecurityHeaders
      */
     public function handle(Request $request, Closure $next): mixed
     {
-        $response = $next($request);
-
-        // Additional security headers not covered by CspHeaders
-        $response->headers->set('X-Permitted-Cross-Domain-Policies', 'none', true);
-
-        return $response;
+        return $next($request);
     }
 }

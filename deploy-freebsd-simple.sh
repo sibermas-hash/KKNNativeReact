@@ -24,7 +24,7 @@ WEB_DOMAIN="${WEB_DOMAIN:-sibermas.uinsaizu.ac.id}"
 PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://${WEB_DOMAIN}}"
 LOG_DIR="${LOG_DIR:-/var/log/sibermas}"
 
-SUPERVISOR_DEST="${SUPERVISOR_DEST:-/usr/local/etc/supervisord.d/sibermas.conf}"
+RC_D_DEST="${RC_D_DEST:-/usr/local/etc/rc.d}"
 NGINX_DEST="${NGINX_DEST:-/usr/local/etc/nginx/nginx.conf}"
 PHP_FPM_POOL_DEST="${PHP_FPM_POOL_DEST:-/usr/local/etc/php-fpm.d/sibermas.conf}"
 
@@ -123,7 +123,7 @@ echo " DOMAIN : ${WEB_DOMAIN}"
 echo "============================================================"
 
 step "Preparing directories"
-mkdir -p "${LOG_DIR}" /usr/local/etc/supervisord.d /usr/local/etc/php-fpm.d
+mkdir -p "${LOG_DIR}" /usr/local/etc/php-fpm.d
 mkdir -p \
   "${API_DIR}/storage/app/public" \
   "${API_DIR}/storage/framework/cache" \
@@ -134,9 +134,11 @@ mkdir -p \
 chown -R "${WEB_USER}:${WEB_USER}" "${LOG_DIR}"
 
 step "Preparing Laravel .env"
+ENV_WAS_SEEDED=0
 if [ ! -f "${ENV_FILE}" ]; then
   cp "${API_DIR}/.env.production.example" "${ENV_FILE}"
   chmod 600 "${ENV_FILE}"
+  ENV_WAS_SEEDED=1
   echo "Seeded ${ENV_FILE} from .env.production.example"
 fi
 
@@ -156,9 +158,10 @@ set_env SESSION_DOMAIN "${WEB_DOMAIN}"
 set_env CORS_ALLOWED_ORIGINS "${PUBLIC_BASE_URL%/}"
 set_env SANCTUM_STATEFUL_DOMAINS "${WEB_DOMAIN}"
 
-if [ "$(env_value DB_PASSWORD)" = "" ]; then
+LEGACY_TEMPLATE_DB_PASSWORD="kknuinsaizu2026native"
+if [ "$(env_value DB_PASSWORD)" = "" ] || { [ "${ENV_WAS_SEEDED}" = "1" ] && [ "$(env_value DB_PASSWORD)" = "${LEGACY_TEMPLATE_DB_PASSWORD}" ]; }; then
   set_env DB_PASSWORD "${DB_PASSWORD:-$(generate_secret)}"
-  echo "Filled DB_PASSWORD from DB_PASSWORD env/default native password"
+  echo "Filled DB_PASSWORD with a generated secret for this deployment"
 fi
 
 for key in APP_BLIND_INDEX_KEY API_ADMIN_SECRET MASTER_WEBHOOK_SECRET; do
@@ -227,10 +230,30 @@ else
 fi
 
 step "Installing FreeBSD service configuration"
-sed "s|/usr/local/www/apache24/data/Sibermas2026|${APP_DIR}|g" \
-  "${API_DIR}/supervisord.conf" > "${SUPERVISOR_DEST}"
-
 cp "${APP_DIR}/conf/php-fpm.sibermas.conf" "${PHP_FPM_POOL_DEST}"
+install -m 0555 "${APP_DIR}/conf/rc.d/sibermas_web" "${RC_D_DEST}/sibermas_web"
+install -m 0555 "${APP_DIR}/conf/rc.d/sibermas_queue" "${RC_D_DEST}/sibermas_queue"
+
+sysrc nginx_enable="YES"
+sysrc php_fpm_enable="YES"
+sysrc sibermas_web_enable="YES"
+sysrc sibermas_web_app_dir="${APP_DIR}"
+sysrc sibermas_web_user="${WEB_USER}"
+sysrc sibermas_web_host="127.0.0.1"
+sysrc sibermas_web_port="3000"
+sysrc sibermas_web_public_api_url="${NEXT_PUBLIC_API_URL:-${PUBLIC_BASE_URL%/}/api/v1}"
+sysrc sibermas_web_server_api_url="${SERVER_API_URL:-http://127.0.0.1/api/v1}"
+sysrc sibermas_web_public_app_url="${NEXT_PUBLIC_APP_URL:-${PUBLIC_BASE_URL%/}}"
+sysrc sibermas_web_logfile="${LOG_DIR}/web.log"
+sysrc sibermas_web_pidfile="${LOG_DIR}/sibermas-web.pid"
+sysrc sibermas_web_child_pidfile="${LOG_DIR}/sibermas-web.child.pid"
+sysrc sibermas_queue_enable="YES"
+sysrc sibermas_queue_app_dir="${APP_DIR}"
+sysrc sibermas_queue_user="${WEB_USER}"
+sysrc sibermas_queue_log_dir="${LOG_DIR}"
+sysrc sibermas_queue_pid_dir="${LOG_DIR}"
+service supervisord stop 2>/dev/null || true
+sysrc supervisord_enable="NO" 2>/dev/null || true
 
 validate_rendered_nginx
 
@@ -264,14 +287,8 @@ else
   die "nginx -t gagal. Periksa ${NGINX_DEST}."
 fi
 
-if ! service supervisord status >/dev/null 2>&1; then
-  service supervisord start
-  sleep 2
-fi
-supervisorctl reread
-supervisorctl update
-supervisorctl restart sibermas-web || supervisorctl start sibermas-web
-supervisorctl restart "workers:*" || supervisorctl start "workers:*"
+service sibermas_web restart
+service sibermas_queue restart
 
 step "Health checks"
 for i in $(seq 1 12); do
@@ -289,6 +306,7 @@ done
 
 echo "Health check failed. Useful diagnostics:"
 echo "  sh ${APP_DIR}/scripts/diagnose-freebsd.sh"
-echo "  tail -50 ${LOG_DIR}/web.log"
+echo "  service sibermas_web status && tail -50 ${LOG_DIR}/web.log"
+echo "  service sibermas_queue status && tail -50 ${LOG_DIR}/worker-default.log"
 echo "  tail -50 ${API_DIR}/storage/logs/laravel.log"
 exit 1

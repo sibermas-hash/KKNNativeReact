@@ -1,5 +1,20 @@
 <?php
 
+$appUrl = (string) env('APP_URL', 'http://localhost');
+$frontendUrl = trim((string) env('APP_FRONTEND_URL', env('FRONTEND_URL', '')));
+
+if ($frontendUrl === '') {
+    $scheme = parse_url($appUrl, PHP_URL_SCHEME);
+    $host = parse_url($appUrl, PHP_URL_HOST);
+    $port = parse_url($appUrl, PHP_URL_PORT);
+
+    if (is_string($scheme) && $scheme !== '' && is_string($host) && $host !== '') {
+        $frontendUrl = sprintf('%s://%s%s', $scheme, $host, is_int($port) ? ':'.$port : '');
+    } else {
+        $frontendUrl = 'http://localhost';
+    }
+}
+
 return [
 
     'name' => env('APP_NAME', 'SIBERMAS'),
@@ -8,9 +23,9 @@ return [
 
     'debug' => (bool) env('APP_DEBUG', false),
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => $appUrl,
 
-    'frontend_url' => env('APP_FRONTEND_URL', env('FRONTEND_URL', env('APP_URL', 'http://localhost'))),
+    'frontend_url' => rtrim($frontendUrl, '/'),
 
     'asset_url' => env('ASSET_URL'),
 

@@ -13,6 +13,8 @@ class PeriodeResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'academic_year_id' => $this->academic_year_id,
+            'jenis_kkn_id' => $this->jenis_kkn_id,
             'periode' => $this->periode,
             'name' => $this->name,
             'theme' => $this->theme,
@@ -27,6 +29,7 @@ class PeriodeResource extends JsonResource
             'current_phase' => $this->current_phase,
             'phase_label' => $this->getPhaseLabel($this->current_phase),
             'is_locked' => $this->is_locked,
+            'participants_count' => $this->whenCounted('peserta'),
             'academic_year' => new TahunAkademikResource($this->whenLoaded('tahunAkademik')),
             'jenis_kkn' => new JenisKknResource($this->whenLoaded('jenisKkn')),
             'document_templates' => $this->whenLoaded('documentTemplates', fn () => $this->documentTemplates->map(fn ($assignment) => [

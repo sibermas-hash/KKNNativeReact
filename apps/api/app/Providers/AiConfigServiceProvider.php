@@ -5,13 +5,96 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Models\KKN\SystemSetting;
-use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 
 class AiConfigServiceProvider extends ServiceProvider
 {
+    public const RUNTIME_CONFIG_CACHE_KEY = 'ai_runtime_config';
+
+    /**
+     * @var array<string, string|array<int, string>>
+     */
+    private const PROVIDER_SETTING_MAP = [
+        'anthropic_api_key' => 'ai.providers.anthropic.key',
+        'anthropic_url' => 'ai.providers.anthropic.url',
+        'azure_openai_api_key' => 'ai.providers.azure.key',
+        'azure_openai_url' => 'ai.providers.azure.url',
+        'azure_openai_api_version' => 'ai.providers.azure.api_version',
+        'azure_openai_deployment' => 'ai.providers.azure.deployment',
+        'azure_openai_embedding_deployment' => 'ai.providers.azure.embedding_deployment',
+        'cohere_api_key' => 'ai.providers.cohere.key',
+        'deepseek_api_key' => 'ai.providers.deepseek.key',
+        'gemini_api_key' => 'ai.providers.gemini.key',
+        'gemini_url' => 'ai.providers.gemini.url',
+        'groq_api_key' => 'ai.providers.groq.key',
+        'groq_url' => 'ai.providers.groq.url',
+        'mistral_api_key' => 'ai.providers.mistral.key',
+        'mistral_url' => 'ai.providers.mistral.url',
+        'ollama_api_key' => 'ai.providers.ollama.key',
+        'ollama_base_url' => 'ai.providers.ollama.url',
+        'openai_api_key' => 'ai.providers.openai.key',
+        'openai_url' => 'ai.providers.openai.url',
+        'rizquna_api_key' => 'ai.providers.rizquna.key',
+        'rizquna_url' => 'ai.providers.rizquna.url',
+        'rizquna_model' => 'ai.providers.rizquna.models.text.default',
+        'rizquna_vision_model' => 'ai.providers.rizquna.models.vision.default',
+        'rizquna_code_model' => 'ai.providers.rizquna.models.code.default',
+        'xai_api_key' => 'ai.providers.xai.key',
+        'xai_url' => 'ai.providers.xai.url',
+    ];
+
+    /**
+     * @var array<string, string|array<int, string>>
+     */
+    private const FAILOVER_SETTING_MAP = [
+        'ai_primary_url' => 'ai.failover.primary.url',
+        'ai_primary_key' => 'ai.failover.primary.key',
+        'ai_primary_model' => 'ai.failover.primary.model',
+        'ai_fallback_url' => 'ai.failover.fallback.url',
+        'ai_fallback_key' => 'ai.failover.fallback.key',
+        'ai_fallback_model' => 'ai.failover.fallback.model',
+        'ai_tertiary_url' => 'ai.failover.tertiary.url',
+        'ai_tertiary_key' => 'ai.failover.tertiary.key',
+        'ai_tertiary_model' => 'ai.failover.tertiary.model',
+    ];
+
+    /**
+     * @var array<string, string|array<int, string>>
+     */
+    private const ROUTING_SETTING_MAP = [
+        'ai_assistant_provider' => 'ai.routing.assistant.provider',
+        'ai_assistant_model' => 'ai.routing.assistant.model',
+        'ai_activity_reviewer_provider' => 'ai.routing.activity_reviewer.provider',
+        'ai_activity_reviewer_model' => 'ai.routing.activity_reviewer.model',
+        'ai_alerting_model' => 'ai.routing.alerting.model',
+        'ai_analysis_model' => 'ai.routing.analysis.model',
+        'ai_code_provider' => 'ai.routing.code.provider',
+        'ai_code_model' => [
+            'ai.routing.code.model',
+            'ai.providers.rizquna.models.code.default',
+        ],
+        'ai_digest_model' => 'ai.routing.digest.model',
+        'ai_self_healer_provider' => 'ai.routing.self_healer.provider',
+        'ai_self_healer_model' => 'ai.routing.self_healer.model',
+        'ai_vision_model' => [
+            'ai.routing.vision.model',
+            'ai.providers.rizquna.models.vision.default',
+        ],
+    ];
+
+    /**
+     * @var array<int, string>
+     */
+    private const LEGACY_MODEL_TARGETS = [
+        'ai.providers.rizquna.models.text.default',
+        'ai.routing.assistant.model',
+        'ai.routing.analysis.model',
+        'ai.routing.activity_reviewer.model',
+        'ai.failover.primary.model',
+    ];
+
     /**
      * Register services.
      */
@@ -25,184 +108,120 @@ class AiConfigServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Load AI configuration from database (production) or .env (development)
-        // This runs after database is ready
         $this->bootstrapAiConfig();
     }
 
     /**
-     * Bootstrap AI configuration from database with fallback to .env
+     * Bootstrap AI configuration from database with fallback to .env.
      *
      * Priority:
-     * 1. Database (SystemSetting) - Production config
-     * 2. .env - Development/initial setup
-     * 3. null - Use default
-     *
-     * Benefits:
-     * - Production: No .env needed, all config in database via admin panel
-     * - Development: Can use .env for quick testing
-     * - No restart needed: Cache invalidation on update
+     * 1. Database (SystemSetting) - runtime override
+     * 2. .env/config - bootstrap default
      */
     private function bootstrapAiConfig(): void
     {
-        if (! $this->app->runningInConsole() && $this->isDatabaseReady()) {
-            $this->loadAiProviderConfig();
+        if (! $this->isDatabaseReady()) {
+            return;
         }
+
+        $this->loadAiRuntimeConfig();
     }
 
     /**
-     * Check if database is ready (avoid errors during migrations)
+     * Check if database and system_settings table are ready.
      */
     private function isDatabaseReady(): bool
     {
         try {
-            return \DB::connection()->getDatabaseName() !== null;
-        } catch (\Exception $e) {
+            return \DB::connection()->getDatabaseName() !== null
+                && Schema::hasTable('system_settings');
+        } catch (\Throwable $e) {
             return false;
         }
     }
 
     /**
-     * Load AI provider configuration from database
+     * Load AI runtime configuration from database.
      */
-    private function loadAiProviderConfig(): void
+    private function loadAiRuntimeConfig(): void
     {
-        // Cache key: ai_config (cached for 1 hour, invalidated on update)
-        $cachedConfig = Cache::remember('ai_provider_config', 3600, function () {
-            return $this->fetchProviderConfigFromDatabase();
+        $overrides = Cache::remember(self::RUNTIME_CONFIG_CACHE_KEY, 3600, function (): array {
+            return $this->buildRuntimeConfig();
         });
 
-        if ($cachedConfig) {
-            // Merge database config with existing config
-            $currentAiConfig = config('ai.providers', []);
-            $updatedConfig = array_merge_recursive($currentAiConfig, $cachedConfig);
-
-            // Update the ai.providers config at runtime
-            config(['ai.providers' => $updatedConfig]);
-            config(['ai.default' => $this->getDefaultProvider()]);
+        if ($overrides !== []) {
+            config($overrides);
         }
     }
 
     /**
-     * Fetch AI provider configuration from database
+     * Build config() dot-key overrides from database-backed system settings.
      *
-     * @return array<string, array>
+     * @return array<string, mixed>
      */
-    private function fetchProviderConfigFromDatabase(): array
+    private function buildRuntimeConfig(): array
     {
-        $config = [];
+        $overrides = [];
+        $defaultProvider = $this->settingValue('ai_provider');
 
-        // Get all AI-related settings from database
-        $settings = SystemSetting::where('group', 'ai_settings')
-            ->orWhere('config_key', 'like', '%_api_key')
-            ->orWhere('config_key', 'like', '%_api_%')
-            ->get();
-
-        if ($settings->isEmpty()) {
-            return [];
+        if ($defaultProvider !== null && $defaultProvider !== '') {
+            $overrides['ai.default'] = $defaultProvider;
+            $overrides['ai.default_for_images'] = $defaultProvider;
+            $overrides['ai.default_for_audio'] = $defaultProvider;
+            $overrides['ai.default_for_transcription'] = $defaultProvider;
+            $overrides['ai.default_for_embeddings'] = $defaultProvider;
+            $overrides['ai.default_for_reranking'] = $defaultProvider;
         }
 
-        foreach ($settings as $setting) {
-            $value = $setting->value;
+        $this->applyConfigMap($overrides, self::PROVIDER_SETTING_MAP);
 
-            // Decrypt if encrypted
-            if ($this->isSecretKey($setting->config_key) && $value) {
-                try {
-                    $value = Crypt::decryptString($value);
-                } catch (DecryptException $e) {
-                    \Log::warning("Failed to decrypt AI setting: {$setting->config_key}", [
-                        'error' => $e->getMessage(),
-                    ]);
-
-                    continue;
-                }
+        $legacyModel = $this->settingValue('ai_model');
+        if ($legacyModel !== null && $legacyModel !== '') {
+            foreach (self::LEGACY_MODEL_TARGETS as $target) {
+                $overrides[$target] = $legacyModel;
             }
-
-            // Map database keys to config structure
-            $config = $this->mapDatabaseKeyToConfig($config, $setting->config_key, $value);
         }
 
-        return $config;
+        $this->applyConfigMap($overrides, self::FAILOVER_SETTING_MAP);
+        $this->applyConfigMap($overrides, self::ROUTING_SETTING_MAP);
+
+        return $overrides;
     }
 
     /**
-     * Map database key to config structure
-     *
-     * Examples:
-     * - 'gemini_api_key' -> ['gemini' => ['key' => value]]
-     * - 'openai_api_key' -> ['openai' => ['key' => value]]
-     * - 'anthropic_api_key' -> ['anthropic' => ['key' => value]]
-     *
-     * @param  array<string, array>  $config
-     * @return array<string, array>
+     * @param  array<string, mixed>  $overrides
+     * @param  array<string, string|array<int, string>>  $settingMap
      */
-    private function mapDatabaseKeyToConfig(array $config, string $dbKey, mixed $value): array
+    private function applyConfigMap(array &$overrides, array $settingMap): void
     {
-        // Extract provider name and setting type from key
-        // Examples: 'gemini_api_key', 'openai_api_key', 'anthropic_api_key'
-        if (str_ends_with($dbKey, '_api_key')) {
-            $provider = str_replace('_api_key', '', $dbKey);
+        foreach ($settingMap as $settingKey => $configKeys) {
+            $value = $this->settingValue($settingKey);
+            if ($value === null) {
+                continue;
+            }
 
-            // Provider exists in config, update its key
-            if ($value) {
-                $config[$provider] ??= [];
-                $config[$provider]['key'] = $value;
+            $allowBlank = str_ends_with($settingKey, '_key');
+            if (! $allowBlank && $value === '') {
+                continue;
+            }
+
+            foreach ((array) $configKeys as $configKey) {
+                $overrides[$configKey] = $value;
             }
         }
-        // For provider-specific settings (URL, deployment, etc)
-        elseif (str_contains($dbKey, '_')) {
-            $parts = explode('_', $dbKey);
-            if (count($parts) >= 2) {
-                $provider = array_shift($parts); // First part is provider
-                $configKey = implode('_', $parts); // Rest is config key
-
-                if ($value) {
-                    $config[$provider] ??= [];
-                    $config[$provider][$configKey] = $value;
-                }
-            }
-        }
-
-        return $config;
     }
 
-    /**
-     * Check if key should be encrypted/decrypted
-     */
-    private function isSecretKey(string $key): bool
+    private function settingValue(string $key): ?string
     {
-        $secretKeys = [
-            'gemini_api_key',
-            'openai_api_key',
-            'anthropic_api_key',
-            'azure_openai_api_key',
-            'groq_api_key',
-            'mistral_api_key',
-            'deepseek_api_key',
-            'cohere_api_key',
-            'xai_api_key',
-            'alibaba_api_key',
-            'master_api_client_secret',
-            'master_api_token',
-        ];
-
-        return in_array($key, $secretKeys, true);
-    }
-
-    /**
-     * Get default provider from database or .env
-     */
-    private function getDefaultProvider(): string
-    {
-        // Try database first
-        if ($this->isDatabaseReady()) {
-            $setting = SystemSetting::where('config_key', 'ai_provider')->first();
-            if ($setting && $setting->value) {
-                return $setting->value;
-            }
+        $value = SystemSetting::get($key, null);
+        if ($value === null) {
+            return null;
         }
 
-        // Fallback to .env
-        return config('ai.provider', 'gemini');
+        if (is_array($value) || is_object($value)) {
+            return null;
+        }
+
+        return trim((string) $value);
     }
 }

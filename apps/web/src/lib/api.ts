@@ -1,3 +1,4 @@
+import axios from 'axios';
 import {
   createWebClient,
   authEndpoints,
@@ -21,6 +22,38 @@ function getBaseUrl(): string {
 }
 
 export const api = createWebClient(getBaseUrl());
+export const rawApi = axios.create({
+  baseURL: getBaseUrl(),
+  withCredentials: true,
+  withXSRFToken: true,
+  headers: {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  },
+});
+
+rawApi.interceptors.response.use(
+  (response) => response,
+  (error: unknown) => {
+    if (axios.isAxiosError(error)) {
+      if (error.response?.status === 401) {
+        if (typeof window !== 'undefined' && window.dispatchEvent) {
+          window.dispatchEvent(new CustomEvent('auth:logout'));
+        }
+      } else if (error.response?.status === 403 && error.response?.data?.error?.code === 'PASSWORD_CHANGE_REQUIRED') {
+        if (typeof window !== 'undefined' && window.dispatchEvent) {
+          window.dispatchEvent(new CustomEvent('auth:require_password_change'));
+        }
+      } else if (error.response?.status === 403 && error.response?.data?.error?.code === 'PROFILE_INCOMPLETE') {
+        if (typeof window !== 'undefined' && window.dispatchEvent) {
+          window.dispatchEvent(new CustomEvent('auth:profile_incomplete'));
+        }
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);
 
 // Singleton endpoint instances — prevents recreation on every render
 export const authApi = authEndpoints(api);

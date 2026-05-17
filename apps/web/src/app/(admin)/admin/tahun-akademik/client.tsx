@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useTransition, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Fragment, useMemo, useState, useTransition } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { api } from '@/lib/api';
+import { AnimatePresence, motion } from 'framer-motion';
 import { clsx } from 'clsx';
 import { Plus, Trash2, CheckCircle2, RefreshCw, LibraryBig, ArrowUpDown, ChevronDown, History, Activity } from 'lucide-react';
 import { toast } from 'sonner';
@@ -20,41 +22,103 @@ const YEAR_OPTIONS = Array.from({ length: 6 }, (_, i) => {
   return `${s}/${s + 1}`;
 });
 
-export function TahunAkademikClient({ initialData }: { initialData: TahunAkademik[] }): React.JSX.Element {
+export function TahunAkademikClient({
+  initialData,
+  loadError,
+}: {
+  initialData: TahunAkademik[];
+  loadError?: string;
+}): React.JSX.Element {
   const [isPending, startTransition] = useTransition();
   const [formYear, setFormYear] = useState('');
   const [formActive, setFormActive] = useState(false);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [expandedId, setExpandedId] = useState<number | null>(null);
   const [search, setSearch] = useState('');
+  const { data: fetched, isLoading, isError, refetch } = useQuery({
+    queryKey: ['admin', 'tahun-akademik'],
+    queryFn: async () => {
+      const res = await api.get('/admin/tahun-akademik');
+      const root = (res as { data?: unknown })?.data ?? res;
+
+      if (Array.isArray(root)) {
+        return root as TahunAkademik[];
+      }
+
+      const payload = root as { data?: unknown };
+
+      return Array.isArray(payload.data) ? (payload.data as TahunAkademik[]) : [];
+    },
+    initialData,
+    enabled: !loadError,
+  });
+  const isReadOnly = Boolean(loadError) || isError;
+  const sourceRows = fetched ?? initialData;
 
   const rows = useMemo(() => {
-    const list = initialData.filter((ay) => ay.year.includes(search));
+    const list = sourceRows.filter((ay) => ay.year.includes(search));
     return [...list].sort((a, b) =>
       sortDir === 'asc' ? a.year.localeCompare(b.year) : b.year.localeCompare(a.year)
     );
-  }, [initialData, search, sortDir]);
+  }, [sourceRows, search, sortDir]);
 
   const handleCreate = () => {
-    if (!formYear) return;
+    if (!formYear || isReadOnly) return;
     startTransition(async () => {
-      await createTahunAkademik(formYear, formActive);
-      toast.success('Tahun akademik ditambahkan');
-      setFormYear(''); setFormActive(false);
+      try {
+        const response = await createTahunAkademik(formYear, formActive);
+        if (!response.ok) {
+          toast.error(response.message);
+          return;
+        }
+
+        await refetch();
+        toast.success(response.message ?? 'Tahun akademik ditambahkan.');
+        setFormYear('');
+        setFormActive(false);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Gagal menambahkan tahun akademik.');
+      }
     });
   };
 
   const handleToggle = (ay: TahunAkademik) => {
+    if (isReadOnly) return;
     startTransition(async () => {
-      await toggleTahunAkademikStatus(ay.id, ay.year, ay.is_active);
+      try {
+        const response = await toggleTahunAkademikStatus(ay.id, ay.year, ay.is_active);
+        if (!response.ok) {
+          toast.error(response.message);
+          return;
+        }
+
+        await refetch();
+        toast.success(
+          response.message ??
+            (ay.is_active ? 'Tahun akademik dinonaktifkan.' : 'Tahun akademik diaktifkan.')
+        );
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Gagal memperbarui status tahun akademik.');
+      }
     });
   };
 
   const handleDelete = (ay: TahunAkademik) => {
+    if (isReadOnly) return;
     if (!confirm(`Data "${ay.year}" akan dihapus secara permanen. Lanjutkan?`)) return;
     startTransition(async () => {
-      await deleteTahunAkademik(ay.id);
-      toast.success('Tahun akademik dihapus');
+      try {
+        const response = await deleteTahunAkademik(ay.id);
+        if (!response.ok) {
+          toast.error(response.message);
+          return;
+        }
+
+        await refetch();
+        toast.success(response.message);
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Gagal menghapus tahun akademik.');
+      }
     });
   };
 
@@ -67,7 +131,7 @@ export function TahunAkademikClient({ initialData }: { initialData: TahunAkademi
             <div className="h-8 w-8 rounded-xl bg-cyan-50 flex items-center justify-center text-cyan-600"><Plus size={16} /></div>
             <div>
               <p className="text-sm font-black text-cyan-950 tracking-tight">Tambah Tahun</p>
-              <p className="text-[11px] text-slate-400">Daftarkan formasi tahun ajaran baru.</p>
+              <p className="text-[11px] text-slate-400">Daftarkan formasi tahun akademik baru.</p>
             </div>
           </div>
           <div className="p-6 space-y-6">
@@ -76,6 +140,7 @@ export function TahunAkademikClient({ initialData }: { initialData: TahunAkademi
               <select
                 value={formYear}
                 onChange={(e) => setFormYear(e.target.value)}
+                disabled={isPending || isReadOnly}
                 className="w-full px-5 py-3.5 rounded-2xl border-2 border-slate-50 text-sm font-semibold text-cyan-950 focus:border-cyan-600 outline-none transition-all bg-[#F8FAF9] hover:border-cyan-100"
               >
                 <option value="" disabled>Pilih Tahun Akademik</option>
@@ -83,16 +148,16 @@ export function TahunAkademikClient({ initialData }: { initialData: TahunAkademi
               </select>
             </div>
             <motion.div whileHover={{ scale: 1.02 }} className="flex items-start gap-4 p-5 bg-white rounded-3xl border-2 border-slate-50 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
-              <input id="is_active" type="checkbox" checked={formActive} onChange={(e) => setFormActive(e.target.checked)} className="w-5 h-5 mt-0.5 text-cyan-600 border-slate-200 rounded-lg focus:ring-cyan-500 cursor-pointer" />
+              <input id="is_active" type="checkbox" checked={formActive} onChange={(e) => setFormActive(e.target.checked)} disabled={isPending || isReadOnly} className="w-5 h-5 mt-0.5 text-cyan-600 border-slate-200 rounded-lg focus:ring-cyan-500 cursor-pointer disabled:cursor-not-allowed" />
               <div>
                 <label htmlFor="is_active" className="text-sm font-semibold text-cyan-950 cursor-pointer tracking-tight leading-none mb-1 block">Jadikan Aktif</label>
-                <p className="text-[11px] font-medium text-slate-500">Otomatis diatur sebagai tahun ajaran berjalan.</p>
+                <p className="text-[11px] font-medium text-slate-500">Otomatis diatur sebagai tahun akademik berjalan.</p>
               </div>
             </motion.div>
             <motion.button
               whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
               onClick={handleCreate}
-              disabled={isPending || !formYear}
+              disabled={isPending || isReadOnly || !formYear}
               className="w-full h-14 bg-cyan-600 text-white text-sm font-semibold rounded-2xl hover:bg-cyan-700 transition-colors flex items-center justify-center gap-4 shadow-[0_8px_20px_rgba(6,182,212,0.25)] disabled:opacity-50"
             >
               {isPending ? <RefreshCw size={18} className="animate-spin" /> : <CheckCircle2 size={18} strokeWidth={3} />}
@@ -109,6 +174,12 @@ export function TahunAkademikClient({ initialData }: { initialData: TahunAkademi
             <div className="flex items-center gap-3">
               <div className="h-8 w-8 rounded-xl bg-cyan-50 flex items-center justify-center text-cyan-600"><LibraryBig size={16} /></div>
               <p className="text-sm font-black text-cyan-950 tracking-tight">Arsip Tahun Akademik</p>
+              {isLoading && <span className="text-[10px] font-bold text-slate-400">Memuat...</span>}
+              {isError && !loadError && (
+                <button onClick={() => refetch()} className="text-[10px] font-black text-rose-600">
+                  API gagal · coba lagi
+                </button>
+              )}
             </div>
             <input
               value={search} onChange={(e) => setSearch(e.target.value)}
@@ -130,9 +201,8 @@ export function TahunAkademikClient({ initialData }: { initialData: TahunAkademi
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                <AnimatePresence>
-                  {rows.map((ay, index) => (
-                    <>
+                {rows.map((ay, index) => (
+                  <Fragment key={ay.id}>
                       <motion.tr key={ay.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }}
                         className={clsx('group transition-all hover:bg-cyan-50/40', expandedId === ay.id && 'bg-cyan-50/20')}
                       >
@@ -153,12 +223,13 @@ export function TahunAkademikClient({ initialData }: { initialData: TahunAkademi
                         </td>
                         <td className="px-6 py-5">
                           <div className="flex items-center justify-end gap-3">
-                            <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleToggle(ay)} disabled={isPending}
+                            <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleToggle(ay)} disabled={isPending || isReadOnly}
                               className={clsx('px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all shadow-sm', ay.is_active ? 'bg-slate-100 text-slate-400 hover:bg-slate-200' : 'bg-lime-500 text-white hover:bg-lime-600 shadow-[0_4px_12px_rgba(132,204,22,0.3)]')}>
                               {ay.is_active ? 'Switch Off' : 'Activate'}
                             </motion.button>
                             <motion.button whileHover={{ scale: 1.1, backgroundColor: '#fff1f2', color: '#e11d48' }} whileTap={{ scale: 0.9 }}
                               onClick={() => handleDelete(ay)}
+                              disabled={isPending || isReadOnly}
                               className="h-10 w-10 flex items-center justify-center text-slate-300 rounded-xl transition-all">
                               <Trash2 size={16} />
                             </motion.button>
@@ -193,9 +264,8 @@ export function TahunAkademikClient({ initialData }: { initialData: TahunAkademi
                           </motion.tr>
                         )}
                       </AnimatePresence>
-                    </>
-                  ))}
-                </AnimatePresence>
+                  </Fragment>
+                ))}
                 {rows.length === 0 && (
                   <tr><td colSpan={3} className="px-6 py-12 text-center text-sm text-slate-400">Belum ada tahun akademik</td></tr>
                 )}

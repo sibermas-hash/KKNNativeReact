@@ -64,7 +64,6 @@ start_one()
         -f \
         -P "$_pidfile" \
         -p "$_child_pidfile" \
-        -u "$sibermas_queue_user" \
         -o "$_logfile" \
         -t "sibermas-queue-${_name}-${_idx}" \
         -r -R 5 \

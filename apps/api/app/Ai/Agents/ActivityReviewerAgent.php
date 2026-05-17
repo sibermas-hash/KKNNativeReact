@@ -23,7 +23,7 @@ class ActivityReviewerAgent implements Agent, Conversational, HasStructuredOutpu
      */
     public function provider(): string
     {
-        return config('ai.routing.activity_reviewer.provider', 'alibaba');
+        return config('ai.routing.activity_reviewer.provider', config('ai.default', 'rizquna'));
     }
 
     /**
@@ -31,7 +31,7 @@ class ActivityReviewerAgent implements Agent, Conversational, HasStructuredOutpu
      */
     public function model(): string
     {
-        return config('ai.routing.activity_reviewer.model', 'qwen-plus');
+        return config('ai.routing.activity_reviewer.model', config('ai.routing.analysis.model', 'ag/gemini-3-flash'));
     }
 
     /**

@@ -11,12 +11,15 @@ class ProdiResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $fakultas = new FakultasResource($this->whenLoaded('fakultas'));
+
         return [
             'id' => $this->id,
             'nama' => $this->nama,
             'code' => $this->code,
             'fakultas_id' => $this->fakultas_id,
-            'faculty' => new FakultasResource($this->whenLoaded('fakultas')),
+            'faculty' => $fakultas,
+            'fakultas' => $fakultas,
         ];
     }
 }

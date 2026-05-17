@@ -354,6 +354,25 @@ check_port 3000 "Next.js"
 check_port 5432 "PostgreSQL"
 check_port 6379 "Redis"
 
+if [ -x /usr/local/etc/rc.d/sibermas_web ]; then
+  WEB_BIND_HOST=$(sysrc -n sibermas_web_host 2>/dev/null || true)
+  WEB_BIND_PORT=$(sysrc -n sibermas_web_port 2>/dev/null || true)
+  [ -n "$WEB_BIND_HOST" ] || WEB_BIND_HOST="127.0.0.1"
+  [ -n "$WEB_BIND_PORT" ] || WEB_BIND_PORT="3000"
+
+  if [ "$WEB_BIND_HOST" = "127.0.0.1" ]; then
+    ok "sibermas_web host internal: ${WEB_BIND_HOST}"
+  else
+    warn "sibermas_web host=${WEB_BIND_HOST} (disarankan 127.0.0.1 agar Nginx tetap owns public edge)"
+  fi
+
+  if [ "$WEB_BIND_PORT" = "3000" ]; then
+    ok "sibermas_web port internal: ${WEB_BIND_PORT}"
+  else
+    warn "sibermas_web port=${WEB_BIND_PORT} (disarankan 3000; jangan bind Next.js ke 443 pada profile ini)"
+  fi
+fi
+
 # ─── 9. Timezone ───────────────────────────────────────────────────────
 section "9. Timezone"
 

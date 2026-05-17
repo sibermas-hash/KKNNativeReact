@@ -2,6 +2,26 @@
 
 declare(strict_types=1);
 
+$appUrl = trim((string) env('APP_URL', ''));
+$frontendUrl = trim((string) env('APP_FRONTEND_URL', env('FRONTEND_URL', '')));
+$scribeBaseUrl = trim((string) env('SCRIBE_BASE_URL', $frontendUrl));
+
+if ($scribeBaseUrl === '' && $appUrl !== '') {
+    $scheme = parse_url($appUrl, PHP_URL_SCHEME);
+    $host = parse_url($appUrl, PHP_URL_HOST);
+    $port = parse_url($appUrl, PHP_URL_PORT);
+
+    if (is_string($scheme) && $scheme !== '' && is_string($host) && $host !== '') {
+        $scribeBaseUrl = sprintf('%s://%s%s', $scheme, $host, is_int($port) ? ':'.$port : '');
+    }
+}
+
+if ($scribeBaseUrl === '') {
+    $scribeBaseUrl = 'http://localhost:8000';
+}
+
+$scribeBaseUrl = rtrim($scribeBaseUrl, '/');
+
 return [
 
     /*
@@ -169,7 +189,7 @@ return [
     'try_it_out' => [
         'enabled' => true,
         'include_csrf_token' => false,
-        'base_url' => env('APP_URL'),
+        'base_url' => $scribeBaseUrl,
     ],
 
     /*
@@ -211,7 +231,7 @@ return [
         'description' => 'SIBERMAS REST API for KKN Management',
         'export_filename' => 'sibermas-api-collection.json',
         'collection_name' => 'SIBERMAS API v1',
-        'collection_base_url' => env('APP_URL').'/api/v1',
+        'collection_base_url' => $scribeBaseUrl,
         'base_url_params' => [
             'api_path' => 'api/v1',
         ],
@@ -241,7 +261,7 @@ return [
         ],
 
         'static' => [
-            'baseUrl' => env('APP_URL').'/api/v1',
+            'baseUrl' => $scribeBaseUrl,
             'headers' => [
                 'Accept' => 'application/json',
             ],

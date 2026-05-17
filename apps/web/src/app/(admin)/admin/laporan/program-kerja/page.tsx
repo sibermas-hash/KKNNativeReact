@@ -2,28 +2,39 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { adminApi } from '@/lib/api';
+import type { ApiResponse, PaginationMeta } from '@sibermas/shared-types';
+import { rawApi } from '@/lib/api';
 import Link from 'next/link';
 import { FileText, Search, Target, Globe, Eye } from 'lucide-react';
 import { PageHeader, DataTable, StatusBadge, StatCard, EmptyState } from '@/components/ui/shared';
+
+type WorkProgramRow = Record<string, unknown>;
+type WorkProgramsMeta = Partial<PaginationMeta> & { approved?: number; pending?: number };
+type PaginatedWorkProgramsResponse = {
+  data: WorkProgramRow[];
+  meta?: WorkProgramsMeta;
+};
 
 export default function AdminWorkProgramsMonitoringPage(): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<PaginatedWorkProgramsResponse>({
     queryKey: ['admin', 'work-programs', { search, status, page }],
     queryFn: async () => {
-      const res = await (adminApi as unknown as {
-        workPrograms: { index: (p: Record<string, unknown>) => Promise<unknown> };
-      }).workPrograms.index({ search: search || undefined, status: status || undefined, page });
-      return (res as { data?: unknown }).data ?? res;
+      const response = await rawApi.get<ApiResponse<WorkProgramRow[]>>('/admin/laporan/program-kerja', {
+        params: { search: search || undefined, status: status || undefined, page },
+      });
+      return {
+        data: response.data.data ?? [],
+        meta: response.data.meta as WorkProgramsMeta | undefined,
+      };
     },
   });
 
-  const programs = (data as { data?: Record<string, unknown>[] })?.data ?? [];
-  const meta = (data as { meta?: { total?: number; last_page?: number; approved?: number; pending?: number } })?.meta ?? {};
+  const programs = data?.data ?? [];
+  const meta = data?.meta ?? {};
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">

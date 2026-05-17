@@ -1,18 +1,21 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminApi } from '@/lib/api';
-import { Users, UserPlus, Eye, EyeOff, X } from 'lucide-react';
-import { PageHeader, EmptyState } from '@/components/ui/shared';
+import type { ApiResponse, PaginationMeta } from '@sibermas/shared-types';
+import { adminApi, rawApi } from '@/lib/api';
+import { mutationErrorHandler } from '@/lib/utils';
+import { Users, UserPlus, Eye, EyeOff, X, ShieldAlert } from 'lucide-react';
+import { PageHeader, EmptyState, ResponsiveTable } from '@/components/ui/shared';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { toast } from 'sonner';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useDeferredValue } from 'react';
+import { useAuthStore } from '@/stores';
 
 interface User {
   id: number;
   name: string;
   username: string;
-  email: string;
+  email?: string | null;
   roles?: string[];
   is_active?: boolean;
   fakultas_id?: number | null;
@@ -31,7 +34,6 @@ interface MahasiswaDetail {
   marital_status?: string | null;
   phone?: string | null;
   alamat?: string | null;
-  api_email?: string | null;
   fakultas_id?: number | null;
   prodi_id?: number | null;
   batch_year?: number | null;
@@ -78,13 +80,32 @@ type EditForm = {
   dosen: Partial<DosenDetail>;
 };
 
+type PaginatedUsersResponse = {
+  data: User[];
+  meta?: PaginationMeta;
+};
+
+type FacultyOption = {
+  id: number;
+  nama: string;
+};
+
+const EMPTY_CREATE_FORM = { username: '', name: '', email: '', role: 'student' };
 const EMPTY_EDIT: EditForm = { user: {}, mahasiswa: {}, dosen: {} };
 
 export default function AdminUsersPage(): React.JSX.Element {
   const queryClient = useQueryClient();
+  const currentUser = useAuthStore((state) => state.user);
+  const isSuperadmin = (currentUser?.roles ?? []).includes('superadmin');
   const [search, setSearch] = useState('');
+  const deferredSearch = useDeferredValue(search.trim());
+  const [roleFilter, setRoleFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [facultyFilter, setFacultyFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(25);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ username: '', name: '', email: '', role: 'student' });
+  const [form, setForm] = useState(EMPTY_CREATE_FORM);
   const [showCreatePassword, setShowCreatePassword] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editRole, setEditRole] = useState('student');
@@ -93,23 +114,67 @@ export default function AdminUsersPage(): React.JSX.Element {
   const [resetConfirmUser, setResetConfirmUser] = useState<User | null>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['admin', 'users', { search }],
+  const resetCreateForm = () => {
+    setForm(EMPTY_CREATE_FORM);
+    setShowCreatePassword(false);
+    if (passwordRef.current) passwordRef.current.value = '';
+  };
+
+  const closeEditModal = () => {
+    setEditingId(null);
+    setEditForm(EMPTY_EDIT);
+  };
+
+  const toggleCreateForm = () => {
+    if (showForm) {
+      setShowForm(false);
+      resetCreateForm();
+      return;
+    }
+
+    resetCreateForm();
+    setShowForm(true);
+  };
+
+  const { data, isLoading, isFetching, isError, error, refetch } = useQuery<PaginatedUsersResponse>({
+    queryKey: ['admin', 'users', { search: deferredSearch, roleFilter, statusFilter, facultyFilter, page, perPage }],
     queryFn: async () => {
-      const res = await adminApi.users.index({ search });
-      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
+      const response = await rawApi.get<ApiResponse<User[]>>('/admin/pengguna', {
+        params: {
+          search: deferredSearch || undefined,
+          role: roleFilter || undefined,
+          is_active: statusFilter === '' ? undefined : statusFilter === 'active',
+          fakultas_id: facultyFilter || undefined,
+          page,
+          per_page: perPage,
+        },
+      });
+
+      return {
+        data: response.data.data ?? [],
+        meta: response.data.meta,
+      };
     },
+    enabled: isSuperadmin,
+    placeholderData: (previousData) => previousData,
   });
 
-  const { data: detailData, isLoading: detailLoading, isError: detailError } = useQuery({
+  const { data: detailData, isLoading: detailLoading, isError: detailError, error: detailQueryError } = useQuery<UserDetailPayload | null>({
     queryKey: ['admin', 'users', 'detail', editingId],
     queryFn: async () => {
       if (editingId === null) return null;
-      const res = await adminApi.users.show(editingId);
-      return (((res as unknown as { data?: unknown })?.data ?? res) as { data?: UserDetailPayload })?.data
-        ?? ((res as unknown as UserDetailPayload));
+      return await adminApi.users.show(editingId) as unknown as UserDetailPayload;
     },
-    enabled: editingId !== null,
+    enabled: editingId !== null && isSuperadmin,
+  });
+
+  const { data: facultiesData } = useQuery<FacultyOption[]>({
+    queryKey: ['admin', 'fakultas', 'user-filters'],
+    queryFn: async () => {
+      const res = await adminApi.master.faculties.index({});
+      return res as unknown as FacultyOption[];
+    },
+    enabled: isSuperadmin,
   });
 
   // Audit fix (2026-05-13): sync detail → form DILAKUKAN di useEffect, bukan
@@ -142,7 +207,6 @@ export default function AdminUsersPage(): React.JSX.Element {
             marital_status: mahasiswa.marital_status ?? '',
             phone: mahasiswa.phone ?? '',
             alamat: mahasiswa.alamat ?? '',
-            api_email: mahasiswa.api_email ?? '',
             fakultas_id: mahasiswa.fakultas_id ?? null,
             prodi_id: mahasiswa.prodi_id ?? null,
             batch_year: mahasiswa.batch_year ?? null,
@@ -184,17 +248,17 @@ export default function AdminUsersPage(): React.JSX.Element {
     mutationFn: (data: Record<string, unknown>) => adminApi.users.store(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      resetCreateForm();
       setShowForm(false);
       toast.success('Pengguna ditambahkan');
-      if (passwordRef.current) passwordRef.current.value = '';
     },
-    onError: () => toast.error('Gagal menambahkan pengguna'),
+    onError: (queryError: unknown) => toast.error(mutationErrorHandler(queryError)),
   });
 
   const toggleMutation = useMutation({
     mutationFn: (id: number) => adminApi.users.toggleStatus(id),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'users'] }); toast.success('Status diubah'); },
-    onError: () => toast.error('Gagal mengubah status pengguna'),
+    onError: (queryError: unknown) => toast.error(mutationErrorHandler(queryError)),
   });
 
   const roleMutation = useMutation({
@@ -204,20 +268,21 @@ export default function AdminUsersPage(): React.JSX.Element {
       setEditingUser(null);
       toast.success('Role berhasil diubah');
     },
-    onError: (error: unknown) => toast.error((error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Gagal mengubah role'),
+    onError: (queryError: unknown) => toast.error(mutationErrorHandler(queryError)),
   });
 
   const resetPwMutation = useMutation({
     mutationFn: (id: number) => adminApi.users.resetPassword(id),
     onSuccess: (res: unknown) => {
-      const data = (res as { data?: { data?: { email_sent?: boolean } } })?.data?.data;
+      setResetConfirmUser(null);
+      const data = res as { email_sent?: boolean };
       toast.success(
         data?.email_sent
-          ? 'Password sementara dikirim ke email.'
-          : 'Password sementara dibuat (user tidak punya email — hubungi manual).'
+          ? 'Tautan reset password dikirim ke email pengguna.'
+          : 'Tautan reset password berhasil dibuat.'
       );
     },
-    onError: () => toast.error('Gagal reset password'),
+    onError: (queryError: unknown) => toast.error(mutationErrorHandler(queryError)),
   });
 
   const editMutation = useMutation({
@@ -225,18 +290,16 @@ export default function AdminUsersPage(): React.JSX.Element {
       adminApi.users.update(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
-      setEditingId(null);
-      setEditForm(EMPTY_EDIT);
+      closeEditModal();
       toast.success('Data pengguna berhasil diperbarui.');
     },
-    onError: (error: unknown) =>
-      toast.error(
-        (error as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error
-          ?.message || 'Gagal memperbarui data.'
-      ),
+    onError: (queryError: unknown) => toast.error(mutationErrorHandler(queryError)),
   });
 
-  const users = (data as unknown as User[]) || [];
+  const users = data?.data ?? [];
+  const meta = data?.meta;
+  const listErrorMessage = isError ? mutationErrorHandler(error) : null;
+  const detailErrorMessage = detailError ? mutationErrorHandler(detailQueryError) : null;
 
   const roleOptions = [
     { value: 'student', label: 'Mahasiswa' },
@@ -246,6 +309,32 @@ export default function AdminUsersPage(): React.JSX.Element {
     { value: 'faculty_admin', label: 'Admin Fakultas' },
     { value: 'superadmin', label: 'Superadmin' },
   ];
+  const statusOptions = [
+    { value: '', label: 'Semua Status' },
+    { value: 'active', label: 'Aktif' },
+    { value: 'inactive', label: 'Nonaktif' },
+  ];
+  const roleLabelMap = Object.fromEntries(roleOptions.map((option) => [option.value, option.label]));
+  const faculties = facultiesData ?? [];
+  const activeFilterCount = [deferredSearch, roleFilter, statusFilter, facultyFilter].filter(Boolean).length;
+  const hasActiveFilters = activeFilterCount > 0;
+
+  if (!isSuperadmin) {
+    return (
+      <div className="max-w-xl mx-auto mt-16">
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-800">
+          <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-bold">Akses khusus superadmin.</p>
+            <p className="text-xs mt-1">
+              Manajemen pengguna, perubahan role, dan reset password hanya tersedia untuk superadmin
+              karena memengaruhi akses seluruh sistem.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmitEdit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -266,15 +355,15 @@ export default function AdminUsersPage(): React.JSX.Element {
     if (hasMahasiswa) {
       const { nim: _nim, ...rest } = editForm.mahasiswa;
       void _nim;
-      payload.mahasiswa = rest;
+      payload.mahasiswa = stripUndefined(rest as Record<string, unknown>);
     }
     if (hasDosen) {
       const { nip: _nip, ...rest } = editForm.dosen;
       void _nip;
-      payload.dosen = rest;
+      payload.dosen = stripUndefined(rest as Record<string, unknown>);
     }
 
-    editMutation.mutate({ id: editingId, payload });
+    editMutation.mutate({ id: editingId, payload: stripUndefined(payload) });
   };
 
   const updateUserField = <K extends keyof User>(key: K, value: User[K]) => {
@@ -287,6 +376,58 @@ export default function AdminUsersPage(): React.JSX.Element {
     setEditForm((prev) => ({ ...prev, dosen: { ...prev.dosen, [key]: value } }));
   };
 
+  const batchLabel = meta
+    ? `Batch ${meta.current_page} dari ${meta.last_page} • ${meta.from ?? 0}-${meta.to ?? 0} dari ${meta.total} pengguna`
+    : `Menampilkan ${users.length} pengguna`;
+
+  const resetFilters = () => {
+    setSearch('');
+    setRoleFilter('');
+    setStatusFilter('');
+    setFacultyFilter('');
+    setPage(1);
+  };
+
+  const renderActions = (u: User) => (
+    <div className="flex flex-wrap justify-end gap-2">
+      <button
+        onClick={() => toggleMutation.mutate(u.id)}
+        disabled={(toggleMutation.isPending && toggleMutation.variables === u.id) || (u.id === currentUser?.id && !!u.is_active)}
+        title={u.id === currentUser?.id && u.is_active ? 'Akun Anda sendiri tidak dapat dinonaktifkan.' : undefined}
+        className={`px-3 py-1.5 rounded-lg text-xs font-black disabled:opacity-50 ${u.is_active ? 'bg-rose-50 text-rose-700 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}`}
+      >
+        {u.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+      </button>
+      <button
+        onClick={() => { setEditForm(EMPTY_EDIT); setEditingId(u.id); }}
+        className="px-3 py-1.5 rounded-lg text-xs font-black bg-cyan-50 text-cyan-700 hover:bg-cyan-100"
+      >
+        Edit Data
+      </button>
+      <button
+        onClick={() => { setEditingUser(u); setEditRole(u.roles?.[0] || 'student'); }}
+        className="px-3 py-1.5 rounded-lg text-xs font-black bg-slate-100 text-slate-700 hover:bg-slate-200"
+      >
+        Ubah Role
+      </button>
+      <button
+        onClick={() => {
+          if (!u.email) {
+            toast.error('Tambahkan email pengguna terlebih dahulu sebelum mengirim tautan reset password.');
+            return;
+          }
+
+          setResetConfirmUser(u);
+        }}
+        disabled={!u.email}
+        title={!u.email ? 'Reset password aman membutuhkan email pengguna.' : undefined}
+        className="px-3 py-1.5 rounded-lg text-xs font-black bg-amber-50 text-amber-700 hover:bg-amber-100 disabled:opacity-50"
+      >
+        Reset Password
+      </button>
+    </div>
+  );
+
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       <PageHeader
@@ -294,7 +435,7 @@ export default function AdminUsersPage(): React.JSX.Element {
         subtitle="Kelola akun pengguna sistem"
         actions={
           <button
-            onClick={() => setShowForm(!showForm)}
+            onClick={toggleCreateForm}
             className="px-4 py-2 bg-cyan-600 text-white rounded-xl text-xs font-black uppercase flex items-center gap-2 hover:bg-cyan-700"
           >
             <UserPlus size={14} /> Tambah
@@ -354,28 +495,123 @@ export default function AdminUsersPage(): React.JSX.Element {
           </div>
           <div className="flex gap-3">
             <button type="submit" disabled={createMutation.isPending} className="px-6 py-2 bg-cyan-600 text-white rounded-xl text-xs font-black uppercase hover:bg-cyan-700 disabled:opacity-50">Simpan</button>
-            <button type="button" onClick={() => { setShowForm(false); if (passwordRef.current) passwordRef.current.value = ''; }} className="px-6 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200">Batal</button>
+            <button type="button" onClick={() => { setShowForm(false); resetCreateForm(); }} className="px-6 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200">Batal</button>
           </div>
         </form>
       )}
 
-      <div>
-        <label htmlFor="search-users" className="sr-only">Cari pengguna</label>
-        <input
-          id="search-users"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Cari pengguna..."
-          autoComplete="off"
-          className="w-full max-w-sm h-10 bg-white border border-slate-200 rounded-xl px-4 text-sm font-bold"
-        />
+      <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
+          <div className="flex flex-1 flex-col gap-3">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="w-full xl:col-span-2">
+                <label htmlFor="search-users" className="text-[10px] font-black text-slate-500 uppercase">Cari Pengguna</label>
+                <input
+                  id="search-users"
+                  value={search}
+                  onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                  placeholder="Cari nama, username, atau email..."
+                  autoComplete="off"
+                  className="mt-1 w-full h-10 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-bold"
+                />
+              </div>
+
+              <div className="w-full">
+                <label htmlFor="filter-role" className="text-[10px] font-black text-slate-500 uppercase">Role</label>
+                <select
+                  id="filter-role"
+                  value={roleFilter}
+                  onChange={(e) => {
+                    setRoleFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="mt-1 w-full h-10 bg-slate-50 border border-slate-200 rounded-xl px-3 text-sm font-bold"
+                >
+                  <option value="">Semua Role</option>
+                  {roleOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="w-full">
+                <label htmlFor="filter-status" className="text-[10px] font-black text-slate-500 uppercase">Status Akun</label>
+                <select
+                  id="filter-status"
+                  value={statusFilter}
+                  onChange={(e) => {
+                    setStatusFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="mt-1 w-full h-10 bg-slate-50 border border-slate-200 rounded-xl px-3 text-sm font-bold"
+                >
+                  {statusOptions.map((option) => (
+                    <option key={option.value || 'all'} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <div className="w-full sm:max-w-xs">
+                <label htmlFor="filter-faculty" className="text-[10px] font-black text-slate-500 uppercase">Fakultas</label>
+                <select
+                  id="filter-faculty"
+                  value={facultyFilter}
+                  onChange={(e) => {
+                    setFacultyFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="mt-1 w-full h-10 bg-slate-50 border border-slate-200 rounded-xl px-3 text-sm font-bold"
+                >
+                  <option value="">Semua Fakultas</option>
+                  {faculties.map((faculty) => (
+                    <option key={faculty.id} value={faculty.id}>{faculty.nama}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="w-full sm:w-40">
+                <label htmlFor="users-per-batch" className="text-[10px] font-black text-slate-500 uppercase">Per Batch</label>
+                <select
+                  id="users-per-batch"
+                  value={perPage}
+                  onChange={(e) => {
+                    setPerPage(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="mt-1 w-full h-10 bg-slate-50 border border-slate-200 rounded-xl px-3 text-sm font-bold"
+                >
+                  {[10, 25, 50, 100].map((size) => (
+                    <option key={size} value={size}>{size} pengguna</option>
+                  ))}
+                </select>
+              </div>
+
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="h-10 rounded-xl border border-slate-200 px-4 text-xs font-black uppercase text-slate-600 hover:bg-slate-50"
+                >
+                  Reset Filter ({activeFilterCount})
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="text-xs font-semibold text-slate-500">
+            {isFetching && !isLoading ? 'Memuat batch baru...' : batchLabel}
+          </div>
+        </div>
       </div>
 
       {isLoading ? (
         <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-16 animate-pulse rounded-2xl bg-slate-200" />)}</div>
-      ) : isError ? (
+      ) : listErrorMessage ? (
         <div className="rounded-2xl bg-rose-50 border border-rose-200 p-6 text-center space-y-3">
           <p className="text-sm font-bold text-rose-700">Gagal memuat data pengguna.</p>
+          <p className="text-sm text-rose-700">{listErrorMessage}</p>
           <button
             onClick={() => refetch()}
             className="px-4 py-2 bg-rose-600 text-white rounded-xl text-xs font-black hover:bg-rose-700"
@@ -384,43 +620,85 @@ export default function AdminUsersPage(): React.JSX.Element {
           </button>
         </div>
       ) : users.length === 0 ? (
-        <EmptyState icon={<Users size={40} />} title="Belum ada pengguna" description="Tidak ada pengguna yang ditemukan." />
+        <EmptyState
+          icon={<Users size={40} />}
+          title="Belum ada pengguna"
+          description={hasActiveFilters ? 'Tidak ada pengguna yang cocok dengan filter saat ini.' : 'Tidak ada pengguna yang ditemukan.'}
+        />
       ) : (
-        <div className="space-y-3">
-          {users.map((u) => (
-            <div key={String(u.id)} className="flex items-center justify-between bg-white rounded-2xl p-5 ring-1 ring-slate-200 shadow-sm">
-              <div>
-                <p className="font-black text-slate-900">{String(u.name || '-')} ({String(u.username || '-')})</p>
-                <p className="text-xs text-slate-400">{String(u.email || '-')} | Role: {(u.roles as string[])?.join(', ') || '-'}</p>
-              </div>
-              <div className="flex gap-2 flex-wrap">
+        <div className="space-y-4">
+          <ResponsiveTable
+            columns={[
+              {
+                key: 'user',
+                label: 'Pengguna',
+                render: (u) => (
+                  <div>
+                    <p className="font-black text-slate-900">{String(u.name || '-')}</p>
+                    <p className="text-xs text-slate-400">@{String(u.username || '-')}</p>
+                  </div>
+                ),
+              },
+              {
+                key: 'email',
+                label: 'Kontak',
+                hideOnMobile: true,
+                render: (u) => (
+                  <span className="text-sm text-slate-600">{String(u.email || '-')}</span>
+                ),
+              },
+              {
+                key: 'role',
+                label: 'Role',
+                render: (u) => (
+                  <div className="flex flex-wrap gap-1">
+                    {(u.roles?.length ? u.roles : ['-']).map((role) => (
+                      <span
+                        key={`${u.id}-${role}`}
+                        className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-slate-600"
+                      >
+                        {roleLabelMap[role] ?? role}
+                      </span>
+                    ))}
+                  </div>
+                ),
+              },
+              {
+                key: 'status',
+                label: 'Status',
+                render: (u) => (
+                  <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ${u.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
+                    {u.is_active ? 'Aktif' : 'Nonaktif'}
+                  </span>
+                ),
+              },
+            ]}
+            data={users}
+            keyExtractor={(u) => u.id}
+            rowActions={renderActions}
+          />
+
+          {meta && meta.last_page > 1 && (
+            <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-xs font-semibold text-slate-500">{batchLabel}</span>
+              <div className="flex gap-2 self-end sm:self-auto">
                 <button
-                  onClick={() => toggleMutation.mutate(u.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-black ${u.is_active ? 'bg-rose-50 text-rose-700 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}`}
+                  onClick={() => setPage((currentPage) => Math.max(1, currentPage - 1))}
+                  disabled={meta.current_page <= 1}
+                  className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-700 hover:bg-slate-200 disabled:opacity-50"
                 >
-                  {u.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+                  {'<'} Sebelumnya
                 </button>
                 <button
-                  onClick={() => setEditingId(u.id)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-black bg-cyan-50 text-cyan-700 hover:bg-cyan-100"
+                  onClick={() => setPage((currentPage) => Math.min(meta.last_page, currentPage + 1))}
+                  disabled={meta.current_page >= meta.last_page}
+                  className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-700 hover:bg-slate-200 disabled:opacity-50"
                 >
-                  Edit Data
-                </button>
-                <button
-                  onClick={() => { setEditingUser(u); setEditRole(u.roles?.[0] || 'student'); }}
-                  className="px-3 py-1.5 rounded-lg text-xs font-black bg-slate-100 text-slate-700 hover:bg-slate-200"
-                >
-                  Ubah Role
-                </button>
-                <button
-                  onClick={() => setResetConfirmUser(u)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-black bg-amber-50 text-amber-700 hover:bg-amber-100"
-                >
-                  Reset Password
+                  Berikutnya {'>'}
                 </button>
               </div>
             </div>
-          ))}
+          )}
         </div>
       )}
 
@@ -461,8 +739,8 @@ export default function AdminUsersPage(): React.JSX.Element {
       {editingId !== null && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto"
-          onClick={(e) => { if (e.target === e.currentTarget) { setEditingId(null); setEditForm(EMPTY_EDIT); } }}
-          onKeyDown={(e) => { if (e.key === 'Escape') { setEditingId(null); setEditForm(EMPTY_EDIT); } }}
+          onClick={(e) => { if (e.target === e.currentTarget) closeEditModal(); }}
+          onKeyDown={(e) => { if (e.key === 'Escape') closeEditModal(); }}
         >
           <form
             onSubmit={handleSubmitEdit}
@@ -478,7 +756,7 @@ export default function AdminUsersPage(): React.JSX.Element {
               </div>
               <button
                 type="button"
-                onClick={() => { setEditingId(null); setEditForm(EMPTY_EDIT); }}
+                onClick={closeEditModal}
                 aria-label="Tutup"
                 className="text-slate-500 hover:text-slate-700"
               >
@@ -488,9 +766,9 @@ export default function AdminUsersPage(): React.JSX.Element {
 
             {detailLoading ? (
               <div className="h-48 animate-pulse rounded-xl bg-slate-100" />
-            ) : detailError ? (
+            ) : detailErrorMessage ? (
               <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 text-sm text-rose-700">
-                Gagal memuat detail pengguna. Tutup modal ini dan coba lagi.
+                {detailErrorMessage}
               </div>
             ) : (
               <>
@@ -515,7 +793,7 @@ export default function AdminUsersPage(): React.JSX.Element {
                       />
                     </label>
                     <label className="block sm:col-span-2">
-                      <span className="text-[10px] font-black text-slate-400 uppercase">Email</span>
+                      <span className="text-[10px] font-black text-slate-400 uppercase">Email Sistem</span>
                       <input
                         type="email"
                         value={String(editForm.user.email ?? '')}
@@ -559,7 +837,6 @@ export default function AdminUsersPage(): React.JSX.Element {
                       <TextField label="Status Aktif" value={editForm.mahasiswa.status_aktif} onChange={(v) => updateMahasiswaField('status_aktif', v)} placeholder="AKTIF / CUTI / LULUS" />
                       <NumberField label="Fakultas ID" value={editForm.mahasiswa.fakultas_id} onChange={(v) => updateMahasiswaField('fakultas_id', v)} />
                       <NumberField label="Prodi ID" value={editForm.mahasiswa.prodi_id} onChange={(v) => updateMahasiswaField('prodi_id', v)} />
-                      <TextField label="Email API" value={editForm.mahasiswa.api_email} onChange={(v) => updateMahasiswaField('api_email', v)} />
                       <TextField label="Status Nikah" value={editForm.mahasiswa.marital_status} onChange={(v) => updateMahasiswaField('marital_status', v)} />
                       <div className="sm:col-span-2">
                         <TextField label="Alamat" value={editForm.mahasiswa.alamat} onChange={(v) => updateMahasiswaField('alamat', v)} />
@@ -627,7 +904,7 @@ export default function AdminUsersPage(): React.JSX.Element {
             <div className="flex gap-3 justify-end pt-3 border-t border-slate-100">
               <button
                 type="button"
-                onClick={() => { setEditingId(null); setEditForm(EMPTY_EDIT); }}
+                onClick={closeEditModal}
                 className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200"
               >
                 Batal
@@ -655,10 +932,10 @@ export default function AdminUsersPage(): React.JSX.Element {
         title="Reset Password"
         description={
           resetConfirmUser
-            ? `Password sementara akan dibuat untuk ${resetConfirmUser.name} (${resetConfirmUser.username}) dan dikirim ke email jika tersedia.`
+            ? `Tautan reset password akan dikirim ke email ${resetConfirmUser.name} (${resetConfirmUser.username}). Password akun tidak akan diubah sebelum pengguna menyelesaikan reset.`
             : ''
         }
-        confirmText="Reset"
+        confirmText="Kirim Tautan"
         variant="warning"
       />
     </div>
@@ -666,6 +943,20 @@ export default function AdminUsersPage(): React.JSX.Element {
 }
 
 /* ─── Field components ──────────────────────────────────────────────── */
+
+function stripUndefined<T extends Record<string, unknown>>(value: T): T {
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([, entryValue]) => entryValue !== undefined)
+      .map(([key, entryValue]) => {
+        if (entryValue && typeof entryValue === 'object' && !Array.isArray(entryValue)) {
+          return [key, stripUndefined(entryValue as Record<string, unknown>)];
+        }
+
+        return [key, entryValue];
+      }),
+  ) as T;
+}
 
 function TextField({
   label,

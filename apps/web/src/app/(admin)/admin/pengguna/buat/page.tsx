@@ -4,8 +4,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api';
+import { mutationErrorHandler } from '@/lib/utils';
 import Link from 'next/link';
-import { ChevronLeft, UserPlus, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, UserPlus, CheckCircle2, ShieldAlert } from 'lucide-react';
+import { toast } from 'sonner';
+import { useAuthStore } from '@/stores';
 
 const ROLES = [
   { value: 'student', label: 'Mahasiswa' },
@@ -18,9 +21,11 @@ const ROLES = [
 
 export default function AdminUserCreatePage(): React.JSX.Element {
   const router = useRouter();
+  const currentUser = useAuthStore((state) => state.user);
+  const isSuperadmin = (currentUser?.roles ?? []).includes('superadmin');
   const [form, setForm] = useState({
     username: '', name: '', email: '', password: '',
-    role: 'student', nim: '', nip: '', faculty_id: '', program_id: '',
+    role: 'student', nim: '', nip: '', fakultas_id: '', prodi_id: '',
     batch_year: '', gender: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -29,28 +34,43 @@ export default function AdminUserCreatePage(): React.JSX.Element {
     queryKey: ['admin', 'fakultas'],
     queryFn: async () => {
       const res = await adminApi.master.faculties.index({});
-      return (res as { data?: { data?: unknown[] } }).data?.data ?? [];
+      return res as unknown as Array<{ id: number; nama: string }>;
     },
+    enabled: isSuperadmin,
   });
 
   const { data: programs } = useQuery({
     queryKey: ['admin', 'prodi'],
     queryFn: async () => {
       const res = await adminApi.master.studyPrograms.index({});
-      return (res as { data?: { data?: unknown[] } }).data?.data ?? [];
+      return res as unknown as Array<{ id: number; nama: string; fakultas_id: number }>;
     },
+    enabled: isSuperadmin,
   });
 
   const mutation = useMutation({
-    mutationFn: async () => adminApi.users.store(form as unknown as Record<string, unknown>),
-    onSuccess: () => router.push('/admin/pengguna'),
+    mutationFn: async () => adminApi.users.store({
+      username: form.username.trim(),
+      name: form.name.trim(),
+      email: form.email.trim() || null,
+      password: form.password,
+      role: form.role,
+      fakultas_id: form.fakultas_id ? Number(form.fakultas_id) : null,
+    }),
+    onSuccess: () => {
+      toast.success('Pengguna berhasil dibuat.');
+      router.push('/admin/pengguna');
+    },
     onError: (err: unknown) => {
       const e = err as { response?: { data?: { error?: { errors?: Record<string, string[]> } } } };
       if (e?.response?.data?.error?.errors) {
         const flat: Record<string, string> = {};
         Object.entries(e.response.data.error.errors).forEach(([k, v]) => { flat[k] = v[0]; });
         setErrors(flat);
+        return;
       }
+
+      toast.error(mutationErrorHandler(err));
     },
   });
 
@@ -62,8 +82,25 @@ export default function AdminUserCreatePage(): React.JSX.Element {
   const isStudent = form.role === 'student';
   const isDosen = ['dosen', 'dpl'].includes(form.role);
 
-  const filteredPrograms = (programs as Array<{ id: number; name: string; faculty_id: number }> ?? [])
-    .filter((p) => !form.faculty_id || String(p.faculty_id) === String(form.faculty_id));
+  if (!isSuperadmin) {
+    return (
+      <div className="max-w-xl mx-auto mt-16">
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-800">
+          <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-bold">Akses khusus superadmin.</p>
+            <p className="text-xs mt-1">
+              Pembuatan akun pengguna baru hanya tersedia untuk superadmin karena langsung
+              memengaruhi boundary akses sistem.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const filteredPrograms = (programs as Array<{ id: number; nama: string; fakultas_id: number }> ?? [])
+    .filter((p) => !form.fakultas_id || String(p.fakultas_id) === String(form.fakultas_id));
 
   const inputClass = "w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-900 placeholder:text-slate-300 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-100";
   const labelClass = "block text-xs font-black text-slate-500 uppercase tracking-widest mb-1.5";
@@ -137,6 +174,9 @@ export default function AdminUserCreatePage(): React.JSX.Element {
         {isStudent && (
           <div>
             <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 pb-2 border-b border-slate-50">Data Mahasiswa</p>
+            <p className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-900">
+              Form ini membuat akun pengguna. NIM, prodi, dan detail akademik lain tetap dilengkapi lewat sinkronisasi SIAKAD atau edit detail setelah akun dibuat.
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className={labelClass}>NIM</label>
@@ -156,19 +196,19 @@ export default function AdminUserCreatePage(): React.JSX.Element {
               </div>
               <div>
                 <label className={labelClass}>Fakultas</label>
-                <select value={form.faculty_id} onChange={set('faculty_id')} className={inputClass}>
+                <select value={form.fakultas_id} onChange={set('fakultas_id')} className={inputClass}>
                   <option value="">Pilih Fakultas...</option>
-                  {(faculties as Array<{ id: number; name: string }> ?? []).map((f) => (
-                    <option key={f.id} value={f.id}>{f.name}</option>
+                  {(faculties as Array<{ id: number; nama: string }> ?? []).map((f) => (
+                    <option key={f.id} value={f.id}>{f.nama}</option>
                   ))}
                 </select>
               </div>
               <div className="sm:col-span-2">
                 <label className={labelClass}>Program Studi</label>
-                <select value={form.program_id} onChange={set('program_id')} className={inputClass}>
+                <select value={form.prodi_id} onChange={set('prodi_id')} className={inputClass}>
                   <option value="">Pilih Prodi...</option>
                   {filteredPrograms.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
+                    <option key={p.id} value={p.id}>{p.nama}</option>
                   ))}
                 </select>
               </div>
@@ -180,6 +220,9 @@ export default function AdminUserCreatePage(): React.JSX.Element {
         {isDosen && (
           <div>
             <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 pb-2 border-b border-slate-50">Data Dosen</p>
+            <p className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-medium text-amber-900">
+              Form ini hanya membuat akun dasar. NIP dan data kepegawaian tetap dikelola lewat sinkronisasi atau edit detail setelah akun dibuat.
+            </p>
             <div>
               <label className={labelClass}>NIP</label>
               <input value={form.nip} onChange={set('nip')} placeholder="NIP dosen" className={inputClass} />

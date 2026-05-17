@@ -60,8 +60,8 @@ class AiAssistantController extends Controller
                 instructions: "Anda adalah asisten AI KKN UIN Saizu. Gunakan data statistik jika perlu: {$stats}. Jawab singkat. Anda ingat percakapan sebelumnya jika ada."
             )->prompt(
                 prompt: $validated['message'],
-                provider: 'alibaba',
-                model: 'qwen-plus'
+                provider: (string) config('ai.routing.assistant.provider', config('ai.default', 'rizquna')),
+                model: (string) config('ai.routing.assistant.model', 'ag/gemini-3-flash')
             );
 
             // 2. Simpan jawaban AI ke DB

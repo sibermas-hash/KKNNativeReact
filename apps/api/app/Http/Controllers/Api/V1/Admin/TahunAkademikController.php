@@ -27,6 +27,10 @@ class TahunAkademikController extends Controller
             'is_active' => ['nullable', 'boolean'],
         ]);
 
+        if (TahunAkademik::where('is_active', true)->doesntExist()) {
+            $validated['is_active'] = true;
+        }
+
         return $this->created(new TahunAkademikResource(TahunAkademik::create($validated)), 'Tahun akademik berhasil dibuat.');
     }
 

@@ -65,6 +65,58 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
   JAIL_API_IP="${JAIL_API_IP:-}"
   JAIL_PROXY_IP="${JAIL_PROXY_IP:-10.0.0.10}"
 
+  restart_native_web() {
+    if [ -x /usr/local/etc/rc.d/sibermas_web ]; then
+      service sibermas_web restart
+      return
+    fi
+
+    supervisorctl restart sibermas-web 2>/dev/null
+  }
+
+  restart_native_queue() {
+    if [ -x /usr/local/etc/rc.d/sibermas_queue ]; then
+      service sibermas_queue restart
+      return
+    fi
+
+    supervisorctl restart "workers:*" 2>/dev/null
+  }
+
+  check_http_status() {
+    local url="$1"
+    local expected="$2"
+    local label="$3"
+    local code
+
+    code=$(curl -s -o /dev/null -m 8 -w '%{http_code}' "${url}" 2>/dev/null || printf '000')
+    if [ "${code}" != "${expected}" ]; then
+      echo "  ❌ ${label} returned HTTP ${code} (expected ${expected})"
+      return 1
+    fi
+
+    echo "  ✅ ${label} returned HTTP ${expected}"
+  }
+
+  lint_backend_php() {
+    local api_dir="$1"
+    local file
+
+    while IFS= read -r file; do
+      php -l "${file}" >/dev/null
+    done < <(
+      printf '%s\n' \
+        "${api_dir}/artisan" \
+        "${api_dir}/bootstrap/app.php"
+      find \
+        "${api_dir}/app" \
+        "${api_dir}/config" \
+        "${api_dir}/database" \
+        "${api_dir}/routes" \
+        -type f -name '*.php'
+    )
+  }
+
   echo "  [a] Pulling latest code..."
   cd "${APP_DIR}"
   git pull origin main
@@ -72,6 +124,8 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
   echo "  [b] Installing PHP dependencies..."
   cd "${APP_DIR}/apps/api"
   composer install --no-dev --optimize-autoloader --no-interaction
+  echo "  [b.1] Linting backend PHP syntax..."
+  lint_backend_php "${APP_DIR}/apps/api"
   cd "${APP_DIR}"
 
   echo "  [c] Running migrations..."
@@ -123,9 +177,8 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
       (command -v ssh >/dev/null && ssh "${JAIL_PROXY_IP}" service nginx reload) || true
   else
     service php-fpm reload 2>/dev/null || service php-fpm restart || true
-    # Restart web (Next.js standalone) — rc.d or supervisord
-    service sibermas_web restart 2>/dev/null || supervisorctl restart sibermas-web 2>/dev/null || true
-    supervisorctl restart "workers:*" 2>/dev/null || true
+    restart_native_web || true
+    restart_native_queue || true
     service nginx reload 2>/dev/null || true
   fi
 
@@ -146,6 +199,11 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
   else
     echo "  ⚠️  Deploy selesai tapi health check gagal. Cek service secara manual."
   fi
+
+  echo "  [m] API smoke checks..."
+  check_http_status "http://127.0.0.1/api/v1/auth/captcha" "200" "Public auth captcha"
+  check_http_status "http://127.0.0.1/api/v1/profile" "401" "Protected profile guard"
+  check_http_status "http://127.0.0.1/api/v1/admin/dashboard" "401" "Protected admin dashboard guard"
 ENDSSH
 
 echo ""

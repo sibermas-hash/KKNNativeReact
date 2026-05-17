@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { adminApi, apiUrl } from '@/lib/api';
+import type { ApiResponse, PaginationMeta } from '@sibermas/shared-types';
+import { apiUrl, rawApi } from '@/lib/api';
 import Link from 'next/link';
 import { FileText, Search, Eye, Download } from 'lucide-react';
 import { PageHeader, DataTable, StatusBadge, StatCard, EmptyState } from '@/components/ui/shared';
@@ -19,23 +20,33 @@ const TYPE_LABELS: Record<string, string> = {
   evaluation_report: 'Evaluasi Refleksi',
 };
 
+type ReportRow = Record<string, unknown>;
+type ReportsMeta = Partial<PaginationMeta> & { pending_review?: number };
+type PaginatedReportsResponse = {
+  data: ReportRow[];
+  meta?: ReportsMeta;
+};
+
 export default function AdminReportsPage(): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<PaginatedReportsResponse>({
     queryKey: ['admin', 'reports', { search, status, page }],
     queryFn: async () => {
-      const res = await (adminApi as unknown as {
-        reports: { index: (p: Record<string, unknown>) => Promise<unknown> };
-      }).reports.index({ search: search || undefined, status: status || undefined, page });
-      return (res as { data?: unknown }).data ?? res;
+      const response = await rawApi.get<ApiResponse<ReportRow[]>>('/admin/laporan/akhir', {
+        params: { search: search || undefined, status: status || undefined, page },
+      });
+      return {
+        data: response.data.data ?? [],
+        meta: response.data.meta as ReportsMeta | undefined,
+      };
     },
   });
 
-  const reports = (data as { data?: Record<string, unknown>[] })?.data ?? [];
-  const meta = (data as { meta?: { total?: number; last_page?: number; pending_review?: number } })?.meta ?? {};
+  const reports = data?.data ?? [];
+  const meta = data?.meta ?? {};
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">

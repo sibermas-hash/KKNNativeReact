@@ -2,26 +2,38 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { adminApi } from '@/lib/api';
+import type { ApiResponse, PaginationMeta } from '@sibermas/shared-types';
+import { rawApi } from '@/lib/api';
 import Link from 'next/link';
 import { Search, Eye } from 'lucide-react';
 import { PageHeader, StatusBadge } from '@/components/ui/shared';
+
+type FinalReportRow = Record<string, unknown>;
+type PaginatedFinalReportsResponse = {
+  data: FinalReportRow[];
+  meta?: Partial<PaginationMeta>;
+};
 
 export default function AdminLaporanAkhirPage(): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<PaginatedFinalReportsResponse>({
     queryKey: ['admin', 'laporan-akhir', { search, status, page }],
     queryFn: async () => {
-      const res = await adminApi.kknOperations.finalReports.index({ search: search || undefined, status: status || undefined, page });
-      return (res as { data?: unknown }).data ?? res;
+      const response = await rawApi.get<ApiResponse<FinalReportRow[]>>('/admin/laporan/akhir', {
+        params: { search: search || undefined, status: status || undefined, page },
+      });
+      return {
+        data: response.data.data ?? [],
+        meta: response.data.meta,
+      };
     },
   });
 
-  const reports = (data as { data?: Record<string, unknown>[] })?.data ?? [];
-  const meta = (data as { meta?: { total?: number; last_page?: number } })?.meta ?? {};
+  const reports = data?.data ?? [];
+  const meta = data?.meta ?? {};
 
   return (
     <div className="space-y-6">

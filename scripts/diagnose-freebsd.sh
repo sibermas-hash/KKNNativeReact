@@ -283,6 +283,14 @@ fi
 if service sibermas_queue status >/dev/null 2>&1; then
   service sibermas_queue status 2>&1 | sed 's/^/  /'
 fi
+WEB_BIND_HOST=$(sysrc -n sibermas_web_host 2>/dev/null || true)
+WEB_BIND_PORT=$(sysrc -n sibermas_web_port 2>/dev/null || true)
+[ -n "$WEB_BIND_HOST" ] || WEB_BIND_HOST="127.0.0.1"
+[ -n "$WEB_BIND_PORT" ] || WEB_BIND_PORT="3000"
+echo "Configured sibermas_web bind: ${WEB_BIND_HOST}:${WEB_BIND_PORT}"
+if [ "$WEB_BIND_HOST" != "127.0.0.1" ] || [ "$WEB_BIND_PORT" != "3000" ]; then
+  echo "  [WARN] Untuk profile native ini, Next.js sebaiknya tetap internal di 127.0.0.1:3000 dan Nginx yang owns 80/443."
+fi
 
 # ─── 10. Supervisord ───────────────────────────────────────────────────
 section "10. Supervisord"

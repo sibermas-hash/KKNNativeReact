@@ -2,28 +2,38 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { adminApi } from '@/lib/api';
+import type { ApiResponse, PaginationMeta } from '@sibermas/shared-types';
+import { rawApi } from '@/lib/api';
 import Link from 'next/link';
 import { Activity, Search, FileText, Eye, RefreshCw, Filter } from 'lucide-react';
 import { PageHeader, DataTable, StatusBadge, StatCard, EmptyState } from '@/components/ui/shared';
+
+type DailyReportRow = Record<string, unknown>;
+type PaginatedDailyReportsResponse = {
+  data: DailyReportRow[];
+  meta?: Partial<PaginationMeta>;
+};
 
 export default function AdminDailyReportsPage(): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
 
-  const { data, isLoading, refetch } = useQuery({
+  const { data, isLoading, refetch } = useQuery<PaginatedDailyReportsResponse>({
     queryKey: ['admin', 'daily-reports', { search, status, page }],
     queryFn: async () => {
-      const res = await (adminApi as unknown as {
-        dailyReports: { index: (p: Record<string, unknown>) => Promise<unknown> };
-      }).dailyReports.index({ search: search || undefined, status: status || undefined, page });
-      return (res as { data?: unknown }).data ?? res;
+      const response = await rawApi.get<ApiResponse<DailyReportRow[]>>('/admin/laporan/harian', {
+        params: { search: search || undefined, status: status || undefined, page },
+      });
+      return {
+        data: response.data.data ?? [],
+        meta: response.data.meta,
+      };
     },
   });
 
-  const reports = (data as { data?: Record<string, unknown>[] })?.data ?? [];
-  const meta = (data as { meta?: { total?: number; last_page?: number } })?.meta ?? {};
+  const reports = data?.data ?? [];
+  const meta = data?.meta ?? {};
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">

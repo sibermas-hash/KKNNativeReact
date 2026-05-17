@@ -29,12 +29,20 @@ LOG_DIR="/var/log/sibermas"
 REPO_URL="${REPO_URL:-https://github.com/putrihati-cmd/KKNNATIVE.git}"
 SKIP_MIGRATE="${SKIP_MIGRATE:-0}"
 PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://${WEB_DOMAIN:-sibermas.uinsaizu.ac.id}}"
+JAIL_WEB_IP="${JAIL_WEB_IP:-}"
+JAIL_API_IP="${JAIL_API_IP:-}"
+JAIL_PROXY_IP="${JAIL_PROXY_IP:-}"
 
 WEB_IP="${JAIL_WEB_IP:-127.0.0.1}"
 API_IP="${JAIL_API_IP:-127.0.0.1}"
 WEB_PORT="${WEB_PORT:-3000}"
-# Multi-port default (cluster). Override dengan WEB_CLUSTER_PORTS="3000" untuk single.
-WEB_CLUSTER_PORTS="${WEB_CLUSTER_PORTS:-3000,3001,3002,3003}"
+if [ -n "${WEB_CLUSTER_PORTS:-}" ]; then
+  WEB_CLUSTER_PORTS="${WEB_CLUSTER_PORTS}"
+elif [ -n "${JAIL_WEB_IP}" ]; then
+  WEB_CLUSTER_PORTS="3000,3001,3002,3003"
+else
+  WEB_CLUSTER_PORTS="3000"
+fi
 HEALTH_RETRIES="${HEALTH_RETRIES:-12}"
 HEALTH_INTERVAL="${HEALTH_INTERVAL:-5}"
 
@@ -64,6 +72,28 @@ fi
 echo "[2/8] Installing backend dependencies..."
 cd "${RELEASE_DIR}/apps/api"
 composer install --no-dev --optimize-autoloader --no-interaction
+
+lint_backend_php() {
+  local api_dir="$1"
+  local file
+
+  while IFS= read -r file; do
+    php -l "${file}" >/dev/null
+  done < <(
+    printf '%s\n' \
+      "${api_dir}/artisan" \
+      "${api_dir}/bootstrap/app.php"
+    find \
+      "${api_dir}/app" \
+      "${api_dir}/config" \
+      "${api_dir}/database" \
+      "${api_dir}/routes" \
+      -type f -name '*.php'
+  )
+}
+
+echo "  Linting backend PHP syntax..."
+lint_backend_php "${RELEASE_DIR}/apps/api"
 
 # ─── Step 3: Build frontend ───────────────────────────────────────────────
 # TURBO_INSTALL_SKIP_DOWNLOAD=1 wajib di FreeBSD — tidak ada turbo binary
@@ -164,6 +194,39 @@ echo "  ✅ current → ${RELEASE_DIR}"
 # direstart. Ini dulu silent bug — kode lama terus di-serve setelah deploy.
 echo "[7/8] Reloading PHP-FPM + restarting workers..."
 
+restart_native_web() {
+  if [ -x /usr/local/etc/rc.d/sibermas_web ]; then
+    service sibermas_web restart
+    return
+  fi
+
+  supervisorctl restart sibermas-web 2>/dev/null
+}
+
+restart_native_queue() {
+  if [ -x /usr/local/etc/rc.d/sibermas_queue ]; then
+    service sibermas_queue restart
+    return
+  fi
+
+  supervisorctl restart workers:* 2>/dev/null
+}
+
+check_http_status() {
+  local url="$1"
+  local expected="$2"
+  local label="$3"
+  local code
+
+  code=$(curl -s -o /dev/null -m 8 -w '%{http_code}' "${url}" 2>/dev/null || printf '000')
+  if [ "${code}" != "${expected}" ]; then
+    echo "  ❌ ${label} returned HTTP ${code} (expected ${expected})"
+    return 1
+  fi
+
+  echo "  ✅ ${label} returned HTTP ${expected}"
+}
+
 if [ -n "${JAIL_WEB_IP:-}" ]; then
   # Jails mode — restart via jexec.
   jexec api service php-fpm reload 2>/dev/null || \
@@ -177,8 +240,8 @@ if [ -n "${JAIL_WEB_IP:-}" ]; then
 else
   # Single-server mode.
   service php-fpm reload 2>/dev/null || service php-fpm restart || true
-  service sibermas_web restart 2>/dev/null || supervisorctl restart sibermas-web 2>/dev/null || true
-  supervisorctl restart workers:*
+  restart_native_web || true
+  restart_native_queue || true
   service nginx reload 2>/dev/null || true
 fi
 
@@ -210,11 +273,16 @@ for i in $(seq 1 "${HEALTH_RETRIES}"); do
       echo "    ln -s ${PREV} ${CURRENT_LINK}"
     fi
     echo "    service php-fpm reload"
-    echo "    supervisorctl restart workers:*"
+    echo "    service sibermas_queue restart"
     exit 1
   fi
   echo "  ... not ready yet (attempt ${i}/${HEALTH_RETRIES})"
 done
+
+echo "  Running API smoke checks..."
+check_http_status "http://127.0.0.1/api/v1/auth/captcha" "200" "Public auth captcha"
+check_http_status "http://127.0.0.1/api/v1/profile" "401" "Protected profile guard"
+check_http_status "http://127.0.0.1/api/v1/admin/dashboard" "401" "Protected admin dashboard guard"
 
 # Prune old releases (keep last 3).
 # find -print0 + sort -rz untuk handle spaces/newlines di filename (paranoia).

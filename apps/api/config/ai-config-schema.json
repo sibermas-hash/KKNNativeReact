@@ -22,7 +22,7 @@
             "deepseek",
             "cohere",
             "ollama",
-            "alibaba"
+            "rizquna"
           ],
           "description": "AI provider name"
         },
@@ -187,11 +187,18 @@
         "$ref": "#/definitions/apiProvider"
       },
       "examples": {
+        "rizquna": {
+          "name": "rizquna",
+          "api_key": "sk-rizquna-...",
+          "enabled": true,
+          "primary": true,
+          "api_url": "https://router.rizquna.id/v1"
+        },
         "gemini": {
           "name": "gemini",
           "api_key": "AIzaSy...",
           "enabled": true,
-          "primary": true
+          "primary": false
         },
         "openai": {
           "name": "openai",
@@ -349,7 +356,7 @@
             }
           }
         },
-        "alibaba": {
+        "rizquna": {
           "type": "object",
           "properties": {
             "text": {
@@ -359,9 +366,9 @@
                   "type": "array",
                   "items": {
                     "enum": [
-                      "qwen-max",
-                      "qwen-plus",
-                      "qwen-turbo"
+                      "ag/gemini-3-flash",
+                      "ag/gemini-3.1-pro-low",
+                      "cx/gpt-5.3-codex"
                     ]
                   }
                 }

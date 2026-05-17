@@ -7,17 +7,23 @@ import { Users, Trash2, Upload } from 'lucide-react';
 import { PageHeader, ConfirmDialog, EmptyState } from '@/components/ui/shared';
 import { toast } from 'sonner';
 import { useState, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 export default function AdminGroupsPage(): React.JSX.Element {
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isImporting, setIsImporting] = useState(false);
   const [confirmId, setConfirmId] = useState<number | null>(null);
+  const searchParams = useSearchParams();
+  const periodeId = searchParams.get('periode_id') ?? '';
+  const periodeName = (searchParams.get('periode_name') ?? '').trim();
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'groups'],
+    queryKey: ['admin', 'groups', { periodeId }],
     queryFn: async () => {
-      const res = await adminApi.groups.index();
+      const res = await adminApi.groups.index({
+        periode_id: periodeId || undefined,
+      });
       return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
   });
@@ -39,7 +45,11 @@ export default function AdminGroupsPage(): React.JSX.Element {
       return adminApi.groups.import(formData);
     },
     onSuccess: (res: unknown) => {
-      const result = (res as { data: { created: number; updated: number; skipped: number } }).data;
+      const result = ((res as { data?: { created: number; updated: number; skipped: number } })?.data ?? res) as {
+        created: number;
+        updated: number;
+        skipped: number;
+      };
       toast.success(`Import selesai: ${result.created} dibuat, ${result.updated} diperbarui`);
       queryClient.invalidateQueries({ queryKey: ['admin', 'groups'] });
       setIsImporting(false);
@@ -73,6 +83,19 @@ export default function AdminGroupsPage(): React.JSX.Element {
           </>
         }
       />
+
+      {periodeId && (
+        <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-sm text-cyan-800">
+          <span className="font-semibold">
+            Filter periode aktif:
+            {' '}
+            {periodeName || `#${periodeId}`}
+          </span>
+          <Link href="/admin/kelompok" className="rounded-lg bg-white px-3 py-1 text-xs font-bold text-cyan-700 ring-1 ring-cyan-200 hover:bg-cyan-100">
+            Tampilkan semua
+          </Link>
+        </div>
+      )}
 
       <ConfirmDialog
         open={confirmId !== null}

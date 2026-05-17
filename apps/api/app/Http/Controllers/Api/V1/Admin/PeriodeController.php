@@ -11,6 +11,7 @@ use App\Models\KKN\Periode;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class PeriodeController extends Controller
 {
@@ -19,6 +20,7 @@ class PeriodeController extends Controller
     public function index(Request $request): JsonResponse
     {
         $periods = Periode::with(['tahunAkademik', 'jenisKkn'])
+            ->withCount('peserta')
             ->when($request->input('academic_year_id'), fn ($q, $id) => $q->where('academic_year_id', $id))
             ->orderByDesc('periode')
             ->paginate($request->input('per_page', 25));
@@ -58,10 +60,14 @@ class PeriodeController extends Controller
     {
         $validated = $request->validate($this->validationRules($request, $periode));
 
-        // Auto-deactivate other periods of same jenis_kkn if this one is being activated
         $jenisKknId = $validated['jenis_kkn_id'] ?? $periode->jenis_kkn_id;
-        $isBeingActivated = isset($validated['is_active']) && $validated['is_active'] && ! $periode->is_active;
-        if ($isBeingActivated && $jenisKknId) {
+        $finalIsActive = array_key_exists('is_active', $validated)
+            ? (bool) $validated['is_active']
+            : (bool) $periode->is_active;
+
+        // Keep only one active period per jenis KKN, including when an
+        // already-active period is moved to another jenis_kkn_id.
+        if ($finalIsActive && $jenisKknId) {
             Periode::where('jenis_kkn_id', $jenisKknId)
                 ->where('is_active', true)
                 ->where('id', '!=', $periode->id)
@@ -80,7 +86,9 @@ class PeriodeController extends Controller
 
             return $this->noContent('Periode berhasil dihapus.');
         } catch (\Throwable $e) {
-            return $this->error('VALIDATION_ERROR', 'Gagal menghapus periode: '.$e->getMessage(), 422);
+            report($e);
+
+            return $this->error('VALIDATION_ERROR', 'Gagal menghapus periode karena masih memiliki data terkait.', 422);
         }
     }
 
@@ -88,13 +96,17 @@ class PeriodeController extends Controller
     {
         try {
             $new = $periode->replicate();
-            $new->name = $periode->name.' (Copy)';
+            $new->periode = $this->nextAvailablePeriodeNumber($periode->jenis_kkn_id, $periode->periode);
+            $new->name = sprintf('%s (Copy %d)', $periode->name, $new->periode);
             $new->is_active = false;
+            $new->current_phase = 'upcoming';
             $new->save();
 
             return $this->created(new PeriodeResource($new->load(['tahunAkademik', 'jenisKkn'])), 'Periode berhasil diduplikasi.');
         } catch (\Throwable $e) {
-            return $this->error('SERVER_ERROR', 'Gagal menduplikasi: '.$e->getMessage(), 500);
+            report($e);
+
+            return $this->error('SERVER_ERROR', 'Gagal menduplikasi periode.', 500);
         }
     }
 
@@ -110,30 +122,68 @@ class PeriodeController extends Controller
         $isUpdate = $existing !== null;
         $req = $isUpdate ? 'sometimes' : 'required';
         $periodeId = $existing?->id;
+        $jenisKknId = (int) $request->input('jenis_kkn_id', $existing?->jenis_kkn_id ?? 0);
 
         return [
             'academic_year_id' => [$req, 'exists:tahun_akademik,id'],
             'jenis_kkn_id' => [$req, 'exists:jenis_kkn,id'],
-            'periode' => [$req, 'integer', 'min:1'],
+            'periode' => [
+                $req,
+                'integer',
+                'min:1',
+                Rule::unique('periode', 'periode')
+                    ->where(fn ($query) => $query->where('jenis_kkn_id', $jenisKknId))
+                    ->ignore($periodeId),
+            ],
             'name' => [$req, 'string', 'max:255'],
             'theme' => ['nullable', 'string', 'max:255'],
-            'start_date' => [$req, 'date', function ($attr, $value, $fail) use ($request) {
-                $regEnd = $request->input('registration_end');
+            'start_date' => [$req, 'date', function ($attr, $value, $fail) use ($request, $existing) {
+                $regEnd = $request->input('registration_end', $existing?->registration_end?->toDateString());
                 if ($regEnd && $value) {
-                    $gap = Carbon::parse($regEnd)->diffInDays(Carbon::parse($value));
+                    $registrationEnd = Carbon::parse($regEnd)->startOfDay();
+                    $startDate = Carbon::parse($value)->startOfDay();
+                    $gap = $registrationEnd->diffInDays($startDate, false);
+                    if ($gap < 0) {
+                        $fail('Tanggal mulai KKN tidak boleh sebelum tanggal tutup pendaftaran.');
+
+                        return;
+                    }
                     if ($gap < 7) {
                         $fail("Jarak minimal antara penutupan pendaftaran dan mulai pelaksanaan adalah 7 hari. Saat ini hanya {$gap} hari.");
                     }
                 }
             }],
-            'end_date' => [$req, 'date', 'after:start_date'],
+            'end_date' => [$req, 'date', function ($attr, $value, $fail) use ($request, $existing) {
+                $startDate = $request->input('start_date', $existing?->start_date?->toDateString());
+                if ($startDate && $value && ! Carbon::parse($value)->gt(Carbon::parse($startDate))) {
+                    $fail('Tanggal selesai KKN harus setelah tanggal mulai KKN.');
+                }
+            }],
             'registration_start' => [$req, 'date'],
-            'registration_end' => [$req, 'date', 'after:registration_start'],
+            'registration_end' => [$req, 'date', function ($attr, $value, $fail) use ($request, $existing) {
+                $registrationStart = $request->input('registration_start', $existing?->registration_start?->toDateString());
+                if ($registrationStart && $value && ! Carbon::parse($value)->gt(Carbon::parse($registrationStart))) {
+                    $fail('Tanggal tutup pendaftaran harus setelah tanggal mulai pendaftaran.');
+                }
+            }],
             'grading_start' => ['nullable', 'date'],
             'grading_end' => ['nullable', 'date', 'after_or_equal:grading_start'],
             'kuota' => [$req, 'integer', 'min:1'],
             'current_phase' => ['nullable', 'string', 'in:upcoming,registration,placement,execution,grading,finished'],
             'is_active' => ['nullable', 'boolean'],
         ];
+    }
+
+    private function nextAvailablePeriodeNumber(?int $jenisKknId, int $fallback): int
+    {
+        if ($jenisKknId === null) {
+            return $fallback + 1;
+        }
+
+        $maxPeriode = Periode::withTrashed()
+            ->where('jenis_kkn_id', $jenisKknId)
+            ->max('periode');
+
+        return ((int) $maxPeriode) + 1;
     }
 }

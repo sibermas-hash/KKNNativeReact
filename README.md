@@ -86,7 +86,7 @@ bash deploy-freebsd-simple.sh
 ```
 ├── apps/
 │   ├── api/              # Laravel 13 backend
-│   │   ├── supervisord.conf           # Single-server supervisor
+│   │   ├── supervisord.conf           # Legacy single-server / referensi worker
 │   │   ├── supervisord.jail-api.conf  # Jails: queue workers (10+4+2)
 │   │   └── .env.production.example    # Template production env
 │   └── web/              # Next.js 15 frontend
@@ -94,6 +94,8 @@ bash deploy-freebsd-simple.sh
 │       └── next.config.ts             # Standalone build for FreeBSD
 ├── packages/             # Shared TS packages (5 packages)
 ├── conf/                 # FreeBSD config files
+│   ├── rc.d/sibermas_web         # Native single-host Next.js service
+│   ├── rc.d/sibermas_queue       # Native single-host queue workers
 │   ├── php-fpm.sibermas.conf   # PHP-FPM pool single-server sederhana
 │   ├── php-fpm.www.conf         # max_children=200
 │   ├── php-opcache.ini          # 256MB OPcache
@@ -151,6 +153,11 @@ Detail: [`docs/SCALING_5000.md`](docs/SCALING_5000.md)
 ## 🔥 Perintah Penting
 
 ```bash
+# Native single-host
+service sibermas_web restart
+service sibermas_queue restart
+service nginx reload
+
 # Jails
 jexec api supervisorctl restart workers:*   # Restart queue
 jexec web supervisorctl restart sibermas-web # Restart Next.js

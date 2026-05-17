@@ -25,7 +25,8 @@ class CodeGuardianService
             Berikan RESPON HANYA DALAM JSON: {'issue_found': boolean, 'severity': 'low/high', 'description': '...', 'suggestion': 'kode baru'}"
         )->prompt(
             prompt: "Analisis file ini: {$content}",
-            provider: 'alibaba'
+            provider: (string) config('ai.routing.code.provider', config('ai.default', 'rizquna')),
+            model: (string) config('ai.routing.code.model', 'cx/gpt-5.3-codex')
         );
 
         return json_decode($response->text, true) ?? [];

@@ -11,8 +11,9 @@
 #   - App root di /usr/local/www/apache24/data/Sibermas2026
 #     (path ini bukan karena server pakai Apache; hanya mengikuti layout
 #     folder yang sudah dipakai ops team. Nginx tetap entry point utama.)
-#   - Supervisor dengan path absolut /usr/local/bin/php + /usr/local/bin/node
-#   - Horizon belum dipakai — queue via `queue:work` standar (supervisord.conf)
+#   - Native single-server runtime memakai `rc.d` + `daemon(8)` untuk Next.js
+#     dan queue worker; supervisor hanya legacy/fallback untuk profile lama.
+#   - Horizon belum dipakai — queue via `queue:work` standar
 
 set -e
 
@@ -80,7 +81,6 @@ echo "==> Mengaktifkan layanan di /etc/rc.conf..."
 sysrc nginx_enable="YES"
 sysrc postgresql_enable="YES"
 sysrc redis_enable="YES"
-sysrc supervisord_enable="YES"
 sysrc php_fpm_enable="YES"
 
 echo "==> Menginisialisasi PostgreSQL..."
@@ -140,10 +140,8 @@ if ! pkg install -y pnpm 2>/dev/null; then
   npm install -g pnpm@10
 fi
 
-echo "==> Menyalin konfigurasi supervisord..."
-mkdir -p /usr/local/etc/supervisord.d
-cp "${APP_DIR}/apps/api/supervisord.conf" /usr/local/etc/supervisord.d/sibermas.conf 2>/dev/null || \
-    echo "  [!] supervisord.conf belum ada di ${APP_DIR}, salin manual setelah deploy."
+echo "==> Menyiapkan direktori runtime rc.d..."
+mkdir -p "${LOG_DIR}"
 
 echo "==> Menyalin konfigurasi nginx..."
 if [ -f "${APP_DIR}/nginx-freebsd.conf" ]; then
@@ -183,7 +181,7 @@ echo "       - seed apps/api/.env dari .env.production.example jika belum ada"
 echo "       - set DB_DATABASE/DB_USERNAME/DB_PASSWORD native"
 echo "       - generate APP_KEY dan secret lokal yang kosong"
 echo "       - composer install, migrate, build Next.js standalone"
-echo "       - pasang config PHP-FPM, Supervisor, dan Nginx jika belum ada"
+echo "       - pasang config PHP-FPM, rc.d service, dan Nginx jika belum ada"
 echo "       - restart service dan menjalankan health check"
 echo ""
 echo " 🔥 Pastikan PostgreSQL dan Redis hanya listen di localhost:"

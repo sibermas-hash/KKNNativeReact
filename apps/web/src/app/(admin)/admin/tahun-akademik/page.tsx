@@ -1,10 +1,28 @@
-import { Database, LibraryBig } from 'lucide-react';
+import { fetchApiAuthStrict, getAuthFetchErrorMessage } from '@/lib/server-api';
+import { Database, LibraryBig, ShieldAlert } from 'lucide-react';
 import { TahunAkademikClient } from './client';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+interface TahunAkademik {
+  id: number;
+  year: string;
+  is_active: boolean;
+  created_at?: string;
+}
+
 export default async function TahunAkademikPage() {
+  const result = await fetchApiAuthStrict<{ data: TahunAkademik[] }>('/admin/tahun-akademik');
+  const loadError =
+    result.kind === 'ok'
+      ? undefined
+      : getAuthFetchErrorMessage(
+          result,
+          'Data tahun akademik belum bisa dimuat karena layanan API tidak merespons normal.',
+        );
+  const initialData = result.kind === 'ok' ? result.data.data ?? [] : [];
+
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12 font-sans text-cyan-950">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-8 border-b border-slate-100">
@@ -23,13 +41,23 @@ export default async function TahunAkademikPage() {
         <div className="flex items-center gap-3 px-5 py-3 bg-white rounded-2xl border border-slate-100 shadow-sm shrink-0">
           <Database size={16} className="text-cyan-600" />
           <div>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mode Data</p>
-            <p className="text-lg font-black text-cyan-950 tabular-nums leading-none">Live API</p>
+            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Terdaftar</p>
+            <p className="text-lg font-black text-cyan-950 tabular-nums leading-none">{result.kind === 'ok' ? initialData.length : '-'}</p>
           </div>
         </div>
       </div>
 
-      <TahunAkademikClient initialData={[]} />
+      {loadError && (
+        <div className="flex items-start gap-4 rounded-3xl border border-amber-200 bg-amber-50 px-5 py-4 text-amber-900">
+          <ShieldAlert size={18} className="mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-bold">Data tahun akademik belum tersedia.</p>
+            <p className="mt-1 text-sm text-amber-800">{loadError}</p>
+          </div>
+        </div>
+      )}
+
+      <TahunAkademikClient initialData={initialData} loadError={loadError} />
     </div>
   );
 }

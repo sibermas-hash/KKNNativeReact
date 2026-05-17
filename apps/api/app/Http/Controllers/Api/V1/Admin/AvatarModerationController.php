@@ -39,16 +39,23 @@ class AvatarModerationController extends Controller
         }
 
         $query = User::query()
-            ->whereNotNull('avatar')
             ->select([
                 'id', 'name', 'username', 'email', 'avatar',
                 'avatar_moderation_status', 'avatar_moderation_reason',
                 'avatar_moderation_reviewed_at', 'avatar_moderation_reviewed_by',
                 'updated_at',
-            ]);
+            ])
+            ->with(['mahasiswa:id,user_id,nim,fakultas_id,prodi_id', 'mahasiswa.fakultas:id,nama', 'mahasiswa.prodi:id,nama']);
 
         if ($status !== 'all') {
             $query->where('avatar_moderation_status', $status);
+        } else {
+            $query->whereIn('avatar_moderation_status', ['pending', 'approved', 'rejected']);
+        }
+
+        // Rejected rows may have avatar cleared; pending/approved must still have files.
+        if (in_array($status, ['pending', 'approved'], true)) {
+            $query->whereNotNull('avatar');
         }
 
         // Pending first so admin sees backlog immediately
@@ -57,12 +64,16 @@ class AvatarModerationController extends Controller
             ->paginate(20);
 
         $users->getCollection()->transform(function (User $u) {
+            $mhs = $u->mahasiswa;
             return [
                 'id' => $u->id,
                 'name' => $u->name,
                 'username' => $u->username,
                 'email' => $u->email,
-                'avatar_url' => $u->avatar ? asset('storage/'.$u->avatar) : null,
+                'nim' => $mhs?->nim,
+                'fakultas' => $mhs?->fakultas?->nama,
+                'prodi' => $mhs?->prodi?->nama,
+                'avatar_url' => $u->avatar ? rtrim((string) config('app.frontend_url', config('app.url')), '/').'/storage/'.$u->avatar : null,
                 'status' => $u->avatar_moderation_status,
                 'reason' => $u->avatar_moderation_reason,
                 'reviewed_at' => $u->avatar_moderation_reviewed_at,
@@ -77,6 +88,11 @@ class AvatarModerationController extends Controller
                 'last_page' => $users->lastPage(),
                 'per_page' => $users->perPage(),
                 'total' => $users->total(),
+            ],
+            'counts' => [
+                'pending' => User::where('avatar_moderation_status', 'pending')->whereNotNull('avatar')->count(),
+                'approved' => User::where('avatar_moderation_status', 'approved')->whereNotNull('avatar')->count(),
+                'rejected' => User::where('avatar_moderation_status', 'rejected')->count(),
             ],
         ]);
     }
@@ -120,5 +136,58 @@ class AvatarModerationController extends Controller
         ]);
 
         return $this->success(['status' => 'rejected'], 'Foto ditolak. User akan diminta upload ulang.');
+    }
+
+    /**
+     * PATCH /admin/avatar-moderation/bulk-approve
+     */
+    public function bulkApprove(Request $request): JsonResponse
+    {
+        $data = $request->validate(['ids' => ['required', 'array', 'min:1'], 'ids.*' => ['integer', 'exists:users,id']]);
+
+        $count = User::whereIn('id', $data['ids'])
+            ->where('avatar_moderation_status', 'pending')
+            ->whereNotNull('avatar')
+            ->update([
+                'avatar_moderation_status' => 'approved',
+                'avatar_moderation_reason' => null,
+                'avatar_moderation_reviewed_at' => now(),
+                'avatar_moderation_reviewed_by' => $request->user()->id,
+            ]);
+
+        return $this->success(['count' => $count], "{$count} foto disetujui.");
+    }
+
+    /**
+     * PATCH /admin/avatar-moderation/bulk-reject
+     */
+    public function bulkReject(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:users,id'],
+            'reason' => ['required', 'string', 'min:5', 'max:500'],
+        ]);
+
+        $users = User::whereIn('id', $data['ids'])
+            ->where('avatar_moderation_status', 'pending')
+            ->whereNotNull('avatar')
+            ->get();
+
+        foreach ($users as $user) {
+            if ($user->avatar) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+            $user->update([
+                'avatar' => null,
+                'avatar_moderation_status' => 'rejected',
+                'avatar_moderation_reason' => $data['reason'],
+                'avatar_moderation_reviewed_at' => now(),
+                'avatar_moderation_reviewed_by' => $request->user()->id,
+            ]);
+        }
+
+        $count = $users->count();
+        return $this->success(['count' => $count], "{$count} foto ditolak.");
     }
 }

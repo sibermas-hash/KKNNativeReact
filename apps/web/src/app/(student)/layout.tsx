@@ -9,6 +9,7 @@ import Image from 'next/image';
 import { clsx } from 'clsx';
 import { ThemeSwitcher, useTheme } from '@/components/ui/theme-provider';
 import { NotificationBell } from '@/components/ui/notification-bell';
+import { ProfileIncompleteGuard } from "@/components/ui/profile-incomplete-guard";
 import {
   LayoutDashboard, ClipboardList, Target, FileText, FileCheck,
   Star, BookOpen, Plane, Home, UserCircle, Image as ImageIcon,
@@ -233,6 +234,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           </div>
         </header>
 
+        <ProfileIncompleteGuard />
         <main className="flex-1 p-4 lg:p-8 text-[color:var(--profile-text)]">{children}</main>
       </div>
 

@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
-import { CheckCircle2, XCircle, Clock, User } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, User, CheckCheck } from 'lucide-react';
 
 interface ChangeRequest {
   id: number;
@@ -46,6 +46,16 @@ export default function AdminProfileChangeRequestsPage(): React.JSX.Element {
     onError: (err: unknown) => toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal menyetujui'),
   });
 
+  const approveAllMutation = useMutation({
+    mutationFn: () => api.patch('/admin/profile-change-requests/approve-all'),
+    onSuccess: (res: unknown) => {
+      const data = res as { approved?: number; failed_count?: number };
+      toast.success(`Approve all selesai: ${data?.approved ?? 0} disetujui${data?.failed_count ? `, ${data.failed_count} gagal` : ''}`);
+      queryClient.invalidateQueries({ queryKey: ['admin', 'profile-change-requests'] });
+    },
+    onError: (err: unknown) => toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal approve all'),
+  });
+
   const rejectMutation = useMutation({
     mutationFn: ({ id, reason }: { id: number; reason: string }) =>
       api.patch(`/admin/profile-change-requests/${id}/reject`, { rejection_reason: reason }),
@@ -58,7 +68,18 @@ export default function AdminProfileChangeRequestsPage(): React.JSX.Element {
     onError: (err: unknown) => toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal menolak'),
   });
 
-  const requests: ChangeRequest[] = Array.isArray((data as { data?: unknown })?.data) ? (data as { data: ChangeRequest[] }).data : Array.isArray(data) ? (data as ChangeRequest[]) : [];
+  const payload = data as { data?: unknown; total?: number } | ChangeRequest[] | undefined;
+  const rawData = Array.isArray(payload)
+    ? payload
+    : (payload?.data as { data?: ChangeRequest[]; total?: number } | ChangeRequest[] | undefined);
+  const requests: ChangeRequest[] = Array.isArray(rawData)
+    ? rawData
+    : Array.isArray(rawData?.data)
+      ? rawData.data
+      : [];
+  const totalPending = statusFilter === 'pending'
+    ? (Array.isArray(rawData) ? requests.length : (rawData?.total ?? requests.length))
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -67,7 +88,18 @@ export default function AdminProfileChangeRequestsPage(): React.JSX.Element {
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">Permintaan Perubahan Profil</h1>
           <p className="text-sm text-slate-500 mt-1">Tinjau dan setujui perubahan data profil pengguna</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 justify-end">
+          {statusFilter === 'pending' && totalPending > 0 && (
+            <button
+              onClick={() => {
+                if (confirm(`Setujui semua ${totalPending} permintaan pending?`)) approveAllMutation.mutate();
+              }}
+              disabled={approveAllMutation.isPending}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+            >
+              <CheckCheck size={14} /> {approveAllMutation.isPending ? 'Memproses...' : 'Approve All'}
+            </button>
+          )}
           {(['pending', 'approved', 'rejected'] as const).map((s) => (
             <button
               key={s}

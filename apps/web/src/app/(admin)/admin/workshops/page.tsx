@@ -38,6 +38,96 @@ interface Workshop {
   is_active: boolean;
   participants_count?: number;
   peserta?: Participant[];
+  display_date?: string;
+  period_name?: string;
+}
+
+interface ApiParticipant {
+  id: number;
+  user_id: number;
+  workshop_id?: number;
+  jabatan_sk?: string | null;
+  nomor_dokumen?: string | null;
+  identity_number?: string | null;
+  attendance_status: string;
+  is_passed?: boolean;
+  certificate_generated?: boolean;
+  registered_at?: string;
+  checked_in_at?: string | null;
+  name?: string;
+  email?: string | null;
+  user?: { id?: number; name?: string; email?: string | null };
+}
+
+interface ApiWorkshop {
+  id: number;
+  periode_id?: number;
+  title: string;
+  description?: string;
+  methodology?: string;
+  workshop_date?: string;
+  workshop_date_value?: string;
+  date?: string;
+  start_time?: string;
+  end_time?: string;
+  location?: string;
+  max_participants?: number;
+  status: string;
+  is_active?: boolean;
+  participants_count?: number;
+  registered?: number;
+  peserta?: ApiParticipant[];
+  participants?: ApiParticipant[];
+  period?: { id: number; name: string } | null;
+}
+
+interface PeriodOption {
+  id: number;
+  name: string;
+}
+
+function normalizeParticipant(participant: ApiParticipant, workshopId: number): Participant {
+  return {
+    id: participant.id,
+    user_id: participant.user_id,
+    workshop_id: participant.workshop_id ?? workshopId,
+    jabatan_sk: participant.jabatan_sk ?? null,
+    nomor_dokumen: participant.nomor_dokumen ?? participant.identity_number ?? null,
+    attendance_status: participant.attendance_status,
+    is_passed: participant.is_passed ?? Boolean(participant.certificate_generated),
+    registered_at: participant.registered_at ?? '',
+    checked_in_at: participant.checked_in_at ?? null,
+    user: {
+      id: Number(participant.user?.id ?? participant.user_id),
+      name: participant.user?.name ?? participant.name ?? `User #${participant.user_id}`,
+      email: participant.user?.email ?? participant.email ?? '',
+    },
+  };
+}
+
+function normalizeWorkshop(workshop: ApiWorkshop): Workshop {
+  const peserta = (workshop.peserta ?? workshop.participants ?? []).map((participant) =>
+    normalizeParticipant(participant, workshop.id),
+  );
+
+  return {
+    id: workshop.id,
+    periode_id: workshop.periode_id ?? workshop.period?.id ?? 0,
+    title: workshop.title,
+    description: workshop.description ?? '',
+    methodology: workshop.methodology ?? '',
+    workshop_date: workshop.workshop_date ?? workshop.workshop_date_value ?? '',
+    start_time: workshop.start_time ?? '',
+    end_time: workshop.end_time ?? '',
+    location: workshop.location ?? '',
+    max_participants: workshop.max_participants ?? undefined,
+    status: workshop.status,
+    is_active: workshop.is_active ?? workshop.status !== 'cancelled',
+    participants_count: workshop.participants_count ?? workshop.registered ?? peserta.length,
+    peserta,
+    display_date: workshop.date ?? workshop.workshop_date ?? workshop.workshop_date_value ?? '-',
+    period_name: workshop.period?.name,
+  };
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -56,7 +146,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 function WorkshopFormModal({ workshop, onClose, onSaved }: { workshop?: Workshop | null; onClose: () => void; onSaved: () => void }) {
   const [form, setForm] = useState({
-    periode_id: workshop?.periode_id ?? '',
+    periode_id: workshop?.periode_id ? String(workshop.periode_id) : '',
     title: workshop?.title ?? '',
     description: workshop?.description ?? '',
     methodology: workshop?.methodology ?? '',
@@ -84,7 +174,11 @@ function WorkshopFormModal({ workshop, onClose, onSaved }: { workshop?: Workshop
     queryKey: ['admin', 'periods-dropdown'],
     queryFn: async () => {
       const res = await adminApi.periods.index();
-      return ((res as unknown as { data?: Array<{ id: number; name: string }> })?.data ?? res) as Array<{ id: number; name: string }>;
+      const rawPeriods = ((res as { data?: unknown })?.data ?? res) as unknown;
+      return (Array.isArray(rawPeriods) ? rawPeriods : []).map((period) => {
+        const item = period as PeriodOption;
+        return { id: item.id, name: item.name };
+      });
     },
   });
 
@@ -242,7 +336,10 @@ export default function WorkshopsPage(): React.JSX.Element {
     queryKey: ['admin', 'workshops'],
     queryFn: async () => {
       const res = await adminApi.workshops.index();
-      return ((res as { data: unknown })?.data ?? res) as Workshop[];
+      const rawWorkshops = ((res as { data?: unknown })?.data ?? res) as unknown;
+      return (Array.isArray(rawWorkshops) ? rawWorkshops : []).map((workshop) =>
+        normalizeWorkshop(workshop as ApiWorkshop),
+      );
     },
   });
 
@@ -352,7 +449,7 @@ export default function WorkshopsPage(): React.JSX.Element {
                   </div>
                   {w.description && <p className="text-xs text-slate-500 mt-1 line-clamp-2">{w.description}</p>}
                   <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-slate-500">
-                    <span className="flex items-center gap-1"><Calendar size={12} /> {w.workshop_date}</span>
+                    <span className="flex items-center gap-1"><Calendar size={12} /> {w.display_date ?? w.workshop_date}</span>
                     {w.start_time && <span className="flex items-center gap-1"><Clock size={12} /> {w.start_time}{w.end_time ? ` - ${w.end_time}` : ''}</span>}
                     {w.location && <span className="flex items-center gap-1"><MapPin size={12} /> {w.location}</span>}
                     <span className="flex items-center gap-1"><Users size={12} /> {w.participants_count ?? 0}{w.max_participants ? ` / ${w.max_participants}` : ''} peserta</span>

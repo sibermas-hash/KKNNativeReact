@@ -30,6 +30,7 @@ class WorkshopService
         $payload = [
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
+            'methodology' => $data['methodology'] ?? null,
             'workshop_date' => $data['workshop_date'],
             'start_time' => $data['start_time'] ?? null,
             'end_time' => $data['end_time'] ?? null,
@@ -63,6 +64,7 @@ class WorkshopService
                 ...(Workshop::supportsPeriodAssignment() ? ['periode_id' => $data['periode_id'] ?? $workshop->periode_id] : []),
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
+                'methodology' => $data['methodology'] ?? null,
                 'workshop_date' => $data['workshop_date'],
                 'start_time' => $data['start_time'] ?? null,
                 'end_time' => $data['end_time'] ?? null,

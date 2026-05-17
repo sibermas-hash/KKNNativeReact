@@ -19,6 +19,7 @@ interface User {
   roles?: string[];
   is_active?: boolean;
   fakultas_id?: number | null;
+  avatar_url?: string | null;
 }
 
 interface MahasiswaDetail {
@@ -34,6 +35,7 @@ interface MahasiswaDetail {
   marital_status?: string | null;
   phone?: string | null;
   alamat?: string | null;
+  api_email?: string | null;
   fakultas_id?: number | null;
   prodi_id?: number | null;
   batch_year?: number | null;
@@ -207,6 +209,7 @@ export default function AdminUsersPage(): React.JSX.Element {
             marital_status: mahasiswa.marital_status ?? '',
             phone: mahasiswa.phone ?? '',
             alamat: mahasiswa.alamat ?? '',
+            api_email: mahasiswa.api_email ?? '',
             fakultas_id: mahasiswa.fakultas_id ?? null,
             prodi_id: mahasiswa.prodi_id ?? null,
             batch_year: mahasiswa.batch_year ?? null,
@@ -275,11 +278,11 @@ export default function AdminUsersPage(): React.JSX.Element {
     mutationFn: (id: number) => adminApi.users.resetPassword(id),
     onSuccess: (res: unknown) => {
       setResetConfirmUser(null);
-      const data = res as { email_sent?: boolean };
+      const data = res as { delivery?: string };
       toast.success(
-        data?.email_sent
-          ? 'Tautan reset password dikirim ke email pengguna.'
-          : 'Tautan reset password berhasil dibuat.'
+        data?.delivery === 'default_ddmmyyyy'
+          ? 'Password direset ke default DDMMYYYY. User wajib ganti password saat login.'
+          : 'Password berhasil direset.'
       );
     },
     onError: (queryError: unknown) => toast.error(mutationErrorHandler(queryError)),
@@ -412,15 +415,10 @@ export default function AdminUsersPage(): React.JSX.Element {
       </button>
       <button
         onClick={() => {
-          if (!u.email) {
-            toast.error('Tambahkan email pengguna terlebih dahulu sebelum mengirim tautan reset password.');
-            return;
-          }
 
           setResetConfirmUser(u);
         }}
-        disabled={!u.email}
-        title={!u.email ? 'Reset password aman membutuhkan email pengguna.' : undefined}
+        title="Reset password ke default DDMMYYYY dari tanggal lahir"
         className="px-3 py-1.5 rounded-lg text-xs font-black bg-amber-50 text-amber-700 hover:bg-amber-100 disabled:opacity-50"
       >
         Reset Password
@@ -750,9 +748,22 @@ export default function AdminUsersPage(): React.JSX.Element {
             aria-labelledby="edit-data-title"
           >
             <div className="flex items-start justify-between">
-              <div>
-                <h3 id="edit-data-title" className="font-black text-slate-900 text-lg">Edit Data Pengguna</h3>
-                <p className="text-xs text-slate-500 mt-1">NIM / NIP di-lock (tidak dapat diubah).</p>
+              <div className="flex items-center gap-4">
+                <div className="h-16 w-16 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm shrink-0">
+                  {detailData?.user?.avatar_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={detailData.user.avatar_url} alt={detailData.user.name || 'Avatar pengguna'} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-cyan-50 text-lg font-black text-cyan-700">
+                      {(detailData?.user?.name || editForm.user.name || '?').toString().slice(0, 1).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h3 id="edit-data-title" className="font-black text-slate-900 text-lg">Edit Data Pengguna</h3>
+                  <p className="text-xs text-slate-500 mt-1">NIM / NIP di-lock (tidak dapat diubah).</p>
+                  <p className="text-[11px] font-semibold text-slate-400 mt-1">Foto profil/Avatar ditampilkan untuk verifikasi visual.</p>
+                </div>
               </div>
               <button
                 type="button"
@@ -793,7 +804,7 @@ export default function AdminUsersPage(): React.JSX.Element {
                       />
                     </label>
                     <label className="block sm:col-span-2">
-                      <span className="text-[10px] font-black text-slate-400 uppercase">Email Sistem</span>
+                      <span className="text-[10px] font-black text-slate-400 uppercase">Email</span>
                       <input
                         type="email"
                         value={String(editForm.user.email ?? '')}
@@ -837,6 +848,7 @@ export default function AdminUsersPage(): React.JSX.Element {
                       <TextField label="Status Aktif" value={editForm.mahasiswa.status_aktif} onChange={(v) => updateMahasiswaField('status_aktif', v)} placeholder="AKTIF / CUTI / LULUS" />
                       <NumberField label="Fakultas ID" value={editForm.mahasiswa.fakultas_id} onChange={(v) => updateMahasiswaField('fakultas_id', v)} />
                       <NumberField label="Prodi ID" value={editForm.mahasiswa.prodi_id} onChange={(v) => updateMahasiswaField('prodi_id', v)} />
+                      <TextField label="Email API" value={editForm.mahasiswa.api_email} onChange={(v) => updateMahasiswaField('api_email', v)} />
                       <TextField label="Status Nikah" value={editForm.mahasiswa.marital_status} onChange={(v) => updateMahasiswaField('marital_status', v)} />
                       <div className="sm:col-span-2">
                         <TextField label="Alamat" value={editForm.mahasiswa.alamat} onChange={(v) => updateMahasiswaField('alamat', v)} />
@@ -932,10 +944,10 @@ export default function AdminUsersPage(): React.JSX.Element {
         title="Reset Password"
         description={
           resetConfirmUser
-            ? `Tautan reset password akan dikirim ke email ${resetConfirmUser.name} (${resetConfirmUser.username}). Password akun tidak akan diubah sebelum pengguna menyelesaikan reset.`
+            ? `Password ${resetConfirmUser.name} (${resetConfirmUser.username}) akan direset ke default DDMMYYYY berdasarkan tanggal lahir. User wajib mengganti password setelah login.`
             : ''
         }
-        confirmText="Kirim Tautan"
+        confirmText="Reset ke DDMMYYYY"
         variant="warning"
       />
     </div>

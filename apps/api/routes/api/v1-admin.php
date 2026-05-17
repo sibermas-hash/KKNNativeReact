@@ -82,8 +82,20 @@ Route::prefix('admin')
         Route::post('/jenis-kkn/{jenisKkn}/document-requirements', [JenisKknDocumentRequirementController::class, 'store']);
         Route::put('/jenis-kkn/{jenisKkn}/document-requirements/{requirement}', [JenisKknDocumentRequirementController::class, 'update']);
         Route::delete('/jenis-kkn/{jenisKkn}/document-requirements/{requirement}', [JenisKknDocumentRequirementController::class, 'destroy']);
-        Route::apiResource('fakultas', FakultasController::class)->only(['index', 'store', 'update', 'destroy']);
-        Route::apiResource('prodi', ProdiController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::get('/fakultas', [FakultasController::class, 'index']);
+        Route::middleware('role:superadmin')->group(function () {
+            Route::post('/fakultas', [FakultasController::class, 'store']);
+            Route::put('/fakultas/{fakultas}', [FakultasController::class, 'update']);
+            Route::patch('/fakultas/{fakultas}', [FakultasController::class, 'update']);
+            Route::delete('/fakultas/{fakultas}', [FakultasController::class, 'destroy']);
+        });
+        Route::get('/prodi', [ProdiController::class, 'index']);
+        Route::middleware('role:superadmin')->group(function () {
+            Route::post('/prodi', [ProdiController::class, 'store']);
+            Route::put('/prodi/{prodi}', [ProdiController::class, 'update']);
+            Route::patch('/prodi/{prodi}', [ProdiController::class, 'update']);
+            Route::delete('/prodi/{prodi}', [ProdiController::class, 'destroy']);
+        });
         Route::apiResource('lokasi', LokasiController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::post('/lokasi/import', [LokasiController::class, 'import']);
         Route::get('/lokasi/export', [LokasiController::class, 'export']);
@@ -214,8 +226,10 @@ Route::prefix('admin')
         Route::patch('/laporan/akhir/{report}/status', [LaporanAkhirAdminController::class, 'updateStatus']);
         Route::get('/laporan/akhir/{report}/unduh', [LaporanAkhirAdminController::class, 'download']);
 
-        Route::get('/konfigurasi-penilaian', [KonfigurasiPenilaianController::class, 'index']);
-        Route::patch('/konfigurasi-penilaian', [KonfigurasiPenilaianController::class, 'update']);
+        Route::middleware('role:superadmin')->group(function () {
+            Route::get('/konfigurasi-penilaian', [KonfigurasiPenilaianController::class, 'index']);
+            Route::patch('/konfigurasi-penilaian', [KonfigurasiPenilaianController::class, 'update']);
+        });
 
         Route::get('/yudisium', [YudisiumController::class, 'index']);
         Route::post('/yudisium/proses', [YudisiumController::class, 'proses']);
@@ -241,15 +255,19 @@ Route::prefix('admin')
         Route::get('/mahasiswa/{mahasiswa}', [UserController::class, 'mahasiswaShow']);
         Route::get('/dosen', [UserController::class, 'dosenIndex']);
 
-        // Avatar moderation (Layer 4 of PRD_AVATAR_VALIDATION.md)
-        Route::get('/avatar-moderation', [AvatarModerationController::class, 'index']);
-        Route::patch('/avatar-moderation/{user}/approve', [AvatarModerationController::class, 'approve']);
-        Route::patch('/avatar-moderation/{user}/reject', [AvatarModerationController::class, 'reject']);
+        // Avatar moderation (superadmin only — Layer 4 of PRD_AVATAR_VALIDATION.md)
+        Route::middleware('role:superadmin')->group(function () {
+            Route::get('/avatar-moderation', [AvatarModerationController::class, 'index']);
+            Route::patch('/avatar-moderation/{user}/approve', [AvatarModerationController::class, 'approve']);
+            Route::patch('/avatar-moderation/{user}/reject', [AvatarModerationController::class, 'reject']);
+        });
 
-        // User Activity Log (PRD_USER_ACTIVITY_LOG.md)
-        Route::get('/activity-log', [UserActivityController::class, 'index']);
-        Route::get('/activity-log/stats', [UserActivityController::class, 'stats']);
-        Route::get('/activity-log/user/{user}', [UserActivityController::class, 'userHistory']);
+        // User Activity Log (superadmin only — PRD_USER_ACTIVITY_LOG.md)
+        Route::middleware('role:superadmin')->group(function () {
+            Route::get('/activity-log', [UserActivityController::class, 'index']);
+            Route::get('/activity-log/stats', [UserActivityController::class, 'stats']);
+            Route::get('/activity-log/user/{user}', [UserActivityController::class, 'userHistory']);
+        });
 
         // AI Playground (superadmin only — PRD_AI_PLAYGROUND.md)
         Route::middleware('role:superadmin')->prefix('playground')->group(function () {
@@ -294,8 +312,10 @@ Route::prefix('admin')
             Route::post('/pengaturan/sistem/reset-pendaftaran', [SystemSettingController::class, 'resetPendaftaran'])
                 ->middleware('throttle:2,60');
         });
-        Route::get('/audit-log', [LogAuditController::class, 'index']);
-        Route::get('/audit-log/{auditLog}', [LogAuditController::class, 'show']);
+        Route::middleware('role:superadmin')->group(function () {
+            Route::get('/audit-log', [LogAuditController::class, 'index']);
+            Route::get('/audit-log/{auditLog}', [LogAuditController::class, 'show']);
+        });
 
         // Data Import (superadmin only)
         Route::middleware('role:superadmin')->group(function () {
@@ -342,9 +362,10 @@ Route::prefix('admin')
         // Legacy alias
         Route::get('/rekap-nilai', [RekapNilaiController::class, 'index']);
 
-        // Profile Change Requests
-        Route::prefix('profile-change-requests')->group(function () {
+        // Profile Change Requests (superadmin only)
+        Route::middleware('role:superadmin')->prefix('profile-change-requests')->group(function () {
             Route::get('/', [ProfileChangeRequestController::class, 'index']);
+            Route::patch('/approve-all', [ProfileChangeRequestController::class, 'approveAll']);
             Route::patch('/{profileChangeRequest}/approve', [ProfileChangeRequestController::class, 'approve']);
             Route::patch('/{profileChangeRequest}/reject', [ProfileChangeRequestController::class, 'reject']);
         });

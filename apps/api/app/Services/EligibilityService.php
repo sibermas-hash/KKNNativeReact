@@ -32,7 +32,13 @@ class EligibilityService
         }
 
         foreach ($config as $rule) {
-            $key = $rule['key'] ?? str_replace(' ', '_', strtolower($rule['name']));
+            // requirements_config also stores scalar settings like min_sks/min_gpa.
+            // Only entries shaped as dynamic-rule arrays should be processed here.
+            if (! is_array($rule)) {
+                continue;
+            }
+
+            $key = $rule['key'] ?? str_replace(' ', '_', strtolower((string) ($rule['name'] ?? 'requirement')));
             $type = $rule['type'] ?? 'upload';
 
             if ($type === 'db_check') {
@@ -358,11 +364,15 @@ class EligibilityService
         $studentProdiId = $mahasiswa->prodi_id;
         $isAllowed = in_array((int) $studentProdiId, array_map('intval', $specificProdiIds));
 
+        $allowedLabel = $periode->jenisKkn->requirements_config['specific_prodi_note']
+            ?? 'Skema ini dibatasi untuk program studi tertentu.';
+
         return [
             'passed' => $isAllowed,
             'key' => 'program_prodi',
-            'message' => $isAllowed ? 'Program studi sesuai' : 'Skema ini dibatasi untuk program studi tertentu.',
+            'message' => $isAllowed ? 'Program studi sesuai' : $allowedLabel,
             'reason' => 'Pembatasan khusus program studi sesuai Edaran.',
+            'allowed_prodi_ids' => array_map('intval', $specificProdiIds),
         ];
     }
 

@@ -22,11 +22,13 @@ type Period = {
 };
 type UserEligibility = {
   sks_completed: number;
+  semester: number;
   gpa: number;
   bta_ppi_passed: boolean;
+  ukt_paid: boolean;
   has_health_certificate: boolean;
   has_parent_permission: boolean;
-  thresholds?: { min_sks: number; min_gpa: number };
+  thresholds?: { min_sks: number; min_semester: number; min_gpa: number };
 };
 type RegistrationStatus = { has_registered: boolean; status?: string; period_name?: string; jenis_name?: string; registered_at?: string };
 type GroupInfo = {
@@ -285,7 +287,9 @@ export default function RegistrationFormPage(): React.JSX.Element {
           </h2>
           <div className="flex flex-wrap gap-2">
             <EligibilityBadge label={`SKS: ${userEligibility.sks_completed}`} passed={userEligibility.sks_completed >= (userEligibility.thresholds?.min_sks ?? 100)} />
+            <EligibilityBadge label={`Semester: ${userEligibility.semester}`} passed={userEligibility.semester >= (userEligibility.thresholds?.min_semester ?? 6)} />
             <EligibilityBadge label={`IPK: ${userEligibility.gpa}`} passed={userEligibility.gpa >= (userEligibility.thresholds?.min_gpa ?? 2.0)} />
+            <EligibilityBadge label="UKT" passed={userEligibility.ukt_paid} />
             <EligibilityBadge label="BTA/PPI" passed={userEligibility.bta_ppi_passed} />
           </div>
           <p className="mt-3 text-xs font-medium text-slate-500">Surat Sehat dan Izin Ortu tidak menjadi filter kelayakan otomatis di halaman ini. Dokumen diunggah setelah pendaftaran dan divalidasi manual oleh LPPM/Superadmin.</p>

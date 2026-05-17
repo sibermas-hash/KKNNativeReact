@@ -180,16 +180,17 @@ class AuthController extends Controller
             ActivityLogger::log('logout', 'success', $user->id);
         }
 
-        if ($request->header('X-App-Type') === 'mobile' && $user) {
-            // Mobile: revoke only the current token
-            $user->currentAccessToken()->delete();
-        } else {
-            // Web: revoke all web Sanctum tokens
-            if ($user) {
-                $user->tokens()->where('name', 'web')->delete();
+        if ($user) {
+            // Revoke only the current token — not all tokens for this user.
+            // This allows multi-device login (laptop + HP browser) without
+            // logging out other sessions. Previously web logout deleted ALL
+            // web tokens, causing other browser sessions to be invalidated.
+            $currentToken = $user->currentAccessToken();
+            if ($currentToken) {
+                $currentToken->delete();
             }
-            Auth::guard('web')->logout();
         }
+        Auth::guard('web')->logout();
 
         return $this->noContent('Logout berhasil.')
             ->withoutCookie('sibermas_token');
@@ -249,7 +250,7 @@ class AuthController extends Controller
             $request->only('email', 'password', 'password_confirmation', 'token'),
             function (User $user, string $password) {
                 $user->forceFill([
-                    'password' => Hash::make($password),
+                    'password' => $password,
                     'password_changed_at' => now(),
                     'must_change_password' => false,
                 ])->save();
@@ -338,17 +339,14 @@ class AuthController extends Controller
             return true;
         }
 
-        // Mahasiswa: full address + biodata required
+        // Mahasiswa: core address + biodata required
+        // Note: address_lat, address_lng, address_verified_at, and address_postal_code
+        // are auto-filled by map picker / geocoding. If the map fails to load on
+        // the student's device these stay NULL and the student has no way to fix it.
+        // Only require fields the student can always fill manually.
         $baseComplete = filled($user->avatar)
             && filled($user->phone)
-            && filled($user->address)
-            && filled($user->address_village_name)
-            && filled($user->address_district_name)
-            && filled($user->address_regency_name)
-            && filled($user->address_postal_code)
-            && filled($user->address_lat)
-            && filled($user->address_lng)
-            && filled($user->address_verified_at);
+            && filled($user->address);
 
         if (! $baseComplete) {
             return false;

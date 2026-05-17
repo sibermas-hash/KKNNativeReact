@@ -22,46 +22,163 @@ class EligibilityController extends Controller
 
     public function __construct(private EligibilityService $eligibilityService) {}
 
-    public function index(Request $request): JsonResponse
+public function index(Request $request): JsonResponse
     {
         $user = auth()->user();
-        $periodeId = $request->integer('period_id') ?: null;
         $facultyId = $user->hasRole('faculty_admin') ? $user->fakultas_id : ($request->integer('faculty_id') ?: null);
         $showEligible = $request->boolean('show_eligible', true);
         $search = $request->string('search')->trim()->toString();
-
-        $result = $this->eligibilityService->getEligibleStudents($periodeId, $facultyId);
-
-        $studentsToShow = $showEligible ? $result['eligible'] : $result['not_eligible'];
-
-        if ($search !== '') {
-            $lower = strtolower($search);
-            $studentsToShow = $studentsToShow->filter(fn ($s) => str_contains(strtolower($s['nim'] ?? ''), $lower) ||
-                str_contains(strtolower($s['nama'] ?? ''), $lower)
-            )->values();
-        }
-
+        $issueKey = $request->string('issue')->trim()->toString();
         $perPage = 20;
         $page = $request->integer('page', 1);
-        $total = $studentsToShow->count();
-        $students = $studentsToShow->slice(($page - 1) * $perPage, $perPage)->values();
+
+        // Check if eligibility cache exists
+        $cacheExists = Mahasiswa::whereNotNull('eligibility_computed_at')->exists();
+
+        if (! $cacheExists) {
+            // Fallback: compute on-the-fly (slow, first-time only)
+            $periodeId = $request->integer('period_id') ?: null;
+            $result = $this->eligibilityService->getEligibleStudents($periodeId, $facultyId);
+
+            $studentsToShow = $showEligible ? $result['eligible'] : $result['not_eligible'];
+
+            if ($search !== '') {
+                $lower = strtolower($search);
+                $studentsToShow = $studentsToShow->filter(fn ($s) => str_contains(strtolower($s['nim'] ?? ''), $lower) ||
+                    str_contains(strtolower($s['nama'] ?? ''), $lower)
+                )->values();
+            }
+
+            if ($issueKey !== '') {
+                $studentsToShow = $studentsToShow->filter(fn ($s) => collect($s['issues'] ?? [])->contains('key', $issueKey))->values();
+            }
+
+            $total = $studentsToShow->count();
+            $students = $studentsToShow->slice(($page - 1) * $perPage, $perPage)->values();
+
+            return $this->success([
+                'students' => $students,
+                'pagination' => [
+                    'current_page' => $page,
+                    'per_page' => $perPage,
+                    'total' => $total,
+                    'last_page' => max(1, (int) ceil($total / $perPage)),
+                ],
+                'stats' => [
+                    'total' => $result['total'],
+                    'eligible_count' => $result['eligible_count'],
+                    'not_eligible_count' => $result['not_eligible_count'],
+                    'eligibility_rate' => $result['eligibility_rate'],
+                ],
+            ]);
+        }
+
+        // FAST PATH: Query from cached eligibility columns with DB-level pagination
+        $query = Mahasiswa::with(['prodi.fakultas', 'fakultas'])
+            ->where('is_eligible', $showEligible)
+            ->whereNotNull('eligibility_computed_at');
+
+        if ($facultyId) {
+            $query->where('fakultas_id', $facultyId);
+        }
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('nim', 'ilike', "%{$search}%")
+                  ->orWhere('nama', 'ilike', "%{$search}%");
+            });
+        }
+
+        if ($issueKey !== '') {
+            $query->where('eligibility_issues', 'like', '%"key":"'.$issueKey.'"%');
+        }
+
+        $query->orderBy('nama');
+
+        // Stats: fast aggregate counts from cache
+        $statsQuery = Mahasiswa::whereNotNull('eligibility_computed_at');
+        if ($facultyId) {
+            $statsQuery->where('fakultas_id', $facultyId);
+        }
+        $totalAll = $statsQuery->count();
+        $eligibleCount = (clone $statsQuery)->where('is_eligible', true)->count();
+        $notEligibleCount = $totalAll - $eligibleCount;
+
+        // Paginate
+        $paginated = $query->paginate($perPage, ['*'], 'page', $page);
+
+        // Transform to expected format
+        $students = $paginated->getCollection()->map(function (Mahasiswa $m) {
+            $issues = json_decode($m->eligibility_issues ?? '[]', true);
+
+            // Reconstruct checks from cached issues
+            $allCheckKeys = ['no_prior_completion', 'min_sks', 'min_semester', 'min_gpa', 'ukt_payment', 'bta_ppi', 'program_prodi', 'personal_status'];
+            $failedKeys = array_column($issues, 'key');
+            $checks = [];
+
+            foreach ($allCheckKeys as $key) {
+                $failedIssue = collect($issues)->firstWhere('key', $key);
+                if ($failedIssue) {
+                    $checks[$key] = ['passed' => false, 'key' => $key, 'message' => $failedIssue['message']];
+                } else {
+                    $checks[$key] = ['passed' => true, 'key' => $key, 'message' => $this->getPassedMessage($key, $m)];
+                }
+            }
+
+            return [
+                'mahasiswa_id' => $m->id,
+                'nim' => $m->nim,
+                'nama' => $m->nama,
+                'prodi_nama' => $m->prodi?->nama,
+                'fakultas_nama' => $m->fakultas?->nama ?? $m->prodi?->fakultas?->nama,
+                'sks_completed' => $m->sks_completed,
+                'gpa' => $m->gpa,
+                'is_bta_ppi_passed' => in_array(strtoupper(trim($m->status_bta_ppi ?? '')), ['LULUS', 'PASSED', 'SUCCESS']),
+                'has_health_certificate' => ! empty($m->health_certificate_path),
+                'has_parent_permission' => ! empty($m->parent_permission_path),
+                'checks' => $checks,
+                'is_eligible' => $m->is_eligible,
+                'issues' => $issues,
+                'issue_count' => count($issues),
+                'has_dispensasi' => false,
+            ];
+        });
 
         return $this->success([
-            'students' => $students,
+            'students' => $students->values(),
             'pagination' => [
-                'current_page' => $page,
-                'per_page' => $perPage,
-                'total' => $total,
-                'last_page' => max(1, (int) ceil($total / $perPage)),
+                'current_page' => $paginated->currentPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+                'last_page' => $paginated->lastPage(),
             ],
             'stats' => [
-                'total' => $result['total'],
-                'eligible_count' => $result['eligible_count'],
-                'not_eligible_count' => $result['not_eligible_count'],
-                'eligibility_rate' => $result['eligibility_rate'],
+                'total' => $totalAll,
+                'eligible_count' => $eligibleCount,
+                'not_eligible_count' => $notEligibleCount,
+                'eligibility_rate' => $totalAll > 0 ? round(($eligibleCount / $totalAll) * 100, 1) : 0,
             ],
         ]);
     }
+
+    /**
+     * Get a human-readable passed message for a check key (cached mode).
+     */
+    private function getPassedMessage(string $key, Mahasiswa $m): string
+    {
+        return match ($key) {
+            'no_prior_completion' => 'Belum pernah lulus KKN',
+            'min_sks' => 'SKS mencukupi (' . ($m->sks_completed ?? 0) . ')',
+            'min_semester' => 'Semester mencukupi (' . ($m->semester ?? 0) . ')',
+            'min_gpa' => 'IPK mencukupi (' . ($m->gpa ? number_format((float) $m->gpa, 2) : '-') . ')',
+            'ukt_payment' => $m->is_paid_ukt ? 'UKT sudah lunas' : 'UKT belum lunas',
+            'bta_ppi' => 'Lulus BTA-PPI',
+            'program_prodi' => 'Program studi sesuai',
+            'personal_status' => 'Lolos kriteria umum',
+            default => 'OK',
+        };
+    }
+
 
     public function checkStudent(Mahasiswa $mahasiswa, Request $request): JsonResponse
     {

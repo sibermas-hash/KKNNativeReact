@@ -58,6 +58,7 @@ class WorkshopController extends Controller
     public function update(Request $request, Workshop $workshop): JsonResponse
     {
         $validated = $request->validate([
+            'periode_id' => 'sometimes|integer|exists:periode,id',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'workshop_date' => 'required|date',

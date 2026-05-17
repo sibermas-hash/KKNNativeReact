@@ -247,13 +247,6 @@ class RegistrationController extends Controller
 
     private function isAddressComplete($user): bool
     {
-        return filled($user?->address)
-            && filled($user?->address_village_name)
-            && filled($user?->address_district_name)
-            && filled($user?->address_regency_name)
-            && filled($user?->address_postal_code)
-            && filled($user?->address_lat)
-            && filled($user?->address_lng)
-            && filled($user?->address_verified_at);
+        return filled($user?->address);
     }
 }

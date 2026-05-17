@@ -34,7 +34,7 @@ export default function StudentDashboard(): React.JSX.Element {
 
   
 
-  const { data, isLoading } = useQuery<Record<string, unknown> | null>({
+  const { data, isLoading, isError, error } = useQuery<Record<string, unknown> | null>({
     queryKey: QUERY_KEYS.student.dashboard,
     queryFn: () => studentApi.dashboard() as unknown as Promise<Record<string, unknown> | null>,
   });
@@ -72,7 +72,8 @@ export default function StudentDashboard(): React.JSX.Element {
   // Audit F-13 fix: ambil dari backend SystemSetting (key `min_daily_reports`, default 30).
   const minLogbook = Number(data?.min_daily_reports) || 30;
   const phaseOrder = ['pre_registration', 'registration', 'placement', 'execution', 'grading', 'finished'];
-  const phaseRank = phaseOrder.indexOf(String(currentPhase || activePeriod?.current_phase || 'pre_registration'));
+  const rawPhaseRank = phaseOrder.indexOf(String(currentPhase || activePeriod?.current_phase || 'pre_registration'));
+  const phaseRank = rawPhaseRank >= 0 ? rawPhaseRank : 0;
   const isPhaseAtLeast = (phase: string) => phaseRank >= phaseOrder.indexOf(phase);
   const dashboardNavItems = [
     { href: '/mahasiswa/laporan-harian', icon: ClipboardList, label: 'Logbook Harian', minPhase: 'execution', lockReason: 'Aktif saat fase pelaksanaan KKN.' },
@@ -110,6 +111,20 @@ export default function StudentDashboard(): React.JSX.Element {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [handleClosePopup, showPopup]);
 
+  if (isError) {
+    return (
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12">
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-8 text-center">
+          <AlertTriangle size={40} className="mx-auto mb-4 text-rose-600" />
+          <h2 className="text-lg font-black uppercase tracking-tight text-rose-900">Dashboard gagal dimuat</h2>
+          <p className="mt-2 text-sm font-semibold text-rose-700">
+            Sesi/API bermasalah. Silakan refresh halaman atau login ulang.
+          </p>
+          <p className="mt-2 text-[11px] text-rose-500">{String((error as Error)?.message || '')}</p>
+        </div>
+      </div>
+    );
+  }
   if (isLoading) {
     return (
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-6 pb-12">

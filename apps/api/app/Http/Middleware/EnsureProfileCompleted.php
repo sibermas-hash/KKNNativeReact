@@ -65,14 +65,7 @@ class EnsureProfileCompleted
         // Mahasiswa: full address + biodata required
         $baseComplete = filled($user->avatar)
             && filled($user->phone)
-            && filled($user->address)
-            && filled($user->address_village_name)
-            && filled($user->address_district_name)
-            && filled($user->address_regency_name)
-            && filled($user->address_postal_code)
-            && filled($user->address_lat)
-            && filled($user->address_lng)
-            && filled($user->address_verified_at);
+            && filled($user->address);
 
         if (! $baseComplete) {
             return false;

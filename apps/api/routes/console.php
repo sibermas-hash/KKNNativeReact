@@ -36,6 +36,13 @@ Schedule::command('monitoring:health-check')->everyFiveMinutes()->withoutOverlap
 // Daily heartbeat di Telegram jam 08:00 WIB (1×/hari via dedup 12h di command)
 Schedule::command('monitoring:health-check --heartbeat')->dailyAt('08:00');
 
+
+// Auto-cleanup stale data every 6 hours (tokens, sessions, cache, old logs)
+Schedule::command('cleanup:stale-data --quiet-log')->everySixHours()->withoutOverlapping();
+
+// Recompute eligibility cache daily at 04:00 WIB
+Schedule::command('audit:recompute-eligibility')->dailyAt('04:00')->withoutOverlapping();
+
 // PRD 9.1: Campus Data Integration Schedules
 // DISABLED 2026-05: Per ops decision, SIAKAD sync is now run manually
 // from the superadmin dashboard (POST /api/v1/admin/sync/run-with-backup)

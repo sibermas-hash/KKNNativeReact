@@ -55,6 +55,37 @@ class MahasiswaResource extends JsonResource
             'fakultas' => $fakultas,
             'prodi' => $prodi,
             'profile_completion' => $this->profile_completion,
+
+            // User account info (loaded via whenLoaded to avoid N+1)
+            'user' => $this->when($this->relationLoaded('user') && $this->user, function () {
+                $u = $this->user;
+                return [
+                    'id' => $u->id,
+                    'username' => $u->username,
+                    'email' => $u->email,
+                    'is_active' => $u->is_active,
+                    'avatar_url' => $u->avatar
+                        ? rtrim(config('app.url'), '/').'/storage/'.$u->avatar
+                        : null,
+                    'password_changed_at' => $u->password_changed_at,
+                    'last_login_at' => $u->last_login_at,
+                ];
+            }),
+
+            // KKN participation history
+            'peserta' => $this->when($this->relationLoaded('peserta'), function () {
+                return $this->peserta->map(fn ($p) => [
+                    'id' => $p->id,
+                    'status' => $p->status,
+                    'kelompok_id' => $p->kelompok_id,
+                    'kelompok' => $p->relationLoaded('kelompok') && $p->kelompok ? [
+                        'id' => $p->kelompok->id,
+                        'nama' => $p->kelompok->nama ?? $p->kelompok->name ?? null,
+                    ] : null,
+                    'joined_group_at' => $p->joined_group_at,
+                    'created_at' => $p->created_at?->toDateTimeString(),
+                ]);
+            }),
         ];
     }
 

@@ -198,8 +198,10 @@ class KknDaftarController extends Controller
         if (! $mahasiswa) {
             return [
                 'sks_completed' => 0,
+                'semester' => 0,
                 'gpa' => 0,
                 'bta_ppi_passed' => false,
+                'ukt_paid' => false,
                 'has_health_certificate' => false,
                 'has_parent_permission' => false,
                 'thresholds' => $this->globalEligibilityThresholds(),
@@ -208,8 +210,10 @@ class KknDaftarController extends Controller
 
         return [
             'sks_completed' => $mahasiswa->sks_completed,
+            'semester' => $mahasiswa->semester,
             'gpa' => $mahasiswa->gpa,
             'bta_ppi_passed' => in_array(strtoupper(trim($mahasiswa->status_bta_ppi ?? '')), ['LULUS', 'PASSED', 'SUCCESS']),
+            'ukt_paid' => (bool) $mahasiswa->is_paid_ukt,
             'has_health_certificate' => ! empty($mahasiswa->health_certificate_path),
             'has_parent_permission' => ! empty($mahasiswa->parent_permission_path),
             // R11 audit fix: kirim threshold ke frontend supaya tidak hardcoded.
@@ -227,6 +231,7 @@ class KknDaftarController extends Controller
     {
         return [
             'min_sks' => (int) SystemSetting::get('eligibility_min_sks', '100'),
+            'min_semester' => (int) SystemSetting::get('min_semester_registration', '6'),
             'min_gpa' => (float) SystemSetting::get('eligibility_min_gpa', '2.0'),
         ];
     }

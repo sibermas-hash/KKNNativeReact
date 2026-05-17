@@ -52,7 +52,6 @@ class ProfileController extends Controller
             'gender' => $mahasiswa->gender,
             'shirt_size' => $mahasiswa->shirt_size,
             'phone' => $user->phone,
-            'address' => $user->address,
         ])->filter(fn ($value) => blank($value))->keys()->values()->all() : [];
 
         $lecturerMissing = $dosen ? collect([
@@ -74,15 +73,11 @@ class ProfileController extends Controller
             'address_verified_at' => $user->address_verified_at,
         ])->filter(fn ($value) => blank($value))->keys()->values()->all() : [];
 
+        // Only require address text that the student can fill manually.
+        // Map/geocode fields (village/district/regency/postal/lat/lng/verified_at)
+        // are logistics metadata and MUST NOT lock the dashboard.
         $addressMissing = collect([
             'address' => $user->address,
-            'address_village_name' => $user->address_village_name,
-            'address_district_name' => $user->address_district_name,
-            'address_regency_name' => $user->address_regency_name,
-            'address_postal_code' => $user->address_postal_code,
-            'address_lat' => $user->address_lat,
-            'address_lng' => $user->address_lng,
-            'address_verified_at' => $user->address_verified_at,
         ])->filter(fn ($value) => blank($value))->keys()->values()->all();
 
         return $this->success([
@@ -149,6 +144,29 @@ class ProfileController extends Controller
             'dosen_alamat' => ['nullable', 'string', 'max:500'],
         ]);
 
+        // Logistics-style rule: written address is the source of truth; map pin
+        // is operational metadata. Save coordinate/geocoding fields immediately
+        // even after profile is complete, otherwise user corrections disappear
+        // while waiting for approval.
+        $mapFields = [
+            'address_village_name', 'address_district_name', 'address_regency_name',
+            'address_postal_code', 'address_lat', 'address_lng', 'address_verified_at',
+        ];
+        $immediateMapUpdates = [];
+        foreach ($mapFields as $mapField) {
+            if (array_key_exists($mapField, $validated)) {
+                $immediateMapUpdates[$mapField] = $validated[$mapField];
+                unset($validated[$mapField]);
+            }
+        }
+        if (array_key_exists('address_verified', $validated)) {
+            $immediateMapUpdates['address_verified_at'] = (bool) $validated['address_verified'] ? now() : null;
+            unset($validated['address_verified']);
+        }
+        if ($immediateMapUpdates !== []) {
+            $user->forceFill($immediateMapUpdates)->save();
+            $user->refresh();
+        }
         // Build diff: only include fields that actually changed
         $mahasiswa = $user->mahasiswa;
         $dosen = $user->dosen;
@@ -160,12 +178,6 @@ class ProfileController extends Controller
             'email' => $user->email,
             'phone' => $user->phone,
             'address' => $user->address,
-            'address_village_name' => $user->address_village_name,
-            'address_district_name' => $user->address_district_name,
-            'address_regency_name' => $user->address_regency_name,
-            'address_postal_code' => $user->address_postal_code,
-            'address_lat' => $user->address_lat,
-            'address_lng' => $user->address_lng,
         ];
 
         $mahasiswaMap = $mahasiswa ? [
@@ -262,14 +274,7 @@ class ProfileController extends Controller
 
         $baseComplete = filled($user->avatar)
             && filled($user->phone)
-            && filled($user->address)
-            && filled($user->address_village_name)
-            && filled($user->address_district_name)
-            && filled($user->address_regency_name)
-            && filled($user->address_postal_code)
-            && filled($user->address_lat)
-            && filled($user->address_lng)
-            && filled($user->address_verified_at);
+            && filled($user->address);
 
         if (! $baseComplete) {
             return false;
@@ -354,10 +359,11 @@ class ProfileController extends Controller
             return $this->error('Gagal menyimpan file foto. Silakan coba lagi atau hubungi admin.', 500);
         }
 
-        $queueBackedValidation = config('queue.default') !== 'sync';
-        $reason = $queueBackedValidation
-            ? 'Sedang diverifikasi otomatis oleh sistem.'
-            : 'Validasi otomatis belum tersedia; menunggu verifikasi admin.';
+        // Run avatar moderation inline. Queue worker was unreliable/offline,
+        // causing photos to stay pending forever. Inline gives immediate
+        // approved/rejected feedback to students.
+        $queueBackedValidation = false;
+        $reason = 'Sedang diverifikasi otomatis oleh sistem.';
 
         if ($user->avatar) {
             Storage::disk('public')->delete($user->avatar);
@@ -400,18 +406,25 @@ class ProfileController extends Controller
             }
         }
 
+        $user->refresh();
+        $currentStatus = $user->avatar_moderation_status ?: 'pending';
+        $currentReason = $user->avatar_moderation_reason ?: null;
+
         ActivityLogger::log('avatar_upload', 'success', $user->id, [
-            'moderation_status' => 'pending',
+            'moderation_status' => $currentStatus,
+            'moderation_reason' => $currentReason,
         ]);
 
-        $msg = $queueBackedValidation
-            ? 'Foto berhasil diunggah dan sedang diverifikasi otomatis.'
-            : 'Foto berhasil diunggah dan menunggu verifikasi admin.';
+        $msg = match ($currentStatus) {
+            'approved' => 'Foto berhasil diunggah dan disetujui otomatis oleh AI.',
+            'rejected' => 'Foto berhasil diunggah tetapi ditolak oleh AI. Silakan upload ulang sesuai ketentuan.',
+            default => 'Foto berhasil diunggah dan sedang diverifikasi otomatis.',
+        };
 
         return $this->success([
-            'avatar_url' => asset('storage/'.$path),
-            'moderation_status' => 'pending',
-            'moderation_reason' => $reason,
+            'avatar_url' => $user->avatar ? asset('storage/'.$user->avatar) : null,
+            'moderation_status' => $currentStatus,
+            'moderation_reason' => $currentReason,
         ], $msg);
     }
 

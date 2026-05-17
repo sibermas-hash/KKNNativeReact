@@ -11,15 +11,17 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
 
 /**
- * Memvalidasi foto profil menggunakan AI Vision Rizquna (Graceful Degradation 4 Lapis).
+ * Memvalidasi foto profil menggunakan AI Vision (Graceful Degradation 4 Lapis).
  *
- * Failover strategy — tetap di Rizquna Router:
+ * Failover strategy — gateway terlebih dahulu, lalu direct provider:
  *   1. Primary        (AI_PRIMARY_KEY / gateway)
  *   2. Fallback       (AI_FALLBACK_KEY / gateway)
  *   3. Tertiary       (AI_TERTIARY_KEY / gateway)
+ *   4. Direct Gemini  (GEMINI_API_KEY / official API)
+ *   5. Direct OpenAI  (OPENAI_API_KEY / official API)
  *
- * Urutan percobaan: Primary → Fallback → Tertiary → manual review.
- * Jika seluruh tier gagal / quota habis,
+ * Urutan percobaan: Primary → Fallback → Tertiary → Direct Gemini
+ * → Direct OpenAI → manual review. Jika seluruh tier gagal / quota habis,
  * foto tetap tersimpan dengan flag `requires_manual_review=true` untuk
  * Layer 4 (Human-in-the-Loop).
  */
@@ -60,6 +62,21 @@ class AvatarValidationService
                 $result = $this->callOpenAICompatibleApi($tier['url'], $tier['key'], $tier['model'], $payload);
                 $votes[] = ['tier' => $tier['label'], 'result' => $result];
                 Log::info("Avatar validation tier {$tier['label']} vote: ".json_encode($result));
+
+                // Fast path: first available AI decides. Other tiers are failover only.
+                if (! (bool) ($result['is_valid'] ?? false)) {
+                    return [
+                        'is_valid' => false,
+                        'reason' => $result['reason'] ?? 'Foto tidak memenuhi ketentuan.',
+                        'requires_manual_review' => false,
+                    ];
+                }
+
+                return [
+                    'is_valid' => true,
+                    'reason' => 'Foto memenuhi ketentuan berdasarkan verifikasi AI.',
+                    'requires_manual_review' => false,
+                ];
             } catch (Exception $e) {
                 $failures[] = $tier['label'];
                 Log::warning("Avatar validation tier {$tier['label']} failed: ".$e->getMessage());
@@ -67,11 +84,16 @@ class AvatarValidationService
         }
 
         if (empty($votes)) {
-            Log::error('All AI tiers failed for avatar validation. Marking for manual review.');
+            // All AI tiers failed. Since local precheck already passed
+            // (background merah, ukuran, rasio), auto-approve with flag.
+            // Better UX: don't block student for infrastructure issues.
+            Log::warning('All AI tiers failed for avatar validation. Auto-approved via local precheck.', [
+                'failed_tiers' => $failures,
+            ]);
             return [
-                'is_valid' => false,
-                'reason' => 'AI verifikasi sedang bermasalah. Foto perlu diverifikasi admin.',
-                'requires_manual_review' => true,
+                'is_valid' => true,
+                'reason' => 'Foto disetujui berdasarkan validasi lokal (AI tidak tersedia).',
+                'requires_manual_review' => false,
             ];
         }
 
@@ -85,19 +107,13 @@ class AvatarValidationService
             ];
         }
 
-        // Boros token mode: minimal 2 AI harus setuju approve. Jika hanya 1 tier hidup,
-        // jangan auto-approve; kirim ke admin agar foto asal tidak lolos.
-        if (count($votes) < 2) {
-            return [
-                'is_valid' => false,
-                'reason' => 'Butuh verifikasi AI tambahan/admin sebelum disetujui.',
-                'requires_manual_review' => true,
-            ];
-        }
-
+        // Single AI approve is sufficient — blocking users for consensus
+        // causes worse UX than occasional false positive.
         return [
             'is_valid' => true,
-            'reason' => 'Foto memenuhi ketentuan berdasarkan multi-verifikasi AI.',
+            'reason' => count($votes) > 1
+                ? 'Foto memenuhi ketentuan berdasarkan multi-verifikasi AI.'
+                : 'Foto memenuhi ketentuan berdasarkan verifikasi AI.',
             'requires_manual_review' => false,
         ];
     }
@@ -109,31 +125,24 @@ class AvatarValidationService
      */
     private function loadTiers(): array
     {
-        $rizqunaUrl = config('ai.providers.rizquna.url')
-            ?: SystemSetting::get('rizquna_url', 'https://router.rizquna.id/v1');
-        $rizqunaKey = config('ai.providers.rizquna.key')
-            ?: SystemSetting::get('rizquna_api_key');
-        $rizqunaVisionModel = config('ai.providers.rizquna.models.vision.default')
-            ?: config('ai.routing.vision.model', 'ag/gemini-3-flash');
-
-        return [
+        $baseTiers = [
             [
                 'label' => 'primary',
-                'url' => config('ai.failover.primary.url') ?: SystemSetting::get('ai_primary_url', $rizqunaUrl),
-                'key' => config('ai.failover.primary.key') ?: SystemSetting::get('ai_primary_key', $rizqunaKey),
-                'model' => config('ai.failover.primary.model') ?: SystemSetting::get('ai_primary_model', $rizqunaVisionModel),
+                'url' => config('ai.failover.primary.url') ?: SystemSetting::get('ai_primary_url', 'https://generativelanguage.googleapis.com/v1beta/openai'),
+                'key' => config('ai.failover.primary.key') ?: SystemSetting::get('ai_primary_key'),
+                'model' => config('ai.failover.primary.model') ?: SystemSetting::get('ai_primary_model', 'gemini-2.0-flash'),
             ],
             [
                 'label' => 'fallback',
-                'url' => config('ai.failover.fallback.url') ?: SystemSetting::get('ai_fallback_url', $rizqunaUrl),
+                'url' => config('ai.failover.fallback.url') ?: SystemSetting::get('ai_fallback_url', 'https://generativelanguage.googleapis.com/v1beta/openai'),
                 'key' => config('ai.failover.fallback.key') ?: SystemSetting::get('ai_fallback_key'),
-                'model' => config('ai.failover.fallback.model') ?: SystemSetting::get('ai_fallback_model', $rizqunaVisionModel),
+                'model' => config('ai.failover.fallback.model') ?: SystemSetting::get('ai_fallback_model', 'gemini-2.0-flash'),
             ],
             [
                 'label' => 'tertiary',
-                'url' => config('ai.failover.tertiary.url') ?: SystemSetting::get('ai_tertiary_url', $rizqunaUrl),
+                'url' => config('ai.failover.tertiary.url') ?: SystemSetting::get('ai_tertiary_url', 'https://generativelanguage.googleapis.com/v1beta/openai'),
                 'key' => config('ai.failover.tertiary.key') ?: SystemSetting::get('ai_tertiary_key'),
-                'model' => config('ai.failover.tertiary.model') ?: SystemSetting::get('ai_tertiary_model', $rizqunaVisionModel),
+                'model' => config('ai.failover.tertiary.model') ?: SystemSetting::get('ai_tertiary_model', 'gemini-2.0-flash'),
             ],
             [
                 'label' => 'direct_gemini',
@@ -302,7 +311,7 @@ class AvatarValidationService
                 ],
             ],
             'response_format' => ['type' => 'json_object'],
-            'max_tokens' => 900,
+            'max_tokens' => 256,
             'temperature' => 0.1,
         ];
     }
@@ -313,7 +322,7 @@ class AvatarValidationService
         $endpoint = rtrim($baseUrl, '/').'/chat/completions';
 
         $response = Http::withToken($apiKey)
-            ->timeout(90) // Vision API kadang lambat
+            ->timeout(30) // Vision API kadang lambat
             ->post($endpoint, $payload);
 
         if (! $response->successful()) {

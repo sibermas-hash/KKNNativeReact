@@ -18,7 +18,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -62,7 +61,7 @@ class UserController extends Controller
         $perPage = max(1, min((int) $request->input('per_page', 25), 100));
         $activeFilter = $request->query('is_active');
 
-        $query = User::with(['fakultas', 'roles'])
+        $query = User::with(['fakultas', 'roles', 'mahasiswa.prodi', 'mahasiswa.fakultas'])
             ->when($request->filled('search'), function ($q) use ($request) {
                 $search = trim((string) $request->input('search'));
 
@@ -96,7 +95,7 @@ class UserController extends Controller
             'role' => ['required', 'string', Rule::in(['superadmin', 'admin', 'faculty_admin', 'dosen', 'dpl', 'student'])],
             'fakultas_id' => ['nullable', 'exists:fakultas,id'],
         ]);
-        $user = User::create(['username' => $validated['username'], 'name' => $validated['name'], 'email' => $validated['email'] ?? null, 'password' => Hash::make($validated['password']), 'must_change_password' => true, 'is_active' => true, 'fakultas_id' => $validated['fakultas_id'] ?? null]);
+        $user = User::create(['username' => $validated['username'], 'name' => $validated['name'], 'email' => $validated['email'] ?? null, 'password' => $validated['password'], 'must_change_password' => true, 'is_active' => true, 'fakultas_id' => $validated['fakultas_id'] ?? null]);
         $user->assignRole($validated['role']);
 
         AuditService::log(
@@ -366,36 +365,46 @@ class UserController extends Controller
             return $this->forbidden('Hanya superadmin yang dapat mereset password pengguna.');
         }
 
-        if (! $user->email) {
+        $user->loadMissing(['mahasiswa', 'dosen']);
+        $birthDate = $user->mahasiswa?->birth_date ?? $user->dosen?->birth_date ?? null;
+
+        if (! $birthDate) {
             return $this->validationError(
-                ['email' => ['Pengguna belum memiliki email. Tambahkan email terlebih dahulu sebelum mengirim tautan reset password.']],
-                'Pengguna belum memiliki email untuk menerima tautan reset password.'
+                ['birth_date' => ['Tanggal lahir pengguna belum tersedia. Isi tanggal lahir terlebih dahulu.']],
+                'Tanggal lahir pengguna belum tersedia untuk membuat password default DDMMYYYY.'
             );
         }
 
         try {
-            $status = Password::sendResetLink(['email' => $user->email]);
+            $defaultPassword = \Carbon\Carbon::parse($birthDate)->format('dmY');
         } catch (\Throwable $e) {
             report($e);
 
-            return $this->serverError('Gagal mengirim tautan reset password. Coba lagi beberapa saat lagi.');
+            return $this->validationError(
+                ['birth_date' => ['Format tanggal lahir pengguna tidak valid.']],
+                'Format tanggal lahir pengguna tidak valid.'
+            );
         }
 
-        if ($status !== Password::RESET_LINK_SENT) {
-            return $this->serverError('Gagal menyiapkan tautan reset password. Coba lagi beberapa saat lagi.');
-        }
+        $user->forceFill([
+            'password' => $defaultPassword,
+            'must_change_password' => true,
+            'password_changed_at' => null,
+        ])->save();
 
         AuditService::log(
-            'SUPERADMIN_TRIGGER_PASSWORD_RESET',
+            'SUPERADMIN_RESET_PASSWORD_TO_DEFAULT',
             sprintf(
-                'Superadmin mengirim tautan reset password untuk user id=%d (%s)',
+                'Superadmin mereset password user id=%d (%s) ke default DDMMYYYY',
                 $user->id,
                 $user->username
             ),
             $user,
             null,
             $this->sanitizeAuditPayload([
-                'delivery' => 'email',
+                'delivery' => 'default_ddmmyyyy',
+                'password_value' => self::AUDIT_MASK,
+                'must_change_password' => true,
                 'user' => [
                     'id' => $user->id,
                     'username' => $user->username,
@@ -405,8 +414,8 @@ class UserController extends Controller
         );
 
         return $this->success(
-            ['username' => $user->username, 'delivery' => 'email', 'email_sent' => true],
-            'Tautan reset password berhasil dikirim ke email pengguna.'
+            ['username' => $user->username, 'delivery' => 'default_ddmmyyyy', 'must_change_password' => true],
+            'Password pengguna berhasil direset ke default DDMMYYYY. Pengguna wajib mengganti password setelah login.'
         );
     }
 
@@ -451,58 +460,52 @@ class UserController extends Controller
 
     public function mahasiswaIndex(Request $request): JsonResponse
     {
-        $perPage = max(1, min((int) $request->input('per_page', 25), 100));
-
         $query = Mahasiswa::with(['user', 'fakultas', 'prodi'])
             ->when($request->input('search'), function ($q, $s) {
                 // nim encrypted — LIKE won't match ciphertext. Fall back to
                 // nama partial match + exact nim via blind index.
                 $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $s);
-                $trimmed = trim($s);
-
-                $q->where(function ($inner) use ($escaped, $trimmed) {
-                    $inner->where('nama', 'like', "%{$escaped}%");
-
-                    if (preg_match('/^\d{6,20}$/', $trimmed)) {
-                        $inner->orWhere('nim_bidx', Mahasiswa::computeBlindIndex($trimmed));
-                    }
-                });
+                $q->where('nama', 'like', "%{$escaped}%");
+                if (preg_match('/^\d{6,20}$/', trim($s))) {
+                    $q->orWhere('nim_bidx', Mahasiswa::computeBlindIndex(trim($s)));
+                }
             })
             ->when($request->input('fakultas_id'), fn ($q, $id) => $q->where('fakultas_id', $id))
-            ->when($request->input('prodi_id'), fn ($q, $id) => $q->where('prodi_id', $id))
             ->orderByDesc('created_at');
 
-        return $this->successCollection(MahasiswaResource::collection($query->paginate($perPage)->withQueryString()));
+        return $this->successCollection(MahasiswaResource::collection($query->paginate(25)));
     }
 
-    public function mahasiswaShow(Mahasiswa $mahasiswa): JsonResponse
+    public function mahasiswaShow(string|int $mahasiswa): JsonResponse
     {
-        $mahasiswa->load(['user', 'fakultas', 'prodi', 'peserta.kelompok']);
+        $record = Mahasiswa::query()
+            ->whereKey($mahasiswa)
+            ->orWhere('user_id', $mahasiswa)
+            ->first();
 
-        return $this->success(new MahasiswaResource($mahasiswa));
+        if (! $record) {
+            return $this->notFound('Mahasiswa tidak ditemukan.');
+        }
+
+        $record->load(['user', 'fakultas', 'prodi', 'peserta.kelompok']);
+
+        return $this->success(new MahasiswaResource($record));
     }
 
     public function dosenIndex(Request $request): JsonResponse
     {
-        $perPage = max(1, min((int) $request->input('per_page', 25), 100));
-
         $query = Dosen::with(['user', 'fakultas'])
             ->when($request->input('search'), function ($q, $s) {
                 // nip encrypted — same blind-index pattern as mahasiswa.nim.
                 $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $s);
-                $trimmed = trim($s);
-
-                $q->where(function ($inner) use ($escaped, $trimmed) {
-                    $inner->where('nama', 'like', "%{$escaped}%");
-
-                    if (preg_match('/^\d{6,20}$/', $trimmed)) {
-                        $inner->orWhere('nip_bidx', Dosen::computeBlindIndex($trimmed));
-                    }
-                });
+                $q->where('nama', 'like', "%{$escaped}%");
+                if (preg_match('/^\d{6,20}$/', trim($s))) {
+                    $q->orWhere('nip_bidx', Dosen::computeBlindIndex(trim($s)));
+                }
             })
             ->orderBy('nama');
 
-        return $this->successCollection(DosenResource::collection($query->paginate($perPage)->withQueryString()));
+        return $this->successCollection(DosenResource::collection($query->paginate(25)));
     }
 
     public function transfer(Request $request): JsonResponse

@@ -150,6 +150,18 @@ export default function LoginPage(): React.JSX.Element {
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'response' in err) {
         const axiosErr = err as { response?: { status?: number; data?: { error?: { code?: string; message?: string; errors?: Record<string, string[] | string | number>; challenge_token?: string; expires_in?: number } } } };
+        // 2FA required — navigate to 2FA verification
+        if (axiosErr.response?.status === 423 && axiosErr.response.data?.error?.code === 'TWO_FACTOR_REQUIRED') {
+          const errorPayload = axiosErr.response.data.error;
+          const token =
+            errorPayload.challenge_token ??
+            (typeof errorPayload.errors?.challenge_token === 'string' ? errorPayload.errors.challenge_token : undefined);
+          if (token) {
+            try { sessionStorage.setItem('sibermas_2fa_challenge', token); } catch { /* private browsing */ }
+            router.push('/login/2fa');
+            return;
+          }
+        }
         if (axiosErr.response?.status === 422) {
           const errorData = axiosErr.response.data?.error;
           if (errorData?.code === 'CAPTCHA_INVALID') {

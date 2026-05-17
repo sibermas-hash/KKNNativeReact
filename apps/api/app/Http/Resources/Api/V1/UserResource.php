@@ -17,7 +17,7 @@ class UserResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'fakultas_id' => $this->fakultas_id,
-            'avatar_url' => $this->avatar ? asset('storage/'.$this->avatar) : null,
+            'avatar_url' => $this->avatar ? rtrim((string) config('app.frontend_url', config('app.url')), '/').'/storage/'.$this->avatar : null,
             'phone' => $this->phone,
             'address' => $this->address,
             'address_village_name' => $this->address_village_name,

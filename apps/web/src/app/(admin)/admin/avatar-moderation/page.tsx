@@ -23,6 +23,13 @@ type PendingAvatar = {
 type PaginatedAvatarResponse = {
   data: PendingAvatar[];
   meta?: Partial<PaginationMeta>;
+  counts?: Partial<Record<'pending' | 'approved' | 'rejected', number>>;
+};
+
+type AvatarModerationPayload = {
+  data?: unknown;
+  meta?: Partial<PaginationMeta>;
+  counts?: Partial<Record<'pending' | 'approved' | 'rejected', number>>;
 };
 
 type FilterStatus = 'pending' | 'approved' | 'rejected' | 'all';
@@ -34,6 +41,42 @@ const STATUS_LABELS: Record<FilterStatus, string> = {
   all: 'Semua',
 };
 
+function normalizeAvatarModerationResponse(payload: unknown): PaginatedAvatarResponse {
+  if (Array.isArray(payload)) {
+    return { data: payload as PendingAvatar[] };
+  }
+
+  if (!payload || typeof payload !== 'object') {
+    return { data: [] };
+  }
+
+  const typed = payload as AvatarModerationPayload;
+  const nestedData = typed.data;
+
+  if (Array.isArray(nestedData)) {
+    return {
+      data: nestedData as PendingAvatar[],
+      meta: typed.meta,
+      counts: typed.counts,
+    };
+  }
+
+  if (nestedData && typeof nestedData === 'object') {
+    const nested = nestedData as AvatarModerationPayload;
+    return {
+      data: Array.isArray(nested.data) ? (nested.data as PendingAvatar[]) : [],
+      meta: nested.meta ?? typed.meta,
+      counts: nested.counts ?? typed.counts,
+    };
+  }
+
+  return {
+    data: [],
+    meta: typed.meta,
+    counts: typed.counts,
+  };
+}
+
 export default function AvatarModerationPage() {
   const qc = useQueryClient();
   const [filter, setFilter] = useState<FilterStatus>('pending');
@@ -43,13 +86,10 @@ export default function AvatarModerationPage() {
   const { data, isLoading } = useQuery<PaginatedAvatarResponse>({
     queryKey: ['admin', 'avatar-moderation', filter],
     queryFn: async () => {
-      const response = await rawApi.get<ApiResponse<PendingAvatar[]>>('/admin/avatar-moderation', {
+      const response = await rawApi.get<ApiResponse<AvatarModerationPayload>>('/admin/avatar-moderation', {
         params: { status: filter },
       });
-      return {
-        data: response.data.data ?? [],
-        meta: response.data.meta,
-      };
+      return normalizeAvatarModerationResponse(response.data.data);
     },
   });
 

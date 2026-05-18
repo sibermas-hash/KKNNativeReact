@@ -64,7 +64,7 @@ jobs:
           php artisan key:generate
           echo "DB_DATABASE=kkn_test" >> .env
           echo "DB_USERNAME=kkn_test" >> .env
-          echo "DB_PASSWORD=kkn_test" >> .env
+          printf '%s\n' 'DB_PASSWORD=kkn_test' >> .env
           echo "DB_HOST=127.0.0.1" >> .env
           echo "REDIS_HOST=127.0.0.1" >> .env
           echo "QUEUE_CONNECTION=sync" >> .env

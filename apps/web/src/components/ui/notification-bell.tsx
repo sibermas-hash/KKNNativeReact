@@ -262,9 +262,9 @@ export function NotificationBell({ className }: { className?: string }): React.J
         <Popover.Content
           align="end"
           sideOffset={8}
-          className="z-50 w-96 max-w-[calc(100vw-2rem)] rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-surface)] shadow-xl"
+          className="z-50 w-[calc(100vw-1rem)] max-w-[24rem] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl shadow-slate-900/20 sm:w-96"
         >
-          <header className="flex items-center justify-between px-4 py-3 border-b border-[color:var(--profile-border)]">
+          <header className="flex flex-col gap-2 border-b border-slate-100 bg-slate-50/80 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p className="text-sm font-bold text-[color:var(--profile-text)]">Notifikasi</p>
               <p className="text-[11px] text-[color:var(--profile-muted)]">
@@ -277,14 +277,14 @@ export function NotificationBell({ className }: { className?: string }): React.J
               <button
                 onClick={() => markAll.mutate()}
                 disabled={markAll.isPending}
-                className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-cyan-700 hover:bg-cyan-50 disabled:opacity-50"
+                className="inline-flex w-full items-center justify-center gap-1 rounded-lg border border-cyan-200 bg-white px-3 py-2 text-[11px] font-semibold text-cyan-700 shadow-sm hover:bg-cyan-50 disabled:opacity-50 sm:w-auto"
               >
                 <CheckCheck size={12} /> Tandai semua dibaca
               </button>
             )}
           </header>
 
-          <div className="max-h-[60vh] overflow-y-auto">
+          <div className="max-h-[min(70vh,32rem)] overflow-y-auto overscroll-contain">
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
                 <Bell className="h-8 w-8 text-[color:var(--profile-muted)] opacity-40 mb-2" />
@@ -299,21 +299,21 @@ export function NotificationBell({ className }: { className?: string }): React.J
                     <button
                       type="button"
                       onClick={() => handleNotificationClick(n)}
-                      className="w-full text-left px-4 py-3 hover:bg-[color:var(--profile-soft)] transition-colors"
+                      className="w-full px-4 py-3 text-left transition-colors hover:bg-cyan-50/70"
                     >
                       <div className="flex items-start gap-3">
                         <PriorityIcon priority={n.priority} />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-[color:var(--profile-text)] truncate">
+                          <p className="text-sm font-semibold leading-snug text-slate-900">
                             {n.title ?? 'Notifikasi'}
                           </p>
                           {n.message && (
-                            <p className="mt-0.5 text-xs text-[color:var(--profile-muted)] line-clamp-2">
+                            <p className="mt-1 text-xs leading-5 text-slate-600 line-clamp-3">
                               {n.message}
                             </p>
                           )}
                           {n.created_at && (
-                            <p className="mt-1 text-[10px] text-[color:var(--profile-muted)]">
+                            <p className="mt-1.5 text-[10px] font-medium text-slate-400">
                               {n.created_at}
                             </p>
                           )}
@@ -327,17 +327,17 @@ export function NotificationBell({ className }: { className?: string }): React.J
           </div>
 
           {/* Footer — always show the "Lihat semua" escape hatch to full page */}
-          <footer className="border-t border-[color:var(--profile-border)] px-4 py-2.5">
+          <footer className="border-t border-slate-100 bg-white px-4 py-2.5">
             <Link
               href="/notifikasi"
-              className="flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold text-cyan-700 hover:bg-cyan-50"
+              className="flex items-center justify-center gap-1.5 rounded-lg border border-transparent py-2 text-xs font-semibold text-cyan-700 hover:border-cyan-100 hover:bg-cyan-50"
             >
               Lihat semua notifikasi
               <ArrowRight size={13} />
             </Link>
           </footer>
 
-          <Popover.Arrow className="fill-[color:var(--profile-border)]" />
+          <Popover.Arrow className="fill-white" />
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>

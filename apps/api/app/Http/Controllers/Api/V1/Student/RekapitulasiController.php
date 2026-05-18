@@ -78,14 +78,74 @@ class RekapitulasiController extends Controller
             'keterangan' => ['nullable', 'string'],
         ]);
 
-        $rekap = RekapitulasiKegiatan::updateOrCreate(
-            [
-                'kelompok_id' => $peserta->kelompok_id,
-                'uraian_kegiatan' => $validated['uraian_kegiatan'],
-            ],
+        $rekap = RekapitulasiKegiatan::create(
             array_merge($validated, ['kelompok_id' => $peserta->kelompok_id])
         );
 
         return $this->created($rekap, 'Rekapitulasi kegiatan berhasil disimpan.');
+    }
+
+    public function update(Request $request, RekapitulasiKegiatan $rekapitulasi): JsonResponse
+    {
+        /** @var User|null $user */
+        $user = auth()->user();
+        $mahasiswa = $user?->mahasiswa;
+        abort_if(! $mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
+
+        $peserta = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
+            ->where('status', 'approved')
+            ->first();
+
+        abort_if(! $peserta?->kelompok_id, 403, 'Anda belum memiliki kelompok KKN aktif.');
+
+        if (strtolower((string) $peserta->role) !== 'ketua') {
+            return $this->forbidden('Hanya ketua kelompok yang dapat mengubah rekapitulasi kegiatan.');
+        }
+
+        if ($rekapitulasi->kelompok_id !== $peserta->kelompok_id) {
+            return $this->forbidden('Anda tidak memiliki akses ke data ini.');
+        }
+
+        $validated = $request->validate([
+            'uraian_kegiatan' => ['required', 'string', 'max:500'],
+            'volume' => ['nullable', 'integer', 'min:0'],
+            'satuan' => ['nullable', 'string', 'max:50'],
+            'swadaya_mhs' => ['nullable', 'integer', 'min:0'],
+            'swadaya_masyarakat' => ['nullable', 'integer', 'min:0'],
+            'bantuan_pemerintah' => ['nullable', 'integer', 'min:0'],
+            'donatur_lain' => ['nullable', 'integer', 'min:0'],
+            'jumlah' => ['nullable', 'integer', 'min:0'],
+            'keterangan' => ['nullable', 'string'],
+        ]);
+
+        $rekapitulasi->update($validated);
+
+        return $this->success($rekapitulasi->fresh(), 'Rekapitulasi kegiatan berhasil diperbarui.');
+    }
+
+    public function destroy(RekapitulasiKegiatan $rekapitulasi): JsonResponse
+    {
+        /** @var User|null $user */
+        $user = auth()->user();
+        $mahasiswa = $user?->mahasiswa;
+        abort_if(! $mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
+
+        $peserta = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
+            ->where('status', 'approved')
+            ->first();
+
+        abort_if(! $peserta?->kelompok_id, 403, 'Anda belum memiliki kelompok KKN aktif.');
+
+        if (strtolower((string) $peserta->role) !== 'ketua') {
+            return $this->forbidden('Hanya ketua kelompok yang dapat menghapus rekapitulasi kegiatan.');
+        }
+
+        if ($rekapitulasi->kelompok_id !== $peserta->kelompok_id) {
+            return $this->forbidden('Anda tidak memiliki akses ke data ini.');
+        }
+
+        $rekapitulasi->delete();
+
+        return $this->noContent('Rekapitulasi kegiatan berhasil dihapus.');
     }
 }

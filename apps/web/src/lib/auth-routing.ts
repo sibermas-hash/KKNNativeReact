@@ -12,21 +12,31 @@ export function dashboardPathForRoles(roles?: string[] | null): string {
 }
 
 export function buildLoginHref(pathname?: string | null): string {
-  if (!pathname || pathname === '/' || pathname.startsWith('/login')) {
+  const normalizedPath = normalizePostLoginRedirect(pathname);
+
+  if (!normalizedPath) {
     return '/login';
   }
 
-  return `/login?redirect=${encodeURIComponent(pathname)}`;
+  return `/login?redirect=${encodeURIComponent(normalizedPath)}`;
 }
 
 export function isSafePostLoginRedirect(path?: string | null): path is string {
+  return normalizePostLoginRedirect(path) !== null;
+}
+
+export function normalizePostLoginRedirect(path?: string | null): string | null {
   if (!path || !path.startsWith('/') || path.startsWith('//')) {
-    return false;
+    return null;
   }
 
-  if (path === '/' || path.startsWith('/login') || path.startsWith('/admin')) {
-    return false;
+  if (path === '/' || path.startsWith('/login')) {
+    return null;
   }
 
-  return true;
+  if (path === '/superadmin' || path.startsWith('/superadmin/')) {
+    return path.replace(/^\/superadmin(?=\/|$)/, '/admin');
+  }
+
+  return path;
 }

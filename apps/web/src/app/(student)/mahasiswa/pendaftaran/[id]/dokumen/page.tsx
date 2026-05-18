@@ -8,19 +8,19 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { AlertCircle, CheckCircle2, FileText, Upload } from 'lucide-react';
 
-const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB — matches backend RegistrationDocumentService
-const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png'];
-const ALLOWED_EXTENSIONS = ['.pdf', '.jpg', '.jpeg', '.png'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB — matches backend RegistrationDocumentService
+const ALLOWED_TYPES = ['application/pdf'];
+const ALLOWED_EXTENSIONS = ['.pdf'];
 
 function formatSize(bytes: number) {
   return bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(0)} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function validateFile(file: File): string | null {
-  if (file.size > MAX_FILE_SIZE) return `Ukuran file ${formatSize(file.size)} melebihi batas maksimal 2 MB.`;
+  if (file.size > MAX_FILE_SIZE) return `Ukuran file ${formatSize(file.size)} melebihi batas maksimal 5 MB.`;
   if (!ALLOWED_TYPES.includes(file.type)) {
     const ext = file.name.split('.').pop()?.toLowerCase();
-    if (!ext || !ALLOWED_EXTENSIONS.includes(`.${ext}`)) return 'Format file tidak didukung. Gunakan PDF, JPG, atau PNG.';
+    if (!ext || !ALLOWED_EXTENSIONS.includes(`.${ext}`)) return 'Format file tidak didukung. Gunakan PDF.';
   }
   return null;
 }
@@ -79,8 +79,8 @@ export default function UploadDokumenPage(): React.JSX.Element {
     },
     onError: (err: unknown) => {
       setUploadProgress(null);
-      const e = err as { response?: { data?: { errors?: Record<string, string[]>; message?: string } } };
-      const apiErrors = e?.response?.data?.errors;
+      const e = err as { response?: { data?: { errors?: Record<string, string[]>; message?: string; error?: { errors?: Record<string, string[]>; message?: string } } } };
+      const apiErrors = e?.response?.data?.errors ?? e?.response?.data?.error?.errors;
       if (apiErrors) {
         const fieldErrors: Record<string, string> = {};
         Object.entries(apiErrors).forEach(([key, msgs]) => { fieldErrors[key] = msgs[0]; });
@@ -88,8 +88,7 @@ export default function UploadDokumenPage(): React.JSX.Element {
         const firstField = Object.keys(apiErrors)[0];
         toast.error(`Gagal: ${apiErrors[firstField]?.[0] || 'Dokumen tidak valid'}`);
       } else {
-        toast.error(e?.response?.data?.message || 'Gagal mengunggah dokumen. Periksa koneksi dan coba lagi.');
-      }
+        toast.error(e?.response?.data?.message ?? e?.response?.data?.error?.message ?? 'Gagal mengunggah dokumen. Periksa koneksi dan coba lagi.');      }
     },
   });
 
@@ -101,9 +100,13 @@ export default function UploadDokumenPage(): React.JSX.Element {
   // periode ini, lalu ambil dokumennya. Sebelumnya (bug): kita cari field
   // `documents` / `uploaded_documents` di response yang tidak pernah ada →
   // `alreadyUploaded` selalu false sehingga mahasiswa selalu harus re-upload.
-  const registrations = (statusData as { registrations?: Array<{ periode_id?: number; dokumen?: UploadedDoc[] }> } | undefined)?.registrations ?? [];
+  const registrations = (statusData as { registrations?: Array<{ periode_id?: number; status?: string; rejection_reason?: string | null; dokumen?: UploadedDoc[]; documents?: UploadedDoc[] }> } | undefined)?.registrations ?? [];
   const matchingRegistration = registrations.find((r) => Number(r?.periode_id) === Number(id));
-  const uploadedDocs: UploadedDoc[] = matchingRegistration?.dokumen ?? [];
+  const rawUploadedDocs: UploadedDoc[] = matchingRegistration?.documents ?? matchingRegistration?.dokumen ?? [];
+  const uploadedDocs: UploadedDoc[] = matchingRegistration?.status === 'rejected' ? [] : rawUploadedDocs;
+  const registrationStatus = String(matchingRegistration?.status ?? '');
+  const hasUploadedDocs = uploadedDocs.length > 0;
+  const canUpload = !(['document_verified', 'approved'].includes(registrationStatus) && hasUploadedDocs);
 
   const handleFileChange = (field: string, file: File | null) => {
     if (file) {
@@ -121,6 +124,11 @@ export default function UploadDokumenPage(): React.JSX.Element {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!canUpload) {
+      toast.info('Dokumen sudah diverifikasi/disetujui admin.');
+      return;
+    }
 
     // Validate required documents are selected
     const missingRequired: string[] = [];
@@ -149,8 +157,13 @@ export default function UploadDokumenPage(): React.JSX.Element {
       return;
     }
 
-    const fd = new FormData();
-    selectedFiles.forEach(([key, file]) => { if (file) fd.append(key, file); });
+    const fd = new FormData(e.currentTarget);
+    selectedFiles.forEach(([key, file]) => {
+      if (file) {
+        fd.delete(key);
+        fd.append(key, file);
+      }
+    });
     setUploadProgress(0);
     mutation.mutate(fd);
   };
@@ -163,8 +176,20 @@ export default function UploadDokumenPage(): React.JSX.Element {
     <div className="mx-auto max-w-2xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-800">Upload Dokumen Persyaratan</h1>
-        <p className="mt-1 text-sm text-slate-500">Format: PDF, JPG, PNG. Maksimal 2 MB per file.</p>
+        <p className="mt-1 text-sm text-slate-500">Format: PDF. Maksimal 5 MB per file.</p>
       </div>
+
+      {!canUpload && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-medium text-amber-800">
+          Dokumen sudah diverifikasi/disetujui admin. Upload ulang tidak tersedia.
+        </div>
+      )}
+
+      {registrationStatus === 'rejected' && (
+        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-800">
+          Pendaftaran ditolak admin. Silakan upload ulang dokumen yang benar.
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
         {requirements.length === 0 ? (
@@ -207,7 +232,9 @@ export default function UploadDokumenPage(): React.JSX.Element {
 
               <input
                 type="file"
-                accept=".pdf,.jpg,.jpeg,.png"
+                accept="application/pdf,.pdf"
+                name={field}
+                disabled={!canUpload}
                 onChange={(e) => handleFileChange(field, e.target.files?.[0] || null)}
                 className="w-full text-sm text-slate-500 file:mr-4 file:rounded-xl file:border-0 file:bg-teal-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-teal-700 hover:file:bg-teal-100"
               />
@@ -240,7 +267,7 @@ export default function UploadDokumenPage(): React.JSX.Element {
 
         <button
           type="submit"
-          disabled={mutation.isPending || Object.keys(errors).length > 0}
+          disabled={mutation.isPending || !canUpload || Object.keys(errors).length > 0}
           className="w-full rounded-xl bg-teal-600 py-3 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50 transition-colors"
         >
           {mutation.isPending ? 'Mengunggah...' : 'Kirim Dokumen'}

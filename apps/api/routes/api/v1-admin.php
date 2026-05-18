@@ -75,6 +75,10 @@ Route::prefix('admin')
         Route::post('/periode/{periode}/document-templates', [PeriodeDocumentTemplateController::class, 'assign']);
         Route::delete('/periode/{periode}/document-templates/{periodDocumentTemplate}', [PeriodeDocumentTemplateController::class, 'destroy']);
 
+        // Countdown Settings
+        Route::get("/periode/{periode}/countdown", [\App\Http\Controllers\Api\V1\Admin\CountdownSettingController::class, "show"]);
+        Route::post("/periode/{periode}/countdown", [\App\Http\Controllers\Api\V1\Admin\CountdownSettingController::class, "store"]);
+
         // Master Data
         Route::apiResource('tahun-akademik', TahunAkademikController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('jenis-kkn', JenisKknController::class);

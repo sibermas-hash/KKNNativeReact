@@ -1,20 +1,21 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { studentApi } from '@/lib/api';
+import { QUERY_KEYS } from '@sibermas/constants';
 import { toast } from 'sonner';
 import { MapPin } from 'lucide-react';
 
 export default function PoskoPage(): React.JSX.Element {
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
-    queryKey: ['student', 'posko'],
-    queryFn: async () => { const res = await api.get('/student/posko'); return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>; },
+    queryKey: QUERY_KEYS.student.posko ?? ['student', 'posko'],
+    queryFn: async () => { const res = await studentApi.posko.show(); return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>; },
   });
 
   const mutation = useMutation({
-    mutationFn: (formData: FormData) => api.post('/student/posko', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['student', 'posko'] }); toast.success('Data posko berhasil diperbarui'); },
+    mutationFn: (formData: FormData) => studentApi.posko.store(formData as unknown as Record<string, unknown>),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.posko ?? ['student', 'posko'] }); toast.success('Data posko berhasil diperbarui'); },
     onError: () => toast.error('Gagal menyimpan data posko'),
   });
 

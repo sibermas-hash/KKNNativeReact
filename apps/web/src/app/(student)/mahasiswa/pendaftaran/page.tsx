@@ -2,23 +2,23 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@sibermas/constants';
-import { studentApi } from '@/lib/api';
+import { rawApi, studentApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { useState } from 'react';
-import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import {
   AlertCircle, BookOpen, Calendar, CheckCircle2, ChevronDown, ChevronRight,
   Clock, FileText, GraduationCap, MapPin, Shield, Users, XCircle,
 } from 'lucide-react';
 
+type RequirementDoc = string | { field?: string; label?: string; required?: boolean; template_url?: string };
 type Period = {
   id: number; name: string; current_phase: string; kuota: number;
   registration_start: string; registration_end: string; start_date: string; end_date: string;
   can_register: boolean; ineligible_reasons: string[];
   jenis: { id: number; name: string; code: string; description?: string } | null;
-  requirements: { config: unknown[]; documents: string[] };
+  requirements: { config: unknown[]; documents: RequirementDoc[] };
 };
 type UserEligibility = {
   sks_completed: number;
@@ -144,11 +144,18 @@ function PeriodCard({ period, onRegister, isRegistering, disabled }: { period: P
         {/* Document requirements */}
         {period.requirements.documents.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
-            {period.requirements.documents.map((doc) => (
-              <span key={doc} className="inline-flex items-center gap-1 rounded-lg bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-600 ring-1 ring-slate-100">
-                <FileText size={10} /> {doc}
+            {period.requirements.documents.map((doc, i) => {
+              const label = typeof doc === "string" ? doc : String(doc?.label || doc?.field || "Dokumen " + (i + 1));
+              const key = typeof doc === "string" ? doc : String(doc?.field || label);
+              const required = typeof doc === "string" ? true : doc?.required !== false;
+              const templateUrl = typeof doc === "object" && typeof doc?.template_url === "string" ? doc.template_url : "";
+              return (
+              <span key={key} className="inline-flex items-center gap-1 rounded-lg bg-slate-50 px-2 py-1 text-[11px] font-medium text-slate-600 ring-1 ring-slate-100">
+                <FileText size={10} /> {label} {required ? "• wajib" : "• opsional"}
+                {templateUrl && <a href={templateUrl} target="_blank" rel="noreferrer" className="ml-1 underline">Template</a>}
               </span>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -194,6 +201,10 @@ export default function RegistrationFormPage(): React.JSX.Element {
   const queryClient = useQueryClient();
   const [registeringPeriod, setRegisteringPeriod] = useState<number | null>(null);
   const [confirmPeriod, setConfirmPeriod] = useState<Period | null>(null);
+  const [statementStep, setStatementStep] = useState(0);
+  const [checks, setChecks] = useState<Record<string, boolean>>({});
+  const [signatureNim, setSignatureNim] = useState('');
+  const [signatureName, setSignatureName] = useState('');
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: QUERY_KEYS.student.kknDaftar,
@@ -204,9 +215,11 @@ export default function RegistrationFormPage(): React.JSX.Element {
   });
 
   const registerMutation = useMutation({
-    mutationFn: (periodeId: number) => {
+    mutationFn: async (periodeId: number) => {
       setRegisteringPeriod(periodeId);
-      return studentApi.registration.store({ periode_id: periodeId });
+      const agree = await rawApi.post(`/student/kkn-statement/${periodeId}/agree`, { checklist: checks, signature_nim: signatureNim, signature_name: signatureName });
+      const agreementId = (agree.data?.data?.agreement_id ?? agree.data?.agreement_id) as number;
+      return studentApi.registration.store({ periode_id: periodeId, statement_agreement_id: agreementId } as unknown as { periode_id: number; jenis_kkn_id?: number });
     },
     onSuccess: (_data, periodeId) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.kknDaftar });
@@ -320,23 +333,41 @@ export default function RegistrationFormPage(): React.JSX.Element {
         )}
       </div>
 
-      <ConfirmDialog
-        open={confirmPeriod !== null}
-        onClose={() => setConfirmPeriod(null)}
-        onConfirm={() => {
-          if (confirmPeriod !== null) {
-            registerMutation.mutate(confirmPeriod.id);
-          }
-        }}
-        title="Konfirmasi Pendaftaran KKN"
-        description={
-          confirmPeriod
-            ? `Daftar ke periode "${confirmPeriod.name}"? Setelah mendaftar, Anda harus membatalkan terlebih dulu untuk memilih periode lain.`
-            : ''
-        }
-        confirmText="Ya, Daftar"
-        variant="info"
-      />
+{confirmPeriod && (() => {
+        const parts = [
+          { title: 'Kepatuhan & Kesiapan', items: ['Saya siap menaati seluruh tata tertib, ketentuan, dan kebijakan pelaksanaan KKN UIN SAIZU.', 'Saya siap mengikuti seluruh pembekalan, orientasi, dan kegiatan persiapan KKN.'] },
+          { title: 'Komitmen Peserta', items: ['Saya tidak akan mengundurkan diri setelah dinyatakan lolos/ditetapkan, kecuali alasan khusus sesuai ketentuan.', 'Saya tidak sedang/akan mengikuti PPL, PKL, KKL, magang, atau kegiatan akademik lain yang bersamaan.'] },
+          { title: 'Etika, Penempatan, dan Kelompok', items: ['Saya siap menjaga nama baik almamater, kelompok KKN, serta etika akademik, sosial, dan keagamaan.', 'Saya bersedia ditempatkan di lokasi KKN sesuai keputusan panitia/LPPM.', 'Saya siap bekerja sama, aktif berpartisipasi, dan menjaga kekompakan kelompok.', 'Saya bersedia mengikuti seluruh program dan target KKN sampai selesai.'] },
+          { title: 'Sanksi, Validasi Data, dan TTD Digital', items: ['Saya memahami pelanggaran tata tertib KKN dapat dikenakan sanksi akademik/administratif.', 'Saya memastikan data dan dokumen yang saya unggah benar dan dapat dipertanggungjawabkan.', 'Saya telah membaca, memahami, dan menyetujui seluruh ketentuan pelaksanaan KKN UIN SAIZU.'] },
+        ];
+        const offset = parts.slice(0, statementStep).reduce((n, p) => n + p.items.length, 0);
+        const partOk = parts[statementStep].items.every((_, i) => checks[`item_${offset + i}`]) && (statementStep < 3 || (signatureNim.trim().length > 0 && signatureName.trim().length > 0));
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
+            <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
+              <div className="border-b border-slate-100 p-5">
+                <p className="text-xs font-black uppercase tracking-widest text-teal-600">Surat Pernyataan KKN • Part {statementStep + 1}/4</p>
+                <h3 className="mt-1 text-xl font-black text-slate-900">{parts[statementStep].title}</h3>
+                <p className="mt-1 text-sm text-slate-500">Wajib dicentang sebelum melanjutkan pendaftaran {confirmPeriod.name}.</p>
+              </div>
+              <div className="space-y-3 p-5">
+                {parts[statementStep].items.map((item, i) => {
+                  const key = `item_${offset + i}`;
+                  return <label key={key} className="flex gap-3 rounded-xl border border-slate-200 p-3 text-sm font-semibold text-slate-700"><input type="checkbox" checked={!!checks[key]} onChange={(e) => setChecks((c) => ({ ...c, [key]: e.target.checked }))} className="mt-1 h-4 w-4" /> <span>{item}</span></label>;
+                })}
+                {statementStep === 3 && <div className="grid gap-3 sm:grid-cols-2"><input value={signatureName} onChange={(e) => setSignatureName(e.target.value)} placeholder="Nama lengkap" className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold" /><input value={signatureNim} onChange={(e) => setSignatureNim(e.target.value)} placeholder="Ketik NIM sebagai TTD digital" className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold" /></div>}
+              </div>
+              <div className="flex justify-between gap-3 border-t border-slate-100 p-5">
+                <button onClick={() => { setConfirmPeriod(null); setStatementStep(0); }} className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-600">Batal</button>
+                <div className="flex gap-2">
+                  {statementStep > 0 && <button onClick={() => setStatementStep((s) => s - 1)} className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-600">Kembali</button>}
+                  <button disabled={!partOk || registerMutation.isPending} onClick={() => statementStep < 3 ? setStatementStep((s) => s + 1) : registerMutation.mutate(confirmPeriod.id)} className="rounded-xl bg-teal-600 px-5 py-2 text-sm font-black text-white disabled:opacity-40">{statementStep < 3 ? 'Lanjut' : 'Setuju & Daftar'}</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

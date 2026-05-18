@@ -3,15 +3,15 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/stores';
-import { AlertTriangle, ArrowRight } from 'lucide-react';
+import { AlertTriangle, ArrowRight, X } from 'lucide-react';
 
 /**
  * ProfileIncompleteGuard
  * 
  * Mounted inside (student) layout. On every navigation / mount it
  * re-checks the backend for real-time profile_complete status.
- * If incomplete → shows a blocking modal that cannot be dismissed
- * and forces the user to complete their profile.
+ * If incomplete → shows a soft warning modal. User may continue,
+ * but critical actions can still enforce profile completion.
  */
 export function ProfileIncompleteGuard() {
   const router = useRouter();
@@ -20,6 +20,7 @@ export function ProfileIncompleteGuard() {
   const [incomplete, setIncomplete] = useState(false);
   const [missingFields, setMissingFields] = useState<string[]>([]);
   const [checking, setChecking] = useState(true);
+  const [dismissed, setDismissed] = useState(false);
 
   const FIELD_LABELS: Record<string, string> = {
     avatar: 'Foto Formal / Foto Profil',
@@ -41,10 +42,12 @@ export function ProfileIncompleteGuard() {
   const checkProfile = useCallback(async () => {
     if (!isAuthenticated || !user) return;
     // Skip for non-student roles
-    if (user.roles?.includes('superadmin') || user.roles?.includes('dosen') || user.roles?.includes('dpl')) {
+    if (user.roles?.includes('admin') || user.roles?.includes('dosen') || user.roles?.includes('dpl')) {
       setChecking(false);
       return;
     }
+    setDismissed(false);
+
     // Skip if already on profile page
     if (pathname === '/profil') {
       setChecking(false);
@@ -89,10 +92,10 @@ export function ProfileIncompleteGuard() {
   }, [checkProfile, pathname]);
 
   // Don't show anything while checking or if complete
-  if (checking || !incomplete) return null;
+  if (checking || !incomplete || dismissed) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-[2px]">
       <div className="mx-4 w-full max-w-lg animate-in fade-in zoom-in-95 duration-300">
         <div className="rounded-2xl border border-amber-200 bg-white shadow-2xl dark:border-amber-800 dark:bg-slate-900">
           {/* Header */}
@@ -105,7 +108,7 @@ export function ProfileIncompleteGuard() {
                 Profil Belum Lengkap
               </h2>
               <p className="text-sm text-amber-700 dark:text-amber-300">
-                Lengkapi data profil untuk mengakses dashboard
+                Data belum lengkap. Anda tetap bisa masuk dashboard.
               </p>
             </div>
           </div>
@@ -113,7 +116,7 @@ export function ProfileIncompleteGuard() {
           {/* Body */}
           <div className="px-6 py-5">
             <p className="text-sm text-slate-600 dark:text-slate-300 mb-4">
-              Sistem mendeteksi data wajib profil Anda belum lengkap. Lengkapi item di bawah ini pada halaman Profil agar akses dashboard dan pendaftaran tidak tertahan.
+              Sistem mendeteksi data wajib profil Anda belum lengkap. Anda tetap bisa masuk dashboard, namun pendaftaran/aksi penting akan tertahan sampai data berikut dilengkapi.
             </p>
 
             {missingFields.length > 0 && (
@@ -136,13 +139,20 @@ export function ProfileIncompleteGuard() {
           </div>
 
           {/* Footer */}
-          <div className="border-t border-slate-100 px-6 py-4 rounded-b-2xl dark:border-slate-800">
+          <div className="flex flex-col gap-2 border-t border-slate-100 px-6 py-4 rounded-b-2xl dark:border-slate-800 sm:flex-row-reverse">
             <button
               onClick={() => router.push('/profil')}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-teal-500/25 transition-all hover:from-teal-500 hover:to-emerald-500 hover:shadow-xl hover:shadow-teal-500/30 active:scale-[0.98]"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-teal-600 to-emerald-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-teal-500/25 transition-all hover:from-teal-500 hover:to-emerald-500 hover:shadow-xl hover:shadow-teal-500/30 active:scale-[0.98]"
             >
               Lengkapi Profil Sekarang
               <ArrowRight className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setDismissed(true)}
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-50 active:scale-[0.98] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              <X className="h-4 w-4" />
+              Nanti / Masuk Dashboard
             </button>
           </div>
         </div>

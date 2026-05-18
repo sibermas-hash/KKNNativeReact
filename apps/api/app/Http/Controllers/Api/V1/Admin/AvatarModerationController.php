@@ -67,6 +67,12 @@ class AvatarModerationController extends Controller
 
         $users->getCollection()->transform(function (User $u) {
             $mhs = $u->mahasiswa;
+            $avatarUrl = null;
+
+            if ($u->avatar && Storage::disk('public')->exists($u->avatar)) {
+                $avatarUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/').'/storage/'.$u->avatar;
+            }
+
             return [
                 'id' => $u->id,
                 'name' => $u->name,
@@ -75,7 +81,7 @@ class AvatarModerationController extends Controller
                 'nim' => $mhs?->nim,
                 'fakultas' => $mhs?->fakultas?->nama,
                 'prodi' => $mhs?->prodi?->nama,
-                'avatar_url' => $u->avatar ? rtrim((string) config('app.frontend_url', config('app.url')), '/').'/storage/'.$u->avatar : null,
+                'avatar_url' => $avatarUrl,
                 'status' => $u->avatar_moderation_status,
                 'reason' => $u->avatar_moderation_reason,
                 'reviewed_at' => $u->avatar_moderation_reviewed_at,

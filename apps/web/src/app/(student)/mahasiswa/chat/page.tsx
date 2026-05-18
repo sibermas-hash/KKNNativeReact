@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { studentApi } from '@/lib/api';
+import { QUERY_KEYS } from '@sibermas/constants';
 import { toast } from 'sonner';
 import { MessageCircle, Plus, Clock, CheckCircle2, XCircle } from 'lucide-react';
 
@@ -46,9 +47,9 @@ export default function ChatListPage() {
   const [priority, setPriority] = useState<'normal' | 'urgent'>('normal');
 
   const { data, isLoading } = useQuery({
-    queryKey: ['student', 'chat', 'conversations'],
+    queryKey: QUERY_KEYS.student.chat,
     queryFn: async () => {
-      const res = await api.get('/chat');
+      const res = await studentApi.chat.index();
       return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
     refetchInterval: 30_000,
@@ -56,11 +57,11 @@ export default function ChatListPage() {
 
   const createMut = useMutation({
     mutationFn: async () => {
-      const res = await api.post('/chat', { subject, message, priority });
+      const res = await studentApi.chat.store({ subject, message, priority });
       return ((res as unknown as { data?: { id: number } })?.data ?? res) as { id: number };
     },
     onSuccess: (conv) => {
-      qc.invalidateQueries({ queryKey: ['student', 'chat', 'conversations'] });
+      qc.invalidateQueries({ queryKey: QUERY_KEYS.student.chat });
       toast.success('Percakapan berhasil dibuat');
       setShowForm(false);
       setSubject(''); setMessage(''); setPriority('normal');

@@ -52,13 +52,13 @@ export default function DosenLayout({ children }: { children: React.ReactNode })
       if (!user.password_changed_at) { router.replace('/ganti-password'); return; }
       if (!user.profile_complete || user.must_change_password) { router.replace('/profil'); return; }
       const roles = user.roles || [];
-      if (!roles.includes('dosen') && !roles.includes('dpl') && !roles.includes('superadmin')) router.replace('/');
+      if (!roles.includes('dosen') && !roles.includes('dpl') && !roles.includes('admin')) router.replace('/');
     }
   }, [isLoading, isAuthenticated, user, router]);
 
   // Guard: redirect non-DPL from DPL-only pages
   const roles = user?.roles || [];
-  const isDpl = roles.includes('dpl') || roles.includes('superadmin');
+  const isDpl = roles.includes('dpl') || roles.includes('admin');
   const dplOnlyPaths = ['/dosen/beranda-dpl', '/dosen/kelompok', '/dosen/laporan-harian', '/dosen/monitoring', '/dosen/izin', '/dosen/evaluasi', '/dosen/laporan-akhir', '/dosen/umpan-balik-peserta'];
   const isOnDplPage = dplOnlyPaths.some(p => pathname === p || pathname.startsWith(p + '/'));
   useEffect(() => {

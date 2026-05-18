@@ -96,6 +96,18 @@ class EligibilityService
         // 3. Build checks — audit mode hanya cek persyaratan akademik
         $checks = [];
 
+        // Check status_aktif — hanya mahasiswa AKTIF yang eligible
+        $statusAktif = strtoupper(trim($mahasiswa->status_aktif ?? ""));
+        if ($statusAktif !== "" && $statusAktif !== "AKTIF") {
+            $checks["status_aktif"] = [
+                "passed" => false,
+                "key" => "status_aktif",
+                "message" => "Status akademik: " . $statusAktif . ". Hanya mahasiswa AKTIF yang dapat mendaftar KKN.",
+            ];
+        } else {
+            $checks["status_aktif"] = ["passed" => true, "key" => "status_aktif", "message" => "Status akademik aktif"];
+        }
+
         // Cek operasional: hanya untuk konteks pendaftaran
         if ($context === 'registration') {
             $checks['registration_window'] = $this->checkRegistrationWindow($periode);
@@ -111,7 +123,7 @@ class EligibilityService
             $checks['min_sks'] = $this->checkMinimumSKS($mahasiswa, $periode, $settings);
         }
         if (! isset($checks['min_semester'])) {
-            $checks['min_semester'] = $this->checkMinimumSemester($mahasiswa, $settings);
+            $checks['min_semester'] = $this->checkMinimumSemester($mahasiswa, $periode, $settings);
         }
         if (! isset($checks['min_gpa'])) {
             $checks['min_gpa'] = $this->checkMinimumGPA($mahasiswa, $periode, $settings);
@@ -126,9 +138,15 @@ class EligibilityService
         $checks['program_prodi'] = $this->checkProgramProdiRestriction($mahasiswa, $periode);
         $checks['personal_status'] = $this->checkPersonalStatusMandate($mahasiswa, $periode);
 
-        // Cek dokumen & registrasi aktif: hanya untuk konteks pendaftaran
+        // Alur semua jenis KKN: mahasiswa daftar → upload dokumen → superadmin periksa → approve/tolak.
+        // Pada pendaftaran, dokumen hanya diinformasikan (tidak blok daftar).
+        // Pada approval, dokumen wajib harus lengkap sebelum disetujui.
+        if (in_array($context, ['registration', 'approval'], true)) {
+            $documentContext = $preloadedData;
+            $documentContext['context'] = $context;
+            $checks['documents'] = $this->checkDocuments($mahasiswa, $periode, $documentContext);
+        }
         if ($context === 'registration') {
-            $checks['documents'] = $this->checkDocuments($mahasiswa, $periode);
             $checks['no_active_registration'] = $this->checkNoActiveRegistration($mahasiswa, $periodeId, $preloadedData['active_reg_ids'] ?? null);
         }
 
@@ -187,8 +205,8 @@ class EligibilityService
             'message' => $withinWindow
                 ? 'Dalam jadwal registrasi'
                 : 'Di luar jadwal registrasi',
-            'registration_start' => $periode->registration_start?->format('d M Y'),
-            'registration_end' => $periode->registration_end?->format('d M Y'),
+            'registration_start' => $periode->registration_start?->format('d M Y H:i'),
+            'registration_end' => $periode->registration_end?->format('d M Y H:i'),
         ];
     }
 
@@ -238,9 +256,11 @@ class EligibilityService
     /**
      * Check minimum semester requirement
      */
-    private function checkMinimumSemester(Mahasiswa $mahasiswa, array $settings): array
+    private function checkMinimumSemester(Mahasiswa $mahasiswa, ?Periode $periode, array $settings): array
     {
-        $minSemester = (int) ($settings['min_semester_registration'] ?? 6);
+        $minSemester = (int) ($periode?->jenisKkn?->min_semester
+                ?? $settings['min_semester_registration']
+                ?? 6);
         $currentSemester = (int) ($mahasiswa->semester ?? 0);
 
         // Skip check jika mahasiswa sudah lulus (semester tidak reliable untuk status LULUS)
@@ -433,7 +453,7 @@ class EligibilityService
     /**
      * Check required documents (Data-driven from Jenis KKN)
      */
-    private function checkDocuments(Mahasiswa $mahasiswa, ?Periode $periode): array
+    private function checkDocuments(Mahasiswa $mahasiswa, ?Periode $periode, array $preloadedData = []): array
     {
         if (! $periode) {
             return [
@@ -460,17 +480,21 @@ class EligibilityService
             ->values()
             ->all();
 
-        // Dokumen (Surat Sehat, Izin Ortu, dan dokumen lain) hanya dicek kelengkapan upload,
-        // bukan validitas substansi. Validasi/approval dokumen dilakukan manual oleh admin LPPM/Superadmin.
-        // Karena itu dokumen tidak boleh memblokir tombol Daftar KKN.
-        $passed = true;
+        // Mahasiswa tetap boleh daftar dulu. Approval/admin wajib memeriksa kelengkapan dokumen.
+        // Context approval akan memblokir jika dokumen wajib belum diunggah.
+        $blockDocuments = (($preloadedData['context'] ?? null) === 'approval')
+            || in_array(request()?->route()?->getName(), ['api.v1.admin.peserta-kkn.approve', 'api.v1.admin.peserta-kkn.bulk-approve'], true)
+            || (app()->bound('kkn.eligibility_context') && app('kkn.eligibility_context') === 'approval');
+        $passed = ! $blockDocuments || $missingDocuments === [];
 
         return [
-            'passed' => true,
+            'passed' => $passed,
             'key' => 'documents',
             'message' => $missingDocuments === []
                 ? 'Dokumen persyaratan sudah diunggah; menunggu validasi admin jika diperlukan.'
-                : 'Dokumen persyaratan dapat diunggah setelah pendaftaran. Validasi dilakukan admin LPPM/Superadmin.',
+                : ($blockDocuments
+                    ? 'Dokumen wajib belum lengkap: '.implode(', ', $missingDocuments)
+                    : 'Dokumen persyaratan dapat diunggah setelah pendaftaran. Validasi dilakukan admin LPPM/Superadmin.'),
             'details' => collect($requirements)->mapWithKeys(function (array $requirement) use ($existing) {
                 $field = (string) $requirement['field'];
 
@@ -578,6 +602,7 @@ class EligibilityService
             'active_reg_ids' => array_flip($activeRegIds),
             'dispensations' => $dispensations,
             'settings' => $settings,
+            'context' => $context,
         ];
 
         $eligible = [];

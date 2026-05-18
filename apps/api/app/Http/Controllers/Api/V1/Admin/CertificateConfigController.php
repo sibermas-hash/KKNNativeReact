@@ -16,11 +16,40 @@ class CertificateConfigController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        return $this->success(['config' => KonfigurasiSertifikat::when($request->input('periode_id'), fn ($q, $id) => $q->where('periode_id', $id))->first()]);
+        $periodeId = $request->input('periode_id');
+        $configs = KonfigurasiSertifikat::when($periodeId, fn ($q, $id) => $q->where('periode_id', $id))
+            ->orderBy('id')
+            ->get();
+
+        return $this->success(['configs' => $configs]);
     }
 
     public function update(Request $request): JsonResponse
     {
-        return $this->success(['config' => KonfigurasiSertifikat::updateOrCreate(['periode_id' => $request->input('periode_id')], $request->validate(['template_path' => ['nullable', 'string'], 'header_text' => ['nullable', 'string'], 'footer_text' => ['nullable', 'string']]))], 'Konfigurasi sertifikat berhasil diperbarui.');
+        $validated = $request->validate([
+            'configs' => ['required', 'array'],
+            'configs.*.config_key' => ['required', 'string'],
+            'configs.*.label' => ['required', 'string'],
+            'configs.*.value' => ['nullable', 'string'],
+            'configs.*.type' => ['nullable', 'string'],
+            'configs.*.periode_id' => ['nullable', 'integer'],
+        ]);
+
+        $results = [];
+        foreach ($validated['configs'] as $item) {
+            $results[] = KonfigurasiSertifikat::updateOrCreate(
+                [
+                    'config_key' => $item['config_key'],
+                    'periode_id' => $item['periode_id'] ?? null,
+                ],
+                [
+                    'label' => $item['label'],
+                    'value' => $item['value'] ?? '',
+                    'type' => $item['type'] ?? 'text',
+                ]
+            );
+        }
+
+        return $this->success(['configs' => $results], 'Konfigurasi sertifikat berhasil diperbarui.');
     }
 }

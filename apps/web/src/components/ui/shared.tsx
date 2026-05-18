@@ -14,6 +14,8 @@ const STATUS_CONFIG: Record<string, { bg: string; text: string; border: string; 
   pending: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'MENUNGGU' },
   menunggu: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'MENUNGGU' },
   submitted: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'MENUNGGU REVIEW' },
+  document_submitted: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', label: 'DOKUMEN MASUK' },
+  document_verified: { bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200', label: 'DOKUMEN TERVERIFIKASI' },
   rejected: { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', label: 'DITOLAK' },
   ditolak: { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', label: 'DITOLAK' },
   revision: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', label: 'REVISI' },

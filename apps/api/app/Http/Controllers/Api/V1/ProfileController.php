@@ -149,18 +149,39 @@ class ProfileController extends Controller
         // even after profile is complete, otherwise user corrections disappear
         // while waiting for approval.
         $mapFields = [
-            'address_village_name', 'address_district_name', 'address_regency_name',
+            'address', 'address_village_name', 'address_district_name', 'address_regency_name',
             'address_postal_code', 'address_lat', 'address_lng', 'address_verified_at',
         ];
         $immediateMapUpdates = [];
+        $mapChanges = [];
         foreach ($mapFields as $mapField) {
             if (array_key_exists($mapField, $validated)) {
-                $immediateMapUpdates[$mapField] = $validated[$mapField];
+                $newValue = $validated[$mapField];
+                $oldValue = $user->{$mapField};
+
+                if ($this->valuesDiffer($oldValue, $newValue)) {
+                    $immediateMapUpdates[$mapField] = $newValue;
+                    $mapChanges[$mapField] = [
+                        'old' => $this->normalizeChangeValue($oldValue),
+                        'new' => $this->normalizeChangeValue($newValue),
+                    ];
+                }
+
                 unset($validated[$mapField]);
             }
         }
         if (array_key_exists('address_verified', $validated)) {
-            $immediateMapUpdates['address_verified_at'] = (bool) $validated['address_verified'] ? now() : null;
+            $newVerifiedAt = (bool) $validated['address_verified'] ? now() : null;
+            $oldVerifiedAt = $user->address_verified_at;
+
+            if ($this->valuesDiffer(filled($oldVerifiedAt), (bool) $validated['address_verified'])) {
+                $immediateMapUpdates['address_verified_at'] = $newVerifiedAt;
+                $mapChanges['address_verified_at'] = [
+                    'old' => $this->normalizeChangeValue($oldVerifiedAt),
+                    'new' => $this->normalizeChangeValue($newVerifiedAt),
+                ];
+            }
+
             unset($validated['address_verified']);
         }
         if ($immediateMapUpdates !== []) {
@@ -227,8 +248,24 @@ class ProfileController extends Controller
         }
 
         if (empty($changes)) {
-            return $this->badRequest('Tidak ada perubahan yang terdeteksi.');
+            if ($mapChanges !== []) {
+                ActivityLogger::log('profile_update', 'success', $user->id, [
+                    'map_only' => true,
+                    'fields_changed' => array_keys($mapChanges),
+                ]);
+
+                return $this->success([
+                    'map_fields_updated' => array_keys($mapChanges),
+                ], 'Titik peta dan metadata alamat berhasil diperbarui.');
+            }
+
+            return $this->success(null, 'Profil sudah tersimpan.');
         }
+
+        $changedFields = array_values(array_unique(array_merge(
+            array_keys($mapChanges),
+            array_keys($changes),
+        )));
 
         $wasProfileComplete = $this->isProfileComplete($user);
 
@@ -239,7 +276,7 @@ class ProfileController extends Controller
 
             ActivityLogger::log('profile_update', 'success', $user->id, [
                 'first_onboarding' => true,
-                'fields_changed' => array_keys($changes),
+                'fields_changed' => $changedFields,
             ]);
 
             return $this->success(null, 'Profil berhasil dilengkapi. Silakan lanjutkan menggunakan portal.');
@@ -262,10 +299,36 @@ class ProfileController extends Controller
 
         ActivityLogger::log('profile_update', 'success', $user->id, [
             'pending_approval' => true,
-            'fields_changed' => array_keys($changes),
+            'fields_changed' => $changedFields,
         ]);
 
         return $this->success(null, 'Permintaan perubahan profil berhasil dikirim. Menunggu persetujuan superadmin.', 202);
+    }
+
+    private function valuesDiffer(mixed $oldValue, mixed $newValue): bool
+    {
+        return $this->normalizeChangeValue($oldValue) !== $this->normalizeChangeValue($newValue);
+    }
+
+    private function normalizeChangeValue(mixed $value): mixed
+    {
+        if ($value instanceof \DateTimeInterface) {
+            return $value->toIso8601String();
+        }
+
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_int($value) || is_float($value)) {
+            return (string) $value;
+        }
+
+        if ($value === '') {
+            return null;
+        }
+
+        return $value === null ? null : trim((string) $value);
     }
 
     private function isProfileComplete(User $user): bool

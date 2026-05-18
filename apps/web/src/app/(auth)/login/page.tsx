@@ -14,7 +14,7 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { dashboardPathForRoles, isSafePostLoginRedirect } from '@/lib/auth-routing';
+import { dashboardPathForRoles, normalizePostLoginRedirect } from '@/lib/auth-routing';
 
 const ParticleBackground = dynamic(
   () => import('@/components/ui/particle-background').then((m) => ({ default: m.ParticleBackground })),
@@ -26,6 +26,7 @@ export default function LoginPage(): React.JSX.Element {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirect');
+  const normalizedRedirect = normalizePostLoginRedirect(redirectTo);
   const { setUser, isAuthenticated, user } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -96,7 +97,7 @@ export default function LoginPage(): React.JSX.Element {
       const isSuperadmin = user.roles?.includes('superadmin');
 
       if (isSuperadmin) {
-        router.replace(isSafePostLoginRedirect(redirectTo) ? redirectTo : '/admin');
+        router.replace(normalizedRedirect ?? '/admin');
         return;
       }
 
@@ -108,7 +109,7 @@ export default function LoginPage(): React.JSX.Element {
 
       const isAdmin = ['admin', 'faculty_admin'].some(r => user.roles?.includes(r));
       if (isAdmin) {
-        router.replace(isSafePostLoginRedirect(redirectTo) ? redirectTo : '/admin');
+        router.replace(normalizedRedirect ?? '/admin');
         return;
       }
 
@@ -119,9 +120,9 @@ export default function LoginPage(): React.JSX.Element {
       }
 
       const target = dashboardPathForRoles(user.roles);
-      router.replace(isSafePostLoginRedirect(redirectTo) ? redirectTo : target);
+      router.replace(normalizedRedirect ?? target);
     }
-  }, [isAuthenticated, redirectTo, user, router]);
+  }, [isAuthenticated, normalizedRedirect, user, router]);
 
   const onSubmit = async (data: LoginFormData) => {
     if (!captcha?.captcha_id) {

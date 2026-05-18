@@ -215,7 +215,7 @@ class RegistrationApprovalService
                 $registrations = PesertaKkn::query()
                     ->with(['dokumen'])
                     ->whereIn('id', $batchIds)
-                    ->where('status', 'pending')
+                    ->whereIn('status', ['pending', 'document_submitted', 'document_verified'])
                     ->when($isFacultyAdmin, function ($query) use ($facultyId) {
                         $query->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
                     })
@@ -437,7 +437,7 @@ class RegistrationApprovalService
         }
 
         // Security check: Only allow specific folders
-        $allowedFolders = ['health-certificates/', 'parent-permissions/', 'documents/'];
+        $allowedFolders = ['health-certificates/', 'parent-permissions/', 'documents/', 'registration-documents/'];
         if (app()->environment('local')) {
             $allowedFolders[] = 'dummy/';
         }
@@ -457,7 +457,7 @@ class RegistrationApprovalService
         }
 
         // Ownership check for non-admin users
-        if ($user && ! $user->hasAnyRole(['superadmin', 'faculty_admin'])) {
+        if ($user && ! $user->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])) {
             $mahasiswa = Mahasiswa::where('user_id', $user->id)->first();
             if (! $mahasiswa || ($mahasiswa->health_certificate_path !== $path && $mahasiswa->parent_permission_path !== $path)) {
                 abort(403, 'Anda tidak memiliki hak akses untuk file ini.');

@@ -8,9 +8,9 @@ import { QUERY_KEYS } from '@sibermas/constants';
 import { studentApi } from '@/lib/api';
 import { useAuthStore, usePeriodStore } from '@/stores';
 import {
-  MapPin, ArrowRight, ClipboardList, CheckCircle2,
+  MapPin, ArrowRight, ClipboardList, CheckCircle2, MessageCircle,
   Presentation, AlertTriangle, Target,
-  ScrollText, LayoutGrid, UserCheck, Users, Lightbulb,
+  ScrollText, LayoutGrid, UserCheck, Users, Lightbulb, Plane, Star, Image, HelpCircle,
   GraduationCap, ShieldCheck, Activity,
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -71,8 +71,8 @@ export default function StudentDashboard(): React.JSX.Element {
   const jenisKknCode = periodData?.jenis_code || '';
   // Audit F-13 fix: ambil dari backend SystemSetting (key `min_daily_reports`, default 30).
   const minLogbook = Number(data?.min_daily_reports) || 30;
-  const phaseOrder = ['pre_registration', 'registration', 'placement', 'execution', 'grading', 'finished'];
-  const rawPhaseRank = phaseOrder.indexOf(String(currentPhase || activePeriod?.current_phase || 'pre_registration'));
+  const phaseOrder = ['upcoming', 'registration', 'placement', 'execution', 'grading', 'finished'];
+  const rawPhaseRank = phaseOrder.indexOf(String(currentPhase || activePeriod?.current_phase || 'upcoming'));
   const phaseRank = rawPhaseRank >= 0 ? rawPhaseRank : 0;
   const isPhaseAtLeast = (phase: string) => phaseRank >= phaseOrder.indexOf(phase);
   const dashboardNavItems = [
@@ -81,6 +81,11 @@ export default function StudentDashboard(): React.JSX.Element {
     { href: '/mahasiswa/posko', icon: MapPin, label: 'Detail Posko', minPhase: 'placement', lockReason: 'Aktif setelah fase penempatan.' },
     { href: '/mahasiswa/laporan-akhir', icon: ScrollText, label: 'Laporan Akhir', minPhase: 'grading', lockReason: 'Aktif saat fase pelaporan/penilaian.' },
     { href: '/mahasiswa/sertifikat', icon: Activity, label: 'Sertifikat & Nilai', minPhase: 'grading', lockReason: 'Aktif setelah penilaian dibuka.' },
+    { href: '/mahasiswa/evaluasi', icon: Star, label: 'Hasil Evaluasi', minPhase: 'grading', lockReason: 'Aktif setelah penilaian dibuka.' },
+    { href: '/mahasiswa/evaluasi-dpl', icon: UserCheck, label: 'Evaluasi DPL', minPhase: 'grading', lockReason: 'Aktif saat fase penilaian.' },
+    { href: '/mahasiswa/izin', icon: Plane, label: 'Izin Absensi', minPhase: 'execution', lockReason: 'Aktif saat fase pelaksanaan KKN.' },
+    { href: '/mahasiswa/chat', icon: MessageCircle, label: 'Chat Konsultasi', minPhase: 'registration', lockReason: 'Aktif setelah registrasi.' },
+    { href: '/mahasiswa/poster', icon: Image, label: 'Poster KKN', minPhase: 'execution', lockReason: 'Aktif saat fase pelaksanaan KKN.' },
   ];
 
   const phases = [

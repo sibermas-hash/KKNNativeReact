@@ -9,6 +9,7 @@ use App\Http\Resources\Api\V1\PeriodeResource;
 use App\Http\Resources\Api\V1\PesertaKknResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\JenisKkn;
+use App\Models\KKN\KknStatementAgreement;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\User;
@@ -45,13 +46,16 @@ class RegistrationController extends Controller
             return $this->forbidden('Profil mahasiswa tidak ditemukan.');
         }
 
-        $activePeriodId = $this->periodContextService->getActivePeriodId()
-            ?? $this->periodContextService->getDefaultPeriodId();
-
+        // Audit fix: jangan filter ke active/default period saja.
+        // Halaman dokumen /mahasiswa/pendaftaran/{id}/dokumen butuh
+        // requirements sesuai periode yang dipilih mahasiswa (Nusantara,
+        // Internasional, Tematik, dll). Filter lama membuat response hanya
+        // berisi periode default (biasanya Reguler), sehingga non-reguler
+        // tampak ter-redirect/terbaca sebagai Reguler.
         $periods = Periode::with(['tahunAkademik', 'jenisKkn'])
             ->where('is_active', true)
-            ->when($activePeriodId, fn ($q) => $q->where('id', $activePeriodId))
-            ->orderBy('periode', 'desc')
+            ->whereIn('current_phase', ['registration', 'placement', 'execution'])
+            ->orderByDesc('registration_start')
             ->get();
 
         $existingRegistration = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
@@ -95,16 +99,31 @@ class RegistrationController extends Controller
         // Cek alamat asli lengkap & terverifikasi
         if (! $this->isAddressComplete($user)) {
             return $this->validationError(
-                ['address' => ['Lengkapi dan verifikasi alamat asli terlebih dahulu.']],
-                'Lengkapi dan verifikasi alamat asli terlebih dahulu.'
+                ['address' => ['Lengkapi data alamat (desa/kelurahan, kecamatan, kabupaten/kota) terlebih dahulu.']],
+                'Lengkapi data alamat (desa/kelurahan, kecamatan, kabupaten/kota) terlebih dahulu.'
             );
         }
 
         $validated = $request->validate([
             'periode_id' => ['required', 'exists:periode,id'],
+            'statement_agreement_id' => ['required', 'integer', 'exists:kkn_statement_agreements,id'],
         ]);
 
         $periode = Periode::findOrFail($validated['periode_id']);
+
+        $agreement = KknStatementAgreement::where('id', $validated['statement_agreement_id'])
+            ->where('mahasiswa_id', $mahasiswa->id)
+            ->where('periode_id', $periode->id)
+            ->where('signature_nim', (string) $mahasiswa->nim)
+            ->latest('id')
+            ->first();
+
+        if (! $agreement) {
+            return $this->validationError(
+                ['statement_agreement_id' => ['Surat pernyataan KKN belum valid/disetujui.']],
+                'Surat pernyataan KKN belum valid/disetujui.'
+            );
+        }
 
         // Cek self-service registration (sesuai codebase lama)
         if (! $periode->usesSelfServiceRegistration()) {
@@ -120,7 +139,8 @@ class RegistrationController extends Controller
                 $validated['periode_id'],
                 null,
                 null,
-                $user->id
+                $user->id,
+                (int) $agreement->id
             );
 
             // Kirim notifikasi ke mahasiswa & superadmin (sesuai codebase lama)
@@ -228,7 +248,9 @@ class RegistrationController extends Controller
             ]);
         });
 
-        return $this->noContent('Anda telah keluar dari pendaftaran KKN.');
+        // Return 200 JSON envelope instead of 204. Some proxy/client stacks mishandle
+        // 204 JSON responses on DELETE and surface them as Cloudflare 520.
+        return $this->success(null, 'Anda telah keluar dari pendaftaran KKN.');
     }
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
@@ -247,6 +269,10 @@ class RegistrationController extends Controller
 
     private function isAddressComplete($user): bool
     {
-        return filled($user?->address);
+        // Audit fix: cek alamat lengkap (village + district + regency)
+        return filled($user?->address)
+            && filled($user?->address_village_name)
+            && filled($user?->address_district_name)
+            && filled($user?->address_regency_name);
     }
 }

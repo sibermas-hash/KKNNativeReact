@@ -40,25 +40,14 @@ class HealthController extends Controller
 
     public function detailed(): JsonResponse
     {
-        $checks = [
-            'database' => $this->checkDatabase(),
-            'cache' => $this->checkCache(),
-            'redis' => $this->checkRedis(),
-            'queue' => $this->checkQueue(),
-            'storage' => $this->checkStorage(),
-            'api_external' => $this->checkExternalApi(),
-        ];
+        $payload = $this->buildDetailedPayload(true, true);
 
-        $allHealthy = collect($checks)->every(fn ($check) => $check['status'] === true);
+        return response()->json($payload, $payload['status'] === 'healthy' ? 200 : 503);
+    }
 
-        return response()->json([
-            'status' => $allHealthy ? 'healthy' : 'degraded',
-            'timestamp' => now()->toIso8601String(),
-            'version' => config('app.version', '4.0.0'),
-            'environment' => config('app.env'),
-            'debug' => config('app.debug'),
-            'checks' => $checks,
-        ], $allHealthy ? 200 : 503);
+    public function monitoringSnapshot(): array
+    {
+        return $this->buildDetailedPayload(false, false);
     }
 
     protected function isHealthy(): bool
@@ -73,79 +62,120 @@ class HealthController extends Controller
         }
     }
 
-    protected function checkDatabase(): array
+    protected function buildDetailedPayload(bool $allowStateChanges, bool $includeSensitiveDetails): array
+    {
+        $checks = [
+            'database' => $this->checkDatabase($includeSensitiveDetails),
+            'cache' => $this->checkCache($allowStateChanges, $includeSensitiveDetails),
+            'redis' => $this->checkRedis($includeSensitiveDetails),
+            'queue' => $this->checkQueue($includeSensitiveDetails),
+            'storage' => $this->checkStorage($allowStateChanges, $includeSensitiveDetails),
+            'api_external' => $this->checkExternalApi($includeSensitiveDetails),
+        ];
+
+        $allHealthy = collect($checks)->every(fn ($check) => $check['status'] === true);
+
+        $payload = [
+            'status' => $allHealthy ? 'healthy' : 'degraded',
+            'timestamp' => now()->toIso8601String(),
+            'checks' => $checks,
+        ];
+
+        if ($includeSensitiveDetails) {
+            $payload['version'] = config('app.version', '4.0.0');
+            $payload['environment'] = config('app.env');
+            $payload['debug'] = config('app.debug');
+        }
+
+        return $payload;
+    }
+
+    protected function checkDatabase(bool $includeSensitiveDetails = true): array
     {
         try {
             $start = microtime(true);
             DB::connection()->getPdo();
             $latency = round((microtime(true) - $start) * 1000, 2);
 
-            $tables = DB::select("
-                SELECT COUNT(*) as count 
-                FROM information_schema.tables 
-                WHERE table_schema = 'public'
-            ");
-
-            return [
+            $result = [
                 'status' => true,
                 'latency_ms' => $latency,
-                'tables' => $tables[0]->count ?? 0,
             ];
+
+            if ($includeSensitiveDetails) {
+                $tables = DB::select("
+                    SELECT COUNT(*) as count 
+                    FROM information_schema.tables 
+                    WHERE table_schema = 'public'
+                ");
+
+                $result['tables'] = $tables[0]->count ?? 0;
+            }
+
+            return $result;
         } catch (\Exception $e) {
             return [
                 'status' => false,
-                'error' => $e->getMessage(),
+                'error' => $includeSensitiveDetails ? $e->getMessage() : 'Koneksi database gagal.',
             ];
         }
     }
 
-    protected function checkCache(): array
+    protected function checkCache(bool $allowStateChanges = true, bool $includeSensitiveDetails = true): array
     {
         try {
             $start = microtime(true);
-            $key = 'health_check_'.time();
-            Cache::put($key, 'ok', 60);
-            $value = Cache::get($key);
-            Cache::forget($key);
+            $value = null;
+            if ($allowStateChanges) {
+                $key = 'health_check_'.time();
+                Cache::put($key, 'ok', 60);
+                $value = Cache::get($key);
+                Cache::forget($key);
+            } else {
+                $value = Cache::get('monitoring:telegram:last-heartbeat');
+            }
             $latency = round((microtime(true) - $start) * 1000, 2);
 
             return [
-                'status' => $value === 'ok',
+                'status' => $allowStateChanges ? $value === 'ok' : true,
                 'latency_ms' => $latency,
                 'driver' => config('cache.default'),
             ];
         } catch (\Exception $e) {
             return [
                 'status' => false,
-                'error' => $e->getMessage(),
+                'error' => $includeSensitiveDetails ? $e->getMessage() : 'Akses cache gagal.',
             ];
         }
     }
 
-    protected function checkRedis(): array
+    protected function checkRedis(bool $includeSensitiveDetails = true): array
     {
         try {
             $start = microtime(true);
             Redis::ping();
             $latency = round((microtime(true) - $start) * 1000, 2);
 
-            $info = Redis::info('server');
-            $version = $info['redis_version'] ?? 'unknown';
-
-            return [
+            $result = [
                 'status' => true,
                 'latency_ms' => $latency,
-                'version' => $version,
             ];
+
+            if ($includeSensitiveDetails) {
+                $info = Redis::info('server');
+                $result['version'] = $info['redis_version'] ?? 'unknown';
+            }
+
+            return $result;
         } catch (\Exception $e) {
             return [
                 'status' => false,
-                'error' => $e->getMessage(),
+                'error' => $includeSensitiveDetails ? $e->getMessage() : 'Koneksi Redis gagal.',
             ];
         }
     }
 
-    protected function checkQueue(): array
+    protected function checkQueue(bool $includeSensitiveDetails = true): array
     {
         try {
             $queue = config('queue.default');
@@ -169,12 +199,12 @@ class HealthController extends Controller
         } catch (\Exception $e) {
             return [
                 'status' => false,
-                'error' => $e->getMessage(),
+                'error' => $includeSensitiveDetails ? $e->getMessage() : 'Akses job queue gagal.',
             ];
         }
     }
 
-    protected function checkStorage(): array
+    protected function checkStorage(bool $allowStateChanges = true, bool $includeSensitiveDetails = true): array
     {
         try {
             $paths = [
@@ -185,29 +215,31 @@ class HealthController extends Controller
                 storage_path('logs'),
             ];
 
-            $allWritable = true;
+            $writablePaths = 0;
             foreach ($paths as $path) {
-                if (! is_dir($path)) {
+                if (! is_dir($path) && $allowStateChanges) {
                     @mkdir($path, 0755, true);
                 }
-                if (! is_writable($path)) {
-                    $allWritable = false;
+                if (is_dir($path) && is_writable($path)) {
+                    $writablePaths++;
                 }
             }
 
+            $allWritable = $writablePaths === count($paths);
+
             return [
                 'status' => $allWritable,
-                'writable_paths' => $allWritable ? count($paths) : 0,
+                'writable_paths' => $writablePaths,
             ];
         } catch (\Exception $e) {
             return [
                 'status' => false,
-                'error' => $e->getMessage(),
+                'error' => $includeSensitiveDetails ? $e->getMessage() : 'Akses storage gagal.',
             ];
         }
     }
 
-    protected function checkExternalApi(): array
+    protected function checkExternalApi(bool $includeSensitiveDetails = true): array
     {
         try {
             if (! config('services.master_api.url')) {
@@ -222,15 +254,20 @@ class HealthController extends Controller
                 ->get(config('services.master_api.url').'/health');
             $latency = round((microtime(true) - $start) * 1000, 2);
 
-            return [
+            $result = [
                 'status' => $response->successful(),
                 'latency_ms' => $latency,
-                'url' => config('services.master_api.url'),
             ];
+
+            if ($includeSensitiveDetails) {
+                $result['url'] = config('services.master_api.url');
+            }
+
+            return $result;
         } catch (\Exception $e) {
             return [
                 'status' => false,
-                'error' => $e->getMessage(),
+                'error' => $includeSensitiveDetails ? $e->getMessage() : 'Koneksi API eksternal gagal.',
             ];
         }
     }

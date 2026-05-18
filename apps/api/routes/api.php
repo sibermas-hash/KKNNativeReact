@@ -58,6 +58,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/locations', [PublicController::class, 'locations'])->name('api.v1.public.locations');
         Route::get('/downloads', [PublicController::class, 'downloads'])->name('api.v1.public.downloads');
         Route::get('/verify-certificate/{token}', [PublicController::class, 'verifyCertificate'])->name('api.v1.public.verify-certificate');
+        Route::get("/countdown/active", [\App\Http\Controllers\Api\V1\Admin\CountdownSettingController::class, "active"])->name("api.v1.public.countdown.active");
     });
 
     // Auth — public. Uses named 'auth_challenge' tier (10/min IP-based)

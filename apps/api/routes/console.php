@@ -59,3 +59,7 @@ Schedule::command('audit:recompute-eligibility')->dailyAt('04:00')->withoutOverl
 
 // Full Sync (Safety net) setiap Sabtu pukul 03:00 WIB
 // Schedule::command('sync:master-data --type=all --source=api')->saturdays()->at('03:00');
+
+// Auto-sync periode phase (upcoming→registration→placement→...→finished)
+// Runs every 5 minutes to catch registration_start triggers promptly.
+Schedule::command('kkn:auto-sync-phase')->everyFiveMinutes()->withoutOverlapping();

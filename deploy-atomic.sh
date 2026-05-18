@@ -112,6 +112,9 @@ TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm install --frozen-lockfile --filter web...
 TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:packages
 TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:web
 
+echo "  [i] Cleaning Next runtime cache..."
+rm -rf apps/web/.next/cache apps/web/.next/standalone/apps/web/.next/cache 2>/dev/null || true
+
 # Copy static & public ke standalone (required for FreeBSD).
 # NOTE: apps/web/package.json postbuild sudah melakukan ini, tapi kita
 # ulang di sini untuk defensive — kalau postbuild gagal atau build
@@ -177,7 +180,7 @@ php artisan event:cache 2>/dev/null || true
 echo "[5/8] Setting permissions..."
 chown -R "${WEB_USER}:${WEB_USER}" "${RELEASE_DIR}/apps/api/storage"
 chown -R "${WEB_USER}:${WEB_USER}" "${RELEASE_DIR}/apps/api/bootstrap/cache"
-chown -R "${WEB_USER}:${WEB_USER}" "${RELEASE_DIR}/apps/web/.next"
+chown -R "${DEPLOY_USER:-kampelmas}:www" "${RELEASE_DIR}/apps/web/.next"
 find "${RELEASE_DIR}/apps/api/storage" -type d -exec chmod 775 {} +
 find "${RELEASE_DIR}/apps/api/storage" -type f -exec chmod 664 {} +
 
@@ -196,6 +199,8 @@ echo "[7/8] Reloading PHP-FPM + restarting workers..."
 
 restart_native_web() {
   if [ -x /usr/local/etc/rc.d/sibermas_web ]; then
+    service sibermas_web stop 2>/dev/null || true
+    sleep 1
     service sibermas_web restart
     return
   fi

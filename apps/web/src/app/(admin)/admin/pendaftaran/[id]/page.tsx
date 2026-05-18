@@ -1,52 +1,42 @@
 'use client';
 
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { StatusBadge } from '@/components/ui/shared';
+import { ArrowLeft, CheckCircle2, Download, Eye, Mail, Phone, XCircle } from 'lucide-react';
+
+const REVIEWABLE = ['pending', 'document_submitted', 'document_verified'];
+type Doc = { id:number; document_type?:string; file_path?:string; file_name?:string; status?:string; notes?:string; is_verified?:boolean; verified_at?:string; uploaded_at?:string };
+type SummaryItem = { field?:string; label?:string; required?:boolean; uploaded?:boolean; file_name?:string; is_verified?:boolean };
+type Registration = { id:number; status?:string; role?:string; notes?:string|null; rejection_reason?:string|null; registration_date?:string; approved_at?:string|null; revision_count?:number; joined_group_at?:string|null; mahasiswa?: { nama?:string; nim?:string; nik?:string; mother_name?:string; gender?:string; birth_place?:string; birth_date?:string; marital_status?:string; batch_year?:number; semester?:number; sks_completed?:number; gpa?:number; status_bta_ppi?:string; is_paid_ukt?:boolean; status_aktif?:string; shirt_size?:string; phone?:string; alamat?:string; profile_completion?:number; fakultas?:{nama?:string; code?:string}; faculty?:{nama?:string; code?:string}; prodi?:{nama?:string; code?:string}; user?:{avatar_url?:string; email?:string; is_active?:boolean; password_changed_at?:string; last_login_at?:string|null} }; periode?: { name?:string; periode?:number; start_date?:string; end_date?:string; registration_start?:string; registration_end?:string; phase_label?:string; kuota?:number; jenis_kkn?: { name?:string; code?:string; registration_mode_label?:string; placement_mode_label?:string; description?:string; requirements_config?:Record<string,unknown> } }; kelompok?: { nama_kelompok?:string }; documents?:Doc[]; document_summary?:{uploaded_count?:number; required_count?:number; missing_required_count?:number; items?:SummaryItem[]} };
+
+const fmt = (v?:string|null) => v ? new Intl.DateTimeFormat('id-ID',{dateStyle:'medium', timeStyle:'short'}).format(new Date(v)) : '-';
+const dateOnly = (v?:string|null) => v ? new Intl.DateTimeFormat('id-ID',{dateStyle:'medium'}).format(new Date(v)) : '-';
+const yn = (v?:boolean) => v ? 'Ya' : 'Tidak';
+const gender = (v?:string) => v === 'L' ? 'Laki-laki' : v === 'P' ? 'Perempuan' : (v || '-');
+const labelDoc = (d:Doc) => d.document_type === 'health_certificate' ? 'Surat Keterangan Dokter' : d.document_type || d.file_name || 'Dokumen';
+function Info({label,value,wide=false}:{label:string; value?:unknown; wide?:boolean}){ return <div className={`rounded-xl bg-slate-50 p-3 ${wide?'md:col-span-2 xl:col-span-3':''}`}><p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{label}</p><p className="mt-1 break-words text-sm font-semibold text-slate-800">{String(value ?? '-')}</p></div>; }
 
 export default function RegistrationDetailPage(): React.JSX.Element {
-  const { id } = useParams();
-  const queryClient = useQueryClient();
-  
-
-  const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'pendaftaran', Number(id)],
-    queryFn: async () => {
-      const res = await adminApi.registrations.show(Number(id));
-      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
-    },
-    enabled: !!id,
-  });
-
-  const approveMutation = useMutation({
-    mutationFn: () => adminApi.registrations.approve(Number(id)),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'pendaftaran', Number(id)] }); toast.success('Pendaftaran disetujui'); },
-  });
-
-  if (isLoading) return <div className="h-32 animate-pulse rounded-2xl bg-slate-200" />;
-  if (!data) return <div className="text-center text-slate-500">Pendaftaran tidak ditemukan</div>;
-
-  const mhs = data.mahasiswa as Record<string, unknown> | undefined;
-
-  return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Detail Pendaftaran</h1>
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-          <div><p className="text-xs text-slate-500">Nama</p><p className="font-semibold">{String(mhs?.nama || '-')}</p></div>
-          <div><p className="text-xs text-slate-500">NIM</p><p className="font-semibold">{String(mhs?.nim || '-')}</p></div>
-          <div><p className="text-xs text-slate-500">Status</p><span className={`rounded-full px-2 py-0.5 text-xs font-medium ${data.status === 'approved' ? 'bg-emerald-100 text-emerald-700' : data.status === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}`}>{String(data.status || '-')}</span></div>
-          <div><p className="text-xs text-slate-500">Periode</p><p className="font-semibold">{String((data.periode as Record<string, unknown>)?.name || '-')}</p></div>
-          <div><p className="text-xs text-slate-500">Kelompok</p><p className="font-semibold">{String((data.kelompok as Record<string, unknown>)?.nama_kelompok || 'Belum ditugaskan')}</p></div>
-          <div><p className="text-xs text-slate-500">Role</p><p className="font-semibold">{String(data.role || 'Anggota')}</p></div>
-        </div>
-        {data.status === 'pending' && (
-          <div className="mt-6 flex gap-3">
-            <button onClick={() => approveMutation.mutate()} disabled={approveMutation.isPending} className="rounded-xl bg-emerald-600 px-6 py-3 text-sm font-semibold text-white hover:bg-emerald-700 disabled:opacity-50">✅ Setujui</button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
+  const params = useParams(); const router = useRouter(); const id = Number(params?.id); const qc = useQueryClient();
+  const [rejectOpen,setRejectOpen]=useState(false); const [reason,setReason]=useState('');
+  const {data,isLoading,isError,refetch}=useQuery<Registration>({queryKey:['admin','pendaftaran',id], queryFn:async()=>{const res=await adminApi.registrations.show(id); return ((res as {data?:unknown})?.data ?? res) as Registration;}, enabled:Number.isFinite(id)&&id>0});
+  const approveMutation=useMutation({mutationFn:()=>adminApi.registrations.approve(id), onSuccess:()=>{qc.invalidateQueries({queryKey:['admin','pendaftaran',id]}); toast.success('Pendaftaran disetujui');}, onError:(e:unknown)=>toast.error((e as {response?:{data?:{error?:{message?:string}}}})?.response?.data?.error?.message ?? 'Gagal menyetujui')});
+  const rejectMutation=useMutation({mutationFn:()=>adminApi.registrations.reject(id,{rejection_reason:reason}), onSuccess:()=>{setRejectOpen(false); setReason(''); qc.invalidateQueries({queryKey:['admin','pendaftaran',id]}); toast.success('Pendaftaran ditolak');}, onError:(e:unknown)=>toast.error((e as {response?:{data?:{error?:{message?:string}}}})?.response?.data?.error?.message ?? 'Gagal menolak')});
+  const viewDoc=async(doc:Doc)=>{ if(!doc.file_path) return; try{const res=await adminApi.registrations.downloadDocument(doc.file_path); const url=URL.createObjectURL((res as {data:Blob}).data); window.open(url,'_blank','noopener,noreferrer'); setTimeout(()=>URL.revokeObjectURL(url),60000);}catch{toast.error('Gagal membuka dokumen');}};
+  const downloadDoc=async(doc:Doc)=>{ if(!doc.file_path) return; try{const res=await adminApi.registrations.downloadDocument(doc.file_path); const url=URL.createObjectURL((res as {data:Blob}).data); const a=document.createElement('a'); a.href=url; a.download=doc.file_name || doc.file_path.split('/').pop() || 'dokumen'; a.click(); URL.revokeObjectURL(url);}catch{toast.error('Gagal mengunduh dokumen');}};
+  if(isLoading) return <div className="h-40 animate-pulse rounded-2xl bg-slate-200"/>;
+  if(isError) return <div className="space-y-3 text-center"><p className="font-bold text-rose-600">Gagal memuat detail</p><button onClick={()=>refetch()} className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-bold text-white">Coba Lagi</button></div>;
+  if(!data) return <div className="text-center text-slate-500">Pendaftaran tidak ditemukan</div>;
+  const m=data.mahasiswa; const p=data.periode; const docs=data.documents??[]; const reviewable=REVIEWABLE.includes(data.status||'');
+  return <div className="space-y-6">
+    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between"><div><button onClick={()=>router.push('/admin/pendaftaran')} className="mb-3 inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-500 hover:text-slate-900"><ArrowLeft size={14}/> Kembali</button><h1 className="text-2xl font-black text-slate-900">Detail Pendaftaran #{data.id}</h1><p className="text-sm text-slate-500">Diajukan {fmt(data.registration_date)} • Revisi {data.revision_count ?? 0}</p></div><div className="flex flex-wrap items-center gap-2"><StatusBadge status={data.status||'-'}/>{reviewable&&<><button onClick={()=>approveMutation.mutate()} disabled={approveMutation.isPending} className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-black text-white hover:bg-emerald-700 disabled:opacity-50"><CheckCircle2 size={16}/> Setujui</button><button onClick={()=>setRejectOpen(true)} className="inline-flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-black text-rose-600 hover:bg-rose-100"><XCircle size={16}/> Tolak</button></>}</div></div>
+    <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]"><div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200"><div className="flex gap-4"><img src={m?.user?.avatar_url || '/logo-sibermas.png'} alt="avatar" className="h-20 w-20 rounded-2xl object-cover ring-1 ring-slate-200"/><div><h2 className="text-xl font-black text-slate-900">{m?.nama||'-'}</h2><p className="font-mono text-sm text-slate-600">{m?.nim||'-'}</p><p className="text-sm text-slate-500">{m?.fakultas?.nama||m?.faculty?.nama||'-'} • {m?.prodi?.nama||'-'}</p></div></div><div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3"><Info label="NIK" value={m?.nik}/><Info label="Ibu Kandung" value={m?.mother_name}/><Info label="Gender" value={gender(m?.gender)}/><Info label="TTL" value={`${m?.birth_place||'-'}, ${dateOnly(m?.birth_date)}`}/><Info label="Status Nikah" value={m?.marital_status}/><Info label="Ukuran Baju" value={m?.shirt_size}/><Info label="Angkatan" value={m?.batch_year}/><Info label="Semester" value={m?.semester}/><Info label="SKS" value={m?.sks_completed}/><Info label="IPK" value={m?.gpa}/><Info label="BTA/PPI" value={m?.status_bta_ppi}/><Info label="UKT Lunas" value={yn(m?.is_paid_ukt)}/><Info label="Status Akademik" value={m?.status_aktif}/><Info label="Kelengkapan Profil" value={`${m?.profile_completion ?? '-'}%`}/><Info label="Akun Aktif" value={yn(m?.user?.is_active)}/><Info label="Alamat" value={m?.alamat} wide/></div></div><div className="space-y-4"><div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200"><h3 className="font-black text-slate-900">Kontak</h3><p className="mt-3 flex items-center gap-2 text-sm"><Mail size={16} className="text-slate-400"/> {m?.user?.email||'-'}</p><p className="mt-2 flex items-center gap-2 text-sm"><Phone size={16} className="text-slate-400"/> {m?.phone||'-'}</p></div><div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200"><h3 className="font-black text-slate-900">Program</h3><div className="mt-4 grid gap-3"><Info label="Periode" value={p?.name}/><Info label="Jenis" value={`${p?.jenis_kkn?.name||'-'} (${p?.jenis_kkn?.code||'-'})`}/><Info label="Fase" value={p?.phase_label}/><Info label="Jadwal KKN" value={`${dateOnly(p?.start_date)} - ${dateOnly(p?.end_date)}`}/><Info label="Pendaftaran" value={`${fmt(p?.registration_start)} - ${fmt(p?.registration_end)}`}/><Info label="Kuota" value={p?.kuota}/><Info label="Mode Daftar" value={p?.jenis_kkn?.registration_mode_label}/><Info label="Penempatan" value={p?.jenis_kkn?.placement_mode_label}/><Info label="Kelompok" value={data.kelompok?.nama_kelompok || 'Belum ditugaskan'}/><Info label="Role" value={data.role || 'Anggota'}/></div></div></div></section>
+    <section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200"><h2 className="text-lg font-black text-slate-900">Dokumen Pendaftaran</h2><p className="mt-1 text-sm text-slate-500">{data.document_summary?.uploaded_count??docs.length}/{data.document_summary?.required_count??docs.length} dokumen terunggah • kurang {data.document_summary?.missing_required_count??0}</p>{data.document_summary?.items?.length? <div className="mt-4 grid gap-3 md:grid-cols-3">{data.document_summary.items.map(i=><div key={i.field||i.label} className="rounded-xl border border-slate-200 p-3"><p className="text-sm font-black text-slate-800">{i.label||i.field}</p><p className="text-xs text-slate-500">{i.required?'Wajib':'Opsional'} • {i.uploaded?'Terunggah':'Belum unggah'} • {i.is_verified?'Terverifikasi':'Belum verifikasi'}</p></div>)}</div>:null}{docs.length===0?<p className="mt-4 text-sm text-slate-500">Belum ada dokumen.</p>:<div className="mt-4 overflow-hidden rounded-xl border border-slate-200">{docs.map(doc=><div key={doc.id} className="flex flex-col gap-3 border-b border-slate-100 p-4 last:border-b-0 sm:flex-row sm:items-center sm:justify-between"><div><p className="text-sm font-black text-slate-800">{labelDoc(doc)}</p><p className="text-xs text-slate-500">{doc.file_name||doc.file_path}</p><p className="mt-1 text-xs text-slate-500">Upload: {fmt(doc.uploaded_at)} • Status: {doc.status||'-'} • Verifikasi: {doc.is_verified?`Ya (${fmt(doc.verified_at)})`:'Belum'}</p>{doc.notes&&<p className="mt-1 text-xs text-slate-600">Catatan: {doc.notes}</p>}</div><div className="flex gap-2"><button onClick={()=>viewDoc(doc)} disabled={!doc.file_path} className="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-xs font-bold text-white disabled:opacity-40"><Eye size={14}/>Lihat</button><button onClick={()=>downloadDoc(doc)} disabled={!doc.file_path} className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-xs font-bold text-white disabled:opacity-40"><Download size={14}/>Unduh</button></div></div>)}</div>}</section>
+    {(data.notes||data.rejection_reason||data.approved_at)&&<section className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200"><h2 className="font-black text-slate-900">Riwayat/Catatan</h2><div className="mt-3 grid gap-3 md:grid-cols-3"><Info label="Disetujui" value={fmt(data.approved_at)}/><Info label="Alasan Tolak" value={data.rejection_reason||'-'}/><Info label="Catatan" value={data.notes||'-'}/></div></section>}
+    {rejectOpen&&<div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"><div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"><h3 className="font-black text-slate-900">Tolak Pendaftaran</h3><textarea value={reason} onChange={e=>setReason(e.target.value)} rows={4} placeholder="Alasan penolakan..." className="mt-4 w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100"/><div className="mt-4 flex gap-3"><button onClick={()=>setRejectOpen(false)} className="flex-1 rounded-xl border border-slate-200 py-2 text-xs font-black">Batal</button><button onClick={()=>rejectMutation.mutate()} disabled={!reason.trim()||rejectMutation.isPending} className="flex-1 rounded-xl bg-rose-600 py-2 text-xs font-black text-white disabled:opacity-50">Tolak</button></div></div></div>}
+  </div>;
 }

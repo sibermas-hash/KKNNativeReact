@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 
 type Check = { passed: boolean; key: string; message: string; dispensasi?: boolean };
+type IssueOption = { value: string; label: string };
 type Student = {
   mahasiswa_id: number; nim: string; nama: string;
   prodi_nama?: string; fakultas_nama?: string;
@@ -21,7 +22,7 @@ type Student = {
 };
 type Stats = { total: number; eligible_count: number; not_eligible_count: number; eligibility_rate: number };
 type Pagination = { current_page: number; per_page: number; total: number; last_page: number };
-type ApiRes = { data?: { students?: Student[]; pagination?: Pagination; stats?: Stats } };
+type ApiRes = { data?: { students?: Student[]; pagination?: Pagination; stats?: Stats; issue_filters?: IssueOption[] } };
 
 export default function AuditKualifikasiPage(): React.JSX.Element {
   const [search, setSearch] = useState('');
@@ -75,12 +76,18 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
   const students: Student[] = (inner.students ?? []) as Student[];
   const pagination: Pagination = (inner.pagination ?? { current_page: 1, per_page: 20, total: 0, last_page: 1 }) as Pagination;
   const stats: Stats = (inner.stats ?? { total: 0, eligible_count: 0, not_eligible_count: 0, eligibility_rate: 0 }) as Stats;
+  const apiIssueOptions: IssueOption[] = (inner.issue_filters ?? []) as IssueOption[];
 
   const handleExport = async () => {
     setIsExporting(true);
     try {
       const res = await api.get('/admin/audit-kualifikasi/export', {
-        params: { faculty_id: facultyId || undefined },
+        params: {
+          faculty_id: facultyId || undefined,
+          search: debouncedSearch || undefined,
+          show_eligible: showEligible,
+          issue: issueFilter || undefined,
+        },
         responseType: 'blob',
       });
       const blob = new Blob([res as unknown as BlobPart], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
@@ -99,17 +106,22 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
 
   const toggleExpand = (id: number) => setExpandedId(expandedId === id ? null : id);
 
-  const ISSUE_OPTIONS = [
-    { value: '', label: 'Semua Syarat' },
-    { value: 'min_sks', label: 'SKS kurang' },
-    { value: 'min_semester', label: 'Semester kurang' },
-    { value: 'min_gpa', label: 'IPK kurang' },
-    { value: 'ukt_payment', label: 'UKT belum lunas' },
-    { value: 'bta_ppi', label: 'BTA-PPI belum lulus' },
-    { value: 'program_prodi', label: 'Prodi tidak sesuai' },
-    { value: 'personal_status', label: 'Syarat personal' },
-    { value: 'no_prior_completion', label: 'Sudah pernah KKN' },
-  ];
+  const issueOptions = useMemo<IssueOption[]>(() => {
+    const fallback = [
+      { value: 'status_aktif', label: 'Status akademik tidak aktif' },
+      { value: 'min_sks', label: 'SKS kurang' },
+      { value: 'min_semester', label: 'Semester kurang' },
+      { value: 'min_gpa', label: 'IPK kurang' },
+      { value: 'ukt_payment', label: 'UKT belum lunas' },
+      { value: 'bta_ppi', label: 'BTA-PPI belum lulus' },
+      { value: 'program_prodi', label: 'Prodi tidak sesuai' },
+      { value: 'personal_status', label: 'Syarat personal' },
+      { value: 'no_prior_completion', label: 'Sudah pernah KKN' },
+    ];
+
+    const source = apiIssueOptions.length > 0 ? apiIssueOptions : fallback;
+    return [{ value: '', label: 'Semua Syarat' }, ...source];
+  }, [apiIssueOptions]);
 
   const rate = stats.eligibility_rate ?? 0;
   const rateColor = rate >= 70 ? 'text-emerald-600' : rate >= 50 ? 'text-amber-600' : 'text-red-600';
@@ -166,7 +178,7 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
       </div>
 
       <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-        <div className="flex items-start gap-2"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><div><b>Formula audit:</b> Eligible jika lolos syarat SKS, semester, IPK, UKT, BTA-PPI, belum pernah lulus KKN, serta syarat khusus jenis KKN/prodi. Klik baris mahasiswa untuk melihat detail alasan. Data memakai cache eligibility terakhir.</div></div>
+        <div className="flex items-start gap-2"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><div><b>Formula audit:</b> Audit ini menghitung syarat akademik dan syarat khusus jenis KKN dari cache eligibility terbaru. Dokumen pendaftaran diperiksa di tahap approval, bukan di halaman audit ini.</div></div>
       </div>
 
       {/* Toolbar */}
@@ -218,7 +230,7 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
               onChange={(e) => { setIssueFilter(e.target.value); setPage(1); }}
               className="h-9 appearance-none rounded-lg border border-slate-200 bg-white pl-8 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600"
             >
-              {ISSUE_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              {issueOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
         </div>

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { InternalAxiosRequestConfig } from 'axios';
 import {
   createWebClient,
   authEndpoints,
@@ -22,6 +23,14 @@ function getBaseUrl(): string {
 }
 
 export const api = createWebClient(getBaseUrl());
+api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+  if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+    config.headers?.delete?.('Content-Type');
+    delete (config.headers as unknown as Record<string, unknown>)['Content-Type'];
+    delete (config.headers as unknown as Record<string, unknown>)['content-type'];
+  }
+  return config;
+});
 export const rawApi = axios.create({
   baseURL: getBaseUrl(),
   withCredentials: true,

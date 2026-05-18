@@ -18,7 +18,12 @@ class DokumenPesertaResource extends JsonResource
             'file_path' => $this->file_path,
             'file_name' => $this->file_name,
             'status' => $this->status,
-            'rejection_reason' => $this->rejection_reason,
+            'notes' => $this->notes,
+            'is_verified' => (bool) $this->is_verified,
+            'verified_at' => $this->verified_at?->toIso8601String(),
+            'verified_by' => $this->verified_by,
+            'is_archived' => (bool) $this->is_archived,
+            'archived_at' => $this->archived_at?->toIso8601String(),
             'uploaded_at' => $this->uploaded_at?->toIso8601String(),
         ];
     }

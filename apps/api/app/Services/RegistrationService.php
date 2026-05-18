@@ -52,7 +52,7 @@ class RegistrationService
      * @throws AuthorizationException If the user does not own this mahasiswa record.
      * @throws ValidationException If validation or eligibility fails.
      */
-    public function register(Mahasiswa $mahasiswa, int $periodeId, ?int $kelompokId, ?string $notes, ?int $userId = null): PesertaKkn
+    public function register(Mahasiswa $mahasiswa, int $periodeId, ?int $kelompokId, ?string $notes, ?int $userId = null, ?int $statementAgreementId = null): PesertaKkn
     {
 
         // FIX C10: Verify ownership - the authenticated user must own this mahasiswa record
@@ -60,8 +60,8 @@ class RegistrationService
             throw new AuthorizationException('Anda tidak memiliki hak untuk mendaftarkan mahasiswa ini.');
         }
 
-        $registration = $this->withRegistrationLocks($mahasiswa, $periodeId, $kelompokId, function () use ($mahasiswa, $periodeId, $kelompokId, $notes) {
-            return $this->runAtomically(function () use ($mahasiswa, $periodeId, $kelompokId, $notes) {
+        $registration = $this->withRegistrationLocks($mahasiswa, $periodeId, $kelompokId, function () use ($mahasiswa, $periodeId, $kelompokId, $notes, $statementAgreementId) {
+            return $this->runAtomically(function () use ($mahasiswa, $periodeId, $kelompokId, $notes, $statementAgreementId) {
                 $periode = Periode::query()->lockForUpdate()->findOrFail($periodeId);
 
                 // FIX C9: Use Carbon between() for proper datetime comparison instead of string comparison
@@ -77,15 +77,16 @@ class RegistrationService
                     ]);
                 }
 
-                // 1. GLOBAL FILTER: Cek apakah pernah LULUS KKN di masa lalu (Periode mana pun)
-                $hasCompleted = PesertaKkn::query()
+                // PEDOMAN KKN 56: lock permanen hanya jika mahasiswa sudah LULUS/COMPLETED KKN.
+                // Jika gugur/tidak lulus/rejected/cancelled, mahasiswa wajib/boleh ikut angkatan berikutnya.
+                $hasCompletedKkn = PesertaKkn::query()
                     ->where('mahasiswa_id', $mahasiswa->id)
                     ->where('status', 'completed')
                     ->exists();
 
-                if ($hasCompleted) {
+                if ($hasCompletedKkn) {
                     throw ValidationException::withMessages([
-                        'periode_id' => 'Pendaftaran ditolak. Anda sudah dinyatakan LULUS KKN pada periode sebelumnya.',
+                        'periode_id' => 'Pendaftaran ditutup untuk akun Anda. Sistem mencatat Anda sudah lulus KKN. Mahasiswa yang sudah lulus KKN tidak dapat mengikuti KKN kembali.',
                     ]);
                 }
 
@@ -134,7 +135,7 @@ class RegistrationService
                         ->whereIn('status', ['pending', 'approved', 'document_submitted', 'document_verified'])
                         // Exclude record milik mahasiswa ini sendiri (re-register scenario)
                         ->where('mahasiswa_id', '!=', $mahasiswa->id)
-                        ->lockForUpdate()
+                        
                         ->count();
 
                     if ($activeCount >= (int) $periode->kuota) {
@@ -167,6 +168,7 @@ class RegistrationService
                         $existing = $this->registrations->create([
                             'mahasiswa_id' => $mahasiswa->id,
                             'periode_id' => $periodeId,
+                            'statement_agreement_id' => $statementAgreementId,
                             'kelompok_id' => null,
                             'notes' => $notes,
                             'status' => 'pending',
@@ -191,6 +193,7 @@ class RegistrationService
                             if ($existing->status === 'rejected') {
                                 $existing->status = 'pending';
                                 $existing->notes = $notes;
+                                $existing->statement_agreement_id = $statementAgreementId;
                                 $existing->kelompok_id = null;
                                 $existing->approved_at = null;
                                 $existing->approved_by = null;
@@ -215,6 +218,7 @@ class RegistrationService
                 } elseif ($existing->status === 'rejected') {
                     $existing->status = 'pending';
                     $existing->notes = $notes;
+                    $existing->statement_agreement_id = $statementAgreementId;
                     $existing->kelompok_id = null;
                     $existing->approved_at = null;
                     $existing->approved_by = null;
@@ -225,6 +229,9 @@ class RegistrationService
                     $existing->save();
                 } else {
                     $existing->notes = $notes;
+                    if ($statementAgreementId) {
+                        $existing->statement_agreement_id = $statementAgreementId;
+                    }
                     $existing->save();
                 }
 

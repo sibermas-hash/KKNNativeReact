@@ -15,7 +15,7 @@ const ParticleBackground = dynamic(
 import { motion } from 'framer-motion';
 
 function dashboardPathFor(roles: string[]) {
-  if (roles.some((role) => ['superadmin', 'admin', 'faculty_admin'].includes(role))) return '/admin';
+  if (roles.some((role) => ['admin', 'admin', 'faculty_admin'].includes(role))) return '/admin';
   if (roles.some((role) => ['dosen', 'dpl'].includes(role))) return '/dosen';
   if (roles.includes('student')) return '/mahasiswa';
   return '/';

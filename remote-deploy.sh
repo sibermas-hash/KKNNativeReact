@@ -67,7 +67,9 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
 
   restart_native_web() {
     if [ -x /usr/local/etc/rc.d/sibermas_web ]; then
-      service sibermas_web restart
+      service sibermas_web stop 2>/dev/null || true
+    sleep 1
+    service sibermas_web restart
       return
     fi
 
@@ -155,12 +157,16 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
   rm -rf apps/web/.next
   TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:web
 
-  echo "  [i] Copying static & public to standalone..."
+  echo "  [i] Cleaning Next runtime cache..."
+rm -rf apps/web/.next/cache apps/web/.next/standalone/apps/web/.next/cache 2>/dev/null || true
+
+echo "  [i] Copying static & public to standalone..."
   cp -r apps/web/.next/static/. apps/web/.next/standalone/apps/web/.next/static 2>/dev/null || true
   cp -r apps/web/public/.       apps/web/.next/standalone/apps/web/public 2>/dev/null || true
 
   echo "  [j] Fixing permissions..."
-  chown -R www:www apps/web/.next apps/api/storage apps/api/bootstrap/cache
+  chown -R ${DEPLOY_USER:-kampelmas}:www apps/web/.next
+  chown -R www:www apps/api/storage apps/api/bootstrap/cache
   find apps/web/.next/standalone -type d -exec chmod 2775 {} + 2>/dev/null || true
   find apps/web/.next/standalone -type f -exec chmod u+rw,g+r {} + 2>/dev/null || true
 

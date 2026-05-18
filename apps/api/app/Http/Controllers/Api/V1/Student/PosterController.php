@@ -56,6 +56,11 @@ class PosterController extends Controller
 
         abort_if(! $peserta?->kelompok_id, 403, 'Anda belum memiliki kelompok KKN aktif.');
 
+        // Audit fix: konsistensi role check — hanya ketua yang bisa upload poster
+        if (strtolower((string) $peserta->role) !== 'ketua') {
+            return $this->forbidden('Hanya ketua kelompok yang dapat mengunggah poster potensi desa.');
+        }
+
         $request->validate([
             'poster' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);

@@ -12,6 +12,7 @@ import {
   MapPin, RefreshCw, Trash2, Users, XCircle,
 } from 'lucide-react';
 
+type UploadedDoc = { document_type?: string; field?: string; file_name?: string; status?: string; uploaded_at?: string };
 type Registration = {
   id: number;
   mahasiswa_id: number;
@@ -28,6 +29,8 @@ type Registration = {
   notification_shown: boolean;
   periode: { id: number; name: string; start_date?: string; end_date?: string } | null;
   kelompok: { id: number; nama_kelompok: string; code?: string; location?: { full_name?: string } } | null;
+  dokumen?: UploadedDoc[];
+  document_summary?: { required_count?: number; uploaded_count?: number; missing_labels?: string[]; flags?: Record<string, boolean> };
 };
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: typeof Clock }> = {
@@ -50,6 +53,10 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function RegistrationCard({ reg, onCancel, isCancelling }: { reg: Registration; onCancel: () => void; isCancelling: boolean }) {
+  const summary = reg.document_summary;
+  const missing = summary?.missing_labels ?? [];
+  const requiredCount = summary?.required_count ?? 0;
+  const uploadedCount = summary?.uploaded_count ?? (reg.dokumen?.length ?? 0);
   const isRejected = reg.status === 'rejected';
   const isPending = reg.status === 'pending';
   const isDocSubmitted = reg.status === 'document_submitted';
@@ -127,6 +134,25 @@ function RegistrationCard({ reg, onCancel, isCancelling }: { reg: Registration; 
           </div>
         )}
 
+
+        {/* Document Summary */}
+        {requiredCount > 0 && (
+          <div className="rounded-xl bg-blue-50 p-4 ring-1 ring-blue-100">
+            <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-blue-700">
+              <FileUp size={12} /> Dokumen Persyaratan
+            </p>
+            <p className="mt-1 text-sm text-blue-800">{uploadedCount} dari {requiredCount} dokumen sudah diunggah.</p>
+            {missing.length > 0 && (
+              <div className="mt-2 rounded-lg bg-white/70 p-3 text-xs text-blue-900">
+                <p className="font-bold">Belum diunggah:</p>
+                <ul className="mt-1 list-disc space-y-0.5 pl-4">
+                  {missing.map((label) => <li key={label}>{label}</li>)}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Approved Info */}
         {isApproved && (
           <div className="rounded-xl bg-emerald-50 p-4 ring-1 ring-emerald-100">
@@ -150,12 +176,12 @@ function RegistrationCard({ reg, onCancel, isCancelling }: { reg: Registration; 
             <FileUp size={14} /> Upload Ulang Berkas
           </Link>
         )}
-        {isPending && (
+        {(isPending || isDocSubmitted) && (
           <Link
             href={`/mahasiswa/pendaftaran/${reg.periode_id}/dokumen`}
             className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow-md"
           >
-            <FileUp size={14} /> Upload Dokumen
+            <FileUp size={14} /> {isDocSubmitted ? 'Lihat / Perbarui Dokumen' : 'Upload Dokumen'}
           </Link>
         )}
         {isApproved && (

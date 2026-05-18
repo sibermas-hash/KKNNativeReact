@@ -113,7 +113,7 @@ class PesertaKknController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = PesertaKkn::with(['mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'kelompok', 'periode'])
+        $query = PesertaKkn::with(['mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'kelompok', 'periode.jenisKkn', 'dokumen'])
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
             ->when($request->input('periode_id'), fn ($q, $id) => $q->where('periode_id', $id))
             ->when($request->input('search'), function ($q, $s) {
@@ -152,26 +152,15 @@ class PesertaKknController extends Controller
             return $this->error('FORBIDDEN', 'Anda tidak memiliki akses ke data mahasiswa ini.', 403);
         }
 
-        // Audit R9-008 fix: re-run eligibility before flipping status=approved.
-        // Previously admin bypass ini memungkinkan mahasiswa yang kehilangan
-        // syarat akademik setelah daftar (misal SKS turun via SIAKAD sync)
-        // tetap lolos approval. Superadmin boleh bypass lewat flag ?force=1
-        // untuk edge-case valid (contoh: dispensasi manual).
-        $force = (bool) request()->boolean('force');
-        if (! $force || ! auth()->user()?->hasRole('superadmin')) {
-            $eligibility = $this->checkApprovalEligibility($pesertaKkn);
-            if (! $eligibility['eligible']) {
-                return $this->error(
-                    'VALIDATION_ERROR',
-                    'Mahasiswa tidak memenuhi syarat approval: '.$eligibility['first_message'],
-                    422,
-                );
-            }
+        try {
+            app(RegistrationApprovalService::class)->approve($pesertaKkn, (int) auth()->id());
+        } catch (ValidationException $e) {
+            $firstMessage = collect($e->errors())->flatten()->first() ?? 'Pendaftaran tidak dapat disetujui.';
+
+            return $this->error('VALIDATION_ERROR', (string) $firstMessage, 422);
         }
 
-        $pesertaKkn->update(['status' => 'approved', 'approved_at' => now(), 'approved_by' => auth()->id()]);
-
-        return $this->success(new PesertaKknResource($pesertaKkn->refresh()), 'Pendaftaran disetujui.');
+        return $this->success(new PesertaKknResource($pesertaKkn->refresh()->load(['mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'kelompok', 'periode', 'dokumen'])), 'Pendaftaran disetujui.');
     }
 
     public function reject(Request $request, PesertaKkn $pesertaKkn): JsonResponse
@@ -183,9 +172,16 @@ class PesertaKknController extends Controller
             return $this->error('FORBIDDEN', 'Anda tidak memiliki akses ke data mahasiswa ini.', 403);
         }
         $request->validate(['rejection_reason' => ['required', 'string', 'max:500']]);
-        $pesertaKkn->update(['status' => 'rejected', 'last_rejected_at' => now(), 'last_rejected_by' => auth()->id(), 'rejection_reason' => $request->input('rejection_reason')]);
 
-        return $this->success(new PesertaKknResource($pesertaKkn->refresh()), 'Pendaftaran ditolak.');
+        try {
+            app(RegistrationApprovalService::class)->reject($pesertaKkn, (string) $request->input('rejection_reason'), (int) auth()->id());
+        } catch (ValidationException $e) {
+            $firstMessage = collect($e->errors())->flatten()->first() ?? 'Pendaftaran tidak dapat ditolak.';
+
+            return $this->error('VALIDATION_ERROR', (string) $firstMessage, 422);
+        }
+
+        return $this->success(new PesertaKknResource($pesertaKkn->refresh()->load(['mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'kelompok', 'periode', 'dokumen'])), 'Pendaftaran ditolak.');
     }
 
     public function assignGroup(Request $request, PesertaKkn $pesertaKkn): JsonResponse
@@ -297,115 +293,14 @@ class PesertaKknController extends Controller
         }
         $request->validate(['ids' => ['required', 'array'], 'ids.*' => ['integer']]);
 
-        $force = (bool) $request->boolean('force');
-        $isSuperadmin = (bool) auth()->user()?->hasRole('superadmin');
+        $approved = app(RegistrationApprovalService::class)->bulkApprove(
+            $request->input('ids'),
+            (int) auth()->id(),
+            false,
+            null,
+        );
 
-        $query = PesertaKkn::with(['mahasiswa.prodi.fakultas', 'mahasiswa.fakultas', 'periode.jenisKkn'])
-            ->whereIn('id', $request->input('ids'))
-            ->where('status', 'pending');
-        $this->scopeByFaculty($query);
-
-        $approved = 0;
-        $skipped = [];
-        $auditQueue = [];
-
-        // Audit fix (2026-05-12): bulk approve sebelumnya loop `cursor()` tanpa
-        // transaction/lock — dua admin bulk-approve bersamaan bisa double-update.
-        // Sekarang tiap peserta di-lock via `lockForUpdate()` dan status
-        // di-re-check setelah lock didapat (double-check locking). Audit log
-        // di-queue dan dispatch setelah semua row selesai untuk hindari
-        // overhead per-iterasi.
-        foreach ($query->cursor() as $peserta) {
-            /** @var PesertaKkn $peserta */
-            $result = DB::transaction(function () use ($peserta, $force, $isSuperadmin) {
-                // Lock baris — kalau request lain approve duluan, kita lihat
-                // status baru dan skip.
-                $locked = PesertaKkn::whereKey($peserta->id)->lockForUpdate()->first();
-
-                if ($locked === null || $locked->status !== 'pending') {
-                    return [
-                        'status' => 'race_skip',
-                        'id' => $peserta->id,
-                        'nim' => $peserta->mahasiswa?->nim,
-                        'nama' => $peserta->mahasiswa?->nama,
-                        'reason' => 'Sudah di-proses oleh request lain',
-                    ];
-                }
-
-                $forceBypass = false;
-                $bypassedReasons = null;
-
-                if (! ($force && $isSuperadmin)) {
-                    $eligibility = $this->checkApprovalEligibility($peserta);
-                    if (! $eligibility['eligible']) {
-                        return [
-                            'status' => 'ineligible',
-                            'id' => $peserta->id,
-                            'nim' => $peserta->mahasiswa?->nim,
-                            'nama' => $peserta->mahasiswa?->nama,
-                            'reason' => $eligibility['first_message'],
-                        ];
-                    }
-                } else {
-                    $eligibility = $this->checkApprovalEligibility($peserta);
-                    if (! $eligibility['eligible']) {
-                        $forceBypass = true;
-                        $bypassedReasons = $eligibility['messages'] ?? [$eligibility['first_message'] ?? 'unknown'];
-                    }
-                }
-
-                $locked->update([
-                    'status' => 'approved',
-                    'approved_at' => now(),
-                    'approved_by' => auth()->id(),
-                ]);
-
-                return [
-                    'status' => 'approved',
-                    'peserta_id' => $locked->id,
-                    'nim' => $peserta->mahasiswa?->nim,
-                    'force_bypass' => $forceBypass,
-                    'bypassed_reasons' => $bypassedReasons,
-                ];
-            });
-
-            if (($result['status'] ?? null) === 'approved') {
-                $approved++;
-                if (! empty($result['force_bypass'])) {
-                    $auditQueue[] = $result;
-                }
-            } else {
-                $skipped[] = [
-                    'id' => $result['id'] ?? $peserta->id,
-                    'nim' => $result['nim'] ?? $peserta->mahasiswa?->nim,
-                    'nama' => $result['nama'] ?? $peserta->mahasiswa?->nama,
-                    'reason' => $result['reason'] ?? 'unknown',
-                ];
-            }
-        }
-
-        // R13-API-005: force-approve audit log — dispatch di luar transaction
-        // supaya tidak menahan koneksi DB saat Redis/queue call.
-        foreach ($auditQueue as $entry) {
-            AuditService::log(
-                'FORCE_APPROVE',
-                "Superadmin force-approved peserta id={$entry['peserta_id']} (NIM {$entry['nim']}) melewati pengecekan eligibility",
-                PesertaKkn::find($entry['peserta_id']),
-                null,
-                ['skipped_eligibility' => $entry['bypassed_reasons']],
-            );
-        }
-
-        $message = "{$approved} pendaftaran berhasil disetujui.";
-        if ($skipped !== []) {
-            $message .= ' '.count($skipped).' dilewati karena tidak memenuhi syarat atau sudah di-proses.';
-        }
-
-        return $this->success([
-            'approved_count' => $approved,
-            'skipped_count' => count($skipped),
-            'skipped' => $skipped,
-        ], $message);
+        return $this->success(['approved_count' => $approved], "{$approved} pendaftaran berhasil disetujui.");
     }
 
     public function bulkReject(Request $request): JsonResponse
@@ -414,9 +309,14 @@ class PesertaKknController extends Controller
             return $this->error('FORBIDDEN', 'Admin fakultas hanya memiliki akses baca (read-only).', 403);
         }
         $request->validate(['ids' => ['required', 'array'], 'ids.*' => ['integer'], 'rejection_reason' => ['required', 'string', 'max:500']]);
-        $query = PesertaKkn::whereIn('id', $request->input('ids'))->where('status', 'pending');
-        $this->scopeByFaculty($query);
-        $count = $query->update(['status' => 'rejected', 'last_rejected_at' => now(), 'last_rejected_by' => auth()->id(), 'rejection_reason' => $request->input('rejection_reason')]);
+
+        $count = app(RegistrationApprovalService::class)->bulkReject(
+            $request->input('ids'),
+            (string) $request->input('rejection_reason'),
+            (int) auth()->id(),
+            false,
+            null,
+        );
 
         return $this->success(['rejected_count' => $count], "{$count} pendaftaran ditolak.");
     }

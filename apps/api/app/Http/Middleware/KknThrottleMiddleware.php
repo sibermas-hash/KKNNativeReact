@@ -14,7 +14,7 @@ class KknThrottleMiddleware extends ThrottleRequests
     /**
      * Handle CSRF validation failures with detailed logging.
      */
-    public function handle($request, $next, $maxAttempts = 60, $decayMinutes = 1, $prefix = ''): Response
+    public function handle($request, $next, $maxAttempts = 300, $decayMinutes = 1, $prefix = ''): Response
     {
         // Define critical endpoints that need stricter limits
         $criticalEndpoints = [
@@ -66,7 +66,7 @@ class KknThrottleMiddleware extends ThrottleRequests
         }
 
         if ($routeName === 'student.registration.store') {
-            $maxAttempts = 20;
+            $maxAttempts = 999;
             $decayMinutes = 1;
         }
 
@@ -110,7 +110,6 @@ class KknThrottleMiddleware extends ThrottleRequests
         return hash('xxh128', implode('|', [
             $request->user()?->id ?: $guestIdentifier,
             $routeName ?: $request->path(),
-            $request->ip(),
         ]));
     }
 }

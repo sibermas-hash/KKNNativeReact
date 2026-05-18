@@ -182,4 +182,47 @@ class JenisKkn extends Model
 
         return is_array($value) && $value !== [] ? array_map('intval', $value) : null;
     }
+
+
+    public function getMinSemesterAttribute(): ?int
+    {
+        $value = $this->requirements_config['min_semester'] ?? null;
+
+        return $value !== null ? (int) $value : null;
+    }
+
+    public function getRequireHealthCertificateAttribute(): bool
+    {
+        return (bool) ($this->requirements_config['require_health_cert'] ?? false);
+    }
+
+    public function getRequireAchievementCertificateAttribute(): bool
+    {
+        return (bool) ($this->requirements_config['require_achievement_certificate'] ?? false);
+    }
+
+    public function getRequireModerationArticleAttribute(): bool
+    {
+        return (bool) ($this->requirements_config['require_moderation_article'] ?? false);
+    }
+
+    public function getRequireOrganizationExperienceAttribute(): bool
+    {
+        return (bool) ($this->requirements_config['require_organization_experience'] ?? false);
+    }
+
+    public function getRequireEnglishSkillAttribute(): bool
+    {
+        return (bool) ($this->requirements_config['require_english_skill'] ?? false);
+    }
+
+    public function getRequireNationalCommitmentAttribute(): bool
+    {
+        return (bool) ($this->requirements_config['require_national_commitment'] ?? false);
+    }
+
+    public function getRequireNotPregnantAttribute(): bool
+    {
+        return (bool) ($this->requirements_config['require_not_pregnant'] ?? false);
+    }
 }

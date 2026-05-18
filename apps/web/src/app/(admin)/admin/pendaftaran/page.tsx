@@ -1,309 +1,177 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api';
 import Link from 'next/link';
-import { ClipboardList, CheckCircle2, XCircle, X } from 'lucide-react';
+import { ClipboardList, CheckCircle2, XCircle, Eye } from 'lucide-react';
 import { StatusBadge, PageHeader, EmptyState } from '@/components/ui/shared';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
 
-interface Registration {
-  id: number;
-  mahasiswa: {
-    nama: string;
-    nim: string;
-    fakultas: { nama: string };
-  };
-  status: string;
-  [key: string]: unknown;
+type DocItem = { field: string; label: string; required: boolean; uploaded: boolean; is_verified?: boolean; file_name?: string };
+type DocSummary = { uploaded_count: number; required_count: number; missing_required_count: number; items: DocItem[] };
+type JenisInfo = {
+  id?: number;
+  name?: string;
+  description?: string;
+  registration_mode_label?: string;
+  placement_mode_label?: string;
+};
+interface Registration { id: number; mahasiswa?: { nama?: string; nim?: string; fakultas?: { nama?: string } }; periode?: { name?: string; jenis_kkn?: JenisInfo }; status: string; document_summary?: DocSummary }
+type ApiList = { items: Registration[]; meta?: { current_page?: number; last_page?: number; total?: number } };
+type PeriodOption = { id: number; name?: string; jenis_kkn?: JenisInfo | null; jenis?: JenisInfo | null; jenis_kkn_id?: number };
+type JenisCard = {
+  id: string;
+  name: string;
+  description?: string;
+  registrationModeLabel?: string;
+  placementModeLabel?: string;
+  activePeriodCount: number;
+  visibleRegistrationCount: number;
+  visibleReviewableCount: number;
+};
+const REVIEWABLE = ['pending', 'document_submitted', 'document_verified'];
+
+function DocumentSummaryCell({ summary }: { summary?: DocSummary }) {
+  if (!summary) return <span className="text-xs text-slate-400">-</span>;
+  const uploaded = summary.uploaded_count;
+  const required = summary.required_count;
+  const missing = summary.missing_required_count;
+  const items = summary.items || [];
+  return (
+    <div className="min-w-[260px] space-y-2">
+      <div className="flex items-center gap-2 text-xs font-black">
+        <span className={missing > 0 ? 'text-rose-700' : 'text-emerald-700'}>{uploaded}/{required} wajib terunggah</span>
+        {missing > 0 && <span className="rounded bg-rose-50 px-2 py-0.5 text-rose-700">kurang {missing}</span>}
+      </div>
+      <div className="flex flex-wrap gap-1">
+        {items.map((d) => <span key={d.field} title={d.file_name || d.label} className={`rounded-md px-2 py-1 text-[10px] font-bold ring-1 ${d.uploaded ? 'bg-emerald-50 text-emerald-700 ring-emerald-100' : d.required ? 'bg-rose-50 text-rose-700 ring-rose-100' : 'bg-slate-50 text-slate-500 ring-slate-100'}`}>{d.uploaded ? '✓' : '×'} {d.label}{d.required ? '' : ' (ops)'}</span>)}
+      </div>
+    </div>
+  );
 }
 
 export default function AdminRegistrationsPage(): React.JSX.Element {
   const queryClient = useQueryClient();
   const searchParams = useSearchParams();
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState('document_submitted');
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [jenisKknId, setJenisKknId] = useState('');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [approveConfirm, setApproveConfirm] = useState<Registration | null>(null);
   const [bulkApproveConfirm, setBulkApproveConfirm] = useState(false);
   const [rejectTarget, setRejectTarget] = useState<Registration | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const periodeId = searchParams.get('periode_id') ?? '';
-  const periodeName = (searchParams.get('periode_name') ?? '').trim();
 
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['admin', 'registrations', { status, search, periodeId }],
+  useEffect(() => { setSelectedIds([]); setPage(1); }, [status, search, periodeId, jenisKknId]);
+
+  const { data: activePeriods = [] } = useQuery<PeriodOption[]>({
+    queryKey: ['admin', 'periods', 'active-registration-review'],
     queryFn: async () => {
-      const res = await adminApi.registrations.index({
-        status,
-        search,
-        periode_id: periodeId || undefined,
-      });
-      return ((res as unknown as { data?: Registration[] }).data ?? res) as Registration[];
+      const res = await adminApi.periods.index({ is_active: true, per_page: 100 });
+      const payload = (res as { data?: unknown }).data ?? res;
+      const rows = Array.isArray(payload) ? payload : ((payload as { data?: PeriodOption[] }).data ?? []);
+      return rows as PeriodOption[];
     },
   });
 
-  const registrations = data || [];
-
-  const approveMutation = useMutation({
-    mutationFn: (id: number) => adminApi.registrations.approve(id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); toast.success('Disetujui'); },
-    onError: () => toast.error('Gagal menyetujui pendaftaran'),
-  });
-
-  const rejectMutation = useMutation({
-    mutationFn: ({ id, reason }: { id: number; reason: string }) =>
-      adminApi.registrations.reject(id, { rejection_reason: reason }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] });
-      toast.success('Ditolak');
-      setRejectTarget(null);
-      setRejectReason('');
+  const { data, isLoading, isError, refetch } = useQuery<ApiList>({
+    queryKey: ['admin', 'registrations', { status, search, periodeId, jenisKknId, page }],
+    queryFn: async () => {
+      const res = await adminApi.registrations.index({ status, search, periode_id: periodeId || undefined, jenis_kkn_id: jenisKknId || undefined, page, per_page: 25 });
+      const payload = (res as { data?: unknown; meta?: ApiList['meta'] }).data ?? res;
+      if (Array.isArray(payload)) return { items: payload as Registration[], meta: (res as { meta?: ApiList['meta'] }).meta };
+      const obj = payload as { data?: Registration[]; meta?: ApiList['meta']; current_page?: number; last_page?: number; total?: number };
+      const meta = obj.meta ?? (res as { meta?: ApiList['meta'] }).meta ?? { current_page: obj.current_page, last_page: obj.last_page, total: obj.total };
+      return { items: obj.data ?? [], meta };
     },
-    onError: () => toast.error('Gagal menolak pendaftaran'),
+  });
+  const registrations = data?.items ?? [];
+  const meta = data?.meta;
+  const jenisCards = Array.from(activePeriods.reduce<Map<string, JenisCard>>((map, period) => {
+    const jenis = period.jenis_kkn ?? period.jenis;
+    const id = jenis?.id ?? period.jenis_kkn_id;
+    if (!id) return map;
+
+    const key = String(id);
+    const current = map.get(key) ?? {
+      id: key,
+      name: jenis?.name ?? `Jenis #${key}`,
+      description: jenis?.description,
+      registrationModeLabel: jenis?.registration_mode_label,
+      placementModeLabel: jenis?.placement_mode_label,
+      activePeriodCount: 0,
+      visibleRegistrationCount: 0,
+      visibleReviewableCount: 0,
+    };
+
+    current.activePeriodCount += 1;
+    map.set(key, current);
+    return map;
+  }, new Map()).values()).map((card) => {
+    const visibleItems = registrations.filter((registration) => String(registration.periode?.jenis_kkn?.id ?? '') === card.id);
+    return {
+      ...card,
+      visibleRegistrationCount: visibleItems.length,
+      visibleReviewableCount: visibleItems.filter((registration) => REVIEWABLE.includes(registration.status)).length,
+    };
   });
 
-  const bulkApproveMutation = useMutation({
-    mutationFn: async (ids: number[]) => adminApi.registrations.bulkApprove(ids),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] });
-      toast.success(`${selectedIds.length} pendaftaran disetujui`);
-      setSelectedIds([]);
-    },
-    onError: () => toast.error('Gagal menyetujui pendaftaran secara massal'),
-  });
+  const approveMutation = useMutation({ mutationFn: (id: number) => adminApi.registrations.approve(id), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); toast.success('Disetujui'); setApproveConfirm(null); }, onError: (e: unknown) => toast.error((e as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message ?? 'Gagal menyetujui') });
+  const rejectMutation = useMutation({ mutationFn: ({ id, reason }: { id: number; reason: string }) => adminApi.registrations.reject(id, { rejection_reason: reason }), onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); toast.success('Ditolak'); setRejectTarget(null); setRejectReason(''); }, onError: (e: unknown) => toast.error((e as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message ?? 'Gagal menolak') });
+  const bulkApproveMutation = useMutation({ mutationFn: (ids: number[]) => adminApi.registrations.bulkApprove(ids), onSuccess: (res: unknown) => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); const payload = (res as { data?: { approved_count?: number } })?.data; toast.success(`${payload?.approved_count ?? selectedIds.length} pendaftaran disetujui`); setSelectedIds([]); setBulkApproveConfirm(false); }, onError: () => toast.error('Gagal menyetujui massal') });
 
-  const toggleSelect = (id: number) =>
-    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
+  const toggleSelect = (r: Registration) => REVIEWABLE.includes(r.status) && setSelectedIds((prev) => prev.includes(r.id) ? prev.filter((i) => i !== r.id) : [...prev, r.id]);
+  const submitReject = () => { const reason = rejectReason.trim(); if (reason.length < 5) return toast.error('Alasan minimal 5 karakter'); if (rejectTarget) rejectMutation.mutate({ id: rejectTarget.id, reason }); };
 
-  const submitReject = () => {
-    const reason = rejectReason.trim();
-    if (reason.length < 5) {
-      toast.error('Alasan minimal 5 karakter');
-      return;
-    }
-    if (rejectTarget !== null) {
-      rejectMutation.mutate({ id: rejectTarget.id, reason });
-    }
-  };
-
-  return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      <PageHeader title="Pendaftaran KKN" subtitle="Kelola pendaftaran mahasiswa" />
-
-      {periodeId && (
-        <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-sm text-cyan-800">
-          <span className="font-semibold">
-            Filter periode aktif:
-            {' '}
-            {periodeName || `#${periodeId}`}
-          </span>
-          <Link href="/admin/pendaftaran" className="rounded-lg bg-white px-3 py-1 text-xs font-bold text-cyan-700 ring-1 ring-cyan-200 hover:bg-cyan-100">
-            Tampilkan semua
-          </Link>
+  return <div className="mx-auto max-w-[1440px] space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+    <PageHeader title="Validasi Dokumen KKN" subtitle="Review dokumen mahasiswa, approve atau minta revisi." />
+    {jenisCards.length > 0 && <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-black text-slate-900">Jenis KKN</h2>
+          <p className="text-xs font-semibold text-slate-500">Klik kartu untuk filter data pendaftaran.</p>
         </div>
-      )}
-
-      <div className="flex flex-wrap items-center gap-3">
-        <label htmlFor="search-pendaftaran" className="sr-only">Cari pendaftaran</label>
-        <input
-          id="search-pendaftaran"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Cari NIM/Nama..."
-          autoComplete="off"
-          className="w-64 h-10 bg-white border border-slate-200 rounded-xl px-4 text-sm font-bold"
-        />
-        <label htmlFor="filter-status" className="sr-only">Filter status</label>
-        <select
-          id="filter-status"
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="h-10 bg-white border border-slate-200 rounded-xl px-4 text-sm font-bold"
-        >
-          <option value="">Semua Status</option>
-          <option value="pending">Menunggu</option>
-          <option value="approved">Disetujui</option>
-          <option value="rejected">Ditolak</option>
-        </select>
-        {selectedIds.length > 0 && (
-          <button
-            type="button"
-            onClick={() => setBulkApproveConfirm(true)}
-            disabled={bulkApproveMutation.isPending}
-            className="h-10 px-4 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase hover:bg-emerald-700 disabled:opacity-50"
-          >
-            Setujui {selectedIds.length} Terpilih
-          </button>
-        )}
+        {jenisKknId && <button onClick={() => setJenisKknId('')} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50">Reset Filter</button>}
       </div>
-
-      {isLoading ? (
-        <div className="space-y-4">{[1, 2, 3].map((i) => <div key={i} className="h-20 animate-pulse rounded-2xl bg-slate-200" />)}</div>
-      ) : isError ? (
-        <div className="rounded-2xl bg-rose-50 border border-rose-200 p-6 text-center space-y-3">
-          <p className="text-sm font-bold text-rose-700">Gagal memuat data pendaftaran.</p>
-          <button
-            type="button"
-            onClick={() => refetch()}
-            className="px-4 py-2 bg-rose-600 text-white rounded-xl text-xs font-black hover:bg-rose-700"
-          >
-            Coba Lagi
-          </button>
-        </div>
-      ) : registrations.length === 0 ? (
-        <EmptyState icon={<ClipboardList size={48} />} title="Tidak ada pendaftaran" />
-      ) : (
-        <div className="space-y-3">
-          {registrations.map((r) => {
-            const mhs = r.mahasiswa as Record<string, unknown> | undefined;
-            return (
-              <div key={String(r.id)} className="flex items-start gap-3 bg-white rounded-2xl p-5 ring-1 ring-slate-200 shadow-sm">
-                <input
-                  type="checkbox"
-                  aria-label={`Pilih pendaftaran ${String(mhs?.nama || '-')}`}
-                  checked={selectedIds.includes(r.id as number)}
-                  onChange={() => toggleSelect(r.id as number)}
-                  className="mt-1 h-5 w-5"
-                />
-                <div className="flex-1">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-black text-slate-900">{String(mhs?.nama || '-')}</p>
-                      <p className="text-xs text-slate-500">
-                        NIM: {String(mhs?.nim || '-')} | {String((mhs?.fakultas as Record<string, unknown>)?.nama || '-')}
-                      </p>
-                    </div>
-                    <StatusBadge status={String(r.status || '')} />
-                  </div>
-                  {r.status === 'pending' && (
-                    <div className="flex gap-2 mt-3">
-                      <button
-                        type="button"
-                        disabled={approveMutation.isPending}
-                        onClick={() => setApproveConfirm(r)}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-black hover:bg-emerald-700 disabled:opacity-50"
-                      >
-                        <CheckCircle2 size={12} /> Setujui
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => { setRejectTarget(r); setRejectReason(''); }}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-rose-100 text-rose-700 rounded-lg text-xs font-black hover:bg-rose-200"
-                      >
-                        <XCircle size={12} /> Tolak
-                      </button>
-                      <Link href={`/admin/pendaftaran/${r.id}`} className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold hover:bg-slate-200">
-                        Detail →
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {/* Approve single confirmation */}
-      <ConfirmDialog
-        open={approveConfirm !== null}
-        onClose={() => setApproveConfirm(null)}
-        onConfirm={() => {
-          if (approveConfirm !== null) {
-            approveMutation.mutate(approveConfirm.id);
-          }
-        }}
-        title="Setujui Pendaftaran"
-        description={
-          approveConfirm
-            ? `Setujui pendaftaran ${approveConfirm.mahasiswa?.nama ?? '-'} (NIM ${approveConfirm.mahasiswa?.nim ?? '-'})?`
-            : ''
-        }
-        confirmText="Setujui"
-        variant="info"
-      />
-
-      {/* Bulk approve confirmation */}
-      <ConfirmDialog
-        open={bulkApproveConfirm}
-        onClose={() => setBulkApproveConfirm(false)}
-        onConfirm={() => bulkApproveMutation.mutate(selectedIds)}
-        title={`Setujui ${selectedIds.length} Pendaftaran`}
-        description={`${selectedIds.length} pendaftaran akan disetujui sekaligus. Lanjutkan?`}
-        confirmText="Setujui Semua"
-        variant="info"
-      />
-
-      {/* Reject modal dengan text-area (gantikan native prompt) */}
-      {rejectTarget && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
-          onClick={(e) => { if (e.target === e.currentTarget) { setRejectTarget(null); setRejectReason(''); } }}
-          onKeyDown={(e) => { if (e.key === 'Escape') { setRejectTarget(null); setRejectReason(''); } }}
-        >
-          <div
-            className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl space-y-4"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="reject-title"
-          >
-            <div className="flex items-start justify-between">
+      <div className="mt-3 grid gap-2 md:grid-cols-3 xl:grid-cols-4">
+        {jenisCards.map((jenis) => {
+          const active = jenisKknId === jenis.id;
+          return <button key={jenis.id} type="button" onClick={() => setJenisKknId((current) => current === jenis.id ? '' : jenis.id)} className={`rounded-xl border p-3 text-left transition-all ${active ? 'border-teal-300 bg-teal-50 shadow-sm ring-2 ring-teal-100' : 'border-slate-200 bg-white hover:border-teal-200 hover:shadow-sm'}`}>
+            <div className="flex items-start justify-between gap-2">
               <div>
-                <h3 id="reject-title" className="font-black text-slate-900 text-lg">Tolak Pendaftaran</h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  {rejectTarget.mahasiswa?.nama ?? '-'} (NIM {rejectTarget.mahasiswa?.nim ?? '-'})
-                </p>
+                <h3 className="text-sm font-black text-slate-900">{jenis.name}</h3>
+                <p className="mt-1 text-[11px] font-semibold text-slate-500">{jenis.activePeriodCount} periode aktif</p>
               </div>
-              <button
-                type="button"
-                onClick={() => { setRejectTarget(null); setRejectReason(''); }}
-                aria-label="Tutup"
-                className="text-slate-500 hover:text-slate-700"
-              >
-                <X size={20} />
-              </button>
+              <span className={`rounded-lg px-2 py-1 text-[10px] font-black uppercase tracking-wide ${active ? 'bg-white text-teal-700 ring-1 ring-teal-200' : 'bg-slate-100 text-slate-600'}`}>{active ? 'Aktif' : 'Filter'}</span>
             </div>
-            <div>
-              <label htmlFor="reject-reason" className="text-[10px] font-black text-slate-500 uppercase">
-                Alasan Penolakan <span className="text-rose-600">*</span>
-              </label>
-              <textarea
-                id="reject-reason"
-                value={rejectReason}
-                onChange={(e) => setRejectReason(e.target.value)}
-                placeholder="Jelaskan alasan penolakan (akan terlihat oleh mahasiswa)..."
-                rows={4}
-                minLength={5}
-                maxLength={500}
-                className="w-full mt-1 bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm resize-none"
-                required
-              />
-              <p className="text-[10px] text-slate-400 mt-1">{rejectReason.length}/500 karakter (min 5)</p>
+            <div className="mt-3 flex gap-2 text-[11px] font-bold">
+              <span className="rounded-lg bg-slate-100 px-2 py-1 text-slate-700">Pendaftar {jenis.visibleRegistrationCount}</span>
+              <span className="rounded-lg bg-emerald-50 px-2 py-1 text-emerald-700">Review {jenis.visibleReviewableCount}</span>
             </div>
-            <div className="flex gap-3 justify-end">
-              <button
-                type="button"
-                onClick={() => { setRejectTarget(null); setRejectReason(''); }}
-                className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200"
-              >
-                Batal
-              </button>
-              <button
-                type="button"
-                onClick={submitReject}
-                disabled={rejectMutation.isPending || rejectReason.trim().length < 5}
-                className="px-4 py-2 bg-rose-600 text-white rounded-xl text-xs font-black hover:bg-rose-700 disabled:opacity-50"
-              >
-                {rejectMutation.isPending ? 'Menolak...' : 'Tolak'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+          </button>;
+        })}
+      </div>
+    </div>}
+    <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+      <div className="flex flex-wrap gap-3">
+        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari nama/NIM" className="h-10 w-60 rounded-xl border border-slate-200 px-4 text-sm font-bold" />
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className="h-10 rounded-xl border border-slate-200 px-4 text-sm font-bold"><option value="">Semua Status</option><option value="document_submitted">Dokumen Masuk</option><option value="pending">Belum Upload</option><option value="document_verified">Dokumen Terverifikasi</option><option value="approved">Disetujui</option><option value="rejected">Ditolak</option></select>
+        {selectedIds.length > 0 && <button onClick={() => setBulkApproveConfirm(true)} className="h-10 rounded-xl bg-emerald-600 px-4 text-xs font-black uppercase text-white">Setujui {selectedIds.length}</button>}
+      </div>
     </div>
-  );
+
+    {isLoading ? <div className="h-40 animate-pulse rounded-2xl bg-slate-200" /> : isError ? <div className="rounded-2xl bg-rose-50 p-6 text-center"><p className="font-bold text-rose-700">Gagal memuat data</p><button onClick={() => refetch()} className="mt-3 rounded-xl bg-rose-600 px-4 py-2 text-xs font-black text-white">Coba Lagi</button></div> : registrations.length === 0 ? <EmptyState icon={<ClipboardList size={48} />} title="Tidak ada data" /> : <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+      <div className="overflow-x-auto"><table className="min-w-full divide-y divide-slate-100 text-sm"><thead className="bg-slate-50 text-left text-xs font-black uppercase tracking-wide text-slate-500"><tr><th className="w-10 px-4 py-3"></th><th className="px-4 py-3">Mahasiswa</th><th className="px-4 py-3">Jenis/Periode</th><th className="px-4 py-3">Status</th><th className="px-4 py-3">Dokumen</th><th className="px-4 py-3 text-right">Aksi</th></tr></thead><tbody className="divide-y divide-slate-100">{registrations.map((r) => { const reviewable = REVIEWABLE.includes(r.status); return <tr key={r.id} className="align-top hover:bg-slate-50/60"><td className="px-4 py-4"><input type="checkbox" checked={selectedIds.includes(r.id)} disabled={!reviewable} onChange={() => toggleSelect(r)} className="h-4 w-4 disabled:opacity-30" /></td><td className="px-4 py-4"><p className="font-black text-slate-900">{r.mahasiswa?.nama || '-'}</p><p className="text-xs text-slate-500">{r.mahasiswa?.nim || '-'} • {r.mahasiswa?.fakultas?.nama || '-'}</p></td><td className="px-4 py-4"><p className="font-bold text-slate-700">{r.periode?.jenis_kkn?.name || '-'}</p><p className="text-xs text-slate-500">{r.periode?.name || '-'}</p></td><td className="px-4 py-4"><StatusBadge status={r.status || ''} /></td><td className="px-4 py-4"><DocumentSummaryCell summary={r.document_summary} /></td><td className="px-4 py-4"><div className="flex justify-end gap-2">{reviewable && <><button onClick={() => setApproveConfirm(r)} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-black text-white"><CheckCircle2 size={12} className="inline" /> Approve</button><button onClick={() => { setRejectTarget(r); setRejectReason(''); }} className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-black text-rose-700"><XCircle size={12} className="inline" /> Tolak</button></>}<Link href={`/admin/pendaftaran/${r.id}`} className="rounded-lg bg-slate-100 px-3 py-2 text-xs font-black text-slate-700"><Eye size={12} className="inline" /> Detail</Link></div></td></tr>; })}</tbody></table></div>
+    </div>}
+
+    {meta && (meta.last_page ?? 1) > 1 && <div className="flex items-center justify-between rounded-xl bg-white p-4 ring-1 ring-slate-200"><button disabled={page <= 1} onClick={() => setPage((n) => Math.max(1, n - 1))} className="rounded-lg px-3 py-2 text-xs font-bold ring-1 ring-slate-200 disabled:opacity-40">← Sebelumnya</button><span className="text-xs font-bold text-slate-500">Halaman {meta.current_page ?? page} / {meta.last_page} • Total {meta.total ?? '-'}</span><button disabled={page >= (meta.last_page ?? 1)} onClick={() => setPage((n) => n + 1)} className="rounded-lg px-3 py-2 text-xs font-bold ring-1 ring-slate-200 disabled:opacity-40">Berikutnya →</button></div>}
+    <ConfirmDialog open={approveConfirm !== null} onClose={() => setApproveConfirm(null)} onConfirm={() => approveConfirm && approveMutation.mutate(approveConfirm.id)} title="Approve pendaftaran?" description={approveConfirm?.mahasiswa?.nama || ''} confirmText="Approve" variant="info" />
+    <ConfirmDialog open={bulkApproveConfirm} onClose={() => setBulkApproveConfirm(false)} onConfirm={() => bulkApproveMutation.mutate(selectedIds)} title={`Approve ${selectedIds.length} data?`} description="Pastikan dokumen sudah lengkap." confirmText="Approve Semua" variant="info" />
+    {rejectTarget && <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4"><div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl"><h3 className="text-lg font-black">Tolak Pendaftaran</h3><p className="mt-1 text-xs text-slate-500">{rejectTarget.mahasiswa?.nama}</p><textarea value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} className="mt-4 h-28 w-full rounded-xl border border-slate-200 p-3 text-sm" placeholder="Alasan penolakan" /><div className="mt-4 flex justify-end gap-2"><button onClick={() => setRejectTarget(null)} className="rounded-xl px-4 py-2 text-sm font-bold ring-1 ring-slate-200">Batal</button><button onClick={submitReject} className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-black text-white">Tolak</button></div></div></div>}
+  </div>;
 }

@@ -29,6 +29,30 @@ class PesertaKknResource extends JsonResource
             'kelompok' => new KelompokKknResource($this->whenLoaded('kelompok')),
             'periode' => new PeriodeResource($this->whenLoaded('periode')),
             'documents' => DokumenPesertaResource::collection($this->whenLoaded('dokumen')),
+            'document_summary' => $this->when($this->relationLoaded('dokumen') && $this->relationLoaded('periode'), function () {
+                $requirements = app(\App\Services\KKN\RegistrationDocumentService::class)->requirementsForPeriod($this->periode);
+                $uploaded = $this->dokumen->keyBy('document_type');
+                $items = collect($requirements)->map(function (array $requirement) use ($uploaded) {
+                    $field = (string) $requirement['field'];
+                    $doc = $uploaded->get($field);
+
+                    return [
+                        'field' => $field,
+                        'label' => $requirement['label'] ?? $field,
+                        'required' => (bool) ($requirement['required'] ?? false),
+                        'uploaded' => (bool) $doc,
+                        'file_name' => $doc?->file_name,
+                        'is_verified' => (bool) ($doc?->is_verified ?? false),
+                    ];
+                })->values();
+
+                return [
+                    'uploaded_count' => $items->where('uploaded', true)->count(),
+                    'required_count' => $items->where('required', true)->count(),
+                    'missing_required_count' => $items->where('required', true)->where('uploaded', false)->count(),
+                    'items' => $items->all(),
+                ];
+            }),
         ];
     }
 }

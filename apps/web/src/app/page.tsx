@@ -2,7 +2,7 @@ import { Metadata } from 'next';
 import { fetchApi } from '@/lib/server-api';
 import { Navbar } from '@/components/public/navbar';
 import { Footer } from '@/components/public/footer';
-import { HeroTitle } from '@/components/public/hero-title';
+import { HeroSection } from '@/components/countdown/hero-section';
 import { Showcase3D, HomeContent } from '@/components/public/lazy';
 import { LandingMapPreview } from '@/components/public/landing-map-preview';
 
@@ -100,7 +100,7 @@ export default async function LandingPage() {
 
         <div className="relative z-10 flex h-screen min-h-[100svh] items-center justify-center px-6 pb-16 pt-24 sm:pt-28 lg:px-8">
           <div className="mx-auto max-w-4xl text-center">
-            <HeroTitle 
+            <HeroSection 
               title="SIBERMAS" 
               subtitle={
                 <p className="mx-auto max-w-2xl text-base font-medium leading-relaxed text-slate-100 sm:text-lg drop-shadow-lg">
@@ -112,6 +112,7 @@ export default async function LandingPage() {
           </div>
         </div>
       </section>
+
 
       {/* --- 3D Showcase Section --- */}
       <Showcase3D />

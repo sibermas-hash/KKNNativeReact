@@ -22,6 +22,7 @@ class PesertaKkn extends Model
     protected $fillable = [
         'mahasiswa_id',
         'periode_id',
+        'statement_agreement_id',
         'kelompok_id',
         'status',
         'role',
@@ -69,6 +70,11 @@ class PesertaKkn extends Model
     public function kelompok(): BelongsTo
     {
         return $this->belongsTo(KelompokKkn::class, 'kelompok_id');
+    }
+
+    public function statementAgreement(): BelongsTo
+    {
+        return $this->belongsTo(KknStatementAgreement::class, 'statement_agreement_id');
     }
 
     public function dokumen(): HasMany

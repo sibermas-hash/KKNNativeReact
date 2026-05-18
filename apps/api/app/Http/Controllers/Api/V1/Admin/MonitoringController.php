@@ -32,10 +32,9 @@ class MonitoringController extends Controller
 
     public function overview(Request $request): JsonResponse
     {
-        // Reuse HealthController::detailed() logic via dependency call
+        // Use a sanitized, read-only health snapshot for the admin monitoring UI.
         $healthController = app(HealthController::class);
-        $healthResponse = $healthController->detailed();
-        $healthData = json_decode($healthResponse->getContent() ?: '{}', true) ?: [];
+        $healthData = $healthController->monitoringSnapshot();
 
         // Queue stats (best-effort)
         $queue = [
@@ -74,10 +73,7 @@ class MonitoringController extends Controller
                 'recent_alerts' => $recentDedupKeys,
             ],
             'server' => [
-                'hostname' => gethostname(),
-                'php_version' => PHP_VERSION,
                 'app_version' => config('app.version', '4.0.0'),
-                'environment' => config('app.env'),
             ],
         ]);
     }
@@ -129,13 +125,13 @@ class MonitoringController extends Controller
             // failed_jobs table may not exist
         }
 
-        // Sort newest first
-        usort($alerts, fn ($a, $b) => strcmp($b['last_sent_at'] ?? '', $a['last_sent_at'] ?? ''));
+        // Sort newest first after normalizing mixed timestamp formats.
+        usort(
+            $alerts,
+            fn ($a, $b) => $this->toUnixTimestamp($b['last_sent_at'] ?? null) <=> $this->toUnixTimestamp($a['last_sent_at'] ?? null)
+        );
 
-        return response()->json([
-            'success' => true,
-            'data' => array_values($alerts),
-        ]);
+        return $this->success(array_values($alerts));
     }
 
     /**
@@ -146,13 +142,32 @@ class MonitoringController extends Controller
         $exitCode = Artisan::call('monitoring:health-check');
         $output = Artisan::output();
 
-        return response()->json([
-            'success' => $exitCode === 0,
-            'data' => [
-                'exit_code' => $exitCode,
-                'output' => trim($output),
-                'checked_at' => now()->toIso8601String(),
-            ],
-        ]);
+        $payload = [
+            'exit_code' => $exitCode,
+            'output' => trim($output),
+            'checked_at' => now()->toIso8601String(),
+        ];
+
+        if ($exitCode === 0) {
+            return $this->success($payload, 'Health check berhasil dijalankan.');
+        }
+
+        return $this->error(
+            'HEALTH_CHECK_FAILED',
+            'Health check mendeteksi masalah atau gagal mengirim alert. Cek log server / Telegram.',
+            503,
+            ['output' => [$payload['output']]]
+        );
+    }
+
+    private function toUnixTimestamp(mixed $value): int
+    {
+        if (! is_string($value) || trim($value) === '') {
+            return 0;
+        }
+
+        $timestamp = strtotime($value);
+
+        return $timestamp === false ? 0 : $timestamp;
     }
 }

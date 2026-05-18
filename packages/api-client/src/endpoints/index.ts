@@ -22,7 +22,7 @@ export function studentEndpoints(client: AxiosInstance) {
       form: () => client.get('/student/registration/form'),
       store: (data: { periode_id: number; jenis_kkn_id?: number }) => client.post('/student/registration', data),
       status: () => client.get('/student/registration/status'),
-      leave: (periodeId: number) => client.delete(`/student/registration/${periodeId}`),
+      leave: (periodeId: number) => client.post(`/student/registration/${periodeId}/leave`, {}),
     },
     kknDaftar: {
       index: () => client.get('/student/kkn-daftar'),
@@ -67,7 +67,7 @@ export function studentEndpoints(client: AxiosInstance) {
     notificationShown: (id: number) => client.patch(`/student/peserta-kkn/${id}/notification-shown`),
     // GAP-1: document upload for registration
     documents: (periodeId: number, data: FormData) =>
-      client.post(`/student/registration/${periodeId}/documents`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+      client.post(`/student/registration/${periodeId}/documents`, data),
     // GAP-3: posko
     posko: {
       show: () => client.get('/student/posko'),
@@ -210,6 +210,7 @@ export function adminEndpoints(client: AxiosInstance) {
       assignGroup: (id: number, data: { kelompok_id: number }) => client.patch(`/admin/pendaftaran/${id}/assign-group`, data),
       bulkApprove: (ids: number[]) => client.post('/admin/pendaftaran/bulk-approve', { ids }),
       bulkReject: (ids: number[], reason: string) => client.post('/admin/pendaftaran/bulk-reject', { ids, rejection_reason: reason }),
+      downloadDocument: (path: string) => client.get('/admin/pendaftaran/berkas/unduh', { params: { path }, responseType: 'blob' }),
     },
 
     groups: {

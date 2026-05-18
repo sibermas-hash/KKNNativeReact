@@ -48,7 +48,7 @@ class KknDaftarController extends Controller
             ->with(['jenisKkn', 'tahunAkademik'])
             ->orderByDesc('registration_start')
             ->get()
-            ->map(function ($p) use ($mahasiswa, $hasRegistered) {
+            ->map(function ($p) use ($mahasiswa, $hasRegistered, $existingRegistration) {
                 // Route submit registration dikunci middleware phase:registration.
                 // Jangan tampilkan can_register=true pada placement karena user
                 // akan klik daftar lalu pasti gagal 403 PHASE_BLOCKED.
@@ -68,10 +68,18 @@ class KknDaftarController extends Controller
                         'name' => $p->jenisKkn?->name,
                         'code' => $p->jenisKkn?->code,
                         'description' => $p->jenisKkn?->description,
+                        'registration_mode' => $p->jenisKkn?->registration_mode,
+                        'registration_mode_label' => $p->jenisKkn?->registrationModeLabel(),
+                        'placement_mode' => $p->jenisKkn?->placement_mode,
+                        'placement_mode_label' => $p->jenisKkn?->placementModeLabel(),
                     ],
                     'requirements' => [
                         'config' => $p->jenisKkn?->requirements_config ?? [],
-                        'documents' => collect($documentRequirements)->pluck('label')->values()->all(),
+                        'documents' => collect($documentRequirements)->map(fn (array $requirement) => [
+                            'field' => (string) ($requirement['field'] ?? ''),
+                            'label' => (string) ($requirement['label'] ?? $requirement['field'] ?? 'Dokumen'),
+                            'required' => (bool) ($requirement['required'] ?? false),
+                        ])->values()->all(),
                     ],
                     'registration_start' => $p->registration_start?->format('d/m/Y'),
                     'registration_end' => $p->registration_end?->format('d/m/Y'),
@@ -198,24 +206,24 @@ class KknDaftarController extends Controller
         if (! $mahasiswa) {
             return [
                 'sks_completed' => 0,
-                'semester' => 0,
                 'gpa' => 0,
                 'bta_ppi_passed' => false,
-                'ukt_paid' => false,
                 'has_health_certificate' => false,
                 'has_parent_permission' => false,
+                'semester' => null,
+                'ukt_paid' => null,
                 'thresholds' => $this->globalEligibilityThresholds(),
             ];
         }
 
         return [
             'sks_completed' => $mahasiswa->sks_completed,
-            'semester' => $mahasiswa->semester,
             'gpa' => $mahasiswa->gpa,
             'bta_ppi_passed' => in_array(strtoupper(trim($mahasiswa->status_bta_ppi ?? '')), ['LULUS', 'PASSED', 'SUCCESS']),
-            'ukt_paid' => (bool) $mahasiswa->is_paid_ukt,
             'has_health_certificate' => ! empty($mahasiswa->health_certificate_path),
             'has_parent_permission' => ! empty($mahasiswa->parent_permission_path),
+            'semester' => $mahasiswa->semester !== null ? (int) $mahasiswa->semester : null,
+            'ukt_paid' => $mahasiswa->is_paid_ukt !== null ? (bool) $mahasiswa->is_paid_ukt : null,
             // R11 audit fix: kirim threshold ke frontend supaya tidak hardcoded.
             'thresholds' => $this->globalEligibilityThresholds(),
         ];
@@ -231,8 +239,8 @@ class KknDaftarController extends Controller
     {
         return [
             'min_sks' => (int) SystemSetting::get('eligibility_min_sks', '100'),
-            'min_semester' => (int) SystemSetting::get('min_semester_registration', '6'),
             'min_gpa' => (float) SystemSetting::get('eligibility_min_gpa', '2.0'),
+            'min_semester' => (int) SystemSetting::get('eligibility_min_semester', '6'),
         ];
     }
 }

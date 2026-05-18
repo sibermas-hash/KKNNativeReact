@@ -45,8 +45,8 @@ class Periode extends Model
         return [
             'start_date' => 'date',
             'end_date' => 'date',
-            'registration_start' => 'date',
-            'registration_end' => 'date',
+            'registration_start' => 'datetime',
+            'registration_end' => 'datetime',
             'grading_start' => 'date',
             'grading_end' => 'date',
             'is_active' => 'boolean',
@@ -186,11 +186,16 @@ class Periode extends Model
 
     public function usesSelfServiceRegistration(): bool
     {
+        // Allow self-service if periode itself has open registration_mode,
+        // OR if jenisKkn has open registration_mode (legacy check).
+        if ($this->registration_mode === self::REGISTRATION_MODE_OPEN) {
+            return true;
+        }
+
         $jenisKkn = $this->jenisKkn;
 
         return $jenisKkn
             ? $jenisKkn->registration_mode === self::REGISTRATION_MODE_OPEN
-                && $jenisKkn->placement_mode === self::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL
             : false;
     }
 

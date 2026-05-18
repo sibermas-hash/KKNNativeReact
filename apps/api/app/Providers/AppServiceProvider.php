@@ -211,7 +211,7 @@ class AppServiceProvider extends ServiceProvider
             if (! $user) {
                 // Fallback for routes that accidentally end up here without
                 // auth (shouldn't happen, but a safe default). Treat as guest.
-                return Limit::perMinute(30)->by('guest:'.$request->ip());
+                return Limit::perMinute(200)->by('guest:'.$request->ip());
             }
 
             $key = 'user:'.$user->id;
@@ -231,12 +231,12 @@ class AppServiceProvider extends ServiceProvider
             }
 
             if ($user->hasRole('student')) {
-                return Limit::perMinute(60)->by($key);
+                return Limit::perMinute(300)->by($key);
             }
 
             // Unknown role — treat as guest to avoid granting unintended
             // throughput to accounts with no role.
-            return Limit::perMinute(30)->by($key);
+            return Limit::perMinute(200)->by($key);
         });
 
         // Destructive bulk operations (bulk-approve, mass-finalize, etc.).
@@ -248,7 +248,7 @@ class AppServiceProvider extends ServiceProvider
             // Superadmin keeps a (still-bounded) higher allowance for legit
             // seasonal bulk work; others get 5/min.
             if ($user && $user->hasRole('superadmin')) {
-                return Limit::perMinute(30)->by($key);
+                return Limit::perMinute(200)->by($key);
             }
 
             return Limit::perMinute(5)->by($key);

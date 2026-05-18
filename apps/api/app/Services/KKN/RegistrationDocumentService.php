@@ -131,14 +131,12 @@ class RegistrationDocumentService
 
         foreach ($this->requirementsForPeriod($period) as $requirement) {
             $field = (string) $requirement['field'];
-            $alreadyUploaded = (bool) ($existing[$field]['exists'] ?? false);
-
+            $alreadyUploaded = $registration?->status === 'rejected' ? false : (bool) ($existing[$field]['exists'] ?? false);
             $rules[$field] = [
                 $requirement['required'] && ! $alreadyUploaded ? 'required' : 'nullable',
                 'file',
-                'mimes:pdf,jpg,jpeg,png',
-                'mimetypes:application/pdf,image/jpeg,image/png',
-                'max:2048',
+                'mimes:pdf',
+                'max:5120',
             ];
         }
 
@@ -150,8 +148,9 @@ class RegistrationDocumentService
         Mahasiswa $mahasiswa,
         Periode $period,
         PesertaKkn $registration
-    ): void {
+    ): int {
         $existing = $this->existingDocuments($mahasiswa, $period, $registration);
+        $uploadedCount = 0;
 
         foreach ($this->requirementsForPeriod($period) as $requirement) {
             $field = (string) $requirement['field'];
@@ -191,7 +190,28 @@ class RegistrationDocumentService
                 'archived_by' => null,
             ]);
             $document->save();
+            $uploadedCount++;
         }
+
+        return $uploadedCount;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    public function uploadedDocumentFields(Request $request, Periode $period): array
+    {
+        $uploadedFields = [];
+
+        foreach ($this->requirementsForPeriod($period) as $requirement) {
+            $field = (string) $requirement['field'];
+
+            if ($request->hasFile($field) || $request->hasFile("dynamic_files.{$field}")) {
+                $uploadedFields[] = $field;
+            }
+        }
+
+        return $uploadedFields;
     }
 
     /**

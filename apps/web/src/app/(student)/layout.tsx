@@ -65,11 +65,11 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     if (!isAuthenticated) { router.replace('/login'); return; }
     if (user) {
       if (!user.password_changed_at) { router.replace('/ganti-password'); return; }
-      if ((!user.profile_complete || user.must_change_password) && !isProfilePage) { router.replace('/profil'); return; }
+      if (user.must_change_password && !isProfilePage) { router.replace('/profil'); return; }
       if (isProfilePage) return;
       if (!user.roles?.includes('student')) { router.replace('/'); return; }
       if (!isPhaseAllowed && currentNavItem) {
-        router.replace(`/phase-blocked?phase=${encodeURIComponent(currentPhase || 'pre_registration')}&required=${encodeURIComponent(currentNavItem.phases?.join(',') || '')}`);
+        router.replace(`/phase-blocked?phase=${encodeURIComponent(currentPhase || 'upcoming')}&required=${encodeURIComponent(currentNavItem.phases?.join(',') || '')}`);
       }
     }
   }, [isLoading, isAuthenticated, isProfilePage, user, router, isPhaseAllowed, currentNavItem, currentPhase]);

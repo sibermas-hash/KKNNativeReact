@@ -107,10 +107,11 @@ class RegistrationDocumentService
             $legacyPath = $this->legacyDocumentPath($mahasiswa, (string) $requirement['field']);
 
             $filePath = $documentRow?->file_path ?? $legacyPath;
+            $fileExists = filled($filePath) && Storage::disk(config('filesystems.default'))->exists($filePath);
             $existing[(string) $requirement['field']] = [
-                'exists' => filled($filePath),
-                'file_name' => $documentRow?->file_name ?? ($legacyPath ? basename($legacyPath) : null),
-                'file_path' => $filePath,
+                'exists' => $fileExists,
+                'file_name' => $fileExists ? ($documentRow?->file_name ?? ($legacyPath ? basename($legacyPath) : null)) : null,
+                'file_path' => $fileExists ? $filePath : null,
                 'status' => $documentRow?->status,
             ];
         }
@@ -136,6 +137,7 @@ class RegistrationDocumentService
                 $requirement['required'] && ! $alreadyUploaded ? 'required' : 'nullable',
                 'file',
                 'mimes:pdf',
+                'mimetypes:application/pdf',
                 'max:5120',
             ];
         }

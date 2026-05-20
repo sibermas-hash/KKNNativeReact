@@ -57,6 +57,7 @@ export default function StudentDashboard(): React.JSX.Element {
   const isPending = normalizedStatus === 'pending';
   const isRejected = normalizedStatus === 'rejected';
   const isGroupPinned = isApproved && !!group;
+  const isApprovedWithoutGroup = isApproved && !group;
   const showKknTools = isApproved || isCompleted;
 
   const groupName = (group?.name as string) || 'Belum Ditentukan';
@@ -64,7 +65,7 @@ export default function StudentDashboard(): React.JSX.Element {
   const dplName = ((group?.lecturer as Record<string, unknown>)?.name as string) || 'Belum Ditentukan';
   const leader = group?.leader as { name?: string; is_self?: boolean } | null | undefined;
   const leaderName = leader?.name ? (leader.is_self ? `${leader.name} (Anda)` : leader.name) : 'Sedang Ditentukan';
-  const periodName = (activePeriod?.name as string) || 'Periode KKN';
+  const periodName = ((registration?.period as { name?: string } | null | undefined)?.name as string) || (activePeriod?.name as string) || 'Periode KKN';
   // REGULER-005 fix: jenis KKN dari response dashboard (periode.jenis_*)
   const periodData = registration?.period as { jenis?: string; jenis_code?: string; jenis_color?: string } | null | undefined;
   const jenisKknLabel = periodData?.jenis || '';
@@ -222,7 +223,7 @@ export default function StudentDashboard(): React.JSX.Element {
           {/* MAIN */}
           <div className="lg:col-span-8 space-y-6">
             {/* PROGRESS */}
-            {showKknTools && <div className="bg-white ring-1 ring-slate-200 rounded-xl p-6 shadow-sm overflow-hidden relative">
+            {showKknTools && group && <div className="bg-white ring-1 ring-slate-200 rounded-xl p-6 shadow-sm overflow-hidden relative">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
                   <Target size={16} className="text-emerald-600" /> Milestone Pengabdian
@@ -248,8 +249,30 @@ export default function StudentDashboard(): React.JSX.Element {
               </div>
             </div>}
 
+            {isApprovedWithoutGroup && (
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white">
+                    <ShieldCheck size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black uppercase tracking-widest text-emerald-900">Pendaftaran Disetujui</h3>
+                    <p className="mt-2 text-sm font-semibold leading-relaxed text-emerald-800">
+                      Selamat, pendaftaran KKN Anda sudah disetujui. Penempatan kelompok, lokasi, dan DPL masih menunggu pengaturan panitia.
+                    </p>
+                    <p className="mt-2 text-xs font-medium text-emerald-700">
+                      Fitur seperti Posko, Logbook, Program Kerja, Laporan Akhir, dan Sertifikat akan aktif setelah penempatan/fase terkait dibuka.
+                    </p>
+                    <Link href="/mahasiswa/cek-pendaftaran" className="mt-4 inline-flex rounded-lg bg-emerald-600 px-4 py-2 text-xs font-black uppercase tracking-wider text-white hover:bg-emerald-700">
+                      Lihat Detail Status
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* STATS */}
-            {showKknTools && <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {showKknTools && group && <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-white ring-1 ring-slate-200 rounded-xl p-5 flex items-center gap-5 shadow-sm">
                 <div className="h-12 w-12 rounded-lg flex items-center justify-center shrink-0 bg-emerald-50 text-emerald-600">
                   <ClipboardList size={24} />
@@ -350,9 +373,9 @@ export default function StudentDashboard(): React.JSX.Element {
               <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
                 <LayoutGrid size={16} className="text-emerald-600" /> Menu Navigasi
               </h3>
-              {!showKknTools ? (
+              {(!showKknTools || isApprovedWithoutGroup) ? (
                 <div className="rounded-lg border border-amber-100 bg-amber-50 p-4 text-xs font-semibold text-amber-800">
-                  Fitur KKN seperti Logbook, Program Kerja, Posko, Laporan Akhir, dan Sertifikat akan dibuka setelah pendaftaran disetujui dan fase sesuai.
+                  {isApprovedWithoutGroup ? 'Pendaftaran Anda sudah disetujui. Menu KKN akan dibuka setelah kelompok/lokasi ditetapkan panitia.' : 'Fitur KKN seperti Logbook, Program Kerja, Posko, Laporan Akhir, dan Sertifikat akan dibuka setelah pendaftaran disetujui dan fase sesuai.'}
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Link href={registration ? '/mahasiswa/cek-pendaftaran' : '/mahasiswa/pendaftaran'} className="rounded-lg bg-amber-600 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-white hover:bg-amber-700">{registration ? 'Cek Status' : 'Daftar KKN'}</Link>
                     <Link href="/profil" className="rounded-lg bg-white px-3 py-2 text-[10px] font-black uppercase tracking-wider text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100">Lengkapi Profil</Link>

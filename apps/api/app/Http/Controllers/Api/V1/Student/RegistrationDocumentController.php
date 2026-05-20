@@ -28,6 +28,15 @@ class RegistrationDocumentController extends Controller
     public function store(Request $request, int $id): JsonResponse
     {
         $user = auth()->user();
+        logger()->info('student.documents.upload.received', [
+            'user_id' => $user?->id,
+            'route_id' => $id,
+            'method' => $request->method(),
+            'content_type' => $request->headers->get('content-type'),
+            'content_length' => $request->headers->get('content-length'),
+            'file_keys' => array_keys($request->allFiles()),
+            'files' => $this->uploadedFileDebug($request->allFiles()),
+        ]);
         $mahasiswa = $user->mahasiswa;
 
         if (! $mahasiswa) {
@@ -125,7 +134,7 @@ class RegistrationDocumentController extends Controller
             $registration->update($updateData);
         }
 
-        return $this->noContent('Dokumen berhasil diunggah.');
+        return $this->success(['uploaded_count' => $uploadedCount], 'Dokumen berhasil diunggah.');
     }
 
     private function normalizeUploadedDocumentFiles(Request $request, Periode $periode): void
@@ -222,6 +231,42 @@ class RegistrationDocumentController extends Controller
         return $debug;
     }
 
+    public function viewDocument(Request $request, int $id, string $documentKey): StreamedResponse|JsonResponse
+    {
+        $user = $request->user();
+        $mahasiswa = $user?->mahasiswa;
+
+        if (! $mahasiswa) {
+            return $this->forbidden();
+        }
+
+        $registration = PesertaKkn::with(['periode.jenisKkn', 'dokumen'])
+            ->where('mahasiswa_id', $mahasiswa->id)
+            ->where(function ($query) use ($id) {
+                $query->where('id', $id)->orWhere('periode_id', $id);
+            })
+            ->first();
+
+        if (! $registration || ! $registration->periode) {
+            return $this->notFound('Pendaftaran tidak ditemukan.');
+        }
+
+        $requirements = $this->documentService->requirementsForPeriod($registration->periode);
+        $allowedKeys = collect($requirements)->map(fn (array $r) => (string) ($r['document_type'] ?? $r['field'] ?? ''))->filter()->values();
+
+        $document = $registration->dokumen
+            ->first(fn ($doc) => (string) $doc->id === $documentKey || (string) $doc->document_type === $documentKey);
+
+        if (! $document || ! $allowedKeys->contains((string) $document->document_type)) {
+            return $this->notFound('Dokumen tidak ditemukan.');
+        }
+
+        if (blank($document->file_path) || ! Storage::disk(config('filesystems.default'))->exists($document->file_path)) {
+            return $this->notFound('File dokumen tidak ditemukan.');
+        }
+
+        return Storage::disk(config('filesystems.default'))->download($document->file_path, $document->file_name ?: basename($document->file_path));
+    }
     public function downloadTemplate(Request $request, int $id, string $documentKey): StreamedResponse|JsonResponse
     {
         $user = $request->user();

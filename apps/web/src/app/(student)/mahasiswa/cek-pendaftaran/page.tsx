@@ -31,6 +31,7 @@ type Registration = {
   kelompok: { id: number; nama_kelompok: string; code?: string; location?: { full_name?: string } } | null;
   dokumen?: UploadedDoc[];
   document_summary?: { required_count?: number; uploaded_count?: number; missing_labels?: string[]; flags?: Record<string, boolean> };
+  requires_interview?: boolean;
 };
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: typeof Clock }> = {
@@ -61,6 +62,7 @@ function RegistrationCard({ reg, onCancel, isCancelling }: { reg: Registration; 
   const isPending = reg.status === 'pending';
   const isDocSubmitted = reg.status === 'document_submitted';
   const isApproved = reg.status === 'approved';
+  const requiresInterview = reg.requires_interview === true;
   const canResubmit = isRejected;
   const canCancel = (isPending || isDocSubmitted) && !reg.kelompok_id;
 
@@ -120,6 +122,21 @@ function RegistrationCard({ reg, onCancel, isCancelling }: { reg: Registration; 
           </div>
         )}
 
+        {/* Interview Notice */}
+        {requiresInterview && (isPending || isDocSubmitted || isApproved) && (
+          <div className="rounded-xl bg-blue-50 p-4 ring-1 ring-blue-100">
+            <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-blue-700">
+              <Calendar size={12} /> Program ini memiliki tahap wawancara
+            </p>
+            <p className="mt-1 text-sm font-semibold text-blue-900">
+              Pendaftaran Anda masuk alur seleksi wawancara. Jadwal wawancara akan diinformasikan oleh panitia.
+            </p>
+            <p className="mt-1 text-xs text-blue-700">
+              Pantau halaman ini secara berkala. Setelah jadwal dibuat, informasi tanggal, jam, dan lokasi/link akan ditampilkan di sini.
+            </p>
+          </div>
+        )}
+
         {/* Pending/DocSubmitted Info */}
         {(isPending || isDocSubmitted) && (
           <div className="rounded-xl bg-amber-50 p-4 ring-1 ring-amber-100">
@@ -160,7 +177,7 @@ function RegistrationCard({ reg, onCancel, isCancelling }: { reg: Registration; 
               <CheckCircle2 size={12} /> Pendaftaran Disetujui
             </p>
             <p className="mt-1 text-sm text-emerald-800">
-              Selamat! Pendaftaran KKN Anda telah disetujui. {reg.kelompok ? 'Anda sudah ditempatkan di kelompok.' : 'Penempatan kelompok akan segera diproses.'}
+              Selamat! Pendaftaran KKN Anda telah disetujui. {requiresInterview ? 'Tahap berikutnya adalah menunggu jadwal/hasil wawancara dari panitia.' : (reg.kelompok ? 'Anda sudah ditempatkan di kelompok.' : 'Penempatan kelompok akan segera diproses.')}
             </p>
           </div>
         )}

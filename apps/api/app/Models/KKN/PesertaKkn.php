@@ -131,4 +131,8 @@ class PesertaKkn extends Model
             }
         });
     }
+    public function interviewParticipants(): HasMany
+    {
+        return $this->hasMany(\App\Models\KKN\InterviewParticipant::class, 'peserta_kkn_id');
+    }
 }

@@ -1,5 +1,7 @@
 'use client';
 
+import { WorkflowGate } from '@/components/kkn/workflow-gate';
+
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@sibermas/constants';
@@ -66,6 +68,8 @@ export default function MahasiswaRekapitulasiPage(): React.JSX.Element {
   if (isLoading) return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" /></div>;
 
   return (
+    <WorkflowGate capability="ready_for_activity" title="Rekapitulasi Belum Dibuka">
+
     <div className="max-w-[1200px] mx-auto px-4 py-10 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -171,5 +175,6 @@ export default function MahasiswaRekapitulasiPage(): React.JSX.Element {
         </div>
       )}
     </div>
+    </WorkflowGate>
   );
 }

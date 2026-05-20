@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\V1\Student\RegistrationDocumentController;
 use App\Http\Controllers\Api\V1\Student\RekapitulasiController;
 use App\Http\Controllers\Api\V1\Student\WorkProgramController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\V1\Student\WorkflowStatusController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,13 +34,15 @@ Route::prefix('student')
     ->group(function () {
 
         // ─── SELALU TERSEDIA ─────────────────────────────────────────
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('api.v1.student.dashboard');
+        Route::get('/workflow-status', WorkflowStatusController::class);
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('api.v1.student.dashboard');
         Route::patch('/peserta-kkn/{pesertaKkn}/notification-shown', [DashboardController::class, 'markNotificationShown'])->name('api.v1.student.notification-shown');
 
         Route::get('/registration/status', [RegistrationController::class, 'status'])->name('api.v1.student.registration.status');
         Route::get('/registration/form', [RegistrationController::class, 'form'])->name('api.v1.student.registration.form');
         Route::delete('/registration/{periode}', [RegistrationController::class, 'leave'])->name('api.v1.student.registration.leave');
         Route::post('/registration/{periode}/leave', [RegistrationController::class, 'leave'])->name('api.v1.student.registration.leave.post');
+        Route::post('/registration/{periode}/confirm-alternative', [RegistrationController::class, 'confirmAlternative'])->name('api.v1.student.registration.confirm-alternative');
 
         // Halaman pemilihan periode KKN
         Route::get('/kkn-daftar', [KknDaftarController::class, 'index'])->name('api.v1.student.kkn-daftar');
@@ -69,6 +72,7 @@ Route::prefix('student')
         Route::middleware('phase:registration,placement')->group(function () {
             Route::post('/registration/{id}/documents', [RegistrationDocumentController::class, 'store'])->name('api.v1.student.registration.documents');
             Route::get('/registration/{id}/documents/{documentKey}/template', [RegistrationDocumentController::class, 'downloadTemplate'])->name('api.v1.student.registration.documents.template');
+            Route::get('/registration/{id}/documents/{documentKey}/view', [RegistrationDocumentController::class, 'viewDocument'])->name('api.v1.student.registration.documents.view');
         });
 
         // ─── FASE: PELAKSANAAN ────────────────────────────────────────

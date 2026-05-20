@@ -6,7 +6,7 @@ import { rawApi } from '@/lib/api';
 import Link from 'next/link';
 import { useState } from 'react';
 import { PageHeader } from '@/components/ui/shared';
-import { ClipboardList, ShieldAlert, Shield, ShieldCheck, X } from 'lucide-react';
+import { ClipboardList, ShieldAlert, Shield, ShieldCheck, X, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
 type Severity = '' | 'low' | 'medium' | 'high';
 
@@ -32,6 +32,19 @@ const SEVERITY_META: Record<Exclude<Severity, ''>, { label: string; icon: typeof
   medium: { label: 'Medium', icon: ShieldCheck,  cls: 'bg-amber-100 text-amber-700' },
   high:   { label: 'High',   icon: ShieldAlert,  cls: 'bg-rose-100 text-rose-700' },
 };
+
+
+function pageWindow(current: number, last: number): Array<number | 'dots'> {
+  if (last <= 7) return Array.from({ length: last }, (_, i) => i + 1);
+  const pages = new Set<number>([1, 2, last - 1, last, current - 1, current, current + 1]);
+  const sorted = [...pages].filter((n) => n >= 1 && n <= last).sort((a, b) => a - b);
+  const out: Array<number | 'dots'> = [];
+  for (let i = 0; i < sorted.length; i += 1) {
+    if (i > 0 && sorted[i] - sorted[i - 1] > 1) out.push('dots');
+    out.push(sorted[i]);
+  }
+  return out;
+}
 
 export default function AuditLogPage(): React.JSX.Element {
   const [severity, setSeverity] = useState<Severity>('');
@@ -202,23 +215,18 @@ export default function AuditLogPage(): React.JSX.Element {
       )}
 
       {/* Pagination */}
-      {meta.last_page && meta.last_page > 1 && (
-        <div className="flex flex-wrap justify-center gap-2">
-          {Array.from({ length: meta.last_page }, (_, i) => i + 1).slice(0, 20).map((p) => (
-            <button
-              key={p}
-              onClick={() => setPage(p)}
-              className={`h-8 w-8 rounded-lg text-sm font-semibold transition-colors ${
-                page === p
-                  ? 'bg-cyan-600 text-white'
-                  : 'border border-slate-200 text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              {p}
-            </button>
-          ))}
+      {meta.last_page && meta.last_page > 1 && (() => { const lp = meta.last_page; const cp = meta.current_page ?? page; const pgs = pageWindow(cp, lp); return (
+        <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 lg:flex-row lg:items-center lg:justify-between">
+          <p className="text-xs font-semibold text-slate-500">Halaman <b className="text-slate-800">{cp}</b> dari <b className="text-slate-800">{lp}</b> &middot; <b className="text-slate-800">{(meta.total ?? 0).toLocaleString('id-ID')}</b> log</p>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <button onClick={() => setPage(1)} disabled={cp <= 1} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40"><ChevronsLeft className="h-4 w-4" /></button>
+            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={cp <= 1} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40"><ChevronLeft className="h-4 w-4" /></button>
+            {pgs.map((item, idx) => item === 'dots' ? <span key={`dots-${idx}`} className="px-1 text-xs font-black text-slate-400">&hellip;</span> : <button key={item} onClick={() => setPage(item as number)} className={`h-9 min-w-9 rounded-xl px-3 text-xs font-black transition ${cp === item ? 'bg-slate-900 text-white shadow-sm' : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'}`}>{item}</button>)}
+            <button onClick={() => setPage((p) => Math.min(lp, p + 1))} disabled={cp >= lp} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40"><ChevronRight className="h-4 w-4" /></button>
+            <button onClick={() => setPage(lp)} disabled={cp >= lp} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40"><ChevronsRight className="h-4 w-4" /></button>
+          </div>
         </div>
-      )}
+      ); })()}
     </div>
   );
 }

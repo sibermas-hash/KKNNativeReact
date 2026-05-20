@@ -1,5 +1,7 @@
 'use client';
 
+import { WorkflowGate } from '@/components/kkn/workflow-gate';
+
 import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@sibermas/constants';
 import { studentApi } from '@/lib/api';
@@ -18,6 +20,7 @@ export default function CertificatesPage(): React.JSX.Element {
   const certificates = (data?.certificates as Record<string, unknown>[]) || [];
 
   return (
+    <WorkflowGate capability="generate_certificate" title="Sertifikat Belum Dibuka">
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       <div className="flex items-center gap-4">
         <div className="h-14 w-14 bg-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg"><GraduationCap size={28} /></div>
@@ -89,5 +92,6 @@ const res = await studentApi.certificates.download(Number(c.id));
         </>
       )}
     </div>
+    </WorkflowGate>
   );
 }

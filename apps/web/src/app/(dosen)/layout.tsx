@@ -34,7 +34,6 @@ const NAV_ITEMS: DosenNavItem[] = [
   { href: '/dosen/umpan-balik-peserta', label: 'Feedback Peserta', icon: Star, dplOnly: true, phases: ['grading', 'finished'] },
   { href: '/dosen/workshops', label: 'Workshop', icon: GraduationCap },
   { href: '/dosen/daftar-dpl', label: 'Daftar DPL', icon: UserCircle },
-  { href: '/profil', label: 'Profil', icon: UserCircle },
 ];
 
 export default function DosenLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
@@ -79,6 +78,9 @@ export default function DosenLayout({ children }: { children: React.ReactNode })
     router.replace('/');
   };
 
+  const avatarUrl = (user as unknown as { avatar_url?: string; avatar?: string }).avatar_url || (user as unknown as { avatar?: string }).avatar;
+  const initials = (user.name || 'Dosen').split(' ').map((part) => part[0]).join('').slice(0, 2).toUpperCase();
+
   return (
     <div className="app-readable min-h-screen font-sans transition-colors duration-500" style={{ ...themeConfig.vars, background: themeConfig.backdrop }}>
       {/* Sidebar overlay mobile */}
@@ -92,11 +94,11 @@ export default function DosenLayout({ children }: { children: React.ReactNode })
 
       {/* Sidebar */}
       <aside className={clsx(
-        'fixed inset-y-0 left-0 z-50 w-64 border-r border-[color:var(--profile-border)] bg-[color:var(--profile-surface-strong)] backdrop-blur-xl shadow-sm flex flex-col transition-transform duration-300 lg:translate-x-0',
+        'fixed inset-y-0 left-0 z-50 w-72 border-r border-white/40 bg-[color:var(--profile-surface-strong)]/90 backdrop-blur-2xl shadow-[0_24px_80px_rgba(15,23,42,0.12)] flex flex-col transition-transform duration-300 lg:translate-x-0',
         sidebarOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full',
       )}>
         {/* Logo / Brand */}
-        <div className="h-28 px-6 flex flex-col justify-center sticky top-0 z-10 bg-[color:var(--profile-surface-strong)]">
+        <div className="px-6 pt-6 pb-4 sticky top-0 z-10 bg-gradient-to-b from-[color:var(--profile-surface-strong)] via-[color:var(--profile-surface-strong)]/95 to-transparent backdrop-blur-xl">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 flex items-center justify-center rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-input)] p-1.5 shadow-sm shrink-0">
               <Image src="/images/logo_uinsaizu.png" alt="Logo UIN" width={48} height={48} className="h-full w-full object-contain" />
@@ -116,24 +118,19 @@ export default function DosenLayout({ children }: { children: React.ReactNode })
           </div>
         </div>
 
-        {/* User Info */}
-        <div className="px-4 py-2">
-          <div className="rounded-xl bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] p-3">
-            <p className="text-[9px] font-black text-[color:var(--profile-soft-text)] uppercase tracking-[0.15em]">
-              {ROLE_LABELS[user.roles?.[0] || 'dosen']}
-            </p>
-            <p className="text-sm font-black text-[color:var(--profile-text)] truncate mt-0.5">{user.name}</p>
-          </div>
+        {/* Profile Avatar */}
+        <div className="px-4 pb-4">
+          <Link href="/profil" title="Lihat profil" onClick={() => setSidebarOpen(false)} className="group relative flex flex-col items-center overflow-hidden rounded-3xl border border-white/50 bg-white/35 px-4 py-5 text-center shadow-[0_18px_45px_rgba(15,23,42,0.08)] backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:border-[color:var(--profile-accent)]/60 hover:shadow-[0_24px_60px_rgba(15,23,42,0.14)]">
+            <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[color:var(--profile-primary)]/10 blur-2xl" />
+            <div className="absolute -bottom-12 -left-10 h-28 w-28 rounded-full bg-[color:var(--profile-accent)]/10 blur-2xl" />
+            <div className="relative h-24 w-24 overflow-hidden rounded-full border-4 border-white/70 bg-gradient-to-br from-[color:var(--profile-primary)] to-[color:var(--profile-accent)] shadow-xl ring-4 ring-[color:var(--profile-accent)]/10 transition-transform duration-300 group-hover:scale-105 flex items-center justify-center text-white">
+              {avatarUrl ? <Image src={avatarUrl} alt={user.name} width={112} height={112} className="h-full w-full object-cover" /> : <span className="text-3xl font-black">{initials}</span>}
+            </div>
+            <p className="relative mt-3 max-w-full truncate text-sm font-black uppercase leading-tight text-[color:var(--profile-text)]">{user.name}</p>
+            <p className="relative mt-1 text-xs font-bold text-[color:var(--profile-muted)]">{(user as unknown as { nip?: string; nidn?: string; username?: string }).nip || (user as unknown as { nidn?: string }).nidn || (user as unknown as { username?: string }).username || 'DOSEN'}</p>
+          <span className="relative mt-3 inline-flex items-center rounded-full bg-[color:var(--profile-accent)]/10 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-[color:var(--profile-accent)]">Lihat Profil →</span>
+          </Link>
         </div>
-
-        {/* Phase indicator */}
-        {currentPhase && (
-          <div className="mx-4 mb-2 rounded-lg bg-[color:var(--profile-warning)] border border-[color:var(--profile-border)] px-3 py-2">
-            <p className="text-[9px] font-black text-[color:var(--profile-warning-text)] uppercase tracking-wider">
-              Fase: {PHASE_LABELS[currentPhase] || currentPhase}
-            </p>
-          </div>
-        )}
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto px-4 py-3">
@@ -153,9 +150,9 @@ export default function DosenLayout({ children }: { children: React.ReactNode })
                   href={item.href}
                   onClick={() => setSidebarOpen(false)}
                   className={clsx(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 group relative overflow-hidden',
+                    'flex items-center gap-3 px-3 py-3 rounded-2xl text-sm transition-all duration-200 group relative overflow-hidden hover:translate-x-0.5',
                     isActive
-                      ? 'bg-[color:var(--profile-soft)] text-[color:var(--profile-text)] font-bold shadow-sm border border-[color:var(--profile-border)] shadow-[inset_3px_0_0_0_var(--profile-accent)]'
+                      ? 'bg-gradient-to-r from-[color:var(--profile-primary)]/12 to-[color:var(--profile-accent)]/10 text-[color:var(--profile-text)] font-bold shadow-sm border border-[color:var(--profile-accent)]/25 shadow-[inset_4px_0_0_0_var(--profile-accent)]'
                       : 'text-[color:var(--profile-muted)] hover:text-[color:var(--profile-text)] hover:bg-[color:var(--profile-soft)]',
                   )}
                 >
@@ -175,25 +172,10 @@ export default function DosenLayout({ children }: { children: React.ReactNode })
           </div>
         </nav>
 
-        {/* Profile Card */}
-        <div className="p-4">
-          <Link href="/profil" className="flex items-center gap-3 p-3 rounded-2xl bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] shadow-sm hover:shadow-md transition-all group">
-            <div className="h-10 w-10 rounded-xl bg-[color:var(--profile-primary)] flex items-center justify-center text-white shrink-0 shadow-inner group-hover:rotate-6 transition-transform">
-              <span className="text-xs font-black uppercase">{user.name.substring(0, 2)}</span>
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-xs font-black text-[color:var(--profile-text)] truncate leading-none mb-1 font-display">{user.name}</span>
-              <span className="text-[9px] font-bold text-[color:var(--profile-muted)] uppercase tracking-wider flex items-center gap-1 font-sans">
-                <div className="w-1 h-1 rounded-full bg-[color:var(--profile-accent)] animate-pulse" />
-                {isDpl ? 'DPL' : 'Dosen'}
-              </span>
-            </div>
-          </Link>
-        </div>
       </aside>
 
       {/* Main */}
-      <div className="lg:pl-64 flex flex-col min-h-screen transition-all duration-300 w-full overflow-x-hidden">
+      <div className="lg:pl-72 flex flex-col min-h-screen transition-all duration-300 w-full overflow-x-hidden">
         {/* Header */}
         <header className="sticky top-0 z-40 h-14 bg-[color:var(--profile-surface-strong)] border-b border-[color:var(--profile-border)] px-6 flex items-center justify-between backdrop-blur-xl">
           <div className="flex items-center gap-4">

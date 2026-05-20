@@ -1,5 +1,7 @@
 'use client';
 
+import { WorkflowGate } from '@/components/kkn/workflow-gate';
+
 import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
@@ -21,7 +23,8 @@ export default function DailyReportsPage(): React.JSX.Element {
         status: statusFilter || undefined,
         search: searchQuery || undefined,
       });
-      return (res as unknown) as { success: boolean; data: unknown[]; meta?: { current_page: number; last_page: number; total: number } };
+      return (
+res as unknown) as { success: boolean; data: unknown[]; meta?: { current_page: number; last_page: number; total: number } };
     },
   });
 
@@ -29,6 +32,8 @@ export default function DailyReportsPage(): React.JSX.Element {
   const meta = (data as unknown as { meta?: { current_page: number; last_page: number; total: number } })?.meta;
 
   return (
+    <WorkflowGate capability="submit_daily_report" title="Laporan Harian Belum Dibuka">
+
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       {/* HEADER */}
       <div className="bg-white rounded-[2rem] p-8 border border-emerald-50 shadow-sm">
@@ -119,5 +124,6 @@ export default function DailyReportsPage(): React.JSX.Element {
         </div>
       )}
     </div>
+    </WorkflowGate>
   );
 }

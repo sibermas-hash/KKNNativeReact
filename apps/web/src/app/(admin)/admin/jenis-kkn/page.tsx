@@ -248,17 +248,17 @@ export default function JenisKknPage(): React.JSX.Element {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'jenis-kkn'] });
-      toast.success('Requirement dokumen ditambahkan');
+      toast.success('Dokumen tambahan ditambahkan');
       setDocReqForm({ document_key: '', document_label: '', description: '', is_required: true, sort_order: 0, default_template_id: '', template_file: null });
     },
-    onError: (err: unknown) => toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal menambah requirement dokumen'),
+    onError: (err: unknown) => toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal menambah dokumen tambahan'),
   });
 
 
 
   const updateDocumentRequirement = useMutation({
     mutationFn: async () => {
-      if (!editingId || !editingRequirementId) throw new Error('Requirement dokumen tidak valid.');
+      if (!editingId || !editingRequirementId) throw new Error('Dokumen tambahan tidak valid.');
       const fd = new FormData();
       fd.append('document_key', docReqForm.document_key);
       fd.append('document_label', docReqForm.document_label);
@@ -271,11 +271,11 @@ export default function JenisKknPage(): React.JSX.Element {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'jenis-kkn'] });
-      toast.success('Requirement dokumen diperbarui');
+      toast.success('Dokumen tambahan diperbarui');
       setEditingRequirementId(null);
       setDocReqForm({ document_key: '', document_label: '', description: '', is_required: true, sort_order: 0, default_template_id: '', template_file: null });
     },
-    onError: (err: unknown) => toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal memperbarui requirement dokumen'),
+    onError: (err: unknown) => toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal memperbarui dokumen tambahan'),
   });
 
   const deleteDocumentRequirement = useMutation({
@@ -285,10 +285,10 @@ export default function JenisKknPage(): React.JSX.Element {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'jenis-kkn'] });
-      toast.success('Requirement dokumen dihapus');
+      toast.success('Dokumen tambahan dihapus');
       setEditingRequirementId(null);
     },
-    onError: (err: unknown) => toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal menghapus requirement dokumen'),
+    onError: (err: unknown) => toast.error((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message || 'Gagal menghapus dokumen tambahan'),
   });
 
 
@@ -458,33 +458,39 @@ export default function JenisKknPage(): React.JSX.Element {
 
                   {/* Requirement Dokumen Dinamis */}
                   <div className="p-5 bg-white rounded-2xl border border-slate-100 space-y-4 shadow-sm">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Requirement Dokumen Dinamis</h4>
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Dokumen Tambahan yang Harus Diunggah Mahasiswa</h4>
+
+                    <div className="rounded-xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-xs leading-relaxed text-cyan-900">
+                      <p className="font-bold">Penjelasan singkat:</p>
+                      <p>Bagian ini menentukan dokumen tambahan yang muncul di halaman pendaftaran mahasiswa. Gunakan nama yang mudah dipahami mahasiswa.</p>
+                      <p className="mt-1"><span className="font-semibold">Contoh:</span> Nama dokumen: <span className="font-semibold">Surat Izin Orang Tua</span>, kode internal: <span className="font-mono">surat_izin_ortu</span>, template: file contoh surat PDF/DOCX.</p>
+                    </div>
                     {!editingId ? (
                       <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs font-semibold text-amber-700">
-                        Simpan skema terlebih dahulu agar requirement dokumen dan template default bisa dikelola dari UI.
+                        Simpan skema terlebih dahulu. Setelah itu admin bisa menambah dokumen tambahan yang wajib/opsional diunggah mahasiswa, misalnya Surat Dokter, Izin Orang Tua, atau Paspor.
                       </div>
                     ) : (
                       <>
                         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                          <input value={docReqForm.document_key} onChange={e => setDocReqForm(f => ({ ...f, document_key: e.target.value }))} className={INPUT} placeholder="document_key, contoh: surat_izin_ortu" />
-                          <input value={docReqForm.document_label} onChange={e => setDocReqForm(f => ({ ...f, document_label: e.target.value }))} className={INPUT} placeholder="Label dokumen (tampil ke mahasiswa)" />
-                          <input value={docReqForm.description} onChange={e => setDocReqForm(f => ({ ...f, description: e.target.value }))} className={INPUT} placeholder="Deskripsi/petunjuk untuk mahasiswa" />
-                          <input type="number" value={docReqForm.sort_order} onChange={e => setDocReqForm(f => ({ ...f, sort_order: Number(e.target.value) }))} className={INPUT} placeholder="Urutan tampil" />
+                          <input value={docReqForm.document_key} onChange={e => setDocReqForm(f => ({ ...f, document_key: e.target.value }))} className={INPUT} placeholder="Kode internal, contoh: surat_izin_ortu" />
+                          <input value={docReqForm.document_label} onChange={e => setDocReqForm(f => ({ ...f, document_label: e.target.value }))} className={INPUT} placeholder="Nama dokumen yang tampil ke mahasiswa, contoh: Surat Izin Orang Tua" />
+                          <input value={docReqForm.description} onChange={e => setDocReqForm(f => ({ ...f, description: e.target.value }))} className={INPUT} placeholder="Petunjuk singkat, contoh: Upload PDF surat izin yang sudah ditandatangani." />
+                          <input type="number" value={docReqForm.sort_order} onChange={e => setDocReqForm(f => ({ ...f, sort_order: Number(e.target.value) }))} className={INPUT} placeholder="Urutan tampil, contoh: 1" />
                           <div className="space-y-1.5">
-                            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider pl-1">File Template (opsional)</p>
+                            <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider pl-1">Contoh/Template Surat (Opsional)</p>
                             <input type="file" accept=".doc,.docx,.pdf,.xls,.xlsx" onChange={e => setDocReqForm(f => ({ ...f, template_file: e.target.files?.[0] ?? null }))} className="block w-full text-sm text-slate-500 file:mr-3 file:rounded-lg file:border-0 file:bg-cyan-50 file:px-3 file:py-2 file:font-semibold file:text-cyan-700" />
-                            <p className="text-[9px] text-slate-400">File ini bisa diunduh mahasiswa sebagai contoh format surat.</p>
+                            <p className="text-[9px] text-slate-400">Opsional. Upload file contoh agar mahasiswa bisa mengunduh format surat yang benar.</p>
                           </div>
                           <label className="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm font-semibold text-cyan-950">
                             <input type="checkbox" checked={docReqForm.is_required} onChange={e => setDocReqForm(f => ({ ...f, is_required: e.target.checked }))} className="accent-cyan-600" />
-                            Wajib diunggah mahasiswa
+                            Mahasiswa wajib mengunggah dokumen ini
                           </label>
                         </div>
                         <div className="flex gap-2">
                           <button type="button" onClick={() => editingRequirementId ? updateDocumentRequirement.mutate() : addDocumentRequirement.mutate()} disabled={(addDocumentRequirement.isPending || updateDocumentRequirement.isPending) || !docReqForm.document_key || !docReqForm.document_label} className="rounded-xl bg-cyan-600 px-4 py-2 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-50">
                             {editingRequirementId
-                              ? (updateDocumentRequirement.isPending ? 'Menyimpan...' : 'Simpan Requirement')
-                              : (addDocumentRequirement.isPending ? 'Menyimpan...' : 'Tambah Requirement Dokumen')}
+                              ? (updateDocumentRequirement.isPending ? 'Menyimpan...' : 'Simpan Dokumen')
+                              : (addDocumentRequirement.isPending ? 'Menyimpan...' : 'Tambah Dokumen')}
                           </button>
                           {editingRequirementId && (
                             <button type="button" onClick={resetDocumentForms} className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">
@@ -495,7 +501,7 @@ export default function JenisKknPage(): React.JSX.Element {
 
                         <div className="space-y-3 border-t border-slate-100 pt-4">
                           {(list.find(item => item.id === editingId)?.document_requirements ?? []).length === 0 ? (
-                            <p className="text-sm text-slate-500">Belum ada requirement dokumen dinamis untuk skema ini.</p>
+                            <p className="text-sm text-slate-500">Belum ada dokumen tambahan untuk skema ini.</p>
                           ) : (
                             (list.find(item => item.id === editingId)?.document_requirements ?? []).map(req => (
                               <div key={req.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -516,7 +522,7 @@ export default function JenisKknPage(): React.JSX.Element {
                                 </div>
                                 <div className="mt-3 rounded-lg bg-white px-3 py-2 text-xs text-slate-600">
                                   <div className="flex items-center justify-between gap-3">
-                                    <span>Template default: {req.default_template ? `${req.default_template.name} (${req.default_template.file_name})` : 'Belum diatur'}</span>
+                                    <span>Contoh/template: {req.default_template ? `${req.default_template.name} (${req.default_template.file_name})` : 'Belum ada'}</span>
                                     {req.default_template?.download_url && (
                                       <a
                                         href={req.default_template.download_url}
@@ -542,16 +548,20 @@ export default function JenisKknPage(): React.JSX.Element {
 
                   {/* Absensi */}
                   <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
-                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Konfigurasi Absensi & Geotagging</h4>
+                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Aturan Absensi Mahasiswa</h4>
+
+                    <div className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-xs leading-relaxed text-slate-600">
+                      <p><span className="font-bold text-slate-700">Tips:</span> Untuk KKN reguler biasanya gunakan <span className="font-semibold">Lokasi Posko Kelompok</span>. Radius umum 500 meter. Jangan terlalu kecil agar mahasiswa tidak gagal absen karena GPS bergeser.</p>
+                    </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <Toggle label="Aktifkan Geofencing" hint="Validasi lokasi saat mahasiswa absen."
+                      <Toggle label="Batasi Absensi Berdasarkan Lokasi" hint="Mahasiswa hanya bisa absen jika berada dalam radius yang ditentukan."
                         checked={form.attendance_config.geofence_enabled} onChange={v => setAtt('geofence_enabled', v)} />
-                      <Toggle label="Wajib Lampiran Foto" hint="Mahasiswa wajib upload foto saat absen."
+                      <Toggle label="Wajib Foto Saat Absen" hint="Mahasiswa harus melampirkan foto bukti kehadiran."
                         checked={form.attendance_config.require_photo} onChange={v => setAtt('require_photo', v)} />
-                      <Toggle label="Izinkan Offline Sync" hint="Absen offline, sync saat online."
+                      <Toggle label="Izinkan Absen Offline" hint="Data absen disimpan dulu saat internet buruk, lalu dikirim saat online."
                         checked={form.attendance_config.allow_offline_sync} onChange={v => setAtt('allow_offline_sync', v)} />
                       {form.attendance_config.geofence_enabled && (
-                        <Field label="Radius Absensi (Meter)">
+                        <Field label="Jarak Maksimal dari Lokasi Absensi">
                           <RadiusSlider
                             value={form.attendance_config.radius_meters}
                             onChange={(value) => setAtt('radius_meters', value)}
@@ -559,9 +569,9 @@ export default function JenisKknPage(): React.JSX.Element {
                         </Field>
                       )}
                     </div>
-                    <Field label="Sumber Lokasi Rujukan">
+                    <Field label="Patokan Lokasi Absensi">
                       <div className="flex gap-3 flex-wrap">
-                        {[{ value: 'posko', label: 'Posko Kelompok' }, { value: 'address', label: 'Alamat Asli Mahasiswa' }, { value: 'custom', label: 'Lokasi Custom' }].map(opt => (
+                        {[{ value: 'posko', label: 'Lokasi Posko Kelompok' }, { value: 'address', label: 'Alamat Mahasiswa' }, { value: 'custom', label: 'Lokasi Khusus' }].map(opt => (
                           <label key={opt.value} className="flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold hover:bg-slate-50 has-[:checked]:border-cyan-500 has-[:checked]:bg-cyan-50">
                             <input type="radio" name="location_source" value={opt.value}
                               checked={form.attendance_config.location_source === opt.value}
@@ -577,7 +587,7 @@ export default function JenisKknPage(): React.JSX.Element {
                   <div className="flex items-center gap-6 flex-wrap">
                     <Field label="Warna">
                       <div className="flex items-center gap-2">
-                        <input type="color" value={form.color} onChange={e => setForm(f => ({ ...f, color: e.target.value }))}
+                        <input type="color" value={/^#[0-9A-Fa-f]{6}$/.test(form.color) ? form.color : '#4f46e5'} onChange={e => setForm(f => ({ ...f, color: e.target.value }))}
                           className="h-11 w-14 cursor-pointer rounded-xl border-2 border-slate-100" />
                         <span className="font-mono text-sm text-slate-500">{form.color}</span>
                       </div>

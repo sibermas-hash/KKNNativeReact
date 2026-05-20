@@ -223,6 +223,7 @@ export function NotificationBell({ className }: { className?: string }): React.J
 
   const unreadCount = data?.unread_count ?? 0;
   const items = data?.notifications ?? [];
+  const badgeCount = Math.min(items.length || unreadCount, 15);
   const hasUnread = unreadCount > 0;
 
   const handleNotificationClick = (n: NotificationItem) => {
@@ -252,7 +253,7 @@ export function NotificationBell({ className }: { className?: string }): React.J
               className="absolute -top-0.5 -right-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white shadow-sm"
               aria-live="polite"
             >
-              {unreadCount > 99 ? '99+' : unreadCount}
+              {badgeCount > 9 ? '9+' : badgeCount}
             </span>
           )}
         </button>

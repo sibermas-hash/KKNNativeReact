@@ -55,6 +55,13 @@ class KknDaftarController extends Controller
                 $canRegister = $p->current_phase === 'registration';
                 $eligibility = $this->checkEligibility($mahasiswa, $p);
                 $documentRequirements = $this->documentService->requirementsForPeriod($p);
+                $registeredCount = PesertaKkn::query()
+                    ->where('periode_id', $p->id)
+                    ->whereIn('status', ['pending', 'document_submitted', 'document_verified', 'approved', 'interview_scheduled'])
+                    ->count();
+                $quotaTotal = (int) ($p->kuota ?? 0);
+                $quotaRemaining = $quotaTotal > 0 ? max($quotaTotal - $registeredCount, 0) : null;
+                $quotaFull = $quotaTotal > 0 && $registeredCount >= $quotaTotal;
 
                 if ($hasRegistered) {
                     $canRegister = false;
@@ -86,6 +93,9 @@ class KknDaftarController extends Controller
                     'start_date' => $p->start_date?->format('d/m/Y'),
                     'end_date' => $p->end_date?->format('d/m/Y'),
                     'kuota' => $p->kuota,
+                    'registered_count' => $registeredCount,
+                    'quota_remaining' => $quotaRemaining,
+                    'quota_full' => $quotaFull,
                     'current_phase' => $p->current_phase,
                     'can_register' => $canRegister && $eligibility['is_eligible'],
                     'ineligible_reasons' => $hasRegistered ? [] : $eligibility['reasons'],

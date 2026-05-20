@@ -21,6 +21,7 @@ class PesertaKknResource extends JsonResource
             'notes' => $this->notes,
             'rejection_reason' => $this->rejection_reason,
             'registration_date' => $this->registration_date?->toIso8601String(),
+            'first_uploaded_at' => $this->first_uploaded_at ? \Carbon\Carbon::parse($this->first_uploaded_at)->toIso8601String() : null,
             'approved_at' => $this->approved_at?->toIso8601String(),
             'revision_count' => $this->revision_count,
             'joined_group_at' => $this->joined_group_at?->toIso8601String(),
@@ -28,6 +29,7 @@ class PesertaKknResource extends JsonResource
             'mahasiswa' => new MahasiswaResource($this->whenLoaded('mahasiswa')),
             'kelompok' => new KelompokKknResource($this->whenLoaded('kelompok')),
             'periode' => new PeriodeResource($this->whenLoaded('periode')),
+            'requires_interview' => $this->when($this->relationLoaded('periode'), fn () => in_array($this->periode?->jenisKkn?->code, ['NUSANTARA', 'INTERNASIONAL', 'KOLABORASI_PTKIN'], true)),
             'documents' => DokumenPesertaResource::collection($this->whenLoaded('dokumen')),
             'document_summary' => $this->when($this->relationLoaded('dokumen') && $this->relationLoaded('periode'), function () {
                 $requirements = app(\App\Services\KKN\RegistrationDocumentService::class)->requirementsForPeriod($this->periode);

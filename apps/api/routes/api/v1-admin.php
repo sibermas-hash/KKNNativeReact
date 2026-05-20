@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\V1\Admin\EvaluasiController;
 use App\Http\Controllers\Api\V1\Admin\FakultasController;
 use App\Http\Controllers\Api\V1\Admin\GeneratorNilaiController;
 use App\Http\Controllers\Api\V1\Admin\GradeController;
+use App\Http\Controllers\Api\V1\Admin\InterviewController;
 use App\Http\Controllers\Api\V1\Admin\JenisKknController;
 use App\Http\Controllers\Api\V1\Admin\JenisKknDocumentRequirementController;
 use App\Http\Controllers\Api\V1\Admin\KegiatanKknAdminController;
@@ -55,6 +56,7 @@ use App\Http\Controllers\Api\V1\Admin\TahunAkademikController;
 use App\Http\Controllers\Api\V1\Admin\UserActivityController;
 use App\Http\Controllers\Api\V1\Admin\UserController;
 use App\Http\Controllers\Api\V1\Admin\WorkshopController;
+use App\Http\Controllers\Api\V1\Admin\WorkflowConfigController;
 use App\Http\Controllers\Api\V1\Admin\YudisiumController;
 use Illuminate\Support\Facades\Route;
 
@@ -71,6 +73,9 @@ Route::prefix('admin')
         Route::get('/periode/export', [PeriodeController::class, 'export']);
         Route::post('/periode/{periode}/duplicate', [PeriodeController::class, 'duplicate']);
         Route::apiResource('periode', PeriodeController::class);
+        Route::get('/periode/{periode}/workflow', [WorkflowConfigController::class, 'showPeriode']);
+        Route::put('/periode/{periode}/workflow', [WorkflowConfigController::class, 'updatePeriode']);
+        Route::delete('/periode/{periode}/workflow', [WorkflowConfigController::class, 'resetPeriode']);
         Route::get('/periode/{periode}/document-templates', [PeriodeDocumentTemplateController::class, 'index']);
         Route::post('/periode/{periode}/document-templates', [PeriodeDocumentTemplateController::class, 'assign']);
         Route::delete('/periode/{periode}/document-templates/{periodDocumentTemplate}', [PeriodeDocumentTemplateController::class, 'destroy']);
@@ -79,9 +84,14 @@ Route::prefix('admin')
         Route::get("/periode/{periode}/countdown", [\App\Http\Controllers\Api\V1\Admin\CountdownSettingController::class, "show"]);
         Route::post("/periode/{periode}/countdown", [\App\Http\Controllers\Api\V1\Admin\CountdownSettingController::class, "store"]);
 
+        Route::middleware('role:superadmin')->post('interviews/{interview}/sync', [InterviewController::class, 'sync'])->name('interviews.sync');
+        Route::middleware('role:superadmin')->apiResource('interviews', InterviewController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
+
         // Master Data
         Route::apiResource('tahun-akademik', TahunAkademikController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('jenis-kkn', JenisKknController::class);
+        Route::get('/jenis-kkn/{jenisKkn}/workflow', [WorkflowConfigController::class, 'showJenis']);
+        Route::put('/jenis-kkn/{jenisKkn}/workflow', [WorkflowConfigController::class, 'updateJenis']);
         Route::get('/jenis-kkn/{jenisKkn}/document-requirements', [JenisKknDocumentRequirementController::class, 'index']);
         Route::post('/jenis-kkn/{jenisKkn}/document-requirements', [JenisKknDocumentRequirementController::class, 'store']);
         Route::put('/jenis-kkn/{jenisKkn}/document-requirements/{requirement}', [JenisKknDocumentRequirementController::class, 'update']);
@@ -121,8 +131,10 @@ Route::prefix('admin')
         Route::post('/pendaftaran/bulk-reject', [PesertaKknController::class, 'bulkReject'])->middleware('throttle:10,1');
         Route::get('/pendaftaran', [PesertaKknController::class, 'index']);
         Route::get('/pendaftaran/{pesertaKkn}', [PesertaKknController::class, 'show']);
-        Route::patch('/pendaftaran/{pesertaKkn}/approve', [PesertaKknController::class, 'approve']);
-        Route::patch('/pendaftaran/{pesertaKkn}/reject', [PesertaKknController::class, 'reject']);
+        Route::match(['patch', 'post'], '/pendaftaran/{pesertaKkn}/approve', [PesertaKknController::class, 'approve']);
+        Route::match(['patch', 'post'], '/pendaftaran/{pesertaKkn}/reject', [PesertaKknController::class, 'reject']);
+        Route::patch('/pendaftaran/{pesertaKkn}/interview/pass', [PesertaKknController::class, 'passInterview']);
+        Route::patch('/pendaftaran/{pesertaKkn}/interview/fail', [PesertaKknController::class, 'failInterview']);
         Route::patch('/pendaftaran/{pesertaKkn}/assign-group', [PesertaKknController::class, 'assignGroup']);
         Route::post('/pendaftaran/{pesertaKkn}/make-leader', [PesertaKknController::class, 'makeLeader']);
         // Korcam is a DPL role (not mahasiswa) — managed via DPL assignment, not here
@@ -369,7 +381,7 @@ Route::prefix('admin')
         // Profile Change Requests (superadmin only)
         Route::middleware('role:superadmin')->prefix('profile-change-requests')->group(function () {
             Route::get('/', [ProfileChangeRequestController::class, 'index']);
-            Route::patch('/approve-all', [ProfileChangeRequestController::class, 'approveAll']);
+            Route::match(['patch', 'post'], '/approve-all', [ProfileChangeRequestController::class, 'approveAll']);
             Route::patch('/{profileChangeRequest}/approve', [ProfileChangeRequestController::class, 'approve']);
             Route::patch('/{profileChangeRequest}/reject', [ProfileChangeRequestController::class, 'reject']);
         });

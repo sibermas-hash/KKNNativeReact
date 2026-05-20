@@ -106,7 +106,7 @@ Route::prefix('v1')->group(function () {
         ->middleware('auth:sanctum')
         ->group(function () {
             Route::get('/', [ProfileController::class, 'show'])->name('api.v1.profile.show');
-            Route::patch('/', [ProfileController::class, 'update'])->name('api.v1.profile.update');
+            Route::match(['patch', 'post'], '/', [ProfileController::class, 'update'])->name('api.v1.profile.update');
             Route::post('/avatar', [ProfileController::class, 'updateAvatar'])->name('api.v1.profile.avatar');
             Route::match(['patch', 'post'], '/password', [ProfileController::class, 'changePassword'])->name('api.v1.profile.password');
             Route::get('/notification-preferences', [ProfileController::class, 'notificationPreferences'])->name('api.v1.profile.notification-preferences.show');

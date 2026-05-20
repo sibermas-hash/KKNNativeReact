@@ -24,7 +24,6 @@ const ParticleBackground = dynamic(
 
 // NotificationPreferencesCard — hidden from student profile, managed via admin dashboard
 // import { NotificationPreferencesCard } from '@/components/profile/notification-preferences-card';
-import { TwoFactorCard } from '@/components/profile/two-factor-card';
 
 type ReverseGeocodeAddress = {
   house_number?: string;
@@ -399,14 +398,19 @@ function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, l
   return (
     <div className="space-y-4 sm:space-y-5">
       <div ref={avatarRef} className={cx('flex flex-col items-center gap-4 rounded-xl p-4 text-center sm:rounded-2xl sm:p-5', 'border border-emerald-100 bg-white shadow-sm shadow-emerald-900/5')}>
-        <button type="button" onClick={() => avatarInputRef.current?.click()} className="relative h-20 w-20 overflow-hidden rounded-full border-2 border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] sm:h-24 sm:w-24 transition-all duration-300 hover:scale-105 hover:shadow-xl">
-          {user.avatar_url ? <img src={user.avatar_url} alt={user.name} className="h-full w-full object-cover" /> : <span className="flex h-full w-full flex-col items-center justify-center px-3 text-center text-[10px] font-black uppercase tracking-wider text-[color:var(--profile-soft-text)]"><Camera size={20} className="mb-1" />Foto Formal</span>}
-          {avatarLoading && <span className="absolute inset-0 flex items-center justify-center bg-[color:var(--profile-surface)]/70"><RefreshCw className="animate-spin text-[color:var(--profile-accent)]" /></span>}
-        </button>
+        <div className="w-full max-w-[180px]">
+          <p className="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-emerald-700">Preview Foto Sertifikat</p>
+          <button type="button" onClick={() => avatarInputRef.current?.click()} className="relative mx-auto aspect-[3/4] w-32 overflow-hidden rounded-xl border-2 border-emerald-200 bg-red-700 shadow-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-xl sm:w-36">
+            {user.avatar_url ? <img src={user.avatar_url} alt={user.name} className="h-full w-full object-contain object-center" /> : <span className="flex h-full w-full flex-col items-center justify-center px-3 text-center text-[10px] font-black uppercase tracking-wider text-white"><Camera size={22} className="mb-2" />Foto Formal 3x4</span>}
+            {avatarLoading && <span className="absolute inset-0 flex items-center justify-center bg-white/70"><RefreshCw className="animate-spin text-emerald-700" /></span>}
+          </button>
+          <p className="mt-2 text-[10px] font-semibold text-slate-500">Preview mengikuti rasio pas foto 3x4 agar posisi wajah tidak terlihat menceng akibat crop avatar.</p>
+        </div>
         <div><p className={`${typography.label} text-[color:var(--profile-text)] drop-shadow-sm`}>{user.name}</p><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>{user.username}</p>{student?.nim && <p className={`${typography.meta} text-[color:var(--profile-muted)] flex items-center gap-1`}><Lock size={12} className="text-amber-500" /> NIM: {student.nim}</p>}{lecturer?.nip && <p className={`${typography.meta} text-[color:var(--profile-muted)] flex items-center gap-1`}><Lock size={12} className="text-amber-500" /> NIP: {lecturer.nip}</p>}</div>
         <div className="space-y-2">
-          <button type="button" onClick={() => avatarInputRef.current?.click()} className={cx('inline-flex items-center gap-2 rounded-lg px-3 py-2', typography.meta, 'border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-300')}><Camera size={14} /><span className="whitespace-normal">Upload Foto Formal HD</span></button>
+          <button type="button" onClick={() => avatarInputRef.current?.click()} className={cx('inline-flex items-center gap-2 rounded-lg px-3 py-2', typography.meta, 'border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-300')}><Camera size={14} /><span className="whitespace-normal">{avatarModerationStatus === 'approved' && user.avatar_url ? 'Ganti Foto' : 'Upload Foto Formal HD'}</span></button>
           <p className={`${typography.meta} max-w-64 text-[color:var(--profile-muted)]`}>Foto ini akan dicetak di sertifikat. Gunakan pas foto formal HD dengan <strong>latar merah polos</strong> dan <strong>jas almamater</strong>. Sistem memvalidasi otomatis via AI.</p>
+          {avatarModerationStatus === 'approved' && user.avatar_url && <p className={`${typography.meta} max-w-64 text-emerald-700`}>Foto saat ini sudah lolos. Upload ulang hanya jika ingin mengganti.</p>}
           {avatarModerationStatus === 'pending' && (
             <div className={cx(
               'rounded-lg border px-3 py-2 text-[11px] font-semibold',
@@ -644,12 +648,13 @@ export default function ProfilePage(): React.JSX.Element {
   useEffect(() => {
     if (!user) return;
     profileApi.get().then((res: unknown) => {
-      const r = res as { student?: StudentProfile; lecturer?: LecturerProfile; user?: { phone?: string; address?: string; address_village_name?: string; address_district_name?: string; address_regency_name?: string; address_postal_code?: string; address_verified_at?: string; address_lat?: number; address_lng?: number; mahasiswa?: StudentProfile; dosen?: LecturerProfile }; pending_change_request?: ChangeRequest };
+      const r = res as { student?: StudentProfile; lecturer?: LecturerProfile; user?: { email?: string; phone?: string; address?: string; address_village_name?: string; address_district_name?: string; address_regency_name?: string; address_postal_code?: string; address_verified_at?: string; address_lat?: number; address_lng?: number; mahasiswa?: StudentProfile; dosen?: LecturerProfile }; pending_change_request?: ChangeRequest };
       const nextStudent = r?.student ?? r?.user?.mahasiswa ?? null;
       const nextLecturer = r?.lecturer ?? r?.user?.dosen ?? null;
       setProfileData({ student: nextStudent, lecturer: nextLecturer, pending: r?.pending_change_request ?? null });
       reset({
         name: user.name ?? '',
+        email: (r?.user?.email ?? user.email ?? '') as string,
         phone: (r?.user?.phone ?? (user as unknown as { phone?: string }).phone ?? '') as string,
         address: (r?.user?.address ?? (user as unknown as { address?: string }).address ?? '') as string,
         address_village_name: (r?.user?.address_village_name ?? (user as unknown as { address_village_name?: string }).address_village_name ?? '') as string,
@@ -924,7 +929,7 @@ export default function ProfilePage(): React.JSX.Element {
             <section className="space-y-4">
               <h2 className={`flex items-center gap-2 ${typography.label} text-[color:var(--profile-text)]`}><IdCard size={16} /> Data Pribadi & Kontak</h2>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <TextInput label="Email Sistem" value={user.email ?? '-'} disabled />
+                <TextInput label="Email Sistem" registration={register('email')} disabled={!isEditing} error={errors.email?.message} />
                 <TextInput label="Nama Lengkap" registration={register('name')} disabled={!isEditing} error={errors.name?.message} />
                 <TextInput label="Nomor HP / WA" registration={register('phone')} disabled={!isEditing} error={errors.phone?.message} />
                 {isStudent && <TextInput label="NIK (KTP)" registration={register('nik')} disabled={!isEditing} error={errors.nik?.message} />}
@@ -946,7 +951,6 @@ export default function ProfilePage(): React.JSX.Element {
 
           <div className="mt-4 sm:mt-6">
             {/* NotificationPreferencesCard hidden — managed via admin dashboard */}
-            <TwoFactorCard />
           </div>
         </div>
       </div>

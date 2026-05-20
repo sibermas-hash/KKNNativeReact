@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ApiResponse, PaginationMeta } from '@sibermas/shared-types';
 import { adminApi, rawApi } from '@/lib/api';
 import { mutationErrorHandler } from '@/lib/utils';
-import { Users, UserPlus, Eye, EyeOff, X, ShieldAlert } from 'lucide-react';
+import { Users, UserPlus, Eye, EyeOff, X, ShieldAlert, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { PageHeader, EmptyState, ResponsiveTable } from '@/components/ui/shared';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { toast } from 'sonner';
@@ -94,6 +94,19 @@ type FacultyOption = {
 
 const EMPTY_CREATE_FORM = { username: '', name: '', email: '', role: 'student', fakultas_id: '' };
 const EMPTY_EDIT: EditForm = { user: {}, mahasiswa: {}, dosen: {} };
+
+
+function pageWindow(current: number, last: number): Array<number | 'dots'> {
+  if (last <= 7) return Array.from({ length: last }, (_, i) => i + 1);
+  const pages = new Set<number>([1, 2, last - 1, last, current - 1, current, current + 1]);
+  const sorted = [...pages].filter((n) => n >= 1 && n <= last).sort((a, b) => a - b);
+  const out: Array<number | 'dots'> = [];
+  for (let i = 0; i < sorted.length; i += 1) {
+    if (i > 0 && sorted[i] - sorted[i - 1] > 1) out.push('dots');
+    out.push(sorted[i]);
+  }
+  return out;
+}
 
 export default function AdminUsersPage(): React.JSX.Element {
   const queryClient = useQueryClient();
@@ -301,6 +314,9 @@ export default function AdminUsersPage(): React.JSX.Element {
 
   const users = data?.data ?? [];
   const meta = data?.meta;
+  const lastPage = Math.max(1, meta?.last_page ?? 1);
+  const currentPage = meta?.current_page ?? page;
+  const pages = pageWindow(currentPage, lastPage);
   const listErrorMessage = isError ? mutationErrorHandler(error) : null;
   const detailErrorMessage = detailError ? mutationErrorHandler(detailQueryError) : null;
 
@@ -692,24 +708,15 @@ export default function AdminUsersPage(): React.JSX.Element {
             rowActions={renderActions}
           />
 
-          {meta && meta.last_page > 1 && (
-            <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:flex-row sm:items-center sm:justify-between">
-              <span className="text-xs font-semibold text-slate-500">{batchLabel}</span>
-              <div className="flex gap-2 self-end sm:self-auto">
-                <button
-                  onClick={() => setPage((currentPage) => Math.max(1, currentPage - 1))}
-                  disabled={meta.current_page <= 1}
-                  className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-700 hover:bg-slate-200 disabled:opacity-50"
-                >
-                  {'<'} Sebelumnya
-                </button>
-                <button
-                  onClick={() => setPage((currentPage) => Math.min(meta.last_page, currentPage + 1))}
-                  disabled={meta.current_page >= meta.last_page}
-                  className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-700 hover:bg-slate-200 disabled:opacity-50"
-                >
-                  Berikutnya {'>'}
-                </button>
+                    {lastPage > 1 && (
+            <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 lg:flex-row lg:items-center lg:justify-between">
+              <p className="text-xs font-semibold text-slate-500">Halaman <b className="text-slate-800">{currentPage}</b> dari <b className="text-slate-800">{lastPage}</b>{meta?.total != null && <> &middot; <b className="text-slate-800">{meta.total.toLocaleString('id-ID')}</b> pengguna</>}</p>
+              <div className="flex flex-wrap items-center gap-1.5">
+                <button onClick={() => setPage(1)} disabled={currentPage <= 1} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40"><ChevronsLeft className="h-4 w-4" /></button>
+                <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={currentPage <= 1} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40"><ChevronLeft className="h-4 w-4" /></button>
+                {pages.map((item, idx) => item === 'dots' ? <span key={`dots-${idx}`} className="px-1 text-xs font-black text-slate-400">&hellip;</span> : <button key={item} onClick={() => setPage(item as number)} className={`h-9 min-w-9 rounded-xl px-3 text-xs font-black transition ${currentPage === item ? 'bg-slate-900 text-white shadow-sm' : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'}`}>{item}</button>)}
+                <button onClick={() => setPage((p) => Math.min(lastPage, p + 1))} disabled={currentPage >= lastPage} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40"><ChevronRight className="h-4 w-4" /></button>
+                <button onClick={() => setPage(lastPage)} disabled={currentPage >= lastPage} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40"><ChevronsRight className="h-4 w-4" /></button>
               </div>
             </div>
           )}

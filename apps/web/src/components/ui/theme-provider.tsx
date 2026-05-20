@@ -21,6 +21,11 @@ export function ThemeProvider({ children }: { children: ReactNode }): React.JSX.
     setThemeState(getStoredTheme());
   }, []);
 
+  useEffect(() => {
+    document.body.dataset.sibermasTheme = theme;
+    document.documentElement.dataset.sibermasTheme = theme;
+  }, [theme]);
+
   const setTheme = (next: ThemeKey) => {
     setThemeState(next);
     storeTheme(next);

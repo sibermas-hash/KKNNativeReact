@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { studentApi } from '@/lib/api';
 import Link from 'next/link';
-import { ChevronLeft, FolderPlus, Target, Users, Wallet, Paperclip, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, FolderPlus, Lock, Target, Users, Wallet, Paperclip, CheckCircle2 } from 'lucide-react';
 
 const KATEGORI_OPTIONS = [
   { value: 'utama', label: 'Program Utama' },
@@ -25,6 +25,9 @@ export default function WorkProgramCreatePage(): React.JSX.Element {
   });
   const [proposalFile, setProposalFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { data: readinessData, isLoading: readinessLoading } = useQuery({ queryKey: ['student','work-programs','readiness'], queryFn: async () => studentApi.workPrograms.index() });
+  const readiness = (readinessData as unknown as { readiness?: { can_create?: boolean; message?: string } })?.readiness;
+  const canCreate = readiness?.can_create === true;
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -59,6 +62,10 @@ export default function WorkProgramCreatePage(): React.JSX.Element {
     setForm((p) => ({ ...p, [field]: e.target.value }));
     setErrors((p) => { const n = { ...p }; delete n[field]; return n; });
   };
+
+  if (!readinessLoading && !canCreate) {
+    return <div className="max-w-[800px] mx-auto px-4 py-10 space-y-6"><Link href="/mahasiswa/program-kerja" className="inline-flex items-center gap-2 text-sm font-bold text-slate-500"><ChevronLeft size={16}/> Kembali</Link><div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-800"><div className="flex items-center gap-3"><Lock size={22}/><h1 className="font-black uppercase">Program Kerja Belum Dibuka</h1></div><p className="mt-3 text-sm font-semibold">{readiness?.message || 'Menunggu proses administrasi KKN selesai.'}</p></div></div>;
+  }
 
   return (
     <div className="max-w-[800px] mx-auto px-4 py-10 space-y-8">

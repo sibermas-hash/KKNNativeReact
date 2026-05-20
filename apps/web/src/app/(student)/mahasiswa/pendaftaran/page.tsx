@@ -14,7 +14,7 @@ import {
 
 type RequirementDoc = string | { field?: string; label?: string; required?: boolean; template_url?: string };
 type Period = {
-  id: number; name: string; current_phase: string; kuota: number;
+  id: number; name: string; current_phase: string; kuota: number; registered_count?: number; quota_remaining?: number | null; quota_full?: boolean;
   registration_start: string; registration_end: string; start_date: string; end_date: string;
   can_register: boolean; ineligible_reasons: string[];
   jenis: { id: number; name: string; code: string; description?: string } | null;
@@ -107,6 +107,9 @@ function PeriodCard({ period, onRegister, isRegistering, disabled }: { period: P
   };
 
   const isOpen = period.current_phase === 'registration';
+  const quotaTotal = Number(period.kuota ?? 0);
+  const remaining = period.quota_remaining ?? (quotaTotal > 0 ? Math.max(quotaTotal - Number(period.registered_count ?? 0), 0) : null);
+  const isQuotaFull = !!period.quota_full || (quotaTotal > 0 && (remaining ?? 0) <= 0);
 
   return (
     <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
@@ -126,11 +129,11 @@ function PeriodCard({ period, onRegister, isRegistering, disabled }: { period: P
           </div>
           <button
             onClick={onRegister}
-            disabled={disabled || !period.can_register || isRegistering}
-            title={!period.can_register ? (period.ineligible_reasons?.[0] || 'Pendaftaran tidak tersedia untuk periode ini') : undefined}
+            disabled={disabled || !period.can_register || isRegistering || isQuotaFull}
+            title={isQuotaFull ? 'Kuota jenis KKN/periode ini sudah habis' : (!period.can_register ? (period.ineligible_reasons?.[0] || 'Pendaftaran tidak tersedia untuk periode ini') : undefined)}
             className="shrink-0 rounded-xl bg-teal-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-teal-700 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:shadow-sm"
           >
-            {isRegistering ? 'Memproses...' : 'Daftar KKN'}
+            {isRegistering ? 'Memproses...' : isQuotaFull ? 'Kuota Habis' : 'Daftar KKN'}
           </button>
         </div>
 
@@ -138,7 +141,8 @@ function PeriodCard({ period, onRegister, isRegistering, disabled }: { period: P
         <div className="mt-4 flex flex-wrap gap-4 text-xs text-slate-500">
           <span className="flex items-center gap-1"><Calendar size={12} /> Pendaftaran: {period.registration_start} — {period.registration_end}</span>
           <span className="flex items-center gap-1"><Clock size={12} /> Pelaksanaan: {period.start_date} — {period.end_date}</span>
-          <span className="flex items-center gap-1"><Users size={12} /> Kuota: {period.kuota}</span>
+          <span className="flex items-center gap-1"><Users size={12} /> Kuota: {quotaTotal || 'Tidak dibatasi'}</span>
+          <span className={`flex items-center gap-1 font-semibold ${isQuotaFull ? 'text-rose-600' : 'text-emerald-600'}`}><Users size={12} /> Sisa kuota: {remaining === null ? 'Tidak dibatasi' : remaining}</span>
         </div>
 
         {/* Document requirements */}
@@ -164,7 +168,7 @@ function PeriodCard({ period, onRegister, isRegistering, disabled }: { period: P
           <div className="mt-3 rounded-lg bg-rose-50 px-3 py-2">
             <p className="flex items-center gap-1.5 text-xs font-semibold text-rose-700"><AlertCircle size={12} /> Belum memenuhi syarat:</p>
             <ul className="mt-1 space-y-0.5 text-xs text-rose-600">
-              {period.ineligible_reasons.map((reason, i) => <li key={i}>• {reason}</li>)}
+              {[...new Set(period.ineligible_reasons)].map((reason, i) => <li key={i}>• {reason}</li>)}
             </ul>
           </div>
         )}
@@ -212,6 +216,8 @@ export default function RegistrationFormPage(): React.JSX.Element {
       const res = await studentApi.kknDaftar.index();
       return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
+    refetchInterval: 5000,
+    refetchOnWindowFocus: true,
   });
 
   const registerMutation = useMutation({

@@ -288,6 +288,40 @@ class EligibilityController extends Controller
         return $timestamp !== false && $timestamp > $cacheTimestamp;
     }
 
+    private function getCachedIssueFilterOptions(?int $facultyId): array
+    {
+        $query = Mahasiswa::query()
+            ->whereNotNull('eligibility_computed_at')
+            ->where('is_eligible', false)
+            ->whereNotNull('eligibility_issues');
+
+        if ($facultyId) {
+            $query->where('fakultas_id', $facultyId);
+        }
+
+        $labels = [];
+
+        $query->pluck('eligibility_issues')->each(function ($raw) use (&$labels) {
+            $issues = json_decode($raw ?? '[]', true);
+            if (! is_array($issues)) {
+                return;
+            }
+
+            foreach ($issues as $issue) {
+                $key = (string) ($issue['key'] ?? '');
+                if ($key === '' || isset($labels[$key])) {
+                    continue;
+                }
+
+                $labels[$key] = $this->getIssueFilterLabel($key, $issue['message'] ?? null);
+            }
+        });
+
+        return collect($labels)
+            ->map(fn (string $label, string $value) => ['value' => $value, 'label' => $label])
+            ->values()
+            ->all();
+    }
     private function getCachedIssueRows(?int $facultyId): Collection
     {
         $query = Mahasiswa::query()

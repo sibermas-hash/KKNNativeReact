@@ -1,5 +1,7 @@
 'use client';
 
+import { WorkflowGate } from '@/components/kkn/workflow-gate';
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentApi } from '@/lib/api';
 import { QUERY_KEYS } from '@sibermas/constants';
@@ -10,7 +12,11 @@ export default function PoskoPage(): React.JSX.Element {
   const queryClient = useQueryClient();
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.posko ?? ['student', 'posko'],
-    queryFn: async () => { const res = await studentApi.posko.show(); return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>; },
+    queryFn: async () => {
+      const res = await studentApi.posko.show();
+      const payload = res as unknown as { data?: unknown };
+      return (payload.data ?? res) as Record<string, unknown>;
+    },
   });
 
   const mutation = useMutation({
@@ -24,6 +30,8 @@ export default function PoskoPage(): React.JSX.Element {
   if (isLoading) return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" /></div>;
 
   return (
+    <WorkflowGate capability="ready_for_activity" title="Informasi Posko Belum Dibuka">
+
     <div className="max-w-[600px] mx-auto px-4 py-10">
       <div className="bg-white rounded-[2rem] p-8 border border-emerald-50 shadow-sm">
         <div className="flex items-center gap-4 mb-8">
@@ -41,5 +49,6 @@ export default function PoskoPage(): React.JSX.Element {
         </form>
       </div>
     </div>
+    </WorkflowGate>
   );
 }

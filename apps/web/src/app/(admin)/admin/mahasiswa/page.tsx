@@ -2,9 +2,9 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api';
-import { useDeferredValue, useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { GraduationCap, Search, RefreshCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, GraduationCap, Search, RefreshCw } from 'lucide-react';
 import { PageHeader, EmptyState } from '@/components/ui/shared';
 
 interface Faculty { id: number; nama?: string; name?: string }
@@ -35,6 +35,19 @@ interface PaginatedResponse<T> {
   links?: unknown;
 }
 
+
+function pageWindow(current: number, last: number): Array<number | 'dots'> {
+  if (last <= 7) return Array.from({ length: last }, (_, i) => i + 1);
+  const pages = new Set<number>([1, 2, last - 1, last, current - 1, current, current + 1]);
+  const sorted = [...pages].filter((n) => n >= 1 && n <= last).sort((a, b) => a - b);
+  const out: Array<number | 'dots'> = [];
+  for (let i = 0; i < sorted.length; i += 1) {
+    if (i > 0 && sorted[i] - sorted[i - 1] > 1) out.push('dots');
+    out.push(sorted[i]);
+  }
+  return out;
+}
+
 function unwrapList<T>(res: unknown): PaginatedResponse<T> {
   const root = res as { data?: unknown; meta?: unknown };
   if (Array.isArray(root?.data)) return { data: root.data as T[], meta: root.meta as PaginatedResponse<T>['meta'] };
@@ -48,12 +61,13 @@ export default function MahasiswaIndexPage(): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [fakultasId, setFakultasId] = useState('');
   const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(25);
   const deferredSearch = useDeferredValue(search.trim());
 
   const studentsQuery = useQuery({
-    queryKey: ['admin', 'mahasiswa', { search: deferredSearch, fakultas_id: fakultasId, page }],
+    queryKey: ['admin', 'mahasiswa', { search: deferredSearch, fakultas_id: fakultasId, page, perPage }],
     queryFn: async () => {
-      const res = await adminApi.users.index({ search: deferredSearch, fakultas_id: fakultasId, page, per_page: 25, role: 'student' });
+      const res = await adminApi.users.index({ search: deferredSearch, fakultas_id: fakultasId, page, per_page: perPage, role: 'student' });
       return unwrapList<StudentUser>(res);
     },
     placeholderData: (previous) => previous,
@@ -68,7 +82,10 @@ export default function MahasiswaIndexPage(): React.JSX.Element {
   const students = studentsQuery.data?.data ?? [];
   const meta = studentsQuery.data?.meta;
   const total = meta?.total ?? students.length;
-  const lastPage = meta?.last_page ?? 1;
+  const lastPage = Math.max(1, meta?.last_page ?? 1);
+  const pages = pageWindow(page, lastPage);
+
+  useEffect(() => { if (page > lastPage) setPage(lastPage); }, [page, lastPage]);
 
   const subtitle = useMemo(() => {
     if (studentsQuery.isLoading) return 'Memuat data mahasiswa...';
@@ -99,10 +116,19 @@ export default function MahasiswaIndexPage(): React.JSX.Element {
               <option value="">Semua Fakultas</option>
               {(facultiesQuery.data ?? []).map((f) => <option key={f.id} value={f.id}>{f.nama ?? f.name ?? `Fakultas #${f.id}`}</option>)}
             </select>
+            <select
+              value={perPage}
+              onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }}
+              className="h-11 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-100"
+              aria-label="Jumlah data per halaman"
+            >
+              {[10, 25, 50, 100].map((n) => <option key={n} value={n}>{n} / halaman</option>)}
+            </select>
             <button
               type="button"
               onClick={() => studentsQuery.refetch()}
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 hover:bg-slate-50"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-black text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+              disabled={studentsQuery.isFetching}
             >
               <RefreshCw className={`h-4 w-4 ${studentsQuery.isFetching ? 'animate-spin' : ''}`} /> Refresh
             </button>
@@ -158,12 +184,20 @@ export default function MahasiswaIndexPage(): React.JSX.Element {
               </tbody>
             </table>
           </div>
-          <div className="flex flex-col gap-3 border-t border-slate-100 px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs font-semibold text-slate-500">Menampilkan {meta?.from ?? 1}-{meta?.to ?? students.length} dari {total.toLocaleString('id-ID')}</p>
-            <div className="flex items-center gap-2">
-              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1 || studentsQuery.isFetching} className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-black text-slate-700 hover:bg-slate-50 disabled:opacity-50">Sebelumnya</button>
-              <span className="text-xs font-black text-slate-500">{page} / {lastPage}</span>
-              <button onClick={() => setPage((p) => Math.min(lastPage, p + 1))} disabled={page >= lastPage || studentsQuery.isFetching} className="rounded-xl border border-slate-200 px-4 py-2 text-xs font-black text-slate-700 hover:bg-slate-50 disabled:opacity-50">Berikutnya</button>
+          <div className="flex flex-col gap-3 border-t border-slate-100 bg-slate-50/40 px-4 py-4 text-sm lg:flex-row lg:items-center lg:justify-between">
+            <p className="text-xs font-semibold text-slate-500">
+              Menampilkan <b className="text-slate-800">{meta?.from ?? 1}-{meta?.to ?? students.length}</b> dari <b className="text-slate-800">{total.toLocaleString('id-ID')}</b> data
+            </p>
+            <div className="flex flex-wrap items-center gap-1.5" aria-label="Navigasi halaman">
+              <button aria-label="Halaman pertama" onClick={() => setPage(1)} disabled={page <= 1 || studentsQuery.isFetching} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40"><ChevronsLeft className="h-4 w-4" /></button>
+              <button aria-label="Halaman sebelumnya" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page <= 1 || studentsQuery.isFetching} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40"><ChevronLeft className="h-4 w-4" /></button>
+              {pages.map((item, idx) => item === 'dots' ? (
+                <span key={`dots-${idx}`} className="px-1 text-xs font-black text-slate-400">…</span>
+              ) : (
+                <button key={item} onClick={() => setPage(item)} disabled={studentsQuery.isFetching} className={`h-9 min-w-9 rounded-xl px-3 text-xs font-black transition ${page === item ? 'bg-cyan-600 text-white shadow-sm' : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'}`}>{item}</button>
+              ))}
+              <button aria-label="Halaman berikutnya" onClick={() => setPage((p) => Math.min(lastPage, p + 1))} disabled={page >= lastPage || studentsQuery.isFetching} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40"><ChevronRight className="h-4 w-4" /></button>
+              <button aria-label="Halaman terakhir" onClick={() => setPage(lastPage)} disabled={page >= lastPage || studentsQuery.isFetching} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40"><ChevronsRight className="h-4 w-4" /></button>
             </div>
           </div>
         </div>

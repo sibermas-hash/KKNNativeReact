@@ -83,3 +83,20 @@ packages/*/dist/
 !**/.env.example
 !**/.env.production.example
 !**/.env.*.example
+
+# ── Local production rescue/backups (FreeBSD server) ────────────────
+*.bak
+*.bak-*
+*.backup
+*.backup-*
+*.orig
+*.tmp
+*.swp
+.audit-fix-backups-*/
+.deploy-backups/
+SIBERMAS_HANDOFF.md
+apps/web/.next*/
+apps/api/storage/app/backups/
+apps/api/update_gpa_*.php
+apps/api/storage/*.bak-*
+apps/api/public/storage

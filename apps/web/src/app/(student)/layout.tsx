@@ -12,8 +12,8 @@ import { NotificationBell } from '@/components/ui/notification-bell';
 import { ProfileIncompleteGuard } from "@/components/ui/profile-incomplete-guard";
 import {
   LayoutDashboard, ClipboardList, Target, FileText, FileCheck,
-  Star, BookOpen, Plane, Home, UserCircle, Image as ImageIcon,
-  Menu, Power, Award, GraduationCap, MessageCircle,
+  Star, BookOpen, Plane, Home, Image as ImageIcon,
+  Menu, Power, Award, GraduationCap, MessageCircle, UserCircle,
 } from 'lucide-react';
 
 type NavItem = {
@@ -37,7 +37,6 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/mahasiswa/laporan-akhir', label: 'Laporan Akhir', icon: BookOpen, phases: ['grading', 'finished'] },
   { href: '/mahasiswa/evaluasi-dpl', label: 'Evaluasi DPL', icon: Star, phases: ['grading', 'finished'] },
   { href: '/mahasiswa/sertifikat', label: 'Sertifikat', icon: Award, phases: ['grading', 'finished'] },
-  { href: '/profil', label: 'Profil', icon: UserCircle, phases: null },
 ];
 
 export default function StudentLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
@@ -86,6 +85,8 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     return <>{children}</>;
   }
 
+  const avatarUrl = (user as unknown as { avatar_url?: string | null; avatar?: string | null }).avatar_url || (user as unknown as { avatar?: string | null }).avatar;
+
   const handleLogout = async () => {
     try { await (await import('@/lib/api')).api.post('/auth/logout'); } catch { /* noop */ }
     clearUser();
@@ -132,11 +133,22 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         {/* User Info */}
         <div className="px-4 py-2">
           <div className="rounded-xl bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] p-3">
-            <p className="text-[9px] font-black text-[color:var(--profile-soft-text)] uppercase tracking-[0.15em]">
-              {ROLE_LABELS[user.roles?.[0] || 'student']}
-            </p>
-            <p className="text-sm font-black text-[color:var(--profile-text)] truncate mt-0.5">{user.name}</p>
-            {user.nim && <p className="text-[10px] font-bold text-[color:var(--profile-muted)] mt-0.5">{user.nim}</p>}
+            <Link href="/profil" onClick={() => setSidebarOpen(false)} className="group block rounded-lg p-1 transition hover:bg-[color:var(--profile-input)]" title="Buka halaman profil">
+              <div className="mb-3 flex justify-center">
+                <div className="h-16 w-16 overflow-hidden rounded-full border-2 border-[color:var(--profile-border)] bg-[color:var(--profile-input)] shadow-sm flex items-center justify-center transition group-hover:scale-105">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt={user.name || 'Foto profil'} className="h-full w-full object-cover" />
+                  ) : (
+                    <UserCircle className="h-10 w-10 text-[color:var(--profile-muted)]" />
+                  )}
+                </div>
+              </div>
+              <p className="text-[9px] font-black text-[color:var(--profile-soft-text)] uppercase tracking-[0.15em] text-center">
+                {ROLE_LABELS[user.roles?.[0] || 'student']}
+              </p>
+              <p className="text-sm font-black text-[color:var(--profile-text)] truncate mt-0.5 text-center group-hover:underline">{user.name}</p>
+              {user.nim && <p className="text-[10px] font-bold text-[color:var(--profile-muted)] mt-0.5 text-center">{user.nim}</p>}
+            </Link>
           </div>
         </div>
 
@@ -187,21 +199,6 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           </div>
         </nav>
 
-        {/* Profile Card */}
-        <div className="p-4">
-          <Link href="/profil" className="flex items-center gap-3 p-3 rounded-2xl bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] shadow-sm hover:shadow-md transition-all group">
-            <div className="h-10 w-10 rounded-xl bg-[color:var(--profile-primary)] flex items-center justify-center text-white shrink-0 shadow-inner group-hover:rotate-6 transition-transform">
-              <span className="text-xs font-black uppercase">{user.name.substring(0, 2)}</span>
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-xs font-black text-[color:var(--profile-text)] truncate leading-none mb-1 font-display">{user.name}</span>
-              <span className="text-[9px] font-bold text-[color:var(--profile-muted)] uppercase tracking-wider flex items-center gap-1 font-sans">
-                <div className="w-1 h-1 rounded-full bg-[color:var(--profile-accent)] animate-pulse" />
-                Mahasiswa
-              </span>
-            </div>
-          </Link>
-        </div>
       </aside>
 
       {/* Main */}

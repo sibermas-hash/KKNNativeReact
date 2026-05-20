@@ -13,6 +13,7 @@ use App\Services\EligibilityService;
 use App\Services\GroupSelectionService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
@@ -88,19 +89,12 @@ class RegistrationApprovalService
                 ]);
             }
 
-            // SECURITY GATE: Verify Academic Eligibility before final approval
-            // Context 'approval' skips registration-window and active-registration checks
-            $eligibility = $this->eligibilityService->checkEligibility(
-                $registration->mahasiswa,
-                $registration->periode_id,
-                [],
-                'approval'
-            );
-            if (! $eligibility['is_eligible']) {
-                $reasons = collect($eligibility['issues'])->pluck('message')->implode(', ');
-                throw ValidationException::withMessages([
-                    'status' => "Pendaftaran tidak dapat disetujui karena mahasiswa tidak memenuhi syarat akademik: {$reasons}",
-                ]);
+            // SECURITY GATE: re-check eligibility + required documents before final approval.
+            $eligibility = $this->eligibilityService->checkEligibility($registration->mahasiswa, $registration->periode_id, ['periode' => $registration->periode], 'approval');
+            if (! ($eligibility['is_eligible'] ?? false)) {
+                $message = collect($eligibility['checks'] ?? [])->first(fn ($check) => ! ($check['passed'] ?? true))['message']
+                    ?? 'Mahasiswa belum memenuhi syarat approval.';
+                throw ValidationException::withMessages(['status' => $message]);
             }
 
             // Try group placement (best-effort, non-blocking)
@@ -124,6 +118,9 @@ class RegistrationApprovalService
                 $registration
             );
         });
+
+        $registration->refresh()->loadMissing(['mahasiswa.user', 'periode']);
+        $this->notifyRegistrationDecision($registration, 'approved');
     }
 
     /**
@@ -158,17 +155,19 @@ class RegistrationApprovalService
                 $registrations = PesertaKkn::query()
                     ->with(['mahasiswa', 'periode', 'dokumen'])
                     ->whereIn('id', $batchIds)
-                    ->whereIn('status', ['pending', 'document_submitted'])
+                    ->whereIn('status', ['pending', 'document_submitted', 'document_verified'])
                     ->when($isFacultyAdmin, function ($query) use ($facultyId) {
                         $query->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
                     })
                     ->lockForUpdate()
                     ->get();
 
+                $approvedInBatch = 0;
+
                 foreach ($registrations as $registration) {
                     // SECURITY GATE: Verify Academic Eligibility before final approval
-                    $eligibility = $this->eligibilityService->checkEligibility($registration->mahasiswa, $registration->periode_id, [], 'approval');
-                    if (! $eligibility['is_eligible']) {
+                    $eligibility = $this->eligibilityService->checkEligibility($registration->mahasiswa, $registration->periode_id, ['periode' => $registration->periode], 'approval');
+                    if (! ($eligibility['is_eligible'] ?? false)) {
                         continue; // Skip ineligible students in bulk action
                     }
 
@@ -189,9 +188,11 @@ class RegistrationApprovalService
                         "Pendaftaran disetujui secara massal untuk Mahasiswa ID {$registration->mahasiswa_id}",
                         $registration
                     );
+
+                    $approvedInBatch++;
                 }
 
-                return $registrations->count();
+                return $approvedInBatch;
             });
 
             $totalCount += $batchCount;
@@ -279,6 +280,44 @@ class RegistrationApprovalService
                 $registration
             );
         });
+
+        $registration->refresh()->loadMissing(['mahasiswa.user', 'periode']);
+        $this->notifyRegistrationDecision($registration, 'rejected', $reason);
+    }
+
+    private function notifyRegistrationDecision(PesertaKkn $registration, string $decision, ?string $reason = null): void
+    {
+        $baseUrl = rtrim((string) env('WA_GATEWAY_URL', ''), '/');
+        $token = (string) env('WA_GATEWAY_TOKEN', '');
+        if ($baseUrl === '' || $token === '') {
+            return;
+        }
+
+        $phone = $registration->mahasiswa?->phone ?: $registration->mahasiswa?->user?->phone;
+        if (! $phone) {
+            return;
+        }
+
+        $nama = $registration->mahasiswa?->nama ?: 'Mahasiswa';
+        $periode = $registration->periode?->name ?: 'KKN';
+        $message = $decision === 'approved'
+            ? "Assalamu'alaikum {$nama}. Pendaftaran {$periode} Anda telah DISETUJUI. Silakan pantau informasi berikutnya melalui SIBERMAS."
+            : "Assalamu'alaikum {$nama}. Pendaftaran {$periode} Anda DITOLAK. Alasan: ".($reason ?: '-').". Silakan perbaiki/konfirmasi melalui SIBERMAS.";
+
+        try {
+            Http::timeout(3)
+                ->withToken($token)
+                ->post("{$baseUrl}/messages/send", [
+                    'to' => $phone,
+                    'message' => $message,
+                ]);
+        } catch (\Throwable $e) {
+            Log::warning('WA gateway notification failed', [
+                'registration_id' => $registration->id,
+                'decision' => $decision,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

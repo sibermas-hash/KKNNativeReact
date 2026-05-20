@@ -1,5 +1,7 @@
 'use client';
 
+import { WorkflowGate } from '@/components/kkn/workflow-gate';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -70,6 +72,9 @@ export default function CreateDailyReportPage(): React.JSX.Element {
   };
 
   return (
+    <WorkflowGate capability="submit_daily_report" title="Laporan Harian Belum Dibuka">
+
+
     <div className="max-w-[800px] mx-auto px-4 py-10">
       <button onClick={() => router.back()} className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-emerald-600 mb-6">
         <ChevronLeft size={16} /> Kembali
@@ -179,5 +184,6 @@ export default function CreateDailyReportPage(): React.JSX.Element {
         </form>
       </div>
     </div>
+    </WorkflowGate>
   );
 }

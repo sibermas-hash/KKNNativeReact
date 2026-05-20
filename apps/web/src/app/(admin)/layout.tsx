@@ -79,6 +79,7 @@ const getNavGroups = (pathname: string, roles: string[]) => {
     { title: 'MANAJEMEN PESERTA', items: [
       { label: 'Audit Kelayakan', href: '/admin/audit-kualifikasi', icon: ShieldCheck },
       { label: 'Registrasi Mahasiswa', href: '/admin/pendaftaran', icon: ClipboardList },
+      { label: 'Jadwal Wawancara', href: '/admin/wawancara', icon: Bell },
       { label: 'Direktori Mahasiswa', href: '/admin/mahasiswa', icon: Users },
       { label: 'Direktori Dosen', href: '/admin/dosen', icon: UserCheck },
     ]},

@@ -4,17 +4,26 @@ declare(strict_types=1);
 
 namespace App\Http\Resources\Api\V1;
 
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
- * R13-SEC-004: Financial PII (nik, no_rekening, nama_bank, npwp) was previously
- * exposed to every authenticated admin/faculty_admin. Now gated via `when()` to
- * superadmin only. Non-superadmin callers simply receive the resource without
- * those keys (Laravel's JsonResource::when semantic).
+ * R13-SEC-004: Financial PII is gated to superadmin only.
+ * Legacy plaintext in encrypted-cast columns can throw DecryptException;
+ * safeAttr() avoids crashing admin pages/bulk actions.
  */
 class DosenResource extends JsonResource
 {
+    private function safeAttr(string $key): mixed
+    {
+        try {
+            return $this->{$key};
+        } catch (DecryptException) {
+            return null;
+        }
+    }
+
     public function toArray(Request $request): array
     {
         $isSuperadmin = (bool) $request->user()?->hasRole('superadmin');
@@ -26,14 +35,11 @@ class DosenResource extends JsonResource
             'nama' => $this->nama,
             'nama_gelar' => $this->nama_gelar,
             'nidn' => $this->nidn,
-
-            // R13-SEC-004: financial / identity PII — superadmin only
-            'nik' => $this->when($isSuperadmin, $this->nik),
-            'phone' => $this->phone,
-            'no_rekening' => $this->when($isSuperadmin, $this->no_rekening),
+            'nik' => $this->when($isSuperadmin, fn () => $this->safeAttr('nik')),
+            'phone' => $this->safeAttr('phone'),
+            'no_rekening' => $this->when($isSuperadmin, fn () => $this->safeAttr('no_rekening')),
             'nama_bank' => $this->when($isSuperadmin, $this->nama_bank),
-            'npwp' => $this->when($isSuperadmin, $this->npwp),
-
+            'npwp' => $this->when($isSuperadmin, fn () => $this->safeAttr('npwp')),
             'jabatan' => $this->jabatan,
             'kelas_jabatan' => $this->kelas_jabatan,
             'tugas_tambahan' => $this->tugas_tambahan,
@@ -43,7 +49,7 @@ class DosenResource extends JsonResource
             'gender' => $this->gender,
             'birth_date' => $this->birth_date?->toDateString(),
             'tempat_lahir' => $this->tempat_lahir,
-            'alamat' => $this->alamat,
+            'alamat' => $this->safeAttr('alamat'),
             'status_aktif' => $this->status_aktif,
             'status_pegawai' => $this->status_pegawai,
             'is_cpns' => $this->is_cpns,

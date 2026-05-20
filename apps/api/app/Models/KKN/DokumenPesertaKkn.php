@@ -53,4 +53,9 @@ class DokumenPesertaKkn extends Model
     {
         return $this->belongsTo(PesertaKkn::class, 'peserta_kkn_id');
     }
+
+    public function pesertaKkn(): BelongsTo
+    {
+        return $this->peserta();
+    }
 }

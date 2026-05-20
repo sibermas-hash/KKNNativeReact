@@ -4,6 +4,7 @@ use App\Http\Middleware\AuthenticateWithCookieToken;
 use App\Http\Middleware\CheckPeriodLock;
 use App\Http\Middleware\CspHeaders;
 use App\Http\Middleware\DisableDebugbar;
+use App\Http\Middleware\EnforceTwoFactor;
 use App\Http\Middleware\EnsureAdminAuthorization;
 use App\Http\Middleware\EnsurePasswordChanged;
 use App\Http\Middleware\EnsurePhase;
@@ -53,12 +54,10 @@ return Application::configure(basePath: dirname(__DIR__))
             ? array_filter(array_map('trim', explode(',', $trustedProxies)))
             : [
                 '127.0.0.1',
-                '::1',
                 '10.0.0.0/8',
                 '172.16.0.0/12',
                 '192.168.0.0/16',
-                // Cloudflare official proxy ranges (IPv4 + IPv6):
-                // https://www.cloudflare.com/ips/
+                // Cloudflare IPv4 ranges
                 '173.245.48.0/20',
                 '103.21.244.0/22',
                 '103.22.200.0/22',
@@ -74,13 +73,6 @@ return Application::configure(basePath: dirname(__DIR__))
                 '104.24.0.0/14',
                 '172.64.0.0/13',
                 '131.0.72.0/22',
-                '2400:cb00::/32',
-                '2606:4700::/32',
-                '2803:f800::/32',
-                '2405:b500::/32',
-                '2405:8100::/32',
-                '2a06:98c0::/29',
-                '2c0f:f248::/32',
             ]);
 
         // TestAutoLogin: Guard ada di dalam class handle() sendiri (langsung pass-through
@@ -130,6 +122,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'phase' => EnsurePhase::class,
             'not_locked' => CheckPeriodLock::class,
             'admin.auth' => EnsureAdminAuthorization::class,
+            '2fa.enforced' => EnforceTwoFactor::class,
             'webhook.signature' => VerifyWebhookSignature::class,
         ]);
 

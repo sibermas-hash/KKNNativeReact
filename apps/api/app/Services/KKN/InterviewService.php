@@ -7,6 +7,7 @@ use App\Models\KKN\InterviewSchedule;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\Periode;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Validation\ValidationException;
 
 class InterviewService
@@ -34,7 +35,7 @@ class InterviewService
 
             $participants = PesertaKkn::query()
                 ->where('periode_id', $periode->id)
-                ->where('status', 'approved')
+                ->whereIn('status', ['approved', 'interview_scheduled'])
                 ->pluck('id');
 
             foreach ($participants as $pesertaId) {
@@ -57,7 +58,7 @@ class InterviewService
         return DB::transaction(function () use ($schedule) {
             $peserta = PesertaKkn::query()
                 ->where('periode_id', $schedule->periode_id)
-                ->where('status', 'approved')
+                ->whereIn('status', ['approved', 'interview_scheduled'])
                 ->get();
 
             foreach ($peserta as $item) {
@@ -90,9 +91,9 @@ class InterviewService
         });
     }
 
-    public function fail(PesertaKkn $peserta, int $processedBy, ?string $notes = null): array
+    public function fail(PesertaKkn $peserta, int $processedBy, ?string $notes = null, ?int $targetPeriodeId = null): array
     {
-        return DB::transaction(function () use ($peserta, $processedBy, $notes) {
+        return DB::transaction(function () use ($peserta, $processedBy, $notes, $targetPeriodeId) {
             $participant = $this->participantFor($peserta);
             $participant->update([
                 'result' => 'failed',
@@ -101,21 +102,23 @@ class InterviewService
                 'processed_at' => now(),
             ]);
 
-            $target = $this->bestFallbackPeriode();
+            $target = $targetPeriodeId ? $this->eligibleFallbackPeriode($targetPeriodeId) : $this->bestFallbackPeriode();
             $fromPeriodeId = $peserta->periode_id;
 
             $peserta->update([
-                'status' => 'pending',
+                'status' => 'approved',
                 'periode_id' => $target->id,
                 'kelompok_id' => null,
-                'notes' => trim(($peserta->notes ? $peserta->notes."\n" : '').'Dipindah otomatis karena gagal wawancara. Menunggu konfirmasi mahasiswa.'),
+                'approved_at' => now(),
+                'approved_by' => $processedBy,
+                'notes' => trim(($peserta->notes ? $peserta->notes."\n" : '').'Tidak lulus wawancara; dialihkan admin ke KKN tanpa wawancara: '.$target->name.'.'),
             ]);
 
             DB::table('registration_histories')->insert([
                 'peserta_kkn_id' => $peserta->id,
                 'from_periode_id' => $fromPeriodeId,
                 'to_periode_id' => $target->id,
-                'reason' => 'Gagal wawancara; dipindah ke KKN dengan sisa kuota terbanyak, menunggu konfirmasi mahasiswa.',
+                'reason' => 'Tidak lulus wawancara; dialihkan admin ke KKN tanpa wawancara.',
                 'processed_by' => $processedBy,
                 'processed_at' => now(),
                 'created_at' => now(),
@@ -140,6 +143,35 @@ class InterviewService
         }
 
         return $participant;
+    }
+
+
+    public function fallbackPeriodes(): Collection
+    {
+        return Periode::query()
+            ->with('jenisKkn')
+            ->where('periode.is_active', true)
+            ->whereHas('jenisKkn', fn ($q) => $q->whereNotIn('code', self::SELECTIVE_CODES))
+            ->orderByDesc('id')
+            ->get();
+    }
+
+    private function eligibleFallbackPeriode(int $periodeId): Periode
+    {
+        $periode = Periode::query()
+            ->with('jenisKkn')
+            ->where('periode.is_active', true)
+            ->whereKey($periodeId)
+            ->whereHas('jenisKkn', fn ($q) => $q->whereNotIn('code', self::SELECTIVE_CODES))
+            ->first();
+
+        if (! $periode) {
+            throw ValidationException::withMessages([
+                'target_periode_id' => 'Periode tujuan harus aktif dan tidak memakai sesi wawancara.',
+            ]);
+        }
+
+        return $periode;
     }
 
     private function bestFallbackPeriode(): Periode

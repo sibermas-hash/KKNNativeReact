@@ -38,7 +38,7 @@ const spaceGrotesk = Space_Grotesk({
 const metadataBase = (() => {
   const fallbackSiteUrl = process.env.NODE_ENV === 'production'
     ? 'https://sibermas.uinsaizu.ac.id'
-    : 'http://localhost:3000';
+    : 'https://sibermas.uinsaizu.ac.id';
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
     || process.env.NEXT_PUBLIC_APP_URL
     || fallbackSiteUrl;

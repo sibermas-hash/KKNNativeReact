@@ -49,7 +49,7 @@ export default function StudentPosterPage(): React.JSX.Element {
 
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-10 space-y-4">
+      <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24 sm:pb-8 space-y-4">
         {[1, 2].map((i) => <div key={i} className="h-32 animate-pulse rounded-2xl bg-slate-200" />)}
       </div>
     );
@@ -59,7 +59,7 @@ export default function StudentPosterPage(): React.JSX.Element {
   const posterUrl = existing?.poster_url || existing?.poster_potensi_desa_path || undefined;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10 space-y-6">
+    <div className="max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24 sm:pb-8 space-y-4 sm:space-y-6">
       {/* Header */}
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
         <div className="flex items-center justify-between">
@@ -131,7 +131,7 @@ export default function StudentPosterPage(): React.JSX.Element {
 
         {/* Drop Zone */}
         <label
-          className={`flex flex-col items-center justify-center gap-3 w-full rounded-2xl border-2 border-dashed px-6 py-10 cursor-pointer transition-all ${
+          className={`flex flex-col items-center justify-center gap-3 w-full rounded-2xl border-2 border-dashed px-4 sm:px-6 py-6 sm:py-10 cursor-pointer transition-all ${
             dragOver ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/30'
           }`}
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -174,7 +174,7 @@ export default function StudentPosterPage(): React.JSX.Element {
             type="button"
             disabled={!file || mutation.isPending}
             onClick={() => mutation.mutate()}
-            className="flex items-center gap-2 px-8 py-3 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-emerald-700 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-200"
+            className="flex items-center gap-2 w-full sm:w-auto justify-center px-4 sm:px-8 py-3 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-emerald-700 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-200"
           >
             {mutation.isPending ? (
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />

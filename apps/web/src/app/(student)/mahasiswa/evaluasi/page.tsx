@@ -48,7 +48,7 @@ export default function StudentEvaluasiPage(): React.JSX.Element {
     : 0;
 
   return (
-    <div className="max-w-[1000px] mx-auto px-4 py-10 space-y-8">
+    <div className="max-w-[1000px] mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24 sm:pb-8 space-y-4 sm:space-y-8">
       {/* Header */}
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
         <div className="flex items-center gap-4">

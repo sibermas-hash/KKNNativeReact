@@ -13,7 +13,6 @@ use App\Services\EligibilityService;
 use App\Services\GroupSelectionService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
@@ -101,7 +100,7 @@ class RegistrationApprovalService
             $prepared = $this->prepareForApproval($registration);
 
             $prepared->update([
-                'status' => 'approved',
+                'status' => app(\App\Services\KKN\InterviewService::class)->isSelectiveRegistration($prepared) ? 'interview_scheduled' : 'approved',
                 'approved_at' => now(),
                 'approved_by' => $approvedBy,
                 'notification_shown' => false,
@@ -120,7 +119,6 @@ class RegistrationApprovalService
         });
 
         $registration->refresh()->loadMissing(['mahasiswa.user', 'periode']);
-        $this->notifyRegistrationDecision($registration, 'approved');
     }
 
     /**
@@ -282,42 +280,6 @@ class RegistrationApprovalService
         });
 
         $registration->refresh()->loadMissing(['mahasiswa.user', 'periode']);
-        $this->notifyRegistrationDecision($registration, 'rejected', $reason);
-    }
-
-    private function notifyRegistrationDecision(PesertaKkn $registration, string $decision, ?string $reason = null): void
-    {
-        $baseUrl = rtrim((string) env('WA_GATEWAY_URL', ''), '/');
-        $token = (string) env('WA_GATEWAY_TOKEN', '');
-        if ($baseUrl === '' || $token === '') {
-            return;
-        }
-
-        $phone = $registration->mahasiswa?->phone ?: $registration->mahasiswa?->user?->phone;
-        if (! $phone) {
-            return;
-        }
-
-        $nama = $registration->mahasiswa?->nama ?: 'Mahasiswa';
-        $periode = $registration->periode?->name ?: 'KKN';
-        $message = $decision === 'approved'
-            ? "Assalamu'alaikum {$nama}. Pendaftaran {$periode} Anda telah DISETUJUI. Silakan pantau informasi berikutnya melalui SIBERMAS."
-            : "Assalamu'alaikum {$nama}. Pendaftaran {$periode} Anda DITOLAK. Alasan: ".($reason ?: '-').". Silakan perbaiki/konfirmasi melalui SIBERMAS.";
-
-        try {
-            Http::timeout(3)
-                ->withToken($token)
-                ->post("{$baseUrl}/messages/send", [
-                    'to' => $phone,
-                    'message' => $message,
-                ]);
-        } catch (\Throwable $e) {
-            Log::warning('WA gateway notification failed', [
-                'registration_id' => $registration->id,
-                'decision' => $decision,
-                'error' => $e->getMessage(),
-            ]);
-        }
     }
 
     /**

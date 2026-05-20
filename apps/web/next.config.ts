@@ -54,6 +54,26 @@ const legacyAuthRedirects = [
   { source: '/login/2fa', destination: '/login-2fa', permanent: false },
 ] satisfies NonNullable<NextConfig['redirects']> extends (...args: never[]) => infer R ? Awaited<R> : never;
 
+const noStoreHeaders = [
+  { key: 'Cache-Control', value: 'private, no-store, no-cache, must-revalidate, max-age=0' },
+  { key: 'Pragma', value: 'no-cache' },
+  { key: 'Expires', value: '0' },
+] satisfies Array<{ key: string; value: string }>;
+
+const protectedNoStoreSources = [
+  '/admin',
+  '/admin/:path*',
+  '/mahasiswa',
+  '/mahasiswa/:path*',
+  '/dosen',
+  '/dosen/:path*',
+  '/profil',
+  '/profil/:path*',
+  '/ganti-password',
+  '/notifikasi',
+  '/notifikasi/:path*',
+] as const;
+
 const nextConfig: NextConfig = {
   // Monorepo: tracer harus start dari root workspace (bukan `apps/web`),
   // supaya symlink pnpm ke `packages/*` dan hoisted deps di root
@@ -171,6 +191,10 @@ const nextConfig: NextConfig = {
         headers: [{ key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, max-age=0' }],
       },
       {
+        source: '/login-2fa',
+        headers: [{ key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, max-age=0' }],
+      },
+      {
         source: '/lupa-kata-sandi',
         headers: [{ key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, max-age=0' }],
       },
@@ -182,6 +206,10 @@ const nextConfig: NextConfig = {
         source: '/ganti-password',
         headers: [{ key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, max-age=0' }],
       },
+      ...protectedNoStoreSources.map((source) => ({
+        source,
+        headers: noStoreHeaders,
+      })),
       {
         // Long-term immutable cache for hashed static assets
         source: '/_next/static/:path*',

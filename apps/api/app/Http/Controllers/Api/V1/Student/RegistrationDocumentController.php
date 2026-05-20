@@ -34,8 +34,8 @@ class RegistrationDocumentController extends Controller
             'method' => $request->method(),
             'content_type' => $request->headers->get('content-type'),
             'content_length' => $request->headers->get('content-length'),
+            'file_count' => count($this->flattenUploadedFiles($request->allFiles())),
             'file_keys' => array_keys($request->allFiles()),
-            'files' => $this->uploadedFileDebug($request->allFiles()),
         ]);
         $mahasiswa = $user->mahasiswa;
 
@@ -88,8 +88,8 @@ class RegistrationDocumentController extends Controller
             logger()->warning('student.documents.upload.empty_request', [
                 'registration_id' => $registration->id,
                 'periode_id' => $periode->id,
+                'file_count' => count($this->flattenUploadedFiles($request->allFiles())),
                 'file_keys' => array_keys($request->allFiles()),
-                'files' => $this->uploadedFileDebug($request->allFiles()),
             ]);
 
             return $this->validationError(
@@ -109,8 +109,8 @@ class RegistrationDocumentController extends Controller
                 'registration_id' => $registration->id,
                 'periode_id' => $periode->id,
                 'errors' => $exception->errors(),
+                'file_count' => count($this->flattenUploadedFiles($request->allFiles())),
                 'file_keys' => array_keys($request->allFiles()),
-                'files' => $this->uploadedFileDebug($request->allFiles()),
                 'uploaded_fields' => $uploadedFields,
                 'rules' => $rules,
             ]);
@@ -202,35 +202,6 @@ class RegistrationDocumentController extends Controller
         return $flat;
     }
 
-    /**
-     * @param array<string, mixed> $items
-     * @return array<string, mixed>
-     */
-    private function uploadedFileDebug(array $items): array
-    {
-        $debug = [];
-
-        foreach ($items as $key => $item) {
-            if ($item instanceof UploadedFile) {
-                $debug[(string) $key] = [
-                    'name' => $item->getClientOriginalName(),
-                    'mime' => $item->getClientMimeType(),
-                    'ext' => $item->getClientOriginalExtension(),
-                    'size' => $item->getSize(),
-                    'valid' => $item->isValid(),
-                    'error' => $item->getError(),
-                ];
-                continue;
-            }
-
-            if (is_array($item)) {
-                $debug[(string) $key] = $this->uploadedFileDebug($item);
-            }
-        }
-
-        return $debug;
-    }
-
     public function viewDocument(Request $request, int $id, string $documentKey): StreamedResponse|JsonResponse
     {
         $user = $request->user();
@@ -276,12 +247,35 @@ class RegistrationDocumentController extends Controller
             return $this->forbidden();
         }
 
-        $periode = Periode::with([
-            'jenisKkn.documentRequirements.defaultTemplate',
-            'documentTemplates.requirement',
-            'documentTemplates.template',
-        ])->findOrFail($id);
+        // Accept both registration_id (new FE) and periode_id (legacy FE), but
+        // always bind the period through the current student's registration.
+        // This prevents students from probing/downloading templates for periods
+        // they are not registered in while keeping old URLs working.
+        $registration = PesertaKkn::with([
+            'periode.jenisKkn.documentRequirements.defaultTemplate',
+            'periode.documentTemplates.requirement',
+            'periode.documentTemplates.template',
+        ])
+            ->where('mahasiswa_id', $mahasiswa->id)
+            ->where('id', $id)
+            ->first();
 
+        if (! $registration) {
+            $registration = PesertaKkn::with([
+                'periode.jenisKkn.documentRequirements.defaultTemplate',
+                'periode.documentTemplates.requirement',
+                'periode.documentTemplates.template',
+            ])
+                ->where('mahasiswa_id', $mahasiswa->id)
+                ->where('periode_id', $id)
+                ->first();
+        }
+
+        if (! $registration || ! $registration->periode) {
+            return $this->notFound('Pendaftaran tidak ditemukan.');
+        }
+
+        $periode = $registration->periode;
         $requirements = $this->documentService->requirementsForPeriod($periode);
         $requirement = collect($requirements)->firstWhere('field', $documentKey);
 
@@ -295,10 +289,14 @@ class RegistrationDocumentController extends Controller
         $template = $assignment?->template
             ?? $periode->jenisKkn?->documentRequirements?->firstWhere('document_key', $documentKey)?->defaultTemplate;
 
-        if (! $template instanceof DocumentTemplate) {
+        if (! $template instanceof DocumentTemplate || blank($template->file_path)) {
             return $this->notFound('Template dokumen tidak ditemukan.');
         }
 
-        return Storage::disk(config('filesystems.default'))->download($template->file_path, $template->file_name);
+        if (! Storage::disk(config('filesystems.default'))->exists($template->file_path)) {
+            return $this->notFound('File template tidak ditemukan.');
+        }
+
+        return Storage::disk(config('filesystems.default'))->download($template->file_path, $template->file_name ?: basename($template->file_path));
     }
 }

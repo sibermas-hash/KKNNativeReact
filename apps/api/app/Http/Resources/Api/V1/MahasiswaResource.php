@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace App\Http\Resources\Api\V1;
 
 use App\Models\User;
+use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/**
- * R13-SEC-005: NIK + mother_name are high-risk PII (identity-theft vector in Indonesia,
- * used for bank/telco verification). Previously exposed to every authenticated user
- * that could view mahasiswa data. Now gated to superadmin only via `when()`.
- */
 class MahasiswaResource extends JsonResource
 {
+    private function safeAttr(string $key): mixed
+    {
+        try { return $this->{$key}; } catch (DecryptException) { return null; }
+    }
+
     public function toArray(Request $request): array
     {
         $user = $request->user();
@@ -29,18 +30,15 @@ class MahasiswaResource extends JsonResource
             'nama' => $this->nama,
             'fakultas_id' => $this->fakultas_id,
             'prodi_id' => $this->prodi_id,
-
-            // R13-SEC-005 + R9-H01 refinement: identity-theft vector protection
-            'nik' => $this->when($isSensitiveVisible, $this->nik),
-            'mother_name' => $this->when($isSensitiveVisible, $this->mother_name),
-
+            'nik' => $this->when($isSensitiveVisible, fn () => $this->safeAttr('nik')),
+            'mother_name' => $this->when($isSensitiveVisible, fn () => $this->safeAttr('mother_name')),
             'gender' => $this->gender,
             'shirt_size' => $this->shirt_size,
             'birth_place' => $this->birth_place,
             'birth_date' => $this->birth_date?->toDateString(),
             'marital_status' => $this->marital_status,
-            'phone' => $this->when($isSensitiveVisible, $this->phone),
-            'alamat' => $this->when($isSensitiveVisible, $this->alamat),
+            'phone' => $this->when($isSensitiveVisible, fn () => $this->safeAttr('phone')),
+            'alamat' => $this->when($isSensitiveVisible, fn () => $this->safeAttr('alamat')),
             'api_email' => $this->when($isSensitiveVisible, $this->api_email),
             'semester' => $this->semester,
             'sks_completed' => $this->sks_completed,
@@ -55,8 +53,6 @@ class MahasiswaResource extends JsonResource
             'fakultas' => $fakultas,
             'prodi' => $prodi,
             'profile_completion' => $this->profile_completion,
-
-            // User account info (loaded via whenLoaded to avoid N+1)
             'user' => $this->when($this->relationLoaded('user') && $this->user, function () {
                 $u = $this->user;
                 return [
@@ -64,15 +60,11 @@ class MahasiswaResource extends JsonResource
                     'username' => $u->username,
                     'email' => $u->email,
                     'is_active' => $u->is_active,
-                    'avatar_url' => $u->avatar
-                        ? rtrim(config('app.url'), '/').'/storage/'.$u->avatar
-                        : null,
+                    'avatar_url' => $u->avatar ? rtrim(config('app.url'), '/').'/storage/'.$u->avatar : null,
                     'password_changed_at' => $u->password_changed_at,
                     'last_login_at' => $u->last_login_at,
                 ];
             }),
-
-            // KKN participation history
             'peserta' => $this->when($this->relationLoaded('peserta'), function () {
                 return $this->peserta->map(fn ($p) => [
                     'id' => $p->id,
@@ -89,30 +81,12 @@ class MahasiswaResource extends JsonResource
         ];
     }
 
-    /**
-     * Determine if sensitive PII data should be exposed.
-     */
     private function shouldShowSensitiveData(?User $user): bool
     {
-        if (! $user) {
-            return false;
-        }
-
-        // Superadmin and admin can see all PII
-        if ($user->hasAnyRole(['superadmin', 'admin'])) {
-            return true;
-        }
-
-        // Students can see their own PII
-        if ($user->hasRole('student') && (int) $user->id === (int) $this->user_id) {
-            return true;
-        }
-
-        // Faculty admins can see PII for students in their faculty
-        if ($user->hasRole('faculty_admin') && $user->fakultas_id && (int) $user->fakultas_id === (int) $this->fakultas_id) {
-            return true;
-        }
-
+        if (! $user) { return false; }
+        if ($user->hasAnyRole(['superadmin', 'admin'])) { return true; }
+        if ($user->hasRole('student') && (int) $user->id === (int) $this->user_id) { return true; }
+        if ($user->hasRole('faculty_admin') && $user->fakultas_id && (int) $user->fakultas_id === (int) $this->fakultas_id) { return true; }
         return false;
     }
 }

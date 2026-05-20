@@ -21,7 +21,7 @@ export default function CertificatesPage(): React.JSX.Element {
 
   return (
     <WorkflowGate capability="generate_certificate" title="Sertifikat Belum Dibuka">
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="max-w-[1440px] mx-auto px-3 sm:px-5 lg:px-8 py-4 sm:py-8 pb-24 sm:pb-8 space-y-4 sm:space-y-8">
       <div className="flex items-center gap-4">
         <div className="h-14 w-14 bg-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg"><GraduationCap size={28} /></div>
         <div><h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Sertifikat & Nilai</h1><p className="text-sm text-slate-400">Lihat nilai dan sertifikat KKN</p></div>
@@ -34,7 +34,7 @@ export default function CertificatesPage(): React.JSX.Element {
           {scores.length > 0 && (
             <div className="space-y-4"><h2 className="text-lg font-black text-slate-700">Nilai KKN</h2>
               {scores.map((s) => (
-                <div key={String(s.id)} className="bg-white rounded-2xl p-4 sm:p-6 ring-1 ring-slate-200 shadow-sm grid grid-cols-3 gap-2 sm:gap-4">
+                <div key={String(s.id)} className="bg-white rounded-2xl p-4 sm:p-6 ring-1 ring-slate-200 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
                   <div><p className="text-[10px] font-black text-slate-400 uppercase">Total Skor</p><p className="text-2xl font-black text-emerald-600">{String(s.total_score || '-')}</p></div>
                   <div><p className="text-[10px] font-black text-slate-400 uppercase">Grade</p><p className="text-2xl font-black text-amber-600">{String(s.letter_grade || '-')}</p></div>
                   <div><p className="text-[10px] font-black text-slate-400 uppercase">Status</p><StatusBadge status={s.is_finalized ? 'approved' : 'pending'} size="md" /></div>

@@ -42,6 +42,10 @@ Route::get('/ready', [HealthController::class, 'ready'])->name('api.ready');
 // New JSON API for Next.js SPA and React Native mobile app.
 
 Route::prefix('v1')->group(function () {
+    // V1 health alias for frontend/proxy checks.
+    Route::get('/health', [HealthController::class, 'check'])->name('api.v1.health');
+    Route::get('/ready', [HealthController::class, 'ready'])->name('api.v1.ready');
+
     // Public endpoints — no auth required. Uses named 'public' tier
     // (30/min IP-based) defined in AppServiceProvider.
     Route::prefix('public')->middleware('throttle:public')->group(function () {
@@ -94,6 +98,30 @@ Route::prefix('v1')->group(function () {
         Route::post('/atur-ulang-kata-sandi', [AuthController::class, 'resetPassword'])
             ->middleware('throttle:5,1')
             ->name('api.v1.auth.reset-password');
+
+        Route::post('/recovery/lookup', [AuthController::class, 'recoveryLookup'])
+            ->middleware('throttle:5,1')
+            ->name('api.v1.auth.recovery.lookup');
+
+        Route::post('/recovery/send-code', [AuthController::class, 'recoverySendCode'])
+            ->middleware('throttle:5,1')
+            ->name('api.v1.auth.recovery.send-code');
+
+        Route::post('/recovery/verify-code', [AuthController::class, 'recoveryVerifyCode'])
+            ->middleware('throttle:5,1')
+            ->name('api.v1.auth.recovery.verify-code');
+
+        Route::post('/recovery/reset-password', [AuthController::class, 'recoveryResetPassword'])
+            ->middleware('throttle:5,1')
+            ->name('api.v1.auth.recovery.reset-password');
+
+        Route::post('/wa/request-otp', [AuthController::class, 'requestWhatsAppOtp'])
+            ->middleware('throttle:5,1')
+            ->name('api.v1.auth.wa.request-otp');
+
+        Route::post('/wa/reset-password', [AuthController::class, 'resetPasswordWithWhatsAppOtp'])
+            ->middleware('throttle:5,1')
+            ->name('api.v1.auth.wa.reset-password');
     });
 
     // Period Context — authenticated

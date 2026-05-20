@@ -64,11 +64,11 @@ export default function WorkProgramCreatePage(): React.JSX.Element {
   };
 
   if (!readinessLoading && !canCreate) {
-    return <div className="max-w-[800px] mx-auto px-4 py-10 space-y-6"><Link href="/mahasiswa/program-kerja" className="inline-flex items-center gap-2 text-sm font-bold text-slate-500"><ChevronLeft size={16}/> Kembali</Link><div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-800"><div className="flex items-center gap-3"><Lock size={22}/><h1 className="font-black uppercase">Program Kerja Belum Dibuka</h1></div><p className="mt-3 text-sm font-semibold">{readiness?.message || 'Menunggu proses administrasi KKN selesai.'}</p></div></div>;
+    return <div className="max-w-[800px] mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24 sm:pb-8 space-y-6"><Link href="/mahasiswa/program-kerja" className="inline-flex items-center gap-2 text-sm font-bold text-slate-500"><ChevronLeft size={16}/> Kembali</Link><div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-800"><div className="flex items-center gap-3"><Lock size={22}/><h1 className="font-black uppercase">Program Kerja Belum Dibuka</h1></div><p className="mt-3 text-sm font-semibold">{readiness?.message || 'Menunggu proses administrasi KKN selesai.'}</p></div></div>;
   }
 
   return (
-    <div className="max-w-[800px] mx-auto px-4 py-10 space-y-8">
+    <div className="max-w-[800px] mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24 sm:pb-8 space-y-8">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/mahasiswa/program-kerja" className="p-2 rounded-xl hover:bg-slate-100 transition-colors" aria-label="Kembali">
@@ -87,7 +87,7 @@ export default function WorkProgramCreatePage(): React.JSX.Element {
 
       <form
         onSubmit={(e) => { e.preventDefault(); mutation.mutate(); }}
-        className="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm space-y-6"
+        className="bg-white rounded-2xl p-4 sm:p-8 border border-slate-100 shadow-sm space-y-6"
       >
         {/* Judul */}
         <div>
@@ -204,7 +204,7 @@ export default function WorkProgramCreatePage(): React.JSX.Element {
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="flex items-center gap-2 px-8 py-3 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-blue-200"
+            className="flex items-center gap-2 w-full sm:w-auto justify-center px-4 sm:px-8 py-3 bg-blue-600 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-blue-700 transition-all active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed shadow-lg shadow-blue-200"
           >
             {mutation.isPending ? (
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />

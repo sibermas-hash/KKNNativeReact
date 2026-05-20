@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Jobs\ValidateAvatarUploadJob;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\DosenResource;
 use App\Http\Resources\Api\V1\MahasiswaResource;
@@ -21,7 +20,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 
@@ -52,6 +50,7 @@ class ProfileController extends Controller
             'gender' => $mahasiswa->gender,
             'shirt_size' => $mahasiswa->shirt_size,
             'phone' => $user->phone,
+            'address' => $user->address,
         ])->filter(fn ($value) => blank($value))->keys()->values()->all() : [];
 
         $lecturerMissing = $dosen ? collect([
@@ -73,11 +72,13 @@ class ProfileController extends Controller
             'address_verified_at' => $user->address_verified_at,
         ])->filter(fn ($value) => blank($value))->keys()->values()->all() : [];
 
-        // Only require address text that the student can fill manually.
-        // Map/geocode fields (village/district/regency/postal/lat/lng/verified_at)
-        // are logistics metadata and MUST NOT lock the dashboard.
         $addressMissing = collect([
             'address' => $user->address,
+            'address_village_name' => $user->address_village_name,
+            'address_district_name' => $user->address_district_name,
+            'address_regency_name' => $user->address_regency_name,
+            'address_postal_code' => $user->address_postal_code,
+            'address_verified_at' => $user->address_verified_at,
         ])->filter(fn ($value) => blank($value))->keys()->values()->all();
 
         return $this->success([
@@ -111,7 +112,6 @@ class ProfileController extends Controller
 
         $validated = $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'phone' => ['nullable', 'string', 'max:20'],
             'address' => ['nullable', 'string', 'max:500'],
             'address_village_name' => ['nullable', 'string', 'max:150'],
@@ -144,50 +144,6 @@ class ProfileController extends Controller
             'dosen_alamat' => ['nullable', 'string', 'max:500'],
         ]);
 
-        // Logistics-style rule: written address is the source of truth; map pin
-        // is operational metadata. Save coordinate/geocoding fields immediately
-        // even after profile is complete, otherwise user corrections disappear
-        // while waiting for approval.
-        $mapFields = [
-            'address', 'address_village_name', 'address_district_name', 'address_regency_name',
-            'address_postal_code', 'address_lat', 'address_lng', 'address_verified_at',
-        ];
-        $immediateMapUpdates = [];
-        $mapChanges = [];
-        foreach ($mapFields as $mapField) {
-            if (array_key_exists($mapField, $validated)) {
-                $newValue = $validated[$mapField];
-                $oldValue = $user->{$mapField};
-
-                if ($this->valuesDiffer($oldValue, $newValue)) {
-                    $immediateMapUpdates[$mapField] = $newValue;
-                    $mapChanges[$mapField] = [
-                        'old' => $this->normalizeChangeValue($oldValue),
-                        'new' => $this->normalizeChangeValue($newValue),
-                    ];
-                }
-
-                unset($validated[$mapField]);
-            }
-        }
-        if (array_key_exists('address_verified', $validated)) {
-            $newVerifiedAt = (bool) $validated['address_verified'] ? now() : null;
-            $oldVerifiedAt = $user->address_verified_at;
-
-            if ($this->valuesDiffer(filled($oldVerifiedAt), (bool) $validated['address_verified'])) {
-                $immediateMapUpdates['address_verified_at'] = $newVerifiedAt;
-                $mapChanges['address_verified_at'] = [
-                    'old' => $this->normalizeChangeValue($oldVerifiedAt),
-                    'new' => $this->normalizeChangeValue($newVerifiedAt),
-                ];
-            }
-
-            unset($validated['address_verified']);
-        }
-        if ($immediateMapUpdates !== []) {
-            $user->forceFill($immediateMapUpdates)->save();
-            $user->refresh();
-        }
         // Build diff: only include fields that actually changed
         $mahasiswa = $user->mahasiswa;
         $dosen = $user->dosen;
@@ -196,9 +152,14 @@ class ProfileController extends Controller
 
         $userMap = [
             'name' => $user->name,
-            'email' => $user->email,
             'phone' => $user->phone,
             'address' => $user->address,
+            'address_village_name' => $user->address_village_name,
+            'address_district_name' => $user->address_district_name,
+            'address_regency_name' => $user->address_regency_name,
+            'address_postal_code' => $user->address_postal_code,
+            'address_lat' => $user->address_lat,
+            'address_lng' => $user->address_lng,
         ];
 
         $mahasiswaMap = $mahasiswa ? [
@@ -248,24 +209,8 @@ class ProfileController extends Controller
         }
 
         if (empty($changes)) {
-            if ($mapChanges !== []) {
-                ActivityLogger::log('profile_update', 'success', $user->id, [
-                    'map_only' => true,
-                    'fields_changed' => array_keys($mapChanges),
-                ]);
-
-                return $this->success([
-                    'map_fields_updated' => array_keys($mapChanges),
-                ], 'Titik peta dan metadata alamat berhasil diperbarui.');
-            }
-
-            return $this->success(null, 'Profil sudah tersimpan.');
+            return $this->badRequest('Tidak ada perubahan yang terdeteksi.');
         }
-
-        $changedFields = array_values(array_unique(array_merge(
-            array_keys($mapChanges),
-            array_keys($changes),
-        )));
 
         $wasProfileComplete = $this->isProfileComplete($user);
 
@@ -276,7 +221,7 @@ class ProfileController extends Controller
 
             ActivityLogger::log('profile_update', 'success', $user->id, [
                 'first_onboarding' => true,
-                'fields_changed' => $changedFields,
+                'fields_changed' => array_keys($changes),
             ]);
 
             return $this->success(null, 'Profil berhasil dilengkapi. Silakan lanjutkan menggunakan portal.');
@@ -299,36 +244,10 @@ class ProfileController extends Controller
 
         ActivityLogger::log('profile_update', 'success', $user->id, [
             'pending_approval' => true,
-            'fields_changed' => $changedFields,
+            'fields_changed' => array_keys($changes),
         ]);
 
         return $this->success(null, 'Permintaan perubahan profil berhasil dikirim. Menunggu persetujuan superadmin.', 202);
-    }
-
-    private function valuesDiffer(mixed $oldValue, mixed $newValue): bool
-    {
-        return $this->normalizeChangeValue($oldValue) !== $this->normalizeChangeValue($newValue);
-    }
-
-    private function normalizeChangeValue(mixed $value): mixed
-    {
-        if ($value instanceof \DateTimeInterface) {
-            return $value->toIso8601String();
-        }
-
-        if (is_bool($value)) {
-            return $value;
-        }
-
-        if (is_int($value) || is_float($value)) {
-            return (string) $value;
-        }
-
-        if ($value === '') {
-            return null;
-        }
-
-        return $value === null ? null : trim((string) $value);
     }
 
     private function isProfileComplete(User $user): bool
@@ -337,7 +256,12 @@ class ProfileController extends Controller
 
         $baseComplete = filled($user->avatar)
             && filled($user->phone)
-            && filled($user->address);
+            && filled($user->address)
+            && filled($user->address_village_name)
+            && filled($user->address_district_name)
+            && filled($user->address_regency_name)
+            && filled($user->address_postal_code)
+            && filled($user->address_verified_at);
 
         if (! $baseComplete) {
             return false;
@@ -367,7 +291,7 @@ class ProfileController extends Controller
 
     private function applyProfileChanges(User $user, array $changes, ?Mahasiswa $mahasiswa, ?Dosen $dosen): void
     {
-        $userFields = ['name', 'email', 'phone', 'address', 'address_village_name', 'address_district_name', 'address_regency_name', 'address_postal_code', 'address_lat', 'address_lng', 'address_registered_at', 'address_verified_at'];
+        $userFields = ['name', 'phone', 'address', 'address_village_name', 'address_district_name', 'address_regency_name', 'address_postal_code', 'address_lat', 'address_lng', 'address_registered_at', 'address_verified_at'];
         $mahasiswaFields = ['nik', 'mother_name', 'gender', 'shirt_size', 'birth_place', 'birth_date'];
         $dosenFields = ['nama_gelar', 'nidn', 'dosen_nik', 'jabatan', 'kelas_jabatan', 'tugas_tambahan', 'golongan', 'pangkat', 'no_rekening', 'nama_bank', 'npwp', 'gender', 'birth_date', 'dosen_alamat'];
 
@@ -409,7 +333,7 @@ class ProfileController extends Controller
         }
     }
 
-    public function updateAvatar(Request $request): JsonResponse
+    public function updateAvatar(Request $request, AvatarValidationService $validator): JsonResponse
     {
         $user = $request->user();
 
@@ -418,15 +342,30 @@ class ProfileController extends Controller
         ]);
 
         $path = $request->file('avatar')->store('avatars', 'public');
-        if (! is_string($path) || $path === '' || $path === '0') {
-            return $this->error('Gagal menyimpan file foto. Silakan coba lagi atau hubungi admin.', 500);
+
+        // Layer 3: AI Validation (background merah + jas almamater + pose formal)
+        $aiResult = $validator->validateAvatar($path);
+
+        // Layer 3 AI tegas menolak (tidak butuh manual review) — tolak instan
+        if (! $aiResult['is_valid'] && ! $aiResult['requires_manual_review']) {
+            Storage::disk('public')->delete($path);
+
+            ActivityLogger::log('avatar_rejected', 'failed', $user->id, [
+                'reason' => $aiResult['reason'],
+            ]);
+
+            return $this->error('VALIDATION_ERROR', $aiResult['reason'] ?? 'Foto ditolak oleh sistem AI.', 422, [
+                'avatar' => [$aiResult['reason']],
+            ]);
         }
 
-        // Run avatar moderation inline. Queue worker was unreliable/offline,
-        // causing photos to stay pending forever. Inline gives immediate
-        // approved/rejected feedback to students.
-        $queueBackedValidation = false;
-        $reason = 'Sedang diverifikasi otomatis oleh sistem.';
+        // Layer 4: tentukan status moderasi
+        // - approved: AI lolos tegas → foto langsung bisa dipakai
+        // - pending : AI tidak tersedia/ragu → butuh review admin
+        $status = $aiResult['requires_manual_review'] ? 'pending' : 'approved';
+        $reason = $aiResult['requires_manual_review']
+            ? 'Server AI tidak tersedia, menunggu verifikasi admin.'
+            : null;
 
         if ($user->avatar) {
             Storage::disk('public')->delete($user->avatar);
@@ -434,60 +373,24 @@ class ProfileController extends Controller
 
         $user->update([
             'avatar' => $path,
-            'avatar_moderation_status' => 'pending',
+            'avatar_moderation_status' => $status,
             'avatar_moderation_reason' => $reason,
-            'avatar_moderation_reviewed_at' => null,
+            'avatar_moderation_reviewed_at' => $status === 'approved' ? now() : null,
             'avatar_moderation_reviewed_by' => null,
         ]);
 
-        if ($queueBackedValidation) {
-            ValidateAvatarUploadJob::dispatch($user->id, $path)->onQueue('long');
-        } else {
-            $result = app(AvatarValidationService::class)->validateAvatar($path);
-            $user->refresh();
-
-            if ($user->avatar === $path && $user->avatar_moderation_status === 'pending') {
-                if (! $result['is_valid'] && ! $result['requires_manual_review']) {
-                    Storage::disk('public')->delete($path);
-                    $user->forceFill([
-                        'avatar' => null,
-                        'avatar_moderation_status' => 'rejected',
-                        'avatar_moderation_reason' => $result['reason'] ?? 'Foto ditolak oleh sistem AI.',
-                        'avatar_moderation_reviewed_at' => now(),
-                        'avatar_moderation_reviewed_by' => null,
-                    ])->save();
-                } else {
-                    $user->forceFill([
-                        'avatar_moderation_status' => $result['requires_manual_review'] ? 'pending' : 'approved',
-                        'avatar_moderation_reason' => $result['requires_manual_review']
-                            ? 'Server AI tidak tersedia, menunggu verifikasi admin.'
-                            : null,
-                        'avatar_moderation_reviewed_at' => $result['requires_manual_review'] ? null : now(),
-                        'avatar_moderation_reviewed_by' => null,
-                    ])->save();
-                }
-            }
-        }
-
-        $user->refresh();
-        $currentStatus = $user->avatar_moderation_status ?: 'pending';
-        $currentReason = $user->avatar_moderation_reason ?: null;
-
         ActivityLogger::log('avatar_upload', 'success', $user->id, [
-            'moderation_status' => $currentStatus,
-            'moderation_reason' => $currentReason,
+            'moderation_status' => $status,
         ]);
 
-        $msg = match ($currentStatus) {
-            'approved' => 'Foto berhasil diunggah dan disetujui otomatis oleh AI.',
-            'rejected' => 'Foto berhasil diunggah tetapi ditolak oleh AI. Silakan upload ulang sesuai ketentuan.',
-            default => 'Foto berhasil diunggah dan sedang diverifikasi otomatis.',
-        };
+        $msg = $status === 'pending'
+            ? 'Foto berhasil diunggah namun butuh persetujuan Admin karena server AI sedang sibuk.'
+            : 'Foto profil berhasil diperbarui.';
 
         return $this->success([
-            'avatar_url' => $user->avatar ? asset('storage/'.$user->avatar) : null,
-            'moderation_status' => $currentStatus,
-            'moderation_reason' => $currentReason,
+            'avatar_url' => asset('storage/'.$path),
+            'moderation_status' => $status,
+            'moderation_reason' => $reason,
         ], $msg);
     }
 

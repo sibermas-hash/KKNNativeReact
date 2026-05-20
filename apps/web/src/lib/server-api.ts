@@ -132,7 +132,6 @@ export async function fetchApi<T>(path: string, options?: RequestInit): Promise<
     const res = await fetch(`${API_BASE}${path}`, {
       ...options,
       headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...options?.headers },
-      next: { revalidate: 60 },
     });
     if (!res.ok || !isJsonResponse(res)) return null;
     return res.json() as Promise<T>;
@@ -163,7 +162,6 @@ export async function fetchApiStrict<T>(
     const res = await fetch(`${API_BASE}${path}`, {
       ...options,
       headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...options?.headers },
-      next: options?.cache === 'no-store' ? undefined : { revalidate: 60 },
     });
 
     if (res.status === 404) {

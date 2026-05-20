@@ -225,6 +225,9 @@ export function adminEndpoints(client: AxiosInstance) {
       update: (id: number, data: Record<string, unknown>) => client.patch(`/admin/interviews/${id}`, data),
       destroy: (id: number) => client.delete(`/admin/interviews/${id}`),
       sync: (id: number) => client.post(`/admin/interviews/${id}/sync`, {}),
+      targets: () => client.get('/admin/interviews/targets/non-interview'),
+      passParticipant: (id: number, data?: { notes?: string }) => client.post(`/admin/interviews/participants/${id}/pass`, data ?? {}),
+      transferParticipant: (id: number, data: { target_periode_id: number; notes?: string }) => client.post(`/admin/interviews/participants/${id}/transfer`, data),
     },
 
     groups: {

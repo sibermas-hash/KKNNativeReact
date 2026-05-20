@@ -72,7 +72,7 @@ export default function DplEvaluationPage(): React.JSX.Element {
             <h1 className="text-3xl font-black text-emerald-950 uppercase tracking-tight">Evaluasi Terkirim</h1>
             <p className="text-slate-500 font-medium">Terima kasih telah memberikan masukan untuk peningkatan kualitas bimbingan KKN.</p>
           </div>
-          <Link href="/mahasiswa" className="inline-flex px-8 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all">
+          <Link href="/mahasiswa" className="inline-flex w-full sm:w-auto justify-center px-4 sm:px-8 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all">
             Kembali ke Dashboard
           </Link>
         </motion.div>
@@ -132,7 +132,7 @@ export default function DplEvaluationPage(): React.JSX.Element {
           ))}
         </div>
 
-        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-4">
+        <div className="bg-white p-4 sm:p-8 rounded-2xl sm:rounded-[2rem] border border-slate-100 shadow-sm space-y-4">
           <label className="flex items-center gap-2 text-[10px] font-black text-blue-600 uppercase tracking-widest ml-1">
             <MessageSquare size={14} /> Kritik & Saran Tambahan
           </label>

@@ -20,7 +20,7 @@ type JenisInfo = {
   registration_mode_label?: string;
   placement_mode_label?: string;
 };
-interface Registration { id: number; mahasiswa?: { nama?: string; nim?: string; fakultas?: { nama?: string } }; periode?: { name?: string; jenis_kkn?: JenisInfo }; kelompok_id?: number | null; kelompok?: { id?: number } | null; status: string; first_uploaded_at?: string | null; document_summary?: DocSummary }
+interface Registration { id: number; mahasiswa?: { nama?: string; nim?: string; fakultas?: { nama?: string } }; periode?: { name?: string; jenis_kkn?: JenisInfo }; kelompok_id?: number | null; kelompok?: { id?: number } | null; status: string; first_uploaded_at?: string | null; created_at?: string | null; updated_at?: string | null; document_summary?: DocSummary }
 type ApiList = { items: Registration[]; meta?: { current_page?: number; last_page?: number; total?: number; per_page?: number; from?: number; to?: number } };
 type PeriodOption = { id: number; name?: string; jenis_kkn?: JenisInfo | null; jenis?: JenisInfo | null; jenis_kkn_id?: number };
 type JenisCard = {
@@ -82,8 +82,8 @@ function DocumentSummaryCell({ summary, registrationId }: { summary?: DocSummary
       const url = URL.createObjectURL(blob);
       if (previewUrl) URL.revokeObjectURL(previewUrl);
       setPreviewUrl(url);
-      setPreviewName(doc.file_name || item.file_name || item.label);
-      setPreviewType(blob.type || doc.mime_type || '');
+      setPreviewName((doc?.file_name || item.file_name || item.label) as string);
+      setPreviewType(blob.type || doc?.mime_type || '');
     } catch { toast.error('Gagal memuat preview dokumen'); }
     finally { setLoadingField(null); }
   };
@@ -122,6 +122,7 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [approveConfirm, setApproveConfirm] = useState<Registration | null>(null);
   const [bulkApproveConfirm, setBulkApproveConfirm] = useState(false);
+  const [isExportingApprovedDocs, setIsExportingApprovedDocs] = useState(false);
   const [rejectTarget, setRejectTarget] = useState<Registration | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
@@ -145,6 +146,8 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
   const { data: activePeriods = [] } = useQuery<PeriodOption[]>({
     queryKey: ['admin', 'periods', 'active-registration-review'],
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    staleTime: 300_000,
     queryFn: async () => {
       const res = await adminApi.periods.index({ is_active: true, per_page: 100 });
       const payload = (res as { data?: unknown }).data ?? res;
@@ -156,6 +159,8 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
   const { data, isLoading, isError, refetch } = useQuery<ApiList>({
     queryKey: ["admin", "registrations", { statusGroup, status, search, periodeId, jenisKknId, page, perPage, dateSort }],
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    staleTime: 60_000,
     placeholderData: keepPreviousData,
     queryFn: async () => {
       const res = await rawApi.get("/admin/pendaftaran", { params: { status_group: statusGroup || undefined, status: status || undefined, search, periode_id: periodeId || undefined, jenis_kkn_id: jenisKknId || undefined, sort: 'first_uploaded_at', direction: dateSort, page, per_page: perPage } });
@@ -167,17 +172,13 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
   const { data: stats } = useQuery<{ total: number; review: number; approved: number; rejected: number }>({
     queryKey: ['admin', 'registrations', 'fast-stats', { search, periodeId, jenisKknId }],
     refetchOnWindowFocus: false,
+    refetchOnMount: false,
+    staleTime: 60_000,
     placeholderData: keepPreviousData,
     queryFn: async () => {
-      const base = { search, periode_id: periodeId || undefined, jenis_kkn_id: jenisKknId || undefined, per_page: 1 };
-      const [total, review, approved, rejected] = await Promise.all([
-        rawApi.get('/admin/pendaftaran', { params: { ...base } }),
-        rawApi.get('/admin/pendaftaran', { params: { ...base, status_group: 'unprocessed' } }),
-        rawApi.get('/admin/pendaftaran', { params: { ...base, status: 'approved' } }),
-        rawApi.get('/admin/pendaftaran', { params: { ...base, status: 'rejected' } }),
-      ]);
-      const getTotal = (res: unknown) => ((res as { data?: { meta?: { total?: number } } }).data?.meta?.total ?? 0);
-      return { total: getTotal(total), review: getTotal(review), approved: getTotal(approved), rejected: getTotal(rejected) };
+      const res = await rawApi.get('/admin/pendaftaran/stats', { params: { search, periode_id: periodeId || undefined, jenis_kkn_id: jenisKknId || undefined } });
+      const payload = (res.data?.data ?? res.data) as { total?: number; review?: number; approved?: number; rejected?: number };
+      return { total: payload.total ?? 0, review: payload.review ?? 0, approved: payload.approved ?? 0, rejected: payload.rejected ?? 0 };
     },
   });
   const registrations = data?.items ?? [];
@@ -215,17 +216,25 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
   const bulkApproveMutation = useMutation({ mutationFn: (ids: number[]) => adminApi.registrations.bulkApprove(ids), onSuccess: (res: unknown) => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); const payload = (res as { data?: { approved_count?: number } })?.data; toast.success(`${payload?.approved_count ?? selectedIds.length} pendaftaran disetujui`); setSelectedIds([]); setBulkApproveConfirm(false); }, onError: () => toast.error('Gagal menyetujui massal') });
 
   const toggleSelect = (r: Registration) => REVIEWABLE.includes(r.status) && setSelectedIds((prev) => prev.includes(r.id) ? prev.filter((i) => i !== r.id) : [...prev, r.id]);
-  const exportFile = async (format: 'xlsx' | 'pdf') => {
+  const exportApprovedDocumentation = async () => {
+    setIsExportingApprovedDocs(true);
     try {
-      const res = await adminApi.registrations.exportFile({ format, status: status || undefined, periode_id: periodeId || undefined, jenis_kkn_id: jenisKknId || undefined, limit: 50000 });
+      const res = await rawApi.get('/admin/pendaftaran/export-approved-dokumentasi', {
+        params: { periode_id: periodeId || undefined, jenis_kkn_id: jenisKknId || undefined, limit: 50000 },
+        responseType: 'blob',
+      });
       const blob = (res as { data: Blob }).data;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'peserta-kkn-lengkap-' + new Date().toISOString().slice(0,10) + '.' + format;
+      a.download = 'pendaftar-approved-dokumentasi-' + new Date().toISOString().slice(0,10) + '.xlsx';
       a.click();
       URL.revokeObjectURL(url);
-    } catch { toast.error('Gagal export ' + format.toUpperCase()); }
+    } catch {
+      toast.error('Gagal export XLSX approved dokumentasi');
+    } finally {
+      setIsExportingApprovedDocs(false);
+    }
   };
   const submitReject = () => { const reason = rejectReason.trim(); if (reason.length < 5) return toast.error('Alasan minimal 5 karakter'); if (rejectTarget) rejectMutation.mutate({ id: rejectTarget.id, reason }); };
 
@@ -252,16 +261,17 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
     <div className="rounded-xl bg-white p-3 shadow-sm ring-1 ring-slate-200">
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex items-center gap-2 pr-2 text-sm font-black text-slate-800"><Filter size={16} /> Filter</div>
-        {[{value:'unprocessed',label:'Belum diproses'},{value:'processed',label:'Sudah diproses'},{value:'',label:'Semua'}].map((tab) => <button key={tab.value || 'all-group'} type="button" onClick={() => { setStatusGroup(tab.value); setStatus(''); }} className={`h-10 rounded-xl px-3 text-xs font-black uppercase tracking-wide ring-1 transition ${statusGroup === tab.value ? 'bg-teal-600 text-white ring-teal-600' : 'bg-white text-slate-600 ring-slate-200 hover:bg-slate-50'}`}>{tab.label}</button>)}
+        {[{value:'unprocessed',label:'Belum lengkap'},{value:'processed',label:'Sudah diproses'},{value:'',label:'Semua'}].map((tab) => <button key={tab.value || 'all-group'} type="button" onClick={() => { setStatusGroup(tab.value); setStatus(''); }} className={`h-10 rounded-xl px-3 text-xs font-black uppercase tracking-wide ring-1 transition ${statusGroup === tab.value ? 'bg-teal-600 text-white ring-teal-600' : 'bg-white text-slate-600 ring-slate-200 hover:bg-slate-50'}`}>{tab.label}</button>)}
         <select value={jenisKknId} onChange={(e) => setJenisKknId(e.target.value)} className="h-10 max-w-[220px] rounded-xl border border-slate-200 bg-white px-3 text-xs font-black uppercase text-slate-600" aria-label="Filter jenis KKN"><option value="">Semua Jenis KKN</option>{jenisCards.map((j) => <option key={j.id} value={j.id}>{j.name}</option>)}</select>
         <div className="relative min-w-[240px] flex-1"><Search className="pointer-events-none absolute left-3 top-2.5 text-slate-400" size={16} /><input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari nama atau NIM" className="h-10 w-full rounded-xl border border-slate-200 pl-9 pr-4 text-sm font-bold outline-none focus:border-teal-300 focus:ring-2 focus:ring-teal-100" /></div>
         <select value={perPage} onChange={(e) => { setPerPage(Number(e.target.value)); setPage(1); }} className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-black uppercase text-slate-600" aria-label="Jumlah data per halaman">{[10,25,50,100].map((n) => <option key={n} value={n}>{n} / halaman</option>)}</select>
         <button onClick={() => refetch()} disabled={isLoading} className="h-10 rounded-xl border border-slate-200 px-4 text-xs font-black uppercase text-slate-600 hover:bg-slate-50 disabled:opacity-50"><RefreshCw size={14} className="inline" /> Refresh</button>
+        <button onClick={exportApprovedDocumentation} disabled={isExportingApprovedDocs} className="h-10 rounded-xl bg-emerald-600 px-4 text-xs font-black uppercase text-white shadow-sm hover:bg-emerald-700 disabled:opacity-50"><Download size={14} className="inline" /> {isExportingApprovedDocs ? 'Mengunduh...' : 'Export XLSX Approved Dokumentasi'}</button>
         {selectedIds.length > 0 && <button onClick={() => setBulkApproveConfirm(true)} className="h-10 rounded-xl bg-emerald-600 px-4 text-xs font-black uppercase text-white">Setujui {selectedIds.length}</button>}
       </div>    </div>
 
-    {isLoading ? <div className="h-40 animate-pulse rounded-2xl bg-slate-200" /> : isError ? <div className="rounded-2xl bg-rose-50 p-6 text-center"><p className="font-bold text-rose-700">Gagal memuat data</p><button onClick={() => refetch()} className="mt-3 rounded-xl bg-rose-600 px-4 py-2 text-xs font-black text-white">Coba Lagi</button></div> : registrations.length === 0 ? <EmptyState icon={<ClipboardList size={48} />} title="Tidak ada pendaftaran sesuai filter" /> : <><div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs font-semibold text-blue-800">Tips: klik Detail untuk melihat berkas. Gunakan Setujui hanya jika dokumen wajib lengkap. Jika menolak, tulis alasan jelas agar mahasiswa bisa memperbaiki.</div><div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-      <div className="overflow-x-auto"><table className="min-w-full divide-y divide-slate-100 text-sm"><thead className="bg-slate-50 text-left text-xs font-black uppercase tracking-wide text-slate-500"><tr><th className="w-10 px-4 py-3"></th><th className="px-4 py-3">Mahasiswa</th><th className="px-4 py-3">Jenis/Periode</th><th className="px-4 py-3">Status</th><th className="px-4 py-3"><button type="button" onClick={toggleDateSort} className="inline-flex items-center gap-1 hover:text-slate-900">Tanggal {dateSort === 'asc' ? '↑' : '↓'}<ArrowUpDown size={12}/></button></th><th className="px-4 py-3">Dokumen</th><th className="px-4 py-3 text-right">Aksi</th></tr></thead><tbody className="divide-y divide-slate-100">{registrations.map((r) => { const reviewable = REVIEWABLE.includes(r.status); return <tr key={r.id} className="align-top hover:bg-slate-50/60"><td className="px-4 py-4"><input type="checkbox" checked={selectedIds.includes(r.id)} disabled={!reviewable} onChange={() => toggleSelect(r)} className="h-4 w-4 disabled:opacity-30" /></td><td className="px-4 py-4"><p className="font-black text-slate-900">{r.mahasiswa?.nama || '-'}</p><p className="text-xs text-slate-500">{r.mahasiswa?.nim || '-'} • {r.mahasiswa?.fakultas?.nama || '-'}</p></td><td className="px-4 py-4"><p className="font-bold text-slate-700">{r.periode?.jenis_kkn?.name || '-'}</p><p className="text-xs text-slate-500">{r.periode?.name || '-'}</p></td><td className="px-4 py-4"><StatusBadge status={r.status || ''} />{r.status === 'approved' && !r.kelompok_id && !r.kelompok && <span className="mt-2 inline-flex rounded-lg bg-amber-50 px-2 py-1 text-[10px] font-black uppercase text-amber-700 ring-1 ring-amber-100">Menunggu Penempatan</span>}</td><td className="px-4 py-4"><p className="text-xs font-bold text-slate-700">{fmtDateTime(r.first_uploaded_at)}</p></td><td className="px-4 py-4"><DocumentSummaryCell summary={r.document_summary} registrationId={r.id} /></td><td className="px-4 py-4"><div className="flex justify-end gap-2">{reviewable && <><button onClick={() => setApproveConfirm(r)} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-black text-white"><CheckCircle2 size={12} className="inline" /> Setujui</button><button onClick={() => { setRejectTarget(r); setRejectReason(''); }} className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-black text-rose-700"><XCircle size={12} className="inline" /> Tolak</button></>}<Link href={`/admin/pendaftaran/${r.id}?returnTo=${encodeURIComponent(`/admin/pendaftaran?${new URLSearchParams({ status_group: statusGroup, ...(status ? { status } : {}), ...(search ? { search } : {}), ...(periodeId ? { periode_id: periodeId } : {}), ...(jenisKknId ? { jenis_kkn_id: jenisKknId } : {}), sort: 'first_uploaded_at', direction: dateSort, page: String(currentPage), per_page: String(perPage) }).toString()}`)}`} className="rounded-lg bg-slate-100 px-3 py-2 text-xs font-black text-slate-700"><Eye size={12} className="inline" /> Detail</Link></div></td></tr>; })}</tbody></table></div>
+    {isLoading ? <div className="h-40 animate-pulse rounded-2xl bg-slate-200" /> : isError ? <div className="rounded-2xl bg-rose-50 p-6 text-center"><p className="font-bold text-rose-700">Gagal memuat data</p><button onClick={() => refetch()} className="mt-3 rounded-xl bg-rose-600 px-4 py-2 text-xs font-black text-white">Coba Lagi</button></div> : registrations.length === 0 ? <EmptyState icon={<ClipboardList size={48} />} title="Tidak ada pendaftaran sesuai filter" /> : <><div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs font-semibold text-blue-800">Tips: klik Detail untuk melihat berkas. Gunakan Setujui hanya jika dokumen wajib lengkap. Jika menolak, tulis alasan jelas agar mahasiswa bisa memperbaiki.</div><div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+      <div className="overflow-x-auto pb-2 [scrollbar-gutter:stable]"><table className="min-w-[1180px] divide-y divide-slate-100 text-sm"><thead className="bg-slate-50 text-left text-xs font-black uppercase tracking-wide text-slate-500"><tr><th className="w-10 px-4 py-3"></th><th className="px-4 py-3">Mahasiswa</th><th className="px-4 py-3">Jenis/Periode</th><th className="px-4 py-3">Status</th><th className="px-4 py-3"><button type="button" onClick={toggleDateSort} className="inline-flex items-center gap-1 hover:text-slate-900">Tanggal {dateSort === 'asc' ? '↑' : '↓'}<ArrowUpDown size={12}/></button></th><th className="px-4 py-3">Dokumen</th><th className="sticky right-0 z-10 bg-slate-50 px-4 py-3 text-right">Aksi</th></tr></thead><tbody className="divide-y divide-slate-100">{registrations.map((r) => { const reviewable = REVIEWABLE.includes(r.status); return <tr key={r.id} className="align-top hover:bg-slate-50/60"><td className="px-4 py-4"><input type="checkbox" checked={selectedIds.includes(r.id)} disabled={!reviewable} onChange={() => toggleSelect(r)} className="h-4 w-4 disabled:opacity-30" /></td><td className="px-4 py-4"><p className="font-black text-slate-900">{r.mahasiswa?.nama || '-'}</p><p className="text-xs text-slate-500">{r.mahasiswa?.nim || '-'} • {r.mahasiswa?.fakultas?.nama || '-'}</p></td><td className="px-4 py-4"><p className="font-bold text-slate-700">{r.periode?.jenis_kkn?.name || '-'}</p><p className="text-xs text-slate-500">{r.periode?.name || '-'}</p></td><td className="px-4 py-4"><StatusBadge status={r.status || ''} />{r.status === 'approved' && !r.kelompok_id && !r.kelompok && <span className="mt-2 inline-flex rounded-lg bg-amber-50 px-2 py-1 text-[10px] font-black uppercase text-amber-700 ring-1 ring-amber-100">Menunggu Penempatan</span>}</td><td className="px-4 py-4"><p className="text-xs font-bold text-slate-700">{fmtDateTime(r.first_uploaded_at || r.created_at || r.updated_at)}</p><p className="mt-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400">{r.first_uploaded_at ? 'Upload pertama' : 'Daftar'}</p></td><td className="px-4 py-4"><DocumentSummaryCell summary={r.document_summary} registrationId={r.id} /></td><td className="sticky right-0 z-[5] bg-white px-4 py-4 shadow-[-8px_0_16px_-16px_rgba(15,23,42,.45)]"><div className="flex justify-end gap-2">{reviewable && <><button onClick={() => setApproveConfirm(r)} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-black text-white"><CheckCircle2 size={12} className="inline" /> Setujui</button><button onClick={() => { setRejectTarget(r); setRejectReason(''); }} className="rounded-lg bg-rose-50 px-3 py-2 text-xs font-black text-rose-700"><XCircle size={12} className="inline" /> Tolak</button></>}<Link href={`/admin/pendaftaran/${r.id}?returnTo=${encodeURIComponent(`/admin/pendaftaran?${new URLSearchParams({ status_group: statusGroup, ...(status ? { status } : {}), ...(search ? { search } : {}), ...(periodeId ? { periode_id: periodeId } : {}), ...(jenisKknId ? { jenis_kkn_id: jenisKknId } : {}), sort: 'first_uploaded_at', direction: dateSort, page: String(currentPage), per_page: String(perPage) }).toString()}`)}`} className="rounded-lg bg-slate-100 px-3 py-2 text-xs font-black text-slate-700"><Eye size={12} className="inline" /> Detail</Link></div></td></tr>; })}</tbody></table></div>
     </div></>}
 
     {meta && <div className="flex flex-col gap-3 rounded-xl bg-white p-4 ring-1 ring-slate-200 lg:flex-row lg:items-center lg:justify-between">

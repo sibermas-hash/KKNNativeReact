@@ -32,8 +32,8 @@ export default function PoskoPage(): React.JSX.Element {
   return (
     <WorkflowGate capability="ready_for_activity" title="Informasi Posko Belum Dibuka">
 
-    <div className="max-w-[600px] mx-auto px-4 py-10">
-      <div className="bg-white rounded-[2rem] p-8 border border-emerald-50 shadow-sm">
+    <div className="max-w-[600px] mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24 sm:pb-8">
+      <div className="bg-white rounded-2xl sm:rounded-[2rem] p-4 sm:p-8 border border-emerald-50 shadow-sm">
         <div className="flex items-center gap-4 mb-8">
           <div className="h-12 w-12 bg-emerald-600 rounded-xl flex items-center justify-center text-white"><MapPin size={24} /></div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Posko Kelompok</h1>

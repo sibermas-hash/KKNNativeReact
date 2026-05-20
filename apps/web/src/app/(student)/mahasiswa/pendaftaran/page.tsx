@@ -112,7 +112,7 @@ function PeriodCard({ period, onRegister, isRegistering, disabled }: { period: P
   const isQuotaFull = !!period.quota_full || (quotaTotal > 0 && (remaining ?? 0) <= 0);
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+    <div className="overflow-hidden rounded-xl sm:rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
       {/* Header */}
       <div className="border-b border-slate-100 px-6 py-5">
         <div className="flex items-start justify-between gap-4">
@@ -242,7 +242,7 @@ export default function RegistrationFormPage(): React.JSX.Element {
 
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-4xl space-y-4 px-4 py-8">
+      <div className="mx-auto max-w-4xl space-y-4 px-3 sm:px-4 py-4 sm:py-8 pb-24 sm:pb-8">
         {[1, 2, 3].map((i) => <div key={i} className="h-32 animate-pulse rounded-2xl bg-slate-200" />)}
       </div>
     );
@@ -250,7 +250,7 @@ export default function RegistrationFormPage(): React.JSX.Element {
 
   if (isError) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-8">
+      <div className="mx-auto max-w-4xl px-3 sm:px-4 py-4 sm:py-8 pb-24 sm:pb-8">
         <div className="rounded-2xl bg-rose-50 border border-rose-200 p-6 text-center space-y-3">
           <p className="text-sm font-bold text-rose-700">Gagal memuat data pendaftaran.</p>
           <button
@@ -270,7 +270,7 @@ export default function RegistrationFormPage(): React.JSX.Element {
   const registrationStatus = data?.registration_status as RegistrationStatus | undefined;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6 px-4 py-8">
+    <div className="mx-auto max-w-4xl space-y-4 sm:space-y-6 px-3 sm:px-4 py-4 sm:py-8 pb-24 sm:pb-8">
       {/* Page Header */}
       <div className="flex items-center gap-4">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-600 text-white shadow-lg">
@@ -350,7 +350,7 @@ export default function RegistrationFormPage(): React.JSX.Element {
         const partOk = parts[statementStep].items.every((_, i) => checks[`item_${offset + i}`]) && (statementStep < 3 || (signatureNim.trim().length > 0 && signatureName.trim().length > 0));
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
-            <div className="w-full max-w-2xl rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
+            <div className="w-[calc(100vw-1.5rem)] max-w-2xl rounded-2xl bg-white shadow-2xl ring-1 ring-slate-200">
               <div className="border-b border-slate-100 p-5">
                 <p className="text-xs font-black uppercase tracking-widest text-teal-600">Surat Pernyataan KKN • Part {statementStep + 1}/4</p>
                 <h3 className="mt-1 text-xl font-black text-slate-900">{parts[statementStep].title}</h3>
@@ -361,7 +361,7 @@ export default function RegistrationFormPage(): React.JSX.Element {
                   const key = `item_${offset + i}`;
                   return <label key={key} className="flex gap-3 rounded-xl border border-slate-200 p-3 text-sm font-semibold text-slate-700"><input type="checkbox" checked={!!checks[key]} onChange={(e) => setChecks((c) => ({ ...c, [key]: e.target.checked }))} className="mt-1 h-4 w-4" /> <span>{item}</span></label>;
                 })}
-                {statementStep === 3 && <div className="grid gap-3 sm:grid-cols-2"><input value={signatureName} onChange={(e) => setSignatureName(e.target.value)} placeholder="Nama lengkap" className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold" /><input value={signatureNim} onChange={(e) => setSignatureNim(e.target.value)} placeholder="Ketik NIM sebagai TTD digital" className="rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold" /></div>}
+                {statementStep === 3 && <div className="grid gap-3 sm:grid-cols-2"><input value={signatureName} onChange={(e) => setSignatureName(e.target.value)} placeholder="Nama lengkap" className="min-h-11 rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold" /><input value={signatureNim} onChange={(e) => setSignatureNim(e.target.value)} placeholder="Ketik NIM sebagai TTD digital" className="min-h-11 rounded-xl border border-slate-300 px-3 py-2 text-sm font-semibold" /></div>}
               </div>
               <div className="flex justify-between gap-3 border-t border-slate-100 p-5">
                 <button onClick={() => { setConfirmPeriod(null); setStatementStep(0); }} className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold text-slate-600">Batal</button>

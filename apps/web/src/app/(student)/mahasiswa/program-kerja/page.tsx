@@ -28,7 +28,7 @@ function WorkProgramsContent(): React.JSX.Element {
   const canCreate = readiness?.can_create === true;
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <div className="max-w-[1440px] mx-auto px-3 sm:px-5 lg:px-8 py-4 sm:py-8 pb-24 sm:pb-8 space-y-4 sm:space-y-8">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="h-14 w-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg"><Presentation size={28} /></div>
@@ -46,7 +46,7 @@ function WorkProgramsContent(): React.JSX.Element {
           {programs.map((p) => (
             <Link key={String(p.id)} href={`/mahasiswa/program-kerja/${p.id}`} className="block bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-all group">
               <div className="flex items-start justify-between">
-                <div><h3 className="text-lg font-black text-slate-900 group-hover:text-blue-700 transition-colors">{String(p.title || '')}</h3><p className="mt-1 text-sm text-slate-500 line-clamp-2">{String(p.description || '-')}</p></div>
+                <div><h3 className="text-base sm:text-lg font-black text-slate-900 group-hover:text-blue-700 transition-colors">{String(p.title || '')}</h3><p className="mt-1 text-sm text-slate-500 line-clamp-2">{String(p.description || '-')}</p></div>
                 <StatusBadge status={String(p.status || 'draft')} />
               </div>
             </Link>

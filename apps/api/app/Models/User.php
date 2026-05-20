@@ -62,11 +62,19 @@ class User extends Authenticatable
         'fakultas_id',
         'manually_edited_fields',
         'notification_preferences',
+        // 2FA fields intentionally excluded — use forceFill() in the 2FA setup flow
+        'two_factor_confirmed_at',
+        'two_factor_enforced',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+        // R13-DB-004: 2FA secrets stored encrypted-at-rest but ALSO hidden
+        // from serialization. Without this, any Resource or toArray() call
+        // decrypts and leaks the TOTP seed + recovery codes.
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     protected $casts = [
@@ -97,6 +105,13 @@ class User extends Authenticatable
         'address_regency_name' => 'encrypted',
         'address_postal_code' => 'encrypted',
 
+        // 2FA (TOTP) — encrypted at rest.
+        // two_factor_secret: base32 TOTP secret (Google Authenticator compatible)
+        // two_factor_recovery_codes: JSON array of single-use backup codes (hashed)
+        'two_factor_secret' => 'encrypted',
+        'two_factor_recovery_codes' => 'encrypted:array',
+        'two_factor_confirmed_at' => 'datetime',
+        'two_factor_enforced' => 'boolean',
     ];
 
     /** @use HasFactory<UserFactory> */
@@ -160,7 +175,39 @@ class User extends Authenticatable
      * Password policy: Minimum 8 characters, mixed case, numbers, and symbols.
      * Apply this across all password validation rules for consistency.
      */
-    public const PASSWORD_REQUIREMENTS = ['min:8', 'regex:/[a-z]/', 'regex:/[A-Z]/', 'regex:/[0-9]/', 'regex:/[@$!%*#?&]/'];
+    public const PASSWORD_REQUIREMENTS = 'min:8|mixed_case|numbers|symbols';
+
+    // ── 2FA (TOTP) helpers ───────────────────────────────────────────
+
+    /**
+     * Apakah user sudah mengaktifkan + mengkonfirmasi 2FA?
+     */
+    public function hasTwoFactorEnabled(): bool
+    {
+        return filled($this->two_factor_secret) && filled($this->two_factor_confirmed_at);
+    }
+
+    /**
+     * Apakah user WAJIB pakai 2FA berdasarkan role atau enforced flag?
+     * - superadmin selalu wajib
+     * - admin wajib
+     * - dpl wajib
+     * - dosen biasa + student optional
+     */
+    public function requiresTwoFactor(): bool
+    {
+        if ($this->two_factor_enforced) {
+            return true;
+        }
+        $privilegedRoles = ['superadmin', 'admin', 'faculty_admin', 'dpl'];
+        foreach ($privilegedRoles as $role) {
+            if ($this->hasRole($role)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public function fakultas(): BelongsTo
     {

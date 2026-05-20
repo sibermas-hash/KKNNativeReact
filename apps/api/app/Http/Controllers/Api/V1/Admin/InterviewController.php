@@ -17,7 +17,7 @@ class InterviewController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = InterviewSchedule::query()
-            ->with(['periode.jenisKkn', 'createdBy:id,name,email'])
+            ->with(['periode.jenisKkn', 'createdBy:id,name,email', 'participants.pesertaKkn.mahasiswa.fakultas', 'participants.pesertaKkn.mahasiswa.prodi'])
             ->withCount('participants')
             ->latest('interview_date');
 
@@ -62,6 +62,30 @@ class InterviewController extends Controller
         return $this->success($schedule, 'Jadwal wawancara dibuat dan peserta lulus administrasi dijadwalkan.', 201);
     }
 
+    public function targets(InterviewService $service): JsonResponse
+    {
+        return $this->success($service->fallbackPeriodes());
+    }
+
+    public function pass(Request $request, int $participantId, InterviewService $service): JsonResponse
+    {
+        $participant = \App\Models\KKN\InterviewParticipant::with('pesertaKkn')->findOrFail($participantId);
+        $data = $request->validate(['notes' => ['nullable', 'string', 'max:2000']]);
+        $service->pass($participant->pesertaKkn, (int) auth()->id(), $data['notes'] ?? null);
+        return $this->success($participant->refresh()->load('pesertaKkn.mahasiswa'), 'Peserta dinyatakan lulus wawancara.');
+    }
+
+    public function transfer(Request $request, int $participantId, InterviewService $service): JsonResponse
+    {
+        $participant = \App\Models\KKN\InterviewParticipant::with('pesertaKkn')->findOrFail($participantId);
+        $data = $request->validate([
+            'target_periode_id' => ['required', 'integer', 'exists:periode,id'],
+            'notes' => ['nullable', 'string', 'max:2000'],
+        ]);
+        $result = $service->fail($participant->pesertaKkn, (int) auth()->id(), $data['notes'] ?? null, (int) $data['target_periode_id']);
+        return $this->success($result, 'Peserta dialihkan ke KKN tanpa wawancara dan disetujui.');
+    }
+
     public function update(Request $request, InterviewSchedule $interview): JsonResponse
     {
         $data = $request->validate([
@@ -82,7 +106,7 @@ class InterviewController extends Controller
         $count = $service->syncParticipants($interview);
 
         return $this->success(
-            $interview->refresh()->load(['periode.jenisKkn', 'participants.peserta.mahasiswa']),
+            $interview->refresh()->load(['periode.jenisKkn', 'participants.pesertaKkn.mahasiswa']),
             "Sinkronisasi selesai. {$count} peserta approved ditambahkan ke jadwal wawancara."
         );
     }

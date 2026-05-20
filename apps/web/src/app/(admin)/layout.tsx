@@ -24,8 +24,8 @@ import {
 
 const getNavGroups = (pathname: string, roles: string[]) => {
   const isSuperadmin = roles.includes('superadmin');
-  const isBlog = pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi') || pathname.includes('/admin/chat');
-  const isSystem = pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/prodi') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/konfigurasi-penilaian') || pathname.includes('/admin/monitoring');
+  const isBlog = pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi') || pathname.includes('/admin/chat') || pathname.includes('/admin/konten-publik');
+  const isSystem = pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/prodi') || pathname.includes('/admin/konfigurasi-penilaian') || pathname.includes('/admin/monitoring');
 
   if (isBlog) return [
     { title: 'MANAJEMEN KONTEN', items: [
@@ -79,7 +79,8 @@ const getNavGroups = (pathname: string, roles: string[]) => {
     { title: 'MANAJEMEN PESERTA', items: [
       { label: 'Audit Kelayakan', href: '/admin/audit-kualifikasi', icon: ShieldCheck },
       { label: 'Registrasi Mahasiswa', href: '/admin/pendaftaran', icon: ClipboardList },
-      { label: 'Jadwal Wawancara', href: '/admin/wawancara', icon: Bell },
+      { label: 'Peserta KKN', href: '/admin/peserta-kkn', icon: GraduationCap },
+      { label: 'Wawancara', href: '/admin/wawancara', icon: Bell },
       { label: 'Direktori Mahasiswa', href: '/admin/mahasiswa', icon: Users },
       { label: 'Direktori Dosen', href: '/admin/dosen', icon: UserCheck },
     ]},
@@ -102,33 +103,27 @@ const getNavGroups = (pathname: string, roles: string[]) => {
 export default function AdminLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isAuthenticated, isLoading, clearUser, fetchUser } = useAuthStore();
+  const { user, isAuthenticated, isLoading, clearUser } = useAuthStore();
   const { activePeriod } = usePeriodStore();
   const { config: themeConfig } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Must be before any early returns — Rules of Hooks
   const navGroups = useMemo(() => getNavGroups(pathname, user?.roles || []), [pathname, user?.roles]);
-  const isBlog = useMemo(() => pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi') || pathname.includes('/admin/chat'), [pathname]);
-  const isSystem = useMemo(() => pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/prodi') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/monitoring'), [pathname]);
+  const isBlog = useMemo(() => pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi') || pathname.includes('/admin/chat') || pathname.includes('/admin/konten-publik'), [pathname]);
+  const isSystem = useMemo(() => pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/prodi') || pathname.includes('/admin/konfigurasi-penilaian') || pathname.includes('/admin/monitoring'), [pathname]);
 
   useEffect(() => {
     if (isLoading) return;
-    if (!isAuthenticated) {
-      void fetchUser(true).then((result) => {
-        if (result !== 'authenticated') router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
-      });
-      return;
-    }
+    if (!isAuthenticated) { router.replace('/login'); return; }
     if (user) {
       const r = user.roles || [];
       const isSuperadmin = r.includes('superadmin');
       if (!isSuperadmin && !user.password_changed_at) { router.replace('/ganti-password'); return; }
       if (!isSuperadmin && (!user.profile_complete || user.must_change_password)) { router.replace('/profil'); return; }
       if (!r.includes('superadmin') && !r.includes('admin') && !r.includes('faculty_admin')) router.replace('/');
-      if (!isSuperadmin && isSystem) { router.replace('/admin'); return; }
     }
-  }, [isLoading, isAuthenticated, user, router, pathname, isSystem, fetchUser]);
+  }, [isLoading, isAuthenticated, user, router]);
 
   const roles = user?.roles || [];
   const hasAdminRole = roles.includes('superadmin') || roles.includes('admin') || roles.includes('faculty_admin');
@@ -153,7 +148,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="app-readable min-h-screen font-sans transition-colors duration-500" style={{ ...themeConfig.vars, background: themeConfig.backdrop }}>
+    <div className="min-h-screen font-sans transition-colors duration-500" style={{ ...themeConfig.vars, background: themeConfig.backdrop }}>
       <CommandPalette />
       {/* Sidebar overlay mobile */}
       {sidebarOpen && (
@@ -177,7 +172,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <div className="mt-4">
             <h1 className="text-base font-black leading-none tracking-tight flex items-center gap-2 font-display uppercase text-[color:var(--profile-text)]">
-              {isBlog ? 'CONTENT HUB' : isSystem ? 'SYSTEM REGISTRY' : (
+              {isBlog ? 'CONTENT HUB' : isSystem ? 'SYSTEM HUB' : (
                 <span><span className="text-[color:var(--profile-primary)]">SIBER</span><span className="text-[color:var(--profile-accent)]">MAS</span></span>
               )}
               <span className={clsx('h-1.5 w-1.5 rounded-full animate-pulse bg-[color:var(--profile-accent)]')} />

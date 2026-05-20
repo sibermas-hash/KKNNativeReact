@@ -54,7 +54,7 @@ export function HomeContent({
   return (
     <>
       {/* --- INFORMATION SECTION --- */}
-      <section className="bg-white py-14 sm:py-20">
+      <section className="bg-white py-10 sm:py-14">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <RevealOnScroll direction="up">
             <div className="max-w-3xl">
@@ -214,7 +214,7 @@ export function HomeContent({
       </section>
 
       {/* --- STATS SECTION with CountUp & GlowCards --- */}
-      <section className="border-t border-emerald-100 bg-emerald-50/70 py-16">
+      <section className="border-t border-emerald-100 bg-emerald-50/70 py-10 sm:py-14">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <RevealOnScroll direction="up">
             <p className="text-center text-xs font-bold uppercase tracking-[0.25em] text-emerald-600 mb-8">
@@ -274,7 +274,7 @@ export function HomeContent({
 
       {/* --- VISI / TENTANG LPPM SECTION --- */}
       {visi && (
-        <section className="border-t border-emerald-100 bg-white py-16 sm:py-20">
+        <section className="border-t border-emerald-100 bg-white py-10 sm:py-14">
           <div className="mx-auto max-w-7xl px-6 lg:px-8">
             <RevealOnScroll direction="up">
               <div className="mx-auto max-w-3xl text-center">

@@ -77,6 +77,17 @@ export function Providers({ children }: { children: ReactNode }): React.JSX.Elem
     let cancelled = false;
 
     void (async () => {
+      const hasCookie = await hasServerAuthCookie();
+      if (cancelled) return;
+
+      if (!isProtected && !hasCookie) {
+        resetAuthState();
+        try {
+          window.sessionStorage.removeItem(staleCookieGuardKey);
+        } catch { /* private browsing / blocked storage */ }
+        return;
+      }
+
       const authResult = await useAuthStore.getState().fetchUser();
       if (cancelled) return;
 
@@ -96,7 +107,7 @@ export function Providers({ children }: { children: ReactNode }): React.JSX.Elem
         return;
       }
 
-      const hasStaleAuthCookie = authResult === 'anonymous' && await hasServerAuthCookie();
+      const hasStaleAuthCookie = authResult === 'anonymous' && hasCookie;
 
       if (!hasStaleAuthCookie) {
         try {

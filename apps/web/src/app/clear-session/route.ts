@@ -5,19 +5,8 @@ import { NextRequest, NextResponse } from 'next/server';
  * Frontend-owned route that clears stale auth cookies without colliding with
  * the reverse-proxied Laravel `/api/*` namespace in production.
  */
-function getPublicOrigin(request: NextRequest): string {
-  const explicitOrigin = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL;
-  if (explicitOrigin) {
-    return explicitOrigin.replace(/\/+$/, '');
-  }
-
-  const forwardedProto = request.headers.get('x-forwarded-proto');
-  const forwardedHost = request.headers.get('x-forwarded-host');
-  if (forwardedProto && forwardedHost) {
-    return `${forwardedProto}://${forwardedHost}`;
-  }
-
-  return request.nextUrl.origin;
+function getPublicOrigin(_request: NextRequest): string {
+  return 'https://sibermas.uinsaizu.ac.id';
 }
 
 function getCookieDomains(request: NextRequest): Array<string | undefined> {

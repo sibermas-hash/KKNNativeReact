@@ -66,7 +66,7 @@ export default function FinalReportPage(): React.JSX.Element {
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white rounded-[2rem] p-8 border border-emerald-100 shadow-sm space-y-6"
+          className="bg-white rounded-2xl sm:rounded-[2rem] p-4 sm:p-8 border border-emerald-100 shadow-sm space-y-6"
         >
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
@@ -89,7 +89,7 @@ export default function FinalReportPage(): React.JSX.Element {
           <div className="bg-slate-50 rounded-2xl p-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <FileText className="text-slate-400" size={20} />
-              <span className="text-sm font-bold text-slate-700 truncate max-w-[200px]">{String(report.file_name || '')}</span>
+              <span className="text-sm font-bold text-slate-700 truncate max-w-[150px] sm:max-w-[200px]">{String(report.file_name || '')}</span>
             </div>
             <a 
               href={String(report.file_url || '') || apiUrl(`/student/final-report/${report.id}/preview`)} 
@@ -173,7 +173,7 @@ export default function FinalReportPage(): React.JSX.Element {
                   setFile(f);
                 }}
               />
-              <div className="px-8 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all">
+              <div className="w-full sm:w-auto justify-center px-4 sm:px-8 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all">
                 {file ? 'Ganti File' : 'Cari File PDF'}
               </div>
             </label>

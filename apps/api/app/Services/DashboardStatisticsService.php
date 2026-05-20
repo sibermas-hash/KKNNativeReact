@@ -16,8 +16,6 @@ use Illuminate\Support\Facades\Log;
 
 class DashboardStatisticsService
 {
-    private const CACHE_TTL = 300; // 5 minutes
-
     /**
      * M-003: Log any dashboard sub-query that exceeds this wall-clock budget.
      * Use `config(['dashboard.slow_query_ms' => 500])` to override per env.
@@ -57,18 +55,14 @@ class DashboardStatisticsService
      */
     public function getPeriodStatistics(int $periodId, ?int $facultyId = null): array
     {
-        $cacheKey = "dashboard:period:{$periodId}:faculty:".($facultyId ?? 'global');
-
         try {
-            return Cache::remember($cacheKey, self::CACHE_TTL, function () use ($periodId, $facultyId) {
-                return [
-                    'summary' => $this->measure('summary', fn () => $this->getSummaryStats($periodId, $facultyId)),
-                    'students_by_status' => $this->measure('students_by_status', fn () => $this->getStudentsByStatus($periodId, $facultyId)),
-                    'grade_distribution' => $this->measure('grade_distribution', fn () => $this->getGradeDistribution($periodId, $facultyId)),
-                    'dpl_workload' => $this->measure('dpl_workload', fn () => $this->getDplWorkload($periodId, $facultyId)),
-                    'sdg_distribution' => $this->measure('sdg_distribution', fn () => $this->getSdgDistribution($periodId, $facultyId)),
-                ];
-            });
+            return [
+                'summary' => $this->measure('summary', fn () => $this->getSummaryStats($periodId, $facultyId)),
+                'students_by_status' => $this->measure('students_by_status', fn () => $this->getStudentsByStatus($periodId, $facultyId)),
+                'grade_distribution' => $this->measure('grade_distribution', fn () => $this->getGradeDistribution($periodId, $facultyId)),
+                'dpl_workload' => $this->measure('dpl_workload', fn () => $this->getDplWorkload($periodId, $facultyId)),
+                'sdg_distribution' => $this->measure('sdg_distribution', fn () => $this->getSdgDistribution($periodId, $facultyId)),
+            ];
         } catch (\Throwable $e) {
             report($e);
 
@@ -121,8 +115,6 @@ class DashboardStatisticsService
         }
         $reportedPosko = $poskoQuery->count();
 
-        $onboardingStats = $this->getStudentOnboardingStats($facultyId);
-
         return [
             'total_students' => $totalStudents,
             'total_groups' => $totalGroups,
@@ -133,67 +125,9 @@ class DashboardStatisticsService
             'assigned_students' => $assignedStudents,
             'unassigned_students' => $unassignedStudents,
             'reported_posko' => $reportedPosko,
-            'student_accounts_total' => $onboardingStats['total'],
-            'student_not_logged_in' => $onboardingStats['not_logged_in'],
-            'student_logged_in_profile_incomplete' => $onboardingStats['logged_in_profile_incomplete'],
-            'student_profile_complete' => $onboardingStats['profile_complete'],
         ];
     }
 
-    /**
-     * Student onboarding funnel for admin dashboard.
-     * Counts are account-level (users with role student), not period registration counts.
-     */
-    private function getStudentOnboardingStats(?int $facultyId = null): array
-    {
-        $base = DB::table('users')
-            ->join('model_has_roles', function ($join) {
-                $join->on('model_has_roles.model_id', '=', 'users.id')
-                    ->where('model_has_roles.model_type', '=', 'App\\Models\\User');
-            })
-            ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
-            ->leftJoin('mahasiswa', 'mahasiswa.user_id', '=', 'users.id')
-            ->where('roles.name', 'student')
-            ->whereNull('users.deleted_at');
-
-        if ($facultyId) {
-            $base->where('mahasiswa.fakultas_id', $facultyId);
-        }
-
-        $completeCondition = function ($q): void {
-            $q->whereNotNull('users.avatar')
-                ->whereNotNull('users.phone')
-                ->whereNotNull('users.address')
-                ->whereNotNull('mahasiswa.nik')
-                ->whereNotNull('mahasiswa.mother_name')
-                ->whereNotNull('mahasiswa.birth_place')
-                ->whereNotNull('mahasiswa.birth_date')
-                ->whereNotNull('mahasiswa.gender')
-                ->whereNotNull('mahasiswa.shirt_size');
-        };
-
-        $total = (clone $base)->count();
-        $profileComplete = (clone $base)->where($completeCondition)->count();
-        // Default-password account = belum menyelesaikan first-login.
-        // Banyak phone/address terisi dari SIAKAD/import, jadi "profile kosong"
-        // tidak boleh ditafsirkan semua kolom null. Avatar null adalah indikator
-        // kuat user belum pernah menyelesaikan onboarding profil.
-        $notLoggedIn = (clone $base)
-            ->where('users.must_change_password', true)
-            ->whereNull('users.avatar')
-            ->count();
-        $loggedInIncomplete = (clone $base)
-            ->where('users.must_change_password', false)
-            ->whereNot($completeCondition)
-            ->count();
-
-        return [
-            'total' => (int) $total,
-            'not_logged_in' => (int) $notLoggedIn,
-            'logged_in_profile_incomplete' => (int) $loggedInIncomplete,
-            'profile_complete' => (int) $profileComplete,
-        ];
-    }
     /**
      * Get student registration counts by status.
      */
@@ -296,9 +230,7 @@ class DashboardStatisticsService
      */
     public function getWeeklyTrend(int $periodId): array
     {
-        $cacheKey = "dashboard:weekly_trend:{$periodId}";
-
-        return Cache::remember($cacheKey, 300, function () use ($periodId) {
+        return (function () use ($periodId) {
             $days = collect(range(6, 0))->map(fn ($i) => now()->subDays($i)->format('Y-m-d'));
             $from = now()->subDays(6)->startOfDay();
             $to = now()->endOfDay();
@@ -327,7 +259,7 @@ class DashboardStatisticsService
                     'validasi' => (int) ($validations[$date] ?? 0),
                 ];
             })->values()->toArray();
-        });
+        })();
     }
 
     /**

@@ -67,7 +67,7 @@ function RegistrationCard({ reg, onCancel, isCancelling }: { reg: Registration; 
   const canCancel = (isPending || isDocSubmitted) && !reg.kelompok_id;
 
   return (
-    <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+    <div className="overflow-hidden rounded-xl sm:rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
       {/* Status Header */}
       <div className={`px-6 py-4 ${isApproved ? 'bg-emerald-50' : isRejected ? 'bg-rose-50' : 'bg-slate-50'}`}>
         <div className="flex items-center justify-between">
@@ -251,7 +251,7 @@ export default function RegistrationStatusPage(): React.JSX.Element {
   const registrations = ((data as unknown as { registrations?: Registration[] })?.registrations as Registration[]) || [];
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
+    <div className="mx-auto max-w-3xl space-y-4 sm:space-y-6 px-3 sm:px-4 py-4 sm:py-8 pb-24 sm:pb-8">
       {/* Header */}
       <div className="flex items-center gap-4">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-600 text-white shadow-lg">

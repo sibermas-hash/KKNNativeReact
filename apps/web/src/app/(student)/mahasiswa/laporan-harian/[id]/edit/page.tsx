@@ -50,12 +50,12 @@ export default function EditDailyReportPage(): React.JSX.Element {
   };
 
   return (
-    <div className="max-w-[800px] mx-auto px-4 py-10">
+    <div className="max-w-[800px] mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24 sm:pb-8">
       <button onClick={() => router.back()} className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-emerald-600 mb-6">
         <ChevronLeft size={16} /> Kembali
       </button>
 
-      <div className="bg-white rounded-[2rem] p-8 border border-emerald-50 shadow-sm">
+      <div className="bg-white rounded-2xl sm:rounded-[2rem] p-4 sm:p-8 border border-emerald-50 shadow-sm">
         <h1 className="text-2xl font-black text-emerald-950 tracking-tight uppercase mb-8">Edit Laporan Harian</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>

@@ -132,22 +132,26 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
         {/* User Info */}
         <div className="px-4 py-2">
-          <div className="rounded-xl bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] p-3">
-            <Link href="/profil" onClick={() => setSidebarOpen(false)} className="group block rounded-lg p-1 transition hover:bg-[color:var(--profile-input)]" title="Buka halaman profil">
+          <div className="relative overflow-hidden rounded-2xl border border-white/60 bg-gradient-to-br from-white via-emerald-50/80 to-cyan-50/70 p-3 shadow-lg shadow-emerald-900/5 ring-1 ring-emerald-100/60">
+            <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-emerald-300/20 blur-2xl" />
+            <Link href="/profil" onClick={() => setSidebarOpen(false)} className="group relative block rounded-xl p-1 transition hover:bg-white/55" title="Buka halaman profil">
               <div className="mb-3 flex justify-center">
-                <div className="h-16 w-16 overflow-hidden rounded-full border-2 border-[color:var(--profile-border)] bg-[color:var(--profile-input)] shadow-sm flex items-center justify-center transition group-hover:scale-105">
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt={user.name || 'Foto profil'} className="h-full w-full object-cover" />
-                  ) : (
-                    <UserCircle className="h-10 w-10 text-[color:var(--profile-muted)]" />
-                  )}
+                <div className="rounded-full bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-400 p-[3px] shadow-lg shadow-emerald-900/20 ring-4 ring-white/80 transition group-hover:scale-105">
+                  <div className="h-20 w-20 overflow-hidden rounded-full bg-white flex items-center justify-center">
+                    {avatarUrl ? (
+                      <img src={avatarUrl} alt={user.name || 'Foto profil'} className="h-full w-full rounded-full object-cover" />
+                    ) : (
+                      <UserCircle className="h-12 w-12 text-emerald-500" />
+                    )}
+                  </div>
                 </div>
               </div>
-              <p className="text-[9px] font-black text-[color:var(--profile-soft-text)] uppercase tracking-[0.15em] text-center">
+              <p className="mx-auto w-fit rounded-full bg-emerald-100 px-2.5 py-1 text-[9px] font-black text-emerald-700 uppercase tracking-[0.15em] text-center">
                 {ROLE_LABELS[user.roles?.[0] || 'student']}
               </p>
-              <p className="text-sm font-black text-[color:var(--profile-text)] truncate mt-0.5 text-center group-hover:underline">{user.name}</p>
+              <p className="text-sm font-black text-[color:var(--profile-text)] truncate mt-2 text-center group-hover:text-emerald-700">{user.name}</p>
               {user.nim && <p className="text-[10px] font-bold text-[color:var(--profile-muted)] mt-0.5 text-center">{user.nim}</p>}
+              <p className="mt-2 text-center text-[9px] font-bold uppercase tracking-wider text-emerald-600 opacity-0 transition group-hover:opacity-100">Lihat Profil</p>
             </Link>
           </div>
         </div>

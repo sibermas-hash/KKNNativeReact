@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { adminApi, rawApi } from '@/lib/api';
 import Link from 'next/link';
-import { ClipboardList, CheckCircle2, XCircle, Eye, Download, Search, Filter, Users, FileCheck2 } from 'lucide-react';
+import { ClipboardList, CheckCircle2, XCircle, Eye, Download, Search, Filter, Users, FileCheck2, ExternalLink } from 'lucide-react';
 import { StatusBadge, PageHeader, EmptyState } from '@/components/ui/shared';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { toast } from 'sonner';
@@ -20,7 +20,7 @@ const REVIEWABLE = ['pending', 'document_submitted', 'document_verified'];
 
 const docLabel = (field?: string, label?: string) => field === 'health_certificate' || label === 'health_certificate' ? 'Surat Sehat' : field === 'parent_permission' || label === 'parent_permission' ? 'Izin Ortu' : (label || field || 'Dokumen');
 
-function DocumentSummaryCell({ summary }: { summary?: DocSummary }) {
+function DocumentSummaryCell({ summary, onPreview }: { summary?: DocSummary; onPreview: (doc: DocItem) => void }) {
   if (!summary) return <span className="text-xs text-slate-400">-</span>;
   const { uploaded_count, required_count, missing_required_count, items } = summary;
   return (
@@ -29,11 +29,19 @@ function DocumentSummaryCell({ summary }: { summary?: DocSummary }) {
         {uploaded_count}/{required_count} {missing_required_count > 0 ? `(kurang ${missing_required_count})` : '✓'}
       </span>
       <div className="flex flex-wrap gap-1">
-        {items.map((d) => (
-          <span key={d.field} className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${d.uploaded ? 'bg-emerald-50 text-emerald-700' : d.required ? 'bg-rose-50 text-rose-600' : 'bg-slate-50 text-slate-400'}`}>
-            {d.uploaded ? '✓' : '×'} {docLabel(d.field, d.label)}
-          </span>
-        ))}
+        {items.map((d) => {
+          const canPreview = d.uploaded && !!d.file_path;
+          const cls = `inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-bold transition ${d.uploaded ? 'bg-emerald-50 text-emerald-700' : d.required ? 'bg-rose-50 text-rose-600' : 'bg-slate-50 text-slate-400'}`;
+          return canPreview ? (
+            <button key={d.field} type="button" onClick={(e) => { e.stopPropagation(); onPreview(d); }} title={`Preview ${docLabel(d.field, d.label)}`} className={`${cls} hover:bg-emerald-100 hover:text-emerald-800 cursor-pointer`}>
+              ✓ {docLabel(d.field, d.label)} <Eye size={10} />
+            </button>
+          ) : (
+            <span key={d.field} className={cls} title={d.uploaded ? 'File tidak tersedia untuk preview' : 'Belum diunggah'}>
+              {d.uploaded ? '✓' : '×'} {docLabel(d.field, d.label)}
+            </span>
+          );
+        })}
       </div>
     </div>
   );
@@ -52,6 +60,8 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
   const [bulkApproveConfirm, setBulkApproveConfirm] = useState(false);
   const [rejectTarget, setRejectTarget] = useState<Registration | null>(null);
   const [rejectReason, setRejectReason] = useState('');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewName, setPreviewName] = useState('');
   const periodeId = searchParams?.get('periode_id') ?? '';
 
   // Debounce search
@@ -131,6 +141,27 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
   });
 
   const toggleSelect = (r: Registration) => REVIEWABLE.includes(r.status) && setSelectedIds((prev) => prev.includes(r.id) ? prev.filter((i) => i !== r.id) : [...prev, r.id]);
+
+
+  const extractBlob = (res: Blob | { data?: Blob }): Blob => res instanceof Blob ? res : (res.data as Blob);
+  const previewDoc = async (doc: DocItem) => {
+    if (!doc.file_path) return toast.error('File dokumen tidak tersedia');
+    try {
+      const res = await adminApi.registrations.downloadDocument(doc.file_path);
+      const blob = extractBlob(res as Blob | { data?: Blob });
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      const url = URL.createObjectURL(blob);
+      setPreviewUrl(url);
+      setPreviewName(doc.file_name || docLabel(doc.field, doc.label));
+    } catch {
+      toast.error('Gagal memuat preview dokumen');
+    }
+  };
+  const closePreview = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPreviewUrl(null);
+    setPreviewName('');
+  };
 
   const submitReject = () => {
     const reason = rejectReason.trim();
@@ -329,7 +360,7 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
                         <p className="text-xs text-slate-400">{r.periode?.name || '-'}</p>
                       </td>
                       <td className="px-3 py-3"><StatusBadge status={r.status || ''} /></td>
-                      <td className="px-3 py-3"><DocumentSummaryCell summary={r.document_summary} /></td>
+                      <td className="px-3 py-3"><DocumentSummaryCell summary={r.document_summary} onPreview={previewDoc} /></td>
                       <td className="px-3 py-3">
                         <div className="flex justify-end gap-1.5">
                           {reviewable && (
@@ -373,6 +404,27 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
 
       {/* Modals */}
       <ConfirmDialog open={approveConfirm !== null} onClose={() => setApproveConfirm(null)} onConfirm={() => approveConfirm && approveMutation.mutate(approveConfirm.id)} title="Setujui pendaftaran?" description={`${approveConfirm?.mahasiswa?.nama ?? ''} — ${approveConfirm?.periode?.jenis_kkn?.name ?? ''}`} confirmText="Setujui" variant="info" />
+
+      {previewUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4 backdrop-blur-sm" onClick={closePreview}>
+          <div className="relative flex h-[90vh] w-full max-w-5xl flex-col rounded-2xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-6 py-4">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-wider text-emerald-600">Preview Dokumen</p>
+                <h3 className="truncate text-sm font-black text-slate-900">{previewName}</h3>
+              </div>
+              <div className="flex items-center gap-2">
+                <a href={previewUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50"><ExternalLink size={13}/>Buka Tab</a>
+                <button onClick={closePreview} className="rounded-lg px-3 py-1.5 text-sm font-bold text-slate-500 hover:bg-slate-100">&times; Tutup</button>
+              </div>
+            </div>
+            <div className="flex-1 overflow-hidden p-2">
+              {previewName.toLowerCase().endsWith('.pdf') ? <iframe src={previewUrl} className="h-full w-full rounded-lg" title="Preview dokumen" /> : <img src={previewUrl} alt={previewName} className="h-full w-full rounded-lg object-contain" />}
+            </div>
+          </div>
+        </div>
+      )}
+
       <ConfirmDialog open={bulkApproveConfirm} onClose={() => setBulkApproveConfirm(false)} onConfirm={() => bulkApproveMutation.mutate(selectedIds)} title={`Setujui ${selectedIds.length} pendaftaran?`} description="Pastikan dokumen sudah lengkap sebelum menyetujui." confirmText="Setujui Semua" variant="info" />
 
       {rejectTarget && (

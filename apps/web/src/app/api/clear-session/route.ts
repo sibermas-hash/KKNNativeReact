@@ -5,8 +5,19 @@ import { NextRequest, NextResponse } from 'next/server';
  * Clears all auth cookies (both HttpOnly and non-HttpOnly variants).
  * Used to fix stale cookie issues during production migration.
  */
-function getPublicOrigin(_request: NextRequest): string {
-  return 'https://sibermas.uinsaizu.ac.id';
+function getPublicOrigin(request: NextRequest): string {
+  const explicitOrigin = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL;
+  if (explicitOrigin) {
+    return explicitOrigin.replace(/\/+$/, '');
+  }
+
+  const forwardedProto = request.headers.get('x-forwarded-proto');
+  const forwardedHost = request.headers.get('x-forwarded-host');
+  if (forwardedProto && forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+
+  return request.nextUrl.origin;
 }
 
 function getCookieDomains(request: NextRequest): Array<string | undefined> {

@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ApiResponse, PaginationMeta } from '@sibermas/shared-types';
 import { api, rawApi } from '@/lib/api';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, CheckCircle2, XCircle, Camera, AlertCircle, Clock } from 'lucide-react';
+import { CheckCircle2, XCircle, Camera, AlertCircle, Clock } from 'lucide-react';
 import { PageHeader } from '@/components/ui/shared';
 
 type PendingAvatar = {
@@ -40,19 +40,6 @@ const STATUS_LABELS: Record<FilterStatus, string> = {
   rejected: 'Ditolak',
   all: 'Semua',
 };
-
-
-function pageWindow(current: number, last: number): Array<number | 'dots'> {
-  if (last <= 7) return Array.from({ length: last }, (_, i) => i + 1);
-  const pages = new Set<number>([1, 2, last - 1, last, current - 1, current, current + 1]);
-  const sorted = [...pages].filter((n) => n >= 1 && n <= last).sort((a, b) => a - b);
-  const out: Array<number | 'dots'> = [];
-  for (let i = 0; i < sorted.length; i += 1) {
-    if (i > 0 && sorted[i] - sorted[i - 1] > 1) out.push('dots');
-    out.push(sorted[i]);
-  }
-  return out;
-}
 
 function normalizeAvatarModerationResponse(payload: unknown): PaginatedAvatarResponse {
   if (Array.isArray(payload)) {
@@ -134,9 +121,8 @@ export default function AvatarModerationPage() {
 
   const avatars = data?.data ?? [];
   const meta = data?.meta;
-  const currentPage = meta?.current_page ?? page;
-  const lastPage = Math.max(1, meta?.last_page ?? 1);
-  const pages = pageWindow(currentPage, lastPage);
+  const currentPage = meta?.current_page ?? 1;
+  const lastPage = meta?.last_page ?? 1;
   const totalPhotos = meta?.total ?? avatars.length;
   const batchLabel = meta
     ? `Menampilkan ${meta.from ?? 0}-${meta.to ?? 0} dari ${totalPhotos} foto`
@@ -326,20 +312,30 @@ export default function AvatarModerationPage() {
         </div>
       )}
 
-      <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 lg:flex-row lg:items-center lg:justify-between">
-        <span className="text-xs font-semibold text-slate-500">{batchLabel}</span>
-        <div className="flex flex-wrap items-center gap-1.5" aria-label="Navigasi halaman avatar">
-          <button aria-label="Halaman pertama" onClick={() => setPage(1)} disabled={currentPage <= 1 || isFetching} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40"><ChevronsLeft className="h-4 w-4" /></button>
-          <button aria-label="Halaman sebelumnya" onClick={() => setPage((n) => Math.max(1, n - 1))} disabled={currentPage <= 1 || isFetching} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40"><ChevronLeft className="h-4 w-4" /></button>
-          {pages.map((item, idx) => item === 'dots' ? (
-            <span key={`dots-${idx}`} className="px-1 text-xs font-black text-slate-400">…</span>
-          ) : (
-            <button key={item} onClick={() => setPage(item)} disabled={isFetching} className={`h-9 min-w-9 rounded-xl px-3 text-xs font-black transition ${currentPage === item ? 'bg-teal-600 text-white shadow-sm' : 'border border-slate-200 bg-white text-slate-700 hover:bg-slate-50'}`}>{item}</button>
-          ))}
-          <button aria-label="Halaman berikutnya" onClick={() => setPage((n) => Math.min(lastPage, n + 1))} disabled={currentPage >= lastPage || isFetching} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40"><ChevronRight className="h-4 w-4" /></button>
-          <button aria-label="Halaman terakhir" onClick={() => setPage(lastPage)} disabled={currentPage >= lastPage || isFetching} className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 disabled:opacity-40"><ChevronsRight className="h-4 w-4" /></button>
+      {lastPage > 1 && (
+        <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:flex-row sm:items-center sm:justify-between">
+          <span className="text-xs font-semibold text-slate-500">{batchLabel}</span>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <button
+              onClick={() => setPage((currentPage) => Math.max(1, currentPage - 1))}
+              disabled={currentPage <= 1}
+              className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+            >
+              {'<'} Sebelumnya
+            </button>
+            <span className="text-xs font-black text-slate-500">
+              Halaman {currentPage} / {lastPage}
+            </span>
+            <button
+              onClick={() => setPage((currentPage) => Math.min(lastPage, currentPage + 1))}
+              disabled={currentPage >= lastPage}
+              className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-700 hover:bg-slate-200 disabled:opacity-50"
+            >
+              Berikutnya {'>'}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

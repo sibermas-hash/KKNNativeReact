@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Student;
 
+use App\Events\Chat\ChatMessageSent;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\ChatConversation;
@@ -193,6 +194,8 @@ class ChatController extends Controller
                 'last_message_at' => now(),
                 'status' => 'open', // jika admin sudah reply, user kirim lagi → balik open
             ]);
+
+            ChatMessageSent::dispatch($msg);
 
             return $msg;
         });

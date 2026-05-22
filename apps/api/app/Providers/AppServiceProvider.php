@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Models\KKN\Announcement;
+use App\Models\KKN\Download;
+use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\Lokasi;
 use App\Models\KKN\Evaluasi;
 use App\Models\KKN\IzinMeninggalkan;
 use App\Models\KKN\KegiatanKkn;
@@ -17,6 +21,7 @@ use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\SystemSetting;
 use App\Observers\AuditObserver;
+use App\Observers\PublicCacheObserver;
 use App\Policies\AdminOperationPolicy;
 use App\Policies\AuditLogPolicy;
 use App\Policies\EvaluasiPolicy;
@@ -45,6 +50,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // FCM Channel — inject Firebase Messaging if credentials configured
+        $this->app->bind(\App\Notifications\Channels\FcmChannel::class, function ($app) {
+            $messaging = null;
+            try {
+                if (config('firebase.projects.app.credentials.file') || config('firebase.projects.app.credentials')) {
+                    $messaging = $app->make(\Kreait\Firebase\Contract\Messaging::class);
+                }
+            } catch (\Throwable) {
+                // Firebase not configured — FcmChannel will use legacy fallback
+            }
+            return new \App\Notifications\Channels\FcmChannel($messaging);
+        });
+
         $this->app->bind(RegistrationRepositoryInterface::class, RegistrationRepository::class);
 
         Gate::policy(NilaiKkn::class, KknScorePolicy::class);
@@ -156,6 +174,13 @@ class AppServiceProvider extends ServiceProvider
         }
         if (class_exists('App\Models\KKN\PesertaKkn')) {
             PesertaKkn::observe(AuditObserver::class);
+
+        // 3b. Public cache invalidation
+        Announcement::observe(PublicCacheObserver::class);
+        Download::observe(PublicCacheObserver::class);
+        Lokasi::observe(PublicCacheObserver::class);
+        KelompokKkn::observe(PublicCacheObserver::class);
+        PesertaKkn::observe(PublicCacheObserver::class);
         }
 
         // 4. Global URL Scheme

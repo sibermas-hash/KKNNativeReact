@@ -306,6 +306,7 @@ function AttendanceModal({ workshop, onClose, onSaved }: { workshop: Workshop; o
                     </div>
                   </div>
                   {p.attendance_status === 'attended' && <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Hadir</span>}
+                  {p.is_passed && <span className="text-[10px] font-black text-cyan-700 bg-cyan-50 px-2 py-0.5 rounded border border-cyan-200">BOLEH DAFTAR DPL</span>}
                 </label>
               ))}
             </div>

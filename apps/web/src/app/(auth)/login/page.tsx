@@ -25,7 +25,7 @@ const ParticleBackground = dynamic(
 export default function LoginPage(): React.JSX.Element {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get('redirect');
+  const redirectTo = searchParams?.get('redirect');
   const normalizedRedirect = normalizePostLoginRedirect(redirectTo);
   const { setUser, isAuthenticated, user } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);

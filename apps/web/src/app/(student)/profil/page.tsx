@@ -12,7 +12,7 @@ import { toast } from 'sonner';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
-import { AlertCircle, BadgeCheck, Camera, GraduationCap, IdCard, Info, Lock, LogOut, Medal, RefreshCw, Save, User as UserIcon } from 'lucide-react';
+import { AlertCircle, BadgeCheck, Camera, GraduationCap, IdCard, Info, LayoutDashboard, Lock, LogOut, Medal, PencilLine, RefreshCw, Save, User as UserIcon } from 'lucide-react';
 import type { User } from '@sibermas/shared-types';
 import { useTheme } from '@/components/ui/theme-provider';
 import { THEMES, THEME_KEYS, THEME_TYPOGRAPHY, SOFT_CLASS, PRIMARY_CLASS, MUTED_TEXT_CLASS, ACCENT_TEXT_CLASS, FIELD_CLASS, type ThemeKey, type ThemeDefinition } from '@/lib/theme-config';
@@ -24,9 +24,37 @@ const ParticleBackground = dynamic(
 
 // NotificationPreferencesCard — hidden from student profile, managed via admin dashboard
 // import { NotificationPreferencesCard } from '@/components/profile/notification-preferences-card';
+import { TwoFactorCard } from '@/components/profile/two-factor-card';
+
+type ReverseGeocodeAddress = {
+  house_number?: string;
+  road?: string;
+  hamlet?: string;
+  quarter?: string;
+  neighbourhood?: string;
+  suburb?: string;
+  village?: string;
+  town?: string;
+  city?: string;
+  municipality?: string;
+  county?: string;
+  state_district?: string;
+  state?: string;
+  postcode?: string;
+};
+
+type ForwardGeocodeResult = {
+  lat: string;
+  lon: string;
+  class?: string;
+  type?: string;
+  addresstype?: string;
+  importance?: number;
+  display_name?: string;
+};
 
 type ChangeRequest = { id: number; requested_changes: Record<string, { old: unknown; new: unknown }>; created_at: string };
-type StudentProfile = { nim?: string; gpa?: number; sks_completed?: number; faculty?: { nama?: string }; prodi?: { nama?: string }; missing_biodata_fields?: string[]; missing_address_fields?: string[]; biodata_complete?: boolean; address_verified?: boolean; address_verified_at?: string | null; [key: string]: unknown };
+type StudentProfile = { nim?: string; gpa?: number; sks_completed?: number; status_bta_ppi?: string | null; faculty?: { nama?: string }; prodi?: { nama?: string }; missing_biodata_fields?: string[]; missing_address_fields?: string[]; biodata_complete?: boolean; address_verified?: boolean; address_verified_at?: string | null; [key: string]: unknown };
 type LecturerProfile = { nip?: string; faculty?: { nama?: string }; missing_biodata_fields?: string[]; biodata_complete?: boolean; jabatan?: string; status_aktif?: string; status_pegawai?: string; has_workshop?: boolean; workshop_date?: string; is_cpns?: boolean; is_tugas_belajar?: boolean; [key: string]: unknown };
 
 type TypographyKeys = { page: string; eyebrow: string; heading: string; body: string; label: string; button: string; meta: string };
@@ -100,7 +128,7 @@ const FIELD_LABELS: Record<string, string> = {
 };
 
 function dashboardPathFor(roles: string[]) {
-  if (roles.some((role) => ['superadmin', 'admin', 'faculty_admin'].includes(role))) return '/admin';
+  if (roles.some((role) => ['admin', 'admin', 'faculty_admin'].includes(role))) return '/admin';
   if (roles.some((role) => ['dosen', 'dpl'].includes(role))) return '/dosen';
   if (roles.includes('student')) return '/mahasiswa';
   return '/';
@@ -123,7 +151,7 @@ const PROFILE_TUTORIAL_STEPS = [
     target: 'intro',
     placement: 'center',
     title: 'Selamat datang di Pusat Data Profil',
-    body: 'Halaman ini menjadi Pusat Informasi KKN. Pastikan data pribadi, kontak, alamat asli sesuai KTP, dan foto formal sudah benar sebelum lanjut.',
+    body: 'Halaman ini menjadi Pusat Informasi KKN. Pastikan data pribadi, kontak, alamat asli sesuai KTP, peta alamat KTP, dan foto formal sudah benar sebelum lanjut.',
   },
   {
     target: 'theme',
@@ -147,7 +175,7 @@ const PROFILE_TUTORIAL_STEPS = [
     target: 'form',
     placement: 'left',
     title: 'Isi dan simpan data',
-    body: 'Klik Lengkapi Profil atau Edit Profil, isi data yang diperlukan, lalu tekan Simpan & Lanjutkan. Pengisian awal langsung tersimpan, perubahan setelah lengkap menunggu persetujuan superadmin.',
+    body: 'Klik Lengkapi Profil atau Edit Profil, isi data yang diperlukan, lalu tekan Simpan & Lanjutkan. Pengisian awal langsung tersimpan, perubahan setelah lengkap menunggu persetujuan admin.',
   },
 ] as const;
 
@@ -175,6 +203,114 @@ const TOUR_CSS = `
 
 function profileTutorialKey(user: { id?: number | string; username?: string } | null) {
   return `${PROFILE_TUTORIAL_KEY}:${user?.id ?? user?.username ?? 'anonymous'}`;
+}
+
+function cleanAdminName(value?: string | null) {
+  return (value ?? '').replace(/^(Kabupaten|Kab\.|Kota|Kecamatan)\s+/i, '').trim();
+}
+
+function normalizeAddressSegment(value?: string | null) {
+  return (value ?? '').replace(/\s+/g, ' ').trim();
+}
+
+function composeAddress(displayName?: string, address?: ReverseGeocodeAddress) {
+  const roadLine = [address?.road, address?.house_number].filter(Boolean).join(' ');
+  const parts = [
+    roadLine,
+    address?.hamlet || address?.quarter || address?.neighbourhood || address?.suburb,
+    address?.village || address?.town || address?.city,
+  ]
+    .map((value) => normalizeAddressSegment(value))
+    .filter(Boolean);
+  return parts.length > 0 ? parts.join(', ') : normalizeAddressSegment(displayName);
+}
+
+function joinAddressParts(parts: Array<string | null | undefined>) {
+  return parts
+    .map((value) => normalizeAddressSegment(value))
+    .filter(Boolean)
+    .join(', ');
+}
+
+function buildAddressQueries({
+  fullAddress,
+  village,
+  district,
+  regency,
+  postalCode,
+}: {
+  fullAddress?: string | null;
+  village?: string | null;
+  district?: string | null;
+  regency?: string | null;
+  postalCode?: string | null;
+}) {
+  const queries = [
+    joinAddressParts([fullAddress, village, district, regency, postalCode, 'Jawa Tengah', 'Indonesia']),
+    joinAddressParts([fullAddress, village, district, regency, 'Jawa Tengah', 'Indonesia']),
+    joinAddressParts([village, district, regency, postalCode, 'Jawa Tengah', 'Indonesia']),
+    joinAddressParts([village, district, regency, 'Jawa Tengah', 'Indonesia']),
+    joinAddressParts([district, regency, 'Jawa Tengah', 'Indonesia']),
+  ];
+
+  return Array.from(new Set(queries.filter(Boolean)));
+}
+
+const ADDRESS_STOP_WORDS = new Set([
+  'jalan',
+  'jln',
+  'rt',
+  'rw',
+  'desa',
+  'kelurahan',
+  'kecamatan',
+  'kabupaten',
+  'kota',
+  'provinsi',
+  'jawa',
+  'tengah',
+  'indonesia',
+]);
+
+function addressTokens(value: string) {
+  return normalizeAddressSegment(value)
+    .toLowerCase()
+    .split(/[^a-z0-9]+/i)
+    .filter((token) => token.length >= 3 && !ADDRESS_STOP_WORDS.has(token));
+}
+
+function scoreForwardGeocodeResult(result: ForwardGeocodeResult, tokens: string[]) {
+  const addresstype = normalizeAddressSegment(result.addresstype).toLowerCase();
+  const type = normalizeAddressSegment(result.type).toLowerCase();
+  const resultClass = normalizeAddressSegment(result.class).toLowerCase();
+  const displayName = (result.display_name ?? '').toLowerCase();
+
+  let score = Number(result.importance ?? 0) * 20;
+
+  if (resultClass === 'boundary') score -= 60;
+  if (['administrative', 'county', 'city', 'state', 'region'].includes(addresstype) || ['administrative', 'county', 'city', 'state', 'region'].includes(type)) {
+    score -= 60;
+  }
+  if (['building', 'house', 'residential', 'road', 'street', 'service', 'amenity', 'premise'].includes(addresstype) || ['building', 'house', 'residential', 'road', 'street', 'service'].includes(type)) {
+    score += 40;
+  }
+  if (['building', 'amenity', 'highway'].includes(resultClass)) {
+    score += 18;
+  } else if (resultClass === 'place') {
+    score += 8;
+  }
+
+  score += tokens.reduce((total, token) => total + (displayName.includes(token) ? 4 : 0), 0);
+  return score;
+}
+
+function pickBestForwardGeocodeResult(results: ForwardGeocodeResult[], query: string) {
+  const tokens = addressTokens(query);
+  const ranked = results
+    .map((result) => ({ result, score: scoreForwardGeocodeResult(result, tokens) }))
+    .sort((left, right) => right.score - left.score);
+
+  return ranked[0] && ranked[0].score > 0 ? ranked[0].result : null;
 }
 
 function focusProfileField(field: string) {
@@ -215,60 +351,111 @@ function StatusRow({ label, complete, subtitle, typography }: { label: string; c
 }
 
 function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, surfaceClass, isLecturer, profileComplete, isEditing, pendingRequest, onThemeChange, onDashboard, onToggleEdit, onLogout }: ProfileHeaderProps) {
+  const dashboardDisabled = !profileComplete;
+
   return (
-    <div ref={refTarget} className={cx('flex flex-col gap-4 rounded-2xl p-5 sm:flex-row sm:items-end sm:justify-between', themeConfig.frame, surfaceClass, themeConfig.shadow)}>
+    <div ref={refTarget} className={cx('flex flex-col gap-4 rounded-xl p-4 sm:rounded-2xl sm:p-5 sm:flex-row sm:items-end sm:justify-between', 'border border-emerald-100 bg-white shadow-sm shadow-emerald-900/5')}>
       <div className="space-y-1">
         <div className="flex items-center gap-2"><UserIcon size={16} className={accentTextClass} /><span className={`${typography.eyebrow} ${accentTextClass}`}>Pengaturan Akun</span></div>
-        <h1 className={`${typography.heading} drop-shadow-sm`}>Pusat Data Profil</h1>
-        <p className={`max-w-xl ${typography.body} ${mutedTextClass} drop-shadow-sm`}>{isLecturer ? 'Pastikan data kepegawaian dan kontak Anda valid untuk keperluan pembimbingan KKN.' : 'Lengkapi data pribadi, alamat asli sesuai KTP, dan foto formal HD untuk kelancaran proses KKN.'}</p>
+        <h1 className={`${typography.heading} text-xl sm:text-2xl drop-shadow-sm`}>Pusat Data Profil</h1>
+        <p className={`max-w-xl text-xs sm:text-sm ${typography.body} ${mutedTextClass} drop-shadow-sm`}>{isLecturer ? 'Pastikan data kepegawaian dan kontak Anda valid untuk keperluan pembimbingan KKN.' : 'Lengkapi data pribadi, alamat asli sesuai KTP, peta alamat KTP, dan foto formal HD untuk kelancaran proses KKN.'}</p>
       </div>
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        <div ref={themeRef} className={cx('flex rounded-xl p-1 shadow-inner', themeConfig.frame, softClass)} aria-label="Pilihan tema profil">
+      <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:max-w-[34rem] sm:items-end sm:gap-3">
+        <div ref={themeRef} className={cx('flex flex-wrap justify-center rounded-xl p-1 shadow-inner', 'border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-300')} aria-label="Pilihan tema profil">
           {THEME_KEYS.map((key) => (
             <TooltipPrimitive.Root key={key}>
-              <TooltipPrimitive.Trigger asChild><button type="button" onClick={() => onThemeChange(key)} aria-label={`Pilih tema ${THEMES[key].label} - ${THEMES[key].strength}`} aria-pressed={theme === key} className={cx('group relative flex h-9 w-9 items-center justify-center rounded-lg transition-all duration-300', theme === key ? primaryClass : 'opacity-70 hover:bg-white/25 hover:opacity-100')}><span className={`h-5 w-5 rounded-full bg-gradient-to-br ${THEMES[key].preview} ring-1 ring-white/60 transition-transform group-hover:scale-125`} />{theme === key && <span className="absolute -bottom-0.5 h-1 w-4 rounded-full bg-white/80 shadow-[0_0_14px_rgba(255,255,255,0.8)]" />}</button></TooltipPrimitive.Trigger>
+              <TooltipPrimitive.Trigger asChild><button type="button" onClick={() => onThemeChange(key)} aria-label={`Pilih tema ${THEMES[key].label} - ${THEMES[key].strength}`} aria-pressed={theme === key} className={cx('group relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg transition-all duration-300', theme === key ? 'bg-emerald-700 text-white hover:bg-emerald-800 shadow-sm shadow-emerald-900/20' : 'opacity-70 hover:bg-white/25 hover:opacity-100')}><span className={`h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-gradient-to-br ${THEMES[key].preview} ring-1 ring-white/60 transition-transform group-hover:scale-125`} />{theme === key && <span className="absolute -bottom-0.5 h-1 w-4 rounded-full bg-white/80 shadow-[0_0_14px_rgba(255,255,255,0.8)]" />}</button></TooltipPrimitive.Trigger>
               <TooltipPrimitive.Portal><TooltipPrimitive.Content side="bottom" align="center" sideOffset={10} className="z-50 max-w-56 rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-surface-strong)] px-3 py-2 text-left text-[color:var(--profile-text)] shadow-[0_18px_70px_-28px_rgba(0,0,0,0.7)] backdrop-blur-2xl backdrop-saturate-150"><p className={`${THEME_TYPOGRAPHY[key].meta} text-[color:var(--profile-text)]`}>{THEMES[key].label} - {THEMES[key].strength}</p><p className="mt-1 text-[11px] leading-4 text-[color:var(--profile-muted)]">{THEMES[key].description}</p><TooltipPrimitive.Arrow className="fill-[color:var(--profile-surface-strong)]" /></TooltipPrimitive.Content></TooltipPrimitive.Portal>
             </TooltipPrimitive.Root>
           ))}
         </div>
-        {profileComplete && <button onClick={onDashboard} className={cx('rounded-lg px-4 py-2', typography.button, themeConfig.frame, softClass)}>Dashboard</button>}
-        <button onClick={onToggleEdit} disabled={!!pendingRequest && profileComplete} className={cx('rounded-lg px-4 py-2 disabled:opacity-50', typography.button, primaryClass)}>{isEditing ? 'Batal' : profileComplete ? 'Edit Profil' : 'Lengkapi Profil'}</button>
-        <button onClick={onLogout} aria-label="Keluar dari akun" title="Keluar" className="rounded-lg border border-rose-200 bg-[color:var(--profile-danger)] px-4 py-2 text-sm font-semibold text-[color:var(--profile-danger-text)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"><LogOut size={16} /></button>
+        <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3">
+          <button
+            type="button"
+            onClick={onDashboard}
+            disabled={dashboardDisabled}
+            title={dashboardDisabled ? 'Dashboard aktif setelah biodata dan alamat KTP lengkap.' : 'Buka dashboard'}
+            className={cx('inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-center transition disabled:cursor-not-allowed disabled:opacity-55 sm:w-auto', typography.button, 'border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-300', dashboardDisabled && 'border border-dashed border-[color:var(--profile-border)]')}
+          >
+            <LayoutDashboard size={16} />
+            Dashboard
+          </button>
+          <button type="button" onClick={onToggleEdit} disabled={!!pendingRequest && profileComplete} className={cx('inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 disabled:opacity-50 sm:w-auto', typography.button, 'bg-emerald-700 text-white hover:bg-emerald-800 shadow-sm shadow-emerald-900/20')}><PencilLine size={16} />{isEditing ? 'Batal' : profileComplete ? 'Edit Profil' : 'Lengkapi Profil'}</button>
+          <button type="button" onClick={onLogout} aria-label="Keluar dari akun" title="Keluar" className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 sm:w-auto"><LogOut size={16} /><span>Keluar</span></button>
+        </div>
+        {dashboardDisabled && <p className={cx('text-left sm:text-right', typography.meta, mutedTextClass)}>Dashboard akan aktif setelah biodata dan alamat KTP lengkap.</p>}
       </div>
     </div>
   );
 }
 
 function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, lecturer, isStudent, isLecturer, avatarLoading, typography, themeConfig, surfaceStrongClass, onAvatarChange }: ProfileSidebarProps) {
+  const avatarModerationStatus = user.avatar_moderation_status;
+  const avatarModerationReason = user.avatar_moderation_reason?.trim() || null;
+  const avatarNeedsManualReview = avatarModerationStatus === 'pending'
+    && !!avatarModerationReason
+    && /server ai tidak tersedia|menunggu verifikasi admin|manual/i.test(avatarModerationReason);
+
   return (
-    <div className="space-y-5">
-      <div ref={avatarRef} className={cx('flex flex-col items-center gap-4 rounded-xl p-5 text-center', themeConfig.frame, surfaceStrongClass, themeConfig.shadow)}>
-        <button type="button" onClick={() => avatarInputRef.current?.click()} className="relative h-24 w-24 overflow-hidden rounded-full border-2 border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] transition-all duration-300 hover:scale-105 hover:shadow-xl">
+    <div className="space-y-4 sm:space-y-5">
+      <div ref={avatarRef} className={cx('flex flex-col items-center gap-4 rounded-xl p-4 text-center sm:rounded-2xl sm:p-5', 'border border-emerald-100 bg-white shadow-sm shadow-emerald-900/5')}>
+        <button type="button" onClick={() => avatarInputRef.current?.click()} className="relative h-20 w-20 overflow-hidden rounded-full border-2 border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] sm:h-24 sm:w-24 transition-all duration-300 hover:scale-105 hover:shadow-xl">
           {user.avatar_url ? <img src={user.avatar_url} alt={user.name} className="h-full w-full object-cover" /> : <span className="flex h-full w-full flex-col items-center justify-center px-3 text-center text-[10px] font-black uppercase tracking-wider text-[color:var(--profile-soft-text)]"><Camera size={20} className="mb-1" />Foto Formal</span>}
           {avatarLoading && <span className="absolute inset-0 flex items-center justify-center bg-[color:var(--profile-surface)]/70"><RefreshCw className="animate-spin text-[color:var(--profile-accent)]" /></span>}
         </button>
         <div><p className={`${typography.label} text-[color:var(--profile-text)] drop-shadow-sm`}>{user.name}</p><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>{user.username}</p>{student?.nim && <p className={`${typography.meta} text-[color:var(--profile-muted)] flex items-center gap-1`}><Lock size={12} className="text-amber-500" /> NIM: {student.nim}</p>}{lecturer?.nip && <p className={`${typography.meta} text-[color:var(--profile-muted)] flex items-center gap-1`}><Lock size={12} className="text-amber-500" /> NIP: {lecturer.nip}</p>}</div>
         <div className="space-y-2">
-          <button type="button" onClick={() => avatarInputRef.current?.click()} className={cx('inline-flex items-center gap-2 rounded-lg px-3 py-2', typography.meta, themeConfig.frame, softClass)}><Camera size={14} /> Upload Foto Formal HD</button>
-          <p className={`${typography.meta} max-w-64 text-[color:var(--profile-muted)]`}>Foto ini akan dicetak di sertifikat. Gunakan pas foto formal HD dengan <strong>latar merah polos</strong> dan <strong>jas almamater</strong>. Sistem memvalidasi otomatis via AI.</p>
-          {(user as unknown as { avatar_moderation_status?: string }).avatar_moderation_status === 'pending' && (
-            <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-900">
-              ⏳ Foto menunggu verifikasi admin (server AI sedang sibuk)
+          <button type="button" onClick={() => avatarInputRef.current?.click()} className={cx('inline-flex items-center gap-2 rounded-lg px-3 py-2', typography.meta, 'border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-300')}><Camera size={14} /><span className="whitespace-normal">Upload Foto Formal HD</span></button>
+          <div className={`${typography.meta} max-w-72 rounded-xl border border-amber-200 bg-amber-50 p-3 text-left text-amber-950`}>
+            <p className="font-black uppercase tracking-wide text-amber-900">Syarat Foto Profil</p>
+            <p className="mt-1">Foto dipakai untuk sertifikat. Sistem akan menolak otomatis jika tidak sesuai.</p>
+            <ul className="mt-2 list-disc space-y-1 pl-4">
+              <li>Pas foto formal satu orang, wajah jelas menghadap kamera.</li>
+              <li>Latar belakang merah polos/solid, bukan ruangan, pemandangan, twibbon, atau editan ramai.</li>
+              <li>Wajib memakai jas almamater/blazer resmi kampus yang terlihat jelas.</li>
+              <li>Komposisi kepala sampai dada/bahu, tidak selfie, tidak miring, tidak terpotong.</li>
+              <li>Tidak memakai masker, kacamata hitam, filter, watermark, stiker, atau tulisan.</li>
+              <li>Rasio wajib 3:4 portrait. File JPG/PNG/WebP, minimal 300×400 px, maksimal 5 MB.</li>
+            </ul>
+            <div className="mt-3 grid gap-2 text-[10px] sm:grid-cols-2">
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-emerald-900">
+                <p className="font-black">Contoh benar ✓</p>
+                <p>Ukuran 600×800 / 900×1200 px, background merah polos, jas almamater terlihat, wajah jelas, crop kepala–dada.</p>
+              </div>
+              <div className="rounded-lg border border-rose-200 bg-rose-50 p-2 text-rose-900">
+                <p className="font-black">Contoh salah ✕</p>
+                <p>Selfie, twibbon/watermark, background kelas/rumah, tanpa jas almamater, foto ramai, blur/gelap.</p>
+              </div>
+            </div>
+          </div>
+          {avatarModerationStatus === 'pending' && (
+            <div className={cx(
+              'rounded-lg border px-3 py-2 text-[11px] font-semibold',
+              avatarNeedsManualReview
+                ? 'border-amber-300 bg-amber-50 text-amber-900'
+                : 'border-sky-300 bg-sky-50 text-sky-900',
+            )}>
+              Status foto: {avatarModerationReason || 'Sedang diverifikasi otomatis oleh sistem.'}
             </div>
           )}
-          {(user as unknown as { avatar_moderation_status?: string; avatar_moderation_reason?: string }).avatar_moderation_status === 'rejected' && (
+          {avatarModerationStatus === 'approved' && user.avatar_url && (
+            <div className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-[11px] font-semibold text-emerald-900">
+              Status foto: Lolos verifikasi dan siap dipakai pada sertifikat.
+            </div>
+          )}
+          {avatarModerationStatus === 'rejected' && (
             <div className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-[11px] font-semibold text-rose-900">
-              ✗ Foto ditolak: {(user as unknown as { avatar_moderation_reason?: string }).avatar_moderation_reason || 'silakan upload ulang'}
+              Status foto: Ditolak. {avatarModerationReason || 'Silakan upload ulang.'}
             </div>
           )}
         </div>
         <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={onAvatarChange} aria-label="Upload foto profil" title="Pilih file foto profil" />
       </div>
-      <div ref={statusRef} className={cx('space-y-4 rounded-xl p-5', themeConfig.frame, surfaceStrongClass, themeConfig.shadow)}>
+      <div ref={statusRef} className={cx('space-y-4 rounded-xl p-4 sm:rounded-2xl sm:p-5', 'border border-emerald-100 bg-white shadow-sm shadow-emerald-900/5')}>
         <h3 className={typography.label}>Informasi Status</h3>
         <StatusRow label="Biodata" typography={typography} complete={student?.biodata_complete ?? lecturer?.biodata_complete ?? true} subtitle={(student?.biodata_complete ?? lecturer?.biodata_complete) ? 'Telah lengkap' : 'Belum lengkap'} />
         {isStudent && <StatusRow label="Alamat KTP" typography={typography} complete={!!student?.address_verified} subtitle={student?.address_verified ? 'Tervalidasi' : 'Belum verifikasi'} />}
-        {isStudent && <div className="grid grid-cols-2 gap-3 border-t border-[color:var(--profile-border)] pt-3"><div className="rounded-lg bg-[color:var(--profile-stat)] p-3 text-center transition-colors"><p className="text-lg font-bold text-[color:var(--profile-text)]">{student?.gpa ?? '-'}</p><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>IPK</p></div><div className="rounded-lg bg-[color:var(--profile-stat)] p-3 text-center transition-colors"><p className="text-lg font-bold text-[color:var(--profile-text)]">{student?.sks_completed ?? 0}</p><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>SKS</p></div></div>}
+        {isStudent && <div className="grid grid-cols-3 gap-3 border-t border-[color:var(--profile-border)] pt-3"><div className="rounded-lg bg-[color:var(--profile-stat)] p-3 text-center transition-colors"><p className="text-lg font-bold text-[color:var(--profile-text)]">{student?.gpa ?? '-'}</p><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>IPK</p></div><div className="rounded-lg bg-[color:var(--profile-stat)] p-3 text-center transition-colors"><p className="text-lg font-bold text-[color:var(--profile-text)]">{student?.sks_completed ?? 0}</p><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>SKS</p></div><div className="rounded-lg bg-[color:var(--profile-stat)] p-3 text-center transition-colors"><p className={`text-sm font-bold ${(student as Record<string, unknown>)?.status_bta_ppi === 'LULUS' ? 'text-emerald-600' : 'text-amber-600'}`}>{((student as Record<string, unknown>)?.status_bta_ppi as string) ?? '-'}</p><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>Status BTA PPI</p></div></div>}
         <div className={`space-y-1 border-t border-[color:var(--profile-border)] pt-2 ${typography.meta} text-[color:var(--profile-muted)]`}><div className="flex items-center gap-1.5"><GraduationCap size={13} />{student?.faculty?.nama || lecturer?.faculty?.nama || user.faculty?.nama || 'Fakultas belum diatur'}</div>{student?.prodi?.nama && <div className="flex items-center gap-1.5"><IdCard size={13} />{student.prodi.nama}</div>}{lecturer?.jabatan && <div className="flex items-center gap-1.5 italic"><Medal size={13} />{lecturer.jabatan}</div>}</div>
         {isLecturer && <div className="rounded-lg bg-[color:var(--profile-soft)] p-3 transition-colors"><div className="mb-2 flex items-center gap-2"><BadgeCheck size={14} className={accentTextClass} /><span className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--profile-soft-text)]">Kualifikasi DPL</span></div><div className="grid grid-cols-2 gap-2 text-center text-[10px] font-bold"><span className={lecturer?.is_cpns ? 'rounded bg-amber-100 px-2 py-1 text-amber-800' : 'rounded bg-emerald-100 px-2 py-1 text-emerald-800'}>{lecturer?.is_cpns ? 'CPNS' : 'PNS/TETAP'}</span><span className={lecturer?.is_tugas_belajar ? 'rounded bg-rose-100 px-2 py-1 text-rose-800' : 'rounded bg-blue-100 px-2 py-1 text-blue-800'}>{lecturer?.is_tugas_belajar ? 'TUGAS BELAJAR' : 'AKTIF'}</span></div></div>}
       </div>
@@ -281,11 +468,16 @@ function StudentAddressSection({ register, errors, isEditing, typography }: Stud
     <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5">
       <div className="space-y-1">
         <h2 className={`${typography.label} text-[color:var(--profile-text)]`}>Alamat Asli sesuai KTP</h2>
-        <p className={`${typography.meta} text-[color:var(--profile-muted)]`}>Isi alamat asli sesuai KTP, bukan alamat kos atau alamat tinggal sementara.</p>
+        <p className={`${typography.meta} text-[color:var(--profile-muted)]`}>Isi alamat asli sesuai KTP, bukan alamat kos atau alamat tinggal sementara. Peta juga harus menunjuk lokasi alamat KTP tersebut.</p>
       </div>
       <TextArea label="Alamat Lengkap sesuai KTP" registration={register('address')} disabled={!isEditing} error={errors.address?.message} />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"><TextInput label="Desa/Kelurahan KTP" registration={register('address_village_name')} disabled={!isEditing} /><TextInput label="Kecamatan KTP" registration={register('address_district_name')} disabled={!isEditing} /><TextInput label="Kabupaten/Kota KTP" registration={register('address_regency_name')} disabled={!isEditing} /><TextInput label="Kode Pos KTP" registration={register('address_postal_code')} disabled={!isEditing} /></div>
-      <label className={`flex gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] transition-colors ${typography.body}`}><input type="checkbox" {...register('address_verified')} disabled={!isEditing} className="mt-1 accent-[color:var(--profile-primary)]" /> Saya menyatakan alamat asli sesuai KTP benar adanya. Data ini digunakan sebagai rujukan alamat resmi pada dashboard profil dan proses KKN.</label>
+      <div className="rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)]">
+        <p className={`${typography.meta} text-[color:var(--profile-muted)]`}>Fitur peta dinonaktifkan sementara. Cukup isi alamat tertulis sesuai KTP, desa/kelurahan, kecamatan, kabupaten/kota, dan kode pos.</p>
+        <input type="hidden" {...register('address_lat', { valueAsNumber: true })} />
+        <input type="hidden" {...register('address_lng', { valueAsNumber: true })} />
+        <input type="hidden" {...register('address_verified')} value="true" />
+      </div>
     </section>
   );
 }
@@ -299,6 +491,9 @@ export default function ProfilePage(): React.JSX.Element {
   const [isEditing, setIsEditing] = useState(false);
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [reverseGeocoding, setReverseGeocoding] = useState(false);
+  const [forwardGeocoding, setForwardGeocoding] = useState(false);
+  const lastMapSyncedQueryRef = useRef('');
   const tutorialTargets = useRef<Record<TutorialTarget, HTMLElement | null>>({ intro: null, theme: null, avatar: null, status: null, form: null });
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -310,7 +505,7 @@ export default function ProfilePage(): React.JSX.Element {
     el.style.background = themeConfig.backdrop;
   }, [themeConfig]);
 
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting, isDirty } } = useForm<UpdateProfileFormData>({
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting, isDirty } } = useForm<UpdateProfileFormData>({
     resolver: zodResolver(updateProfileSchema),
   });
 
@@ -320,12 +515,108 @@ export default function ProfilePage(): React.JSX.Element {
   const roles = user?.roles ?? [];
   const isStudent = !!student;
   const isLecturer = !!lecturer;
+  const addressValue = watch('address');
+  const addressLat = watch('address_lat');
+  const addressLng = watch('address_lng');
+  const villageValue = watch('address_village_name');
+  const districtValue = watch('address_district_name');
+  const regencyValue = watch('address_regency_name');
+  const postalCodeValue = watch('address_postal_code');
+
   const setTutorialTargetRef = (target: TutorialTarget) => (node: HTMLElement | null) => {
     tutorialTargets.current[target] = node;
   };
 
   const changeTheme = (nextTheme: ThemeKey) => {
     setTheme(nextTheme);
+  };
+
+  const handleAddressPointChange = async (point: { lat: number; lng: number }) => {
+    setValue('address_lat', point.lat, { shouldDirty: true });
+    setValue('address_lng', point.lng, { shouldDirty: true });
+    setReverseGeocoding(true);
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${point.lat}&lon=${point.lng}&zoom=18&addressdetails=1`, {
+        headers: { Accept: 'application/json' },
+      });
+      if (!response.ok) throw new Error('Reverse geocoding failed');
+      const data = await response.json() as { display_name?: string; address?: ReverseGeocodeAddress };
+      const address = data.address ?? {};
+      // Do not overwrite user's manual KTP address from reverse geocode.
+      // Logistics-style: manual address = truth; pin/geocode = delivery aid.
+      const nextAddress = addressValue || composeAddress(data.display_name, address);
+      const nextVillage = cleanAdminName(address.village || address.suburb || address.neighbourhood || address.town);
+      const nextDistrict = cleanAdminName(address.municipality || address.county || address.state_district);
+      const nextRegency = cleanAdminName(address.city || address.county || address.state_district);
+      const nextPostalCode = address.postcode ?? '';
+
+      if (!addressValue) setValue('address', nextAddress, { shouldDirty: true });
+      setValue('address_village_name', nextVillage, { shouldDirty: true });
+      setValue('address_district_name', nextDistrict, { shouldDirty: true });
+      setValue('address_regency_name', nextRegency, { shouldDirty: true });
+      setValue('address_postal_code', nextPostalCode, { shouldDirty: true });
+      lastMapSyncedQueryRef.current = buildAddressQueries({
+        fullAddress: nextAddress,
+        village: nextVillage,
+        district: nextDistrict,
+        regency: nextRegency,
+        postalCode: nextPostalCode,
+      })[0] ?? '';
+      toast.success('Titik peta tersimpan. Alamat manual tidak diubah.');
+    } catch {
+      toast.warning('Titik tersimpan. Alamat otomatis gagal dibaca, silakan lengkapi manual.');
+    } finally {
+      setReverseGeocoding(false);
+    }
+  };
+
+  const syncMapFromAddress = async () => {
+    const queries = buildAddressQueries({
+      fullAddress: addressValue,
+      village: villageValue,
+      district: districtValue,
+      regency: regencyValue,
+      postalCode: postalCodeValue,
+    });
+    const primaryQuery = queries[0];
+
+    if (!primaryQuery) {
+      toast.warning('Lengkapi alamat KTP terlebih dahulu sebelum mencari titik peta.');
+      return;
+    }
+    if (primaryQuery === lastMapSyncedQueryRef.current && typeof addressLat === 'number' && typeof addressLng === 'number') {
+      return;
+    }
+
+    setForwardGeocoding(true);
+    try {
+      let bestResult: ForwardGeocodeResult | null = null;
+      let matchedQuery = '';
+
+      for (const query of queries) {
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&countrycodes=id&limit=5&q=${encodeURIComponent(query)}`, {
+          headers: { Accept: 'application/json', 'Accept-Language': 'id,en' },
+        });
+        if (!response.ok) throw new Error('Forward geocoding failed');
+        const results = await response.json() as ForwardGeocodeResult[];
+        const candidate = pickBestForwardGeocodeResult(results, query);
+        if (candidate) {
+          bestResult = candidate;
+          matchedQuery = query;
+          break;
+        }
+      }
+
+      if (!bestResult) throw new Error('Location not found');
+      setValue('address_lat', Number(bestResult.lat), { shouldDirty: true });
+      setValue('address_lng', Number(bestResult.lon), { shouldDirty: true });
+      lastMapSyncedQueryRef.current = matchedQuery;
+      toast.success('Peta alamat KTP disesuaikan dari alamat terdekat');
+    } catch {
+      toast.warning('Lokasi tidak ditemukan dari alamat. Lengkapi alamat lebih detail atau pilih titik pada peta.');
+    } finally {
+      setForwardGeocoding(false);
+    }
   };
 
   const _closeTutorial = () => {
@@ -432,13 +723,39 @@ export default function ProfilePage(): React.JSX.Element {
   const onSubmit = async (data: UpdateProfileFormData) => {
     try {
       const payload = { ...(data as unknown as Record<string, unknown>) };
-      await profileApi.update(payload);
-      toast.success(profileComplete ? 'Permintaan perubahan profil dikirim. Menunggu persetujuan superadmin.' : 'Profil berhasil disimpan. Pastikan semua data sudah valid.');
+      const updateRes = await profileApi.update(payload) as { map_fields_updated?: string[] } | null;
       setIsEditing(false);
-      const res = await profileApi.get() as unknown as { student?: StudentProfile; lecturer?: LecturerProfile; pending_change_request?: ChangeRequest; profile_complete?: boolean; user?: { biodata_complete?: boolean; address_complete?: boolean } };
-      setProfileData({ student: res?.student ?? null, lecturer: res?.lecturer ?? null, pending: res?.pending_change_request ?? null });
+
+      let successMessage = profileComplete
+        ? 'Permintaan perubahan profil dikirim. Menunggu persetujuan admin.'
+        : 'Profil berhasil disimpan. Pastikan semua data sudah valid.';
+      let complete = profileComplete;
+
+      try {
+        const res = await profileApi.get() as unknown as { student?: StudentProfile; lecturer?: LecturerProfile; pending_change_request?: ChangeRequest; profile_complete?: boolean; user?: { biodata_complete?: boolean; address_complete?: boolean } };
+        setProfileData({ student: res?.student ?? null, lecturer: res?.lecturer ?? null, pending: res?.pending_change_request ?? null });
+
+        if (res?.pending_change_request) {
+          successMessage = 'Permintaan perubahan profil dikirim. Menunggu persetujuan admin.';
+        } else if (Array.isArray(updateRes?.map_fields_updated) && updateRes.map_fields_updated.length > 0) {
+          successMessage = 'Titik peta dan metadata alamat berhasil diperbarui.';
+        } else if (profileComplete) {
+          successMessage = 'Perubahan profil berhasil disimpan.';
+        }
+
+        complete = !!res?.profile_complete || !!(res?.student?.biodata_complete && res?.student?.address_complete) || !!res?.lecturer?.biodata_complete;
+      } catch {
+        if (Array.isArray(updateRes?.map_fields_updated) && updateRes.map_fields_updated.length > 0) {
+          successMessage = 'Titik peta berhasil diperbarui. Profil terbaru belum sempat dimuat ulang.';
+        } else if (profileComplete) {
+          successMessage = 'Perubahan profil tersimpan. Profil terbaru belum sempat dimuat ulang.';
+        } else {
+          successMessage = 'Profil tersimpan. Pastikan semua data sudah valid.';
+        }
+      }
+
+      toast.success(successMessage);
       await fetchUser(true);
-      const complete = !!res?.profile_complete || !!(res?.student?.biodata_complete && res?.student?.address_complete) || !!res?.lecturer?.biodata_complete;
       setProfileCompleteCookie(complete);
       if (complete) {
         const freshUser = useAuthStore.getState().user;
@@ -492,12 +809,14 @@ export default function ProfilePage(): React.JSX.Element {
 
     let uploadSucceeded = false;
     let moderationStatus: 'approved' | 'pending' | null = null;
+    let moderationReason: string | null = null;
 
     try {
       // Step 1: the actual upload. Only a throw HERE means the upload failed.
       const uploadRes = await profileApi.updateAvatar(formData) as unknown as Record<string, unknown> & { data?: Record<string, unknown> };
       uploadSucceeded = true;
       moderationStatus = ((uploadRes?.data?.moderation_status ?? uploadRes?.moderation_status) as 'approved' | 'pending' | null) ?? null;
+      moderationReason = ((uploadRes?.data?.moderation_reason ?? uploadRes?.moderation_reason) as string | null | undefined)?.trim() || null;
     } catch (error: unknown) {
       // R-008 fix: only rollback the preview when the UPLOAD itself failed.
       if (user) {
@@ -535,7 +854,14 @@ export default function ProfilePage(): React.JSX.Element {
 
     if (uploadSucceeded) {
       if (moderationStatus === 'pending') {
-        toast.warning('Foto terunggah dan menunggu verifikasi admin (server AI sedang sibuk).');
+        const pendingMessage = moderationReason || 'Sedang diverifikasi otomatis oleh sistem.';
+        const manualReview = /server ai tidak tersedia|menunggu verifikasi admin|manual/i.test(pendingMessage);
+
+        if (manualReview) {
+          toast.warning(`Foto terunggah. ${pendingMessage}`);
+        } else {
+          toast.message(`Foto terunggah. ${pendingMessage}`);
+        }
       } else {
         toast.success('Foto profil diperbarui');
       }
@@ -553,7 +879,7 @@ export default function ProfilePage(): React.JSX.Element {
   }
 
   return (
-    <div ref={rootRef} className={`relative min-h-screen overflow-hidden px-4 py-8 pb-12 text-[color:var(--profile-text)] transition-all duration-700 ease-out ${typography.page}`}>
+    <div ref={rootRef} className={`relative min-h-screen overflow-hidden px-3 py-6 pb-12 sm:px-4 sm:py-8 text-[color:var(--profile-text)] transition-all duration-700 ease-out ${typography.page}`}>
       <style jsx global>{TOUR_CSS}</style>
       {themeConfig.useParticles && (
         <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
@@ -576,7 +902,7 @@ export default function ProfilePage(): React.JSX.Element {
       <div className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-white/10 to-transparent opacity-80" />
       <div className="pointer-events-none absolute -left-24 top-16 h-72 w-72 rounded-full bg-[color:var(--profile-accent)]/10 blur-3xl transition-colors duration-700" />
       <div className="pointer-events-none absolute -right-24 top-48 h-80 w-80 rounded-full bg-[color:var(--profile-primary)]/10 blur-3xl transition-colors duration-700" />
-      <div className="relative z-10 mx-auto max-w-5xl space-y-6">
+      <div className="relative z-10 mx-auto max-w-5xl space-y-4 sm:space-y-6">
       <ProfileHeader
         refTarget={setTutorialTargetRef('intro')}
         themeRef={setTutorialTargetRef('theme')}
@@ -594,10 +920,10 @@ export default function ProfilePage(): React.JSX.Element {
         onLogout={handleLogout}
       />
 
-      {pendingRequest && profileComplete && <div className="rounded-xl border border-amber-300 bg-[color:var(--profile-warning)] p-4 text-sm text-[color:var(--profile-warning-text)] shadow-sm transition-colors duration-500">Permintaan perubahan profil sedang menunggu persetujuan superadmin.</div>}
-      {missingFields.length > 0 && <div className="flex gap-3 rounded-xl border border-amber-300 bg-[color:var(--profile-warning)] p-4 shadow-sm transition-colors duration-500"><AlertCircle size={18} className="mt-0.5 shrink-0 text-[color:var(--profile-warning-text)]" /><p className="text-sm text-[color:var(--profile-warning-text)]">Tahap awal wajib review dan melengkapi data berikut: <strong>{missingFields.map((f) => FIELD_LABELS[f] ?? f).join(', ')}</strong>. Pengisian awal disimpan langsung, edit setelah lengkap akan menunggu approval superadmin.</p></div>}
+      {pendingRequest && profileComplete && <div className="rounded-xl border border-amber-300 bg-[color:var(--profile-warning)] p-4 text-sm text-[color:var(--profile-warning-text)] shadow-sm transition-colors duration-500">Permintaan perubahan profil sedang menunggu persetujuan admin.</div>}
+      {missingFields.length > 0 && <div className="flex gap-3 rounded-xl border border-amber-300 bg-[color:var(--profile-warning)] p-4 shadow-sm transition-colors duration-500"><AlertCircle size={18} className="mt-0.5 shrink-0 text-[color:var(--profile-warning-text)]" /><p className="text-sm text-[color:var(--profile-warning-text)]">Tahap awal wajib review dan melengkapi data berikut: <strong>{missingFields.map((f) => FIELD_LABELS[f] ?? f).join(', ')}</strong>. Pengisian awal disimpan langsung, edit setelah lengkap akan menunggu approval admin.</p></div>}
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
         <ProfileSidebar
           avatarRef={setTutorialTargetRef('avatar')}
           statusRef={setTutorialTargetRef('status')}
@@ -615,7 +941,7 @@ export default function ProfilePage(): React.JSX.Element {
         />
 
         <div className="lg:col-span-2">
-          <form ref={setTutorialTargetRef('form')} onSubmit={handleSubmit(onSubmit, onSubmitInvalid)} className={cx('space-y-6 rounded-xl p-6', themeConfig.frame, surfaceStrongClass, themeConfig.shadow)}>
+          <form ref={setTutorialTargetRef('form')} onSubmit={handleSubmit(onSubmit, onSubmitInvalid)} className={cx('space-y-4 rounded-xl p-4 sm:space-y-6 sm:rounded-2xl sm:p-6', 'border border-emerald-100 bg-white shadow-sm shadow-emerald-900/5')}>
             <section className="space-y-4">
               <h2 className={`flex items-center gap-2 ${typography.label} text-[color:var(--profile-text)]`}><IdCard size={16} /> Data Pribadi & Kontak</h2>
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -634,11 +960,15 @@ export default function ProfilePage(): React.JSX.Element {
 
             {isStudent && <StudentAddressSection register={register} errors={errors} isEditing={isEditing} typography={typography} />}
 
-            {isLecturer && <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5"><h2 className={`${typography.label} text-[color:var(--profile-text)]`}>Data Kepegawaian, Keuangan & Pajak</h2><div className="grid grid-cols-1 gap-4 md:grid-cols-2"><TextInput label="Nama Bergelar" registration={register('nama_gelar')} disabled={!isEditing} /><TextInput label="NIDN" registration={register('nidn')} disabled={!isEditing} /><TextInput label="NIK Dosen" registration={register('dosen_nik')} disabled={!isEditing} /><TextInput label="Jabatan Fungsional" registration={register('jabatan')} disabled={!isEditing} /><TextInput label="Kelas Jabatan" registration={register('kelas_jabatan')} disabled={!isEditing} /><TextInput label="Tugas Tambahan" registration={register('tugas_tambahan')} disabled={!isEditing} /><TextInput label="Golongan" registration={register('golongan')} disabled={!isEditing} /><TextInput label="Pangkat" registration={register('pangkat')} disabled={!isEditing} /><TextArea label="Alamat Dosen" registration={register('dosen_alamat')} disabled={!isEditing} /><TextInput label="No. Rekening" registration={register('no_rekening')} disabled={!isEditing} /><TextInput label="Nama Bank" registration={register('nama_bank')} disabled={!isEditing} /><TextInput label="NPWP" registration={register('npwp')} disabled={!isEditing} /><TextInput label="Status Aktif" value={(lecturer?.status_aktif as string) ?? '-'} disabled /><TextInput label="Status Pegawai" value={(lecturer?.status_pegawai as string) ?? '-'} disabled /><TextInput label="Workshop DPL" value={lecturer?.has_workshop ? `Sudah (${(lecturer?.workshop_date as string) ?? '-'})` : 'Belum'} disabled /></div><div className={`flex gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] transition-colors ${typography.meta}`}><Info size={18} className="shrink-0" />Kolom yang tidak relevan untuk proses KKN seperti tanggal pensiun dan pendidikan terakhir tidak ditampilkan. Pengisian awal disimpan langsung; perubahan setelah profil lengkap menunggu persetujuan superadmin.</div></section>}
+            {isLecturer && <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5"><h2 className={`${typography.label} text-[color:var(--profile-text)]`}>Data Kepegawaian, Keuangan & Pajak</h2><div className="grid grid-cols-1 gap-4 md:grid-cols-2"><TextInput label="Nama Bergelar" registration={register('nama_gelar')} disabled={!isEditing} /><TextInput label="NIDN" registration={register('nidn')} disabled={!isEditing} /><TextInput label="NIK Dosen" registration={register('dosen_nik')} disabled={!isEditing} /><TextInput label="Jabatan Fungsional" registration={register('jabatan')} disabled={!isEditing} /><TextInput label="Kelas Jabatan" registration={register('kelas_jabatan')} disabled={!isEditing} /><TextInput label="Tugas Tambahan" registration={register('tugas_tambahan')} disabled={!isEditing} /><TextInput label="Golongan" registration={register('golongan')} disabled={!isEditing} /><TextInput label="Pangkat" registration={register('pangkat')} disabled={!isEditing} /><TextArea label="Alamat Dosen" registration={register('dosen_alamat')} disabled={!isEditing} /><TextInput label="No. Rekening" registration={register('no_rekening')} disabled={!isEditing} /><TextInput label="Nama Bank" registration={register('nama_bank')} disabled={!isEditing} /><TextInput label="NPWP" registration={register('npwp')} disabled={!isEditing} /><TextInput label="Status Aktif" value={(lecturer?.status_aktif as string) ?? '-'} disabled /><TextInput label="Status Pegawai" value={(lecturer?.status_pegawai as string) ?? '-'} disabled /><TextInput label="Workshop DPL" value={lecturer?.has_workshop ? `Sudah (${(lecturer?.workshop_date as string) ?? '-'})` : 'Belum'} disabled /></div><div className={`flex gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] transition-colors ${typography.meta}`}><Info size={18} className="shrink-0" />Kolom yang tidak relevan untuk proses KKN seperti tanggal pensiun dan pendidikan terakhir tidak ditampilkan. Pengisian awal disimpan langsung; perubahan setelah profil lengkap menunggu persetujuan admin.</div></section>}
 
-            {isEditing && <button type="submit" disabled={isSubmitting || !isDirty || (!!pendingRequest && profileComplete)} className={cx('flex h-11 items-center justify-center gap-2 rounded-lg px-6 disabled:opacity-50', typography.button, primaryClass)}>{isSubmitting ? 'Menyimpan...' : profileComplete ? 'Ajukan Perubahan' : 'Simpan & Lanjutkan'}<Save size={16} /></button>}
+            {isEditing && <button type="submit" disabled={isSubmitting || !isDirty || (!!pendingRequest && profileComplete)} className={cx('flex h-11 w-full items-center justify-center gap-2 rounded-lg px-6 disabled:opacity-50 sm:w-auto', typography.button, 'bg-emerald-700 text-white hover:bg-emerald-800 shadow-sm shadow-emerald-900/20')}>{isSubmitting ? 'Menyimpan...' : profileComplete ? 'Ajukan Perubahan' : 'Simpan & Lanjutkan'}<Save size={16} /></button>}
           </form>
 
+          <div className="mt-4 sm:mt-6">
+            {/* NotificationPreferencesCard hidden — managed via admin dashboard */}
+            <TwoFactorCard />
+          </div>
         </div>
       </div>
       </div>

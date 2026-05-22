@@ -15,8 +15,8 @@ export default function AdminGroupsPage(): React.JSX.Element {
   const [isImporting, setIsImporting] = useState(false);
   const [confirmId, setConfirmId] = useState<number | null>(null);
   const searchParams = useSearchParams();
-  const periodeId = searchParams.get('periode_id') ?? '';
-  const periodeName = (searchParams.get('periode_name') ?? '').trim();
+  const periodeId = searchParams?.get('periode_id') ?? '';
+  const periodeName = (searchParams?.get('periode_name') ?? '').trim();
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'groups', { periodeId }],

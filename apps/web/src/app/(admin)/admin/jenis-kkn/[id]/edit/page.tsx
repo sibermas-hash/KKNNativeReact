@@ -93,7 +93,8 @@ function NumberField({ label, value, onChange, min = 0, step = 1, hint }: { labe
 }
 
 export default function JenisKknEditPage(): React.JSX.Element {
-  const { id } = useParams();
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const router = useRouter();
   const queryClient = useQueryClient();
 

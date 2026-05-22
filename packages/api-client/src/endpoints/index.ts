@@ -23,7 +23,6 @@ export function studentEndpoints(client: AxiosInstance) {
       store: (data: { periode_id: number; jenis_kkn_id?: number }) => client.post('/student/registration', data),
       status: () => client.get('/student/registration/status'),
       leave: (periodeId: number) => client.post(`/student/registration/${periodeId}/leave`, {}),
-      confirmAlternative: (periodeId: number) => client.post(`/student/registration/${periodeId}/confirm-alternative`, {}),
     },
     kknDaftar: {
       index: () => client.get('/student/kkn-daftar'),
@@ -68,11 +67,17 @@ export function studentEndpoints(client: AxiosInstance) {
     notificationShown: (id: number) => client.patch(`/student/peserta-kkn/${id}/notification-shown`),
     // GAP-1: document upload for registration
     documents: (periodeId: number, data: FormData) =>
-      client.post(`/student/registration/${periodeId}/documents`, data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+      client.post(`/student/registration/${periodeId}/documents`, data, {}),
     // GAP-3: posko
     posko: {
       show: () => client.get('/student/posko'),
       store: (data: Record<string, unknown>) => client.post('/student/posko', data),
+    },
+    chat: {
+      index: () => client.get('/chat'),
+      store: (data: { subject: string; message: string; priority?: string }) => client.post('/chat', data),
+      show: (id: number) => client.get(`/chat/${id}`),
+      reply: (id: number, data: { message: string }) => client.post(`/chat/${id}/reply`, data),
     },
   };
 }
@@ -206,28 +211,14 @@ export function adminEndpoints(client: AxiosInstance) {
     registrations: {
       index: (params?: Record<string, unknown>) => client.get('/admin/pendaftaran', { params }),
       show: (id: number) => client.get(`/admin/pendaftaran/${id}`),
-      approve: (id: number) => client.post(`/admin/pendaftaran/${id}/approve`),
-      reject: (id: number, data: { rejection_reason: string }) => client.post(`/admin/pendaftaran/${id}/reject`, data),
-      passInterview: (id: number, data?: { notes?: string }) => client.patch(`/admin/pendaftaran/${id}/interview/pass`, data ?? {}),
-      failInterview: (id: number, data?: { notes?: string }) => client.patch(`/admin/pendaftaran/${id}/interview/fail`, data ?? {}),
+      approve: (id: number) => client.patch(`/admin/pendaftaran/${id}/approve`),
+      reject: (id: number, data: { rejection_reason: string }) => client.patch(`/admin/pendaftaran/${id}/reject`, data),
       assignGroup: (id: number, data: { kelompok_id: number }) => client.patch(`/admin/pendaftaran/${id}/assign-group`, data),
       bulkApprove: (ids: number[]) => client.post('/admin/pendaftaran/bulk-approve', { ids }),
       bulkReject: (ids: number[], reason: string) => client.post('/admin/pendaftaran/bulk-reject', { ids, rejection_reason: reason }),
       downloadDocument: (path: string) => client.get('/admin/pendaftaran/berkas/unduh', { params: { path }, responseType: 'blob' }),
       export: (params?: Record<string, unknown>) => client.get('/admin/pendaftaran/export', { params }),
       exportFile: (params?: Record<string, unknown>) => client.get('/admin/pendaftaran/export', { params, responseType: 'blob' }),
-    },
-
-    interviews: {
-      index: (params?: Record<string, unknown>) => client.get('/admin/interviews', { params }),
-      show: (id: number) => client.get(`/admin/interviews/${id}`),
-      store: (data: Record<string, unknown>) => client.post('/admin/interviews', data),
-      update: (id: number, data: Record<string, unknown>) => client.patch(`/admin/interviews/${id}`, data),
-      destroy: (id: number) => client.delete(`/admin/interviews/${id}`),
-      sync: (id: number) => client.post(`/admin/interviews/${id}/sync`, {}),
-      targets: () => client.get('/admin/interviews/targets/non-interview'),
-      passParticipant: (id: number, data?: { notes?: string }) => client.post(`/admin/interviews/participants/${id}/pass`, data ?? {}),
-      transferParticipant: (id: number, data: { target_periode_id: number; notes?: string }) => client.post(`/admin/interviews/participants/${id}/transfer`, data),
     },
 
     groups: {
@@ -526,7 +517,7 @@ export function adminEndpoints(client: AxiosInstance) {
 export function profileEndpoints(client: AxiosInstance) {
   return {
     get: () => client.get('/profile'),
-    update: (data: Record<string, unknown>) => client.post('/profile', data),
+    update: (data: Record<string, unknown>) => client.patch('/profile', data),
     updateAvatar: (data: FormData) => client.post('/profile/avatar', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
     // Keep password change on POST as a compatibility path for gateways that
     // still block PATCH before the request reaches the origin.

@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminApi } from '@/lib/api';
+import { adminApi, rawApi } from '@/lib/api';
 import { useAuthStore, usePeriodStore } from '@/stores';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import dynamicImport from 'next/dynamic';
@@ -22,7 +22,7 @@ import {
   Users, LayoutGrid, FileText, ClipboardList, AlertTriangle,
   MapPin, Clock, ArrowRight, ShieldCheck, Activity, TrendingUp,
   ChevronDown, BookOpen, BarChart3, CheckCircle2,
-} from 'lucide-react';
+  Mic } from 'lucide-react';
 import { toast } from 'sonner';
 import { CountUp } from '@/components/ui/motion-effects';
 
@@ -79,6 +79,7 @@ const PHASES = [
 
 const NAV = [
   { href: '/admin/pendaftaran',    icon: ClipboardList, label: 'Pendaftaran' },
+  { href: '/admin/wawancara',      icon: Mic,           label: 'Wawancara'   },
   { href: '/admin/kelompok',       icon: Users,         label: 'Kelompok'    },
   { href: '/admin/nilai',          icon: FileText,      label: 'Nilai'       },
   { href: '/admin/lokasi',         icon: MapPin,        label: 'Lokasi'      },
@@ -95,10 +96,20 @@ export default function AdminDashboardPage(): React.JSX.Element {
   const [selPeriod, setSelPeriod] = useState<number | undefined>(
     activePeriod?.id != null ? Number(activePeriod.id) : undefined
   );
+  const [showAiAlert, setShowAiAlert] = useState(true);
 
   useEffect(() => {
     if (activePeriod?.id != null && !selPeriod) setSelPeriod(Number(activePeriod.id));
   }, [activePeriod, selPeriod]);
+
+  const isSuperadmin = (user?.roles ?? []).includes('superadmin');
+
+  const { data: aiHealth } = useQuery({
+    queryKey: ['admin', 'ai-health'],
+    queryFn: async () => (await rawApi.get('/admin/ai-health')).data as { ok: boolean; message: string; issues?: string[]; checked_at?: string },
+    enabled: isSuperadmin,
+    refetchInterval: 60000,
+  });
 
   const { data, isLoading, isError, error } = useQuery({
     queryKey: ['admin', 'dashboard', { periode_id: selPeriod }],
@@ -145,53 +156,54 @@ export default function AdminDashboardPage(): React.JSX.Element {
   const alokPct  = totalStudents > 0 ? Math.round((assignedStudents / totalStudents) * 100) : 0;
 
   const STAT_CARDS = useMemo(() => [
-    { label: 'Pendaftar Periode', value: totalStudents,  icon: Users,         color: '#3b82f6', bg: '#eff6ff', href: '/admin/pendaftaran', alert: false },
-    { label: 'Menunggu Review',   value: pendingCount,   icon: Clock,         color: '#f59e0b', bg: '#fffbeb', href: '/admin/pendaftaran', alert: pendingCount > 0 },
+    { label: 'Total Peserta Periode', value: totalStudents,  icon: Users,         color: '#3b82f6', bg: '#eff6ff', href: '/admin/pendaftaran', alert: false },
+    { label: 'Review Periode',         value: pendingCount,   icon: Clock,         color: '#f59e0b', bg: '#fffbeb', href: '/admin/pendaftaran', alert: pendingCount > 0 },
     { label: 'Belum Ditempatkan', value: unassignedCount,icon: AlertTriangle, color: '#ef4444', bg: '#fef2f2', href: undefined,            alert: unassignedCount > 0 },
-    { label: 'Total Kelompok',    value: totalGroups,    icon: LayoutGrid,    color: '#10b981', bg: '#ecfdf5', href: '/admin/kelompok',    alert: false },
+    { label: 'Kelompok Periode',      value: totalGroups,    icon: LayoutGrid,    color: '#10b981', bg: '#ecfdf5', href: '/admin/kelompok',    alert: false },
   ], [totalStudents, pendingCount, unassignedCount, totalGroups]);
 
   return (
     <motion.div
-      className="space-y-4 font-display"
+      className="space-y-6 font-display"
       initial="hidden"
       animate="show"
       variants={{ show: { transition: { staggerChildren: 0.06 } } }}
     >
       {/* ── Header ── */}
-      <motion.div variants={ENTER} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-1">
-        <div>
-          <h1 className="text-[1.35rem] font-bold text-slate-900 tracking-tight leading-none">
-            Dashboard <span className="text-slate-400 font-normal">·</span> {user?.name?.split(' ')[0] ?? 'Admin'}
-          </h1>
-          <p className="text-xs text-slate-400 mt-1 font-sans">
-            Fase aktif: <span className="font-semibold text-slate-600">{PHASES[phaseIdx]?.label ?? '—'}</span>
-          </p>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2 shrink-0">
-          <div className="relative">
-            <select
-              value={selPeriod ?? ''}
-              onChange={e => setSelPeriod(e.target.value ? Number(e.target.value) : undefined)}
-              className="h-8 pl-3 pr-8 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200 appearance-none cursor-pointer font-sans"
-              aria-label="Pilih periode KKN"
-            >
-              {!selPeriod && <option value="">Pilih Periode</option>}
-              {periodOptions.map(p => <option key={String(p.id)} value={Number(p.id)}>{String(p.name ?? p.periode ?? '-')}</option>)}
-            </select>
-            <ChevronDown size={11} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+      <motion.div variants={ENTER} className="relative overflow-hidden rounded-[2rem] border border-emerald-100 bg-gradient-to-br from-white via-emerald-50/70 to-cyan-50/60 p-5 shadow-[0_24px_80px_rgba(15,118,110,0.10)] sm:p-6">
+        <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <span className="inline-flex items-center rounded-full border border-emerald-200 bg-white/75 px-3 py-1 text-[10px] font-black uppercase tracking-[0.22em] text-emerald-700 shadow-sm">
+              Command Center KKN
+            </span>
+            <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-950 sm:text-4xl">
+              Halo, {user?.name?.split(' ')[0] ?? 'Admin'}
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 font-sans">
+              Ringkasan jumlah total pada periode yang sedang dipilih.
+            </p>
           </div>
-          <div className="relative">
-            <select value={phaseKey}
-              disabled={!periodId || phaseMut.isPending}
-              onChange={e => periodId && phaseMut.mutate({ periode_id: periodId, phase: e.target.value })}
-              className="h-8 pl-3 pr-8 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200 appearance-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 font-sans">
-              <option value="upcoming">Pra-Pendaftaran</option>
-              {PHASES.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
-            </select>
-            <ChevronDown size={11} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+          <div className="flex flex-col gap-2 shrink-0 sm:items-end">
+            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Periode Ringkasan</span>
+            <div className="relative">
+              <select
+                value={selPeriod ?? ''}
+                onChange={e => setSelPeriod(e.target.value ? Number(e.target.value) : undefined)}
+                className="h-10 max-w-[360px] pl-4 pr-9 rounded-2xl border border-emerald-100 bg-white/90 text-xs font-black text-slate-700 shadow-sm focus:outline-none focus:ring-4 focus:ring-emerald-100 appearance-none cursor-pointer font-sans"
+                aria-label="Pilih periode KKN"
+              >
+                {!selPeriod && <option value="">Pilih Periode</option>}
+                {periodOptions.map(p => <option key={String(p.id)} value={Number(p.id)}>{String(p.name ?? p.periode ?? '-')}</option>)}
+              </select>
+              <ChevronDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+            </div>
+            <span className="rounded-full bg-emerald-600 px-3 py-1 text-[10px] font-black uppercase tracking-wide text-white">
+              Fase: {PHASES[phaseIdx]?.label ?? 'Aktif'}
+            </span>
           </div>
         </div>
+        <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-emerald-300/25 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 left-1/3 h-60 w-60 rounded-full bg-cyan-300/20 blur-3xl" />
       </motion.div>
 
       {isError && (
@@ -200,6 +212,49 @@ export default function AdminDashboardPage(): React.JSX.Element {
         </motion.div>
       )}
 
+      <AnimatePresence>
+        {isSuperadmin && aiHealth && !aiHealth.ok && showAiAlert && (
+          <motion.div
+            variants={ENTER}
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 backdrop-blur-sm"
+          >
+            <div className="w-full max-w-lg rounded-2xl border border-rose-200 bg-white p-5 shadow-2xl">
+              <div className="flex items-start gap-3">
+                <div className="rounded-xl bg-rose-100 p-2 text-rose-700"><AlertTriangle size={22} /></div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-base font-black text-rose-700">AI Validasi Foto Tidak Bekerja</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-700">{aiHealth.message}</p>
+                  {!!aiHealth.issues?.length && (
+                    <ul className="mt-3 list-disc space-y-1 pl-5 text-xs text-slate-600">
+                      {aiHealth.issues.map((issue) => <li key={issue}>{issue}</li>)}
+                    </ul>
+                  )}
+                  <p className="mt-3 text-[11px] text-slate-400">Dicek: {aiHealth.checked_at ?? '-'}</p>
+                </div>
+              </div>
+              <div className="mt-5 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAiAlert(false)}
+                  className="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50"
+                >
+                  Tutup sementara
+                </button>
+                <Link
+                  href="/admin/avatar-moderation"
+                  className="rounded-lg bg-rose-600 px-3 py-2 text-xs font-black text-white hover:bg-rose-700"
+                >
+                  Cek Moderasi Avatar
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {phaseContext?.hint && (
         <motion.div variants={ENTER} className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-3 text-sm text-blue-800 font-sans">
           {phaseContext.hint}
@@ -207,7 +262,7 @@ export default function AdminDashboardPage(): React.JSX.Element {
       )}
 
       {/* ── Phase stepper ── */}
-      <motion.div variants={ENTER} className="bg-white rounded-xl border border-slate-100 px-5 py-3 flex items-center">
+      <motion.div variants={ENTER} className="rounded-2xl border border-white/70 bg-white/80 px-5 py-4 shadow-sm backdrop-blur flex items-center">
         {PHASES.map((p, i) => (
           <div key={p.id} className="flex items-center flex-1 min-w-0">
             <Tip content={p.label}>
@@ -237,22 +292,22 @@ export default function AdminDashboardPage(): React.JSX.Element {
       </motion.div>
 
       {/* ── Stat cards ── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {STAT_CARDS.map((c, i) => {
           const card = (
             <motion.div key={c.label} variants={ENTER}
-              className="bg-white rounded-xl border border-slate-100 p-4 relative overflow-hidden group hover:shadow-md transition-shadow cursor-default">
+              className="relative overflow-hidden rounded-2xl border border-white/70 bg-white/85 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(15,118,110,0.14)] cursor-default">
               {c.alert && (
                 <span className="absolute top-3 right-3 flex h-2 w-2">
                   <span className="animate-ping absolute h-full w-full rounded-full opacity-60" style={{ background: c.color }} />
                   <span className="relative h-2 w-2 rounded-full" style={{ background: c.color }} />
                 </span>
               )}
-              <div className="h-9 w-9 rounded-lg flex items-center justify-center mb-3" style={{ background: c.bg, color: c.color }}>
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl ring-1 ring-white/70" style={{ background: c.bg, color: c.color }}>
                 <c.icon size={17} strokeWidth={2} />
               </div>
               <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1 font-sans">{c.label}</p>
-              <p className="text-2xl font-black tabular-nums" style={{ color: c.color }}>
+              <p className="text-3xl font-black tabular-nums tracking-tight" style={{ color: c.color }}>
                 {isLoading ? <span className="inline-block h-7 w-10 animate-pulse rounded bg-slate-100" /> : <Counter to={c.value} delay={0.1 + i * 0.07} />}
               </p>
               <div className="absolute bottom-0 left-0 right-0 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: c.color }} />
@@ -296,7 +351,7 @@ export default function AdminDashboardPage(): React.JSX.Element {
       )}
 
       {/* ── Main grid ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
 
         {/* Chart */}
         <motion.div variants={ENTER} className="lg:col-span-8 bg-white rounded-xl border border-slate-100 overflow-hidden">

@@ -23,6 +23,7 @@ class JenisKknResource extends JsonResource
             'placement_mode_label' => $this->placementModeLabel(),
             'color' => $this->color,
             'is_active' => $this->is_active,
+            'requires_interview' => (bool) $this->requires_interview,
             'sort_order' => $this->sort_order,
             'attendance_config' => $this->getAttendanceConfig(),
             'requirements_config' => $this->requirements_config,

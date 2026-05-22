@@ -38,7 +38,7 @@ const spaceGrotesk = Space_Grotesk({
 const metadataBase = (() => {
   const fallbackSiteUrl = process.env.NODE_ENV === 'production'
     ? 'https://sibermas.uinsaizu.ac.id'
-    : 'https://sibermas.uinsaizu.ac.id';
+    : 'http://localhost:3000';
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
     || process.env.NEXT_PUBLIC_APP_URL
     || fallbackSiteUrl;
@@ -63,10 +63,19 @@ export const metadata: Metadata = {
   },
   description: 'Sistem Informasi Berbasis Masyarakat — Platform digital terintegrasi Pelaksanaan KKN UIN Prof. K.H. Saifuddin Zuhri Purwokerto.',
   metadataBase,
+  manifest: '/manifest.json',
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
-    apple: '/logo_kkn.png',
+    apple: [
+      { url: '/icons/icon-152x152.png', sizes: '152x152', type: 'image/png' },
+      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'SIBERMAS',
   },
   openGraph: {
     type: 'website',

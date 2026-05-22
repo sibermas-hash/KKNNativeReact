@@ -1,71 +1,107 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
-import { useQuery } from '@tanstack/react-query';
-import { api } from '@/lib/api';
 import { useState } from 'react';
-import { Users } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { rawApi } from '@/lib/api';
+import { Users, Search, GraduationCap } from 'lucide-react';
 import { PageHeader, EmptyState } from '@/components/ui/shared';
+
+type Dosen = {
+  id: number;
+  nip?: string;
+  nama?: string;
+  jabatan?: string;
+  faculty?: { nama?: string };
+  has_workshop?: boolean;
+};
+
+type Meta = { current_page: number; last_page: number; total: number; per_page: number };
 
 export default function DosenIndexPage(): React.JSX.Element {
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery<unknown[]>({
-    queryKey: ['admin', 'dosen', { search }],
+  const { data, isLoading } = useQuery<{ data: Dosen[]; meta?: Meta }>({
+    queryKey: ['admin', 'dosen', { search, page }],
     queryFn: async () => {
-      return await api.get('/admin/dosen', { params: { search } });
+      const res = await rawApi.get('/admin/dosen', { params: { search: search || undefined, page, per_page: 25 } });
+      const body = res.data as { data?: Dosen[] | { data?: Dosen[]; meta?: Meta }; meta?: Meta };
+      if (Array.isArray(body.data)) {
+        return { data: body.data, meta: body.meta };
+      }
+      const inner = body.data as { data?: Dosen[]; meta?: Meta };
+      return { data: inner?.data ?? [], meta: inner?.meta ?? body.meta };
     },
   });
 
-  const dosen = data ?? [];
+  const dosen = data?.data ?? [];
+  const meta = data?.meta;
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      <PageHeader
-        title="Data Dosen"
-        subtitle="Daftar seluruh dosen yang terdaftar dalam sistem."
-        actions={
+    <div className="space-y-6">
+      <PageHeader title="Direktori Dosen" subtitle={`${meta?.total ?? dosen.length} dosen terdaftar dalam sistem.`} />
+
+      {/* Filter */}
+      <div className="flex flex-wrap gap-3">
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <input
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
             placeholder="Cari NIP/Nama..."
-            className="rounded-lg border border-slate-200 px-3 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+            className="h-10 w-full rounded-xl border border-slate-200 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600"
           />
-        }
-      />
-
-      {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => <div key={i} className="h-16 animate-pulse rounded-2xl bg-slate-100" />)}
         </div>
+      </div>
+
+      {/* Table */}
+      {isLoading ? (
+        <div className="space-y-2">{[1,2,3,4,5].map(i => <div key={i} className="h-14 animate-pulse rounded-xl bg-slate-100" />)}</div>
       ) : dosen.length === 0 ? (
         <EmptyState icon={<Users size={40} />} title="Tidak ada dosen" description="Tidak ada dosen yang sesuai pencarian." />
       ) : (
         <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-slate-100">
-                <th className="p-4 text-left text-xs text-slate-500 font-black uppercase tracking-wider">NIP</th>
-                <th className="p-4 text-left text-xs text-slate-500 font-black uppercase tracking-wider">Nama</th>
-                <th className="p-4 text-left text-xs text-slate-500 font-black uppercase tracking-wider">Fakultas</th>
-                <th className="p-4 text-left text-xs text-slate-500 font-black uppercase tracking-wider">Jabatan</th>
+              <tr className="border-b border-slate-100 bg-slate-50">
+                <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">No</th>
+                <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">NIP</th>
+                <th className="px-4 py-3 text-left text-xs font-bold text-slate-500">Nama</th>
+                <th className="hidden px-4 py-3 text-left text-xs font-bold text-slate-500 md:table-cell">Fakultas</th>
+                <th className="hidden px-4 py-3 text-left text-xs font-bold text-slate-500 lg:table-cell">Jabatan</th>
+                <th className="px-4 py-3 text-center text-xs font-bold text-slate-500">Workshop</th>
               </tr>
             </thead>
             <tbody>
-              {dosen.map((d: unknown) => {
-                const item = d as Record<string, unknown>;
-                return (
-                  <tr key={String(item.id)} className="border-b border-slate-50 last:border-0">
-                    <td className="p-4 font-mono text-xs text-slate-600">{String(item.nip || '-')}</td>
-                    <td className="p-4 font-medium text-slate-800">{String(item.nama || '-')}</td>
-                    <td className="p-4 text-slate-600">{String((item.fakultas as Record<string, unknown>)?.nama || '-')}</td>
-                    <td className="p-4 text-slate-600">{String(item.jabatan || '-')}</td>
-                  </tr>
-                );
-              })}
+              {dosen.map((d, i) => (
+                <tr key={d.id} className="border-b border-slate-50 hover:bg-slate-50">
+                  <td className="px-4 py-3 text-slate-400">{((meta?.current_page ?? 1) - 1) * (meta?.per_page ?? 25) + i + 1}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-slate-600">{d.nip || '-'}</td>
+                  <td className="px-4 py-3 font-medium text-slate-800">{d.nama || '-'}</td>
+                  <td className="hidden px-4 py-3 text-xs text-slate-500 md:table-cell">{d.faculty?.nama || '-'}</td>
+                  <td className="hidden px-4 py-3 text-xs text-slate-500 lg:table-cell">{d.jabatan || '-'}</td>
+                  <td className="px-4 py-3 text-center">
+                    {d.has_workshop ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                        <GraduationCap size={10} />Lulus
+                      </span>
+                    ) : (
+                      <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-500">Belum</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {meta && meta.last_page > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold disabled:opacity-30">Prev</button>
+          <span className="text-xs text-slate-500">{meta.current_page} / {meta.last_page} • {meta.total} dosen</span>
+          <button onClick={() => setPage(p => Math.min(meta.last_page, p + 1))} disabled={page === meta.last_page} className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold disabled:opacity-30">Next</button>
         </div>
       )}
     </div>

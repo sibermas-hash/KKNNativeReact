@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\ApiResponse;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\DplPeriod;
+use App\Models\KKN\PesertaWorkshop;
 use App\Services\DplAssignmentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,6 +16,8 @@ use Illuminate\Support\Facades\Gate;
 
 class DplRegistrationController extends Controller
 {
+    use ApiResponse;
+
     public function __construct(
         private readonly DplAssignmentService $assignmentService,
     ) {}
@@ -42,8 +46,24 @@ class DplRegistrationController extends Controller
         $approved = (clone $query)->where('status', 'approved')->count();
         $rejected = (clone $query)->where('status', 'rejected')->count();
 
+        $items = $query->paginate($request->input('per_page', 25))->items();
+
+        // Attach workshop status per dosen
+        $userIds = collect($items)->pluck('dosen.user_id')->filter()->unique()->values();
+        $passedWorkshopUserIds = PesertaWorkshop::whereIn('user_id', $userIds)
+            ->where('is_passed', true)
+            ->pluck('user_id')
+            ->unique()
+            ->toArray();
+
+        $enriched = collect($items)->map(function ($item) use ($passedWorkshopUserIds) {
+            $arr = $item->toArray();
+            $arr['workshop_passed'] = in_array($item->dosen?->user_id, $passedWorkshopUserIds);
+            return $arr;
+        })->values();
+
         return $this->success([
-            'registrations' => $query->paginate($request->input('per_page', 25))->items(),
+            'registrations' => $enriched,
             'stats' => [
                 'total' => $total,
                 'pending' => $pending,

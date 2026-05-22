@@ -11,7 +11,6 @@ use App\Http\Traits\ApiResponse;
 use App\Models\KKN\ProgramKerja;
 use App\Models\KKN\ProposalProgramKerja;
 use App\Models\User;
-use App\Services\KKN\KknWorkflowService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -21,18 +20,15 @@ class WorkProgramController extends Controller
 {
     use ApiResponse;
 
-    public function __construct(private readonly KknWorkflowService $workflowService) {}
-
     public function index(): JsonResponse
     {
         /** @var User|null $user */
         $user = auth()->user();
         $mahasiswa = $user?->mahasiswa;
-        $registration = $mahasiswa?->peserta()->with(['periode.jenisKkn', 'kelompok'])->where('status', 'approved')->latest()->first();
-        $workflow = $this->workflowService->state($registration);
+        $registration = $mahasiswa?->peserta()->where('status', 'approved')->first();
 
         if (! $registration?->kelompok_id) {
-            return $this->success(['programs' => [], 'workflow' => $workflow, 'readiness' => $this->legacyReadiness($workflow, $registration)]);
+            return $this->success(['programs' => []]);
         }
 
         $programs = ProgramKerja::where('kelompok_id', $registration->kelompok_id)
@@ -42,22 +38,7 @@ class WorkProgramController extends Controller
 
         return $this->success([
             'programs' => ProgramKerjaResource::collection($programs),
-            'workflow' => $workflow,
-            'readiness' => $this->legacyReadiness($workflow, $registration),
         ]);
-    }
-
-    private function legacyReadiness(array $workflow, ?object $registration): array
-    {
-        return [
-            'approved' => (bool) $registration,
-            'has_kelompok' => (bool) $registration?->kelompok_id,
-            'has_dpl' => (bool) ($registration?->kelompok?->dpl_id || $registration?->kelompok?->dpl_periode_id),
-            'is_ketua' => strtolower((string) $registration?->role) === 'ketua',
-            'can_create' => (bool) ($workflow['can']['create_work_program'] ?? false),
-            'message' => $workflow['message'] ?? null,
-            'state' => $workflow['state'] ?? null,
-        ];
     }
 
     public function show(ProgramKerja $programKerja): JsonResponse
@@ -73,11 +54,14 @@ class WorkProgramController extends Controller
         /** @var User|null $user */
         $user = auth()->user();
         $mahasiswa = $user?->mahasiswa;
-        $registration = $mahasiswa?->peserta()->with(['periode.jenisKkn', 'kelompok'])->where('status', 'approved')->first();
-        $workflow = $this->workflowService->state($registration);
+        $registration = $mahasiswa?->peserta()->where('status', 'approved')->first();
 
-        if (! ($workflow['can']['create_work_program'] ?? false)) {
-            return $this->forbidden($workflow['message'] ?? 'Program kerja belum dapat dibuat.');
+        if (! $registration?->kelompok_id) {
+            return $this->forbidden('Anda belum ditempatkan di kelompok.');
+        }
+
+        if (strtolower((string) $registration->role) !== 'ketua') {
+            return $this->forbidden('Hanya ketua kelompok yang dapat membuat program kerja.');
         }
 
         $validated = $request->validate([

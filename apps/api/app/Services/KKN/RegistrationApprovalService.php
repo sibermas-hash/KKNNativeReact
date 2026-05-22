@@ -36,7 +36,7 @@ class RegistrationApprovalService
      */
     public function prepareForApproval(PesertaKkn $registration): PesertaKkn
     {
-        $registration->loadMissing(['mahasiswa', 'periode']);
+        $registration->loadMissing(['mahasiswa', 'periode.jenisKkn', 'dokumen']);
 
         if (! $registration->mahasiswa) {
             throw ValidationException::withMessages([
@@ -80,7 +80,7 @@ class RegistrationApprovalService
     public function approve(PesertaKkn $registration, int $approvedBy): void
     {
         DB::transaction(function () use ($registration, $approvedBy) {
-            $registration->loadMissing(['mahasiswa', 'periode']);
+            $registration->loadMissing(['mahasiswa', 'periode.jenisKkn', 'dokumen']);
 
             if (! $registration->mahasiswa) {
                 throw ValidationException::withMessages([
@@ -88,23 +88,39 @@ class RegistrationApprovalService
                 ]);
             }
 
-            // SECURITY GATE: re-check eligibility + required documents before final approval.
-            $eligibility = $this->eligibilityService->checkEligibility($registration->mahasiswa, $registration->periode_id, ['periode' => $registration->periode], 'approval');
-            if (! ($eligibility['is_eligible'] ?? false)) {
-                $message = collect($eligibility['checks'] ?? [])->first(fn ($check) => ! ($check['passed'] ?? true))['message']
-                    ?? 'Mahasiswa belum memenuhi syarat approval.';
-                throw ValidationException::withMessages(['status' => $message]);
+            // SECURITY GATE: Verify Academic Eligibility before final approval
+            // Context 'approval' skips registration-window and active-registration checks
+            $eligibility = $this->eligibilityService->checkEligibility(
+                $registration->mahasiswa,
+                $registration->periode_id,
+                [],
+                'approval'
+            );
+            if (! $eligibility['is_eligible']) {
+                $reasons = collect($eligibility['issues'])->pluck('message')->implode(', ');
+                throw ValidationException::withMessages([
+                    'status' => "Pendaftaran tidak dapat disetujui karena mahasiswa tidak memenuhi syarat akademik: {$reasons}",
+                ]);
             }
+
+            // SECURITY GATE: all required documents must be verified before approval
+            $this->assertRequiredDocumentsVerified($registration);
 
             // Try group placement (best-effort, non-blocking)
             $prepared = $this->prepareForApproval($registration);
 
             $prepared->update([
-                'status' => app(\App\Services\KKN\InterviewService::class)->isSelectiveRegistration($prepared) ? 'interview_scheduled' : 'approved',
+                'status' => 'approved',
                 'approved_at' => now(),
                 'approved_by' => $approvedBy,
                 'notification_shown' => false,
             ]);
+
+            // If jenis KKN requires interview, set status to interview_scheduled
+            $jenisKkn = $prepared->periode?->jenisKkn;
+            if ($jenisKkn && $jenisKkn->requires_interview) {
+                $prepared->update(['status' => 'interview_scheduled']);
+            }
 
             // Load and mark/archive all documents
             $registration->load('dokumen');
@@ -117,8 +133,54 @@ class RegistrationApprovalService
                 $registration
             );
         });
+    }
 
-        $registration->refresh()->loadMissing(['mahasiswa.user', 'periode']);
+
+    /**
+     * Guard approval: every required registration document must be uploaded and verified before approval.
+     */
+    private function assertRequiredDocumentsVerified(PesertaKkn $registration): void
+    {
+        $registration->loadMissing(['mahasiswa', 'periode', 'dokumen']);
+
+        if (! $registration->mahasiswa || ! $registration->periode) {
+            throw ValidationException::withMessages([
+                'documents' => 'Data mahasiswa/periode tidak lengkap untuk validasi dokumen.',
+            ]);
+        }
+
+        $documentService = app(RegistrationDocumentService::class);
+        $requirements = $documentService->requirementsForPeriod($registration->periode);
+        $uploaded = $registration->dokumen->keyBy('document_type');
+        $existing = $documentService->existingDocuments($registration->mahasiswa, $registration->periode, $registration);
+        $errors = [];
+
+        foreach ($requirements as $requirement) {
+            if (! (bool) ($requirement['required'] ?? false)) {
+                continue;
+            }
+
+            $field = (string) ($requirement['field'] ?? '');
+            $documentType = (string) ($requirement['document_type'] ?? $field);
+            $label = (string) ($requirement['label'] ?? $field ?: 'Dokumen wajib');
+            $document = $uploaded->get($documentType) ?? $uploaded->get($field);
+            $exists = $document || (($existing[$field]['exists'] ?? false) === true);
+
+            if (! $exists) {
+                $errors[] = "{$label} belum diunggah";
+                continue;
+            }
+
+            if (! $document || ! (bool) $document->is_verified) {
+                $errors[] = "{$label} belum diverifikasi";
+            }
+        }
+
+        if ($errors !== []) {
+            throw ValidationException::withMessages([
+                'documents' => 'Pendaftaran tidak dapat disetujui: '.implode(', ', $errors).'.',
+            ]);
+        }
     }
 
     /**
@@ -151,22 +213,26 @@ class RegistrationApprovalService
         foreach ($idBatches as $batchIds) {
             $batchCount = DB::transaction(function () use ($batchIds, $approvedBy, $isFacultyAdmin, $facultyId) {
                 $registrations = PesertaKkn::query()
-                    ->with(['mahasiswa', 'periode', 'dokumen'])
+                    ->with(['mahasiswa', 'periode.jenisKkn', 'dokumen'])
                     ->whereIn('id', $batchIds)
-                    ->whereIn('status', ['pending', 'document_submitted', 'document_verified'])
+                    ->whereIn('status', ['pending', 'document_submitted'])
                     ->when($isFacultyAdmin, function ($query) use ($facultyId) {
                         $query->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
                     })
                     ->lockForUpdate()
                     ->get();
 
-                $approvedInBatch = 0;
-
                 foreach ($registrations as $registration) {
                     // SECURITY GATE: Verify Academic Eligibility before final approval
-                    $eligibility = $this->eligibilityService->checkEligibility($registration->mahasiswa, $registration->periode_id, ['periode' => $registration->periode], 'approval');
-                    if (! ($eligibility['is_eligible'] ?? false)) {
+                    $eligibility = $this->eligibilityService->checkEligibility($registration->mahasiswa, $registration->periode_id, [], 'approval');
+                    if (! $eligibility['is_eligible']) {
                         continue; // Skip ineligible students in bulk action
+                    }
+
+                    try {
+                        $this->assertRequiredDocumentsVerified($registration);
+                    } catch (ValidationException) {
+                        continue;
                     }
 
                     // This handles auto-placement if enabled
@@ -178,6 +244,12 @@ class RegistrationApprovalService
                         'approved_by' => $approvedBy,
                     ]);
 
+                    // If jenis KKN requires interview, set status to interview_scheduled
+                    $jenisKkn = $prepared->periode?->jenisKkn;
+                    if ($jenisKkn && $jenisKkn->requires_interview) {
+                        $prepared->update(['status' => 'interview_scheduled']);
+                    }
+
                     // Mark and archive all documents
                     $this->markAndArchiveDocuments($registration, $approvedBy);
 
@@ -186,11 +258,9 @@ class RegistrationApprovalService
                         "Pendaftaran disetujui secara massal untuk Mahasiswa ID {$registration->mahasiswa_id}",
                         $registration
                     );
-
-                    $approvedInBatch++;
                 }
 
-                return $approvedInBatch;
+                return $registrations->count();
             });
 
             $totalCount += $batchCount;
@@ -278,8 +348,6 @@ class RegistrationApprovalService
                 $registration
             );
         });
-
-        $registration->refresh()->loadMissing(['mahasiswa.user', 'periode']);
     }
 
     /**

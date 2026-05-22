@@ -6,6 +6,7 @@ namespace App\Notifications;
 
 use App\Models\User;
 use App\Notifications\Channels\FcmChannel;
+use App\Notifications\Channels\WaGatewayChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -64,6 +65,10 @@ class GenericNotification extends Notification
             $channels[] = FcmChannel::class;
         }
 
+        if ($notifiable->wantsNotificationVia('wa') && ! empty($notifiable->phone)) {
+            $channels[] = WaGatewayChannel::class;
+        }
+
         return $channels;
     }
 
@@ -92,6 +97,14 @@ class GenericNotification extends Notification
         return $mail;
     }
 
+    public function toWaGateway(mixed $notifiable): string
+    {
+        $text = "*{$this->title}*\n\n{$this->message}";
+        if ($this->action) {
+            $text .= "\n\nBuka: ".url($this->action);
+        }
+        return $text;
+    }
     public function toFcm(mixed $notifiable): array
     {
         return [

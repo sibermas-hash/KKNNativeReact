@@ -6,7 +6,8 @@ import { dplApi } from '@/lib/api';
 import { useParams } from 'next/navigation';
 
 export default function GroupDetailPage(): React.JSX.Element {
-  const { id } = useParams();
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.dpl.group(Number(id)),

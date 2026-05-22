@@ -21,6 +21,9 @@ const STATUS_CONFIG: Record<string, { bg: string; text: string; border: string; 
   revision: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', label: 'REVISI' },
   draft: { bg: 'bg-slate-50', text: 'text-slate-500', border: 'border-slate-200', label: 'DRAFT' },
   unregistered: { bg: 'bg-slate-50', text: 'text-slate-500', border: 'border-slate-200', label: 'BELUM DAFTAR' },
+  interview_scheduled: { bg: 'bg-cyan-50', text: 'text-cyan-700', border: 'border-cyan-200', label: 'MENUNGGU WAWANCARA' },
+  interview_passed: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', label: 'LULUS WAWANCARA' },
+  interview_failed: { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', label: 'TIDAK LULUS WAWANCARA' },
 };
 
 export function StatusBadge({ status, size = 'sm' }: { status: StatusType; size?: 'sm' | 'md' }): React.JSX.Element {

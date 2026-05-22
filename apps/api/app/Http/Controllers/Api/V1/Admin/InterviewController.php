@@ -1,119 +1,368 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
+use App\Models\KKN\InterviewParticipant;
 use App\Models\KKN\InterviewSchedule;
+use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\Periode;
-use App\Services\KKN\InterviewService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use App\Notifications\KKN\InterviewScheduledNotification;
+use App\Notifications\KKN\InterviewResultNotification;
+use App\Exports\InterviewResultExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class InterviewController extends Controller
 {
     use ApiResponse;
 
+    /**
+     * List interview schedules with participant counts.
+     */
     public function index(Request $request): JsonResponse
     {
-        $query = InterviewSchedule::query()
-            ->with(['periode.jenisKkn', 'createdBy:id,name,email', 'participants.pesertaKkn.mahasiswa.fakultas', 'participants.pesertaKkn.mahasiswa.prodi'])
-            ->withCount('participants')
-            ->latest('interview_date');
+        $query = InterviewSchedule::with(['periode.jenisKkn', 'creator'])
+            ->withCount(['participants', 'participants as pending_count' => fn ($q) => $q->where('result', 'pending'), 'participants as passed_count' => fn ($q) => $q->where('result', 'passed'), 'participants as failed_count' => fn ($q) => $q->where('result', 'failed')])
+            ->when($request->input('periode_id'), fn ($q, $v) => $q->where('periode_id', $v))
+            ->when($request->input('angkatan'), fn ($q, $a) => $q->whereHas('periode', fn ($p) => $p->where('periode', $a)))
+            ->orderByDesc('interview_date')
+            ->orderBy('interview_time_start');
 
-        if ($request->filled('periode_id')) {
-            $query->where('periode_id', $request->integer('periode_id'));
-        }
+        $paginated = $query->paginate($request->integer('per_page', 20));
 
-        return $this->success($query->paginate((int) $request->input('per_page', 15)));
+        return $this->success([
+            'data' => $paginated->items(),
+            'meta' => [
+                'current_page' => $paginated->currentPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+                'last_page' => $paginated->lastPage(),
+            ],
+        ]);
     }
 
-    public function show(InterviewSchedule $interview): JsonResponse
+    /**
+     * Create a new interview schedule.
+     */
+    public function store(Request $request): JsonResponse
     {
-        return $this->success($interview->load([
-            'periode.jenisKkn',
-            'createdBy:id,name,email',
-            'participants.pesertaKkn.mahasiswa.fakultas',
-            'participants.pesertaKkn.mahasiswa.prodi',
-            'participants.processedBy:id,name,email',
-        ]));
-    }
-
-    public function store(Request $request, InterviewService $service): JsonResponse
-    {
-        $data = $request->validate([
-            'periode_id' => ['required', 'integer', 'exists:periode,id'],
-            'interview_date' => ['required', 'date'],
+        $validated = $request->validate([
+            'periode_id' => ['required', 'exists:periode,id'],
+            'interview_date' => ['required', 'date', 'after_or_equal:today'],
             'interview_time_start' => ['required', 'date_format:H:i'],
             'interview_time_end' => ['required', 'date_format:H:i', 'after:interview_time_start'],
             'location' => ['nullable', 'string', 'max:255'],
-            'notes' => ['nullable', 'string', 'max:2000'],
+            'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $periode = Periode::with('jenisKkn')->findOrFail($data['periode_id']);
-        $code = $periode->jenisKkn?->code;
-
-        if (! in_array($code, ['NUSANTARA', 'INTERNASIONAL', 'KOLABORASI_PTKIN'], true)) {
-            return $this->error('VALIDATION_ERROR', 'Jadwal wawancara hanya untuk KKN Nusantara, Internasional, dan Kolaborasi PTKIN.', 422);
-        }
-
-        $schedule = $service->scheduleForPeriode($periode, $data, (int) auth()->id());
-
-        return $this->success($schedule, 'Jadwal wawancara dibuat dan peserta lulus administrasi dijadwalkan.', 201);
-    }
-
-    public function targets(InterviewService $service): JsonResponse
-    {
-        return $this->success($service->fallbackPeriodes());
-    }
-
-    public function pass(Request $request, int $participantId, InterviewService $service): JsonResponse
-    {
-        $participant = \App\Models\KKN\InterviewParticipant::with('pesertaKkn')->findOrFail($participantId);
-        $data = $request->validate(['notes' => ['nullable', 'string', 'max:2000']]);
-        $service->pass($participant->pesertaKkn, (int) auth()->id(), $data['notes'] ?? null);
-        return $this->success($participant->refresh()->load('pesertaKkn.mahasiswa'), 'Peserta dinyatakan lulus wawancara.');
-    }
-
-    public function transfer(Request $request, int $participantId, InterviewService $service): JsonResponse
-    {
-        $participant = \App\Models\KKN\InterviewParticipant::with('pesertaKkn')->findOrFail($participantId);
-        $data = $request->validate([
-            'target_periode_id' => ['required', 'integer', 'exists:periode,id'],
-            'notes' => ['nullable', 'string', 'max:2000'],
+        $schedule = InterviewSchedule::create([
+            ...$validated,
+            'created_by' => auth()->id(),
         ]);
-        $result = $service->fail($participant->pesertaKkn, (int) auth()->id(), $data['notes'] ?? null, (int) $data['target_periode_id']);
-        return $this->success($result, 'Peserta dialihkan ke KKN tanpa wawancara dan disetujui.');
+
+        $schedule->load(['periode.jenisKkn', 'creator']);
+
+        return $this->success($schedule, 'Jadwal wawancara berhasil dibuat.', 201);
     }
 
+    /**
+     * Show schedule detail with participants.
+     */
+    public function show(InterviewSchedule $interview): JsonResponse
+    {
+        $interview->load([
+            'periode.jenisKkn',
+            'creator',
+            'participants.pesertaKkn.mahasiswa.prodi',
+            'participants.pesertaKkn.mahasiswa.fakultas',
+            'participants.processedBy',
+        ]);
+
+        return $this->success($interview);
+    }
+
+    /**
+     * Update schedule.
+     */
     public function update(Request $request, InterviewSchedule $interview): JsonResponse
     {
-        $data = $request->validate([
-            'interview_date' => ['sometimes', 'required', 'date'],
-            'interview_time_start' => ['sometimes', 'required', 'date_format:H:i'],
-            'interview_time_end' => ['sometimes', 'required', 'date_format:H:i'],
+        $validated = $request->validate([
+            'interview_date' => ['sometimes', 'date'],
+            'interview_time_start' => ['sometimes', 'date_format:H:i'],
+            'interview_time_end' => ['sometimes', 'date_format:H:i'],
             'location' => ['nullable', 'string', 'max:255'],
-            'notes' => ['nullable', 'string', 'max:2000'],
+            'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $interview->update($data);
+        $interview->update($validated);
+        $interview->load(['periode.jenisKkn', 'creator']);
 
-        return $this->success($interview->refresh()->load(['periode.jenisKkn']), 'Jadwal wawancara diperbarui.');
+        return $this->success($interview, 'Jadwal wawancara diperbarui.');
     }
 
-    public function sync(InterviewSchedule $interview, InterviewService $service): JsonResponse
-    {
-        $count = $service->syncParticipants($interview);
-
-        return $this->success(
-            $interview->refresh()->load(['periode.jenisKkn', 'participants.pesertaKkn.mahasiswa']),
-            "Sinkronisasi selesai. {$count} peserta approved ditambahkan ke jadwal wawancara."
-        );
-    }
+    /**
+     * Delete schedule (cascade deletes participants).
+     */
     public function destroy(InterviewSchedule $interview): JsonResponse
     {
         $interview->delete();
 
         return $this->success(null, 'Jadwal wawancara dihapus.');
     }
+
+    /**
+     * Assign peserta KKN to interview schedule.
+     */
+    public function assignParticipants(Request $request, InterviewSchedule $interview): JsonResponse
+    {
+        $validated = $request->validate([
+            'peserta_kkn_ids' => ['required', 'array', 'min:1'],
+            'peserta_kkn_ids.*' => ['required', 'integer', 'exists:peserta_kkn,id'],
+        ]);
+
+        $assigned = 0;
+        $skipped = 0;
+
+        foreach ($validated['peserta_kkn_ids'] as $pesertaId) {
+            $exists = InterviewParticipant::where('interview_schedule_id', $interview->id)
+                ->where('peserta_kkn_id', $pesertaId)
+                ->exists();
+
+            if ($exists) {
+                $skipped++;
+                continue;
+            }
+
+            InterviewParticipant::create([
+                'interview_schedule_id' => $interview->id,
+                'peserta_kkn_id' => $pesertaId,
+                'result' => 'pending',
+            ]);
+
+            // Update peserta status to interview_scheduled
+            PesertaKkn::where('id', $pesertaId)
+                ->whereIn('status', ['approved', 'document_verified'])
+                ->update(['status' => 'interview_scheduled']);
+
+            // Notify student
+            $peserta = PesertaKkn::with('mahasiswa.user')->find($pesertaId);
+            if ($peserta?->mahasiswa?->user) {
+                $peserta->mahasiswa->user->notify(new InterviewScheduledNotification($interview));
+            }
+
+            $assigned++;
+        }
+
+        return $this->success(
+            ['assigned' => $assigned, 'skipped' => $skipped],
+            "{$assigned} peserta ditambahkan ke jadwal wawancara."
+        );
+    }
+
+    /**
+     * Remove participant from schedule.
+     */
+    public function removeParticipant(InterviewSchedule $interview, InterviewParticipant $participant): JsonResponse
+    {
+        if ($participant->interview_schedule_id !== $interview->id) {
+            return $this->error('Peserta tidak ditemukan di jadwal ini.', 404);
+        }
+
+        // Revert status if still interview_scheduled
+        PesertaKkn::where('id', $participant->peserta_kkn_id)
+            ->where('status', 'interview_scheduled')
+            ->update(['status' => 'approved']);
+
+        $participant->delete();
+
+        return $this->success(null, 'Peserta dihapus dari jadwal wawancara.');
+    }
+
+    /**
+     * Record interview result for a participant.
+     */
+    public function recordResult(Request $request, InterviewSchedule $interview, InterviewParticipant $participant): JsonResponse
+    {
+        if ($participant->interview_schedule_id !== $interview->id) {
+            return $this->error('Peserta tidak ditemukan di jadwal ini.', 404);
+        }
+
+        $validated = $request->validate([
+            'result' => ['required', Rule::in(['passed', 'failed'])],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $participant->update([
+            'result' => $validated['result'],
+            'notes' => $validated['notes'] ?? $participant->notes,
+            'processed_by' => auth()->id(),
+            'processed_at' => now(),
+        ]);
+
+        // Auto-update peserta KKN status based on result
+        $newStatus = $validated['result'] === 'passed' ? 'interview_passed' : 'interview_failed';
+        PesertaKkn::where('id', $participant->peserta_kkn_id)
+            ->whereIn('status', ['interview_scheduled', 'approved', 'document_verified'])
+            ->update(['status' => $newStatus]);
+
+        // If failed: auto-transfer to KKN Reguler (no re-registration needed)
+        if ($validated['result'] === 'failed') {
+            $regulerPeriode = Periode::whereHas('jenisKkn', fn ($q) => $q->where('requires_interview', false))
+                ->where('periode', $interview->periode?->periode ?? 58)
+                ->whereHas('jenisKkn', fn ($q) => $q->where('name', 'ilike', '%reguler%'))
+                ->first();
+
+            if ($regulerPeriode) {
+                PesertaKkn::where('id', $participant->peserta_kkn_id)
+                    ->update([
+                        'periode_id' => $regulerPeriode->id,
+                        'status' => 'approved',
+                        'kelompok_id' => null,
+                    ]);
+            }
+        }
+
+        // Notify student of result
+        $peserta = PesertaKkn::with('mahasiswa.user')->find($participant->peserta_kkn_id);
+        if ($peserta?->mahasiswa?->user) {
+            $peserta->mahasiswa->user->notify(new InterviewResultNotification($participant->fresh()));
+        }
+
+        return $this->success($participant->fresh()->load(['pesertaKkn.mahasiswa', 'processedBy']), 'Hasil wawancara disimpan.');
+    }
+
+    /**
+     * Bulk record results.
+     */
+    public function bulkRecordResult(Request $request, InterviewSchedule $interview): JsonResponse
+    {
+        $validated = $request->validate([
+            'results' => ['required', 'array', 'min:1'],
+            'results.*.participant_id' => ['required', 'integer', 'exists:interview_participants,id'],
+            'results.*.result' => ['required', Rule::in(['passed', 'failed'])],
+            'results.*.notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $processed = 0;
+
+        DB::transaction(function () use ($validated, $interview, &$processed) {
+            foreach ($validated['results'] as $item) {
+                $participant = InterviewParticipant::where('id', $item['participant_id'])
+                    ->where('interview_schedule_id', $interview->id)
+                    ->first();
+
+                if (!$participant) {
+                    continue;
+                }
+
+                $participant->update([
+                    'result' => $item['result'],
+                    'notes' => $item['notes'] ?? $participant->notes,
+                    'processed_by' => auth()->id(),
+                    'processed_at' => now(),
+                ]);
+
+                // Auto-update peserta status
+                $newStatus = $item['result'] === 'passed' ? 'interview_passed' : 'interview_failed';
+                PesertaKkn::where('id', $participant->peserta_kkn_id)
+                    ->whereIn('status', ['interview_scheduled', 'approved', 'document_verified'])
+                    ->update(['status' => $newStatus]);
+
+                // If failed: auto-transfer to KKN Reguler
+                if ($item['result'] === 'failed') {
+                    $regulerPeriode = Periode::whereHas('jenisKkn', fn ($q) => $q->where('requires_interview', false))
+                        ->where('periode', $interview->periode?->periode ?? 58)
+                        ->whereHas('jenisKkn', fn ($q) => $q->where('name', 'ilike', '%reguler%'))
+                        ->first();
+
+                    if ($regulerPeriode) {
+                        PesertaKkn::where('id', $participant->peserta_kkn_id)
+                            ->update([
+                                'periode_id' => $regulerPeriode->id,
+                                'status' => 'approved',
+                                'kelompok_id' => null,
+                            ]);
+                    }
+                }
+
+                // Notify student
+                $peserta = PesertaKkn::with('mahasiswa.user')->find($participant->peserta_kkn_id);
+                if ($peserta?->mahasiswa?->user) {
+                    $peserta->mahasiswa->user->notify(new InterviewResultNotification($participant->fresh()));
+                }
+
+                $processed++;
+            }
+        });
+
+        return $this->success(['processed' => $processed], "{$processed} hasil wawancara disimpan.");
+    }
+
+    /**
+     * Get available peserta for assignment (approved/document_verified, not yet assigned to any interview in same periode).
+     */
+    public function availablePeserta(Request $request, InterviewSchedule $interview): JsonResponse
+    {
+        $alreadyAssigned = InterviewParticipant::whereHas('schedule', fn ($q) => $q->where('periode_id', $interview->periode_id))
+            ->pluck('peserta_kkn_id');
+
+        $query = PesertaKkn::with(['mahasiswa.prodi', 'mahasiswa.fakultas'])
+            ->where('periode_id', $interview->periode_id)
+            ->where('status', 'interview_scheduled')
+            ->whereNotIn('id', $alreadyAssigned)
+            ->when($request->input('search'), function ($q, $search) {
+                $q->whereHas('mahasiswa', fn ($m) => $m->where('nim', 'ilike', "%{$search}%")->orWhere('nama', 'ilike', "%{$search}%"));
+            });
+
+        $paginated = $query->paginate($request->integer('per_page', 50));
+
+        return $this->success([
+            'data' => $paginated->items(),
+            'meta' => [
+                'current_page' => $paginated->currentPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+                'last_page' => $paginated->lastPage(),
+            ],
+        ]);
+    }
+
+    /**
+     * List all peserta with status interview_scheduled (waiting for interview).
+     */
+    public function pesertaWawancara(Request $request): JsonResponse
+    {
+        $query = PesertaKkn::with(['mahasiswa.prodi', 'mahasiswa.fakultas', 'periode.jenisKkn'])
+            ->where('status', 'interview_scheduled')
+            ->when($request->input('angkatan'), fn ($q, $a) => $q->whereHas('periode', fn ($p) => $p->where('periode', $a)))
+            ->when($request->input('search'), function ($q, $search) {
+                $q->whereHas('mahasiswa', fn ($m) => $m->where('nim', 'ilike', "%{$search}%")->orWhere('nama', 'ilike', "%{$search}%"));
+            })
+            ->orderBy('id');
+
+        $perPage = $request->integer('per_page', 100);
+
+        return $this->success(['data' => $query->paginate($perPage)->items()]);
+    }
+
+    /**
+     * Export interview results to XLSX.
+     */
+    public function export(Request $request)
+    {
+        $scheduleId = $request->input('schedule_id') ? (int) $request->input('schedule_id') : null;
+        $periodeId = $request->input('periode_id') ? (int) $request->input('periode_id') : null;
+
+        $filename = 'hasil-wawancara-' . now()->format('Y-m-d') . '.xlsx';
+
+        return Excel::download(new InterviewResultExport($scheduleId, $periodeId), $filename);
+    }
+
 }

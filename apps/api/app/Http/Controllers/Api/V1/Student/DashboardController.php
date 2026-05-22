@@ -34,11 +34,11 @@ class DashboardController extends Controller
             return $this->forbidden('Profil mahasiswa tidak ditemukan.');
         }
 
-        // Dashboard mahasiswa harus menampilkan status pendaftaran aktif milik mahasiswa,
-        // bukan activePeriod global. Mahasiswa bisa memilih KKN Nusantara/Responsif saat
-        // activePeriod sistem masih Reguler.
+        $activePeriodId = $periodContextService->getActivePeriodId() ?? $periodContextService->getDefaultPeriodId();
+
         $registration = PesertaKkn::query()
             ->where('mahasiswa_id', $mahasiswa->id)
+            ->when($activePeriodId, fn ($q) => $q->where('periode_id', $activePeriodId))
             ->with([
                 'periode.jenisKkn',
                 'kelompok.lokasi',
@@ -150,16 +150,13 @@ class DashboardController extends Controller
         /** @var User|null $user */
         $user = auth()->user();
 
-        if (! $user?->mahasiswa || $pesertaKkn->mahasiswa_id !== $user->mahasiswa->id) {
+        if ($pesertaKkn->mahasiswa_id !== $user->mahasiswa?->id) {
             return $this->forbidden();
         }
 
-        PesertaKkn::query()
-            ->whereKey($pesertaKkn->id)
-            ->where('mahasiswa_id', $user->mahasiswa->id)
-            ->update(['notification_shown' => true, 'updated_at' => now()]);
+        $pesertaKkn->update(['notification_shown' => true]);
 
-        return $this->success(['notification_shown' => true], 'Notifikasi ditandai sudah dibaca.');
+        return $this->noContent('Notifikasi ditandai sudah dibaca.');
     }
 
     private function normalizeStatus(?string $status): ?string

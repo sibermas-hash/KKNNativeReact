@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useAuthStore, usePeriodStore } from '@/stores';
+import { useAuthStore } from '@/stores';
 import Link from 'next/link';
 import { clsx } from 'clsx';
 import { ThemeSwitcher, useTheme } from '@/components/ui/theme-provider';
@@ -19,13 +19,13 @@ import {
   Layers, BarChart3, ShieldCheck, Award, RefreshCw, Shuffle, BookOpen,
   Activity, History, Cpu, UserCheck, FileCheck, GraduationCap, Settings,
   UserCog, Globe, Terminal, Newspaper, Download, Menu, Power, Building2,
-  Play, Megaphone, Bell, Camera, Sparkles, MessageCircle,
+  Play, Megaphone, Bell, Camera, Sparkles, MessageCircle, ArrowRightLeft,
 } from 'lucide-react';
 
 const getNavGroups = (pathname: string, roles: string[]) => {
   const isSuperadmin = roles.includes('superadmin');
   const isBlog = pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi') || pathname.includes('/admin/chat') || pathname.includes('/admin/konten-publik');
-  const isSystem = pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/prodi') || pathname.includes('/admin/konfigurasi-penilaian') || pathname.includes('/admin/monitoring');
+  const isSystem = pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/prodi') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/konfigurasi-penilaian') || pathname.includes('/admin/monitoring');
 
   if (isBlog) return [
     { title: 'MANAJEMEN KONTEN', items: [
@@ -74,19 +74,27 @@ const getNavGroups = (pathname: string, roles: string[]) => {
       { label: 'Tahun Akademik', href: '/admin/tahun-akademik', icon: Calendar },
       { label: 'Jenis KKN', href: '/admin/jenis-kkn', icon: Layers },
       { label: 'Periode Pelaksanaan', href: '/admin/periode', icon: History },
-      { label: 'Workshop & Pembekalan', href: '/admin/workshops', icon: GraduationCap },
+      { label: 'Template Dokumen', href: '/admin/template-dokumen', icon: FileText },
     ]},
-    { title: 'MANAJEMEN PESERTA', items: [
-      { label: 'Audit Kelayakan', href: '/admin/audit-kualifikasi', icon: ShieldCheck },
-      { label: 'Registrasi Mahasiswa', href: '/admin/pendaftaran', icon: ClipboardList },
-      { label: 'Peserta KKN', href: '/admin/peserta-kkn', icon: GraduationCap },
-      { label: 'Wawancara', href: '/admin/wawancara', icon: Bell },
+    { title: 'MANAJEMEN MAHASISWA', items: [
       { label: 'Direktori Mahasiswa', href: '/admin/mahasiswa', icon: Users },
-      { label: 'Direktori Dosen', href: '/admin/dosen', icon: UserCheck },
+      { label: 'Audit Kelayakan', href: '/admin/audit-kualifikasi', icon: ShieldCheck },
+      { label: 'Dispensasi', href: '/admin/dispensasi', icon: Award },
+      { label: 'Registrasi Mahasiswa', href: '/admin/pendaftaran', icon: ClipboardList },
+      { label: 'Wawancara', href: '/admin/wawancara', icon: FileCheck },
+      { label: 'Peserta KKN', href: '/admin/peserta-kkn', icon: UserCheck },
+      { label: 'Transfer Peserta', href: '/admin/transfer-peserta', icon: ArrowRightLeft },
+    ]},
+    { title: 'MANAJEMEN DOSEN', items: [
+      { label: 'Direktori Dosen', href: '/admin/dosen', icon: GraduationCap },
+      { label: 'Workshop & Pembekalan', href: '/admin/workshops', icon: Play },
+      { label: 'Pendaftaran DPL', href: '/admin/dosen/pendaftaran-dpl', icon: FileCheck },
+      { label: 'Penugasan DPL', href: '/admin/dosen/penugasan', icon: MapPin },
+      { label: 'Evaluasi DPL', href: '/admin/evaluasi-dpl', icon: FileText },
     ]},
     { title: 'PENEMPATAN & MONITORING', items: [
       { label: 'Manajemen Kelompok', href: '/admin/kelompok', icon: Users },
-      { label: 'Penugasan DPL', href: '/admin/dosen/penugasan', icon: MapPin },
+      { label: 'Plotting Otomatis', href: '/admin/plotting-otomatis', icon: Shuffle },
       { label: 'Wilayah Penugasan', href: '/admin/lokasi', icon: MapPin },
       { label: 'Laporan Harian', href: '/admin/laporan/harian', icon: Activity },
       { label: 'Program Kerja', href: '/admin/laporan/program-kerja', icon: BookOpen },
@@ -94,7 +102,9 @@ const getNavGroups = (pathname: string, roles: string[]) => {
     { title: 'PENILAIAN & OUTPUT', items: [
       { label: 'Laporan Akhir', href: '/admin/laporan/akhir', icon: FileCheck },
       { label: 'Input Nilai', href: '/admin/nilai', icon: FileText },
+      { label: 'Generator Nilai', href: '/admin/generator-nilai', icon: Cpu },
       { label: 'Rekapitulasi Nilai', href: '/admin/rekapitulasi', icon: BarChart3 },
+      { label: 'Evaluasi Peserta', href: '/admin/evaluasi', icon: UserCheck },
       { label: 'Yudisium', href: '/admin/yudisium', icon: GraduationCap },
     ]},
   ];
@@ -102,28 +112,43 @@ const getNavGroups = (pathname: string, roles: string[]) => {
 
 export default function AdminLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
   const router = useRouter();
-  const pathname = usePathname();
-  const { user, isAuthenticated, isLoading, clearUser } = useAuthStore();
-  const { activePeriod } = usePeriodStore();
+  const pathname = usePathname() ?? "";
+  const { user, isAuthenticated, isLoading, clearUser, fetchUser } = useAuthStore();
   const { config: themeConfig } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Must be before any early returns — Rules of Hooks
   const navGroups = useMemo(() => getNavGroups(pathname, user?.roles || []), [pathname, user?.roles]);
-  const isBlog = useMemo(() => pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi') || pathname.includes('/admin/chat') || pathname.includes('/admin/konten-publik'), [pathname]);
-  const isSystem = useMemo(() => pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/prodi') || pathname.includes('/admin/konfigurasi-penilaian') || pathname.includes('/admin/monitoring'), [pathname]);
+  const activeNav = useMemo(() => {
+    for (const group of navGroups) {
+      const item = group.items.find(i => pathname === i.href || pathname.startsWith(i.href + '/'));
+      if (item) return { group: group.title, item };
+    }
+    return null;
+  }, [navGroups, pathname]);
+  const pageTitle = activeNav?.item.label ?? (pathname === '/admin' ? 'Hub Utama' : 'SIBERMAS');
+  const pageContext = activeNav?.group ?? (pathname === '/admin' ? 'Pusat Navigasi' : 'Operasional');
+  const ActiveHeaderIcon = activeNav?.item.icon ?? LayoutDashboard;
+  const isBlog = useMemo(() => pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi') || pathname.includes('/admin/chat'), [pathname]);
+  const isSystem = useMemo(() => pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/prodi') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/monitoring'), [pathname]);
 
   useEffect(() => {
     if (isLoading) return;
-    if (!isAuthenticated) { router.replace('/login'); return; }
+    if (!isAuthenticated) {
+      void fetchUser(true).then((result) => {
+        if (result !== 'authenticated') router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
+      });
+      return;
+    }
     if (user) {
       const r = user.roles || [];
       const isSuperadmin = r.includes('superadmin');
       if (!isSuperadmin && !user.password_changed_at) { router.replace('/ganti-password'); return; }
       if (!isSuperadmin && (!user.profile_complete || user.must_change_password)) { router.replace('/profil'); return; }
       if (!r.includes('superadmin') && !r.includes('admin') && !r.includes('faculty_admin')) router.replace('/');
+      if (!isSuperadmin && isSystem) { router.replace('/admin'); return; }
     }
-  }, [isLoading, isAuthenticated, user, router]);
+  }, [isLoading, isAuthenticated, user, router, pathname, isSystem, fetchUser]);
 
   const roles = user?.roles || [];
   const hasAdminRole = roles.includes('superadmin') || roles.includes('admin') || roles.includes('faculty_admin');
@@ -148,7 +173,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="min-h-screen font-sans transition-colors duration-500" style={{ ...themeConfig.vars, background: themeConfig.backdrop }}>
+    <div className="app-readable min-h-screen font-sans transition-colors duration-500" style={{ ...themeConfig.vars, background: themeConfig.backdrop }}>
       <CommandPalette />
       {/* Sidebar overlay mobile */}
       {sidebarOpen && (
@@ -172,7 +197,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <div className="mt-4">
             <h1 className="text-base font-black leading-none tracking-tight flex items-center gap-2 font-display uppercase text-[color:var(--profile-text)]">
-              {isBlog ? 'CONTENT HUB' : isSystem ? 'SYSTEM HUB' : (
+              {isBlog ? 'CONTENT HUB' : isSystem ? 'SYSTEM REGISTRY' : (
                 <span><span className="text-[color:var(--profile-primary)]">SIBER</span><span className="text-[color:var(--profile-accent)]">MAS</span></span>
               )}
               <span className={clsx('h-1.5 w-1.5 rounded-full animate-pulse bg-[color:var(--profile-accent)]')} />
@@ -204,6 +229,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     <Link
                       key={item.href}
                       href={item.href}
+                      prefetch={false}
                       onClick={() => setSidebarOpen(false)}
                       className={clsx(
                         'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 group relative overflow-hidden',
@@ -250,14 +276,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Main */}
       <div className="lg:pl-64 flex flex-col min-h-screen transition-all duration-300 w-full overflow-x-hidden">
         {/* Header */}
-        <header className="sticky top-0 z-40 h-14 bg-[color:var(--profile-surface-strong)] border-b border-[color:var(--profile-border)] px-6 flex items-center justify-between backdrop-blur-xl">
-          <div className="flex items-center gap-4">
+        <header className="sticky top-0 z-40 min-h-16 bg-[color:var(--profile-surface-strong)] border-b border-[color:var(--profile-border)] px-4 sm:px-6 flex items-center justify-between gap-4 backdrop-blur-xl">
+          <div className="flex min-w-0 items-center gap-3 sm:gap-4">
             <button onClick={() => setSidebarOpen(true)} className="p-2 text-[color:var(--profile-muted)] hover:text-[color:var(--profile-text)] hover:bg-[color:var(--profile-soft)] rounded-lg lg:hidden transition-colors" title="Buka Menu Sidebar" aria-label="Buka Menu Sidebar">
               <Menu className="h-5 w-5" />
             </button>
-            <h2 className="text-[1.1rem] font-black text-[color:var(--profile-text)] uppercase tracking-tighter font-display leading-none">
-              {activePeriod ? activePeriod.name : 'SIBERMAS'}
-            </h2>
+            <div className="min-w-0">
+              <div className="flex min-w-0 items-center gap-2">
+                <ActiveHeaderIcon className="h-4 w-4 shrink-0 text-[color:var(--profile-accent)]" />
+                <h2 className="truncate text-[1.05rem] font-black text-[color:var(--profile-text)] uppercase tracking-tighter font-display leading-none">
+                  {pageTitle}
+                </h2>
+              </div>
+              <p className="mt-1 hidden truncate text-[10px] font-bold uppercase tracking-[0.18em] text-[color:var(--profile-muted)] sm:block">
+                {pageContext}
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-3">
             <NotificationBell />
@@ -279,3 +313,4 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     </div>
   );
 }
+// cache-bust 1779479400

@@ -27,7 +27,6 @@ use App\Http\Controllers\Api\V1\Admin\EvaluasiController;
 use App\Http\Controllers\Api\V1\Admin\FakultasController;
 use App\Http\Controllers\Api\V1\Admin\GeneratorNilaiController;
 use App\Http\Controllers\Api\V1\Admin\GradeController;
-use App\Http\Controllers\Api\V1\Admin\InterviewController;
 use App\Http\Controllers\Api\V1\Admin\JenisKknController;
 use App\Http\Controllers\Api\V1\Admin\JenisKknDocumentRequirementController;
 use App\Http\Controllers\Api\V1\Admin\KegiatanKknAdminController;
@@ -105,7 +104,6 @@ class EnsureAdminAuthorization
         LokasiController::class => 'manage-master-data',
         JenisKknController::class => 'manage-master-data',
         JenisKknDocumentRequirementController::class => 'manage-master-data',
-        InterviewController::class => 'manage-kkn-operations',
         DocumentTemplateController::class => 'manage-master-data',
 
         // Users
@@ -184,9 +182,6 @@ class EnsureAdminAuthorization
         // Eligibility / requirements
         EligibilityController::class => 'manage-eligibility',
         KknRequirementController::class => 'manage-requirements',
-
-        // Countdown settings
-        \App\Http\Controllers\Api\V1\Admin\CountdownSettingController::class => 'manage-settings',
     ];
 
     /**

@@ -19,6 +19,7 @@ class DocumentTemplateController extends Controller
     public function index(Request $request): JsonResponse
     {
         $templates = DocumentTemplate::query()
+            ->withCount(['requirementDefaults', 'periodAssignments'])
             ->when($request->filled('document_key'), fn ($q) => $q->where('document_key', $request->string('document_key')))
             ->latest()
             ->get();
@@ -53,6 +54,19 @@ class DocumentTemplateController extends Controller
         return $this->created(['template' => $this->serialize($template)], 'Template dokumen berhasil diunggah.');
     }
 
+
+    public function update(Request $request, DocumentTemplate $documentTemplate): JsonResponse
+    {
+        $validated = $request->validate([
+            'document_key' => ['sometimes', 'required', 'string', 'max:120'],
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'description' => ['nullable', 'string'],
+        ]);
+
+        $documentTemplate->update($validated);
+
+        return $this->success(['template' => $this->serialize($documentTemplate->refresh())], 'Metadata template berhasil diperbarui.');
+    }
     public function destroy(DocumentTemplate $documentTemplate): JsonResponse
     {
         if ($documentTemplate->requirementDefaults()->exists() || $documentTemplate->periodAssignments()->exists()) {
@@ -82,6 +96,10 @@ class DocumentTemplateController extends Controller
             'file_size' => $template->file_size,
             'download_url' => route('api.v1.admin.document-templates.download', $template),
             'created_at' => $template->created_at?->toIso8601String(),
+            'requirement_defaults_count' => (int) ($template->requirement_defaults_count ?? $template->requirementDefaults()->count()),
+            'period_assignments_count' => (int) ($template->period_assignments_count ?? $template->periodAssignments()->count()),
+            'is_deletable' => (($template->requirement_defaults_count ?? $template->requirementDefaults()->count()) === 0)
+                && (($template->period_assignments_count ?? $template->periodAssignments()->count()) === 0),
         ];
     }
 }

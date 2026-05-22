@@ -6,6 +6,31 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
   openAnalyzer: false,
 });
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const withPWA = require("next-pwa")({
+  dest: "public",
+  disable: process.env.NODE_ENV === "development",
+  register: true,
+  skipWaiting: true,
+  runtimeCaching: [
+    {
+      urlPattern: /^\/api\/v1\/public\/.*/,
+      handler: "StaleWhileRevalidate",
+      options: { cacheName: "api-public", expiration: { maxEntries: 50, maxAgeSeconds: 300 } },
+    },
+    {
+      urlPattern: /^\/_next\/static\/.*/,
+      handler: "CacheFirst",
+      options: { cacheName: "static-assets", expiration: { maxEntries: 200, maxAgeSeconds: 31536000 } },
+    },
+    {
+      urlPattern: /^\/images\/.*/,
+      handler: "CacheFirst",
+      options: { cacheName: "image-cache", expiration: { maxEntries: 100, maxAgeSeconds: 86400 } },
+    },
+  ],
+});
+
 
 const systemAdminRouteAliases = [
   { source: '/admin/sistem/pengguna', destination: '/admin/pengguna' },
@@ -54,26 +79,6 @@ const legacyAuthRedirects = [
   { source: '/login/2fa', destination: '/login-2fa', permanent: false },
 ] satisfies NonNullable<NextConfig['redirects']> extends (...args: never[]) => infer R ? Awaited<R> : never;
 
-const noStoreHeaders = [
-  { key: 'Cache-Control', value: 'private, no-store, no-cache, must-revalidate, max-age=0' },
-  { key: 'Pragma', value: 'no-cache' },
-  { key: 'Expires', value: '0' },
-] satisfies Array<{ key: string; value: string }>;
-
-const protectedNoStoreSources = [
-  '/admin',
-  '/admin/:path*',
-  '/mahasiswa',
-  '/mahasiswa/:path*',
-  '/dosen',
-  '/dosen/:path*',
-  '/profil',
-  '/profil/:path*',
-  '/ganti-password',
-  '/notifikasi',
-  '/notifikasi/:path*',
-] as const;
-
 const nextConfig: NextConfig = {
   // Monorepo: tracer harus start dari root workspace (bukan `apps/web`),
   // supaya symlink pnpm ke `packages/*` dan hoisted deps di root
@@ -114,11 +119,18 @@ const nextConfig: NextConfig = {
 
   // ── Image Optimization ──────────────────────────────────────────────────
   images: {
-    // FreeBSD jail deploy runs Next standalone without relying on native sharp.
-    unoptimized: true,
+    // sharp WASM enabled for FreeBSD — server-side image optimization active
+    unoptimized: false,
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 86400,
-    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    deviceSizes: [360, 414, 640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'sibermas.uinsaizu.ac.id',
+      },
+    ],
   },
 
   experimental: {
@@ -191,10 +203,6 @@ const nextConfig: NextConfig = {
         headers: [{ key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, max-age=0' }],
       },
       {
-        source: '/login-2fa',
-        headers: [{ key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, max-age=0' }],
-      },
-      {
         source: '/lupa-kata-sandi',
         headers: [{ key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, max-age=0' }],
       },
@@ -206,10 +214,6 @@ const nextConfig: NextConfig = {
         source: '/ganti-password',
         headers: [{ key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, max-age=0' }],
       },
-      ...protectedNoStoreSources.map((source) => ({
-        source,
-        headers: noStoreHeaders,
-      })),
       {
         // Long-term immutable cache for hashed static assets
         source: '/_next/static/:path*',
@@ -229,4 +233,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withBundleAnalyzer(nextConfig);
+export default withBundleAnalyzer(withPWA(nextConfig));

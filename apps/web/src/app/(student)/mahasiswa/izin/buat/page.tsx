@@ -36,9 +36,9 @@ export default function CreateIzinPage(): React.JSX.Element {
   };
 
   return (
-    <div className="max-w-[600px] mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24 sm:pb-8">
+    <div className="max-w-[600px] mx-auto px-4 py-10">
       <button onClick={() => router.back()} className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-amber-600 mb-6"><ChevronLeft size={16} /> Kembali</button>
-      <div className="bg-white rounded-2xl sm:rounded-[2rem] p-4 sm:p-8 border border-amber-50 shadow-sm">
+      <div className="bg-white rounded-[2rem] p-8 border border-amber-50 shadow-sm">
         <div className="flex items-center gap-4 mb-8">
           <div className="h-12 w-12 bg-amber-600 rounded-xl flex items-center justify-center text-white"><Plane size={24} /></div>
           <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Ajukan Izin</h1>

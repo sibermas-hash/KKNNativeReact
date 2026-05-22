@@ -32,7 +32,7 @@ const PROGRAMS = [
 
 export function Showcase3D() {
   return (
-    <section className="bg-white py-10 sm:py-14 border-t border-emerald-100">
+    <section className="bg-white py-14 sm:py-20 border-t border-emerald-100">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <RevealOnScroll direction="up">
           <div className="max-w-2xl">

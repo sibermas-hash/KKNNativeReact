@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
 use App\Models\User;
@@ -17,9 +19,12 @@ class InterviewParticipant extends Model
         'processed_at',
     ];
 
-    protected $casts = [
-        'processed_at' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'processed_at' => 'datetime',
+        ];
+    }
 
     public function schedule(): BelongsTo
     {
@@ -34,5 +39,25 @@ class InterviewParticipant extends Model
     public function processedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'processed_by');
+    }
+
+    public function markPassed(?int $userId = null, ?string $notes = null): void
+    {
+        $this->update([
+            'result' => 'passed',
+            'notes' => $notes ?? $this->notes,
+            'processed_by' => $userId ?? auth()->id(),
+            'processed_at' => now(),
+        ]);
+    }
+
+    public function markFailed(?int $userId = null, ?string $notes = null): void
+    {
+        $this->update([
+            'result' => 'failed',
+            'notes' => $notes ?? $this->notes,
+            'processed_by' => $userId ?? auth()->id(),
+            'processed_at' => now(),
+        ]);
     }
 }

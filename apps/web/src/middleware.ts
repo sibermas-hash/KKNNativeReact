@@ -36,14 +36,6 @@ import { NextRequest, NextResponse } from 'next/server';
  */
 
 const PROTECTED_PREFIXES = ['/admin', '/mahasiswa', '/dosen', '/profil', '/ganti-password', '/notifikasi'];
-const NO_STORE_HEADER_VALUE = 'private, no-store, no-cache, must-revalidate, max-age=0';
-
-function applyNoStoreHeaders(response: NextResponse): NextResponse {
-  response.headers.set('Cache-Control', NO_STORE_HEADER_VALUE);
-  response.headers.set('Pragma', 'no-cache');
-  response.headers.set('Expires', '0');
-  return response;
-}
 
 function hasAuthToken(request: NextRequest): boolean {
   // Only trust the HttpOnly cookie. The legacy `sibermas_session` marker is
@@ -51,8 +43,19 @@ function hasAuthToken(request: NextRequest): boolean {
   return Boolean(request.cookies.get('sibermas_token')?.value);
 }
 
-function getPublicOrigin(_request: NextRequest): string {
-  return 'https://sibermas.uinsaizu.ac.id';
+function getPublicOrigin(request: NextRequest): string {
+  const explicitOrigin = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL;
+  if (explicitOrigin) {
+    return explicitOrigin.replace(/\/+$/, '');
+  }
+
+  const forwardedProto = request.headers.get('x-forwarded-proto');
+  const forwardedHost = request.headers.get('x-forwarded-host');
+  if (forwardedProto && forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`;
+  }
+
+  return request.nextUrl.origin;
 }
 
 export function middleware(request: NextRequest) {
@@ -65,12 +68,8 @@ export function middleware(request: NextRequest) {
   // (1) Anonymous user trying to reach a protected page → /login.
   if (isProtected && !hasAuthToken(request)) {
     const loginUrl = new URL('/login', `${getPublicOrigin(request)}/`);
-    loginUrl.searchParams.set('redirect', `${pathname}${request.nextUrl.search}`);
-    return applyNoStoreHeaders(NextResponse.redirect(loginUrl, 307));
-  }
-
-  if (isProtected) {
-    return applyNoStoreHeaders(NextResponse.next());
+    loginUrl.searchParams.set('redirect', pathname);
+    return NextResponse.redirect(loginUrl, 308);
   }
 
   return NextResponse.next();
@@ -78,16 +77,11 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/admin',
     '/admin/:path*',
-    '/mahasiswa',
     '/mahasiswa/:path*',
-    '/dosen',
     '/dosen/:path*',
-    '/profil',
     '/profil/:path*',
     '/ganti-password',
-    '/notifikasi',
     '/notifikasi/:path*',
   ],
 };

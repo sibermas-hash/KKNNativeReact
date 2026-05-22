@@ -506,7 +506,16 @@ class UserController extends Controller
                 }
             })
             ->when($request->input('fakultas_id'), fn ($q, $id) => $q->where('fakultas_id', $id))
-            ->orderByDesc('created_at');
+            ->when($request->input('sort_by'), function ($q) use ($request) {
+                $allowed = ['nim', 'nama', 'batch_year', 'semester', 'gpa', 'status_aktif'];
+                $field = $request->input('sort_by');
+                $dir = $request->input('sort_dir', 'asc') === 'desc' ? 'desc' : 'asc';
+                if (in_array($field, $allowed)) {
+                    $q->orderBy($field, $dir);
+                }
+            }, function ($q) {
+                $q->orderByDesc('created_at');
+            });
 
         return $this->successCollection(MahasiswaResource::collection($query->paginate(25)));
     }

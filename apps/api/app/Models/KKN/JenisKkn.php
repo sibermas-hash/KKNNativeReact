@@ -26,10 +26,12 @@ class JenisKkn extends Model
         'is_active',
         'sort_order',
         'attendance_config',
+        'requires_interview',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'requires_interview' => 'boolean',
         'requirements_config' => 'array',
         'allowed_regencies' => 'array',
         'attendance_config' => 'array',

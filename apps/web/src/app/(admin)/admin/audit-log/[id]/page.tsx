@@ -31,7 +31,8 @@ const SEVERITY_META: Record<Severity, { label: string; icon: typeof Shield; cls:
 };
 
 export default function AuditLogDetailPage(): React.JSX.Element {
-  const { id } = useParams();
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
 
   const { data, isLoading } = useQuery<AuditLog>({
     queryKey: ['admin', 'audit-log', Number(id)],

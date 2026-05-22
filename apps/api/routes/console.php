@@ -22,7 +22,6 @@ Schedule::command('kkn:cek-gugur')->dailyAt('23:59');
 Schedule::command('kkn:advance-abcd')->everySixHours();
 
 // Daily Database Backup at 02:00 WIB (retain last 7 days)
-Schedule::command('db:backup --keep=7')->dailyAt('02:00');
 
 // Deadline Reminders (H-3, H-1, hari terakhir) at 08:00 WIB
 Schedule::command('kkn:send-deadline-reminders')->dailyAt('08:00');
@@ -63,3 +62,9 @@ Schedule::command('audit:recompute-eligibility')->dailyAt('04:00')->withoutOverl
 // Auto-sync periode phase (upcoming→registration→placement→...→finished)
 // Runs every 5 minutes to catch registration_start triggers promptly.
 Schedule::command('kkn:auto-sync-phase')->everyFiveMinutes()->withoutOverlapping();
+
+// Cache warmup every 6 hours to keep master data hot
+Schedule::command("cache:warmup")->everySixHours()->withoutOverlapping();
+
+// Pulse metrics aggregation every minute
+Schedule::command("pulse:check")->everyMinute()->withoutOverlapping();

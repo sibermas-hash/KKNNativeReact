@@ -48,7 +48,8 @@ function fmt(key: string, val: unknown): string {
 }
 
 export default function MahasiswaDetailPage(): React.JSX.Element {
-  const { id } = useParams();
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const mahasiswaId = Number(id);
   const qc = useQueryClient();
   const router = useRouter();

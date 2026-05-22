@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore, usePeriodStore } from '@/stores';
 import { ROLE_LABELS, PHASE_LABELS } from '@sibermas/constants';
@@ -9,11 +9,16 @@ import Image from 'next/image';
 import { clsx } from 'clsx';
 import { ThemeSwitcher, useTheme } from '@/components/ui/theme-provider';
 import { NotificationBell } from '@/components/ui/notification-bell';
+import { PullToRefresh } from '@/components/ui/pull-to-refresh';
+import { SwipeHandler } from '@/components/ui/swipe-handler';
 import { ProfileIncompleteGuard } from "@/components/ui/profile-incomplete-guard";
+import { useQuery } from '@tanstack/react-query';
+import { QUERY_KEYS } from '@sibermas/constants';
+import { studentApi } from '@/lib/api';
 import {
   LayoutDashboard, ClipboardList, Target, FileText, FileCheck,
-  Star, BookOpen, Plane, Home, Image as ImageIcon,
-  Menu, Power, Award, GraduationCap, MessageCircle, UserCircle,
+  Star, BookOpen, Plane, Home, UserCircle, Image as ImageIcon,
+  Menu, Power, Award, GraduationCap, MessageCircle, Mic,
 } from 'lucide-react';
 
 type NavItem = {
@@ -22,6 +27,7 @@ type NavItem = {
   icon: typeof LayoutDashboard;
   /** Phases where this item is visible. null = always visible */
   phases: string[] | null;
+  requiresApproved?: boolean;
   external?: boolean;
 };
 
@@ -29,21 +35,29 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/mahasiswa', label: 'Dashboard', icon: LayoutDashboard, phases: null },
   { href: '/mahasiswa/pendaftaran', label: 'Daftar KKN', icon: ClipboardList, phases: ['registration', 'placement'] },
   { href: '/mahasiswa/cek-pendaftaran', label: 'Status Pendaftaran', icon: FileCheck, phases: ['registration', 'placement'] },
-  { href: '/mahasiswa/posko', label: 'Posko', icon: Home, phases: ['placement', 'execution', 'grading', 'finished'] },
-  { href: '/mahasiswa/laporan-harian', label: 'Logbook Harian', icon: FileText, phases: ['execution', 'grading'] },
-  { href: '/mahasiswa/program-kerja', label: 'Program Kerja', icon: Target, phases: ['execution', 'grading'] },
-  { href: '/mahasiswa/izin', label: 'Izin', icon: Plane, phases: ['execution', 'grading'] },
-  { href: '/mahasiswa/poster', label: 'Poster Potensi Desa', icon: ImageIcon, phases: ['execution', 'grading'] },
-  { href: '/mahasiswa/laporan-akhir', label: 'Laporan Akhir', icon: BookOpen, phases: ['grading', 'finished'] },
-  { href: '/mahasiswa/evaluasi-dpl', label: 'Evaluasi DPL', icon: Star, phases: ['grading', 'finished'] },
-  { href: '/mahasiswa/sertifikat', label: 'Sertifikat', icon: Award, phases: ['grading', 'finished'] },
+  { href: '/mahasiswa/wawancara', label: 'Wawancara', icon: Mic, phases: ['registration', 'placement'] },
+  { href: '/mahasiswa/posko', label: 'Posko', icon: Home, phases: ['placement', 'execution', 'grading', 'finished'], requiresApproved: true },
+  { href: '/mahasiswa/laporan-harian', label: 'Logbook Harian', icon: FileText, phases: ['execution', 'grading'], requiresApproved: true },
+  { href: '/mahasiswa/program-kerja', label: 'Program Kerja', icon: Target, phases: ['execution', 'grading'], requiresApproved: true },
+  { href: '/mahasiswa/izin', label: 'Izin', icon: Plane, phases: ['execution', 'grading'], requiresApproved: true },
+  { href: '/mahasiswa/poster', label: 'Poster Potensi Desa', icon: ImageIcon, phases: ['execution', 'grading'], requiresApproved: true },
+  { href: '/mahasiswa/laporan-akhir', label: 'Laporan Akhir', icon: BookOpen, phases: ['grading', 'finished'], requiresApproved: true },
+  { href: '/mahasiswa/evaluasi-dpl', label: 'Evaluasi DPL', icon: Star, phases: ['grading', 'finished'], requiresApproved: true },
+  { href: '/mahasiswa/sertifikat', label: 'Sertifikat', icon: Award, phases: ['grading', 'finished'], requiresApproved: true },
+  { href: '/profil', label: 'Profil', icon: UserCircle, phases: null },
 ];
 
 export default function StudentLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const { user, isAuthenticated, isLoading, clearUser } = useAuthStore();
   const { currentPhase, activePeriod } = usePeriodStore();
+  const { data: dashboardData } = useQuery<Record<string, unknown> | null>({
+    queryKey: QUERY_KEYS.student.dashboard,
+    queryFn: () => studentApi.dashboard() as unknown as Promise<Record<string, unknown> | null>,
+    enabled: isAuthenticated && !!user?.roles?.includes('student'),
+    staleTime: 30_000,
+  });
   const { config: themeConfig } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -55,8 +69,16 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     Object.entries(vars).forEach(([key, value]) => el.style.setProperty(key, value));
     el.style.background = themeConfig.backdrop;
   }, [themeConfig]);
+  const registration = dashboardData?.registration as Record<string, unknown> | null | undefined;
+  const normalizedStatus = String(registration?.status || '').toLowerCase();
+  const isRegisteredApproved = ['approved', 'disetujui', 'verifikasi_pusat', 'completed', 'selesai'].includes(normalizedStatus);
+  const safeNavItems = useMemo(
+    () => NAV_ITEMS.filter((item) => !item.requiresApproved || isRegisteredApproved),
+    [isRegisteredApproved],
+  );
+
   const isProfilePage = pathname === '/profil';
-  const currentNavItem = NAV_ITEMS.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
+  const currentNavItem = safeNavItems.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
   const isPhaseAllowed = !currentNavItem?.phases || currentNavItem.phases.includes(currentPhase || '');
 
   useEffect(() => {
@@ -80,13 +102,6 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
       </div>
     );
   }
-
-  if (isProfilePage) {
-    return <>{children}</>;
-  }
-
-  const avatarUrl = (user as unknown as { avatar_url?: string | null; avatar?: string | null }).avatar_url || (user as unknown as { avatar?: string | null }).avatar;
-
   const handleLogout = async () => {
     try { await (await import('@/lib/api')).api.post('/auth/logout'); } catch { /* noop */ }
     clearUser();
@@ -94,7 +109,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   };
 
   return (
-    <div ref={rootRef} className="app-readable min-h-screen font-sans transition-colors duration-500">
+    <SwipeHandler onSwipeRight={() => setSidebarOpen(true)} onSwipeLeft={() => setSidebarOpen(false)} className="min-h-screen"><div ref={rootRef} className="app-readable min-h-screen font-sans transition-colors duration-500">
       {/* Sidebar overlay mobile */}
       {sidebarOpen && (
         <div
@@ -132,27 +147,12 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
 
         {/* User Info */}
         <div className="px-4 py-2">
-          <div className="relative overflow-hidden rounded-2xl border border-white/60 bg-gradient-to-br from-white via-emerald-50/80 to-cyan-50/70 p-3 shadow-lg shadow-emerald-900/5 ring-1 ring-emerald-100/60">
-            <div className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-emerald-300/20 blur-2xl" />
-            <Link href="/profil" onClick={() => setSidebarOpen(false)} className="group relative block rounded-xl p-1 transition hover:bg-white/55" title="Buka halaman profil">
-              <div className="mb-3 flex justify-center">
-                <div className="rounded-full bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-400 p-[3px] shadow-lg shadow-emerald-900/20 ring-4 ring-white/80 transition group-hover:scale-105">
-                  <div className="h-20 w-20 overflow-hidden rounded-full bg-white flex items-center justify-center">
-                    {avatarUrl ? (
-                      <img src={avatarUrl} alt={user.name || 'Foto profil'} className="h-full w-full rounded-full object-cover" />
-                    ) : (
-                      <UserCircle className="h-12 w-12 text-emerald-500" />
-                    )}
-                  </div>
-                </div>
-              </div>
-              <p className="mx-auto w-fit rounded-full bg-emerald-100 px-2.5 py-1 text-[9px] font-black text-emerald-700 uppercase tracking-[0.15em] text-center">
-                {ROLE_LABELS[user.roles?.[0] || 'student']}
-              </p>
-              <p className="text-sm font-black text-[color:var(--profile-text)] truncate mt-2 text-center group-hover:text-emerald-700">{user.name}</p>
-              {user.nim && <p className="text-[10px] font-bold text-[color:var(--profile-muted)] mt-0.5 text-center">{user.nim}</p>}
-              <p className="mt-2 text-center text-[9px] font-bold uppercase tracking-wider text-emerald-600 opacity-0 transition group-hover:opacity-100">Lihat Profil</p>
-            </Link>
+          <div className="rounded-xl bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] p-3">
+            <p className="text-[9px] font-black text-[color:var(--profile-soft-text)] uppercase tracking-[0.15em]">
+              {ROLE_LABELS[user.roles?.[0] || 'student']}
+            </p>
+            <p className="text-sm font-black text-[color:var(--profile-text)] truncate mt-0.5">{user.name}</p>
+            {user.nim && <p className="text-[10px] font-bold text-[color:var(--profile-muted)] mt-0.5">{user.nim}</p>}
           </div>
         </div>
 
@@ -171,7 +171,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             MENU UTAMA
           </h3>
           <div className="space-y-1">
-            {NAV_ITEMS.filter((item) => item.phases === null || item.phases.includes(currentPhase || 'upcoming')).map((item) => {
+            {safeNavItems.filter((item) => item.phases === null || item.phases.includes(currentPhase || 'upcoming')).map((item) => {
               const isActive = !item.external && (pathname === item.href || pathname.startsWith(item.href + '/'));
               const linkProps = item.external ? { target: "_blank", rel: "noopener noreferrer" } : {};
               return (
@@ -203,6 +203,21 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           </div>
         </nav>
 
+        {/* Profile Card */}
+        <div className="p-4">
+          <Link href="/profil" className="flex items-center gap-3 p-3 rounded-2xl bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] shadow-sm hover:shadow-md transition-all group">
+            <div className="h-10 w-10 rounded-xl bg-[color:var(--profile-primary)] flex items-center justify-center text-white shrink-0 shadow-inner group-hover:rotate-6 transition-transform">
+              <span className="text-xs font-black uppercase">{user.name.substring(0, 2)}</span>
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs font-black text-[color:var(--profile-text)] truncate leading-none mb-1 font-display">{user.name}</span>
+              <span className="text-[9px] font-bold text-[color:var(--profile-muted)] uppercase tracking-wider flex items-center gap-1 font-sans">
+                <div className="w-1 h-1 rounded-full bg-[color:var(--profile-accent)] animate-pulse" />
+                Mahasiswa
+              </span>
+            </div>
+          </Link>
+        </div>
       </aside>
 
       {/* Main */}
@@ -236,7 +251,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         </header>
 
         <ProfileIncompleteGuard />
-        <main className="flex-1 p-4 lg:p-8 text-[color:var(--profile-text)]">{children}</main>
+        <PullToRefresh className="flex-1"><main className="p-4 lg:p-8 text-[color:var(--profile-text)]">{children}</main></PullToRefresh>
       </div>
 
       {pathname !== '/mahasiswa/chat' && (
@@ -252,5 +267,6 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         </Link>
       )}
     </div>
+    </SwipeHandler>
   );
 }

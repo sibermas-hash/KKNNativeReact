@@ -22,6 +22,7 @@ class PeriodeController extends Controller
         $periods = Periode::with(['tahunAkademik', 'jenisKkn'])
             ->withCount('peserta')
             ->when($request->input('academic_year_id'), fn ($q, $id) => $q->where('academic_year_id', $id))
+            ->when($request->input('angkatan'), fn ($q, $a) => $q->where('periode', $a))
             ->orderByDesc('periode')
             ->paginate($request->input('per_page', 25));
 

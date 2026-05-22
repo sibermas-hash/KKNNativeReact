@@ -21,6 +21,10 @@ interface Period {
   kuota: number;
   current_phase?: string;
   is_active?: boolean;
+  theme?: string | null;
+  grading_start?: string | null;
+  grading_end?: string | null;
+  is_locked?: boolean;
   academic_year_id?: number;
   jenis_kkn_id?: number;
   academic_year?: { id: number; year: string };
@@ -43,7 +47,7 @@ const PHASE_COLOR: Record<string, string> = {
   grading: 'bg-amber-100 text-amber-700', finished: 'bg-slate-200 text-slate-500',
 };
 
-const EMPTY_FORM = { name: '', periode: 1, start_date: '', end_date: '', registration_start: '', registration_end: '', kuota: 30, academic_year_id: 0, jenis_kkn_id: 0, is_active: false, current_phase: 'upcoming' };
+const EMPTY_FORM = { name: '', theme: '', periode: 1, start_date: '', end_date: '', registration_start: '', registration_end: '', grading_start: '', grading_end: '', kuota: 30, academic_year_id: 0, jenis_kkn_id: 0, is_active: false, current_phase: 'upcoming' };
 const INPUT = 'w-full h-10 px-3 rounded-xl border border-slate-200 text-sm font-medium text-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-200 outline-none bg-white';
 
 function formatDate(value?: string | null) {
@@ -64,15 +68,17 @@ export default function PeriodsPage(): React.JSX.Element {
   const [confirmId, setConfirmId] = useState<number | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [page, setPage] = useState(1);
+  const [angkatan, setAngkatan] = useState('');
   const [perPage, setPerPage] = useState(25);
 
   const { data, isLoading, isFetching } = useQuery<PaginatedPeriodsResponse>({
-    queryKey: ['admin', 'periods', { page, perPage }],
+    queryKey: ['admin', 'periods', { page, perPage, angkatan }],
     queryFn: async () => {
       const response = await rawApi.get<ApiResponse<Period[]>>('/admin/periode', {
         params: {
           page,
           per_page: perPage,
+          angkatan: angkatan || undefined,
         },
       });
 
@@ -133,9 +139,10 @@ export default function PeriodsPage(): React.JSX.Element {
   const openEdit = (p: Period) => {
     setEditingId(p.id);
     setForm({
-      name: p.name, periode: p.periode,
+      name: p.name, theme: p.theme ?? '', periode: p.periode,
       start_date: p.start_date ?? '', end_date: p.end_date ?? '',
       registration_start: p.registration_start ?? '', registration_end: p.registration_end ?? '',
+      grading_start: p.grading_start ?? '', grading_end: p.grading_end ?? '',
       kuota: p.kuota,
       academic_year_id: p.academic_year_id ?? p.academic_year?.id ?? 0,
       jenis_kkn_id: p.jenis_kkn_id ?? p.jenis_kkn?.id ?? 0,
@@ -175,11 +182,11 @@ export default function PeriodsPage(): React.JSX.Element {
             <p className="text-2xl font-black text-slate-800 mt-1">{meta?.total ?? periods.length}</p>
           </div>
           <div className="rounded-xl bg-white p-4 ring-1 ring-slate-200 shadow-sm">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Aktif di Tabel</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Aktif per Jenis KKN</p>
             <p className="text-2xl font-black text-emerald-600 mt-1">{activePeriods.length}</p>
           </div>
           <div className="rounded-xl bg-white p-4 ring-1 ring-slate-200 shadow-sm">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Peserta di Tabel</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Peserta Tampil</p>
             <p className="text-2xl font-black text-slate-800 mt-1">{totalPeserta}</p>
           </div>
           <div className="rounded-xl bg-white p-4 ring-1 ring-slate-200 shadow-sm">
@@ -197,18 +204,20 @@ export default function PeriodsPage(): React.JSX.Element {
               className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setOpen(false)} />
             <motion.div initial={{ opacity: 0, scale: 0.96, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96 }} transition={{ duration: 0.18 }}
-              className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl ring-1 ring-slate-200 overflow-hidden">
+              className="relative w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-2xl ring-1 ring-slate-200 overflow-hidden">
               <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
                 <h2 className="text-base font-black text-slate-900">{editingId ? 'Edit Periode' : 'Tambah Periode'}</h2>
                 <button onClick={() => setOpen(false)} className="text-slate-400 hover:text-slate-600 text-lg leading-none">&times;</button>
               </div>
-              <form onSubmit={e => { e.preventDefault(); save.mutate(); }} className="p-6 space-y-4">
+              <form onSubmit={e => { e.preventDefault(); save.mutate(); }} className="max-h-[calc(90vh-76px)] overflow-y-auto p-6 space-y-5">
                 {/* Info */}
                 <div className="rounded-lg bg-slate-50 border border-slate-200 px-3 py-2 text-xs text-slate-500">
                   Periode = <strong>Tahun Akademik</strong> + <strong>Jenis KKN</strong> + Angkatan. Pilih keduanya lalu isi detail jadwal.
                 </div>
+                <div className="space-y-3 rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">1. Identitas Periode</h3>
                 {/* Tahun Akademik + Jenis KKN */}
-                <div className="grid grid-cols-1 sm:grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tahun Akademik *</label>
                     <select value={form.academic_year_id} onChange={e => setForm(f => ({ ...f, academic_year_id: Number(e.target.value) }))} className={`${INPUT} ${fieldErrors.academic_year_id ? 'border-rose-400 ring-1 ring-rose-200' : ''}`} required>
@@ -232,11 +241,20 @@ export default function PeriodsPage(): React.JSX.Element {
                   <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className={`${INPUT} ${fieldErrors.name ? 'border-rose-400 ring-1 ring-rose-200' : ''}`} placeholder="KKN Reguler 2025/2026 Angkatan 1" required />
                   <FieldError error={fieldErrors.name} />
                 </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tema</label>
+                  <input value={form.theme} onChange={e => setForm(f => ({ ...f, theme: e.target.value }))} className={`${INPUT} ${fieldErrors.theme ? 'border-rose-400 ring-1 ring-rose-200' : ''}`} placeholder="Tema besar periode KKN" />
+                  <FieldError error={fieldErrors.theme} />
+                </div>
                 {/* Angkatan + Kuota */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Angkatan *</label>
-                    <input type="number" min={1} value={form.periode} onChange={e => setForm(f => ({ ...f, periode: Number(e.target.value) }))} className={`${INPUT} ${fieldErrors.periode ? 'border-rose-400 ring-1 ring-rose-200' : ''}`} required />
+                    <select value={form.periode} onChange={e => setForm(f => ({ ...f, periode: Number(e.target.value) }))} className={`${INPUT} ${fieldErrors.periode ? 'border-rose-400 ring-1 ring-rose-200' : ''}`} required>
+                      <option value={0}>— Pilih Angkatan —</option>
+                      <option value={58}>Angkatan 58 (2026/2027)</option>
+                      <option value={59}>Angkatan 59 (baru)</option>
+                    </select>
                     <FieldError error={fieldErrors.periode} />
                   </div>
                   <div className="space-y-1.5">
@@ -245,6 +263,9 @@ export default function PeriodsPage(): React.JSX.Element {
                     <FieldError error={fieldErrors.kuota} />
                   </div>
                 </div>
+                </div>
+                <div className="space-y-3 rounded-2xl border border-slate-100 bg-white p-4">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">2. Jadwal Pendaftaran</h3>
                 {/* Pendaftaran dates */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
@@ -283,6 +304,9 @@ export default function PeriodsPage(): React.JSX.Element {
                     <FieldError error={fieldErrors.registration_end} />
                   </div>
                 </div>
+                </div>
+                <div className="space-y-3 rounded-2xl border border-slate-100 bg-white p-4">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">3. Jadwal Pelaksanaan</h3>
                 {/* Pelaksanaan dates */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
@@ -312,7 +336,22 @@ export default function PeriodsPage(): React.JSX.Element {
                 </div>
                 {/* Hint: 7 hari gap */}
                 <p className="text-[10px] text-slate-400">Catatan: Jarak minimal antara Tutup Pendaftaran dan Mulai KKN adalah 7 hari (untuk proses verifikasi admin).</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Mulai Penilaian</label>
+                    <input type="date" value={form.grading_start} min={form.end_date || form.start_date || undefined} onChange={e => setForm(f => ({ ...f, grading_start: e.target.value }))} className={`${INPUT} ${fieldErrors.grading_start ? 'border-rose-400 ring-1 ring-rose-200' : ''}`} />
+                    <FieldError error={fieldErrors.grading_start} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Tutup Penilaian</label>
+                    <input type="date" value={form.grading_end} min={form.grading_start || form.end_date || undefined} onChange={e => setForm(f => ({ ...f, grading_end: e.target.value }))} className={`${INPUT} ${fieldErrors.grading_end ? 'border-rose-400 ring-1 ring-rose-200' : ''}`} />
+                    <FieldError error={fieldErrors.grading_end} />
+                  </div>
+                </div>
 
+                </div>
+                <div className="space-y-3 rounded-2xl border border-slate-100 bg-slate-50/70 p-4">
+                  <h3 className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">4. Fase & Publikasi</h3>
                 {/* Fase + Publikasi */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
@@ -337,8 +376,9 @@ export default function PeriodsPage(): React.JSX.Element {
                     <FieldError error={fieldErrors.is_active} />
                   </div>
                 </div>
+                </div>
                 {/* Actions */}
-                <div className="flex gap-3 pt-2">
+                <div className="flex gap-3 pt-2 sticky bottom-0 bg-white/95 backdrop-blur">
                   <button type="button" onClick={() => setOpen(false)} className="flex-1 h-10 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Batal</button>
                   <button type="submit" disabled={save.isPending} className="flex-[2] h-10 rounded-xl bg-cyan-600 text-white text-sm font-semibold hover:bg-cyan-700 disabled:opacity-50">
                     {save.isPending ? 'Menyimpan...' : editingId ? 'Simpan Perubahan' : 'Buat Periode'}
@@ -365,7 +405,16 @@ export default function PeriodsPage(): React.JSX.Element {
               <p className="text-xs font-black uppercase tracking-wider text-slate-500">Data Periode</p>
               <p className="text-xs text-slate-400">{batchLabel}{isFetching ? ' • memperbarui...' : ''}</p>
             </div>
-            <label className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                Angkatan
+                <select value={angkatan} onChange={(e) => { setAngkatan(e.target.value); setPage(1); }} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs font-bold text-slate-700">
+                  <option value="">Semua</option>
+                  <option value="58">58</option>
+                  <option value="59">59</option>
+                </select>
+              </label>
+              <label className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">
               Per Halaman
               <select
                 value={perPage}
@@ -380,6 +429,7 @@ export default function PeriodsPage(): React.JSX.Element {
                 ))}
               </select>
             </label>
+            </div>
           </div>
           <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -406,6 +456,7 @@ export default function PeriodsPage(): React.JSX.Element {
                           </span>
                         )}
                         {p.is_active && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" title="Aktif" />}
+                        {p.is_locked && <span className="text-[9px] font-black text-amber-600">LOCK</span>}
                       </div>
                     </td>
                     {/* Tahun Akademik */}
@@ -495,7 +546,7 @@ export default function PeriodsPage(): React.JSX.Element {
         onClose={() => setConfirmId(null)}
         onConfirm={() => { if (confirmId) destroy.mutate(confirmId); }}
         title="Hapus periode ini?"
-        description="Periode akan dihapus dari daftar aktif. Proses ini bisa ditolak jika masih ada data terkait yang bergantung pada periode tersebut."
+        description="Periode adalah master data vital. Hapus hanya jika belum dipakai pendaftaran, kelompok, dokumen, atau data operasional lain. Sistem akan menolak jika masih ada relasi."
         confirmText="Ya, Hapus"
         variant="danger"
       />

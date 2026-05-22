@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { getEcho } from '@/lib/realtime';
 import { toast } from 'sonner';
 import { ArrowLeft, Send, Paperclip, CheckCircle2, Clock, XCircle } from 'lucide-react';
 
@@ -34,7 +35,8 @@ const STATUS_INFO: Record<string, { label: string; icon: typeof Clock | typeof C
 };
 
 export default function ChatRoomPage() {
-  const { id } = useParams();
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const qc = useQueryClient();
   const [body, setBody] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -73,6 +75,23 @@ export default function ChatRoomPage() {
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [data?.messages?.length]);
+
+  useEffect(() => {
+    if (!id) return;
+    let active = true;
+
+    getEcho().then((echo) => {
+      if (!echo || !active) return;
+      echo.private(`chat.${id}`).listen('.message.sent', () => {
+        qc.invalidateQueries({ queryKey: ['student', 'chat', 'conversation', id] });
+      });
+    });
+
+    return () => {
+      active = false;
+      getEcho().then((echo) => echo?.leave(`private-chat.${id}`));
+    };
+  }, [id, qc]);
 
   const handleSend = () => {
     if (!body.trim() || sendMut.isPending) return;
@@ -120,7 +139,7 @@ export default function ChatRoomPage() {
           ) : (
             data.messages.map((m) => (
               <div key={m.id} className={`flex ${m.sender.is_self ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[88%] sm:max-w-[75%] rounded-2xl px-4 py-2.5 ${
+                <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
                   m.sender.is_self ? 'bg-teal-600 text-white' : 'bg-white text-slate-800 ring-1 ring-slate-200'
                 }`}>
                   {!m.sender.is_self && (

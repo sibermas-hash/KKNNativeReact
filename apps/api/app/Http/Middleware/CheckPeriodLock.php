@@ -28,12 +28,6 @@ class CheckPeriodLock
             return $next($request);
         }
 
-        // System/user-management endpoints are not tied to a KKN period.
-        // Do not block avatar/profile moderation when the active period is locked.
-        if ($request->is('api/v1/admin/avatar-moderation/*') || $request->is('api/v1/admin/profile-change-requests/*')) {
-            return $next($request);
-        }
-
         $period = $this->contextService->getActivePeriod();
 
         if ($period && $period->is_locked) {

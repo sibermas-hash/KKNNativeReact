@@ -1,6 +1,7 @@
 'use client';
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryPersist } from '@/components/providers/query-persist';
 import { useState, useEffect, Component } from 'react';
 import type { ReactNode, ErrorInfo } from 'react';
 import { usePathname } from 'next/navigation';
@@ -77,17 +78,6 @@ export function Providers({ children }: { children: ReactNode }): React.JSX.Elem
     let cancelled = false;
 
     void (async () => {
-      const hasCookie = await hasServerAuthCookie();
-      if (cancelled) return;
-
-      if (!isProtected && !hasCookie) {
-        resetAuthState();
-        try {
-          window.sessionStorage.removeItem(staleCookieGuardKey);
-        } catch { /* private browsing / blocked storage */ }
-        return;
-      }
-
       const authResult = await useAuthStore.getState().fetchUser();
       if (cancelled) return;
 
@@ -107,7 +97,7 @@ export function Providers({ children }: { children: ReactNode }): React.JSX.Elem
         return;
       }
 
-      const hasStaleAuthCookie = authResult === 'anonymous' && hasCookie;
+      const hasStaleAuthCookie = authResult === 'anonymous' && await hasServerAuthCookie();
 
       if (!hasStaleAuthCookie) {
         try {
@@ -163,6 +153,7 @@ export function Providers({ children }: { children: ReactNode }): React.JSX.Elem
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
+        <QueryPersist queryClient={queryClient} />
         <ThemeProvider>
           <TooltipPrimitive.Provider delayDuration={200}>
             <SmoothScrollProvider>

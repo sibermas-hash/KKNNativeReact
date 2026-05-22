@@ -23,8 +23,8 @@ export default function ResetPasswordPage(): React.JSX.Element {
   const [loading, setLoading] = useState(false);
   const [serverErrors, setServerErrors] = useState<string[]>([]);
 
-  const token = searchParams.get('token');
-  const email = searchParams.get('email');
+  const token = searchParams?.get('token');
+  const email = searchParams?.get('email');
 
   const {
     register,

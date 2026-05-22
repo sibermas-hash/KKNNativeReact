@@ -18,7 +18,8 @@ const ENTITY_LABELS: Record<string, string> = {
 };
 
 export default function DatabaseSyncDetailPage(): React.JSX.Element {
-  const { id } = useParams();
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const router = useRouter();
 
   const { data, isLoading } = useQuery({

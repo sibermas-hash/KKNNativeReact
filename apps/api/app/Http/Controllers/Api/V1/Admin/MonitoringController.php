@@ -65,7 +65,6 @@ class MonitoringController extends Controller
 
         // R13-API-008: standardize on ApiResponse envelope instead of raw response()->json.
         return $this->success([
-            'overall_status' => $healthData['status'] ?? null,
             'health' => $healthData,
             'queue' => $queue,
             'telegram' => [
@@ -74,10 +73,7 @@ class MonitoringController extends Controller
                 'recent_alerts' => $recentDedupKeys,
             ],
             'server' => [
-                'hostname' => gethostname() ?: php_uname('n'),
-                'php_version' => PHP_VERSION,
                 'app_version' => config('app.version', '4.0.0'),
-                'environment' => config('app.env'),
             ],
         ]);
     }

@@ -8,7 +8,8 @@ import { ChevronLeft, CheckCircle2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function DplReportDetailPage(): React.JSX.Element {
-  const { id } = useParams();
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const router = useRouter();
   
   const queryClient = useQueryClient();

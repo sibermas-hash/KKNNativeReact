@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { getEcho } from '@/lib/realtime';
 import { toast } from 'sonner';
 import { ArrowLeft, Send, Paperclip, Lock } from 'lucide-react';
 
@@ -29,7 +30,8 @@ type Conversation = {
 };
 
 export default function AdminChatRoomPage() {
-  const { id } = useParams();
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const qc = useQueryClient();
   const [body, setBody] = useState('');
   const [file, setFile] = useState<File | null>(null);
@@ -84,6 +86,23 @@ export default function AdminChatRoomPage() {
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [data?.messages?.length]);
+
+  useEffect(() => {
+    if (!id) return;
+    let active = true;
+
+    getEcho().then((echo) => {
+      if (!echo || !active) return;
+      echo.private(`chat.${id}`).listen('.message.sent', () => {
+        qc.invalidateQueries({ queryKey: ['admin', 'chat', 'conversation', id] });
+      });
+    });
+
+    return () => {
+      active = false;
+      getEcho().then((echo) => echo?.leave(`private-chat.${id}`));
+    };
+  }, [id, qc]);
 
   const handleSend = () => {
     if (!body.trim() || replyMut.isPending) return;

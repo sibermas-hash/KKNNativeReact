@@ -109,14 +109,14 @@ jobs:
         run: |
           echo "DB_DATABASE=kkn_test" >> .env
           echo "DB_USERNAME=kkn_test" >> .env
-          printf '%s\n' 'DB_PASSWORD=ci_test_pass" >> .env
+          echo "DB_PASSWORD=kkn_test" >> .env
           echo "DB_HOST=127.0.0.1" >> .env
           echo "REDIS_HOST=127.0.0.1" >> .env
           echo "QUEUE_CONNECTION=sync" >> .env
           echo "SESSION_DRIVER=array" >> .env
           echo "CACHE_STORE=array" >> .env
           echo "MAIL_MAILER=array" >> .env
-          printf '%s\n' 'AUTH_TEST_AUTO_LOGIN_ENABLED=true" >> .env
+          echo "AUTH_TEST_AUTO_LOGIN_ENABLED=false" >> .env
           echo "APP_BLIND_INDEX_KEY=base64:dGVzdGluZ2tleWZvcmNpcGlwZWxpbmVydW4xMjM0NTY=" >> .env
 
       - name: Run migrations

@@ -79,15 +79,6 @@ return [
         'chat_id' => env('TELEGRAM_CHAT_ID', ''),
     ],
 
-
-    'whatsapp' => [
-        'enabled' => filter_var(env('WA_GATEWAY_ENABLED', false), FILTER_VALIDATE_BOOLEAN),
-        'url' => env('WA_GATEWAY_URL', 'https://wa.rizquna.id'),
-        'api_key' => env('WA_GATEWAY_API_KEY'),
-        'session_name' => env('WA_GATEWAY_SESSION_NAME'),
-        'timeout' => (int) env('WA_GATEWAY_TIMEOUT', 15),
-    ],
-
     /*
      |--------------------------------------------------------------------------
      | Sync Behaviour

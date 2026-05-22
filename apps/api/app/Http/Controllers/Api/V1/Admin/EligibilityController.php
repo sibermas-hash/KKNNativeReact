@@ -76,6 +76,8 @@ class EligibilityController extends Controller
                     'eligible_count' => $result['eligible_count'],
                     'not_eligible_count' => $result['not_eligible_count'],
                     'eligibility_rate' => $result['eligibility_rate'],
+                    'registered_count' => \App\Models\KKN\Mahasiswa::where('is_eligible', true)->whereHas('peserta')->count(),
+                    'not_registered_count' => \App\Models\KKN\Mahasiswa::where('is_eligible', true)->whereDoesntHave('peserta')->count(),
                 ],
                 'issue_filters' => $issueFilters,
             ]);
@@ -85,6 +87,14 @@ class EligibilityController extends Controller
         $query = Mahasiswa::with(['prodi.fakultas', 'fakultas'])
             ->where('is_eligible', $showEligible)
             ->whereNotNull('eligibility_computed_at');
+
+        // Filter by registration status
+        $regFilter = $request->string('registration_status')->trim()->toString();
+        if ($regFilter === 'registered') {
+            $query->whereHas('peserta');
+        } elseif ($regFilter === 'not_registered') {
+            $query->whereDoesntHave('peserta');
+        }
 
         if ($facultyId) {
             $query->where('fakultas_id', $facultyId);
@@ -131,6 +141,8 @@ class EligibilityController extends Controller
                 'eligible_count' => $eligibleCount,
                 'not_eligible_count' => $notEligibleCount,
                 'eligibility_rate' => $totalAll > 0 ? round(($eligibleCount / $totalAll) * 100, 1) : 0,
+                'registered_count' => (clone $statsQuery)->where('is_eligible', true)->whereHas('peserta')->count(),
+                'not_registered_count' => (clone $statsQuery)->where('is_eligible', true)->whereDoesntHave('peserta')->count(),
             ],
             'issue_filters' => $this->buildIssueFilterOptions($this->transformCachedStudents($this->getCachedIssueRows($facultyId), $periodeId)),
         ]);
@@ -233,15 +245,19 @@ class EligibilityController extends Controller
             $query->where('fakultas_id', $facultyId);
         }
 
-        $oldestCacheAt = (clone $query)->whereNotNull('eligibility_computed_at')->min('eligibility_computed_at');
-        $cacheTimestamp = $oldestCacheAt ? strtotime((string) $oldestCacheAt) : false;
+        // Use MAX (most recent computation) — if data changed after the latest recompute,
+        // cache is stale. Using MIN was too aggressive: any mahasiswa update after the
+        // earliest-computed row would invalidate the entire cache.
+        $latestCacheAt = (clone $query)->whereNotNull('eligibility_computed_at')->max('eligibility_computed_at');
+        $cacheTimestamp = $latestCacheAt ? strtotime((string) $latestCacheAt) : false;
         if ($cacheTimestamp === false) {
             return false;
         }
 
-        if ($this->isNewerThanCache((clone $query)->max('updated_at'), $cacheTimestamp)) {
-            return false;
-        }
+        // NOTE: We do NOT check mahasiswa.updated_at here because computing
+        // eligibility itself updates the row (is_eligible, eligibility_issues,
+        // eligibility_computed_at) which bumps updated_at. Instead we only
+        // check external triggers: periode, settings, dispensasi, completions.
 
         $periode = $periodeId
             ? Periode::with('jenisKkn')->find($periodeId)
@@ -288,40 +304,6 @@ class EligibilityController extends Controller
         return $timestamp !== false && $timestamp > $cacheTimestamp;
     }
 
-    private function getCachedIssueFilterOptions(?int $facultyId): array
-    {
-        $query = Mahasiswa::query()
-            ->whereNotNull('eligibility_computed_at')
-            ->where('is_eligible', false)
-            ->whereNotNull('eligibility_issues');
-
-        if ($facultyId) {
-            $query->where('fakultas_id', $facultyId);
-        }
-
-        $labels = [];
-
-        $query->pluck('eligibility_issues')->each(function ($raw) use (&$labels) {
-            $issues = json_decode($raw ?? '[]', true);
-            if (! is_array($issues)) {
-                return;
-            }
-
-            foreach ($issues as $issue) {
-                $key = (string) ($issue['key'] ?? '');
-                if ($key === '' || isset($labels[$key])) {
-                    continue;
-                }
-
-                $labels[$key] = $this->getIssueFilterLabel($key, $issue['message'] ?? null);
-            }
-        });
-
-        return collect($labels)
-            ->map(fn (string $label, string $value) => ['value' => $value, 'label' => $label])
-            ->values()
-            ->all();
-    }
     private function getCachedIssueRows(?int $facultyId): Collection
     {
         $query = Mahasiswa::query()

@@ -7,24 +7,18 @@ namespace App\Notifications\Channels;
 use App\Models\KKN\DeviceToken;
 use App\Models\User;
 use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Kreait\Firebase\Contract\Messaging;
+use Kreait\Firebase\Messaging\CloudMessage;
+use Kreait\Firebase\Messaging\Notification as FcmNotification;
+use Kreait\Firebase\Exception\Messaging\NotFound;
+use Kreait\Firebase\Exception\Messaging\InvalidMessage;
 
 /**
- * FCM (Firebase Cloud Messaging) notification channel.
+ * FCM (Firebase Cloud Messaging) notification channel — v2 (HTTP v1 API).
  *
- * Dispatches a push payload to every registered device token for the
- * notifiable user. The payload is produced by the notification class's
- * `toFcm($notifiable): array` method (title, body, data, click_action).
- *
- * Behavior:
- *   - No-op when the user has disabled push via notification preferences.
- *   - No-op when FCM_SERVER_KEY is not configured (development or
- *     deployments without Firebase). Logs a single debug line per call.
- *   - Invalid tokens (FCM `NotRegistered` or `InvalidRegistration` result)
- *     are deleted from `device_tokens` so we stop trying them.
- *   - Network errors are logged but never rethrown — push failures must
- *     NOT break the fire-and-forget notification pipeline.
+ * Uses kreait/laravel-firebase Admin SDK for modern FCM HTTP v1 API.
+ * Falls back to legacy endpoint if Firebase credentials not configured.
  *
  * Usage in a Notification class:
  *   public function via($notifiable): array
@@ -36,43 +30,36 @@ use Illuminate\Support\Facades\Log;
  *       return [
  *           'title' => 'Laporan disetujui',
  *           'body'  => 'Laporan harian tanggal X telah disetujui oleh DPL.',
- *           'data'  => ['kkn_report_id' => 42],
+ *           'data'  => ['kkn_report_id' => '42'],
  *           'click_action' => '/mahasiswa/laporan-harian',
  *       ];
  *   }
  */
 class FcmChannel
 {
-    private const FCM_LEGACY_ENDPOINT = 'https://fcm.googleapis.com/fcm/send';
+    public function __construct(
+        private readonly ?Messaging $messaging = null,
+    ) {}
 
     public function send(mixed $notifiable, Notification $notification): void
     {
-        // Preference gate — single source of truth across channels.
-        if ($notifiable instanceof User && ! $notifiable->wantsNotificationVia('push')) {
+        // Preference gate
+        if ($notifiable instanceof User && !$notifiable->wantsNotificationVia('push')) {
             return;
         }
 
-        $serverKey = (string) config('services.fcm.server_key', '');
-        if ($serverKey === '') {
-            Log::debug('[FcmChannel] Skipping — FCM_SERVER_KEY not configured');
-
-            return;
-        }
-
-        if (! method_exists($notification, 'toFcm')) {
+        if (!method_exists($notification, 'toFcm')) {
             Log::warning('[FcmChannel] Notification class has no toFcm() method', [
                 'notification' => $notification::class,
             ]);
-
             return;
         }
 
         $payload = $notification->toFcm($notifiable);
-        if (! is_array($payload) || empty($payload['title'])) {
+        if (!is_array($payload) || empty($payload['title'])) {
             Log::warning('[FcmChannel] toFcm() returned invalid payload', [
                 'notification' => $notification::class,
             ]);
-
             return;
         }
 
@@ -85,13 +72,113 @@ class FcmChannel
             return;
         }
 
-        // FCM's multicast endpoint — up to 1000 tokens per request.
-        // For SIBERMAS users this is always <10.
+        // Use Firebase Admin SDK if available
+        if ($this->messaging) {
+            $this->sendViaAdminSdk($tokens, $payload, $notification);
+        } else {
+            // Fallback to legacy API
+            $this->sendViaLegacy($tokens, $payload, $notifiable, $notification);
+        }
+    }
+
+    /**
+     * Send via Firebase Admin SDK (HTTP v1 API) — recommended.
+     */
+    private function sendViaAdminSdk(array $tokens, array $payload, Notification $notification): void
+    {
         try {
-            $response = Http::withHeaders([
-                'Authorization' => 'key='.$serverKey,
+            $fcmNotification = FcmNotification::create(
+                $payload['title'],
+                $payload['body'] ?? '',
+            );
+
+            $data = array_map('strval', $payload['data'] ?? []);
+            if (!empty($payload['click_action'])) {
+                $data['click_action'] = $payload['click_action'];
+            }
+
+            $message = CloudMessage::new()
+                ->withNotification($fcmNotification)
+                ->withData($data);
+
+            // Android config — high priority for immediate delivery
+            $message = $message->withAndroidConfig([
+                'priority' => 'high',
+                'notification' => [
+                    'channel_id' => 'sibermas_default',
+                    'click_action' => $payload['click_action'] ?? 'FLUTTER_NOTIFICATION_CLICK',
+                ],
+            ]);
+
+            // APNs config for iOS
+            $message = $message->withApnsConfig([
+                'payload' => [
+                    'aps' => [
+                        'alert' => [
+                            'title' => $payload['title'],
+                            'body' => $payload['body'] ?? '',
+                        ],
+                        'sound' => 'default',
+                        'badge' => 1,
+                    ],
+                ],
+            ]);
+
+            // Web push config
+            if (!empty($payload['click_action'])) {
+                $message = $message->withWebPushConfig([
+                    'fcm_options' => [
+                        'link' => $payload['click_action'],
+                    ],
+                ]);
+            }
+
+            $report = $this->messaging->sendMulticast($message, $tokens);
+
+            // Clean up invalid tokens
+            if ($report->hasFailures()) {
+                foreach ($report->failures()->getItems() as $failure) {
+                    $error = $failure->error();
+                    if ($error instanceof NotFound || $error instanceof InvalidMessage) {
+                        $token = $failure->target()->value();
+                        DeviceToken::where('token', $token)->delete();
+                        Log::debug('[FcmChannel] Removed invalid token', ['token' => substr($token, 0, 20) . '...']);
+                    }
+                }
+            }
+
+            $successCount = $report->successes()->count();
+            if ($successCount > 0) {
+                Log::debug('[FcmChannel] Sent via Admin SDK', [
+                    'success' => $successCount,
+                    'failures' => $report->failures()->count(),
+                    'notification' => $notification::class,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            Log::warning('[FcmChannel] Admin SDK dispatch failed', [
+                'error' => $e->getMessage(),
+                'notification' => $notification::class,
+            ]);
+        }
+    }
+
+    /**
+     * Fallback: Legacy FCM API (deprecated but still works).
+     */
+    private function sendViaLegacy(array $tokens, array $payload, mixed $notifiable, Notification $notification): void
+    {
+        $serverKey = (string) config('services.fcm.server_key', '');
+        if ($serverKey === '') {
+            Log::debug('[FcmChannel] Skipping — neither Firebase credentials nor FCM_SERVER_KEY configured');
+            return;
+        }
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'Authorization' => 'key=' . $serverKey,
                 'Content-Type' => 'application/json',
-            ])->timeout(10)->post(self::FCM_LEGACY_ENDPOINT, [
+            ])->timeout(10)->post('https://fcm.googleapis.com/fcm/send', [
                 'registration_ids' => $tokens,
                 'notification' => [
                     'title' => $payload['title'],
@@ -101,28 +188,25 @@ class FcmChannel
                 'data' => $payload['data'] ?? [],
             ]);
 
-            if (! $response->successful()) {
-                Log::warning('[FcmChannel] FCM returned non-2xx', [
+            if (!$response->successful()) {
+                Log::warning('[FcmChannel] Legacy FCM returned non-2xx', [
                     'status' => $response->status(),
-                    'body' => substr($response->body(), 0, 500),
                 ]);
-
                 return;
             }
 
-            // Clean up invalid tokens.
+            // Clean up invalid tokens
             $body = $response->json();
-            if (! isset($body['results']) || ! is_array($body['results'])) {
-                return;
-            }
-            foreach ($body['results'] as $i => $result) {
-                $error = $result['error'] ?? null;
-                if (in_array($error, ['NotRegistered', 'InvalidRegistration'], true)) {
-                    DeviceToken::where('token', $tokens[$i] ?? null)->delete();
+            if (isset($body['results']) && is_array($body['results'])) {
+                foreach ($body['results'] as $i => $result) {
+                    $error = $result['error'] ?? null;
+                    if (in_array($error, ['NotRegistered', 'InvalidRegistration'], true)) {
+                        DeviceToken::where('token', $tokens[$i] ?? null)->delete();
+                    }
                 }
             }
         } catch (\Throwable $e) {
-            Log::warning('[FcmChannel] Dispatch failed', [
+            Log::warning('[FcmChannel] Legacy dispatch failed', [
                 'error' => $e->getMessage(),
                 'notification' => $notification::class,
             ]);

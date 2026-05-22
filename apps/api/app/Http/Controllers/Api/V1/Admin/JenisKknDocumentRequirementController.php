@@ -12,7 +12,6 @@ use App\Models\KKN\JenisKknDocumentRequirement;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use Illuminate\Support\Facades\DB;
 
 class JenisKknDocumentRequirementController extends Controller
 {
@@ -68,7 +67,7 @@ class JenisKknDocumentRequirementController extends Controller
 
         $requirement->load('defaultTemplate');
 
-        return $this->created(['requirement' => $this->serialize($requirement)], 'Dokumen tambahan berhasil ditambahkan.');
+        return $this->created(['requirement' => $this->serialize($requirement)], 'Requirement dokumen berhasil ditambahkan.');
     }
 
     public function update(Request $request, JenisKkn $jenisKkn, JenisKknDocumentRequirement $requirement): JsonResponse
@@ -107,19 +106,15 @@ class JenisKknDocumentRequirementController extends Controller
         $requirement->update($validated);
         $requirement->load('defaultTemplate');
 
-        return $this->success(['requirement' => $this->serialize($requirement)], 'Dokumen tambahan berhasil diperbarui.');
+        return $this->success(['requirement' => $this->serialize($requirement)], 'Requirement dokumen berhasil diperbarui.');
     }
 
     public function destroy(JenisKkn $jenisKkn, JenisKknDocumentRequirement $requirement): JsonResponse
     {
         abort_if($requirement->jenis_kkn_id !== $jenisKkn->id, 404);
+        $requirement->delete();
 
-        DB::transaction(function () use ($requirement): void {
-            $requirement->periodTemplates()->delete();
-            $requirement->delete();
-        });
-
-        return $this->success(null, 'Dokumen tambahan berhasil dihapus.');
+        return $this->noContent('Requirement dokumen berhasil dihapus.');
     }
 
     private function createTemplateFromUpload($file, string $documentKey, string $label): int

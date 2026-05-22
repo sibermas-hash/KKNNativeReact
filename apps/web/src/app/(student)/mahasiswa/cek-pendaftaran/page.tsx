@@ -31,7 +31,6 @@ type Registration = {
   kelompok: { id: number; nama_kelompok: string; code?: string; location?: { full_name?: string } } | null;
   dokumen?: UploadedDoc[];
   document_summary?: { required_count?: number; uploaded_count?: number; missing_labels?: string[]; flags?: Record<string, boolean> };
-  requires_interview?: boolean;
 };
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string; icon: typeof Clock }> = {
@@ -62,12 +61,11 @@ function RegistrationCard({ reg, onCancel, isCancelling }: { reg: Registration; 
   const isPending = reg.status === 'pending';
   const isDocSubmitted = reg.status === 'document_submitted';
   const isApproved = reg.status === 'approved';
-  const requiresInterview = reg.requires_interview === true;
   const canResubmit = isRejected;
   const canCancel = (isPending || isDocSubmitted) && !reg.kelompok_id;
 
   return (
-    <div className="overflow-hidden rounded-xl sm:rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+    <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
       {/* Status Header */}
       <div className={`px-6 py-4 ${isApproved ? 'bg-emerald-50' : isRejected ? 'bg-rose-50' : 'bg-slate-50'}`}>
         <div className="flex items-center justify-between">
@@ -122,21 +120,6 @@ function RegistrationCard({ reg, onCancel, isCancelling }: { reg: Registration; 
           </div>
         )}
 
-        {/* Interview Notice */}
-        {requiresInterview && (isPending || isDocSubmitted || isApproved) && (
-          <div className="rounded-xl bg-blue-50 p-4 ring-1 ring-blue-100">
-            <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-blue-700">
-              <Calendar size={12} /> Program ini memiliki tahap wawancara
-            </p>
-            <p className="mt-1 text-sm font-semibold text-blue-900">
-              Pendaftaran Anda masuk alur seleksi wawancara. Jadwal wawancara akan diinformasikan oleh panitia.
-            </p>
-            <p className="mt-1 text-xs text-blue-700">
-              Pantau halaman ini secara berkala. Setelah jadwal dibuat, informasi tanggal, jam, dan lokasi/link akan ditampilkan di sini.
-            </p>
-          </div>
-        )}
-
         {/* Pending/DocSubmitted Info */}
         {(isPending || isDocSubmitted) && (
           <div className="rounded-xl bg-amber-50 p-4 ring-1 ring-amber-100">
@@ -177,7 +160,7 @@ function RegistrationCard({ reg, onCancel, isCancelling }: { reg: Registration; 
               <CheckCircle2 size={12} /> Pendaftaran Disetujui
             </p>
             <p className="mt-1 text-sm text-emerald-800">
-              Selamat! Pendaftaran KKN Anda telah disetujui. {requiresInterview ? 'Tahap berikutnya adalah menunggu jadwal/hasil wawancara dari panitia.' : (reg.kelompok ? 'Anda sudah ditempatkan di kelompok.' : 'Penempatan kelompok akan segera diproses.')}
+              Selamat! Pendaftaran KKN Anda telah disetujui. {reg.kelompok ? 'Anda sudah ditempatkan di kelompok.' : 'Penempatan kelompok akan segera diproses.'}
             </p>
           </div>
         )}
@@ -251,7 +234,7 @@ export default function RegistrationStatusPage(): React.JSX.Element {
   const registrations = ((data as unknown as { registrations?: Registration[] })?.registrations as Registration[]) || [];
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4 sm:space-y-6 px-3 sm:px-4 py-4 sm:py-8 pb-24 sm:pb-8">
+    <div className="mx-auto max-w-3xl space-y-6 px-4 py-8">
       {/* Header */}
       <div className="flex items-center gap-4">
         <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-teal-600 text-white shadow-lg">

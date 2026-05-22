@@ -204,6 +204,22 @@ return [
         ],
     ],
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | AI Router (Legacy env compatibility)
+    |--------------------------------------------------------------------------
+    |
+    | Maps AI_ROUTER_* env vars into config so they work with config:cache.
+    | AiHealthController and AvatarValidationService reference these.
+    |
+    */
+    'router' => [
+        'url' => env('AI_ROUTER_URL', env('AI_PRIMARY_URL', 'https://router.rizquna.id/v1')),
+        'key' => env('AI_ROUTER_KEY', env('AI_PRIMARY_KEY', env('RIZQUNA_API_KEY'))),
+        'models' => env('AI_ROUTER_MODELS', env('AI_PRIMARY_MODEL', 'ag/gemini-3-flash')),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Task-Specific Model Routing

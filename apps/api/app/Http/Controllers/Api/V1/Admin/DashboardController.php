@@ -17,6 +17,7 @@ use App\Services\PeriodContextService;
 use App\Services\RedisCacheService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class DashboardController extends Controller
@@ -114,7 +115,10 @@ class DashboardController extends Controller
         $facultyId = $user?->hasRole('faculty_admin') ? $user->fakultas_id : null;
         $phase = $period->current_phase ?? 'upcoming';
 
-        return match ($phase) {
+        $cacheKey = "phase_context_{$periodId}_{$phase}_".($facultyId ?? 'all');
+
+        return Cache::remember($cacheKey, 300, function () use ($phase, $periodId, $facultyId) {
+            return match ($phase) {
                 'upcoming' => [
                     'hint' => 'Periode siap dimulai. Klik "Buka Pendaftaran" untuk membuka portal mahasiswa.',
                     'actions' => [
@@ -133,8 +137,9 @@ class DashboardController extends Controller
                         ['label' => 'Ekspor Data', 'route' => 'admin.pendaftaran.index', 'color' => 'blue'],
                     ],
                 ],
-            default => ['hint' => 'Fase tidak dikenali.'],
-        };
+                default => ['hint' => 'Fase tidak dikenali.'],
+            };
+        });
     }
 
     private function registrationContext(int $periodId, ?int $facultyId): array

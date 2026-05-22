@@ -17,8 +17,8 @@ const PHASE_INFO: Record<string, { label: string; icon: React.ElementType; color
 
 function PhaseBlockedContent() {
   const params = useSearchParams();
-  const message = params.get('message') ?? 'Fitur ini belum tersedia pada fase KKN saat ini.';
-  const currentPhase = params.get('phase') ?? 'inactive';
+  const message = params?.get('message') ?? 'Fitur ini belum tersedia pada fase KKN saat ini.';
+  const currentPhase = params?.get('phase') ?? 'inactive';
 
   const info = PHASE_INFO[currentPhase] ?? PHASE_INFO.inactive;
   const PhaseIcon = info.icon;

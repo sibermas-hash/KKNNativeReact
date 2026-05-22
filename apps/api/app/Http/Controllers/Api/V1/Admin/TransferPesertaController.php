@@ -1,0 +1,92 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Api\V1\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Http\Traits\ApiResponse;
+use App\Models\KKN\PesertaKkn;
+use App\Models\KKN\Periode;
+use App\Services\AuditService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class TransferPesertaController extends Controller
+{
+    use ApiResponse;
+
+    /**
+     * List peserta yang bisa di-transfer (interview_failed, atau admin mau pindah manual).
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $query = PesertaKkn::with(['mahasiswa.prodi', 'mahasiswa.fakultas', 'periode.jenisKkn'])
+            ->where('status', 'interview_failed')
+            ->when($request->input('angkatan'), fn ($q, $a) => $q->whereHas('periode', fn ($p) => $p->where('periode', $a)))
+            ->when($request->input('search'), function ($q, $search) {
+                $q->whereHas('mahasiswa', fn ($m) => $m->where('nim', 'ilike', "%{$search}%")->orWhere('nama', 'ilike', "%{$search}%"));
+            })
+            ->orderBy('id');
+
+        return $this->success(['data' => $query->get()]);
+    }
+
+    /**
+     * Available periodes for transfer (non-interview jenis KKN in same angkatan).
+     */
+    public function periodes(Request $request): JsonResponse
+    {
+        $angkatan = $request->input('angkatan', 58);
+
+        $periodes = Periode::with('jenisKkn')
+            ->where('periode', $angkatan)
+            ->whereHas('jenisKkn', fn ($q) => $q->where('requires_interview', false))
+            ->get();
+
+        return $this->success(['data' => $periodes]);
+    }
+
+    /**
+     * Transfer peserta to another jenis KKN (different periode_id).
+     */
+    public function transfer(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'peserta_kkn_id' => 'required|integer|exists:peserta_kkn,id',
+            'target_periode_id' => 'required|integer|exists:periode,id',
+        ]);
+
+        $peserta = PesertaKkn::with(['mahasiswa', 'periode.jenisKkn'])->findOrFail($validated['peserta_kkn_id']);
+        $targetPeriode = Periode::with('jenisKkn')->findOrFail($validated['target_periode_id']);
+
+        // Validate target periode doesn't require interview
+        if ($targetPeriode->jenisKkn?->requires_interview) {
+            return $this->error('Tidak dapat memindahkan ke jenis KKN yang memerlukan wawancara.', 422);
+        }
+
+        // Validate same angkatan
+        if ($peserta->periode?->periode !== $targetPeriode->periode) {
+            return $this->error('Periode tujuan harus dalam angkatan yang sama.', 422);
+        }
+
+        DB::transaction(function () use ($peserta, $targetPeriode) {
+            $oldPeriode = $peserta->periode;
+
+            $peserta->update([
+                'periode_id' => $targetPeriode->id,
+                'status' => 'approved',
+                'kelompok_id' => null,
+            ]);
+
+            AuditService::log(
+                'PESERTA_TRANSFER',
+                "Peserta dipindahkan dari {$oldPeriode?->jenisKkn?->name} ke {$targetPeriode->jenisKkn?->name}",
+                $peserta
+            );
+        });
+
+        return $this->success($peserta->fresh()->load(['mahasiswa', 'periode.jenisKkn']), 'Peserta berhasil dipindahkan.');
+    }
+}

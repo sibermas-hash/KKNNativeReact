@@ -107,11 +107,10 @@ class RegistrationDocumentService
             $legacyPath = $this->legacyDocumentPath($mahasiswa, (string) $requirement['field']);
 
             $filePath = $documentRow?->file_path ?? $legacyPath;
-            $fileExists = filled($filePath) && Storage::disk(config('filesystems.default'))->exists($filePath);
             $existing[(string) $requirement['field']] = [
-                'exists' => $fileExists,
-                'file_name' => $fileExists ? ($documentRow?->file_name ?? ($legacyPath ? basename($legacyPath) : null)) : null,
-                'file_path' => $fileExists ? $filePath : null,
+                'exists' => filled($filePath),
+                'file_name' => $documentRow?->file_name ?? ($legacyPath ? basename($legacyPath) : null),
+                'file_path' => $filePath,
                 'status' => $documentRow?->status,
             ];
         }

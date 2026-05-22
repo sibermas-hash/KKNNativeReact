@@ -11,8 +11,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class PesertaKknResource extends JsonResource
 {
-    /** @var array<int, array<int, array<string, mixed>>> */
-    private static array $requirementsCache = [];
     public function toArray(Request $request): array
     {
         $documentPayload = $this->buildDocumentPayload();
@@ -27,9 +25,6 @@ class PesertaKknResource extends JsonResource
             'notes' => $this->notes,
             'rejection_reason' => $this->rejection_reason,
             'registration_date' => $this->registration_date?->toIso8601String(),
-            'created_at' => $this->created_at?->toIso8601String(),
-            'updated_at' => $this->updated_at?->toIso8601String(),
-            'first_uploaded_at' => $this->first_uploaded_at ? (is_string($this->first_uploaded_at) ? $this->first_uploaded_at : $this->first_uploaded_at?->toIso8601String()) : null,
             'approved_at' => $this->approved_at?->toIso8601String(),
             'revision_count' => $this->revision_count,
             'joined_group_at' => $this->joined_group_at?->toIso8601String(),
@@ -51,12 +46,9 @@ class PesertaKknResource extends JsonResource
             return null;
         }
 
-        $periodId = (int) ($this->periode?->id ?? 0);
-        if (! isset(self::$requirementsCache[$periodId])) {
-            self::$requirementsCache[$periodId] = app(RegistrationDocumentService::class)->requirementsForPeriod($this->periode);
-        }
-        $requirements = self::$requirementsCache[$periodId];
-        $existingDocuments = []; // performance: avoid per-row Storage::exists() during admin list
+        $documentService = app(RegistrationDocumentService::class);
+        $requirements = $documentService->requirementsForPeriod($this->periode);
+        $existingDocuments = $documentService->existingDocuments($this->mahasiswa, $this->periode, $this->resource);
         $uploadedDocuments = $this->dokumen->keyBy('document_type');
         $documents = [];
         $seenTypes = [];
@@ -97,6 +89,7 @@ class PesertaKknResource extends JsonResource
                 'required' => (bool) ($requirement['required'] ?? false),
                 'uploaded' => (bool) ($document instanceof DokumenPesertaKkn || (($existing['exists'] ?? false) === true)),
                 'file_name' => $document?->file_name ?? ($existing['file_name'] ?? null),
+                'file_path' => $document?->file_path ?? ($existing['file_path'] ?? null),
                 'is_verified' => (bool) ($document?->is_verified ?? false),
             ];
         })->values();

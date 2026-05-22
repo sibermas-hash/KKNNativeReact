@@ -158,10 +158,10 @@ class AvatarValidationService
             ],
         ];
 
-        $routerUrl = env('AI_ROUTER_URL', config('ai.failover.primary.url', 'https://router.rizquna.id/v1'));
+        $routerUrl = config('ai.router.url', 'https://router.rizquna.id/v1');
         $routerModels = $this->routerModelPool();
         $routerKeys = array_values(array_filter(array_unique([
-            env('AI_ROUTER_KEY'),
+            config('ai.router.key', ''),
             config('ai.failover.primary.key'),
             config('ai.failover.fallback.key'),
             config('ai.failover.tertiary.key'),
@@ -187,11 +187,67 @@ class AvatarValidationService
     /** @return array<int, string> */
     private function routerModelPool(): array
     {
-        $raw = env('AI_ROUTER_MODELS')
+        $configuredRaw = config('ai.router.models', '')
             ?: SystemSetting::get('ai_router_models')
-            ?: 'gc/gemini-3.1-flash-preview,gc/gemini-3-flash-preview,gc/gemini-2.5-flash,gc/gemini-2.5-flash-preview,gc/gemini-3.1-pro-preview,gc/gemini-3-pro-preview,gc/gemini-2.5-pro';
+            ?: 'gc/gemini-3-flash-preview,gc/gemini-3-pro-preview';
+        $configured = array_values(array_filter(array_map('trim', explode(',', (string) $configuredRaw))));
 
-        return array_values(array_filter(array_map('trim', explode(',', (string) $raw))));
+        $discovered = $this->discoverRouterModels();
+        if ($discovered === []) {
+            return $configured;
+        }
+
+        $preferred = [
+            'gc/gemini-3-flash-preview',
+            'gc/gemini-3-pro-preview',
+        ];
+
+        $ordered = [];
+        foreach (array_merge($configured, $preferred, $discovered) as $model) {
+            if (in_array($model, $discovered, true) && ! in_array($model, $ordered, true)) {
+                $ordered[] = $model;
+            }
+        }
+
+        return $ordered;
+    }
+
+    /** @return array<int, string> */
+    private function discoverRouterModels(): array
+    {
+        $cacheKey = 'avatar_ai_router_available_models';
+        $cached = Cache::get($cacheKey);
+        if (is_array($cached)) {
+            return $cached;
+        }
+
+        $url = rtrim((string) config('ai.router.url', ''), '/');
+        $key = (string) config('ai.router.key', config('ai.failover.primary.key', ''));
+        if ($url === '' || $key === '') {
+            return [];
+        }
+
+        try {
+            $response = Http::withToken($key)->acceptJson()->timeout(10)->get($url.'/models');
+            if (! $response->successful()) {
+                Log::warning('AI router model discovery failed: HTTP '.$response->status().' '.$response->body());
+                Cache::put($cacheKey, [], now()->addMinutes(2));
+                return [];
+            }
+
+            $models = collect($response->json('data', []))
+                ->pluck('id')
+                ->filter(fn ($id) => is_string($id) && str_contains($id, 'gemini'))
+                ->values()
+                ->all();
+
+            Cache::put($cacheKey, $models, now()->addMinutes(10));
+            return $models;
+        } catch (\Throwable $e) {
+            Log::warning('AI router model discovery exception: '.$e->getMessage());
+            Cache::put($cacheKey, [], now()->addMinutes(2));
+            return [];
+        }
     }
 
     /** @param array<int, array<string, mixed>> $tiers */

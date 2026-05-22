@@ -31,7 +31,7 @@ const ROLE_LABELS: Record<string, string> = {
   dpl: 'DPL',
   admin: 'Admin',
   faculty_admin: 'Faculty Admin',
-  admin: 'Superadmin',
+  superadmin: 'Superadmin',
 };
 
 const ACTION_LABELS: Record<string, string> = {

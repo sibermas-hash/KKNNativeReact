@@ -2,12 +2,12 @@
 
 import { useState, useMemo } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import { api } from '@/lib/api';
+import { rawApi } from '@/lib/api';
 import { PageHeader } from '@/components/ui/shared';
 import {
   Users, CheckCircle2, XCircle, Search, Download, ChevronLeft, ChevronRight,
   Filter, BarChart3, AlertTriangle, ChevronDown, ChevronUp, GraduationCap,
-  Building2, Percent, FileSpreadsheet, ShieldCheck, ShieldX
+  Building2, Percent, FileSpreadsheet, ShieldCheck
 } from 'lucide-react';
 
 type Check = { passed: boolean; key: string; message: string; dispensasi?: boolean };
@@ -18,16 +18,18 @@ type Student = {
   sks_completed?: number; gpa?: number;
   is_bta_ppi_passed?: boolean; has_health_certificate?: boolean; has_parent_permission?: boolean;
   checks?: Record<string, Check>; is_eligible: boolean;
+  registration_status?: string;
   issues?: Check[]; issue_count?: number; has_dispensasi?: boolean;
 };
-type Stats = { total: number; eligible_count: number; not_eligible_count: number; eligibility_rate: number };
+type Stats = { total: number; eligible_count: number; not_eligible_count: number; eligibility_rate: number; registered_count?: number; not_registered_count?: number };
 type Pagination = { current_page: number; per_page: number; total: number; last_page: number };
 type ApiRes = { data?: { students?: Student[]; pagination?: Pagination; stats?: Stats; issue_filters?: IssueOption[] } };
 
 export default function AuditKualifikasiPage(): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [showEligible, setShowEligible] = useState(true);
+  const showEligible = true;
+  const [regFilter, setRegFilter] = useState('');
   const [page, setPage] = useState(1);
   const [facultyId, setFacultyId] = useState<number | null>(null);
   const [issueFilter, setIssueFilter] = useState('');
@@ -47,26 +49,28 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
   const { data: faculties } = useQuery<{ id: number; nama: string }[]>({
     queryKey: ['admin', 'fakultas-list'],
     queryFn: async () => {
-      const res = await api.get('/admin/fakultas');
-      const d = res as unknown as Record<string, unknown>;
-      return (Array.isArray(d) ? d : Array.isArray((d.data as Record<string, unknown>)?.data) ? (d.data as Record<string, unknown>).data : d.data) as { id: number; nama: string }[];
+      const res = await rawApi.get('/admin/fakultas?per_page=100');
+      const body = res.data as { data?: unknown };
+      const inner = body.data as { data?: { id: number; nama: string }[] } | { id: number; nama: string }[];
+      return (Array.isArray(inner) ? inner : (inner as { data?: { id: number; nama: string }[] }).data ?? []) as { id: number; nama: string }[];
     },
     staleTime: 60000,
   });
 
   // Main query
   const { data: raw, isLoading, isFetching } = useQuery<ApiRes>({
-    queryKey: ['admin', 'audit-kualifikasi', { search: debouncedSearch, showEligible, page, facultyId, issueFilter }],
+    queryKey: ['admin', 'audit-kualifikasi', { search: debouncedSearch, page, facultyId, issueFilter, regFilter }],
     queryFn: async () => {
-      return await api.get('/admin/audit-kualifikasi', {
-        params: {
-          search: debouncedSearch || undefined,
-          show_eligible: showEligible,
-          page,
-          faculty_id: facultyId || undefined,
-          issue: issueFilter || undefined,
-        },
-      }) as unknown as ApiRes;
+      const params = new URLSearchParams();
+      if (debouncedSearch) params.set('search', debouncedSearch);
+      params.set('show_eligible', String(showEligible));
+      params.set('page', String(page));
+      if (facultyId) params.set('faculty_id', String(facultyId));
+      if (issueFilter) params.set('issue', issueFilter);
+      if (regFilter) params.set('registration_status', regFilter);
+      const res = await rawApi.get(`/admin/audit-kualifikasi?${params}`);
+      const body = (res.data as { data?: unknown }).data ?? res.data;
+      return { data: body } as ApiRes;
     },
     placeholderData: keepPreviousData,
   });
@@ -81,16 +85,14 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      const res = await api.get('/admin/audit-kualifikasi/export', {
-        params: {
-          faculty_id: facultyId || undefined,
-          search: debouncedSearch || undefined,
-          show_eligible: showEligible,
-          issue: issueFilter || undefined,
-        },
-        responseType: 'blob',
-      });
-      const blob = new Blob([res as unknown as BlobPart], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const params = new URLSearchParams();
+      if (facultyId) params.set('faculty_id', String(facultyId));
+      if (debouncedSearch) params.set('search', debouncedSearch);
+      params.set('show_eligible', String(showEligible));
+      if (issueFilter) params.set('issue', issueFilter);
+      if (regFilter) params.set('registration_status', regFilter);
+      const res = await rawApi.get(`/admin/audit-kualifikasi/export?${params}`, { responseType: 'blob' });
+      const blob = new Blob([res.data as BlobPart], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -131,8 +133,22 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
     <div className="space-y-6">
       <PageHeader
         title="Audit Kualifikasi"
-        subtitle="Periksa kelayakan mahasiswa untuk mengikuti KKN berdasarkan persyaratan akademik dan administratif."
+        subtitle="Pemeriksaan otomatis kelayakan mahasiswa untuk pendaftaran KKN"
       />
+
+      <div className="rounded-3xl bg-gradient-to-br from-cyan-950 via-cyan-800 to-emerald-700 p-6 text-white shadow-sm">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-100">Audit Kualifikasi KKN</p>
+            <h2 className="mt-2 text-3xl font-black tracking-tight">{stats.eligible_count.toLocaleString('id-ID')} Mahasiswa Eligible</h2>
+            <p className="mt-2 max-w-2xl text-sm text-cyan-50">Pantau syarat akademik, BTA-PPI, UKT, status pendaftaran, dan alasan tidak eligible dalam satu layar.</p>
+          </div>
+          <div className="rounded-2xl bg-white/10 px-4 py-3 ring-1 ring-white/15">
+            <p className="text-[10px] font-black uppercase tracking-wider text-cyan-100">Tingkat Kelayakan</p>
+            <p className="text-2xl font-black">{rate.toFixed(1)}%</p>
+          </div>
+        </div>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -140,7 +156,7 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
           <div className="flex items-center gap-3">
             <div className="rounded-xl bg-slate-100 p-2.5"><Users className="h-5 w-5 text-slate-600" /></div>
             <div>
-              <p className="text-xs font-medium text-slate-500">Total Mahasiswa</p>
+              <p className="text-xs font-medium text-slate-500">Total Diperiksa</p>
               <p className="text-2xl font-bold text-slate-900">{stats.total.toLocaleString('id-ID')}</p>
             </div>
           </div>
@@ -149,64 +165,40 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
           <div className="flex items-center gap-3">
             <div className="rounded-xl bg-emerald-50 p-2.5"><ShieldCheck className="h-5 w-5 text-emerald-600" /></div>
             <div>
-              <p className="text-xs font-medium text-slate-500">Eligible</p>
+              <p className="text-xs font-medium text-slate-500">Boleh Daftar KKN</p>
               <p className="text-2xl font-bold text-emerald-600">{stats.eligible_count.toLocaleString('id-ID')}</p>
             </div>
           </div>
         </div>
+
         <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-red-50 p-2.5"><ShieldX className="h-5 w-5 text-red-500" /></div>
+            <div className="rounded-xl bg-cyan-50 p-2.5"><GraduationCap className="h-5 w-5 text-cyan-600" /></div>
             <div>
-              <p className="text-xs font-medium text-slate-500">Tidak Eligible</p>
-              <p className="text-2xl font-bold text-red-500">{stats.not_eligible_count.toLocaleString('id-ID')}</p>
+              <p className="text-xs font-medium text-slate-500">Sudah Mendaftar</p>
+              <p className="text-2xl font-bold text-cyan-600">{(stats.registered_count ?? 0).toLocaleString('id-ID')}</p>
             </div>
           </div>
         </div>
         <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
           <div className="flex items-center gap-3">
-            <div className="rounded-xl bg-blue-50 p-2.5"><Percent className="h-5 w-5 text-blue-600" /></div>
+            <div className="rounded-xl bg-amber-50 p-2.5"><AlertTriangle className="h-5 w-5 text-amber-600" /></div>
             <div>
-              <p className="text-xs font-medium text-slate-500">Tingkat Kelayakan</p>
-              <p className={`text-2xl font-bold ${rateColor}`}>{rate}%</p>
+              <p className="text-xs font-medium text-slate-500">Belum Mendaftar</p>
+              <p className="text-2xl font-bold text-amber-600">{(stats.not_registered_count ?? 0).toLocaleString('id-ID')}</p>
             </div>
-          </div>
-          <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-100">
-            <div className={`h-full rounded-full transition-all duration-500 ${barColor}`} style={{ width: `${rate}%` }} />
           </div>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-        <div className="flex items-start gap-2"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><div><b>Formula audit:</b> Audit ini menghitung syarat akademik dan syarat khusus jenis KKN dari cache eligibility terbaru. Dokumen pendaftaran diperiksa di tahap approval, bukan di halaman audit ini.</div></div>
+      <div className="rounded-2xl border border-cyan-100 bg-cyan-50 p-4 text-sm text-cyan-900">
+        <div className="flex items-start gap-2"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><div><b>Cara kerja:</b> Sistem memeriksa syarat akademik (SKS, IPK, semester, BTA-PPI, UKT) secara otomatis. Mahasiswa yang memenuhi semua syarat akan muncul di tab "Boleh Daftar". Dokumen fisik diperiksa saat proses approval pendaftaran.</div></div>
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+      <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex flex-wrap items-center gap-2">
-          {/* Tab toggle */}
-          <div className="inline-flex rounded-xl bg-slate-100 p-1">
-            <button
-              onClick={() => { setShowEligible(true); setPage(1); }}
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${showEligible ? 'bg-white text-emerald-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-            >
-              <CheckCircle2 className="h-3.5 w-3.5" />
-              Eligible
-              <span className={`rounded-full px-1.5 py-0.5 text-xs font-semibold ${showEligible ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-500'}`}>
-                {stats.eligible_count.toLocaleString('id-ID')}
-              </span>
-            </button>
-            <button
-              onClick={() => { setShowEligible(false); setPage(1); }}
-              className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all ${!showEligible ? 'bg-white text-red-700 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-            >
-              <XCircle className="h-3.5 w-3.5" />
-              Tidak Eligible
-              <span className={`rounded-full px-1.5 py-0.5 text-xs font-semibold ${!showEligible ? 'bg-red-100 text-red-700' : 'bg-slate-200 text-slate-500'}`}>
-                {stats.not_eligible_count.toLocaleString('id-ID')}
-              </span>
-            </button>
-          </div>
 
           {/* Faculty filter */}
           <div className="relative">
@@ -231,6 +223,19 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
               className="h-9 appearance-none rounded-lg border border-slate-200 bg-white pl-8 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600"
             >
               {issueOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </div>
+
+          <div className="relative">
+            <GraduationCap className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+            <select
+              value={regFilter}
+              onChange={(e) => { setRegFilter(e.target.value); setPage(1); }}
+              className="h-9 appearance-none rounded-lg border border-slate-200 bg-white pl-8 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600"
+            >
+              <option value="">Semua Status Pendaftaran</option>
+              <option value="registered">Sudah Mendaftar KKN</option>
+              <option value="not_registered">Belum Mendaftar KKN</option>
             </select>
           </div>
         </div>
@@ -258,6 +263,10 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
           </button>
         </div>
       </div>
+      {(debouncedSearch || facultyId || issueFilter || regFilter) && (
+        <button onClick={() => { setSearch(''); setDebouncedSearch(''); setFacultyId(null); setIssueFilter(''); setRegFilter(''); setPage(1); }} className="mt-3 rounded-xl border border-slate-200 px-3 py-2 text-xs font-black uppercase tracking-wider text-slate-500 hover:bg-slate-50">Reset Filter</button>
+      )}
+      </div>
 
       {/* Loading */}
       {isLoading ? (
@@ -275,6 +284,13 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
         <>
           {/* Table */}
           <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+            <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
+              <div>
+                <p className="text-xs font-black uppercase tracking-wider text-slate-500">Hasil Audit</p>
+                <p className="text-xs text-slate-400">Klik baris untuk melihat detail syarat</p>
+              </div>
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-black uppercase text-slate-500">{pagination.total.toLocaleString('id-ID')} data</span>
+            </div>
             {isFetching && (
               <div className="h-0.5 w-full overflow-hidden bg-slate-100">
                 <div className="h-full w-1/3 animate-pulse rounded-full bg-cyan-500" />

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Exports\PesertaKknFullExport;
-use App\Exports\PendaftarApprovedDokumentasiExport;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\PesertaKknResource;
 use App\Http\Traits\ApiResponse;
@@ -102,30 +101,6 @@ class PesertaKknController extends Controller
     }
 
     /**
-     * Correlated subquery for the earliest uploaded document per registration.
-     * We avoid relying on ORDER BY aliases because PostgreSQL can drop them on
-     * some generated queries, which breaks pagination and filtered list loads.
-     */
-    private function firstUploadedAtSubquery()
-    {
-        return DokumenPesertaKkn::query()
-            ->selectRaw('MIN(uploaded_at)')
-            ->whereColumn('peserta_kkn_id', 'peserta_kkn.id');
-    }
-
-    private function applyRegistrationSort($query, string $sort, string $direction): void
-    {
-        if ($sort === 'approved_at') {
-            $query->orderBy('approved_at', $direction);
-
-            return;
-        }
-
-        $subquery = $this->firstUploadedAtSubquery();
-        $query->orderByRaw("({$subquery->toSql()}) {$direction} nulls last", $subquery->getBindings());
-    }
-
-    /**
      * Check if current user can access a specific PesertaKkn record.
      */
     private function canAccessPeserta(PesertaKkn $pesertaKkn): bool
@@ -139,29 +114,32 @@ class PesertaKknController extends Controller
         return $pesertaKkn->mahasiswa?->fakultas_id === $facultyId;
     }
 
+
+    public function stats(): JsonResponse
+    {
+        $counts = \App\Models\KKN\PesertaKkn::query()
+            ->selectRaw("
+                COUNT(*) as total,
+                COUNT(*) FILTER (WHERE status = 'pending') as pending,
+                COUNT(*) FILTER (WHERE status = 'document_submitted') as document_submitted,
+                COUNT(*) FILTER (WHERE status = 'document_verified') as document_verified,
+                COUNT(*) FILTER (WHERE status = 'approved') as approved,
+                COUNT(*) FILTER (WHERE status = 'interview_scheduled') as interview_scheduled,
+                COUNT(*) FILTER (WHERE status = 'interview_passed') as interview_passed,
+                COUNT(*) FILTER (WHERE status = 'rejected') as rejected
+            ")
+            ->first();
+
+        return $this->success($counts);
+    }
+
     public function index(Request $request): JsonResponse
     {
         $format = strtolower((string) $request->input("format", "json"));
-        $sort = (string) $request->input('sort', 'first_uploaded_at');
-        $direction = strtolower((string) $request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
-        $normalizedSort = in_array($sort, ['first_uploaded_at', 'approved_at'], true) ? $sort : 'first_uploaded_at';
-        $normalizedDirection = $normalizedSort === $sort ? $direction : 'asc';
-        $firstUploadedAt = $this->firstUploadedAtSubquery();
         $query = PesertaKkn::with(['mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'kelompok', 'periode.jenisKkn', 'dokumen'])
-            ->select('peserta_kkn.*')
-            ->selectSub(clone $firstUploadedAt, 'first_uploaded_at')
-            ->when($request->input('status_group'), function ($q, $group) {
-                if ($group === 'processed') {
-                    $q->whereIn('status', ['approved', 'rejected', 'interview_scheduled']);
-                } elseif ($group === 'unprocessed') {
-                    $q->whereIn('status', ['pending', 'document_submitted', 'document_verified']);
-                }
-            })
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
             ->when($request->input('periode_id'), fn ($q, $id) => $q->where('periode_id', $id))
-            ->when($request->input('jenis_kkn_id'), fn ($q, $id) => $q->whereHas('periode', fn ($p) => $p->where('jenis_kkn_id', $id)))
-            ->when($request->input('fakultas_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $id)))
-            ->when($request->input('kelompok_id'), fn ($q, $id) => $q->where('kelompok_id', $id))
+            ->when($request->input('angkatan'), fn ($q, $a) => $q->whereHas('periode', fn ($p) => $p->where('periode', $a)))
             ->when($request->input('search'), function ($q, $s) {
                 // nim encrypted at rest — LIKE impossible; exact-NIM via bidx.
                 $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $s);
@@ -171,11 +149,10 @@ class PesertaKknController extends Controller
                         $q2->orWhere('nim_bidx', Mahasiswa::computeBlindIndex(trim($s)));
                     }
                 });
-            });
+            })
+            ->orderByDesc('created_at');
 
         $this->scopeByFaculty($query);
-        $this->applyRegistrationSort($query, $normalizedSort, $normalizedDirection);
-        $query->orderBy('created_at')->orderBy('id');
 
         return $this->successCollection(PesertaKknResource::collection($query->paginate(min((int) $request->input('per_page', 25), 100))));
     }
@@ -185,7 +162,7 @@ class PesertaKknController extends Controller
         if (! $this->canAccessPeserta($pesertaKkn)) {
             return $this->error('FORBIDDEN', 'Anda tidak memiliki akses ke data mahasiswa ini.', 403);
         }
-        $pesertaKkn->load(['mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'kelompok.lokasi', 'periode', 'dokumen']);
+        $pesertaKkn->load(['mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'kelompok.lokasi', 'periode.jenisKkn', 'dokumen']);
 
         return $this->success(new PesertaKknResource($pesertaKkn));
     }
@@ -368,79 +345,11 @@ class PesertaKknController extends Controller
         return $this->success(['rejected_count' => $count], "{$count} pendaftaran ditolak.");
     }
 
-    public function exportApprovedDokumentasi(Request $request): \Symfony\Component\HttpFoundation\BinaryFileResponse
-    {
-        $query = PesertaKkn::with([
-            'mahasiswa:id,user_id,nim,nama,fakultas_id,prodi_id,batch_year,semester,sks_completed,gpa,status_bta_ppi,status_aktif,phone',
-            'mahasiswa.user:id,email,phone',
-            'mahasiswa.fakultas:id,nama',
-            'mahasiswa.prodi:id,nama',
-            'periode:id,jenis_kkn_id,name,periode',
-            'periode.jenisKkn:id,name',
-            'approver:id,name,email',
-            'dokumen:id,peserta_kkn_id,status,is_verified,file_path,uploaded_at,verified_at',
-        ])
-            ->where('status', 'approved')
-            ->when($request->input('periode_id'), fn ($q, $v) => $q->where('periode_id', $v))
-            ->when($request->input('jenis_kkn_id'), fn ($q, $v) => $q->whereHas('periode', fn ($p) => $p->where('jenis_kkn_id', $v)))
-            ->when($request->input('fakultas_id'), fn ($q, $v) => $q->whereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $v)))
-            ->when($request->input('prodi_id'), fn ($q, $v) => $q->whereHas('mahasiswa', fn ($m) => $m->where('prodi_id', $v)))
-            ->orderByDesc('approved_at')
-            ->limit(min((int) $request->input('limit', 50000), 50000));
-
-        $this->scopeByFaculty($query);
-
-        $rows = $query->get()->values()->map(function (PesertaKkn $p, int $i) {
-            $docs = $p->dokumen ?? collect();
-            $uploaded = $docs->filter(fn ($d) => filled($d->file_path))->count();
-            $verified = $docs->filter(fn ($d) => (bool) $d->is_verified || $d->status === 'approved')->count();
-
-            return [
-                'no' => $i + 1,
-                'registration_id' => $p->id,
-                'nim' => $p->mahasiswa?->nim,
-                'nama' => $p->mahasiswa?->nama,
-                'email' => $p->mahasiswa?->user?->email,
-                'no_wa' => $p->mahasiswa?->phone ?? $p->mahasiswa?->user?->phone,
-                'fakultas' => $p->mahasiswa?->fakultas?->nama,
-                'prodi' => $p->mahasiswa?->prodi?->nama,
-                'angkatan' => $p->mahasiswa?->batch_year,
-                'semester' => $p->mahasiswa?->semester,
-                'sks' => $p->mahasiswa?->sks_completed,
-                'ipk' => $p->mahasiswa?->gpa,
-                'status_bta_ppi' => $p->mahasiswa?->status_bta_ppi,
-                'status_aktif' => $p->mahasiswa?->status_aktif,
-                'jenis_kkn' => $p->periode?->jenisKkn?->name,
-                'periode' => $p->periode?->name ?? $p->periode?->periode,
-                'status_pendaftaran' => $p->status,
-                'tanggal_daftar' => $p->registration_date?->toDateTimeString() ?? $p->created_at?->toDateTimeString(),
-                'tanggal_approve_dokumen' => $p->approved_at?->toDateTimeString(),
-                'approved_by' => $p->approver?->name ?? $p->approver?->email,
-                'catatan_approval' => $p->notes ?? $p->rejection_reason ?? null,
-                'dokumen_terunggah' => $uploaded,
-                'dokumen_wajib' => $docs->count(),
-                'dokumen_kurang' => max($docs->count() - $uploaded, 0),
-            ];
-        });
-
-        ActivityLogger::log('pii_export', 'success', $request->user()?->id, [
-            'export_type' => 'pendaftar_approved_dokumentasi_xlsx',
-            'filters' => $request->only(['periode_id', 'jenis_kkn_id', 'fakultas_id', 'prodi_id']),
-            'record_count' => count($rows),
-            'faculty_scope' => $this->getFacultyScope(),
-        ]);
-
-        return Excel::download(new PendaftarApprovedDokumentasiExport($rows), 'pendaftar-approved-dokumentasi-'.now()->format('Ymd-His').'.xlsx');
-    }
-
     public function export(Request $request): JsonResponse|\Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\Response
     {
-        $format = strtolower((string) $request->input("format", "json"));
-        $sort = (string) $request->input('sort', 'first_uploaded_at');
-        $direction = strtolower((string) $request->input('direction', 'asc')) === 'desc' ? 'desc' : 'asc';
         $query = PesertaKkn::with([
             "mahasiswa:id,user_id,nim,nama,fakultas_id,prodi_id,batch_year,gender,birth_place,birth_date,sks_completed,gpa,status_bta_ppi,semester,nik,mother_name,shirt_size,is_paid_ukt,alamat,phone,status_aktif,marital_status,is_eligible,eligibility_issues",
-            "mahasiswa.user:id,name,email,phone,address,is_active",
+            "mahasiswa.user:id,name,email,phone,address,is_active,last_login_at,password_changed_at",
             "mahasiswa.fakultas:id,nama,code",
             "mahasiswa.prodi:id,nama,code",
             "kelompok:id,nama_kelompok,code",
@@ -585,40 +494,6 @@ class PesertaKknController extends Controller
         return $this->success($data, 'Export BPJS berhasil. '.count($data).' data.');
     }
 
-
-    public function stats(Request $request): JsonResponse
-    {
-        $base = PesertaKkn::query()
-            ->when($request->input('periode_id'), fn ($q, $id) => $q->where('periode_id', $id))
-            ->when($request->input('jenis_kkn_id'), fn ($q, $id) => $q->whereHas('periode', fn ($p) => $p->where('jenis_kkn_id', $id)))
-            ->when($request->input('fakultas_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $id)))
-            ->when($request->input('search'), function ($q, $s) {
-                $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $s);
-                $q->whereHas('mahasiswa', function ($q2) use ($escaped, $s) {
-                    $q2->where('nama', 'like', "%{$escaped}%");
-                    if (preg_match('/^\d{6,20}$/', trim($s))) {
-                        $q2->orWhere('nim_bidx', Mahasiswa::computeBlindIndex(trim($s)));
-                    }
-                });
-            });
-
-        $this->scopeByFaculty($base);
-
-        $rows = (clone $base)
-            ->selectRaw('count(*) as total')
-            ->selectRaw("sum(case when status in ('pending','document_submitted','document_verified') then 1 else 0 end) as review")
-            ->selectRaw("sum(case when status = 'approved' then 1 else 0 end) as approved")
-            ->selectRaw("sum(case when status = 'rejected' then 1 else 0 end) as rejected")
-            ->first();
-
-        return $this->success([
-            'total' => (int) ($rows->total ?? 0),
-            'review' => (int) ($rows->review ?? 0),
-            'approved' => (int) ($rows->approved ?? 0),
-            'rejected' => (int) ($rows->rejected ?? 0),
-        ]);
-    }
-
     public function downloadDocument(Request $request)
     {
         $path = $request->input('path');
@@ -637,20 +512,16 @@ class PesertaKknController extends Controller
             abort(404, 'Dokumen tidak ditemukan.');
         }
 
-        // Verify the requested path is attached to a real registration document.
-        // Superadmin may access all; admin/faculty_admin must be scoped through ownership/faculty.
-        $user = $request->user();
-        $isSuperadmin = (bool) $user?->hasRole('superadmin');
+        // Faculty admin scoping: verify the document belongs to a student in their faculty
         $facultyId = $this->getFacultyScope();
-
-        if (! $isSuperadmin) {
+        if ($facultyId) {
             $ownsDocument = DokumenPesertaKkn::where('file_path', $path)
-                ->when($facultyId, fn ($q) => $q->whereHas('peserta.mahasiswa', fn ($m) => $m->where('fakultas_id', $facultyId)))
+                ->whereHas('pesertaKkn.mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId))
                 ->exists();
 
             if (! $ownsDocument) {
-                $ownsLegacy = Mahasiswa::query()
-                    ->when($facultyId, fn ($q) => $q->where('fakultas_id', $facultyId))
+                // Also check legacy paths on mahasiswa table
+                $ownsLegacy = Mahasiswa::where('fakultas_id', $facultyId)
                     ->where(fn ($q) => $q->where('health_certificate_path', $path)->orWhere('parent_permission_path', $path))
                     ->exists();
 

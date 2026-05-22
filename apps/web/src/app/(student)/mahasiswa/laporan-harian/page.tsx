@@ -1,7 +1,5 @@
 'use client';
 
-import { WorkflowGate } from '@/components/kkn/workflow-gate';
-
 import { useState } from 'react';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
@@ -23,8 +21,7 @@ export default function DailyReportsPage(): React.JSX.Element {
         status: statusFilter || undefined,
         search: searchQuery || undefined,
       });
-      return (
-res as unknown) as { success: boolean; data: unknown[]; meta?: { current_page: number; last_page: number; total: number } };
+      return (res as unknown) as { success: boolean; data: unknown[]; meta?: { current_page: number; last_page: number; total: number } };
     },
   });
 
@@ -32,11 +29,9 @@ res as unknown) as { success: boolean; data: unknown[]; meta?: { current_page: n
   const meta = (data as unknown as { meta?: { current_page: number; last_page: number; total: number } })?.meta;
 
   return (
-    <WorkflowGate capability="submit_daily_report" title="Laporan Harian Belum Dibuka">
-
-    <div className="max-w-[1440px] mx-auto px-3 sm:px-5 lg:px-8 py-4 sm:py-8 pb-24 sm:pb-8 space-y-4 sm:space-y-8">
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       {/* HEADER */}
-      <div className="bg-white rounded-2xl sm:rounded-[2rem] p-4 sm:p-8 border border-emerald-50 shadow-sm">
+      <div className="bg-white rounded-[2rem] p-8 border border-emerald-50 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
             <div className="h-14 w-14 bg-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-emerald-200">
@@ -100,7 +95,7 @@ res as unknown) as { success: boolean; data: unknown[]; meta?: { current_page: n
                     <span className="text-xs font-bold text-slate-400">{String(report.date_label || report.date || '')}</span>
                     <StatusBadge status={String(report.status || 'draft')} />
                   </div>
-                  <h3 className="text-base sm:text-lg font-black text-slate-900 group-hover:text-emerald-700 transition-colors">{String(report.title || '')}</h3>
+                  <h3 className="text-lg font-black text-slate-900 group-hover:text-emerald-700 transition-colors">{String(report.title || '')}</h3>
                   <p className="mt-1 text-sm text-slate-500 line-clamp-2">{String(report.activity || '')}</p>
                   {String(report.review_notes || '') && (
                     <p className="mt-2 text-xs text-rose-600 bg-rose-50 rounded-lg px-3 py-2">Catatan: {String(report.review_notes)}</p>
@@ -124,6 +119,5 @@ res as unknown) as { success: boolean; data: unknown[]; meta?: { current_page: n
         </div>
       )}
     </div>
-    </WorkflowGate>
   );
 }

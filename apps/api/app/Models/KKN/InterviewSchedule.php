@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\KKN;
 
-use App\Models\KKN\Periode;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class InterviewSchedule extends Model
 {
@@ -21,16 +21,21 @@ class InterviewSchedule extends Model
         'created_by',
     ];
 
-    protected $casts = [
-        'interview_date' => 'date',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'interview_date' => 'date',
+            'interview_time_start' => 'datetime:H:i',
+            'interview_time_end' => 'datetime:H:i',
+        ];
+    }
 
     public function periode(): BelongsTo
     {
         return $this->belongsTo(Periode::class);
     }
 
-    public function createdBy(): BelongsTo
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
@@ -40,10 +45,23 @@ class InterviewSchedule extends Model
         return $this->hasMany(InterviewParticipant::class);
     }
 
-    public function pesertaKkn(): BelongsToMany
+    public function getParticipantCountAttribute(): int
     {
-        return $this->belongsToMany(PesertaKkn::class, 'interview_participants', 'interview_schedule_id', 'peserta_kkn_id')
-            ->withPivot(['result', 'notes', 'processed_by', 'processed_at'])
-            ->withTimestamps();
+        return $this->participants()->count();
+    }
+
+    public function getPendingCountAttribute(): int
+    {
+        return $this->participants()->where('result', 'pending')->count();
+    }
+
+    public function getPassedCountAttribute(): int
+    {
+        return $this->participants()->where('result', 'passed')->count();
+    }
+
+    public function getFailedCountAttribute(): int
+    {
+        return $this->participants()->where('result', 'failed')->count();
     }
 }

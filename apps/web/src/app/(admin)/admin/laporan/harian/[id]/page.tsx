@@ -13,7 +13,8 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 export default function AdminDailyReportDetailPage(): React.JSX.Element {
-  const { id } = useParams();
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const router = useRouter();
   const qc = useQueryClient();
   const [notes, setNotes] = useState('');

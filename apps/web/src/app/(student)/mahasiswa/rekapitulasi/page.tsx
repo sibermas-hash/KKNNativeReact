@@ -1,7 +1,5 @@
 'use client';
 
-import { WorkflowGate } from '@/components/kkn/workflow-gate';
-
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@sibermas/constants';
@@ -68,9 +66,7 @@ export default function MahasiswaRekapitulasiPage(): React.JSX.Element {
   if (isLoading) return <div className="flex items-center justify-center py-20"><div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" /></div>;
 
   return (
-    <WorkflowGate capability="ready_for_activity" title="Rekapitulasi Belum Dibuka">
-
-    <div className="max-w-[1200px] mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24 sm:pb-8 space-y-4 sm:space-y-6">
+    <div className="max-w-[1200px] mx-auto px-4 py-10 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -147,8 +143,8 @@ export default function MahasiswaRekapitulasiPage(): React.JSX.Element {
           <p className="text-xs text-slate-400 mt-1">Klik &quot;Tambah Kegiatan&quot; untuk mulai mencatat.</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl sm:rounded-2xl -mx-3 sm:mx-0 px-3 sm:px-0 bg-white shadow-sm ring-1 ring-slate-200">
-          <table className="min-w-[720px] w-full text-sm">
+        <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+          <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100 text-left text-xs text-slate-500">
                 {['Uraian Kegiatan', 'Vol', 'Satuan', 'Swadaya Mhs', 'Swadaya Masy', 'Pemerintah', 'Donatur', 'Jumlah', 'Ket'].map(col => (
@@ -159,7 +155,7 @@ export default function MahasiswaRekapitulasiPage(): React.JSX.Element {
             <tbody className="divide-y divide-slate-50">
               {items.map(item => (
                 <tr key={item.id} className="hover:bg-slate-50">
-                  <td className="p-3 font-medium text-slate-800 max-w-[140px] sm:max-w-[200px] truncate">{item.uraian_kegiatan}</td>
+                  <td className="p-3 font-medium text-slate-800 max-w-[200px] truncate">{item.uraian_kegiatan}</td>
                   <td className="p-3 text-slate-600 tabular-nums">{item.volume ?? '-'}</td>
                   <td className="p-3 text-slate-600">{item.satuan ?? '-'}</td>
                   <td className="p-3 text-slate-600 tabular-nums">{item.swadaya_mhs?.toLocaleString('id-ID') ?? '-'}</td>
@@ -167,7 +163,7 @@ export default function MahasiswaRekapitulasiPage(): React.JSX.Element {
                   <td className="p-3 text-slate-600 tabular-nums">{item.bantuan_pemerintah?.toLocaleString('id-ID') ?? '-'}</td>
                   <td className="p-3 text-slate-600 tabular-nums">{item.donatur_lain?.toLocaleString('id-ID') ?? '-'}</td>
                   <td className="p-3 font-semibold text-slate-800 tabular-nums">{item.jumlah?.toLocaleString('id-ID') ?? '-'}</td>
-                  <td className="p-3 text-slate-500 max-w-[100px] sm:max-w-[120px] truncate">{item.keterangan ?? '-'}</td>
+                  <td className="p-3 text-slate-500 max-w-[120px] truncate">{item.keterangan ?? '-'}</td>
                 </tr>
               ))}
             </tbody>
@@ -175,6 +171,5 @@ export default function MahasiswaRekapitulasiPage(): React.JSX.Element {
         </div>
       )}
     </div>
-    </WorkflowGate>
   );
 }

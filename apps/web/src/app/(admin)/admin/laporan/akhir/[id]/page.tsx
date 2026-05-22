@@ -35,7 +35,8 @@ interface LaporanAkhir {
 }
 
 export default function AdminLaporanAkhirDetailPage(): React.JSX.Element {
-  const { id } = useParams();
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const router = useRouter();
   const qc = useQueryClient();
   const [notes, setNotes] = useState('');

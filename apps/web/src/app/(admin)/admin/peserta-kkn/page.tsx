@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { rawApi } from '@/lib/api';
 import { PageHeader } from '@/components/ui/shared';
+import { toast } from 'sonner';
 import { Users, Search, Download } from 'lucide-react';
 
 type Peserta = {
@@ -41,8 +42,22 @@ export default function PesertaKknPage(): React.JSX.Element {
   const peserta = data?.data ?? [];
   const meta = data?.meta ?? { current_page: 1, last_page: 1, total: 0, per_page: 25 };
 
-  const exportXlsx = () => {
-    window.open(`${(rawApi.defaults as { baseURL?: string }).baseURL}/admin/peserta-kkn/export?angkatan=${angkatan}`, '_blank');
+  const exportXlsx = async () => {
+    try {
+      const res = await rawApi.get('/admin/peserta-kkn/export', {
+        params: { angkatan: angkatan || undefined, limit: 50000 },
+        responseType: 'blob',
+      });
+      const blob = res.data instanceof Blob ? res.data : new Blob([res.data as BlobPart]);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `peserta-kkn-${angkatan || 'semua'}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error('Export gagal');
+    }
   };
 
   return (

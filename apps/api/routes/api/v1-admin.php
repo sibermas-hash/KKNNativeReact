@@ -134,6 +134,7 @@ Route::prefix('admin')
         Route::patch('/pendaftaran/{pesertaKkn}/reject', [PesertaKknController::class, 'reject']);
 
         // Wawancara / Interview
+        Route::get('/peserta-kkn/export', [PesertaKknListController::class, 'export']);
         Route::get('/peserta-kkn', [PesertaKknListController::class, 'index']);
         Route::get('/peserta-wawancara', [InterviewController::class, 'pesertaWawancara']);
 

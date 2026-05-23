@@ -65,7 +65,7 @@ export default function TransferPesertaPage(): React.JSX.Element {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Transfer Peserta" subtitle="Pindahkan peserta antar jenis KKN (misal: gagal wawancara → KKN Reguler)." />
+      <PageHeader title="Transfer Peserta" subtitle="Pindahkan peserta gagal wawancara ke jenis KKN non-wawancara dengan aman." />
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">

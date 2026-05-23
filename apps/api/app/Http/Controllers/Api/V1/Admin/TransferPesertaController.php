@@ -9,6 +9,7 @@ use App\Http\Traits\ApiResponse;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\Periode;
+use App\Models\KKN\RegistrationHistory;
 use App\Services\AuditService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -66,7 +67,7 @@ class TransferPesertaController extends Controller
             'target_periode_id' => 'required|integer|exists:periode,id',
         ]);
 
-        $peserta = PesertaKkn::with(['mahasiswa', 'periode.jenisKkn'])->findOrFail($validated['peserta_kkn_id']);
+        $peserta = PesertaKkn::with(['mahasiswa', 'periode.jenisKkn'])->withCount(['attendances', 'locationDispensations'])->findOrFail($validated['peserta_kkn_id']);
         $targetPeriode = Periode::with('jenisKkn')->findOrFail($validated['target_periode_id']);
 
         if ($peserta->status !== 'interview_failed') {
@@ -75,6 +76,10 @@ class TransferPesertaController extends Controller
 
         if ($peserta->periode_id === $targetPeriode->id) {
             return $this->error('Periode tujuan sama dengan periode asal.', 422);
+        }
+
+        if ($peserta->attendances_count > 0 || $peserta->location_dispensations_count > 0) {
+            return $this->error('Peserta sudah memiliki data operasional lapangan; transfer manual diblokir agar relasi data tetap aman.', 422);
         }
 
         $alreadyRegistered = PesertaKkn::where('mahasiswa_id', $peserta->mahasiswa_id)
@@ -98,6 +103,17 @@ class TransferPesertaController extends Controller
 
         DB::transaction(function () use ($peserta, $targetPeriode) {
             $oldPeriode = $peserta->periode;
+
+            RegistrationHistory::create([
+                'peserta_kkn_id' => $peserta->id,
+                'from_periode_id' => $oldPeriode?->id,
+                'to_periode_id' => $targetPeriode->id,
+                'from_kelompok_id' => $peserta->kelompok_id,
+                'to_kelompok_id' => null,
+                'reason' => 'Transfer dari halaman admin transfer peserta',
+                'processed_by' => auth()->id(),
+                'processed_at' => now(),
+            ]);
 
             $peserta->update([
                 'periode_id' => $targetPeriode->id,

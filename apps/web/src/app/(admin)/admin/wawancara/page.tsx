@@ -177,7 +177,7 @@ export default function WawancaraPage(): React.JSX.Element {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Wawancara KKN" subtitle="Kelola jadwal dan hasil wawancara peserta KKN." />
+      <PageHeader title="Wawancara KKN" subtitle="Kelola jadwal, peserta, dan hasil wawancara KKN." />
 
       {/* Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-3">

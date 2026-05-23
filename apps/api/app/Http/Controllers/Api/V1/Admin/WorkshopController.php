@@ -30,7 +30,9 @@ class WorkshopController extends Controller
             userId: null,
             includeParticipants: true,
             includeAllStatuses: true,
-            periodId: $request->input('periode_id') ? (int) $request->input('periode_id') : null
+            periodId: $request->input('periode_id') ? (int) $request->input('periode_id') : null,
+            status: $request->input('status') ?: null,
+            search: $request->input('search') ?: null
         );
 
         return $this->success($workshops);

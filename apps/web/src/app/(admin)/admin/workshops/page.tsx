@@ -36,6 +36,8 @@ interface Workshop {
   max_participants?: number;
   status: string;
   is_active: boolean;
+  can_edit?: boolean;
+  can_cancel?: boolean;
   participants_count?: number;
   peserta?: Participant[];
   display_date?: string;
@@ -76,6 +78,8 @@ interface ApiWorkshop {
   is_active?: boolean;
   participants_count?: number;
   registered?: number;
+  can_edit?: boolean;
+  can_cancel?: boolean;
   peserta?: ApiParticipant[];
   participants?: ApiParticipant[];
   period?: { id: number; name: string } | null;
@@ -123,6 +127,8 @@ function normalizeWorkshop(workshop: ApiWorkshop): Workshop {
     max_participants: workshop.max_participants ?? undefined,
     status: workshop.status,
     is_active: workshop.is_active ?? workshop.status !== 'cancelled',
+    can_edit: workshop.can_edit ?? workshop.status === 'scheduled',
+    can_cancel: workshop.can_cancel ?? workshop.status === 'scheduled',
     participants_count: workshop.participants_count ?? workshop.registered ?? peserta.length,
     peserta,
     display_date: workshop.date ?? workshop.workshop_date ?? workshop.workshop_date_value ?? '-',
@@ -331,12 +337,14 @@ export default function WorkshopsPage(): React.JSX.Element {
   const [attendanceWorkshop, setAttendanceWorkshop] = useState<Workshop | null>(null);
   const [importResult, setImportResult] = useState<{ matched: number; unmatched: number } | null>(null);
   const [importPesertaId, setImportPesertaId] = useState<number | null>(null);
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('');
   const pesertaFileRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'workshops'],
+    queryKey: ['admin', 'workshops', { search, status }],
     queryFn: async () => {
-      const res = await adminApi.workshops.index();
+      const res = await adminApi.workshops.index({ search: search || undefined, status: status || undefined });
       const rawWorkshops = ((res as { data?: unknown })?.data ?? res) as unknown;
       return (Array.isArray(rawWorkshops) ? rawWorkshops : []).map((workshop) =>
         normalizeWorkshop(workshop as ApiWorkshop),
@@ -351,7 +359,7 @@ export default function WorkshopsPage(): React.JSX.Element {
       return adminApi.workshops.importMetodologiPkm(fd);
     },
     onSuccess: (res) => {
-      const r = (res as unknown) as { matched: number; unmatched: number };
+      const r = (((res as { data?: { data?: unknown } })?.data?.data ?? (res as { data?: unknown })?.data ?? res) as { matched: number; unmatched: number });
       setImportResult(r);
       qc.invalidateQueries({ queryKey: ['admin', 'workshops'] });
       toast.success(`Import selesai: ${r.matched} berhasil, ${r.unmatched} tidak ditemukan`);
@@ -416,6 +424,22 @@ export default function WorkshopsPage(): React.JSX.Element {
         }
       />
 
+      <div className="flex flex-wrap gap-3 rounded-2xl bg-white p-4 ring-1 ring-slate-200">
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Cari judul, lokasi, metodologi..."
+          className="h-10 min-w-[240px] flex-1 rounded-xl border border-slate-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+        />
+        <select value={status} onChange={(e) => setStatus(e.target.value)} className="h-10 rounded-xl border border-slate-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600">
+          <option value="">Semua Status</option>
+          <option value="scheduled">Terjadwal</option>
+          <option value="ongoing">Berlangsung</option>
+          <option value="completed">Selesai</option>
+          <option value="cancelled">Dibatalkan</option>
+        </select>
+      </div>
+
       {/* Import result */}
       {importResult && (
         <div className="flex items-center justify-between rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3">
@@ -470,11 +494,12 @@ export default function WorkshopsPage(): React.JSX.Element {
                         className="flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors disabled:opacity-50">
                         <FileUp size={13} /> {importPesertaMut.isPending && importPesertaId === w.id ? 'Importing...' : 'Import'}
                       </button>
-                      <button onClick={() => { setEditingWorkshop(w); setShowForm(true); }} title="Edit"
-                        className="p-2 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors">
+                      <button onClick={() => { setEditingWorkshop(w); setShowForm(true); }} title={w.can_edit ? 'Edit' : 'Tidak dapat diedit setelah presensi'}
+                        disabled={!w.can_edit}
+                        className="p-2 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-colors disabled:cursor-not-allowed disabled:opacity-40">
                         <Pencil size={14} />
                       </button>
-                      {w.status === 'scheduled' && (
+                      {w.status === 'scheduled' && w.can_cancel && (
                         <button onClick={() => { if (confirm(`Batalkan workshop "${w.title}"? Workshop yang sudah memiliki presensi tidak dapat dibatalkan.`)) cancelMut.mutate(w.id); }} title="Batalkan"
                           disabled={cancelMut.isPending}
                           className="p-2 rounded-lg border border-rose-200 text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors disabled:opacity-50">

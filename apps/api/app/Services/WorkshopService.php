@@ -406,7 +406,9 @@ class WorkshopService
         ?int $userId = null,
         bool $includeParticipants = false,
         bool $includeAllStatuses = false,
-        ?int $periodId = null
+        ?int $periodId = null,
+        ?string $status = null,
+        ?string $search = null
     ): array {
         $query = Workshop::query();
 
@@ -421,8 +423,20 @@ class WorkshopService
 
         $query->withCount('peserta');
 
-        if (! $includeAllStatuses) {
+        if ($status && in_array($status, ['scheduled', 'ongoing', 'completed', 'cancelled'], true)) {
+            $query->where('status', $status);
+        } elseif (! $includeAllStatuses) {
             $query->where('status', 'scheduled');
+        }
+
+        if ($search !== null && trim($search) !== '') {
+            $term = str_replace(['%', '_'], ['\%', '\_'], trim($search));
+            $query->where(function ($q) use ($term) {
+                $q->where('title', 'ilike', "%{$term}%")
+                    ->orWhere('description', 'ilike', "%{$term}%")
+                    ->orWhere('methodology', 'ilike', "%{$term}%")
+                    ->orWhere('location', 'ilike', "%{$term}%");
+            });
         }
 
         if (Workshop::supportsPeriodAssignment()) {
@@ -493,7 +507,9 @@ class WorkshopService
                                             ?? $participant->user?->dosen?->nip
                                             ?? '-',
                         'attendance_status' => $participant->attendance_status,
+                        'is_passed' => (bool) $participant->is_passed,
                         'certificate_generated' => (bool) $participant->certificate_generated,
+                        'registered_at' => $participant->created_at?->toDateTimeString(),
                         'checked_in_at' => $participant->checked_in_at?->toDateTimeString(),
                     ])->values()->all()
                     : [],

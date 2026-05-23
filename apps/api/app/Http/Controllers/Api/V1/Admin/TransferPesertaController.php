@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
+use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\Periode;
 use App\Services\AuditService;
@@ -26,7 +27,14 @@ class TransferPesertaController extends Controller
             ->where('status', 'interview_failed')
             ->when($request->input('angkatan'), fn ($q, $a) => $q->whereHas('periode', fn ($p) => $p->where('periode', $a)))
             ->when($request->input('search'), function ($q, $search) {
-                $q->whereHas('mahasiswa', fn ($m) => $m->where('nim', 'ilike', "%{$search}%")->orWhere('nama', 'ilike', "%{$search}%"));
+                $term = trim((string) $search);
+                $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $term);
+                $q->whereHas('mahasiswa', function ($m) use ($term, $escaped) {
+                    $m->where('nama', 'ilike', "%{$escaped}%");
+                    if (preg_match('/^\d{6,20}$/', $term)) {
+                        $m->orWhere('nim_bidx', Mahasiswa::computeBlindIndex($term));
+                    }
+                });
             })
             ->orderBy('id');
 
@@ -61,6 +69,23 @@ class TransferPesertaController extends Controller
         $peserta = PesertaKkn::with(['mahasiswa', 'periode.jenisKkn'])->findOrFail($validated['peserta_kkn_id']);
         $targetPeriode = Periode::with('jenisKkn')->findOrFail($validated['target_periode_id']);
 
+        if ($peserta->status !== 'interview_failed') {
+            return $this->error('Hanya peserta dengan status gagal wawancara yang dapat ditransfer.', 422);
+        }
+
+        if ($peserta->periode_id === $targetPeriode->id) {
+            return $this->error('Periode tujuan sama dengan periode asal.', 422);
+        }
+
+        $alreadyRegistered = PesertaKkn::where('mahasiswa_id', $peserta->mahasiswa_id)
+            ->where('periode_id', $targetPeriode->id)
+            ->where('id', '!=', $peserta->id)
+            ->exists();
+
+        if ($alreadyRegistered) {
+            return $this->error('Mahasiswa sudah terdaftar pada periode tujuan.', 422);
+        }
+
         // Validate target periode doesn't require interview
         if ($targetPeriode->jenisKkn?->requires_interview) {
             return $this->error('Tidak dapat memindahkan ke jenis KKN yang memerlukan wawancara.', 422);
@@ -78,6 +103,8 @@ class TransferPesertaController extends Controller
                 'periode_id' => $targetPeriode->id,
                 'status' => 'approved',
                 'kelompok_id' => null,
+                'role' => 'member',
+                'joined_group_at' => null,
             ]);
 
             AuditService::log(

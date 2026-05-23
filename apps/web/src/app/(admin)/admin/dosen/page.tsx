@@ -16,15 +16,17 @@ type Dosen = {
 };
 
 type Meta = { current_page: number; last_page: number; total: number; per_page: number };
+type Faculty = { id: number; nama: string };
 
 export default function DosenIndexPage(): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [fakultasId, setFakultasId] = useState('');
 
   const { data, isLoading } = useQuery<{ data: Dosen[]; meta?: Meta }>({
-    queryKey: ['admin', 'dosen', { search, page }],
+    queryKey: ['admin', 'dosen', { search, page, fakultasId }],
     queryFn: async () => {
-      const res = await rawApi.get('/admin/dosen', { params: { search: search || undefined, page, per_page: 25 } });
+      const res = await rawApi.get('/admin/dosen', { params: { search: search || undefined, fakultas_id: fakultasId || undefined, page, per_page: 25 } });
       const body = res.data as { data?: Dosen[] | { data?: Dosen[]; meta?: Meta }; meta?: Meta };
       if (Array.isArray(body.data)) {
         return { data: body.data, meta: body.meta };
@@ -32,6 +34,16 @@ export default function DosenIndexPage(): React.JSX.Element {
       const inner = body.data as { data?: Dosen[]; meta?: Meta };
       return { data: inner?.data ?? [], meta: inner?.meta ?? body.meta };
     },
+  });
+
+  const { data: faculties = [] } = useQuery<Faculty[]>({
+    queryKey: ['admin', 'fakultas', 'dosen-filter'],
+    queryFn: async () => {
+      const res = await rawApi.get('/admin/fakultas', { params: { per_page: 100 } });
+      const payload = (res.data as { data?: unknown }).data ?? res.data;
+      return (Array.isArray(payload) ? payload : (payload as { data?: unknown[] }).data ?? []) as Faculty[];
+    },
+    staleTime: 300000,
   });
 
   const dosen = data?.data ?? [];
@@ -52,6 +64,10 @@ export default function DosenIndexPage(): React.JSX.Element {
             className="h-10 w-full rounded-xl border border-slate-200 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600"
           />
         </div>
+        <select value={fakultasId} onChange={(e) => { setFakultasId(e.target.value); setPage(1); }} className="h-10 min-w-[220px] rounded-xl border border-slate-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600">
+          <option value="">Semua Fakultas</option>
+          {faculties.map((f) => <option key={f.id} value={f.id}>{f.nama}</option>)}
+        </select>
       </div>
 
       {/* Table */}

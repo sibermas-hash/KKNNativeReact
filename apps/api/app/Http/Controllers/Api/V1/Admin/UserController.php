@@ -540,16 +540,20 @@ class UserController extends Controller
     {
         $query = Dosen::with(['user', 'fakultas'])
             ->when($request->input('search'), function ($q, $s) {
-                // nip encrypted — same blind-index pattern as mahasiswa.nim.
-                $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $s);
-                $q->where('nama', 'like', "%{$escaped}%");
-                if (preg_match('/^\d{6,20}$/', trim($s))) {
-                    $q->orWhere('nip_bidx', Dosen::computeBlindIndex(trim($s)));
-                }
+                $term = trim((string) $s);
+                $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $term);
+                $q->where(function ($w) use ($term, $escaped) {
+                    $w->where('nama', 'ilike', "%{$escaped}%")
+                        ->orWhere('nip', 'ilike', "%{$escaped}%");
+                    if (preg_match('/^\d{6,20}$/', $term)) {
+                        $w->orWhere('nip_bidx', Dosen::computeBlindIndex($term));
+                    }
+                });
             })
+            ->when($request->input('fakultas_id'), fn ($q, $id) => $q->where('fakultas_id', $id))
             ->orderBy('nama');
 
-        return $this->successCollection(DosenResource::collection($query->paginate(25)));
+        return $this->successCollection(DosenResource::collection($query->paginate($request->integer('per_page', 25))));
     }
 
     public function transfer(Request $request): JsonResponse

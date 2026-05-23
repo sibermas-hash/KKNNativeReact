@@ -17,6 +17,7 @@ type Peserta = {
 };
 
 type Meta = { current_page: number; last_page: number; total: number; per_page: number };
+type Faculty = { id: number; nama: string; code?: string };
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   approved: { label: 'Aktif', color: 'bg-emerald-100 text-emerald-700' },
@@ -28,15 +29,26 @@ export default function PesertaKknPage(): React.JSX.Element {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [angkatan, setAngkatan] = useState('58');
+  const [fakultasId, setFakultasId] = useState('');
 
   const { data, isLoading } = useQuery<{ data: Peserta[]; meta: Meta }>({
-    queryKey: ['admin', 'peserta-kkn', page, search, angkatan],
+    queryKey: ['admin', 'peserta-kkn', page, search, angkatan, fakultasId],
     queryFn: async () => {
       const res = await rawApi.get('/admin/peserta-kkn', {
-        params: { page, search: search || undefined, angkatan: angkatan || undefined, per_page: 25 },
+        params: { page, search: search || undefined, angkatan: angkatan || undefined, fakultas_id: fakultasId || undefined, per_page: 25 },
       });
       return ((res.data as { data?: unknown }).data ?? res.data) as { data: Peserta[]; meta: Meta };
     },
+  });
+
+  const { data: faculties = [] } = useQuery<Faculty[]>({
+    queryKey: ['admin', 'fakultas', 'peserta-kkn-filter'],
+    queryFn: async () => {
+      const res = await rawApi.get('/admin/fakultas', { params: { per_page: 100 } });
+      const payload = (res.data as { data?: unknown }).data ?? res.data;
+      return (Array.isArray(payload) ? payload : (payload as { data?: unknown[] }).data ?? []) as Faculty[];
+    },
+    staleTime: 300000,
   });
 
   const peserta = data?.data ?? [];
@@ -45,7 +57,7 @@ export default function PesertaKknPage(): React.JSX.Element {
   const exportXlsx = async () => {
     try {
       const res = await rawApi.get('/admin/peserta-kkn/export', {
-        params: { angkatan: angkatan || undefined, limit: 50000 },
+        params: { angkatan: angkatan || undefined, fakultas_id: fakultasId || undefined, limit: 50000 },
         responseType: 'blob',
       });
       const blob = res.data instanceof Blob ? res.data : new Blob([res.data as BlobPart]);
@@ -78,7 +90,11 @@ export default function PesertaKknPage(): React.JSX.Element {
         <select value={angkatan} onChange={e => { setAngkatan(e.target.value); setPage(1); }} className="h-10 rounded-xl border border-slate-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600">
           <option value="58">Angkatan 58</option>
           <option value="59">Angkatan 59</option>
-          <option value="">Semua</option>
+          <option value="">Semua Angkatan</option>
+        </select>
+        <select value={fakultasId} onChange={e => { setFakultasId(e.target.value); setPage(1); }} className="h-10 min-w-[220px] rounded-xl border border-slate-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600">
+          <option value="">Semua Fakultas</option>
+          {faculties.map((f) => <option key={f.id} value={f.id}>{f.nama}</option>)}
         </select>
       </div>
 

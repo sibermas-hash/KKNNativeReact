@@ -36,6 +36,7 @@ class PesertaKknListController extends Controller
                 });
             })
             ->when($request->input('jenis_kkn_id'), fn ($q, $id) => $q->whereHas('periode', fn ($p) => $p->where('jenis_kkn_id', $id)))
+            ->when($request->input('fakultas_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $id)))
             ->orderBy('id');
 
         $paginated = $query->paginate($request->integer('per_page', 25));
@@ -57,6 +58,7 @@ class PesertaKknListController extends Controller
             ->whereIn('status', ['approved', 'interview_passed', 'completed'])
             ->when($request->input('angkatan'), fn ($q, $a) => $q->whereHas('periode', fn ($p) => $p->where('periode', $a)))
             ->when($request->input('jenis_kkn_id'), fn ($q, $id) => $q->whereHas('periode', fn ($p) => $p->where('jenis_kkn_id', $id)))
+            ->when($request->input('fakultas_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $id)))
             ->orderBy('id')
             ->limit(min($request->integer('limit', 50000), 50000));
 

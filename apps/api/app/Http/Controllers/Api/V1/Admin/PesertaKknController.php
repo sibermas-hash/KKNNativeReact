@@ -348,6 +348,7 @@ class PesertaKknController extends Controller
 
     public function export(Request $request): JsonResponse|\Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\Response
     {
+        $format = strtolower((string) $request->input("format", "json"));
         $query = PesertaKkn::with([
             "mahasiswa:id,user_id,nim,nama,fakultas_id,prodi_id,batch_year,gender,birth_place,birth_date,sks_completed,gpa,status_bta_ppi,semester,nik,mother_name,shirt_size,is_paid_ukt,alamat,phone,status_aktif,marital_status,is_eligible,eligibility_issues",
             "mahasiswa.user:id,name,email,phone,address,is_active,last_login_at,password_changed_at",

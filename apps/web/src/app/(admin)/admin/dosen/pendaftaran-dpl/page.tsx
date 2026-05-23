@@ -19,7 +19,7 @@ interface Registration {
     nama: string;
     nip?: string;
     user_id: number;
-    fakultas?: { name: string };
+    fakultas?: { name?: string; nama?: string };
   };
   periode?: { name: string };
 }
@@ -31,18 +31,23 @@ interface Stats {
   rejected: number;
 }
 
+interface Meta { current_page: number; last_page: number; total: number; per_page: number }
+
 export default function DplRegistrationPage(): React.JSX.Element {
   const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [page, setPage] = useState(1);
   const [rejectModal, setRejectModal] = useState<{ id: number; nama: string; reason: string } | null>(null);
 
-  const { data, isLoading } = useQuery<{ registrations: Registration[]; stats: Stats }>({
-    queryKey: ['admin', 'dpl-registration', search, statusFilter],
+  const { data, isLoading } = useQuery<{ registrations: Registration[]; stats: Stats; meta?: Meta }>({
+    queryKey: ['admin', 'dpl-registration', search, statusFilter, page],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (search) params.set('search', search);
       if (statusFilter) params.set('status', statusFilter);
+      params.set('page', String(page));
+      params.set('per_page', '25');
       const res = await rawApi.get(`/admin/dosen/pendaftaran-dpl?${params}`);
       return ((res.data as { data?: unknown }).data ?? res.data) as { registrations: Registration[]; stats: Stats };
     },
@@ -70,6 +75,7 @@ export default function DplRegistrationPage(): React.JSX.Element {
 
   const registrations = data?.registrations ?? [];
   const stats = data?.stats ?? { total: 0, pending: 0, approved: 0, rejected: 0 };
+  const meta = data?.meta;
 
   return (
     <div className="space-y-6">
@@ -97,11 +103,11 @@ export default function DplRegistrationPage(): React.JSX.Element {
       <div className="flex flex-col gap-3 md:flex-row md:items-center">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input value={search} onChange={e => setSearch(e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 pl-9 pr-4 text-sm focus:border-cyan-500 outline-none" placeholder="Cari nama dosen..." />
+          <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} className="h-10 w-full rounded-xl border border-slate-200 pl-9 pr-4 text-sm focus:border-cyan-500 outline-none" placeholder="Cari nama dosen..." />
         </div>
         <div className="flex items-center gap-2">
           <Filter size={14} className="text-slate-400" />
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="h-10 rounded-xl border border-slate-200 px-3 text-sm focus:border-cyan-500 outline-none">
+          <select value={statusFilter} onChange={e => { setStatusFilter(e.target.value); setPage(1); }} className="h-10 rounded-xl border border-slate-200 px-3 text-sm focus:border-cyan-500 outline-none">
             <option value="">Semua Status</option>
             <option value="pending">Menunggu</option>
             <option value="approved">Disetujui</option>
@@ -139,7 +145,7 @@ export default function DplRegistrationPage(): React.JSX.Element {
                     <p className="font-bold text-slate-800">{r.dosen?.nama || '-'}</p>
                     <p className="text-[10px] text-slate-400 font-mono">{r.dosen?.nip || '-'}</p>
                   </td>
-                  <td className="p-4 text-xs text-slate-600">{r.dosen?.fakultas?.name || '-'}</td>
+                  <td className="p-4 text-xs text-slate-600">{r.dosen?.fakultas?.name || r.dosen?.fakultas?.nama || '-'}</td>
                   <td className="p-4">
                     {r.workshop_passed ? (
                       <span className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-black text-emerald-700 border border-emerald-200">
@@ -181,6 +187,14 @@ export default function DplRegistrationPage(): React.JSX.Element {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {meta && meta.last_page > 1 && (
+        <div className="flex items-center justify-center gap-2">
+          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold disabled:opacity-30">Prev</button>
+          <span className="text-xs text-slate-500">{meta.current_page} / {meta.last_page} • {meta.total} pendaftaran</span>
+          <button onClick={() => setPage(p => Math.min(meta.last_page, p + 1))} disabled={page === meta.last_page} className="rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold disabled:opacity-30">Next</button>
         </div>
       )}
 

@@ -26,27 +26,31 @@ class DplRegistrationController extends Controller
     {
         Gate::authorize('manageDplAssignment');
 
-        $query = DplPeriod::with(['dosen.user', 'dosen.fakultas', 'periode'])
-            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
+        $baseQuery = DplPeriod::with(['dosen.user', 'dosen.fakultas', 'periode'])
             ->when($request->input('periode_id'), fn ($q, $id) => $q->where('periode_id', $id))
             ->when($request->input('search'), function ($q, $search) {
-                // nip encrypted — partial ilike impossible; nama-only + exact bidx.
-                $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $search);
-                $q->whereHas('dosen', function ($dq) use ($escaped, $search) {
-                    $dq->where('nama', 'ilike', "%{$escaped}%");
-                    if (preg_match('/^\d{6,20}$/', trim($search))) {
-                        $dq->orWhere('nip_bidx', Dosen::computeBlindIndex(trim($search)));
+                $term = trim((string) $search);
+                $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $term);
+                $q->whereHas('dosen', function ($dq) use ($escaped, $term) {
+                    $dq->where('nama', 'ilike', "%{$escaped}%")
+                        ->orWhere('nip', 'ilike', "%{$escaped}%");
+                    if (preg_match('/^\d{6,20}$/', $term)) {
+                        $dq->orWhere('nip_bidx', Dosen::computeBlindIndex($term));
                     }
                 });
-            })
-            ->orderByDesc('created_at');
+            });
 
-        $total = $query->count();
-        $pending = (clone $query)->where('status', 'pending')->count();
-        $approved = (clone $query)->where('status', 'approved')->count();
-        $rejected = (clone $query)->where('status', 'rejected')->count();
+        $total = (clone $baseQuery)->count();
+        $pending = (clone $baseQuery)->where('status', 'pending')->count();
+        $approved = (clone $baseQuery)->where('status', 'approved')->count();
+        $rejected = (clone $baseQuery)->where('status', 'rejected')->count();
 
-        $items = $query->paginate($request->input('per_page', 25))->items();
+        $paginator = (clone $baseQuery)
+            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
+            ->orderByDesc('created_at')
+            ->paginate($request->integer('per_page', 25));
+
+        $items = $paginator->items();
 
         // Attach workshop status per dosen
         $userIds = collect($items)->pluck('dosen.user_id')->filter()->unique()->values();
@@ -69,6 +73,12 @@ class DplRegistrationController extends Controller
                 'pending' => $pending,
                 'approved' => $approved,
                 'rejected' => $rejected,
+            ],
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
             ],
         ]);
     }

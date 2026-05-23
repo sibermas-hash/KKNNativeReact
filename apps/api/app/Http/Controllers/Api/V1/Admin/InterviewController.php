@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\InterviewParticipant;
 use App\Models\KKN\InterviewSchedule;
+use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\Periode;
 use Illuminate\Http\JsonResponse;
@@ -131,7 +132,18 @@ class InterviewController extends Controller
         $skipped = 0;
 
         foreach ($validated['peserta_kkn_ids'] as $pesertaId) {
-            $exists = InterviewParticipant::where('interview_schedule_id', $interview->id)
+            $peserta = PesertaKkn::with('mahasiswa.user')
+                ->where('id', $pesertaId)
+                ->where('periode_id', $interview->periode_id)
+                ->whereIn('status', ['approved', 'document_verified'])
+                ->first();
+
+            if (! $peserta) {
+                $skipped++;
+                continue;
+            }
+
+            $exists = InterviewParticipant::whereHas('schedule', fn ($q) => $q->where('periode_id', $interview->periode_id))
                 ->where('peserta_kkn_id', $pesertaId)
                 ->exists();
 
@@ -146,13 +158,8 @@ class InterviewController extends Controller
                 'result' => 'pending',
             ]);
 
-            // Update peserta status to interview_scheduled
-            PesertaKkn::where('id', $pesertaId)
-                ->whereIn('status', ['approved', 'document_verified'])
-                ->update(['status' => 'interview_scheduled']);
+            $peserta->update(['status' => 'interview_scheduled']);
 
-            // Notify student
-            $peserta = PesertaKkn::with('mahasiswa.user')->find($pesertaId);
             if ($peserta?->mahasiswa?->user) {
                 $peserta->mahasiswa->user->notify(new InterviewScheduledNotification($interview));
             }
@@ -315,10 +322,17 @@ class InterviewController extends Controller
 
         $query = PesertaKkn::with(['mahasiswa.prodi', 'mahasiswa.fakultas'])
             ->where('periode_id', $interview->periode_id)
-            ->where('status', 'interview_scheduled')
+            ->whereIn('status', ['approved', 'document_verified'])
             ->whereNotIn('id', $alreadyAssigned)
             ->when($request->input('search'), function ($q, $search) {
-                $q->whereHas('mahasiswa', fn ($m) => $m->where('nim', 'ilike', "%{$search}%")->orWhere('nama', 'ilike', "%{$search}%"));
+                $term = trim((string) $search);
+                $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $term);
+                $q->whereHas('mahasiswa', function ($m) use ($term, $escaped) {
+                    $m->where('nama', 'ilike', "%{$escaped}%");
+                    if (preg_match('/^\d{6,20}$/', $term)) {
+                        $m->orWhere('nim_bidx', Mahasiswa::computeBlindIndex($term));
+                    }
+                });
             });
 
         $paginated = $query->paginate($request->integer('per_page', 50));
@@ -343,7 +357,14 @@ class InterviewController extends Controller
             ->where('status', 'interview_scheduled')
             ->when($request->input('angkatan'), fn ($q, $a) => $q->whereHas('periode', fn ($p) => $p->where('periode', $a)))
             ->when($request->input('search'), function ($q, $search) {
-                $q->whereHas('mahasiswa', fn ($m) => $m->where('nim', 'ilike', "%{$search}%")->orWhere('nama', 'ilike', "%{$search}%"));
+                $term = trim((string) $search);
+                $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $term);
+                $q->whereHas('mahasiswa', function ($m) use ($term, $escaped) {
+                    $m->where('nama', 'ilike', "%{$escaped}%");
+                    if (preg_match('/^\d{6,20}$/', $term)) {
+                        $m->orWhere('nim_bidx', Mahasiswa::computeBlindIndex($term));
+                    }
+                });
             })
             ->orderBy('id');
 

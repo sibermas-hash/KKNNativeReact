@@ -139,6 +139,7 @@ class PesertaKknController extends Controller
         $query = PesertaKkn::with(['mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'kelompok', 'periode.jenisKkn', 'dokumen'])
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
             ->when($request->input('periode_id'), fn ($q, $id) => $q->where('periode_id', $id))
+            ->when($request->input('jenis_kkn_id'), fn ($q, $id) => $q->whereHas('periode', fn ($p) => $p->where('jenis_kkn_id', $id)))
             ->when($request->input('angkatan'), fn ($q, $a) => $q->whereHas('periode', fn ($p) => $p->where('periode', $a)))
             ->when($request->input('search'), function ($q, $s) {
                 // nim encrypted at rest — LIKE impossible; exact-NIM via bidx.

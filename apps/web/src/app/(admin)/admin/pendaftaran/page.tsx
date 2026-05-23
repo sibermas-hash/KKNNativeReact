@@ -94,7 +94,7 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
   });
 
   // Main data
-  const { data, isLoading, isError, refetch } = useQuery<ApiList>({
+  const { data, isLoading, isFetching, isError, refetch } = useQuery<ApiList>({
     queryKey: ['admin', 'registrations', { status, search: debouncedSearch, periodeId, jenisKknId, page }],
     queryFn: async () => {
       const params: Record<string, string | number | undefined> = {
@@ -327,7 +327,7 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
             <div>
               <p className="text-xs font-black uppercase tracking-wider text-slate-500">Data Pendaftaran</p>
-              <p className="text-xs text-slate-400">Klik detail untuk review lengkap mahasiswa dan dokumen</p>
+              <p className="text-xs text-slate-400">{isFetching && !isLoading ? 'Memfilter data...' : 'Klik detail untuk review lengkap mahasiswa dan dokumen'}</p>
             </div>
             <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-black uppercase text-slate-500">{meta?.total?.toLocaleString('id-ID') ?? 0} data</span>
           </div>

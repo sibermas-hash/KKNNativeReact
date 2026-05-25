@@ -83,3 +83,7 @@ packages/*/dist/
 !**/.env.example
 !**/.env.production.example
 !**/.env.*.example
+
+# Laravel public storage symlink / local backups
+apps/api/public/storage
+*.bak-*

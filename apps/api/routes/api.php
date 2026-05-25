@@ -156,6 +156,8 @@ Route::prefix('v1')->group(function () {
             Route::get('/chat-attachment/{message}', [PrivateFileController::class, 'chatAttachment'])
                 ->middleware('signed')
                 ->name('api.v1.files.chat-attachment');
+            Route::get('/leave-evidence/{izin}', [PrivateFileController::class, 'leaveEvidence'])
+                ->name('api.v1.files.leave-evidence');
         });
 
     // Student routes

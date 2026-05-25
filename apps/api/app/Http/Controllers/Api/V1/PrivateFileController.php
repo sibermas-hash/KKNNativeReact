@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\KKN\AttendancePhoto;
 use App\Models\KKN\ChatMessage;
 use App\Models\KKN\PesertaWorkshop;
+use App\Models\KKN\IzinMeninggalkan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -93,6 +94,35 @@ class PrivateFileController extends Controller
         );
     }
 
+    /**
+     * GET /api/v1/files/leave-evidence/{izin}
+     */
+    public function leaveEvidence(Request $request, IzinMeninggalkan $izin): BinaryFileResponse
+    {
+        $user = $request->user();
+        $izin->loadMissing('mahasiswa.user', 'kelompok.dpl.user');
+
+        $ownerUserId = $izin->mahasiswa?->user_id;
+        $supervisingDplUserId = $izin->kelompok?->dpl?->user_id;
+
+        $authorized = $user->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])
+            || ($ownerUserId && $user->id === $ownerUserId)
+            || ($supervisingDplUserId && $user->id === $supervisingDplUserId);
+
+        if (! $authorized) {
+            abort(403, 'Anda tidak berhak mengakses bukti izin ini.');
+        }
+
+        if (empty($izin->file_bukti)) {
+            abort(404, 'Bukti izin tidak ditemukan.');
+        }
+
+        return $this->streamFromLocal(
+            (string) $izin->file_bukti,
+            basename((string) $izin->file_bukti),
+            'application/octet-stream',
+        );
+    }
     /**
      * GET /api/v1/files/chat-attachment/{message}
      *

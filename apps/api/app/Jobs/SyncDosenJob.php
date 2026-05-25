@@ -101,7 +101,15 @@ class SyncDosenJob implements ShouldBeUnique, ShouldQueue
         $synced = 0;
         $errors = 0;
 
+        $skippedNoNip = 0;
         foreach ($lecturers as $lecturerData) {
+            // Master API: hanya proses dosen yg punya NIP berupa angka murni (PNS/NIDN).
+            // Skip kode honorer (LB-xxx, DOS-xxx) sesuai kebijakan SIBERMAS.
+            $nip = trim((string) ($lecturerData['nip'] ?? ''));
+            if ($nip === '' || ! preg_match('/^\d+$/', $nip)) {
+                $skippedNoNip++;
+                continue;
+            }
             try {
                 $this->upsertLecturer($lecturerData);
                 $synced++;
@@ -117,6 +125,7 @@ class SyncDosenJob implements ShouldBeUnique, ShouldQueue
         Log::info('SyncDosenJob: completed sync', [
             'synced' => $synced,
             'errors' => $errors,
+            'skipped_no_nip' => $skippedNoNip,
             'mode' => $this->since ? 'delta' : 'full',
         ]);
     }

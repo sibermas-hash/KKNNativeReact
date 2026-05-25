@@ -13,13 +13,17 @@ export default function FinalReportPage(): React.JSX.Element {
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
 
-  const { data: reportData, isLoading } = useQuery({
+  const { data: reportData, isLoading, error } = useQuery({
     queryKey: ['student', 'final-report'],
     queryFn: async () => {
       const res = await studentApi.finalReport.index();
       return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
     },
+    retry: false,
   });
+
+  const isPhaseBlocked = (error as { response?: { data?: { error?: { code?: string; message?: string } } } })?.response?.data?.error?.code === 'PHASE_BLOCKED';
+  const phaseMessage = (error as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
 
   const mutation = useMutation({
     mutationFn: (formData: FormData) => studentApi.finalReport.store(formData),
@@ -62,7 +66,15 @@ export default function FinalReportPage(): React.JSX.Element {
         <p className="text-slate-500 font-medium">Unggah dokumen laporan akhir sebagai syarat yudisium KKN.</p>
       </header>
 
-      {report ? (
+      {isPhaseBlocked && (
+        <div className="rounded-2xl border-2 border-dashed border-amber-200 bg-amber-50 p-8 text-center space-y-3">
+          <AlertCircle className="h-12 w-12 text-amber-600 mx-auto" />
+          <h2 className="text-lg font-black text-amber-900">Belum Bisa Mengunggah</h2>
+          <p className="text-sm text-amber-800">{phaseMessage ?? 'Pengunggahan laporan akhir hanya tersedia saat masa penilaian KKN.'}</p>
+        </div>
+      )}
+
+      {!isPhaseBlocked && report ? (
         <motion.div 
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}

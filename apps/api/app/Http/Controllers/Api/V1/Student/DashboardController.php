@@ -56,6 +56,7 @@ class DashboardController extends Controller
         $dailyReportCount = ($mahasiswa->id && $activeGroupId)
             ? KegiatanKkn::where('mahasiswa_id', $mahasiswa->id)
                 ->where('kelompok_id', $activeGroupId)
+                ->where('status', 'approved')
                 ->count()
             : 0;
 

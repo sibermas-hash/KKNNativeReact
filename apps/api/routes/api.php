@@ -42,6 +42,13 @@ Route::get('/ready', [HealthController::class, 'ready'])->name('api.ready');
 // New JSON API for Next.js SPA and React Native mobile app.
 
 Route::prefix('v1')->group(function () {
+    // Versioned server time alias for @sibermas/api-client serverTime.get()
+    Route::get('/server-time', function () {
+        return response()->json([
+            'server_unix_ms' => now()->getTimestampMs(),
+        ]);
+    })->middleware('throttle:30,1');
+
     // Public endpoints — no auth required. Uses named 'public' tier
     // (30/min IP-based) defined in AppServiceProvider.
     Route::prefix('public')->middleware(['throttle:public', \Spatie\ResponseCache\Middlewares\CacheResponse::class])->group(function () {

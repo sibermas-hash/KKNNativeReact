@@ -74,9 +74,21 @@ class DailyReportController extends Controller
 
         $validated = $request->validated();
 
+        // P1-A: 1 laporan per hari per mahasiswa.
+        // Prevent dobel report di tanggal sama (sebelumnya tak ada constraint).
+        $reportDate = Carbon::parse($validated['date'])->toDateString();
+        $exists = KegiatanKkn::where('mahasiswa_id', $mahasiswa->id)
+            ->whereDate('date', $reportDate)
+            ->exists();
+        if ($exists) {
+            throw ValidationException::withMessages([
+                'date' => 'Anda sudah membuat laporan untuk tanggal ini. Edit laporan yang ada jika perlu memperbarui.',
+            ]);
+        }
+
         // 24-hour backdate protection
-        $reportDate = Carbon::parse($validated['date']);
-        if ($reportDate->diffInHours(now()) > 24 && ! auth()->user()->hasRole('superadmin')) {
+        $reportDateCarbon = Carbon::parse($validated['date']);
+        if ($reportDateCarbon->diffInHours(now()) > 24 && ! auth()->user()->hasRole('superadmin')) {
             throw ValidationException::withMessages([
                 'date' => 'Logbook maksimal diisi 24 jam setelah kegiatan berlangsung.',
             ]);

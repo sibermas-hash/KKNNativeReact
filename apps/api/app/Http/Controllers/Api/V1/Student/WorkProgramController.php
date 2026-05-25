@@ -12,6 +12,7 @@ use App\Models\KKN\ProgramKerja;
 use App\Models\KKN\ProposalProgramKerja;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -129,7 +130,7 @@ class WorkProgramController extends Controller
         );
     }
 
-    public function downloadProposal(ProgramKerja $programKerja, ProposalProgramKerja $proposal): JsonResponse
+    public function downloadProposal(ProgramKerja $programKerja, ProposalProgramKerja $proposal): StreamedResponse|JsonResponse
     {
         Gate::authorize('view', $programKerja);
 
@@ -142,9 +143,9 @@ class WorkProgramController extends Controller
             return $this->notFound('File proposal tidak ditemukan.');
         }
 
-        return $this->success([
-            'download_url' => Storage::disk(config('filesystems.default'))->url($proposal->file_path),
-            'file_name' => $proposal->file_name,
-        ]);
+        return Storage::disk(config("filesystems.default"))->download(
+            $proposal->file_path,
+            $proposal->file_name ?: basename($proposal->file_path)
+        );
     }
 }

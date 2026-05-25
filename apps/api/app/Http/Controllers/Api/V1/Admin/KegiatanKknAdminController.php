@@ -19,9 +19,23 @@ class KegiatanKknAdminController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = KegiatanKkn::with(['mahasiswa.user', 'mahasiswa.prodi', 'mahasiswa.fakultas', 'kelompok.lokasi', 'fileKegiatan', 'reviewer'])->when($request->input('kelompok_id'), fn ($q, $id) => $q->where('kelompok_id', $id))->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))->orderByDesc('date');
+        $query = KegiatanKkn::with(['mahasiswa.user', 'mahasiswa.prodi', 'mahasiswa.fakultas', 'kelompok.lokasi', 'fileKegiatan', 'reviewer'])
+            ->when($request->input('kelompok_id'), fn ($q, $id) => $q->where('kelompok_id', $id))
+            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
+            ->when($request->input('date_from'), fn ($q, $d) => $q->whereDate('date', '>=', $d))
+            ->when($request->input('date_to'), fn ($q, $d) => $q->whereDate('date', '<=', $d))
+            ->when($request->input('search'), function ($q, $s) {
+                $q->where(function ($qq) use ($s) {
+                    $qq->where('title', 'ILIKE', "%{$s}%")
+                        ->orWhere('activity', 'ILIKE', "%{$s}%")
+                        ->orWhereHas('mahasiswa', fn ($mq) => $mq->where('nama', 'ILIKE', "%{$s}%")->orWhere('nim', 'ILIKE', "%{$s}%"));
+                });
+            })
+            ->orderByDesc('date');
 
-        return $this->successCollection(KegiatanKknResource::collection($query->paginate(25)));
+        $perPage = min(1000, max(10, (int) $request->input('per_page', 25)));
+
+        return $this->successCollection(KegiatanKknResource::collection($query->paginate($perPage)));
     }
 
     public function show(KegiatanKkn $dailyReport): JsonResponse

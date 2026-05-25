@@ -77,7 +77,7 @@ export function studentEndpoints(client: AxiosInstance) {
       index: () => client.get('/chat'),
       store: (data: { subject: string; message: string; priority?: string }) => client.post('/chat', data),
       show: (id: number) => client.get(`/chat/${id}`),
-      reply: (id: number, data: { message: string }) => client.post(`/chat/${id}/reply`, data),
+      reply: (id: number, data: { message: string }) => client.post(`/chat/${id}/messages`, data),
     },
   };
 }

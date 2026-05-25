@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Popover from '@radix-ui/react-popover';
-import { Bell, BellRing, CheckCheck, AlertTriangle, CheckCircle2, Info, ArrowRight } from 'lucide-react';
+import { Bell, BellRing, CheckCheck, AlertTriangle, CheckCircle2, Info, ArrowRight, Clock3 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -222,7 +222,9 @@ export function NotificationBell({ className }: { className?: string }): React.J
   }
 
   const unreadCount = data?.unread_count ?? 0;
-  const items = data?.notifications ?? [];
+  const allItems = data?.notifications ?? [];
+  const items = allItems.slice(0, 5);
+  const hiddenCount = Math.max(0, allItems.length - items.length);
   const hasUnread = unreadCount > 0;
 
   const handleNotificationClick = (n: NotificationItem) => {
@@ -261,10 +263,10 @@ export function NotificationBell({ className }: { className?: string }): React.J
       <Popover.Portal>
         <Popover.Content
           align="end"
-          sideOffset={8}
-          className="z-50 w-96 max-w-[calc(100vw-2rem)] rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-surface)] shadow-xl"
+          sideOffset={10}
+          className="z-50 w-[30rem] max-w-[calc(100vw-1rem)] overflow-hidden rounded-3xl border border-[color:var(--profile-border)] bg-[color:var(--profile-surface)] shadow-2xl backdrop-blur-xl"
         >
-          <header className="flex items-center justify-between px-4 py-3 border-b border-[color:var(--profile-border)]">
+          <header className="flex items-start justify-between gap-3 px-4 py-3.5 border-b border-[color:var(--profile-border)] bg-[color:var(--profile-surface-strong)]">
             <div>
               <p className="text-sm font-bold text-[color:var(--profile-text)]">Notifikasi</p>
               <p className="text-[11px] text-[color:var(--profile-muted)]">
@@ -277,14 +279,14 @@ export function NotificationBell({ className }: { className?: string }): React.J
               <button
                 onClick={() => markAll.mutate()}
                 disabled={markAll.isPending}
-                className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold text-cyan-700 hover:bg-cyan-50 disabled:opacity-50"
+                className="flex shrink-0 items-center gap-1 rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wide text-[color:var(--profile-soft-text)] hover:opacity-90 disabled:opacity-50"
               >
                 <CheckCheck size={12} /> Tandai semua dibaca
               </button>
             )}
           </header>
 
-          <div className="max-h-[60vh] overflow-y-auto">
+          <div className="max-h-[68vh] overflow-y-auto">
             {items.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
                 <Bell className="h-8 w-8 text-[color:var(--profile-muted)] opacity-40 mb-2" />
@@ -327,12 +329,12 @@ export function NotificationBell({ className }: { className?: string }): React.J
           </div>
 
           {/* Footer — always show the "Lihat semua" escape hatch to full page */}
-          <footer className="border-t border-[color:var(--profile-border)] px-4 py-2.5">
+          <footer className="border-t border-[color:var(--profile-border)] bg-[color:var(--profile-surface-strong)] px-4 py-2.5">
             <Link
               href="/notifikasi"
-              className="flex items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-semibold text-cyan-700 hover:bg-cyan-50"
+              className="flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-black uppercase tracking-wide text-[color:var(--profile-primary)] hover:bg-[color:var(--profile-soft)]"
             >
-              Lihat semua notifikasi
+              {hiddenCount > 0 ? `Lihat semua notifikasi (+${hiddenCount})` : 'Lihat semua notifikasi'}
               <ArrowRight size={13} />
             </Link>
           </footer>
@@ -354,4 +356,16 @@ function PriorityIcon({ priority }: { priority?: string }): React.JSX.Element {
 
   const Icon = meta.icon;
   return <Icon className={`h-4 w-4 shrink-0 mt-0.5 ${meta.cls}`} />;
+}
+
+function notificationView(n: NotificationItem): { title: string; badge?: string } {
+  const rawTitle = (n.title || 'Notifikasi').trim();
+  const rawMessage = (n.message || '').trim();
+  const haystack = rawTitle + ' ' + rawMessage;
+  const match = haystack.match(/KKN\s+([A-Za-zÀ-ÿ0-9 .-]+)/i);
+  const program = match?.[1]?.replace(/\s+(akan|telah|dibuka|ditutup|pada|hari).*$/i, '').trim();
+  const isDeadline = /deadline|batas|hari terakhir|pendaftaran/i.test(haystack);
+  if (isDeadline && program) return { title: 'Deadline Pendaftaran KKN ' + program, badge: 'Deadline' };
+  if (isDeadline) return { title: rawTitle.replace(/\s*\([^)]*$/,'').replace(/\s*\.\.\.$/,''), badge: 'Deadline' };
+  return { title: rawTitle };
 }

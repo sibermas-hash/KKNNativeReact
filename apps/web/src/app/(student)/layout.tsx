@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore, usePeriodStore } from '@/stores';
 import { ROLE_LABELS, PHASE_LABELS } from '@sibermas/constants';
@@ -9,16 +9,11 @@ import Image from 'next/image';
 import { clsx } from 'clsx';
 import { ThemeSwitcher, useTheme } from '@/components/ui/theme-provider';
 import { NotificationBell } from '@/components/ui/notification-bell';
-import { PullToRefresh } from '@/components/ui/pull-to-refresh';
-import { SwipeHandler } from '@/components/ui/swipe-handler';
 import { ProfileIncompleteGuard } from "@/components/ui/profile-incomplete-guard";
-import { useQuery } from '@tanstack/react-query';
-import { QUERY_KEYS } from '@sibermas/constants';
-import { studentApi } from '@/lib/api';
 import {
   LayoutDashboard, ClipboardList, Target, FileText, FileCheck,
   Star, BookOpen, Plane, Home, UserCircle, Image as ImageIcon,
-  Menu, Power, Award, GraduationCap, MessageCircle, Mic,
+  Menu, Power, Award, GraduationCap, MessageCircle,
 } from 'lucide-react';
 
 type NavItem = {
@@ -27,7 +22,6 @@ type NavItem = {
   icon: typeof LayoutDashboard;
   /** Phases where this item is visible. null = always visible */
   phases: string[] | null;
-  requiresApproved?: boolean;
   external?: boolean;
 };
 
@@ -35,15 +29,14 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/mahasiswa', label: 'Dashboard', icon: LayoutDashboard, phases: null },
   { href: '/mahasiswa/pendaftaran', label: 'Daftar KKN', icon: ClipboardList, phases: ['registration', 'placement'] },
   { href: '/mahasiswa/cek-pendaftaran', label: 'Status Pendaftaran', icon: FileCheck, phases: ['registration', 'placement'] },
-  { href: '/mahasiswa/wawancara', label: 'Wawancara', icon: Mic, phases: ['registration', 'placement'] },
-  { href: '/mahasiswa/posko', label: 'Posko', icon: Home, phases: ['placement', 'execution', 'grading', 'finished'], requiresApproved: true },
-  { href: '/mahasiswa/laporan-harian', label: 'Logbook Harian', icon: FileText, phases: ['execution', 'grading'], requiresApproved: true },
-  { href: '/mahasiswa/program-kerja', label: 'Program Kerja', icon: Target, phases: ['execution', 'grading'], requiresApproved: true },
-  { href: '/mahasiswa/izin', label: 'Izin', icon: Plane, phases: ['execution', 'grading'], requiresApproved: true },
-  { href: '/mahasiswa/poster', label: 'Poster Potensi Desa', icon: ImageIcon, phases: ['execution', 'grading'], requiresApproved: true },
-  { href: '/mahasiswa/laporan-akhir', label: 'Laporan Akhir', icon: BookOpen, phases: ['grading', 'finished'], requiresApproved: true },
-  { href: '/mahasiswa/evaluasi-dpl', label: 'Evaluasi DPL', icon: Star, phases: ['grading', 'finished'], requiresApproved: true },
-  { href: '/mahasiswa/sertifikat', label: 'Sertifikat', icon: Award, phases: ['grading', 'finished'], requiresApproved: true },
+  { href: '/mahasiswa/posko', label: 'Posko', icon: Home, phases: ['placement', 'execution', 'grading', 'finished'] },
+  { href: '/mahasiswa/laporan-harian', label: 'Logbook Harian', icon: FileText, phases: ['execution', 'grading'] },
+  { href: '/mahasiswa/program-kerja', label: 'Program Kerja', icon: Target, phases: ['execution', 'grading'] },
+  { href: '/mahasiswa/izin', label: 'Izin', icon: Plane, phases: ['execution', 'grading'] },
+  { href: '/mahasiswa/poster', label: 'Poster Potensi Desa', icon: ImageIcon, phases: ['execution', 'grading'] },
+  { href: '/mahasiswa/laporan-akhir', label: 'Laporan Akhir', icon: BookOpen, phases: ['grading', 'finished'] },
+  { href: '/mahasiswa/evaluasi-dpl', label: 'Evaluasi DPL', icon: Star, phases: ['grading', 'finished'] },
+  { href: '/mahasiswa/sertifikat', label: 'Sertifikat', icon: Award, phases: ['grading', 'finished'] },
   { href: '/profil', label: 'Profil', icon: UserCircle, phases: null },
 ];
 
@@ -52,33 +45,10 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const pathname = usePathname() ?? "";
   const { user, isAuthenticated, isLoading, clearUser } = useAuthStore();
   const { currentPhase, activePeriod } = usePeriodStore();
-  const { data: dashboardData } = useQuery<Record<string, unknown> | null>({
-    queryKey: QUERY_KEYS.student.dashboard,
-    queryFn: () => studentApi.dashboard() as unknown as Promise<Record<string, unknown> | null>,
-    enabled: isAuthenticated && !!user?.roles?.includes('student'),
-    staleTime: 30_000,
-  });
   const { config: themeConfig } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = rootRef.current;
-    if (!el) return;
-    const vars = themeConfig.vars as Record<string, string>;
-    Object.entries(vars).forEach(([key, value]) => el.style.setProperty(key, value));
-    el.style.background = themeConfig.backdrop;
-  }, [themeConfig]);
-  const registration = dashboardData?.registration as Record<string, unknown> | null | undefined;
-  const normalizedStatus = String(registration?.status || '').toLowerCase();
-  const isRegisteredApproved = ['approved', 'disetujui', 'verifikasi_pusat', 'completed', 'selesai'].includes(normalizedStatus);
-  const safeNavItems = useMemo(
-    () => NAV_ITEMS.filter((item) => !item.requiresApproved || isRegisteredApproved),
-    [isRegisteredApproved],
-  );
-
   const isProfilePage = pathname === '/profil';
-  const currentNavItem = safeNavItems.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
+  const currentNavItem = NAV_ITEMS.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
   const isPhaseAllowed = !currentNavItem?.phases || currentNavItem.phases.includes(currentPhase || '');
 
   useEffect(() => {
@@ -109,7 +79,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   };
 
   return (
-    <SwipeHandler onSwipeRight={() => setSidebarOpen(true)} onSwipeLeft={() => setSidebarOpen(false)} className="min-h-screen"><div ref={rootRef} className="app-readable min-h-screen font-sans transition-colors duration-500">
+    <div className="app-readable min-h-screen font-sans transition-colors duration-500" style={{ ...themeConfig.vars, background: themeConfig.backdrop }}>
       {/* Sidebar overlay mobile */}
       {sidebarOpen && (
         <div
@@ -171,8 +141,8 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             MENU UTAMA
           </h3>
           <div className="space-y-1">
-            {safeNavItems.filter((item) => item.phases === null || item.phases.includes(currentPhase || 'upcoming')).map((item) => {
-              const isActive = !item.external && (pathname === item.href || pathname.startsWith(item.href + '/'));
+            {NAV_ITEMS.filter((item) => item.phases === null || item.phases.includes(currentPhase || 'upcoming')).map((item) => {
+              const isActive = !item.external && (pathname === item.href || ((item.href !== '/mahasiswa' && item.href !== '/dosen') && pathname.startsWith(item.href + '/')));
               const linkProps = item.external ? { target: "_blank", rel: "noopener noreferrer" } : {};
               return (
                 <Link
@@ -251,7 +221,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         </header>
 
         <ProfileIncompleteGuard />
-        <PullToRefresh className="flex-1"><main className="p-4 lg:p-8 text-[color:var(--profile-text)]">{children}</main></PullToRefresh>
+        <main className="flex-1 p-4 lg:p-8 text-[color:var(--profile-text)]">{children}</main>
       </div>
 
       {pathname !== '/mahasiswa/chat' && (
@@ -259,7 +229,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           href="/mahasiswa/chat"
           aria-label="Chat Admin"
           title="Chat Admin"
-          className="fixed bottom-5 right-5 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-emerald-600 text-white shadow-2xl shadow-emerald-900/25 ring-4 ring-white transition-all hover:-translate-y-0.5 hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 md:bottom-6 md:right-6"
+          className="fixed bottom-5 right-5 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-[color:var(--profile-primary)] text-white shadow-2xl shadow-black/20 ring-4 ring-[color:var(--profile-surface)] transition-all hover:-translate-y-0.5 hover:opacity-90 focus:outline-none focus:ring-4 focus:ring-[color:var(--profile-soft)] md:bottom-6 md:right-6"
         >
           <MessageCircle className="h-6 w-6" strokeWidth={2.5} />
           <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full border-2 border-white bg-rose-500" />
@@ -267,6 +237,5 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         </Link>
       )}
     </div>
-    </SwipeHandler>
   );
 }

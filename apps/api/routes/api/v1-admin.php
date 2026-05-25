@@ -71,6 +71,7 @@ Route::prefix('admin')
         // Dashboard
         Route::get('/hub', [DashboardController::class, 'hub']);
         Route::get('/dashboard', [DashboardController::class, 'index']);
+        Route::post('/dashboard/switch-phase', [DashboardController::class, 'switchPhase']);
         
         Route::get('/ai-health', [AiHealthController::class, 'show']);
 

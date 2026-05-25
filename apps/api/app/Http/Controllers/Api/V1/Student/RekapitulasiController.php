@@ -21,14 +21,29 @@ class RekapitulasiController extends Controller
         /** @var User|null $user */
         $user = auth()->user();
         $mahasiswa = $user?->mahasiswa;
-        abort_if(! $mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
+
+        if (! $mahasiswa) {
+            return $this->success([
+                'kelompok' => null,
+                'rekapitulasi' => [],
+                'is_ketua' => false,
+                'message' => 'Data mahasiswa belum tersedia.',
+            ]);
+        }
 
         $peserta = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
             ->where('status', 'approved')
             ->with(['kelompok.lokasi', 'kelompok.periode'])
             ->first();
 
-        abort_if(! $peserta?->kelompok, 403, 'Anda belum memiliki kelompok KKN aktif.');
+        if (! $peserta?->kelompok) {
+            return $this->success([
+                'kelompok' => null,
+                'rekapitulasi' => [],
+                'is_ketua' => false,
+                'message' => 'Anda belum memiliki kelompok KKN aktif. Rekapitulasi akan tersedia setelah plotting kelompok selesai.',
+            ]);
+        }
 
         $rekapitulasi = RekapitulasiKegiatan::where('kelompok_id', $peserta->kelompok_id)
             ->orderBy('uraian_kegiatan')
@@ -45,6 +60,7 @@ class RekapitulasiController extends Controller
                 ] : null,
                 'periode' => $peserta->kelompok->periode?->name,
             ],
+            'is_ketua' => strtolower((string) $peserta->role) === 'ketua',
             'rekapitulasi' => $rekapitulasi,
         ]);
     }

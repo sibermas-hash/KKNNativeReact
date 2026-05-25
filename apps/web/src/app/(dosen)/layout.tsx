@@ -10,7 +10,6 @@ import { clsx } from 'clsx';
 import { ThemeSwitcher, useTheme } from '@/components/ui/theme-provider';
 import { NotificationBell } from '@/components/ui/notification-bell';
 import { PullToRefresh } from '@/components/ui/pull-to-refresh';
-import { SwipeHandler } from '@/components/ui/swipe-handler';
 import {
   LayoutDashboard, Home, Users, ClipboardList, FileText,
   Star, MapPin, Plane, UserCircle,
@@ -148,7 +147,7 @@ export default function DosenLayout({ children }: { children: React.ReactNode })
               if (item.phases && !item.phases.includes(currentPhase || 'upcoming')) return false;
               return true;
             }).map((item) => {
-              const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+              const isActive = pathname === item.href || ((item.href !== '/mahasiswa' && item.href !== '/dosen') && pathname.startsWith(item.href + '/'));
               return (
                 <Link
                   key={item.href}

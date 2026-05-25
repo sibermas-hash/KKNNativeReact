@@ -32,7 +32,7 @@ const GRADE_COLORS: Record<string, string> = {
 };
 
 export default function StudentEvaluasiPage(): React.JSX.Element {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error } = useQuery({
     queryKey: ['student', 'evaluations'],
     queryFn: async () => {
       const res = await (studentApi as unknown as {
@@ -40,7 +40,11 @@ export default function StudentEvaluasiPage(): React.JSX.Element {
       }).evaluations.index();
       return (res as { data?: Evaluation[] }).data ?? [];
     },
+    retry: false,
   });
+
+  const isPhaseBlocked = (error as { response?: { data?: { error?: { code?: string; message?: string } } } })?.response?.data?.error?.code === 'PHASE_BLOCKED';
+  const phaseMessage = (error as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
 
   const evaluations = data ?? [];
   const avgScore = evaluations.length > 0
@@ -62,8 +66,17 @@ export default function StudentEvaluasiPage(): React.JSX.Element {
         </div>
       </div>
 
+      {/* Phase blocked */}
+      {isPhaseBlocked && (
+        <div className="rounded-2xl border-2 border-dashed border-amber-200 bg-amber-50 p-8 text-center space-y-3">
+          <ClipboardList className="h-12 w-12 text-amber-600 mx-auto" />
+          <h2 className="text-lg font-black text-amber-900">Belum Tersedia</h2>
+          <p className="text-sm text-amber-800">{phaseMessage ?? 'Hasil evaluasi akan tersedia setelah masa penilaian KKN.'}</p>
+        </div>
+      )}
+
       {/* Stats */}
-      {evaluations.length > 0 && (
+      {!isPhaseBlocked && evaluations.length > 0 && (
         <div className="grid grid-cols-2 gap-4">
           <StatCard icon={ClipboardList} label="Total Evaluasi" value={evaluations.length} color="indigo" />
           <StatCard icon={Star} label="Rata-rata Nilai" value={avgScore} color="emerald" />
@@ -71,11 +84,11 @@ export default function StudentEvaluasiPage(): React.JSX.Element {
       )}
 
       {/* Content */}
-      {isLoading ? (
+      {!isPhaseBlocked && isLoading ? (
         <div className="space-y-4">
           {[1, 2].map((i) => <div key={i} className="h-48 animate-pulse rounded-2xl bg-slate-200" />)}
         </div>
-      ) : evaluations.length === 0 ? (
+      ) : !isPhaseBlocked && evaluations.length === 0 ? (
         <EmptyState
           icon={<ClipboardList size={48} />}
           title="Belum Ada Evaluasi"

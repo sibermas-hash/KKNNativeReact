@@ -217,6 +217,12 @@ export default function AdminLokasiPage(): React.JSX.Element {
   };
   const stateOf = (ids: number[]) => ({ checked: ids.length > 0 && ids.every(id => selected.has(id)), partial: ids.some(id => selected.has(id)) && !ids.every(id => selected.has(id)) });
   const toggleSet = (setter: React.Dispatch<React.SetStateAction<Set<string>>>, key: string) => setter(prev => { const next = new Set(prev); next.has(key) ? next.delete(key) : next.add(key); return next; });
+  const allRegencyKeys = Object.keys(tree);
+  const allDistrictKeys = Object.entries(tree).flatMap(([r, ds]) => Object.keys(ds).map((d) => `${r}|${d}`));
+  const expandAll = () => { setOpenRegencies(new Set(allRegencyKeys)); setOpenDistricts(new Set(allDistrictKeys)); };
+  const collapseAll = () => { setOpenRegencies(new Set()); setOpenDistricts(new Set()); };
+  const selectedCapacity = filtered.reduce((sum, l) => sum + (selected.has(l.id) ? (l.capacity ?? 0) : 0), 0);
+  const maxGroups = selected.size;
 
   const openCreate = () => {
     setEditing(null);
@@ -280,7 +286,7 @@ export default function AdminLokasiPage(): React.JSX.Element {
         <div>
           <h1 className="text-2xl font-black uppercase text-slate-900">Wilayah Penugasan KKN</h1>
           <p className="text-sm text-slate-500">
-            Master data lokasi (desa) untuk plotting KKN. {stats.data?.total ?? 0} desa di {stats.data?.regencyCount ?? 0} kabupaten.
+            Master data lokasi untuk penempatan KKN. {selected.size} desa dipilih · estimasi {selectedCapacity} mahasiswa · maksimal {maxGroups} kelompok.
           </p>
         </div>
         <div className="flex gap-2">
@@ -399,8 +405,8 @@ export default function AdminLokasiPage(): React.JSX.Element {
       {/* Tree checklist */}
       <div className="rounded-xl border bg-white overflow-hidden shadow-sm">
         <div className="flex items-center justify-between border-b bg-slate-50 px-4 py-3">
-          <div><h2 className="font-black text-slate-900">Checklist Wilayah</h2><p className="text-xs text-slate-500">Kabupaten → Kecamatan → Desa. Terpilih: {selected.size} desa.</p></div>
-          <button onClick={() => setSelected(new Set())} className="rounded border bg-white px-3 py-1.5 text-xs font-bold text-slate-600">Reset Pilihan</button>
+          <div><h2 className="font-black text-slate-900">Checklist Wilayah</h2><p className="text-xs text-slate-500">Kabupaten → Kecamatan → Desa. Terpilih: {selected.size} desa · estimasi {selectedCapacity} mahasiswa · max {maxGroups} kelompok.</p></div>
+          <div className="flex flex-wrap gap-2"><button onClick={expandAll} className="rounded border bg-white px-3 py-1.5 text-xs font-bold text-slate-600">Expand All</button><button onClick={collapseAll} className="rounded border bg-white px-3 py-1.5 text-xs font-bold text-slate-600">Collapse All</button><button onClick={() => setMany(filtered.map((l) => l.id), false)} className="rounded border bg-white px-3 py-1.5 text-xs font-bold text-rose-600">Clear All</button></div>
         </div>
         {list.isLoading ? <div className="p-8 text-center text-slate-500"><Loader2 className="h-5 w-5 animate-spin inline mr-2" /> Memuat...</div> : (
           <div className="divide-y">
@@ -410,15 +416,15 @@ export default function AdminLokasiPage(): React.JSX.Element {
                 <div className="flex items-center gap-3 bg-teal-50/60 px-4 py-3">
                   <button onClick={() => toggleSet(setOpenRegencies, reg)} className="rounded p-1 hover:bg-white">{regOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}</button>
                   <input type="checkbox" checked={regState.checked} ref={(el) => { if (el) el.indeterminate = regState.partial; }} onChange={(e) => setMany(regIds, e.target.checked)} className="h-4 w-4" />
-                  <div className="flex-1"><div className="font-black text-teal-900">{reg}</div><div className="text-xs text-teal-700">{Object.keys(districts).length} kecamatan · {regVillages.length} desa</div></div>
+                  <div className="flex-1"><div className="font-black text-teal-900">{reg}</div><div className="text-xs text-teal-700">{Object.keys(districts).length} kecamatan · {regVillages.length} desa · {regIds.filter(id => selected.has(id)).length} dipilih</div></div>
                 </div>
                 {regOpen && <div className="pl-8">{Object.entries(districts).sort(([a], [b]) => a.localeCompare(b)).map(([dist, villages]) => {
                   const key = `${reg}|${dist}`; const ids = villages.map(v => v.id); const st = stateOf(ids); const open = openDistricts.has(key);
                   return <div key={key} className="border-t"><div className="flex items-center gap-3 px-4 py-2 bg-slate-50">
                     <button onClick={() => toggleSet(setOpenDistricts, key)} className="rounded p-1 hover:bg-white">{open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}</button>
                     <input type="checkbox" checked={st.checked} ref={(el) => { if (el) el.indeterminate = st.partial; }} onChange={(e) => setMany(ids, e.target.checked)} className="h-4 w-4" />
-                    <div className="flex-1 font-bold text-slate-800">{dist}</div><span className="text-xs text-slate-500">{villages.length} desa</span></div>
-                    {open && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1 p-3 pl-12">{villages.map((l) => <label key={l.id} className="flex items-center gap-2 rounded border border-slate-100 px-2 py-1.5 text-sm hover:bg-slate-50"><input type="checkbox" checked={selected.has(l.id)} onChange={(e) => setMany([l.id], e.target.checked)} className="h-4 w-4" /><span className="flex-1 truncate">{l.village_name ?? '-'}</span><button type="button" onClick={() => openEdit(l)} className="text-xs font-bold text-teal-700 hover:underline">Edit</button></label>)}</div>}
+                    <div className="flex-1 font-bold text-slate-800">{dist}</div><span className="text-xs text-slate-500">{ids.filter(id => selected.has(id)).length}/{villages.length} desa</span></div>
+                    {open && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1 p-3 pl-12">{villages.map((l) => <label key={l.id} className="flex items-center gap-2 rounded border border-slate-100 px-2 py-1.5 text-sm hover:bg-slate-50"><input type="checkbox" checked={selected.has(l.id)} onChange={(e) => setMany([l.id], e.target.checked)} className="h-4 w-4" /><span className="flex-1 truncate">{l.village_name ?? '-'}</span><span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] text-slate-600">{l.capacity ?? 0} mhs</span><button type="button" onClick={() => openEdit(l)} className="text-xs font-bold text-teal-700 hover:underline">Edit</button></label>)}</div>}
                   </div>;
                 })}</div>}
               </div>;

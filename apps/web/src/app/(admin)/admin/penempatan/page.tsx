@@ -24,8 +24,8 @@ export default function PenempatanKknPage(): React.JSX.Element {
     <main className="space-y-6 p-6">
       <div>
         <p className="text-xs font-black uppercase tracking-wide text-teal-600">Penempatan KKN</p>
-        <h1 className="text-2xl font-black uppercase text-slate-900">Dashboard Penempatan Per Jenis KKN</h1>
-        <p className="text-sm text-slate-500">Reguler memakai checklist wilayah + plotting otomatis. Non-reguler memakai input manual di sistem Sibermas.</p>
+        <h1 className="text-2xl font-black uppercase text-slate-900">Pusat Penempatan KKN</h1>
+        <p className="text-sm text-slate-500">Pilih jenis KKN, lalu ikuti workflow yang sesuai. Semua penempatan tetap tercatat di sistem Sibermas.</p>
       </div>
 
       <div className="rounded-xl border bg-white p-2 shadow-sm">
@@ -42,7 +42,7 @@ export default function PenempatanKknPage(): React.JSX.Element {
         <section className="rounded-2xl border border-teal-200 bg-teal-50 p-6 shadow-sm">
           <div className="text-xs font-black uppercase tracking-wide text-teal-700">Mode Otomatis</div>
           <h2 className="mt-1 text-xl font-black text-teal-950">{label}</h2>
-          <p className="mt-2 text-sm text-teal-800">Atur desa kandidat, lalu jalankan plotting otomatis. Aturan: 1 desa maksimal 1 kelompok.</p>
+          <p className="mt-2 text-sm text-teal-800">Workflow Reguler: pilih desa kandidat, jalankan plotting otomatis, lalu review kelompok. Aturan: 1 desa maksimal 1 kelompok.</p>
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             <Action href="/admin/lokasi?jenis_kkn=reguler" icon={<MapPin className="h-5 w-5" />} title="Atur Wilayah Reguler" desc="Checklist desa kandidat KKN Reguler" />
             <Action href="/admin/plotting-otomatis?jenis_kkn=reguler" icon={<Shuffle className="h-5 w-5" />} title="Plotting Otomatis" desc="Generate kelompok otomatis" />
@@ -53,11 +53,11 @@ export default function PenempatanKknPage(): React.JSX.Element {
         <section className="rounded-2xl border border-amber-200 bg-amber-50 p-6 shadow-sm">
           <div className="text-xs font-black uppercase tracking-wide text-amber-700">Mode Manual</div>
           <h2 className="mt-1 text-xl font-black text-amber-950">{label}</h2>
-          <p className="mt-2 text-sm text-amber-800">Penempatan tetap di sistem Sibermas: admin buat kelompok, input/pilih lokasi, tambah peserta, lalu assign DPL. Tidak memakai checklist wilayah massal.</p>
+          <p className="mt-2 text-sm text-amber-800">Workflow Manual: admin buat kelompok, tentukan lokasi, tambah peserta, lalu assign DPL. Tidak memakai checklist wilayah massal.</p>
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             <Action href={`/admin/kelompok?jenis_kkn=${active}&mode=manual`} icon={<Users className="h-5 w-5" />} title="Buat Kelompok Manual" desc="Kelompok & peserta jenis ini" amber />
             <Action href={`/admin/dosen/penugasan?jenis_kkn=${active}`} icon={<GraduationCap className="h-5 w-5" />} title="Penugasan DPL" desc="Assign DPL ke kelompok" amber />
-            <Action href={`/admin/lokasi?jenis_kkn=${active}`} icon={<MapPin className="h-5 w-5" />} title="Info Wilayah" desc="Lihat catatan mode manual" amber />
+            <Action href={`/admin/kelompok?jenis_kkn=${active}`} icon={<MapPin className="h-5 w-5" />} title="Review Kelompok" desc="Cek kelompok jenis ini" amber />
           </div>
         </section>
       )}

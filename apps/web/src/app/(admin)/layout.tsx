@@ -54,8 +54,6 @@ const getNavGroups = (pathname: string, roles: string[]) => {
     ]},
     { title: 'PENEMPATAN', items: [
       { label: 'Penempatan KKN', href: '/admin/penempatan', icon: MapPin },
-      { label: 'Wilayah Reguler', href: '/admin/lokasi?jenis_kkn=reguler', icon: MapPin },
-      { label: 'Plotting Otomatis Reguler', href: '/admin/plotting-otomatis?jenis_kkn=reguler', icon: Shuffle },
       { label: 'Manajemen Kelompok', href: '/admin/kelompok', icon: Users },
       { label: 'Penugasan DPL', href: '/admin/dosen/penugasan', icon: MapPin },
     ]},

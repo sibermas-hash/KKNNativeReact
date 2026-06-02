@@ -5,11 +5,19 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Http\Controllers\Api\V1\Admin\ActivityAuditController;
+use App\Http\Controllers\Api\V1\Admin\AiHealthController;
+use App\Http\Controllers\Api\V1\Admin\AutoPlottingController;
+use App\Http\Controllers\Api\V1\Admin\CountdownSettingController;
+use App\Http\Controllers\Api\V1\Admin\InterviewController;
+use App\Http\Controllers\Api\V1\Admin\LegacyKknTrackingController;
+use App\Http\Controllers\Api\V1\Admin\PesertaKknListController;
+use App\Http\Controllers\Api\V1\Admin\TransferPesertaController;
 use App\Http\Controllers\Api\V1\Admin\AdminChatController;
 use App\Http\Controllers\Api\V1\Admin\AnnouncementController;
 use App\Http\Controllers\Api\V1\Admin\AvatarModerationController;
 use App\Http\Controllers\Api\V1\Admin\BulkCertificateDownloadController;
 use App\Http\Controllers\Api\V1\Admin\CertificateConfigController;
+use App\Http\Controllers\Api\V1\Admin\CollaborationLetterController;
 use App\Http\Controllers\Api\V1\Admin\ComprehensiveReportController;
 use App\Http\Controllers\Api\V1\Admin\DashboardController;
 use App\Http\Controllers\Api\V1\Admin\DatabaseSyncController;
@@ -24,6 +32,7 @@ use App\Http\Controllers\Api\V1\Admin\DplRegistrationController;
 use App\Http\Controllers\Api\V1\Admin\DplSyncController;
 use App\Http\Controllers\Api\V1\Admin\EligibilityController;
 use App\Http\Controllers\Api\V1\Admin\EvaluasiController;
+use App\Http\Controllers\Api\V1\Admin\ExternalUniversityController;
 use App\Http\Controllers\Api\V1\Admin\FakultasController;
 use App\Http\Controllers\Api\V1\Admin\GeneratorNilaiController;
 use App\Http\Controllers\Api\V1\Admin\GradeController;
@@ -124,6 +133,8 @@ class EnsureAdminAuthorization
         // must re-check 'manage-participants' at the controller level)
         PesertaKknController::class => 'view-participants',
         StudentTransferController::class => 'view-participants',
+        ExternalUniversityController::class => 'manage-participants',
+        CollaborationLetterController::class => 'manage-participants',
 
         // Groups
         KelompokKknAdminController::class => 'manage-groups',
@@ -178,6 +189,14 @@ class EnsureAdminAuthorization
         LaporanAkhirAdminController::class => 'manage-kkn-operations',
         YudisiumController::class => 'manage-kkn-operations',
         DispensasiController::class => 'manage-kkn-operations',
+
+        AiHealthController::class => 'manage-settings',
+        CountdownSettingController::class => 'manage-settings',
+        AutoPlottingController::class => 'manage-groups',
+        InterviewController::class => 'manage-participants',
+        LegacyKknTrackingController::class => 'manage-reports',
+        PesertaKknListController::class => 'view-participants',
+        TransferPesertaController::class => 'manage-participants',
 
         // Eligibility / requirements
         EligibilityController::class => 'manage-eligibility',

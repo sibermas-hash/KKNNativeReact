@@ -22,9 +22,10 @@ class PesertaKkn extends Model
     protected $fillable = [
         'mahasiswa_id',
         'periode_id',
-        'statement_agreement_id',
         'kelompok_id',
         'status',
+        'entry_scheme',
+        'collaboration_letter_id',
         'role',
         'notes',
         'rejection_reason',
@@ -44,6 +45,7 @@ class PesertaKkn extends Model
     {
         return [
             'registration_date' => 'datetime',
+            'collaboration_letter_id' => 'integer',
             'approved_at' => 'datetime',
             'last_rejected_at' => 'datetime',
             'resubmitted_at' => 'datetime',
@@ -72,9 +74,9 @@ class PesertaKkn extends Model
         return $this->belongsTo(KelompokKkn::class, 'kelompok_id');
     }
 
-    public function statementAgreement(): BelongsTo
+    public function collaborationLetter(): BelongsTo
     {
-        return $this->belongsTo(KknStatementAgreement::class, 'statement_agreement_id');
+        return $this->belongsTo(CollaborationLetter::class, 'collaboration_letter_id');
     }
 
     public function dokumen(): HasMany

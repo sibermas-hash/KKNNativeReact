@@ -1,13 +1,12 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Admin\ActivityAuditController;
-use App\Http\Controllers\Api\V1\Admin\AiHealthController;
 use App\Http\Controllers\Api\V1\Admin\AdminChatController;
 use App\Http\Controllers\Api\V1\Admin\AnnouncementController;
 use App\Http\Controllers\Api\V1\Admin\AvatarModerationController;
-use App\Http\Controllers\Api\V1\Admin\AutoPlottingController;
 use App\Http\Controllers\Api\V1\Admin\BulkCertificateDownloadController;
 use App\Http\Controllers\Api\V1\Admin\CertificateConfigController;
+use App\Http\Controllers\Api\V1\Admin\CollaborationLetterController;
 use App\Http\Controllers\Api\V1\Admin\ComprehensiveReportController;
 use App\Http\Controllers\Api\V1\Admin\DashboardController;
 use App\Http\Controllers\Api\V1\Admin\DatabaseSyncController;
@@ -22,6 +21,7 @@ use App\Http\Controllers\Api\V1\Admin\DplRegistrationController;
 use App\Http\Controllers\Api\V1\Admin\DplSyncController;
 use App\Http\Controllers\Api\V1\Admin\EligibilityController;
 use App\Http\Controllers\Api\V1\Admin\EvaluasiController;
+use App\Http\Controllers\Api\V1\Admin\ExternalUniversityController;
 use App\Http\Controllers\Api\V1\Admin\FakultasController;
 use App\Http\Controllers\Api\V1\Admin\GeneratorNilaiController;
 use App\Http\Controllers\Api\V1\Admin\GradeController;
@@ -29,7 +29,6 @@ use App\Http\Controllers\Api\V1\Admin\JenisKknController;
 use App\Http\Controllers\Api\V1\Admin\JenisKknDocumentRequirementController;
 use App\Http\Controllers\Api\V1\Admin\KegiatanKknAdminController;
 use App\Http\Controllers\Api\V1\Admin\KelompokKknAdminController;
-use App\Http\Controllers\Api\V1\Admin\LegacyKknTrackingController;
 use App\Http\Controllers\Api\V1\Admin\KknRequirementController;
 use App\Http\Controllers\Api\V1\Admin\KonfigurasiPenilaianController;
 use App\Http\Controllers\Api\V1\Admin\LaporanAkhirAdminController;
@@ -59,21 +58,16 @@ use App\Http\Controllers\Api\V1\Admin\UserActivityController;
 use App\Http\Controllers\Api\V1\Admin\UserController;
 use App\Http\Controllers\Api\V1\Admin\WorkshopController;
 use App\Http\Controllers\Api\V1\Admin\YudisiumController;
-use App\Http\Controllers\Api\V1\Admin\InterviewController;
-use App\Http\Controllers\Api\V1\Admin\PesertaKknListController;
-use App\Http\Controllers\Api\V1\Admin\TransferPesertaController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')
-    ->middleware(['auth:sanctum', 'role:superadmin|admin|faculty_admin', 'not_locked', 'admin.auth'])
+    ->middleware(['auth:sanctum', 'role:superadmin|admin|faculty_admin', '2fa.enforced', 'not_locked', 'admin.auth'])
     ->group(function () {
 
         // Dashboard
         Route::get('/hub', [DashboardController::class, 'hub']);
         Route::get('/dashboard', [DashboardController::class, 'index']);
         Route::post('/dashboard/switch-phase', [DashboardController::class, 'switchPhase']);
-        
-        Route::get('/ai-health', [AiHealthController::class, 'show']);
 
         // Periode
         Route::get('/periode/export', [PeriodeController::class, 'export']);
@@ -83,31 +77,22 @@ Route::prefix('admin')
         Route::post('/periode/{periode}/document-templates', [PeriodeDocumentTemplateController::class, 'assign']);
         Route::delete('/periode/{periode}/document-templates/{periodDocumentTemplate}', [PeriodeDocumentTemplateController::class, 'destroy']);
 
-        // Countdown Settings
-        Route::get("/periode/{periode}/countdown", [\App\Http\Controllers\Api\V1\Admin\CountdownSettingController::class, "show"]);
-        Route::post("/periode/{periode}/countdown", [\App\Http\Controllers\Api\V1\Admin\CountdownSettingController::class, "store"]);
-
         // Master Data
         Route::apiResource('tahun-akademik', TahunAkademikController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('jenis-kkn', JenisKknController::class);
+        Route::apiResource('external-universities', ExternalUniversityController::class)
+            ->middleware('role:superadmin|admin');
+        Route::get('/collaboration-letters', [CollaborationLetterController::class, 'index'])->middleware('role:superadmin|admin');
+        Route::get('/collaboration-letters/{letter}', [CollaborationLetterController::class, 'show'])->middleware('role:superadmin|admin');
+        Route::patch('/collaboration-letters/{letter}', [CollaborationLetterController::class, 'update'])->middleware('role:superadmin|admin');
+        Route::post('/collaboration-letters/{letter}/verify', [CollaborationLetterController::class, 'verify'])->middleware('role:superadmin|admin');
+        Route::post('/collaboration-letters/{letter}/reject', [CollaborationLetterController::class, 'reject'])->middleware('role:superadmin|admin');
         Route::get('/jenis-kkn/{jenisKkn}/document-requirements', [JenisKknDocumentRequirementController::class, 'index']);
         Route::post('/jenis-kkn/{jenisKkn}/document-requirements', [JenisKknDocumentRequirementController::class, 'store']);
         Route::put('/jenis-kkn/{jenisKkn}/document-requirements/{requirement}', [JenisKknDocumentRequirementController::class, 'update']);
         Route::delete('/jenis-kkn/{jenisKkn}/document-requirements/{requirement}', [JenisKknDocumentRequirementController::class, 'destroy']);
-        Route::get('/fakultas', [FakultasController::class, 'index']);
-        Route::middleware('role:superadmin')->group(function () {
-            Route::post('/fakultas', [FakultasController::class, 'store']);
-            Route::put('/fakultas/{fakultas}', [FakultasController::class, 'update']);
-            Route::patch('/fakultas/{fakultas}', [FakultasController::class, 'update']);
-            Route::delete('/fakultas/{fakultas}', [FakultasController::class, 'destroy']);
-        });
-        Route::get('/prodi', [ProdiController::class, 'index']);
-        Route::middleware('role:superadmin')->group(function () {
-            Route::post('/prodi', [ProdiController::class, 'store']);
-            Route::put('/prodi/{prodi}', [ProdiController::class, 'update']);
-            Route::patch('/prodi/{prodi}', [ProdiController::class, 'update']);
-            Route::delete('/prodi/{prodi}', [ProdiController::class, 'destroy']);
-        });
+        Route::apiResource('fakultas', FakultasController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::apiResource('prodi', ProdiController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::apiResource('lokasi', LokasiController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::post('/lokasi/import', [LokasiController::class, 'import']);
         Route::get('/lokasi/export', [LokasiController::class, 'export']);
@@ -117,7 +102,6 @@ Route::prefix('admin')
         Route::patch('/kkn-requirements/{requirement}/toggle', [KknRequirementController::class, 'toggle']);
         Route::get('/document-templates', [DocumentTemplateController::class, 'index']);
         Route::post('/document-templates', [DocumentTemplateController::class, 'store']);
-        Route::patch('/document-templates/{documentTemplate}', [DocumentTemplateController::class, 'update']);
         Route::delete('/document-templates/{documentTemplate}', [DocumentTemplateController::class, 'destroy']);
         Route::get('/document-templates/{documentTemplate}/download', [DocumentTemplateController::class, 'download'])->name('api.v1.admin.document-templates.download');
 
@@ -125,45 +109,17 @@ Route::prefix('admin')
         Route::get('/pendaftaran/export', [PesertaKknController::class, 'export']);
         Route::get('/pendaftaran/export-biodata', [PesertaKknController::class, 'exportBiodata']);
         Route::get('/pendaftaran/export-bpjs', [PesertaKknController::class, 'exportBpjs']);
+        Route::get('/pendaftaran/summary', [PesertaKknController::class, 'summary']);
         Route::get('/pendaftaran/berkas/unduh', [PesertaKknController::class, 'downloadDocument']);
         Route::post('/pendaftaran/bulk-approve', [PesertaKknController::class, 'bulkApprove'])->middleware('throttle:10,1');
         Route::post('/pendaftaran/bulk-reject', [PesertaKknController::class, 'bulkReject'])->middleware('throttle:10,1');
-        Route::get('/pendaftaran/stats', [PesertaKknController::class, 'stats']);
         Route::get('/pendaftaran', [PesertaKknController::class, 'index']);
         Route::get('/pendaftaran/{pesertaKkn}', [PesertaKknController::class, 'show']);
         Route::patch('/pendaftaran/{pesertaKkn}/approve', [PesertaKknController::class, 'approve']);
         Route::patch('/pendaftaran/{pesertaKkn}/reject', [PesertaKknController::class, 'reject']);
-
-        // Wawancara / Interview
-        Route::get('/peserta-kkn/export', [PesertaKknListController::class, 'export']);
-        Route::get('/peserta-kkn', [PesertaKknListController::class, 'index']);
-        Route::get('/peserta-wawancara', [InterviewController::class, 'pesertaWawancara']);
-
-        Route::get('/transfer-peserta', [TransferPesertaController::class, 'index']);
-        Route::get('/transfer-peserta/periodes', [TransferPesertaController::class, 'periodes']);
-        Route::post('/transfer-peserta', [TransferPesertaController::class, 'transfer']);
-
-        Route::prefix('wawancara')->group(function () {
-            Route::get('/', [InterviewController::class, 'index']);
-            Route::post('/', [InterviewController::class, 'store']);
-            Route::get('/export', [InterviewController::class, 'export']);
-            Route::get('/{interview}', [InterviewController::class, 'show']);
-            Route::patch('/{interview}', [InterviewController::class, 'update']);
-            Route::delete('/{interview}', [InterviewController::class, 'destroy']);
-            Route::get('/{interview}/available-peserta', [InterviewController::class, 'availablePeserta']);
-            Route::post('/{interview}/assign', [InterviewController::class, 'assignParticipants']);
-            Route::delete('/{interview}/participants/{participant}', [InterviewController::class, 'removeParticipant']);
-            Route::patch('/{interview}/participants/{participant}/result', [InterviewController::class, 'recordResult']);
-            Route::post('/{interview}/bulk-result', [InterviewController::class, 'bulkRecordResult']);
-        });
-
         Route::patch('/pendaftaran/{pesertaKkn}/assign-group', [PesertaKknController::class, 'assignGroup']);
         Route::post('/pendaftaran/{pesertaKkn}/make-leader', [PesertaKknController::class, 'makeLeader']);
         // Korcam is a DPL role (not mahasiswa) — managed via DPL assignment, not here
-
-        // Auto Plotting
-        Route::post('/plotting-otomatis/simulate', [AutoPlottingController::class, 'simulate']);
-        Route::post('/plotting-otomatis/apply', [AutoPlottingController::class, 'apply']);
 
         // Groups
         Route::apiResource('kelompok', KelompokKknAdminController::class)->only(['index', 'show', 'store', 'update', 'destroy']);
@@ -213,13 +169,6 @@ Route::prefix('admin')
 
         // Rekapitulasi
         Route::get('/rekapitulasi', [RekapitulasiController::class, 'index']);
-
-        // Legacy KKN Tracking
-        Route::middleware("role:superadmin")->prefix("legacy-kkn")->group(function () {
-            Route::get("/summary", [LegacyKknTrackingController::class, "summary"]);
-            Route::get("/export", [LegacyKknTrackingController::class, "export"]);
-            Route::get("/", [LegacyKknTrackingController::class, "index"]);
-        });
 
         // Generator Nilai
         Route::get('/generator-nilai', [GeneratorNilaiController::class, 'index']);
@@ -275,10 +224,8 @@ Route::prefix('admin')
         Route::patch('/laporan/akhir/{report}/status', [LaporanAkhirAdminController::class, 'updateStatus']);
         Route::get('/laporan/akhir/{report}/unduh', [LaporanAkhirAdminController::class, 'download']);
 
-        Route::middleware('role:superadmin')->group(function () {
-            Route::get('/konfigurasi-penilaian', [KonfigurasiPenilaianController::class, 'index']);
-            Route::patch('/konfigurasi-penilaian', [KonfigurasiPenilaianController::class, 'update']);
-        });
+        Route::get('/konfigurasi-penilaian', [KonfigurasiPenilaianController::class, 'index']);
+        Route::patch('/konfigurasi-penilaian', [KonfigurasiPenilaianController::class, 'update']);
 
         Route::get('/yudisium', [YudisiumController::class, 'index']);
         Route::post('/yudisium/proses', [YudisiumController::class, 'proses']);
@@ -304,19 +251,15 @@ Route::prefix('admin')
         Route::get('/mahasiswa/{mahasiswa}', [UserController::class, 'mahasiswaShow']);
         Route::get('/dosen', [UserController::class, 'dosenIndex']);
 
-        // Avatar moderation (superadmin only — Layer 4 of PRD_AVATAR_VALIDATION.md)
-        Route::middleware('role:superadmin')->group(function () {
-            Route::get('/avatar-moderation', [AvatarModerationController::class, 'index']);
-            Route::patch('/avatar-moderation/{user}/approve', [AvatarModerationController::class, 'approve']);
-            Route::patch('/avatar-moderation/{user}/reject', [AvatarModerationController::class, 'reject']);
-        });
+        // Avatar moderation (Layer 4 of PRD_AVATAR_VALIDATION.md)
+        Route::get('/avatar-moderation', [AvatarModerationController::class, 'index']);
+        Route::patch('/avatar-moderation/{user}/approve', [AvatarModerationController::class, 'approve']);
+        Route::patch('/avatar-moderation/{user}/reject', [AvatarModerationController::class, 'reject']);
 
-        // User Activity Log (superadmin only — PRD_USER_ACTIVITY_LOG.md)
-        Route::middleware('role:superadmin')->group(function () {
-            Route::get('/activity-log', [UserActivityController::class, 'index']);
-            Route::get('/activity-log/stats', [UserActivityController::class, 'stats']);
-            Route::get('/activity-log/user/{user}', [UserActivityController::class, 'userHistory']);
-        });
+        // User Activity Log (PRD_USER_ACTIVITY_LOG.md)
+        Route::get('/activity-log', [UserActivityController::class, 'index']);
+        Route::get('/activity-log/stats', [UserActivityController::class, 'stats']);
+        Route::get('/activity-log/user/{user}', [UserActivityController::class, 'userHistory']);
 
         // AI Playground (superadmin only — PRD_AI_PLAYGROUND.md)
         Route::middleware('role:superadmin')->prefix('playground')->group(function () {
@@ -361,10 +304,8 @@ Route::prefix('admin')
             Route::post('/pengaturan/sistem/reset-pendaftaran', [SystemSettingController::class, 'resetPendaftaran'])
                 ->middleware('throttle:2,60');
         });
-        Route::middleware('role:superadmin')->group(function () {
-            Route::get('/audit-log', [LogAuditController::class, 'index']);
-            Route::get('/audit-log/{auditLog}', [LogAuditController::class, 'show']);
-        });
+        Route::get('/audit-log', [LogAuditController::class, 'index']);
+        Route::get('/audit-log/{auditLog}', [LogAuditController::class, 'show']);
 
         // Data Import (superadmin only)
         Route::middleware('role:superadmin')->group(function () {
@@ -411,12 +352,11 @@ Route::prefix('admin')
         // Legacy alias
         Route::get('/rekap-nilai', [RekapNilaiController::class, 'index']);
 
-        // Profile Change Requests (superadmin only)
-        Route::middleware('role:superadmin')->prefix('profile-change-requests')->group(function () {
+        // Profile Change Requests
+        Route::prefix('profile-change-requests')->group(function () {
             Route::get('/', [ProfileChangeRequestController::class, 'index']);
-            Route::match(['patch', 'post'], '/approve-all', [ProfileChangeRequestController::class, 'approveAll']);
-            Route::match(['patch', 'post'], '/{profileChangeRequest}/approve', [ProfileChangeRequestController::class, 'approve']);
-            Route::match(['patch', 'post'], '/{profileChangeRequest}/reject', [ProfileChangeRequestController::class, 'reject']);
+            Route::patch('/{profileChangeRequest}/approve', [ProfileChangeRequestController::class, 'approve']);
+            Route::patch('/{profileChangeRequest}/reject', [ProfileChangeRequestController::class, 'reject']);
         });
 
         // Field-lock inspection (any admin may view)

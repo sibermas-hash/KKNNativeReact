@@ -1,464 +1,257 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
-import { adminApi, rawApi } from '@/lib/api';
+import { useState } from 'react';
 import Link from 'next/link';
-import { ClipboardList, CheckCircle2, XCircle, Eye, Download, Search, Filter, Users, FileCheck2, ExternalLink } from 'lucide-react';
-import { StatusBadge, PageHeader, EmptyState } from '@/components/ui/shared';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { AlertTriangle, Download, Eye, FileCheck2, Filter, RefreshCw, Search, Users, X, XCircle } from 'lucide-react';
+import { adminApi } from '@/lib/api';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { toast } from 'sonner';
-import { useSearchParams } from 'next/navigation';
 
-type DocItem = { field: string; label: string; required: boolean; uploaded: boolean; is_verified?: boolean; file_name?: string; file_path?: string };
-type DocSummary = { uploaded_count: number; required_count: number; missing_required_count: number; items: DocItem[] };
-type JenisInfo = { id?: number; name?: string; description?: string };
-interface Registration { id: number; mahasiswa?: { nama?: string; nim?: string; fakultas?: { nama?: string } }; periode?: { name?: string; jenis_kkn?: JenisInfo }; status: string; document_summary?: DocSummary; created_at?: string }
-type ApiList = { items: Registration[]; meta?: { current_page?: number; last_page?: number; total?: number } };
-type PeriodOption = { id: number; name?: string; jenis_kkn?: JenisInfo | null; jenis?: JenisInfo | null; jenis_kkn_id?: number };
-const REVIEWABLE = ['pending', 'document_submitted', 'document_verified'];
+type Doc = { id?: number; document_type?: string; file_name?: string; file_path?: string; status?: string; uploaded_at?: string };
+type Reg = {
+  id: number;
+  status: string;
+  registration_date?: string;
+  mahasiswa?: { nama?: string; nim?: string; fakultas?: { nama?: string }; prodi?: { nama?: string } };
+  periode?: { name?: string; periode?: string; jenis_kkn?: { name?: string } };
+  documents?: Doc[];
+};
 
-const docLabel = (field?: string, label?: string) => field === 'health_certificate' || label === 'health_certificate' ? 'Surat Sehat' : field === 'parent_permission' || label === 'parent_permission' ? 'Izin Ortu' : (label || field || 'Dokumen');
+type KknType = { id: number; name?: string; code?: string };
+type ExternalUniversity = { id: number; name: string; code?: string };
 
-function DocumentSummaryCell({ summary, onPreview }: { summary?: DocSummary; onPreview: (doc: DocItem) => void }) {
-  if (!summary) return <span className="text-xs text-slate-400">-</span>;
-  const { uploaded_count, required_count, missing_required_count, items } = summary;
-  return (
-    <div className="space-y-1.5">
-      <span className={`text-xs font-bold ${missing_required_count > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
-        {uploaded_count}/{required_count} {missing_required_count > 0 ? `(kurang ${missing_required_count})` : '✓'}
-      </span>
-      <div className="flex flex-wrap gap-1">
-        {items.map((d) => {
-          const canPreview = d.uploaded && !!d.file_path;
-          const cls = `inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-bold transition ${d.uploaded ? 'bg-emerald-50 text-emerald-700' : d.required ? 'bg-rose-50 text-rose-600' : 'bg-slate-50 text-slate-400'}`;
-          return canPreview ? (
-            <button key={d.field} type="button" onClick={(e) => { e.stopPropagation(); onPreview(d); }} title={`Preview ${docLabel(d.field, d.label)}`} className={`${cls} hover:bg-emerald-100 hover:text-emerald-800 cursor-pointer`}>
-              ✓ {docLabel(d.field, d.label)} <Eye size={10} />
-            </button>
-          ) : (
-            <span key={d.field} className={cls} title={d.uploaded ? 'File tidak tersedia untuk preview' : 'Belum diunggah'}>
-              {d.uploaded ? '✓' : '×'} {docLabel(d.field, d.label)}
-            </span>
-          );
-        })}
-      </div>
-    </div>
-  );
+const STATUS_LABEL: Record<string, string> = {
+  pending: 'MENUNGGU',
+  document_submitted: 'DOKUMEN MASUK',
+  approved: 'DISETUJUI',
+  rejected: 'DITOLAK',
+  interview_scheduled: 'JADWAL WAWANCARA',
+};
+
+function unwrap(res: unknown): Reg[] {
+  if (Array.isArray(res)) return res as Reg[];
+  const obj = res as { data?: Reg[] } | null;
+  return Array.isArray(obj?.data) ? obj.data : [];
+}
+
+function fmtDate(value?: string): string {
+  if (!value) return '-';
+  return new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(value));
+}
+
+function statusClass(status: string): string {
+  if (status === 'approved') return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+  if (status === 'rejected') return 'bg-rose-50 text-rose-700 border-rose-200';
+  if (status === 'pending') return 'bg-amber-50 text-amber-700 border-amber-200';
+  return 'bg-blue-50 text-blue-700 border-blue-200';
+}
+
+function previewDoc(doc: Doc): void {
+  if (!doc.file_path) {
+    toast.error('Path dokumen tidak tersedia');
+    return;
+  }
+  window.open(`/api/v1/admin/pendaftaran/berkas/unduh?path=${encodeURIComponent(doc.file_path)}`, '_blank', 'noopener,noreferrer');
 }
 
 export default function AdminRegistrationsPage(): React.JSX.Element {
   const queryClient = useQueryClient();
-  const searchParams = useSearchParams();
-  const [status, setStatus] = useState('');
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [page, setPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState('unprocessed');
   const [jenisKknId, setJenisKknId] = useState('');
+  const [originType, setOriginType] = useState('');
+  const [entryScheme, setEntryScheme] = useState('');
+  const [externalUniversityId, setExternalUniversityId] = useState('');
+  const [search, setSearch] = useState('');
+  const [perPage, setPerPage] = useState(25);
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [approveConfirm, setApproveConfirm] = useState<Registration | null>(null);
+  const [approveConfirm, setApproveConfirm] = useState<Reg | null>(null);
   const [bulkApproveConfirm, setBulkApproveConfirm] = useState(false);
-  const [rejectTarget, setRejectTarget] = useState<Registration | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<Reg | null>(null);
   const [rejectReason, setRejectReason] = useState('');
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [previewName, setPreviewName] = useState('');
-  const periodeId = searchParams?.get('periode_id') ?? '';
 
-  // Debounce search
-  useEffect(() => {
-    const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
-    return () => clearTimeout(t);
-  }, [search]);
+  const statusGroup = ['unprocessed', 'processed'].includes(statusFilter) ? statusFilter : undefined;
+  const status = ['pending', 'document_submitted', 'interview_scheduled', 'approved', 'rejected'].includes(statusFilter) ? statusFilter : undefined;
 
-  useEffect(() => { setSelectedIds([]); setPage(1); }, [status, debouncedSearch, periodeId, jenisKknId]);
-
-  // Jenis KKN options
-  const { data: jenisOptions = [] } = useQuery<{ id: number; name: string }[]>({
-    queryKey: ['admin', 'jenis-kkn-options'],
-    queryFn: async () => {
-      const res = await rawApi.get('/admin/jenis-kkn?per_page=50');
-      const body = res.data as { data?: { id: number; name: string }[] };
-      return body.data ?? [];
-    },
-    staleTime: 60000,
+  const { data = [], isLoading, isError, refetch, isFetching } = useQuery({
+    queryKey: ['admin', 'registrations-review', { statusFilter, jenisKknId, originType, entryScheme, externalUniversityId, search, perPage }],
+    queryFn: async () => unwrap(await adminApi.registrations.index({
+      status_group: statusGroup,
+      status,
+      jenis_kkn_id: jenisKknId || undefined,
+      origin_type: originType || undefined,
+      entry_scheme: entryScheme || undefined,
+      external_university_id: externalUniversityId || undefined,
+      search: search || undefined,
+      per_page: perPage,
+      sort: 'first_uploaded_at',
+      direction: 'asc',
+    })),
+    staleTime: 0,
+    gcTime: 0,
+    refetchInterval: 5_000,
+    refetchIntervalInBackground: true,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: 'always',
+    refetchOnReconnect: 'always',
   });
 
-  // Stats
-  const { data: stats } = useQuery({
-    queryKey: ['admin', 'registrations-stats'],
+  const { data: kknTypes = [] } = useQuery({
+    queryKey: ['admin', 'kkn-types', 'registration-filter'],
     queryFn: async () => {
-      const res = await rawApi.get('/admin/pendaftaran/stats');
-      return ((res.data as { data?: unknown }).data ?? res.data) as { total: number; pending: number; document_submitted: number; document_verified: number; approved: number; interview_scheduled: number; interview_passed: number; rejected: number; other?: number };
+      const res = await fetch('/api/v1/admin/jenis-kkn?per_page=100', { credentials: 'include', headers: { Accept: 'application/json' } });
+      if (!res.ok) return [];
+      const obj = await res.json() as { data?: KknType[] | { data?: KknType[] } };
+      if (Array.isArray(obj.data)) return obj.data;
+      return obj.data?.data ?? [];
+    },
+    staleTime: 60_000,
+  });
+
+  const { data: externalUniversities = [] } = useQuery({
+    queryKey: ['admin', 'external-universities', 'registration-filter'],
+    queryFn: async () => {
+      const res = await fetch('/api/v1/admin/external-universities?per_page=100', { credentials: 'include', headers: { Accept: 'application/json' } });
+      if (!res.ok) return [];
+      const obj = await res.json() as { data?: ExternalUniversity[] | { data?: ExternalUniversity[] } };
+      if (Array.isArray(obj.data)) return obj.data;
+      return obj.data?.data ?? [];
+    },
+    staleTime: 60_000,
+  });
+
+  const { data: stats = { total: 0, review: 0, approved: 0, rejected: 0 } } = useQuery({
+    queryKey: ['admin', 'registrations-summary'],
+    queryFn: async () => {
+      const res = await fetch('/api/v1/admin/pendaftaran/summary', { credentials: 'include', headers: { Accept: 'application/json' } });
+      if (!res.ok) throw new Error('Gagal memuat ringkasan pendaftaran');
+      const json = await res.json() as { data?: { total: number; review: number; approved: number; rejected: number } };
+      return json.data ?? { total: 0, review: 0, approved: 0, rejected: 0 };
     },
     staleTime: 0,
-    refetchInterval: 10000,
-    refetchOnWindowFocus: true,
+    gcTime: 0,
+    refetchInterval: 5_000,
+    refetchIntervalInBackground: true,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: 'always',
+    refetchOnReconnect: 'always',
   });
 
-  // Main data
-  const { data, isLoading, isFetching, isError, refetch } = useQuery<ApiList>({
-    queryKey: ['admin', 'registrations', { status, search: debouncedSearch, periodeId, jenisKknId, page }],
-    queryFn: async () => {
-      const params: Record<string, string | number | undefined> = {
-        page,
-        per_page: 25,
-      };
-      if (status) params.status = status;
-      if (debouncedSearch) params.search = debouncedSearch;
-      if (periodeId) params.periode_id = periodeId;
-      if (jenisKknId) params.jenis_kkn_id = jenisKknId;
-      const res = await rawApi.get('/admin/pendaftaran', { params });
-      const envelope = res.data as { data?: Registration[]; meta?: ApiList['meta'] };
-      return { items: envelope.data ?? [], meta: envelope.meta };
-    },
-    placeholderData: keepPreviousData,
-    staleTime: 0,
-    refetchInterval: 10000,
-    refetchOnWindowFocus: true,
-  });
-
-  const registrations = data?.items ?? [];
-  const meta = data?.meta;
-
-  // Mutations
   const approveMutation = useMutation({
     mutationFn: (id: number) => adminApi.registrations.approve(id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); toast.success('Pendaftaran disetujui'); setApproveConfirm(null); },
-    onError: (e: unknown) => toast.error((e as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message ?? 'Gagal menyetujui'),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations-review'] }); queryClient.invalidateQueries({ queryKey: ['admin', 'registrations-summary'] }); toast.success('Pendaftaran disetujui'); setApproveConfirm(null); },
+    onError: () => toast.error('Gagal menyetujui pendaftaran'),
+  });
+
+  const bulkApproveMutation = useMutation({
+    mutationFn: async (ids: number[]) => adminApi.registrations.bulkApprove(ids),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations-review'] }); queryClient.invalidateQueries({ queryKey: ['admin', 'registrations-summary'] }); toast.success(`${selectedIds.length} pendaftaran disetujui`); setSelectedIds([]); setBulkApproveConfirm(false); },
+    onError: () => toast.error('Gagal menyetujui massal'),
   });
 
   const rejectMutation = useMutation({
     mutationFn: ({ id, reason }: { id: number; reason: string }) => adminApi.registrations.reject(id, { rejection_reason: reason }),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] }); toast.success('Pendaftaran ditolak'); setRejectTarget(null); setRejectReason(''); },
-    onError: (e: unknown) => toast.error((e as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message ?? 'Gagal menolak'),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'registrations-review'] }); queryClient.invalidateQueries({ queryKey: ['admin', 'registrations-summary'] }); toast.success('Pendaftaran ditolak'); setRejectTarget(null); setRejectReason(''); },
+    onError: () => toast.error('Gagal menolak pendaftaran'),
   });
 
-  const bulkApproveMutation = useMutation({
-    mutationFn: (ids: number[]) => adminApi.registrations.bulkApprove(ids),
-    onSuccess: (res: unknown) => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'registrations'] });
-      const payload = (res as { data?: { approved_count?: number } })?.data;
-      toast.success(`${payload?.approved_count ?? selectedIds.length} pendaftaran disetujui`);
-      setSelectedIds([]); setBulkApproveConfirm(false);
-    },
-    onError: () => toast.error('Gagal menyetujui massal'),
-  });
-
-  const toggleSelect = (r: Registration) => REVIEWABLE.includes(r.status) && setSelectedIds((prev) => prev.includes(r.id) ? prev.filter((i) => i !== r.id) : [...prev, r.id]);
-
-
-  const extractBlob = (res: Blob | { data?: Blob }): Blob => res instanceof Blob ? res : (res.data as Blob);
-  const previewDoc = async (doc: DocItem) => {
-    if (!doc.file_path) return toast.error('File dokumen tidak tersedia');
-    try {
-      const res = await adminApi.registrations.downloadDocument(doc.file_path);
-      const blob = extractBlob(res as Blob | { data?: Blob });
-      if (previewUrl) URL.revokeObjectURL(previewUrl);
-      const url = URL.createObjectURL(blob);
-      setPreviewUrl(url);
-      setPreviewName(doc.file_name || docLabel(doc.field, doc.label));
-    } catch {
-      toast.error('Gagal memuat preview dokumen');
-    }
-  };
-  const closePreview = () => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(null);
-    setPreviewName('');
-  };
-
-  const submitReject = () => {
-    const reason = rejectReason.trim();
-    if (reason.length < 5) return toast.error('Alasan minimal 5 karakter');
-    if (rejectTarget) rejectMutation.mutate({ id: rejectTarget.id, reason });
-  };
-
-  const exportFile = async (format: 'xlsx' | 'pdf') => {
-    try {
-      const res = await rawApi.get('/admin/pendaftaran/export', { params: { format, status: status || undefined, periode_id: periodeId || undefined, jenis_kkn_id: jenisKknId || undefined, limit: 50000 }, responseType: 'blob' });
-      const blob = res.data as Blob;
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = `pendaftaran-kkn-${new Date().toISOString().slice(0, 10)}.${format}`; a.click();
-      URL.revokeObjectURL(url);
-    } catch { toast.error(`Gagal export ${format.toUpperCase()}`); }
-  };
-
-  const statusOptions = [
-    { value: '', label: 'Semua Status', count: meta?.total },
-    { value: 'pending', label: 'Belum Upload Dokumen' },
-    { value: 'document_submitted', label: 'Dokumen Masuk' },
-    { value: 'document_verified', label: 'Dokumen Terverifikasi' },
-    { value: 'approved', label: 'Disetujui' },
-    { value: 'interview_scheduled', label: 'Menunggu Wawancara' },
-    { value: 'interview_passed', label: 'Lulus Wawancara' },
-    { value: 'rejected', label: 'Ditolak' },
-  ];
+  const toggleSelect = (id: number) => setSelectedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+  const exportUrl = `/api/v1/admin/pendaftaran/export-biodata?status_group=${statusGroup ?? ''}&status=${status ?? ''}&jenis_kkn_id=${jenisKknId}&search=${encodeURIComponent(search)}`;
 
   return (
-    <div className="space-y-5">
-      <PageHeader title="Pendaftaran KKN" subtitle="Review, validasi dokumen, approval, dan export pendaftaran mahasiswa." />
-
-      <div className="rounded-3xl bg-gradient-to-br from-cyan-950 via-cyan-800 to-emerald-700 p-6 text-white shadow-sm">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-100">Sentral Review Pendaftaran</p>
-            <h2 className="mt-2 text-3xl font-black tracking-tight">{(stats?.total ?? meta?.total ?? 0).toLocaleString('id-ID')} Pendaftaran</h2>
-            <p className="mt-2 max-w-2xl text-sm text-cyan-50">Pantau dokumen masuk, verifikasi, approval, penolakan, dan pendaftaran per jenis KKN.</p>
-          </div>
-          <div className="rounded-2xl bg-white/10 px-4 py-3 ring-1 ring-white/15">
-            <p className="text-[10px] font-black uppercase tracking-wider text-cyan-100">Dipilih</p>
-            <p className="text-2xl font-black">{selectedIds.length}</p>
-          </div>
-        </div>
+    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <Stat icon={<Users size={24} />} label="TOTAL PENDAFTAR" value={stats.total} tone="slate" />
+        <Stat icon={<AlertTriangle size={24} />} label="PERLU REVIEW" value={stats.review} tone="amber" />
+        <Stat icon={<FileCheck2 size={24} />} label="DISETUJUI" value={stats.approved} tone="emerald" />
+        <Stat icon={<XCircle size={24} />} label="DITOLAK" value={stats.rejected} tone="rose" />
       </div>
 
-      {/* Summary Cards */}
-      {stats && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-8">
-          <div onClick={() => setStatus('')} className={`cursor-pointer rounded-xl p-3 shadow-sm ring-1 transition-all ${!status ? 'bg-cyan-50 ring-cyan-200' : 'bg-white ring-slate-200 hover:ring-cyan-200'}`}>
-            <p className="text-[10px] font-bold text-slate-500 uppercase">Total</p>
-            <p className="text-xl font-bold text-slate-900">{stats.total?.toLocaleString('id-ID') ?? 0}</p>
-          </div>
-          <div onClick={() => setStatus('pending')} className={`cursor-pointer rounded-xl p-3 shadow-sm ring-1 transition-all ${status === 'pending' ? 'bg-amber-50 ring-amber-200' : 'bg-white ring-slate-200 hover:ring-amber-200'}`}>
-            <p className="text-[10px] font-bold text-slate-500 uppercase">Belum Upload</p>
-            <p className="text-xl font-bold text-amber-600">{stats.pending?.toLocaleString('id-ID') ?? 0}</p>
-          </div>
-          <div onClick={() => setStatus('document_submitted')} className={`cursor-pointer rounded-xl p-3 shadow-sm ring-1 transition-all ${status === 'document_submitted' ? 'bg-blue-50 ring-blue-200' : 'bg-white ring-slate-200 hover:ring-blue-200'}`}>
-            <p className="text-[10px] font-bold text-slate-500 uppercase">Dokumen Masuk</p>
-            <p className="text-xl font-bold text-blue-600">{stats.document_submitted?.toLocaleString('id-ID') ?? 0}</p>
-          </div>
-          <div onClick={() => setStatus('document_verified')} className={`cursor-pointer rounded-xl p-3 shadow-sm ring-1 transition-all ${status === 'document_verified' ? 'bg-indigo-50 ring-indigo-200' : 'bg-white ring-slate-200 hover:ring-indigo-200'}`}>
-            <p className="text-[10px] font-bold text-slate-500 uppercase">Terverifikasi</p>
-            <p className="text-xl font-bold text-indigo-600">{stats.document_verified?.toLocaleString('id-ID') ?? 0}</p>
-          </div>
-          <div onClick={() => setStatus('interview_scheduled')} className={`cursor-pointer rounded-xl p-3 shadow-sm ring-1 transition-all ${status === 'interview_scheduled' ? 'bg-violet-50 ring-violet-200' : 'bg-white ring-slate-200 hover:ring-violet-200'}`}>
-            <p className="text-[10px] font-bold text-slate-500 uppercase">Menunggu Wawancara</p>
-            <p className="text-xl font-bold text-violet-600">{stats.interview_scheduled?.toLocaleString('id-ID') ?? 0}</p>
-          </div>
-          <div onClick={() => setStatus('interview_passed')} className={`cursor-pointer rounded-xl p-3 shadow-sm ring-1 transition-all ${status === 'interview_passed' ? 'bg-teal-50 ring-teal-200' : 'bg-white ring-slate-200 hover:ring-teal-200'}`}>
-            <p className="text-[10px] font-bold text-slate-500 uppercase">Lulus Wawancara</p>
-            <p className="text-xl font-bold text-teal-600">{stats.interview_passed?.toLocaleString('id-ID') ?? 0}</p>
-          </div>
-          <div onClick={() => setStatus('approved')} className={`cursor-pointer rounded-xl p-3 shadow-sm ring-1 transition-all ${status === 'approved' ? 'bg-emerald-50 ring-emerald-200' : 'bg-white ring-slate-200 hover:ring-emerald-200'}`}>
-            <p className="text-[10px] font-bold text-slate-500 uppercase">Disetujui</p>
-            <p className="text-xl font-bold text-emerald-600">{stats.approved?.toLocaleString('id-ID') ?? 0}</p>
-          </div>
-          <div onClick={() => setStatus('rejected')} className={`cursor-pointer rounded-xl p-3 shadow-sm ring-1 transition-all ${status === 'rejected' ? 'bg-rose-50 ring-rose-200' : 'bg-white ring-slate-200 hover:ring-rose-200'}`}>
-            <p className="text-[10px] font-bold text-slate-500 uppercase">Ditolak</p>
-            <p className="text-xl font-bold text-rose-600">{stats.rejected?.toLocaleString('id-ID') ?? 0}</p>
-          </div>
-        </div>
-      )}
-
-      <div className="rounded-2xl border border-cyan-100 bg-cyan-50 p-4 text-sm text-cyan-900">
-        <div className="flex items-start gap-2"><FileCheck2 className="mt-0.5 h-4 w-4 shrink-0" /><div><b>Alur kerja:</b> cek dokumen → verifikasi/detail → setujui/tolak. Bulk approve hanya untuk status yang reviewable.</div></div>
-      </div>
-
-      {/* Filter Bar */}
-      <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
-        <div className="flex items-center gap-2 mb-3">
-          <Filter size={14} className="text-slate-400" />
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Filter</span>
-        </div>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Search */}
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Cari nama atau NIM..."
-              className="h-10 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600"
-            />
-          </div>
-
-          {/* Status */}
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="h-10 rounded-xl border border-slate-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600"
-          >
-            {statusOptions.map((o) => (
-              <option key={o.value} value={o.value}>{o.label}</option>
-            ))}
+      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm p-5 space-y-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 text-slate-700 font-black text-xs uppercase"><Filter size={16} /> Filter</div>
+          <select value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setSelectedIds([]); }} className="h-10 rounded-xl border border-slate-200 bg-white px-4 text-xs font-black text-slate-700">
+            <option value="unprocessed">BELUM DIPROSES</option>
+            <option value="pending">MENUNGGU</option>
+            <option value="document_submitted">DOKUMEN MASUK</option>
+            <option value="interview_scheduled">JADWAL WAWANCARA</option>
+            <option value="processed">SUDAH DIPROSES</option>
+            <option value="approved">DISETUJUI</option>
+            <option value="rejected">DITOLAK</option>
+            <option value="all">SEMUA STATUS</option>
           </select>
-
-          {/* Jenis KKN */}
-          <select
-            value={jenisKknId}
-            onChange={(e) => setJenisKknId(e.target.value)}
-            className="h-10 rounded-xl border border-slate-200 px-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600"
-          >
-            <option value="">Semua Jenis KKN</option>
-            {jenisOptions.map((j) => (
-              <option key={j.id} value={j.id}>{j.name}</option>
-            ))}
+          <select value={jenisKknId} onChange={(e) => { setJenisKknId(e.target.value); setSelectedIds([]); }} className="h-10 rounded-xl border border-slate-200 bg-white px-4 text-xs font-black text-slate-700">
+            <option value="">SEMUA JENIS KKN</option>
+            {kknTypes.map((t) => <option key={t.id} value={t.id}>{t.name ?? t.code ?? `Jenis #${t.id}`}</option>)}
           </select>
-
-          {/* Actions */}
-          <div className="flex items-center gap-2">
-            <button onClick={() => exportFile('xlsx')} className="h-10 rounded-xl bg-emerald-600 px-3 text-xs font-bold text-white hover:bg-emerald-700 transition-colors">
-              <Download size={13} className="inline mr-1" />Excel
-            </button>
-            <button onClick={() => exportFile('pdf')} className="h-10 rounded-xl bg-slate-700 px-3 text-xs font-bold text-white hover:bg-slate-800 transition-colors">
-              <Download size={13} className="inline mr-1" />PDF
-            </button>
-            {(search || status || jenisKknId) && (
-              <button onClick={() => { setSearch(''); setStatus(''); setJenisKknId(''); setPage(1); }} className="h-10 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-600 hover:bg-slate-50">Reset Filter</button>
-            )}
-            {selectedIds.length > 0 && (
-              <button onClick={() => setBulkApproveConfirm(true)} className="h-10 rounded-xl bg-cyan-600 px-3 text-xs font-bold text-white animate-pulse">
-                <CheckCircle2 size={13} className="inline mr-1" />Setujui {selectedIds.length}
-              </button>
-            )}
-          </div>
+          <select value={originType} onChange={(e) => { setOriginType(e.target.value); setSelectedIds([]); }} className="h-10 rounded-xl border border-slate-200 bg-white px-4 text-xs font-black text-slate-700">
+            <option value="">SEMUA ASAL</option><option value="internal">INTERNAL</option><option value="external">EKSTERNAL</option>
+          </select>
+          <select value={entryScheme} onChange={(e) => { setEntryScheme(e.target.value); setSelectedIds([]); }} className="h-10 rounded-xl border border-slate-200 bg-white px-4 text-xs font-black text-slate-700">
+            <option value="">SEMUA SKEMA</option><option value="regular">REGULAR</option><option value="kolaborasi">KOLABORASI</option>
+          </select>
+          <select value={externalUniversityId} onChange={(e) => { setExternalUniversityId(e.target.value); setSelectedIds([]); }} className="h-10 rounded-xl border border-slate-200 bg-white px-4 text-xs font-black text-slate-700">
+            <option value="">SEMUA KAMPUS LUAR</option>
+            {externalUniversities.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
+          </select>
         </div>
-      </div>
-
-      {/* Summary */}
-      {meta && (
-        <div className="flex flex-wrap items-center gap-4 rounded-xl bg-white px-4 py-3 text-xs font-bold text-slate-500 ring-1 ring-slate-200">
-          <span className="flex items-center gap-1"><Users size={13} /> {meta.total?.toLocaleString('id-ID') ?? 0} pendaftaran</span>
-          <span>Halaman {meta.current_page}/{meta.last_page}</span>
+        <div className="flex flex-wrap gap-3">
+          <label className="relative flex-1 min-w-[260px]">
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari nama atau NIM" className="w-full h-11 rounded-xl border border-slate-200 pl-11 pr-4 text-sm font-semibold outline-none focus:ring-2 focus:ring-emerald-200" />
+          </label>
+          <select value={perPage} onChange={(e) => setPerPage(Number(e.target.value))} className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-xs font-black text-slate-700">
+            <option value={25}>25 / HALAMAN</option><option value={50}>50 / HALAMAN</option><option value={100}>100 / HALAMAN</option>
+          </select>
+          <button type="button" onClick={() => refetch()} className="h-11 px-4 rounded-xl border border-slate-200 text-xs font-black text-slate-700 flex items-center gap-2 hover:bg-slate-50"><RefreshCw size={16} className={isFetching ? 'animate-spin' : ''} /> REFRESH</button>
+          <a href={exportUrl} target="_blank" rel="noreferrer" className="h-11 px-4 rounded-xl bg-emerald-600 text-white text-xs font-black flex items-center gap-2 hover:bg-emerald-700"><Download size={16} /> EXPORT XLSX</a>
+          {selectedIds.length > 0 && <button type="button" onClick={() => setBulkApproveConfirm(true)} className="h-11 px-4 rounded-xl bg-blue-600 text-white text-xs font-black hover:bg-blue-700">SETUJUI {selectedIds.length}</button>}
         </div>
-      )}
+        <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3 text-xs font-semibold text-blue-700">Tips: klik Detail/Preview untuk melihat berkas. Gunakan Setujui hanya jika dokumen wajib lengkap. Jika menolak, tulis alasan jelas agar mahasiswa bisa memperbaiki.</div>
+      </section>
 
-      {/* Table */}
-      {isLoading ? (
-        <div className="space-y-3">{[...Array(5)].map((_, i) => <div key={i} className="h-16 animate-pulse rounded-xl bg-slate-200" />)}</div>
-      ) : isError ? (
-        <div className="rounded-2xl bg-rose-50 p-6 text-center">
-          <p className="font-bold text-rose-700">Gagal memuat data</p>
-          <button onClick={() => refetch()} className="mt-3 rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white">Coba Lagi</button>
+      <section className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="grid grid-cols-[44px_1.35fr_1fr_130px_145px_1.25fr_180px] gap-4 bg-slate-50 px-5 py-3 text-[11px] font-black text-slate-500 uppercase tracking-wider">
+          <div /><div>Mahasiswa</div><div>Jenis/Periode</div><div>Status</div><div>Tanggal</div><div>Dokumen</div><div>Aksi</div>
         </div>
-      ) : registrations.length === 0 ? (
-        <EmptyState icon={<ClipboardList size={48} />} title="Tidak ada pendaftaran" />
-      ) : (
-        <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-          <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-            <div>
-              <p className="text-xs font-black uppercase tracking-wider text-slate-500">Data Pendaftaran</p>
-              <p className="text-xs text-slate-400">{isFetching && !isLoading ? 'Memfilter data...' : 'Klik detail untuk review lengkap mahasiswa dan dokumen'}</p>
-            </div>
-            <span className="rounded-full bg-slate-100 px-3 py-1 text-[10px] font-black uppercase text-slate-500">{meta?.total?.toLocaleString('id-ID') ?? 0} data</span>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-100 bg-slate-50">
-                  <th className="w-10 px-3 py-3"><input type="checkbox" onChange={(e) => { if (e.target.checked) { setSelectedIds(registrations.filter(r => REVIEWABLE.includes(r.status)).map(r => r.id)); } else { setSelectedIds([]); } }} checked={selectedIds.length > 0 && selectedIds.length === registrations.filter(r => REVIEWABLE.includes(r.status)).length} className="h-4 w-4" /></th>
-                  <th className="px-3 py-3 text-left text-xs font-bold text-slate-600">Mahasiswa</th>
-                  <th className="px-3 py-3 text-left text-xs font-bold text-slate-600">Jenis KKN</th>
-                  <th className="px-3 py-3 text-left text-xs font-bold text-slate-600">Status</th>
-                  <th className="px-3 py-3 text-left text-xs font-bold text-slate-600">Dokumen</th>
-                  <th className="px-3 py-3 text-right text-xs font-bold text-slate-600">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {registrations.map((r) => {
-                  const reviewable = REVIEWABLE.includes(r.status);
-                  return (
-                    <tr key={r.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="px-3 py-3">
-                        <input type="checkbox" checked={selectedIds.includes(r.id)} disabled={!reviewable} onChange={() => toggleSelect(r)} className="h-4 w-4 disabled:opacity-30" />
-                      </td>
-                      <td className="px-3 py-3">
-                        <p className="font-bold text-slate-900">{r.mahasiswa?.nama || '-'}</p>
-                        <p className="text-xs text-slate-500">{r.mahasiswa?.nim || '-'} • {r.mahasiswa?.fakultas?.nama || '-'}</p>
-                      </td>
-                      <td className="px-3 py-3">
-                        <p className="font-medium text-slate-700">{r.periode?.jenis_kkn?.name || '-'}</p>
-                        <p className="text-xs text-slate-400">{r.periode?.name || '-'}</p>
-                      </td>
-                      <td className="px-3 py-3"><StatusBadge status={r.status || ''} /></td>
-                      <td className="px-3 py-3"><DocumentSummaryCell summary={r.document_summary} onPreview={previewDoc} /></td>
-                      <td className="px-3 py-3">
-                        <div className="flex justify-end gap-1.5">
-                          {reviewable && (
-                            <>
-                              <button onClick={() => setApproveConfirm(r)} className="rounded-lg bg-emerald-600 px-2.5 py-1.5 text-[11px] font-bold text-white hover:bg-emerald-700">
-                                <CheckCircle2 size={11} className="inline mr-0.5" />Setujui
-                              </button>
-                              <button onClick={() => { setRejectTarget(r); setRejectReason(''); }} className="rounded-lg bg-rose-50 px-2.5 py-1.5 text-[11px] font-bold text-rose-700 hover:bg-rose-100">
-                                <XCircle size={11} className="inline mr-0.5" />Tolak
-                              </button>
-                            </>
-                          )}
-                          <Link href={`/admin/pendaftaran/${r.id}`} className="rounded-lg bg-slate-100 px-2.5 py-1.5 text-[11px] font-bold text-slate-600 hover:bg-slate-200">
-                            <Eye size={11} className="inline mr-0.5" />Detail
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* Pagination */}
-      {meta && (meta.last_page ?? 1) > 1 && (
-        <div className="flex items-center justify-between rounded-xl bg-white p-3 ring-1 ring-slate-200">
-          <button disabled={page <= 1} onClick={() => setPage((n) => Math.max(1, n - 1))} className="rounded-lg px-3 py-2 text-xs font-bold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 disabled:opacity-40">
-            ← Sebelumnya
-          </button>
-          <span className="text-xs font-bold text-slate-500">
-            {meta.current_page} / {meta.last_page} • {meta.total?.toLocaleString('id-ID')} data
-          </span>
-          <button disabled={page >= (meta.last_page ?? 1)} onClick={() => setPage((n) => n + 1)} className="rounded-lg px-3 py-2 text-xs font-bold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50 disabled:opacity-40">
-            Berikutnya →
-          </button>
-        </div>
-      )}
-
-      {/* Modals */}
-      <ConfirmDialog open={approveConfirm !== null} onClose={() => setApproveConfirm(null)} onConfirm={() => approveConfirm && approveMutation.mutate(approveConfirm.id)} title="Setujui pendaftaran?" description={`${approveConfirm?.mahasiswa?.nama ?? ''} — ${approveConfirm?.periode?.jenis_kkn?.name ?? ''}`} confirmText="Setujui" variant="info" />
-
-      {previewUrl && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 p-4 backdrop-blur-sm" onClick={closePreview}>
-          <div className="relative flex h-[90vh] w-full max-w-5xl flex-col rounded-2xl bg-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between gap-3 border-b border-slate-200 px-6 py-4">
-              <div>
-                <p className="text-[10px] font-black uppercase tracking-wider text-emerald-600">Preview Dokumen</p>
-                <h3 className="truncate text-sm font-black text-slate-900">{previewName}</h3>
-              </div>
-              <div className="flex items-center gap-2">
-                <a href={previewUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50"><ExternalLink size={13}/>Buka Tab</a>
-                <button onClick={closePreview} className="rounded-lg px-3 py-1.5 text-sm font-bold text-slate-500 hover:bg-slate-100">&times; Tutup</button>
+        {isLoading ? <div className="p-10 text-center font-bold text-slate-500">Memuat data realtime...</div> : isError ? <div className="p-10 text-center font-bold text-rose-600">Gagal memuat data</div> : data.length === 0 ? <div className="p-12 text-center font-bold text-slate-400">Tidak ada pendaftaran</div> : data.map((r) => {
+          const docs = r.documents ?? [];
+          const firstDoc = docs[0];
+          const canApprove = ['pending', 'document_submitted'].includes(r.status);
+          return (
+            <div key={r.id} className="grid grid-cols-[44px_1.35fr_1fr_130px_145px_1.25fr_180px] gap-4 px-5 py-4 border-t border-slate-100 items-start hover:bg-slate-50/70">
+              <div><input type="checkbox" checked={selectedIds.includes(r.id)} onChange={() => toggleSelect(r.id)} className="mt-1 h-4 w-4" /></div>
+              <div><p className="font-black text-slate-900 uppercase leading-tight">{r.mahasiswa?.nama ?? '-'}</p><p className="text-xs text-slate-500 mt-1">{r.mahasiswa?.nim ?? '-'} • {r.mahasiswa?.fakultas?.nama ?? '-'}</p></div>
+              <div><p className="font-black text-slate-800 text-sm">{r.periode?.jenis_kkn?.name ?? 'KKN Reguler'}</p><p className="text-xs text-slate-500">{r.periode?.name ?? r.periode?.periode ?? '-'}</p></div>
+              <div><span className={`inline-flex rounded-lg border px-2 py-1 text-[10px] font-black uppercase ${statusClass(r.status)}`}>{STATUS_LABEL[r.status] ?? r.status}</span></div>
+              <div className="text-xs font-bold text-slate-600">{fmtDate(firstDoc?.uploaded_at || r.registration_date)}</div>
+              <div><p className="text-xs font-black text-emerald-700">{docs.length}/1 dokumen wajib</p><div className="mt-2 flex flex-wrap gap-1">{docs.length ? docs.map((d, idx) => <button key={idx} type="button" onClick={() => previewDoc(d)} className="rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-1 text-[10px] font-bold hover:bg-emerald-100">✓ {d.document_type || d.file_name || 'Dokumen'}</button>) : <span className="text-xs text-slate-400">Belum ada dokumen</span>}</div></div>
+              <div className="flex flex-wrap gap-2">
+                {firstDoc && <button type="button" onClick={() => previewDoc(firstDoc)} className="px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-[10px] font-black flex items-center gap-1 hover:bg-slate-200"><Eye size={12} /> Preview</button>}
+                <Link href={`/admin/pendaftaran/${r.id}`} className="px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-700 text-[10px] font-black hover:bg-slate-200">Detail</Link>
+                {canApprove && <button type="button" onClick={() => setApproveConfirm(r)} className="px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white text-[10px] font-black hover:bg-emerald-700">Setujui</button>}
+                {canApprove && <button type="button" onClick={() => { setRejectTarget(r); setRejectReason(''); }} className="px-2.5 py-1.5 rounded-lg bg-rose-100 text-rose-700 text-[10px] font-black hover:bg-rose-200">Tolak</button>}
               </div>
             </div>
-            <div className="flex-1 overflow-hidden p-2">
-              {previewName.toLowerCase().endsWith('.pdf') ? <iframe src={previewUrl} className="h-full w-full rounded-lg" title="Preview dokumen" /> : <img src={previewUrl} alt={previewName} className="h-full w-full rounded-lg object-contain" />}
-            </div>
-          </div>
-        </div>
-      )}
+          );
+        })}
+      </section>
 
-      <ConfirmDialog open={bulkApproveConfirm} onClose={() => setBulkApproveConfirm(false)} onConfirm={() => bulkApproveMutation.mutate(selectedIds)} title={`Setujui ${selectedIds.length} pendaftaran?`} description="Pastikan dokumen sudah lengkap sebelum menyetujui." confirmText="Setujui Semua" variant="info" />
+      <ConfirmDialog open={approveConfirm !== null} onClose={() => setApproveConfirm(null)} onConfirm={() => approveConfirm && approveMutation.mutate(approveConfirm.id)} title="Setujui Pendaftaran" description={approveConfirm ? `Setujui ${approveConfirm.mahasiswa?.nama ?? '-'}?` : ''} confirmText="Setujui" variant="info" />
+      <ConfirmDialog open={bulkApproveConfirm} onClose={() => setBulkApproveConfirm(false)} onConfirm={() => bulkApproveMutation.mutate(selectedIds)} title={`Setujui ${selectedIds.length} Pendaftaran`} description="Pastikan dokumen wajib lengkap." confirmText="Setujui Semua" variant="info" />
 
-      {rejectTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-            <h3 className="text-lg font-bold text-slate-900">Tolak Pendaftaran</h3>
-            <p className="mt-1 text-sm text-slate-500">{rejectTarget.mahasiswa?.nama} — {rejectTarget.periode?.jenis_kkn?.name}</p>
-            <textarea
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              className="mt-4 h-28 w-full rounded-xl border border-slate-200 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500"
-              placeholder="Alasan penolakan (min. 5 karakter)..."
-            />
-            <div className="mt-4 flex justify-end gap-2">
-              <button onClick={() => setRejectTarget(null)} className="rounded-xl px-4 py-2 text-sm font-bold text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50">Batal</button>
-              <button onClick={submitReject} disabled={rejectMutation.isPending} className="rounded-xl bg-rose-600 px-4 py-2 text-sm font-bold text-white hover:bg-rose-700 disabled:opacity-50">
-                {rejectMutation.isPending ? 'Menolak...' : 'Tolak'}
-              </button>
-            </div>
-          </div>
+      {rejectTarget && <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm" onClick={(e) => { if (e.target === e.currentTarget) setRejectTarget(null); }}>
+        <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-xl space-y-4">
+          <div className="flex items-start justify-between"><div><h3 className="font-black text-slate-900 text-lg">Tolak Pendaftaran</h3><p className="text-xs text-slate-500 mt-1">{rejectTarget.mahasiswa?.nama ?? '-'} ({rejectTarget.mahasiswa?.nim ?? '-'})</p></div><button type="button" onClick={() => setRejectTarget(null)}><X size={20} /></button></div>
+          <textarea value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} placeholder="Alasan penolakan..." rows={4} className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm" />
+          <div className="flex justify-end gap-2"><button type="button" onClick={() => setRejectTarget(null)} className="px-4 py-2 bg-slate-100 rounded-xl text-xs font-bold">Batal</button><button type="button" disabled={rejectReason.trim().length < 5 || rejectMutation.isPending} onClick={() => rejectMutation.mutate({ id: rejectTarget.id, reason: rejectReason.trim() })} className="px-4 py-2 bg-rose-600 text-white rounded-xl text-xs font-black disabled:opacity-50">Tolak</button></div>
         </div>
-      )}
+      </div>}
     </div>
   );
+}
+
+function Stat({ icon, label, value, tone }: { icon: React.ReactNode; label: string; value: number; tone: 'slate' | 'amber' | 'emerald' | 'rose' }): React.JSX.Element {
+  const cls = tone === 'amber' ? 'bg-amber-50 border-amber-100 text-amber-700' : tone === 'emerald' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : tone === 'rose' ? 'bg-rose-50 border-rose-100 text-rose-700' : 'bg-white border-slate-200 text-slate-600';
+  return <div className={`rounded-3xl border p-5 shadow-sm ${cls}`}><div className="flex items-center gap-3"><div>{icon}</div><div><p className="text-[11px] font-black uppercase tracking-wider">{label}</p><p className="text-4xl font-black text-slate-900 mt-1">{value}</p></div></div></div>;
 }

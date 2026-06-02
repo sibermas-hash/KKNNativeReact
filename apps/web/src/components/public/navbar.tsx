@@ -7,7 +7,6 @@ import { usePathname } from 'next/navigation';
 import { Menu, X, CircleHelp } from 'lucide-react';
 import { useScroll, useTransform, motion, AnimatePresence } from 'framer-motion';
 import { useAuthStore } from '@/stores';
-import { buildLoginHref, dashboardPathForRoles } from '@/lib/auth-routing';
 
 // Assign motion components to local constants. Workaround untuk Next.js 15 SWC
 // yang kadang gagal parse JSX member expressions seperti <motion.nav>.
@@ -83,8 +82,17 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
   const authHref = !hasMounted
     ? '/login'
     : isAuthenticated
-      ? dashboardPathForRoles(user?.roles)
-      : buildLoginHref(pathname);
+      ? (() => {
+          const roles = user?.roles || [];
+          if (roles.some((role) => ['superadmin', 'admin', 'faculty_admin'].includes(role))) return '/admin';
+          if (roles.includes('external_lppm_admin')) return '/external/dashboard';
+          if (roles.some((role) => ['dosen', 'dpl'].includes(role))) return '/dosen';
+          if (roles.includes('student')) return '/mahasiswa';
+          return '/';
+        })()
+      : pathname === '/login'
+        ? '/login'
+        : `/login?redirect=${encodeURIComponent(pathname ?? '/')}`;
 
   // Same number of items on every render — only label/href change post-hydration
   const allNavItems: NavItem[] = [

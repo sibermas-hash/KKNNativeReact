@@ -16,8 +16,7 @@ class UserResource extends JsonResource
             'username' => $this->username,
             'name' => $this->name,
             'email' => $this->email,
-            'fakultas_id' => $this->fakultas_id,
-            'avatar_url' => $this->avatar ? rtrim((string) config('app.frontend_url', config('app.url')), '/').'/storage/'.$this->avatar : null,
+            'avatar_url' => $this->avatar ? asset('storage/'.$this->avatar) : null,
             'phone' => $this->phone,
             'address' => $this->address,
             'address_village_name' => $this->address_village_name,
@@ -37,6 +36,12 @@ class UserResource extends JsonResource
                 fn () => $this->getPermissionsViaRoles()->pluck('name')->unique()->values()->toArray()
             ),
             'faculty' => new FakultasResource($this->whenLoaded('fakultas')),
+            'external_university_id' => $this->external_university_id,
+            'external_university' => $this->whenLoaded('externalUniversity', fn () => [
+                'id' => $this->externalUniversity?->id,
+                'name' => $this->externalUniversity?->name,
+                'code' => $this->externalUniversity?->code,
+            ]),
             'mahasiswa' => new MahasiswaResource($this->whenLoaded('mahasiswa')),
             'dosen' => new DosenResource($this->whenLoaded('dosen')),
             'created_at' => $this->created_at?->toIso8601String(),

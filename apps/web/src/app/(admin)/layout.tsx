@@ -103,8 +103,7 @@ const getNavGroups = (pathname: string, roles: string[]) => {
     ]},
   ];
 
-  if (isSuperadmin) return [...operationalGroups, ...contentGroups, ...systemGroups];
-  if (isSystem) return [];
+  if (isSystem) return isSuperadmin ? systemGroups : [];
   if (isBlog) return contentGroups;
   return operationalGroups;
 };

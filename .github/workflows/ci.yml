@@ -1,55 +1,45 @@
-name: CI
+name: CI/CD
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main]
   pull_request:
     branches: [main, develop]
+  workflow_dispatch:
+
+concurrency:
+  group: sibermas-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
   frontend:
-    name: Frontend (Web + Packages)
+    name: Frontend
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: CI guard
-        run: pnpm run ci:guard
-
-      - name: Type check packages
-        run: pnpm build:packages
-
-      - name: Type check web
-        run: pnpm run type-check
-
-      - name: Lint
-        run: pnpm run lint
-
-      - name: Build web
-        run: pnpm run build
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run ci:guard
+      - run: pnpm build:packages
+      - run: pnpm run type-check
+      - run: pnpm run lint
+      - run: pnpm run build
         env:
           NEXT_PUBLIC_API_URL: /api/v1
-
-      - name: Run tests
-        run: pnpm run test
-
-      - name: Security audit
-        run: pnpm audit --audit-level=critical
+          NEXT_PUBLIC_APP_URL: https://sibermas.uinsaizu.ac.id
+          NEXT_PUBLIC_SITE_URL: https://sibermas.uinsaizu.ac.id
+      - run: pnpm run test
+      - run: pnpm audit --audit-level=critical
 
   backend:
-    name: Backend (Laravel API)
+    name: Backend
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -58,213 +48,117 @@ jobs:
           POSTGRES_DB: kkn_test
           POSTGRES_USER: kkn_test
           POSTGRES_PASSWORD: kkn_test
-        ports:
-          - 5432:5432
+        ports: ['5432:5432']
         options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
       redis:
         image: redis:7
-        ports:
-          - 6379:6379
-        options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
     defaults:
       run:
         working-directory: apps/api
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@v2
         with:
           php-version: '8.4'
           extensions: pdo_pgsql, redis, mbstring, xml, curl, zip, gd, pcntl, intl, bcmath, sodium
           coverage: none
-
-      - name: Cache Composer
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
         with:
           path: apps/api/vendor
           key: composer-${{ hashFiles('apps/api/composer.lock') }}
           restore-keys: composer-
-
-      - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist --optimize-autoloader
-
-      - name: Prepare environment
+      - run: composer install --no-interaction --prefer-dist --optimize-autoloader
+      - name: Prepare env
         run: |
           cp .env.example .env
           php artisan key:generate
-        env:
-          DB_CONNECTION: pgsql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 5432
-          DB_DATABASE: kkn_test
-          DB_USERNAME: kkn_test
-          DB_PASSWORD: kkn_test
+          cat >> .env <<'EOF'
+          DB_CONNECTION=pgsql
+          DB_HOST=127.0.0.1
+          DB_PORT=5432
+          DB_DATABASE=kkn_test
+          DB_USERNAME=kkn_test
+          DB_PASSWORD=kkn_test
+          REDIS_HOST=127.0.0.1
+          QUEUE_CONNECTION=sync
+          SESSION_DRIVER=array
+          CACHE_STORE=array
+          MAIL_MAILER=array
+          AUTH_TEST_AUTO_LOGIN_ENABLED=false
+          APP_BLIND_INDEX_KEY=base64:dGVzdGluZ2tleWZvcmNpcGlwZWxpbmVydW4xMjM0NTY=
+          EOF
+      - run: php artisan migrate --force
+      - run: php artisan test --no-coverage
+      - run: composer stan
+      - run: ./vendor/bin/pint --test
+      - run: composer audit
 
-      - name: Set test env vars
-        run: |
-          echo "DB_DATABASE=kkn_test" >> .env
-          echo "DB_USERNAME=kkn_test" >> .env
-          echo "DB_PASSWORD=kkn_test" >> .env
-          echo "DB_HOST=127.0.0.1" >> .env
-          echo "REDIS_HOST=127.0.0.1" >> .env
-          echo "QUEUE_CONNECTION=sync" >> .env
-          echo "SESSION_DRIVER=array" >> .env
-          echo "CACHE_STORE=array" >> .env
-          echo "MAIL_MAILER=array" >> .env
-          echo "AUTH_TEST_AUTO_LOGIN_ENABLED=false" >> .env
-          echo "APP_BLIND_INDEX_KEY=base64:dGVzdGluZ2tleWZvcmNpcGlwZWxpbmVydW4xMjM0NTY=" >> .env
-
-      - name: Run migrations
-        run: php artisan migrate --force
-
-      - name: Run Pest tests
-        run: php artisan test --no-coverage
-
-      - name: Run PHPStan
-        run: composer stan
-
-      - name: Run Pint (code style)
-        run: ./vendor/bin/pint --test
-
-      - name: Security audit (Composer)
-        run: composer audit
-
-  deploy-single:
-    name: Deploy to FreeBSD (Single Server)
+  deploy:
+    name: Deploy FreeBSD live
     needs: [frontend, backend]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.DEPLOY_MODE != 'jails'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    environment: production
     steps:
-      - uses: actions/checkout@v4
-
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: ${{ secrets.DEPLOY_PORT || 22 }}
+          port: ${{ secrets.DEPLOY_PORT || '22' }}
+          command_timeout: 30m
           script: |
-            set -e
-            cd /usr/local/www/apache24/data/Sibermas2026
+            set -Eeuo pipefail
+            APP_DIR="${{ vars.DEPLOY_APP_DIR || '/usr/local/www/apache24/data/Sibermas2026' }}"
+            DOMAIN="${{ vars.DEPLOY_DOMAIN || 'sibermas.uinsaizu.ac.id' }}"
+            cd "$APP_DIR"
+
+            echo "[1/8] Sync git"
             git fetch origin main
             git reset --hard origin/main
 
-            # Backend
-            cd apps/api
-            composer install --no-dev --optimize-autoloader --no-interaction
+            echo "[2/8] Backend deps"
+            cd "$APP_DIR/apps/api"
+            composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+
+            echo "[3/8] Laravel migrate/cache"
             php artisan migrate --force
+            php artisan optimize:clear
             php artisan config:cache
             php artisan route:cache
-            php artisan event:cache 2>/dev/null || true
+            php artisan event:cache || true
+            php artisan storage:link || true
 
-            # Frontend — TURBO_INSTALL_SKIP_DOWNLOAD=1 wajib di FreeBSD
-            cd /usr/local/www/apache24/data/Sibermas2026
+            echo "[4/8] Frontend deps/build"
+            cd "$APP_DIR"
             export TURBO_INSTALL_SKIP_DOWNLOAD=1
-            export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-https://sibermas.uinsaizu.ac.id/api/v1}"
-            export NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL:-https://sibermas.uinsaizu.ac.id}"
-            export NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL:-https://sibermas.uinsaizu.ac.id}"
+            export NEXT_PUBLIC_API_URL="https://${DOMAIN}/api/v1"
+            export NEXT_PUBLIC_APP_URL="https://${DOMAIN}"
+            export NEXT_PUBLIC_SITE_URL="https://${DOMAIN}"
             pnpm install --frozen-lockfile
-            pnpm --filter web build
-            cp -r apps/web/.next/static/. apps/web/.next/standalone/apps/web/.next/static 2>/dev/null || true
-            cp -r apps/web/public/. apps/web/.next/standalone/apps/web/public 2>/dev/null || true
-            chown -R www:www apps/web/.next apps/api/storage apps/api/bootstrap/cache
+            pnpm run build
+            yes | pnpm prune --prod
 
-            # PHP-FPM reload (OPcache flush)
-            service php-fpm reload 2>/dev/null || service php-fpm restart || true
+            echo "[5/8] Permissions"
+            sudo -n chown -R www:www "$APP_DIR/apps/api/storage" "$APP_DIR/apps/api/bootstrap/cache" "$APP_DIR/apps/web/.next"
+            sudo -n chmod -R ug+rwX "$APP_DIR/apps/api/storage" "$APP_DIR/apps/api/bootstrap/cache" "$APP_DIR/apps/web/.next"
 
-            # Restart services
-            service sibermas_web restart
-            service apache24 restart
-            service sibermas_queue restart 2>/dev/null || true
+            echo "[6/8] Restart services"
+            sudo -n service sibermas_web restart
+            sudo -n service php_fpm restart
+            sudo -n service nginx configtest
+            sudo -n service nginx restart
 
-            # Health check
-            sleep 5
-            curl -sf http://127.0.0.1:3000/api/health || echo "WARNING: API health check failed"
-            curl -sf http://127.0.0.1:3000 || echo "WARNING: Web health check failed"
+            echo "[7/8] Health checks"
+            curl -fsS "https://${DOMAIN}/" >/dev/null
+            curl -fsS "https://${DOMAIN}/external/dashboard" >/dev/null
+            curl -fsS "https://${DOMAIN}/api/v1/auth/captcha" >/dev/null
+            code="$(curl -sk -o /dev/null -w '%{http_code}' "https://${DOMAIN}/api/v1/external/dashboard")"
+            test "$code" = "401"
 
-  deploy-jails:
-    name: Deploy to FreeBSD (Jails Mode)
-    needs: [frontend, backend]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && vars.DEPLOY_MODE == 'jails'
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Deploy via SSH ke host
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          port: ${{ secrets.DEPLOY_PORT || 22 }}
-          script: |
-            set -e
-            APP_DIR="/usr/local/www/sibermas"
-            RELEASE_DIR="${APP_DIR}/releases/$(date +%Y%m%d_%H%M%S)"
-            CURRENT_LINK="${APP_DIR}/current"
-            SHARED_ENV="${APP_DIR}/shared/api.env"
-
-            # Clone code
-            git clone --depth=1 git@github.com:putrihati-cmd/KKNNATIVE.git "$RELEASE_DIR"
-
-            # Backend build (di host)
-            cd "$RELEASE_DIR/apps/api"
-            composer install --no-dev --optimize-autoloader --no-interaction
-            if [ -f "${CURRENT_LINK}/apps/api/.env" ]; then
-              cp "${CURRENT_LINK}/apps/api/.env" .env
-              mkdir -p "$(dirname "${SHARED_ENV}")"
-              cp .env "${SHARED_ENV}"
-              chmod 600 "${SHARED_ENV}"
-            elif [ -f "${SHARED_ENV}" ]; then
-              cp "${SHARED_ENV}" .env
-            else
-              echo "ERROR: first jails deploy needs a prepared ${SHARED_ENV}"
-              echo "Refusing to generate APP_KEY automatically because encrypted data depends on it."
-              exit 1
-            fi
-            php artisan migrate --force
-            php artisan config:cache
-            php artisan route:cache
-
-            # Frontend build (di host) — TURBO_INSTALL_SKIP_DOWNLOAD=1 wajib
-            cd "$RELEASE_DIR"
-            export TURBO_INSTALL_SKIP_DOWNLOAD=1
-            export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-https://sibermas.uinsaizu.ac.id/api/v1}"
-            export NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL:-https://sibermas.uinsaizu.ac.id}"
-            export NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL:-https://sibermas.uinsaizu.ac.id}"
-            pnpm install --frozen-lockfile
-            pnpm --filter web build
-            cp -r apps/web/.next/static/. apps/web/.next/standalone/apps/web/.next/static 2>/dev/null || true
-            cp -r apps/web/public/. apps/web/.next/standalone/apps/web/public 2>/dev/null || true
-            chown -R www:www apps/web/.next apps/api/storage apps/api/bootstrap/cache
-
-            # Switch symlink
-            ln -sfn "$RELEASE_DIR" "${CURRENT_LINK}.new"
-            rm -f "$CURRENT_LINK" && mv "${CURRENT_LINK}.new" "$CURRENT_LINK"
-
-            # PHP-FPM reload (OPcache flush)
-            jexec api service php-fpm reload 2>/dev/null || true
-
-            # Restart services di setiap jail
-            if [ "${JAIL_USE_SSH:-false}" = "true" ]; then
-              ssh 10.0.0.12 service sibermas_queue restart 2>/dev/null || true
-              ssh 10.0.0.12 service nginx reload
-              ssh 10.0.0.11 supervisorctl restart sibermas-web
-              ssh 10.0.0.10 service nginx reload
-            else
-              jexec api service sibermas_queue restart 2>/dev/null || true
-              jexec api service nginx reload 2>/dev/null || true
-              jexec web supervisorctl restart sibermas-web 2>/dev/null || true
-              jexec nginx-proxy service nginx reload 2>/dev/null || true
-            fi
-
-            # Health check via nginx-proxy
-            sleep 5
-            curl -sf https://sibermas.uinsaizu.ac.id/api/health || echo "WARNING: API health check failed"
-            curl -sf https://sibermas.uinsaizu.ac.id/ || echo "WARNING: Web health check failed"
+            echo "[8/8] OK $(git rev-parse --short HEAD)"

@@ -14,6 +14,8 @@ import {
   X,
   Building2,
   Download,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 
 type Lokasi = {
@@ -77,11 +79,14 @@ export default function AdminLokasiPage(): React.JSX.Element {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Lokasi | null>(null);
   const [form, setForm] = useState<LokasiForm>(EMPTY_FORM);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [openRegencies, setOpenRegencies] = useState<Set<string>>(new Set());
+  const [openDistricts, setOpenDistricts] = useState<Set<string>>(new Set());
 
   const list = useQuery({
     queryKey: ['admin', 'lokasi', { page, perPage, search }],
     queryFn: async () => {
-      const params: Record<string, string | number> = { page, per_page: perPage };
+      const params: Record<string, string | number> = { page, per_page: 9999 };
       if (search) params.search = search;
       const res = await rawApi.get('/admin/lokasi', { params });
       const body = res.data as { data?: Lokasi[]; meta?: Pagination };
@@ -186,6 +191,16 @@ export default function AdminLokasiPage(): React.JSX.Element {
   }, [items, filterRegency]);
 
   const regencies = useMemo(() => Object.keys(stats.data?.byRegency ?? {}).sort(), [stats.data]);
+
+  const tree = useMemo(() => {
+    const root: Record<string, Record<string, Lokasi[]>> = {};
+    filtered.forEach((l) => { const r = l.regency_name ?? 'Tanpa Kabupaten'; const d = l.district_name ?? 'Tanpa Kecamatan'; (root[r] ??= {}); (root[r][d] ??= []).push(l); });
+    Object.values(root).forEach(ds => Object.values(ds).forEach(vs => vs.sort((a,b)=>(a.village_name ?? '').localeCompare(b.village_name ?? ''))));
+    return root;
+  }, [filtered]);
+  const setMany = (ids: number[], checked: boolean) => setSelected(prev => { const next = new Set(prev); ids.forEach(id => checked ? next.add(id) : next.delete(id)); return next; });
+  const stateOf = (ids: number[]) => ({ checked: ids.length > 0 && ids.every(id => selected.has(id)), partial: ids.some(id => selected.has(id)) && !ids.every(id => selected.has(id)) });
+  const toggleSet = (setter: React.Dispatch<React.SetStateAction<Set<string>>>, key: string) => setter(prev => { const next = new Set(prev); next.has(key) ? next.delete(key) : next.add(key); return next; });
 
   const openCreate = () => {
     setEditing(null);
@@ -365,123 +380,33 @@ export default function AdminLokasiPage(): React.JSX.Element {
         )}
       </div>
 
-      {/* Table */}
+      {/* Tree checklist */}
       <div className="rounded-xl border bg-white overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left">
-              <tr className="border-b">
-                <th className="px-4 py-3 font-bold text-slate-600">Desa</th>
-                <th className="px-4 py-3 font-bold text-slate-600">Kecamatan</th>
-                <th className="px-4 py-3 font-bold text-slate-600">Kabupaten</th>
-                <th className="px-4 py-3 font-bold text-slate-600">Koordinat</th>
-                <th className="px-4 py-3 font-bold text-slate-600">Kapasitas</th>
-                <th className="px-4 py-3 font-bold text-slate-600">Fakultas</th>
-                <th className="px-4 py-3 font-bold text-slate-600 text-right">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {list.isLoading && (
-                <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
-                    <Loader2 className="h-5 w-5 animate-spin inline mr-2" /> Memuat...
-                  </td>
-                </tr>
-              )}
-              {!list.isLoading && filtered.length === 0 && (
-                <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-slate-400">
-                    Tidak ada data
-                  </td>
-                </tr>
-              )}
-              {filtered.map((l) => (
-                <tr key={l.id} className="border-b hover:bg-slate-50">
-                  <td className="px-4 py-2 font-medium text-slate-900">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-3.5 w-3.5 text-teal-600" />
-                      {l.village_name ?? '-'}
-                    </div>
-                    {l.address && <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{l.address}</p>}
-                  </td>
-                  <td className="px-4 py-2 text-slate-700">{l.district_name ?? '-'}</td>
-                  <td className="px-4 py-2 text-slate-700">
-                    <span className="rounded bg-teal-50 text-teal-800 px-2 py-0.5 text-xs font-bold border border-teal-200">
-                      {l.regency_name ?? '-'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-2 text-xs">
-                    {l.latitude && l.longitude ? (
-                      <span className="text-slate-700">
-                        {Number(l.latitude).toFixed(4)}, {Number(l.longitude).toFixed(4)}
-                      </span>
-                    ) : (
-                      <span className="text-slate-400">-</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-2 text-slate-700">
-                    {l.capacity != null && l.capacity > 0 ? `${l.capacity} mhs` : <span className="text-slate-400">-</span>}
-                  </td>
-                  <td className="px-4 py-2 text-slate-700 text-xs">
-                    {l.faculty ? (
-                      <span className="flex items-center gap-1">
-                        <Building2 className="h-3 w-3" />
-                        {l.faculty.nama ?? l.faculty.name}
-                      </span>
-                    ) : (
-                      <span className="text-slate-400">Umum</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-2 text-right">
-                    <div className="flex justify-end gap-1">
-                      <button
-                        onClick={() => openEdit(l)}
-                        className="rounded p-1.5 text-slate-600 hover:bg-slate-100"
-                        title="Edit"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
-                      <button
-                        onClick={() => {
-                          if (confirm(`Hapus lokasi "${l.village_name}"?`)) del.mutate(l.id);
-                        }}
-                        className="rounded p-1.5 text-rose-600 hover:bg-rose-50"
-                        title="Hapus"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="flex items-center justify-between border-b bg-slate-50 px-4 py-3">
+          <div><h2 className="font-black text-slate-900">Checklist Wilayah</h2><p className="text-xs text-slate-500">Kabupaten → Kecamatan → Desa. Terpilih: {selected.size} desa.</p></div>
+          <button onClick={() => setSelected(new Set())} className="rounded border bg-white px-3 py-1.5 text-xs font-bold text-slate-600">Reset Pilihan</button>
         </div>
-
-        {meta && meta.last_page > 1 && (
-          <div className="flex items-center justify-between p-3 border-t text-sm">
-            <span className="text-slate-500">
-              {meta.from ?? 0}-{meta.to ?? 0} dari {meta.total} lokasi
-            </span>
-            <div className="flex gap-1">
-              <button
-                disabled={page === 1}
-                onClick={() => setPage(page - 1)}
-                className="rounded border px-3 py-1 text-xs disabled:opacity-40"
-              >
-                ← Prev
-              </button>
-              <span className="rounded border px-3 py-1 text-xs bg-slate-100">
-                {page} / {meta.last_page}
-              </span>
-              <button
-                disabled={page >= meta.last_page}
-                onClick={() => setPage(page + 1)}
-                className="rounded border px-3 py-1 text-xs disabled:opacity-40"
-              >
-                Next →
-              </button>
-            </div>
+        {list.isLoading ? <div className="p-8 text-center text-slate-500"><Loader2 className="h-5 w-5 animate-spin inline mr-2" /> Memuat...</div> : (
+          <div className="divide-y">
+            {Object.entries(tree).sort(([a], [b]) => a.localeCompare(b)).map(([reg, districts]) => {
+              const regVillages = Object.values(districts).flat(); const regIds = regVillages.map(v => v.id); const regState = stateOf(regIds); const regOpen = openRegencies.has(reg);
+              return <div key={reg}>
+                <div className="flex items-center gap-3 bg-teal-50/60 px-4 py-3">
+                  <button onClick={() => toggleSet(setOpenRegencies, reg)} className="rounded p-1 hover:bg-white">{regOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}</button>
+                  <input type="checkbox" checked={regState.checked} ref={(el) => { if (el) el.indeterminate = regState.partial; }} onChange={(e) => setMany(regIds, e.target.checked)} className="h-4 w-4" />
+                  <div className="flex-1"><div className="font-black text-teal-900">{reg}</div><div className="text-xs text-teal-700">{Object.keys(districts).length} kecamatan · {regVillages.length} desa</div></div>
+                </div>
+                {regOpen && <div className="pl-8">{Object.entries(districts).sort(([a], [b]) => a.localeCompare(b)).map(([dist, villages]) => {
+                  const key = `${reg}|${dist}`; const ids = villages.map(v => v.id); const st = stateOf(ids); const open = openDistricts.has(key);
+                  return <div key={key} className="border-t"><div className="flex items-center gap-3 px-4 py-2 bg-slate-50">
+                    <button onClick={() => toggleSet(setOpenDistricts, key)} className="rounded p-1 hover:bg-white">{open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}</button>
+                    <input type="checkbox" checked={st.checked} ref={(el) => { if (el) el.indeterminate = st.partial; }} onChange={(e) => setMany(ids, e.target.checked)} className="h-4 w-4" />
+                    <div className="flex-1 font-bold text-slate-800">{dist}</div><span className="text-xs text-slate-500">{villages.length} desa</span></div>
+                    {open && <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-1 p-3 pl-12">{villages.map((l) => <label key={l.id} className="flex items-center gap-2 rounded border border-slate-100 px-2 py-1.5 text-sm hover:bg-slate-50"><input type="checkbox" checked={selected.has(l.id)} onChange={(e) => setMany([l.id], e.target.checked)} className="h-4 w-4" /><span className="flex-1 truncate">{l.village_name ?? '-'}</span><button type="button" onClick={() => openEdit(l)} className="text-xs font-bold text-teal-700 hover:underline">Edit</button></label>)}</div>}
+                  </div>;
+                })}</div>}
+              </div>;
+            })}
           </div>
         )}
       </div>

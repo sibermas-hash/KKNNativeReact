@@ -84,9 +84,6 @@ export default function AdminLokasiPage(): React.JSX.Element {
   const [openRegencies, setOpenRegencies] = useState<Set<string>>(new Set());
   const [openDistricts, setOpenDistricts] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    setSelected(new Set(items.filter((l) => l.is_selected_for_kkn).map((l) => l.id)));
-  }, [items]);
 
   const list = useQuery({
     queryKey: ['admin', 'lokasi', { page, perPage, search }],
@@ -188,6 +185,10 @@ export default function AdminLokasiPage(): React.JSX.Element {
   });
 
   const items = list.data?.data ?? [];
+
+  useEffect(() => {
+    setSelected(new Set(items.filter((l) => l.is_selected_for_kkn).map((l) => l.id)));
+  }, [items]);
   const meta = list.data?.meta;
 
   const filtered = useMemo(() => {
@@ -206,8 +207,8 @@ export default function AdminLokasiPage(): React.JSX.Element {
   const setMany = (ids: number[], checked: boolean) => {
     setSelected(prev => { const next = new Set(prev); ids.forEach(id => checked ? next.add(id) : next.delete(id)); return next; });
     Promise.all(ids.map((id) => rawApi.put(`/admin/lokasi/${id}`, { is_selected_for_kkn: checked })))
-      .then(() => { queryClient.invalidateQueries({ queryKey: ['admin-lokasi'] }); toast.success(checked ? 'Lokasi dipilih untuk KKN' : 'Lokasi dinonaktifkan dari KKN'); })
-      .catch(() => { toast.error('Gagal menyimpan pilihan lokasi'); queryClient.invalidateQueries({ queryKey: ['admin-lokasi'] }); });
+      .then(() => { qc.invalidateQueries({ queryKey: ['admin', 'lokasi'] }); toast.success(checked ? 'Lokasi dipilih untuk KKN' : 'Lokasi dinonaktifkan dari KKN'); })
+      .catch(() => { toast.error('Gagal menyimpan pilihan lokasi'); qc.invalidateQueries({ queryKey: ['admin', 'lokasi'] }); });
   };
   const stateOf = (ids: number[]) => ({ checked: ids.length > 0 && ids.every(id => selected.has(id)), partial: ids.some(id => selected.has(id)) && !ids.every(id => selected.has(id)) });
   const toggleSet = (setter: React.Dispatch<React.SetStateAction<Set<string>>>, key: string) => setter(prev => { const next = new Set(prev); next.has(key) ? next.delete(key) : next.add(key); return next; });

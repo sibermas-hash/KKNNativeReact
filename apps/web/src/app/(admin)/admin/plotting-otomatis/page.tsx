@@ -373,6 +373,9 @@ export default function AutoPlottingPage(): React.JSX.Element {
 
   return (
     <div className="space-y-6 p-6">
+      <div className="rounded-xl border border-teal-200 bg-teal-50 p-4 text-sm text-teal-900">
+        <b>Plotting otomatis hanya untuk KKN Reguler.</b> KKN non-Reguler memakai workflow manual lewat Penempatan KKN → TAB Manual.
+      </div>
       <div>
         <h1 className="text-2xl font-black uppercase text-slate-900">Plotting Otomatis KKN Reguler</h1>
         <p className="text-sm text-slate-500">

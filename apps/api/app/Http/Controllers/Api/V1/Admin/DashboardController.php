@@ -91,9 +91,29 @@ class DashboardController extends Controller
 
         $facultyId = auth()->user()?->hasRole('faculty_admin') ? auth()->user()?->fakultas_id : null;
         $service = app(DashboardStatisticsService::class);
-        $stats = $service->getPeriodStatistics($periodId, $facultyId);
-        $weeklyTrend = $service->getWeeklyTrend($periodId);
-        $phaseContext = $this->getPhaseContext($period, $periodId);
+        try {
+            $stats = $service->getPeriodStatistics($periodId, $facultyId);
+            $weeklyTrend = $service->getWeeklyTrend($periodId);
+            $phaseContext = $this->getPhaseContext($period, $periodId);
+        } catch (\Throwable $e) {
+            report($e);
+            Log::warning('Dashboard fallback used', [
+                'periode_id' => $periodId,
+                'faculty_id' => $facultyId,
+                'error' => $e->getMessage(),
+            ]);
+
+            $stats = [
+                'summary' => ['total_students' => 0, 'total_groups' => 0],
+                'students_by_status' => [],
+                'grade_distribution' => [],
+                'dpl_workload' => [],
+                'sdg_distribution' => [],
+                'degraded' => true,
+            ];
+            $weeklyTrend = [];
+            $phaseContext = ['hint' => 'Dashboard sementara mode aman. Cek log server.'];
+        }
 
         return $this->success([
             'stats' => $stats,

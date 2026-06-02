@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * UserActivityController — admin endpoint untuk PRD_USER_ACTIVITY_LOG.md.
@@ -94,9 +95,15 @@ class UserActivityController extends Controller
     {
         $cacheKey = 'admin:activity-stats:v1';
 
-        $stats = Cache::remember($cacheKey, 60, function () {
-            return $this->computeStats();
-        });
+        try {
+            $stats = Cache::remember($cacheKey, 60, function () {
+                return $this->computeStats();
+            });
+        } catch (\Throwable $e) {
+            report($e);
+            Log::warning('Activity-log stats fallback used', ['error' => $e->getMessage()]);
+            $stats = $this->emptyStats();
+        }
 
         return $this->success($stats);
     }
@@ -123,6 +130,32 @@ class UserActivityController extends Controller
                 'total' => $logs->total(),
             ],
         ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function emptyStats(): array
+    {
+        return [
+            'login' => [
+                'total_attempts_today' => 0,
+                'successful_today' => 0,
+                'failed_today' => 0,
+                'unique_users_today' => 0,
+                'unique_users_week' => 0,
+                'unique_users_month' => 0,
+            ],
+            'by_role' => collect(['student', 'dosen', 'dpl', 'admin', 'faculty_admin', 'superadmin'])
+                ->mapWithKeys(fn ($role) => [$role => ['total' => 0, 'logged_in' => 0, 'never_logged_in' => 0, 'percent' => 0.0]])
+                ->all(),
+            'password' => ['changed_today' => 0, 'changed_this_week' => 0],
+            'profile' => ['updated_today' => 0, 'avatar_uploaded_today' => 0, 'avatar_rejected_today' => 0],
+            'suspicious' => ['repeated_failures' => [], 'suspect_ip_count_today' => 0],
+            'recent_activity' => [],
+            'generated_at' => now()->toIso8601String(),
+            'degraded' => true,
+        ];
     }
 
     /**

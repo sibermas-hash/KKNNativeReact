@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class SystemSettingController extends Controller
 {
@@ -58,6 +59,40 @@ class SystemSettingController extends Controller
             'provider' => $provider,
             'has_api_key' => $hasApiKey,
             'model' => $effectiveModel,
+        ]);
+    }
+
+    public function aiHealth(): JsonResponse
+    {
+        $preferredModel = (string) SystemSetting::get(
+            'ai_assistant_model',
+            SystemSetting::get('ai_model', config('ai.routing.assistant.model', 'ag/gemini-3-flash'))
+        );
+        $tiers = $this->loadAiTiers($preferredModel, true);
+        $issues = [];
+        $configured = 0;
+
+        foreach ($tiers as $tier) {
+            $hasKey = is_string($tier['key'] ?? null) && trim((string) $tier['key']) !== '';
+            if ($hasKey) {
+                $configured++;
+            } else {
+                $issues[] = "Tier {$tier['label']} belum punya API key.";
+                continue;
+            }
+
+            if (! Str::startsWith((string) ($tier['url'] ?? ''), ['http://', 'https://'])) {
+                $issues[] = "Tier {$tier['label']} URL tidak valid.";
+            }
+        }
+
+        return response()->json([
+            'ok' => $configured > 0 && $issues === [],
+            'message' => $configured > 0
+                ? ($issues === [] ? 'Konfigurasi AI tersedia.' : 'Konfigurasi AI tersedia, namun ada catatan.')
+                : 'Tidak ada API key AI yang terkonfigurasi.',
+            'issues' => $issues,
+            'checked_at' => now()->toIso8601String(),
         ]);
     }
 

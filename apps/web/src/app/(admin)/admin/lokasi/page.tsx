@@ -72,8 +72,20 @@ const EMPTY_FORM: LokasiForm = {
   fakultas_id: '',
 };
 
+const JENIS_KKN_TABS = [
+  ['reguler', 'KKN Reguler'],
+  ['nusantara', 'KKN Nusantara'],
+  ['internasional', 'KKN Internasional'],
+  ['tematik', 'KKN Tematik'],
+  ['kolaborasi_ptkin', 'KKN Kolaborasi PTKIN'],
+  ['responsif', 'KKN Responsif'],
+  ['kampung_zakat_katana', 'KKN Kampung Zakat & Katana'],
+] as const;
+
 export default function AdminLokasiPage(): React.JSX.Element {
   const qc = useQueryClient();
+  const searchParams = useSearchParams();
+  const activeJenis = searchParams.get('jenis_kkn') ?? 'reguler';
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(25);
   const [search, setSearch] = useState('');

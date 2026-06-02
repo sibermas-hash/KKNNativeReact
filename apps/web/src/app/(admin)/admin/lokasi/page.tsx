@@ -1,8 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { rawApi } from '@/lib/api';
 import { toast } from 'sonner';
@@ -72,20 +70,9 @@ const EMPTY_FORM: LokasiForm = {
   fakultas_id: '',
 };
 
-const JENIS_KKN_TABS = [
-  ['reguler', 'KKN Reguler'],
-  ['nusantara', 'KKN Nusantara'],
-  ['internasional', 'KKN Internasional'],
-  ['tematik', 'KKN Tematik'],
-  ['kolaborasi_ptkin', 'KKN Kolaborasi PTKIN'],
-  ['responsif', 'KKN Responsif'],
-  ['kampung_zakat_katana', 'KKN Kampung Zakat & Katana'],
-] as const;
 
 export default function AdminLokasiPage(): React.JSX.Element {
   const qc = useQueryClient();
-  const searchParams = useSearchParams();
-  const activeJenis = searchParams.get('jenis_kkn') ?? 'reguler';
   const [page, setPage] = useState(1);
   const [perPage, setPerPage] = useState(25);
   const [search, setSearch] = useState('');
@@ -317,30 +304,7 @@ export default function AdminLokasiPage(): React.JSX.Element {
         </div>
       </div>
 
-      {/* Jenis KKN tabs */}
-      <div className="rounded-xl border bg-white p-2 shadow-sm">
-        <div className="mb-2 px-2 text-xs font-black uppercase text-slate-500">Penempatan per Jenis KKN</div>
-        <div className="flex flex-wrap gap-2">
-          {JENIS_KKN_TABS.map(([key, label]) => (
-            <Link key={key} href={'/admin/lokasi?jenis_kkn=' + key} className={'rounded-lg px-3 py-2 text-sm font-bold transition ' + (activeJenis === key ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200')}>
-              {label}
-            </Link>
-          ))}
-        </div>
-      </div>
-
-      {activeJenis !== 'reguler' && (
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-900 shadow-sm">
-          <div className="text-xs font-black uppercase tracking-wide text-amber-700">Mode Input Manual</div>
-          <h2 className="mt-1 text-xl font-black">Penempatan non-KKN Reguler tidak memakai checklist wilayah otomatis.</h2>
-          <p className="mt-2 text-sm text-amber-800">
-            Checklist desa, estimasi mahasiswa, dan plotting otomatis hanya berlaku untuk <b>KKN Reguler</b>.
-            Untuk jenis KKN ini, admin melakukan penempatan manual lewat Manajemen Kelompok / menu penempatan terkait.
-          </p>
-        </div>
-      )}
-
-      {activeJenis === 'reguler' && (<>
+      <div className="rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-900"><b>Wilayah Reguler.</b> Halaman ini khusus checklist desa kandidat untuk KKN Reguler dan plotting otomatis.</div>
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard label="Total Desa" value={stats.data?.total ?? 0} />
@@ -471,7 +435,6 @@ export default function AdminLokasiPage(): React.JSX.Element {
         )}
       </div>
 
-      </>)}
 
       {/* Form Modal */}
       {showForm && (

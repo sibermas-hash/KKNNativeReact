@@ -133,6 +133,28 @@ export default function AdminLokasiPage(): React.JSX.Element {
     },
   });
 
+  const jenisRegularQ = useQuery({
+    queryKey: ['admin', 'jenis-kkn', 'regular-id'],
+    queryFn: async () => {
+      const res = await rawApi.get('/admin/jenis-kkn');
+      const body = (res.data as { data?: unknown }).data ?? res.data;
+      const arr = Array.isArray(body) ? body : ((body as { data?: unknown[] })?.data ?? []);
+      const found = (arr as Array<{ id: number; code?: string; name?: string }>).find(j => `${j.code ?? ''} ${j.name ?? ''}`.toLowerCase().includes('reguler'));
+      return found?.id ?? null;
+    },
+  });
+
+  const pesertaRealtime = useQuery({
+    queryKey: ['admin', 'peserta-kkn', 'regular-capacity-live', jenisRegularQ.data],
+    queryFn: async () => {
+      const params: Record<string, number> = { per_page: 1 }; if (jenisRegularQ.data) params.jenis_kkn_id = jenisRegularQ.data; const res = await rawApi.get('/admin/peserta-kkn', { params });
+      const body = res.data as { data?: { meta?: { total?: number } }; meta?: { total?: number } };
+      return Number(body.data?.meta?.total ?? body.meta?.total ?? 0);
+    },
+    enabled: jenisRegularQ.isSuccess,
+    refetchInterval: 10000,
+  });
+
   const fakultas = useQuery({
     queryKey: ['admin', 'fakultas-options'],
     queryFn: async () => {
@@ -224,6 +246,10 @@ export default function AdminLokasiPage(): React.JSX.Element {
   const collapseAll = () => { setOpenRegencies(new Set()); setOpenDistricts(new Set()); };
   const selectedCapacity = filtered.reduce((sum, l) => sum + (selected.has(l.id) ? (l.capacity ?? 0) : 0), 0);
   const maxGroups = selected.size;
+  const totalPesertaRealtime = pesertaRealtime.data ?? 0;
+  const kebutuhanKelompok = Math.ceil(totalPesertaRealtime / 15);
+  const kurangKelompok = Math.max(0, kebutuhanKelompok - maxGroups);
+  const kurangMahasiswa = Math.max(0, totalPesertaRealtime - selectedCapacity);
 
   const openCreate = () => {
     setEditing(null);
@@ -311,7 +337,10 @@ export default function AdminLokasiPage(): React.JSX.Element {
         <StatCard label="Kabupaten" value={stats.data?.regencyCount ?? 0} />
         <StatCard label="Desa Diceklist" value={stats.data?.selectedDesa ?? 0} color={(stats.data?.selectedDesa ?? 0) === 0 ? 'amber' : 'emerald'} />
         <StatCard label="Estimasi Mahasiswa" value={stats.data?.selectedCapacity ?? 0} color={(stats.data?.selectedCapacity ?? 0) === 0 ? 'amber' : 'emerald'} />
+        <StatCard label="Kurang Kelompok" value={kurangKelompok} color={kurangKelompok > 0 ? 'rose' : 'emerald'} />
+        <StatCard label="Mahasiswa Belum Tertampung" value={kurangMahasiswa} color={kurangMahasiswa > 0 ? 'rose' : 'emerald'} />
       </div>
+      <p className="text-xs text-slate-500">Realtime tiap 10 detik. Acuan: {totalPesertaRealtime.toLocaleString('id-ID')} peserta final · kebutuhan kelompok @15 mahasiswa/kelompok: {kebutuhanKelompok.toLocaleString('id-ID')}.</p>
 
       {/* Per-regency cards */}
       {stats.data && (

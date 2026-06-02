@@ -244,7 +244,7 @@ export default function AdminLokasiPage(): React.JSX.Element {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-6" data-app-version="20260602">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-black uppercase text-slate-900">Wilayah Penugasan KKN</h1>

@@ -89,15 +89,12 @@ const getNavGroups = (pathname: string, roles: string[]) => {
       { label: 'Direktori Dosen', href: '/admin/dosen', icon: GraduationCap },
       { label: 'Workshop & Pembekalan', href: '/admin/workshops', icon: Play },
       { label: 'Pendaftaran DPL', href: '/admin/dosen/pendaftaran-dpl', icon: FileCheck },
-      { label: 'Penugasan DPL', href: '/admin/dosen/penugasan', icon: MapPin },
       { label: 'Evaluasi DPL', href: '/admin/evaluasi-dpl', icon: FileText },
     ]},
-    { title: 'PENEMPATAN', items: [
+    { title: 'PENEMPATAN & MONITORING', items: [
       { label: 'Manajemen Kelompok', href: '/admin/kelompok', icon: Users },
+      { label: 'Penugasan DPL', href: '/admin/dosen/penugasan', icon: MapPin },
       { label: 'Wilayah Penugasan', href: '/admin/lokasi', icon: MapPin },
-      { label: 'Plotting Otomatis', href: '/admin/plotting-otomatis', icon: Shuffle },
-    ]},
-    { title: 'MONITORING KEGIATAN', items: [
       { label: 'Laporan Harian', href: '/admin/laporan/harian', icon: Activity },
       { label: 'Program Kerja', href: '/admin/laporan/program-kerja', icon: BookOpen },
     ]},

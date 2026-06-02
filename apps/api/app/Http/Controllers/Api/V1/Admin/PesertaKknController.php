@@ -117,16 +117,20 @@ class PesertaKknController extends Controller
 
     public function stats(): JsonResponse
     {
-        $counts = \App\Models\KKN\PesertaKkn::query()
+        $query = PesertaKkn::query();
+        $this->scopeByFaculty($query);
+
+        $counts = $query
             ->selectRaw("
                 COUNT(*) as total,
                 COUNT(*) FILTER (WHERE status = 'pending') as pending,
                 COUNT(*) FILTER (WHERE status = 'document_submitted') as document_submitted,
                 COUNT(*) FILTER (WHERE status = 'document_verified') as document_verified,
-                COUNT(*) FILTER (WHERE status = 'approved') as approved,
                 COUNT(*) FILTER (WHERE status = 'interview_scheduled') as interview_scheduled,
                 COUNT(*) FILTER (WHERE status = 'interview_passed') as interview_passed,
-                COUNT(*) FILTER (WHERE status = 'rejected') as rejected
+                COUNT(*) FILTER (WHERE status = 'approved') as approved,
+                COUNT(*) FILTER (WHERE status = 'rejected') as rejected,
+                COUNT(*) FILTER (WHERE status NOT IN ('pending','document_submitted','document_verified','interview_scheduled','interview_passed','approved','rejected')) as other
             ")
             ->first();
 

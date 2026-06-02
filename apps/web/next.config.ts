@@ -9,8 +9,8 @@ const withBundleAnalyzer = bundleAnalyzer({
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const withPWA = require("next-pwa")({
   dest: "public",
-  disable: process.env.NODE_ENV === "development",
-  register: true,
+  disable: true,// disabled temporarily: stale SW cached old Next chunks
+  register: false,
   skipWaiting: true,
   runtimeCaching: [
     {
@@ -159,6 +159,8 @@ const nextConfig: NextConfig = {
 
   webpack: (config) => {
     config.resolve.alias.canvas = false;
+    config.output = config.output || {};
+    config.output.hashSalt = 'sibermas-20260602-cache-reset';
     return config;
   },
 

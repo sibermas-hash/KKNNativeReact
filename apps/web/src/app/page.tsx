@@ -77,7 +77,7 @@ export default async function LandingPage() {
   const visi = data.aboutContent?.visi;
 
   return (
-    <div className="min-h-screen bg-white text-emerald-950">
+    <div className="min-h-screen bg-white text-emerald-950" data-app-version="20260602">
       <Navbar overlayNav={true} />
 
       {/* --- HERO SECTION --- */}

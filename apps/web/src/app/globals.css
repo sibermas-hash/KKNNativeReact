@@ -101,3 +101,5 @@ html, body {
 .app-readable thead * {
   color: #334155;
 }
+
+:root{--sibermas-asset-version:20260602;}

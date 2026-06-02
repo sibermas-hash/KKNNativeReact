@@ -88,9 +88,11 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
     queryKey: ['admin', 'registrations-stats'],
     queryFn: async () => {
       const res = await rawApi.get('/admin/pendaftaran/stats');
-      return ((res.data as { data?: unknown }).data ?? res.data) as { total: number; pending: number; document_submitted: number; document_verified: number; approved: number; interview_scheduled: number; rejected: number };
+      return ((res.data as { data?: unknown }).data ?? res.data) as { total: number; pending: number; document_submitted: number; document_verified: number; approved: number; interview_scheduled: number; interview_passed: number; rejected: number; other?: number };
     },
-    staleTime: 30000,
+    staleTime: 0,
+    refetchInterval: 10000,
+    refetchOnWindowFocus: true,
   });
 
   // Main data
@@ -110,7 +112,9 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
       return { items: envelope.data ?? [], meta: envelope.meta };
     },
     placeholderData: keepPreviousData,
-    refetchOnWindowFocus: false,
+    staleTime: 0,
+    refetchInterval: 10000,
+    refetchOnWindowFocus: true,
   });
 
   const registrations = data?.items ?? [];
@@ -211,7 +215,7 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
 
       {/* Summary Cards */}
       {stats && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-8">
           <div onClick={() => setStatus('')} className={`cursor-pointer rounded-xl p-3 shadow-sm ring-1 transition-all ${!status ? 'bg-cyan-50 ring-cyan-200' : 'bg-white ring-slate-200 hover:ring-cyan-200'}`}>
             <p className="text-[10px] font-bold text-slate-500 uppercase">Total</p>
             <p className="text-xl font-bold text-slate-900">{stats.total?.toLocaleString('id-ID') ?? 0}</p>
@@ -227,6 +231,14 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
           <div onClick={() => setStatus('document_verified')} className={`cursor-pointer rounded-xl p-3 shadow-sm ring-1 transition-all ${status === 'document_verified' ? 'bg-indigo-50 ring-indigo-200' : 'bg-white ring-slate-200 hover:ring-indigo-200'}`}>
             <p className="text-[10px] font-bold text-slate-500 uppercase">Terverifikasi</p>
             <p className="text-xl font-bold text-indigo-600">{stats.document_verified?.toLocaleString('id-ID') ?? 0}</p>
+          </div>
+          <div onClick={() => setStatus('interview_scheduled')} className={`cursor-pointer rounded-xl p-3 shadow-sm ring-1 transition-all ${status === 'interview_scheduled' ? 'bg-violet-50 ring-violet-200' : 'bg-white ring-slate-200 hover:ring-violet-200'}`}>
+            <p className="text-[10px] font-bold text-slate-500 uppercase">Menunggu Wawancara</p>
+            <p className="text-xl font-bold text-violet-600">{stats.interview_scheduled?.toLocaleString('id-ID') ?? 0}</p>
+          </div>
+          <div onClick={() => setStatus('interview_passed')} className={`cursor-pointer rounded-xl p-3 shadow-sm ring-1 transition-all ${status === 'interview_passed' ? 'bg-teal-50 ring-teal-200' : 'bg-white ring-slate-200 hover:ring-teal-200'}`}>
+            <p className="text-[10px] font-bold text-slate-500 uppercase">Lulus Wawancara</p>
+            <p className="text-xl font-bold text-teal-600">{stats.interview_passed?.toLocaleString('id-ID') ?? 0}</p>
           </div>
           <div onClick={() => setStatus('approved')} className={`cursor-pointer rounded-xl p-3 shadow-sm ring-1 transition-all ${status === 'approved' ? 'bg-emerald-50 ring-emerald-200' : 'bg-white ring-slate-200 hover:ring-emerald-200'}`}>
             <p className="text-[10px] font-bold text-slate-500 uppercase">Disetujui</p>

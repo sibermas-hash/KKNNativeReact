@@ -17,9 +17,12 @@ class LokasiController extends Controller
 {
     use ApiResponse;
 
+    private const TARGET_REGENCIES = ['Banyumas', 'Banjarnegara', 'Kebumen', 'Purbalingga', 'Pangandaran'];
+
     public function index(Request $request): JsonResponse
     {
         $lokasi = Lokasi::with('fakultas')
+            ->whereIn('regency_name', self::TARGET_REGENCIES)
             ->when($request->input('search'), fn ($q, $s) => $q->where('village_name', 'like', '%'.QueryHelper::escapeLike($s).'%'))
             ->orderBy('village_name')
             ->paginate($request->input('per_page', 25));
@@ -55,6 +58,7 @@ class LokasiController extends Controller
             'longitude' => ['nullable', 'numeric'],
             'capacity' => ['nullable', 'integer', 'min:0'],
             'fakultas_id' => ['nullable', 'exists:fakultas,id'],
+            'is_selected_for_kkn' => ['sometimes', 'boolean'],
         ]));
 
         return $this->success(new LokasiResource($lokasi->refresh()), 'Lokasi berhasil diperbarui.');

@@ -52,10 +52,12 @@ const getNavGroups = (pathname: string, roles: string[]) => {
       { label: 'Pendaftaran DPL', href: '/admin/dosen/pendaftaran-dpl', icon: FileCheck },
       { label: 'Evaluasi DPL', href: '/admin/evaluasi-dpl', icon: FileText },
     ]},
-    { title: 'PENEMPATAN & MONITORING', items: [
+    { title: 'PENEMPATAN', items: [
       { label: 'Manajemen Kelompok', href: '/admin/kelompok', icon: Users },
       { label: 'Penugasan DPL', href: '/admin/dosen/penugasan', icon: MapPin },
       { label: 'Wilayah Penugasan', href: '/admin/lokasi', icon: MapPin },
+    ]},
+    { title: 'MONITORING KEGIATAN', items: [
       { label: 'Laporan Harian', href: '/admin/laporan/harian', icon: Activity },
       { label: 'Program Kerja', href: '/admin/laporan/program-kerja', icon: BookOpen },
     ]},

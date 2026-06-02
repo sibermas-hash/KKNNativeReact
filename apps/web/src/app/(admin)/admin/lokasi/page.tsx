@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { rawApi } from '@/lib/api';
 import { toast } from 'sonner';
@@ -32,6 +32,7 @@ type Lokasi = {
   latitude?: string | number | null;
   longitude?: string | number | null;
   capacity?: number | null;
+  is_selected_for_kkn?: boolean;
   fakultas_id?: number | null;
   faculty?: { id: number; name?: string; nama?: string } | null;
 };
@@ -82,6 +83,10 @@ export default function AdminLokasiPage(): React.JSX.Element {
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [openRegencies, setOpenRegencies] = useState<Set<string>>(new Set());
   const [openDistricts, setOpenDistricts] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    setSelected(new Set(items.filter((l) => l.is_selected_for_kkn).map((l) => l.id)));
+  }, [items]);
 
   const list = useQuery({
     queryKey: ['admin', 'lokasi', { page, perPage, search }],
@@ -198,7 +203,12 @@ export default function AdminLokasiPage(): React.JSX.Element {
     Object.values(root).forEach(ds => Object.values(ds).forEach(vs => vs.sort((a,b)=>(a.village_name ?? '').localeCompare(b.village_name ?? ''))));
     return root;
   }, [filtered]);
-  const setMany = (ids: number[], checked: boolean) => setSelected(prev => { const next = new Set(prev); ids.forEach(id => checked ? next.add(id) : next.delete(id)); return next; });
+  const setMany = (ids: number[], checked: boolean) => {
+    setSelected(prev => { const next = new Set(prev); ids.forEach(id => checked ? next.add(id) : next.delete(id)); return next; });
+    Promise.all(ids.map((id) => rawApi.put(`/admin/lokasi/${id}`, { is_selected_for_kkn: checked })))
+      .then(() => { queryClient.invalidateQueries({ queryKey: ['admin-lokasi'] }); toast.success(checked ? 'Lokasi dipilih untuk KKN' : 'Lokasi dinonaktifkan dari KKN'); })
+      .catch(() => { toast.error('Gagal menyimpan pilihan lokasi'); queryClient.invalidateQueries({ queryKey: ['admin-lokasi'] }); });
+  };
   const stateOf = (ids: number[]) => ({ checked: ids.length > 0 && ids.every(id => selected.has(id)), partial: ids.some(id => selected.has(id)) && !ids.every(id => selected.has(id)) });
   const toggleSet = (setter: React.Dispatch<React.SetStateAction<Set<string>>>, key: string) => setter(prev => { const next = new Set(prev); next.has(key) ? next.delete(key) : next.add(key); return next; });
 

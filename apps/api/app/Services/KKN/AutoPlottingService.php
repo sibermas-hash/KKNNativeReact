@@ -136,7 +136,10 @@ class AutoPlottingService
 
         $groups = [];
         for ($i = 0; $i < $count; $i++) {
-            $loc = $locations[$i % count($locations)];
+            if ($count > count($locations)) {
+                throw new RuntimeException('Jumlah kelompok melebihi desa terpilih. Pilih minimal '.$count.' desa karena 1 desa hanya boleh 1 kelompok.');
+            }
+            $loc = $locations[$i];
             $no = $i + 1;
             $groups[] = [
                 'no' => $no,
@@ -525,6 +528,7 @@ class AutoPlottingService
 
         $locs = Lokasi::query()
             ->whereNotNull('regency_name')
+            ->where('is_selected_for_kkn', true)
             ->orderBy('regency_name')
             ->orderBy('district_name')
             ->orderBy('village_name')

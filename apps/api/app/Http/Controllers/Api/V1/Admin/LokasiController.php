@@ -38,6 +38,7 @@ class LokasiController extends Controller
             'longitude' => ['nullable', 'numeric'],
             'capacity' => ['nullable', 'integer', 'min:0'],
             'fakultas_id' => ['nullable', 'exists:fakultas,id'],
+            'is_selected_for_kkn' => ['sometimes', 'boolean'],
         ]);
 
         return $this->created(new LokasiResource(Lokasi::create($validated)), 'Lokasi berhasil dibuat.');

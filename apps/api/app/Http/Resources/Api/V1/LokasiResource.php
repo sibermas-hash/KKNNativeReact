@@ -25,6 +25,7 @@ class LokasiResource extends JsonResource
             'latitude' => $this->latitude,
             'longitude' => $this->longitude,
             'capacity' => $this->capacity,
+            'is_selected_for_kkn' => (bool) $this->is_selected_for_kkn,
             'fakultas_id' => $this->fakultas_id,
             'faculty' => new FakultasResource($this->whenLoaded('fakultas')),
 

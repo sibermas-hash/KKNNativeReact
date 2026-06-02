@@ -28,6 +28,7 @@ class Lokasi extends Model
         'latitude',
         'longitude',
         'capacity',
+        'is_selected_for_kkn',
         'fakultas_id',
     ];
 
@@ -35,6 +36,7 @@ class Lokasi extends Model
         'latitude' => 'decimal:8',
         'longitude' => 'decimal:8',
         'capacity' => 'integer',
+        'is_selected_for_kkn' => 'boolean',
     ];
 
     public function fakultas(): BelongsTo

@@ -206,7 +206,7 @@ export default function AdminLokasiPage(): React.JSX.Element {
   }, [filtered]);
   const setMany = (ids: number[], checked: boolean) => {
     setSelected(prev => { const next = new Set(prev); ids.forEach(id => checked ? next.add(id) : next.delete(id)); return next; });
-    Promise.all(ids.map((id) => rawApi.put(`/admin/lokasi/${id}`, { is_selected_for_kkn: checked })))
+    rawApi.post('/admin/lokasi/selection', { ids, is_selected_for_kkn: checked })
       .then(() => { qc.invalidateQueries({ queryKey: ['admin', 'lokasi'] }); toast.success(checked ? 'Lokasi dipilih untuk KKN' : 'Lokasi dinonaktifkan dari KKN'); })
       .catch(() => { toast.error('Gagal menyimpan pilihan lokasi'); qc.invalidateQueries({ queryKey: ['admin', 'lokasi'] }); });
   };

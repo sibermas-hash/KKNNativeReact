@@ -30,6 +30,21 @@ class LokasiController extends Controller
         return $this->successCollection(LokasiResource::collection($lokasi));
     }
 
+    public function updateSelection(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1'],
+            'ids.*' => ['integer', 'exists:lokasi,id'],
+            'is_selected_for_kkn' => ['required', 'boolean'],
+        ]);
+
+        $updated = Lokasi::whereIn('id', $validated['ids'])
+            ->whereIn('regency_name', self::TARGET_REGENCIES)
+            ->update(['is_selected_for_kkn' => (bool) $validated['is_selected_for_kkn']]);
+
+        return $this->success(['updated' => $updated], 'Pilihan lokasi berhasil disimpan.');
+    }
+
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([

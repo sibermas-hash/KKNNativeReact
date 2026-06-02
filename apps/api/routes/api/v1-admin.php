@@ -108,6 +108,7 @@ Route::prefix('admin')
             Route::patch('/prodi/{prodi}', [ProdiController::class, 'update']);
             Route::delete('/prodi/{prodi}', [ProdiController::class, 'destroy']);
         });
+        Route::post('/lokasi/selection', [LokasiController::class, 'updateSelection']);
         Route::apiResource('lokasi', LokasiController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::post('/lokasi/import', [LokasiController::class, 'import']);
         Route::get('/lokasi/export', [LokasiController::class, 'export']);

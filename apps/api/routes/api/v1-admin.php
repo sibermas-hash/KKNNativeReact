@@ -40,6 +40,7 @@ use App\Http\Controllers\Api\V1\Admin\NotificationBroadcastController;
 use App\Http\Controllers\Api\V1\Admin\PeriodeController;
 use App\Http\Controllers\Api\V1\Admin\PeriodeDocumentTemplateController;
 use App\Http\Controllers\Api\V1\Admin\PesertaKknController;
+use App\Http\Controllers\Api\V1\Admin\PesertaKknListController;
 use App\Http\Controllers\Api\V1\Admin\PlaygroundController;
 use App\Http\Controllers\Api\V1\Admin\ProdiController;
 use App\Http\Controllers\Api\V1\Admin\ProfileChangeRequestController;
@@ -54,6 +55,7 @@ use App\Http\Controllers\Api\V1\Admin\StudentSyncController;
 use App\Http\Controllers\Api\V1\Admin\StudentTransferController;
 use App\Http\Controllers\Api\V1\Admin\SystemSettingController;
 use App\Http\Controllers\Api\V1\Admin\TahunAkademikController;
+use App\Http\Controllers\Api\V1\Admin\TransferPesertaController;
 use App\Http\Controllers\Api\V1\Admin\UserActivityController;
 use App\Http\Controllers\Api\V1\Admin\UserController;
 use App\Http\Controllers\Api\V1\Admin\WorkshopController;
@@ -97,6 +99,7 @@ Route::prefix('admin')
         Route::apiResource('lokasi', LokasiController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::post('/lokasi/import', [LokasiController::class, 'import']);
         Route::get('/lokasi/export', [LokasiController::class, 'export']);
+        Route::get('/lokasi-reguler-pool', [LokasiController::class, 'regulerPool']);
 
         // Requirements
         Route::apiResource('kkn-requirements', KknRequirementController::class)->only(['index', 'store', 'update', 'destroy']);
@@ -120,6 +123,11 @@ Route::prefix('admin')
         Route::patch('/pendaftaran/{pesertaKkn}/reject', [PesertaKknController::class, 'reject']);
         Route::patch('/pendaftaran/{pesertaKkn}/assign-group', [PesertaKknController::class, 'assignGroup']);
         Route::post('/pendaftaran/{pesertaKkn}/make-leader', [PesertaKknController::class, 'makeLeader']);
+        Route::get('/peserta-kkn/export', [PesertaKknListController::class, 'export']);
+        Route::get('/peserta-kkn', [PesertaKknListController::class, 'index']);
+        Route::get('/transfer-peserta/periodes', [TransferPesertaController::class, 'periodes']);
+        Route::get('/transfer-peserta', [TransferPesertaController::class, 'index']);
+        Route::post('/transfer-peserta', [TransferPesertaController::class, 'transfer']);
         // Korcam is a DPL role (not mahasiswa) — managed via DPL assignment, not here
 
         // Groups

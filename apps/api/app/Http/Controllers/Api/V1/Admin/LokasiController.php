@@ -95,4 +95,15 @@ class LokasiController extends Controller
     {
         return $this->success(LokasiResource::collection(Lokasi::with('fakultas')->orderBy('village_name')->get()));
     }
+
+    public function regulerPool(Request $request): JsonResponse
+    {
+        $lokasi = Lokasi::query()
+            ->with('fakultas')
+            ->when($request->input('search'), fn ($q, $s) => $q->where('village_name', 'like', '%'.QueryHelper::escapeLike($s).'%'))
+            ->orderBy('village_name')
+            ->get();
+
+        return $this->success(LokasiResource::collection($lokasi));
+    }
 }

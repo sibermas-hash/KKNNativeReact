@@ -107,6 +107,8 @@ export default function AdminLokasiPage(): React.JSX.Element {
       const districtSet: Record<string, Set<string>> = {};
       let withCoord = 0;
       let withCapacity = 0;
+      let selectedDesa = 0;
+      let selectedCapacity = 0;
       items.forEach((l) => {
         const r = l.regency_name ?? 'Unknown';
         byRegency[r] = (byRegency[r] ?? 0) + 1;
@@ -114,6 +116,7 @@ export default function AdminLokasiPage(): React.JSX.Element {
         if (l.district_name) districtSet[r].add(l.district_name);
         if (l.latitude && l.longitude) withCoord++;
         if ((l.capacity ?? 0) > 0) withCapacity++;
+        if (l.is_selected_for_kkn) { selectedDesa++; selectedCapacity += l.capacity ?? 0; }
       });
       return {
         total: body.meta?.total ?? items.length,
@@ -122,6 +125,8 @@ export default function AdminLokasiPage(): React.JSX.Element {
         regencyCount: Object.keys(byRegency).length,
         withCoord,
         withCapacity,
+        selectedDesa,
+        selectedCapacity,
         all: items,
       };
     },
@@ -296,8 +301,8 @@ export default function AdminLokasiPage(): React.JSX.Element {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard label="Total Desa" value={stats.data?.total ?? 0} />
         <StatCard label="Kabupaten" value={stats.data?.regencyCount ?? 0} />
-        <StatCard label="Dengan Koordinat" value={stats.data?.withCoord ?? 0} color={(stats.data?.withCoord ?? 0) === 0 ? 'amber' : 'emerald'} />
-        <StatCard label="Dengan Kapasitas" value={stats.data?.withCapacity ?? 0} color={(stats.data?.withCapacity ?? 0) === 0 ? 'amber' : 'emerald'} />
+        <StatCard label="Desa Diceklist" value={stats.data?.selectedDesa ?? 0} color={(stats.data?.selectedDesa ?? 0) === 0 ? 'amber' : 'emerald'} />
+        <StatCard label="Estimasi Mahasiswa" value={stats.data?.selectedCapacity ?? 0} color={(stats.data?.selectedCapacity ?? 0) === 0 ? 'amber' : 'emerald'} />
       </div>
 
       {/* Per-regency cards */}

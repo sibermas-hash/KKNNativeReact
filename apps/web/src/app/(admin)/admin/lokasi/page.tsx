@@ -329,6 +329,18 @@ export default function AdminLokasiPage(): React.JSX.Element {
         </div>
       </div>
 
+      {activeJenis !== 'reguler' && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-amber-900 shadow-sm">
+          <div className="text-xs font-black uppercase tracking-wide text-amber-700">Mode Input Manual</div>
+          <h2 className="mt-1 text-xl font-black">Penempatan non-KKN Reguler tidak memakai checklist wilayah otomatis.</h2>
+          <p className="mt-2 text-sm text-amber-800">
+            Checklist desa, estimasi mahasiswa, dan plotting otomatis hanya berlaku untuk <b>KKN Reguler</b>.
+            Untuk jenis KKN ini, admin melakukan penempatan manual lewat Manajemen Kelompok / menu penempatan terkait.
+          </p>
+        </div>
+      )}
+
+      {activeJenis === 'reguler' && (<>
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard label="Total Desa" value={stats.data?.total ?? 0} />
@@ -458,6 +470,8 @@ export default function AdminLokasiPage(): React.JSX.Element {
           </div>
         )}
       </div>
+
+      </>)}
 
       {/* Form Modal */}
       {showForm && (

@@ -53,6 +53,8 @@ export default function AdminKelompokPage(): React.JSX.Element {
   const search = useSearchParams();
   const initialPeriodeId = search?.get('periode_id') ?? '';
   const initialPeriodeName = (search?.get('periode_name') ?? '').trim();
+  const jenisKey = (search?.get('jenis_kkn') ?? '').trim();
+  const manualMode = search?.get('mode') === 'manual';
 
   const [periodeId, setPeriodeId] = useState<string>(initialPeriodeId);
   const [page, setPage] = useState(1);
@@ -237,6 +239,16 @@ export default function AdminKelompokPage(): React.JSX.Element {
           </button>
         </div>
       </div>
+
+      {manualMode && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <b>Mode manual non-Reguler.</b> Filter/kelola kelompok untuk jenis KKN ini di sistem Sibermas. Buat kelompok via Import Excel atau tombol tambah manual akan disiapkan di halaman ini.
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button onClick={() => fileRef.current?.click()} className="rounded-lg bg-amber-700 px-3 py-2 text-xs font-bold text-white">Import Kelompok Manual</button>
+            <Link href={`/admin/dosen/penugasan?jenis_kkn=${jenisKey}`} className="rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-bold text-amber-800">Lanjut Assign DPL</Link>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard label="Total Kelompok" value={stats.totalGroups} />

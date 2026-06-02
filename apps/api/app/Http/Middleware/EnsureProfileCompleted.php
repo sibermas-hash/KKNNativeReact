@@ -18,7 +18,7 @@ class EnsureProfileCompleted
             return $next($request);
         }
 
-        if ($user->hasRole('superadmin')) {
+        if ($user->hasAnyRole(['superadmin', 'admin', 'faculty_admin', 'external_lppm_admin'])) {
             return $next($request);
         }
 

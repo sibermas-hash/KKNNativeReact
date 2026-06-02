@@ -33,6 +33,7 @@ use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -237,6 +238,30 @@ return Application::configure(basePath: dirname(__DIR__))
                         'message' => 'Terlalu banyak permintaan. Silakan coba lagi nanti.',
                     ],
                 ], 429, $e->getHeaders());
+            }
+        });
+
+        // Preserve HTTP exceptions (signed URL, abort(403/404), etc.) instead of
+        // converting them to generic 500 responses.
+        $exceptions->render(function (HttpExceptionInterface $e, $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                $status = $e->getStatusCode();
+                $code = match ($status) {
+                    401 => 'UNAUTHORIZED',
+                    403 => 'FORBIDDEN',
+                    404 => 'NOT_FOUND',
+                    405 => 'METHOD_NOT_ALLOWED',
+                    429 => 'RATE_LIMITED',
+                    default => 'HTTP_ERROR',
+                };
+
+                return response()->json([
+                    'success' => false,
+                    'error' => [
+                        'code' => $code,
+                        'message' => $e->getMessage() ?: 'Permintaan tidak dapat diproses.',
+                    ],
+                ], $status, $e->getHeaders());
             }
         });
 

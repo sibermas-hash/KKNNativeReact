@@ -27,46 +27,7 @@ const getNavGroups = (pathname: string, roles: string[]) => {
   const isBlog = pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi') || pathname.includes('/admin/chat') || pathname.includes('/admin/konten-publik');
   const isSystem = pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/prodi') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/konfigurasi-penilaian') || pathname.includes('/admin/monitoring');
 
-  if (isBlog) return [
-    { title: 'MANAJEMEN KONTEN', items: [
-      { label: 'Warta Utama', href: '/admin/warta-utama', icon: Newspaper },
-      { label: 'Kirim Pengumuman', href: '/admin/notifikasi/broadcast', icon: Megaphone },
-      { label: 'Chat Konsultasi', href: '/admin/chat', icon: MessageCircle },
-      { label: 'Pusat Unduhan', href: '/admin/unduhan', icon: Download },
-    ]},
-    { title: 'INFORMASI LEMBAGA', items: [
-      { label: 'Profil Lembaga', href: '/admin/konten-publik/profil', icon: Globe },
-      { label: 'Skema KKN Publik', href: '/admin/konten-publik/skema', icon: Layers },
-    ]},
-  ];
-
-  if (isSystem) {
-    // Non-superadmin should not see system section at all, redirect handled elsewhere
-    if (!isSuperadmin) return [];
-
-    return [
-      { title: 'INTELIJEN & SYNC', items: [
-        { label: 'Intelijen Sistem', href: '/admin/audit-log', icon: Terminal },
-        { label: 'Log Aktivitas User', href: '/admin/activity-log', icon: Activity },
-        { label: 'AI Playground', href: '/admin/playground', icon: Sparkles },
-        { label: 'Sinkron SIAKAD', href: '/admin/sinkron-siakad', icon: Play },
-        { label: 'Log Sinkronisasi', href: '/admin/database-sync', icon: RefreshCw },
-        { label: 'Monitoring Sistem', href: '/admin/monitoring', icon: Activity },
-      ]},
-      { title: 'KONFIGURASI GLOBAL', items: [
-        { label: 'Manajemen Pengguna', href: '/admin/pengguna', icon: UserCog },
-        { label: 'Perubahan Profil', href: '/admin/profile-change-requests', icon: UserCheck },
-        { label: 'Moderasi Foto', href: '/admin/avatar-moderation', icon: Camera },
-        { label: 'Fakultas & Prodi', href: '/admin/fakultas', icon: Building2 },
-        { label: 'Pengaturan Global', href: '/admin/pengaturan/sistem', icon: Cpu },
-        { label: 'Pengaturan Notifikasi', href: '/admin/pengaturan/notifikasi', icon: Bell },
-        { label: 'Skema Penilaian', href: '/admin/pengaturan/penilaian', icon: Settings },
-        { label: 'Template Sertifikat', href: '/admin/pengaturan/sertifikat', icon: Award },
-      ]},
-    ];
-  }
-
-  return [
+  const operationalGroups = [
     { title: 'SENTRAL OPERASIONAL', items: [
       { label: 'Statistik KKN', href: '/admin/dashboard', icon: LayoutDashboard },
     ]},
@@ -107,6 +68,45 @@ const getNavGroups = (pathname: string, roles: string[]) => {
       { label: 'Yudisium', href: '/admin/yudisium', icon: GraduationCap },
     ]},
   ];
+
+  const contentGroups = [
+    { title: 'MANAJEMEN KONTEN', items: [
+      { label: 'Warta Utama', href: '/admin/warta-utama', icon: Newspaper },
+      { label: 'Kirim Pengumuman', href: '/admin/notifikasi/broadcast', icon: Megaphone },
+      { label: 'Chat Konsultasi', href: '/admin/chat', icon: MessageCircle },
+      { label: 'Pusat Unduhan', href: '/admin/unduhan', icon: Download },
+    ]},
+    { title: 'INFORMASI LEMBAGA', items: [
+      { label: 'Profil Lembaga', href: '/admin/konten-publik/profil', icon: Globe },
+      { label: 'Skema KKN Publik', href: '/admin/konten-publik/skema', icon: Layers },
+    ]},
+  ];
+
+  const systemGroups = [
+    { title: 'INTELIJEN & SYNC', items: [
+      { label: 'Intelijen Sistem', href: '/admin/audit-log', icon: Terminal },
+      { label: 'Log Aktivitas User', href: '/admin/activity-log', icon: Activity },
+      { label: 'AI Playground', href: '/admin/playground', icon: Sparkles },
+      { label: 'Sinkron SIAKAD', href: '/admin/sinkron-siakad', icon: Play },
+      { label: 'Log Sinkronisasi', href: '/admin/database-sync', icon: RefreshCw },
+      { label: 'Monitoring Sistem', href: '/admin/monitoring', icon: Activity },
+    ]},
+    { title: 'KONFIGURASI GLOBAL', items: [
+      { label: 'Manajemen Pengguna', href: '/admin/pengguna', icon: UserCog },
+      { label: 'Perubahan Profil', href: '/admin/profile-change-requests', icon: UserCheck },
+      { label: 'Moderasi Foto', href: '/admin/avatar-moderation', icon: Camera },
+      { label: 'Fakultas & Prodi', href: '/admin/fakultas', icon: Building2 },
+      { label: 'Pengaturan Global', href: '/admin/pengaturan/sistem', icon: Cpu },
+      { label: 'Pengaturan Notifikasi', href: '/admin/pengaturan/notifikasi', icon: Bell },
+      { label: 'Skema Penilaian', href: '/admin/pengaturan/penilaian', icon: Settings },
+      { label: 'Template Sertifikat', href: '/admin/pengaturan/sertifikat', icon: Award },
+    ]},
+  ];
+
+  if (isSuperadmin) return [...operationalGroups, ...contentGroups, ...systemGroups];
+  if (isSystem) return [];
+  if (isBlog) return contentGroups;
+  return operationalGroups;
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }): React.JSX.Element {

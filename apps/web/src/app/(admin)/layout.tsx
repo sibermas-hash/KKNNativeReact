@@ -52,14 +52,8 @@ const getNavGroups = (pathname: string, roles: string[]) => {
       { label: 'Pendaftaran DPL', href: '/admin/dosen/pendaftaran-dpl', icon: FileCheck },
       { label: 'Evaluasi DPL', href: '/admin/evaluasi-dpl', icon: FileText },
     ]},
-    { title: 'PENEMPATAN PER JENIS KKN', items: [
-      { label: 'KKN Reguler', href: '/admin/lokasi?jenis_kkn=reguler', icon: MapPin },
-      { label: 'KKN Nusantara', href: '/admin/lokasi?jenis_kkn=nusantara', icon: MapPin },
-      { label: 'KKN Internasional', href: '/admin/lokasi?jenis_kkn=internasional', icon: MapPin },
-      { label: 'KKN Tematik', href: '/admin/lokasi?jenis_kkn=tematik', icon: MapPin },
-      { label: 'KKN Kolaborasi PTKIN', href: '/admin/lokasi?jenis_kkn=kolaborasi_ptkin', icon: MapPin },
-      { label: 'KKN Responsif', href: '/admin/lokasi?jenis_kkn=responsif', icon: MapPin },
-      { label: 'KKN Kampung Zakat & Katana', href: '/admin/lokasi?jenis_kkn=kampung_zakat_katana', icon: MapPin },
+    { title: 'PENEMPATAN', items: [
+      { label: 'Wilayah Penugasan', href: '/admin/lokasi', icon: MapPin },
       { label: 'Plotting Otomatis KKN Reguler', href: '/admin/plotting-otomatis?jenis_kkn=reguler', icon: Shuffle },
       { label: 'Penugasan DPL', href: '/admin/dosen/penugasan', icon: MapPin },
       { label: 'Manajemen Kelompok', href: '/admin/kelompok', icon: Users },

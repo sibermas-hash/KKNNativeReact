@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { rawApi } from '@/lib/api';
 import { toast } from 'sonner';
@@ -300,6 +302,18 @@ export default function AdminLokasiPage(): React.JSX.Element {
           <button onClick={openCreate} className="h-10 rounded-lg bg-teal-600 px-4 text-sm font-bold text-white flex items-center gap-2">
             <Plus className="h-4 w-4" /> Tambah Lokasi
           </button>
+        </div>
+      </div>
+
+      {/* Jenis KKN tabs */}
+      <div className="rounded-xl border bg-white p-2 shadow-sm">
+        <div className="mb-2 px-2 text-xs font-black uppercase text-slate-500">Penempatan per Jenis KKN</div>
+        <div className="flex flex-wrap gap-2">
+          {JENIS_KKN_TABS.map(([key, label]) => (
+            <Link key={key} href={'/admin/lokasi?jenis_kkn=' + key} className={'rounded-lg px-3 py-2 text-sm font-bold transition ' + (activeJenis === key ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200')}>
+              {label}
+            </Link>
+          ))}
         </div>
       </div>
 

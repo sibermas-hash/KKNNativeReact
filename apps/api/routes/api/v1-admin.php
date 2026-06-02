@@ -61,7 +61,7 @@ use App\Http\Controllers\Api\V1\Admin\YudisiumController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')
-    ->middleware(['auth:sanctum', 'role:superadmin|admin|faculty_admin', '2fa.enforced', 'not_locked', 'admin.auth'])
+    ->middleware(['auth:sanctum', 'role:superadmin|admin|faculty_admin', 'not_locked', 'admin.auth'])
     ->group(function () {
 
         // Dashboard

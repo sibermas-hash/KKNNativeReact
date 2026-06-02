@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\V1\External\ParticipantController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('external')
-    ->middleware(['auth:sanctum', 'role:external_lppm_admin', '2fa.enforced', 'not_locked'])
+    ->middleware(['auth:sanctum', 'role:external_lppm_admin', 'not_locked'])
     ->group(function () {
         Route::get('/dashboard', DashboardController::class);
 

@@ -18,6 +18,7 @@ type Peserta = {
 
 type Meta = { current_page: number; last_page: number; total: number; per_page: number };
 type Faculty = { id: number; nama: string; code?: string };
+type Prodi = { id: number; nama: string; code?: string; fakultas_id?: number };
 type JenisKkn = { id: number; name: string; code?: string };
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
@@ -31,13 +32,14 @@ export default function PesertaKknPage(): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [angkatan, setAngkatan] = useState('58');
   const [fakultasId, setFakultasId] = useState('');
+  const [prodiId, setProdiId] = useState('');
   const [jenisKknId, setJenisKknId] = useState('');
 
   const { data, isLoading } = useQuery<{ data: Peserta[]; meta: Meta }>({
-    queryKey: ['admin', 'peserta-kkn', page, search, angkatan, fakultasId, jenisKknId],
+    queryKey: ['admin', 'peserta-kkn', page, search, angkatan, fakultasId, prodiId, jenisKknId],
     queryFn: async () => {
       const res = await rawApi.get('/admin/peserta-kkn', {
-        params: { page, search: search || undefined, angkatan: angkatan || undefined, fakultas_id: fakultasId || undefined, jenis_kkn_id: jenisKknId || undefined, per_page: 25 },
+        params: { page, search: search || undefined, angkatan: angkatan || undefined, fakultas_id: fakultasId || undefined, prodi_id: prodiId || undefined, jenis_kkn_id: jenisKknId || undefined, per_page: 25 },
       });
       return ((res.data as { data?: unknown }).data ?? res.data) as { data: Peserta[]; meta: Meta };
     },
@@ -49,6 +51,16 @@ export default function PesertaKknPage(): React.JSX.Element {
       const res = await rawApi.get('/admin/fakultas', { params: { per_page: 100 } });
       const payload = (res.data as { data?: unknown }).data ?? res.data;
       return (Array.isArray(payload) ? payload : (payload as { data?: unknown[] }).data ?? []) as Faculty[];
+    },
+    staleTime: 300000,
+  });
+
+  const { data: prodiOptions = [] } = useQuery<Prodi[]>({
+    queryKey: ['admin', 'prodi', 'peserta-kkn-filter', fakultasId],
+    queryFn: async () => {
+      const res = await rawApi.get('/admin/prodi', { params: { per_page: 500, fakultas_id: fakultasId || undefined } });
+      const payload = (res.data as { data?: unknown }).data ?? res.data;
+      return (Array.isArray(payload) ? payload : (payload as { data?: unknown[] }).data ?? []) as Prodi[];
     },
     staleTime: 300000,
   });
@@ -69,7 +81,7 @@ export default function PesertaKknPage(): React.JSX.Element {
   const exportXlsx = async () => {
     try {
       const res = await rawApi.get('/admin/peserta-kkn/export', {
-        params: { angkatan: angkatan || undefined, fakultas_id: fakultasId || undefined, jenis_kkn_id: jenisKknId || undefined, limit: 50000 },
+        params: { angkatan: angkatan || undefined, fakultas_id: fakultasId || undefined, prodi_id: prodiId || undefined, jenis_kkn_id: jenisKknId || undefined, limit: 50000 },
         responseType: 'blob',
       });
       const blob = res.data instanceof Blob ? res.data : new Blob([res.data as BlobPart]);
@@ -104,9 +116,13 @@ export default function PesertaKknPage(): React.JSX.Element {
           <option value="59">Angkatan 59</option>
           <option value="">Semua Angkatan</option>
         </select>
-        <select value={fakultasId} onChange={e => { setFakultasId(e.target.value); setPage(1); }} className="h-10 min-w-[220px] rounded-xl border border-slate-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600">
+        <select value={fakultasId} onChange={e => { setFakultasId(e.target.value); setProdiId(''); setPage(1); }} className="h-10 min-w-[220px] rounded-xl border border-slate-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600">
           <option value="">Semua Fakultas</option>
           {faculties.map((f) => <option key={f.id} value={f.id}>{f.nama}</option>)}
+        </select>
+        <select value={prodiId} onChange={e => { setProdiId(e.target.value); setPage(1); }} className="h-10 min-w-[240px] rounded-xl border border-slate-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600">
+          <option value="">Semua Prodi</option>
+          {prodiOptions.map((p) => <option key={p.id} value={p.id}>{p.nama}</option>)}
         </select>
         <select value={jenisKknId} onChange={e => { setJenisKknId(e.target.value); setPage(1); }} className="h-10 min-w-[220px] rounded-xl border border-slate-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600">
           <option value="">Semua Jenis KKN</option>

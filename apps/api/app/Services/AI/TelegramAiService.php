@@ -135,18 +135,12 @@ class TelegramAiService
     }
 
     /**
-     * Generate AI summary using the project's AI gateway failover.
+     * Generate AI summary using the project's 3-tier failover.
      */
     private function generateAiSummary(string $context, array $data): string
     {
-        $tiers = $this->loadAiTiers(
-            (string) config('ai.routing.digest.model', 'ag/gemini-3-flash'),
-            true
-        );
+        $tiers = $this->loadAiTiers();
         $prompt = $this->buildPrompt($context, $data);
-        $timeout = (int) config('ai.routing.digest.timeout', 30);
-        $temperature = (float) config('ai.routing.digest.temperature', 0.3);
-        $maxTokens = (int) config('ai.routing.digest.max_tokens', 300);
 
         foreach ($tiers as $tier) {
             if (empty($tier['key'])) {
@@ -155,16 +149,15 @@ class TelegramAiService
 
             try {
                 $response = Http::withToken($tier['key'])
-                    ->timeout($timeout)
+                    ->timeout(30)
                     ->post(rtrim($tier['url'], '/').'/chat/completions', [
                         'model' => $tier['model'],
-                        'stream' => false,
                         'messages' => [
                             ['role' => 'system', 'content' => 'Anda adalah asisten monitoring KKN. Berikan analisis singkat, actionable, dalam Bahasa Indonesia. Maksimal 3-4 kalimat. Fokus pada insight dan rekomendasi.'],
                             ['role' => 'user', 'content' => $prompt],
                         ],
-                        'temperature' => $temperature,
-                        'max_tokens' => $maxTokens,
+                        'temperature' => 0.3,
+                        'max_tokens' => 300,
                     ]);
 
                 if ($response->successful()) {
@@ -214,10 +207,7 @@ class TelegramAiService
             'active_students' => DB::table('peserta_kkn')->where('status', 'approved')->count(),
             'queue_pending' => DB::table('jobs')->count(),
             'failed_jobs' => DB::table('failed_jobs')->count(),
-            'ai_analyses_today' => DB::table('kegiatan_kkn')
-                ->whereDate('created_at', $today)
-                ->whereRaw("(ai_analysis->>'quality_score') IS NOT NULL")
-                ->count(),
+            'ai_analyses_today' => DB::table('kegiatan_kkn')->whereDate('created_at', $today)->whereRaw("(ai_analysis->>'quality_score') IS NOT NULL")->count(),
         ];
     }
 
@@ -226,14 +216,8 @@ class TelegramAiService
         $weekAgo = now()->subWeek();
 
         $totalReports = DB::table('kegiatan_kkn')->where('created_at', '>=', $weekAgo)->count();
-        $avgQuality = DB::table('kegiatan_kkn')
-            ->where('created_at', '>=', $weekAgo)
-            ->selectRaw("AVG((ai_analysis->>'quality_score')::numeric) as avg_quality_score")
-            ->value('avg_quality_score');
-        $flagged = DB::table('kegiatan_kkn')
-            ->where('created_at', '>=', $weekAgo)
-            ->whereRaw("COALESCE((ai_analysis->>'flagged')::boolean, false) = true")
-            ->count();
+        $avgQuality = DB::table('kegiatan_kkn')->where('created_at', '>=', $weekAgo)->selectRaw("AVG((ai_analysis->>'quality_score')::numeric) as avg_quality_score")->value('avg_quality_score');
+        $flagged = DB::table('kegiatan_kkn')->where('created_at', '>=', $weekAgo)->whereRaw("COALESCE((ai_analysis->>'flagged')::boolean, false) = true")->count();
 
         $mostActiveGroup = DB::table('kegiatan_kkn')
             ->join('peserta_kkn', 'kegiatan_kkn.mahasiswa_id', '=', 'peserta_kkn.mahasiswa_id')
@@ -286,10 +270,7 @@ class TelegramAiService
 
         // 2. High flag rate
         $recentReports = DB::table('kegiatan_kkn')->whereDate('created_at', $today)->count();
-        $flaggedToday = DB::table('kegiatan_kkn')
-            ->whereDate('created_at', $today)
-            ->whereRaw("COALESCE((ai_analysis->>'flagged')::boolean, false) = true")
-            ->count();
+        $flaggedToday = DB::table('kegiatan_kkn')->whereDate('created_at', $today)->whereRaw("COALESCE((ai_analysis->>'flagged')::boolean, false) = true")->count();
         if ($recentReports > 5 && ($flaggedToday / max(1, $recentReports)) > 0.3) {
             $anomalies['high_flag_rate'] = "{$flaggedToday}/{$recentReports} laporan hari ini di-flag AI (>30%)";
         }

@@ -19,6 +19,8 @@ class Roles
 
     public const FACULTY_ADMIN = 'faculty_admin';
 
+    public const EXTERNAL_LPPM_ADMIN = 'external_lppm_admin';
+
     public const DOSEN = 'dosen';
 
     public const DPL = 'dpl';
@@ -34,6 +36,7 @@ class Roles
             self::SUPERADMIN,
             self::ADMIN,
             self::FACULTY_ADMIN,
+            self::EXTERNAL_LPPM_ADMIN,
             self::DOSEN,
             self::DPL,
             self::STUDENT,

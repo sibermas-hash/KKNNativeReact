@@ -14,6 +14,7 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "types": ["node"],
     "paths": {
       "@sibermas/shared-types": ["./packages/shared-types/src/index.ts"],
       "@sibermas/api-client": ["./packages/api-client/src/index.ts"],

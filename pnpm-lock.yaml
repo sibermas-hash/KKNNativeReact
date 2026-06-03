@@ -13,6 +13,10 @@ overrides:
 importers:
 
   .:
+    dependencies:
+      concat-map:
+        specifier: 0.0.1
+        version: 0.0.1
     devDependencies:
       turbo:
         specifier: ^2.9.14
@@ -4507,6 +4511,9 @@ packages:
   compression@1.8.1:
     resolution: {integrity: sha512-9mAqGPHLakhCLeNyxPkK4xVo746zQ/czLH1Ky+vkitMnWfWZps8r0qXuwhwizagCRttsL4lfG4pIOvaWLpAP0w==}
     engines: {node: '>= 0.8.0'}
+
+  concat-map@0.0.1:
+    resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
   connect@3.7.0:
     resolution: {integrity: sha512-ZqRXc+tZukToSNmh5C2iWMSoV3X1YUcPbqEM4DkEG5tNQXrQUZCNVGGv3IuicnkMtPfGf3Xtp8WCXs295iQ1pQ==}
@@ -12121,7 +12128,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@22.19.17)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1(canvas@3.2.3))(vite@8.0.10(@types/node@22.19.17)(jiti@2.6.1)(terser@5.47.1))
+      vitest: 4.1.5(@opentelemetry/api@1.9.1)(@types/node@22.19.18)(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1(canvas@3.2.3))(vite@8.0.10(@types/node@22.19.18)(jiti@2.6.1)(terser@5.47.1))
 
   '@vitest/expect@4.1.5':
     dependencies:
@@ -12874,6 +12881,8 @@ snapshots:
       vary: 1.1.2
     transitivePeerDependencies:
       - supports-color
+
+  concat-map@0.0.1: {}
 
   connect@3.7.0:
     dependencies:

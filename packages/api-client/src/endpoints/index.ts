@@ -22,7 +22,7 @@ export function studentEndpoints(client: AxiosInstance) {
       form: () => client.get('/student/registration/form'),
       store: (data: { periode_id: number; jenis_kkn_id?: number }) => client.post('/student/registration', data),
       status: () => client.get('/student/registration/status'),
-      leave: (periodeId: number) => client.post(`/student/registration/${periodeId}/leave`, {}),
+      leave: (periodeId: number) => client.delete(`/student/registration/${periodeId}`),
     },
     kknDaftar: {
       index: () => client.get('/student/kkn-daftar'),
@@ -65,19 +65,19 @@ export function studentEndpoints(client: AxiosInstance) {
       store: (data: FormData) => client.post('/student/poster-potensi-desa', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
     },
     notificationShown: (id: number) => client.patch(`/student/peserta-kkn/${id}/notification-shown`),
+    chat: {
+      index: () => client.get('/chat'),
+      store: (data: { subject: string; message: string; priority?: 'normal' | 'urgent' }) => client.post('/chat', data),
+      show: (id: number) => client.get(`/chat/${id}`),
+      sendMessage: (id: number, data: FormData | { message: string }) => client.post(`/chat/${id}/messages`, data),
+    },
     // GAP-1: document upload for registration
     documents: (periodeId: number, data: FormData) =>
-      client.post(`/student/registration/${periodeId}/documents`, data, {}),
+      client.post(`/student/registration/${periodeId}/documents`, data),
     // GAP-3: posko
     posko: {
       show: () => client.get('/student/posko'),
       store: (data: Record<string, unknown>) => client.post('/student/posko', data),
-    },
-    chat: {
-      index: () => client.get('/chat'),
-      store: (data: { subject: string; message: string; priority?: string }) => client.post('/chat', data),
-      show: (id: number) => client.get(`/chat/${id}`),
-      reply: (id: number, data: { message: string }) => client.post(`/chat/${id}/messages`, data),
     },
   };
 }
@@ -217,8 +217,16 @@ export function adminEndpoints(client: AxiosInstance) {
       bulkApprove: (ids: number[]) => client.post('/admin/pendaftaran/bulk-approve', { ids }),
       bulkReject: (ids: number[], reason: string) => client.post('/admin/pendaftaran/bulk-reject', { ids, rejection_reason: reason }),
       downloadDocument: (path: string) => client.get('/admin/pendaftaran/berkas/unduh', { params: { path }, responseType: 'blob' }),
-      export: (params?: Record<string, unknown>) => client.get('/admin/pendaftaran/export', { params }),
-      exportFile: (params?: Record<string, unknown>) => client.get('/admin/pendaftaran/export', { params, responseType: 'blob' }),
+    },
+
+    interviews: {
+      index: (params?: Record<string, unknown>) => client.get('/admin/wawancara', { params }),
+      targets: () => client.get('/admin/wawancara/targets'),
+      store: (data: Record<string, unknown>) => client.post('/admin/wawancara', data),
+      sync: (id: number) => client.post(`/admin/wawancara/${id}/sync`),
+      passParticipant: (participantId: number, data: Record<string, unknown>) => client.patch(`/admin/wawancara/participants/${participantId}/pass`, data),
+      transferParticipant: (participantId: number, data: Record<string, unknown>) => client.patch(`/admin/wawancara/participants/${participantId}/transfer`, data),
+      destroy: (id: number) => client.delete(`/admin/wawancara/${id}`),
     },
 
     groups: {

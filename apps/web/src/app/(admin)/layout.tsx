@@ -44,6 +44,7 @@ const getNavGroups = (pathname: string, roles: string[]) => {
       { label: 'Registrasi Mahasiswa', href: '/admin/pendaftaran', icon: ClipboardList },
       { label: 'Wawancara', href: '/admin/wawancara', icon: FileCheck },
       { label: 'Peserta KKN', href: '/admin/peserta-kkn', icon: UserCheck },
+      { label: 'Peserta Eksternal', href: '/admin/peserta-eksternal', icon: Globe },
       { label: 'Transfer Peserta', href: '/admin/transfer-peserta', icon: ArrowRightLeft },
     ]},
     { title: 'MANAJEMEN DOSEN', items: [

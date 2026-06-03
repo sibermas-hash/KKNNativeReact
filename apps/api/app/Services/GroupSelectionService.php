@@ -303,7 +303,7 @@ class GroupSelectionService
             ->whereIn('status', self::ACTIVE_REGISTRATION_STATUSES)
             ->when($excludingRegistrationId, fn ($query, $id) => $query->where('id', '!=', $id))
             ->with([
-                'mahasiswa:id,fakultas_id,prodi_id,gender',
+                'mahasiswa:id,fakultas_id,prodi_id,gender,origin_type',
             ])
             ->lockForUpdate()
             ->get([
@@ -318,6 +318,8 @@ class GroupSelectionService
                 'kelompok_id' => "Kelompok {$group->nama_kelompok} sudah penuh.",
             ]);
         }
+
+        $this->assertExternalComposition($group, $activeParticipants, $mahasiswa);
 
         $rules = $this->buildRuleSnapshot($group->slotTerkunci, $activeParticipants, $mahasiswa, (int) $group->capacity);
         if ($rules->isEmpty()) {
@@ -362,6 +364,40 @@ class GroupSelectionService
         ]);
     }
 
+    /**
+     * Guard komposisi peserta eksternal. Default eksternal 5 slot/kelompok saat peserta eksternal ditugaskan.
+     * Internal cap hanya aktif kalau kolom internal_capacity diisi agar flow lama tidak mendadak terblokir.
+     *
+     * @param  Collection<int, PesertaKkn>  $activeParticipants
+     */
+    private function assertExternalComposition(KelompokKkn $group, Collection $activeParticipants, Mahasiswa $mahasiswa): void
+    {
+        $isExternal = $mahasiswa->origin_type === 'external';
+        $externalCap = $group->external_capacity;
+        $internalCap = $group->internal_capacity;
+
+        if ($isExternal && $externalCap === null) {
+            $externalCap = (int) SystemSetting::get('external_group_capacity', '5');
+        }
+
+        if ($externalCap !== null) {
+            $externalCount = $activeParticipants->filter(fn (PesertaKkn $p) => $p->mahasiswa?->origin_type === 'external')->count();
+            if ($isExternal && $externalCount >= (int) $externalCap) {
+                throw ValidationException::withMessages([
+                    'kelompok_id' => "Kuota peserta eksternal kelompok {$group->nama_kelompok} sudah penuh ({$externalCount}/{$externalCap}).",
+                ]);
+            }
+        }
+
+        if (! $isExternal && $internalCap !== null) {
+            $internalCount = $activeParticipants->filter(fn (PesertaKkn $p) => $p->mahasiswa?->origin_type !== 'external')->count();
+            if ($internalCount >= (int) $internalCap) {
+                throw ValidationException::withMessages([
+                    'kelompok_id' => "Kuota peserta internal kelompok {$group->nama_kelompok} sudah penuh ({$internalCount}/{$internalCap}).",
+                ]);
+            }
+        }
+    }
     /**
      * @param  Collection<int, SlotTerkunci>  $rules
      * @param  Collection<int, PesertaKkn>  $participants

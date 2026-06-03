@@ -22,10 +22,9 @@ import {
   Play, Megaphone, Bell, Camera, Sparkles, MessageCircle, ArrowRightLeft,
 } from 'lucide-react';
 
-const getNavGroups = (pathname: string, roles: string[]) => {
-  const isSuperadmin = roles.includes('superadmin');
-  const isBlog = pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi') || pathname.includes('/admin/chat') || pathname.includes('/admin/konten-publik');
-  const isSystem = pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/prodi') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/konfigurasi-penilaian') || pathname.includes('/admin/monitoring');
+const getNavGroups = (_pathname: string, roles: string[]) => {
+  const normalizedRoles = roles.map((role) => String(role).toLowerCase());
+  const isSuperadmin = normalizedRoles.includes('superadmin') || normalizedRoles.includes('super-admin');
 
   const operationalGroups = [
     { title: 'SENTRAL OPERASIONAL', items: [
@@ -126,7 +125,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Must be before any early returns — Rules of Hooks
-  const navGroups = useMemo(() => getNavGroups(pathname, user?.roles || []), [pathname, user?.roles]);
+  const roles = useMemo(() => user?.roles || [], [user?.roles]);
+  const navGroups = useMemo(() => getNavGroups(pathname, roles), [pathname, roles]);
   const activeNav = useMemo(() => {
     for (const group of navGroups) {
       const item = group.items.find(i => pathname === i.href || pathname.startsWith(i.href + '/'));
@@ -137,7 +137,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pageTitle = activeNav?.item.label ?? (pathname === '/admin' ? 'Hub Utama' : 'SIBERMAS');
   const pageContext = activeNav?.group ?? (pathname === '/admin' ? 'Pusat Navigasi' : 'Operasional');
   const ActiveHeaderIcon = activeNav?.item.icon ?? LayoutDashboard;
-  const isBlog = useMemo(() => pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi') || pathname.includes('/admin/chat'), [pathname]);
   const isSystem = useMemo(() => pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/prodi') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/monitoring'), [pathname]);
 
   useEffect(() => {
@@ -158,7 +157,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [isLoading, isAuthenticated, user, router, pathname, isSystem, fetchUser]);
 
-  const roles = user?.roles || [];
   const hasAdminRole = roles.includes('superadmin') || roles.includes('admin') || roles.includes('faculty_admin');
 
   const handleLogout = async () => {
@@ -205,13 +203,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <div className="mt-4">
             <h1 className="text-base font-black leading-none tracking-tight flex items-center gap-2 font-display uppercase text-[color:var(--profile-text)]">
-              {isBlog ? 'CONTENT HUB' : isSystem ? 'SYSTEM REGISTRY' : (
+              {isSystem ? 'SYSTEM REGISTRY' : (
                 <span><span className="text-[color:var(--profile-primary)]">SIBER</span><span className="text-[color:var(--profile-accent)]">MAS</span></span>
               )}
               <span className={clsx('h-1.5 w-1.5 rounded-full animate-pulse bg-[color:var(--profile-accent)]')} />
             </h1>
             <p className="text-[9px] font-bold text-[color:var(--profile-muted)] mt-2 font-sans tracking-wider leading-relaxed uppercase">
-              {isBlog ? 'Eksistensi Digital' : isSystem ? 'Infrastruktur Data' : 'Otomasi Operasional'}
+              {isSystem ? 'Infrastruktur Data' : 'Otomasi Operasional'}
             </p>
           </div>
         </div>

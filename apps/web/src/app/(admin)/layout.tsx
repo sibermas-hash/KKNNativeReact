@@ -197,9 +197,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="h-12 w-12 flex items-center justify-center rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-input)] p-1.5 shadow-sm shrink-0">
               <Image src="/images/logo_uinsaizu.png" alt="Logo UIN" width={48} height={48} className="h-full w-full object-contain" />
             </div>
-            <div className="h-12 w-12 flex items-center justify-center rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-input)] p-1 shadow-sm shrink-0">
+            <Link href="/profil" title="Buka Profil" aria-label="Buka Profil" onClick={() => setSidebarOpen(false)} className="h-12 w-12 flex items-center justify-center rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-input)] p-1 shadow-sm shrink-0 transition-all hover:bg-[color:var(--profile-soft)] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[color:var(--profile-accent)]">
               <Image src="/images/Logo_SIBERMAS.png" alt="Logo SIBERMAS" width={48} height={48} className="h-full w-full object-contain" />
-            </div>
+            </Link>
           </div>
           <div className="mt-4">
             <h1 className="text-base font-black leading-none tracking-tight flex items-center gap-2 font-display uppercase text-[color:var(--profile-text)]">
@@ -259,22 +259,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/admin" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[10px] font-black text-[color:var(--profile-muted)] uppercase tracking-widest hover:bg-[color:var(--profile-soft)] hover:text-[color:var(--profile-text)] transition-all group border border-transparent hover:border-[color:var(--profile-border)]">
             <Shuffle className="h-4 w-4 text-[color:var(--profile-muted)] group-hover:text-[color:var(--profile-primary)] transition-colors" />
             Kembali ke Hub Utama
-          </Link>
-        </div>
-
-        {/* Profile */}
-        <div className="p-4">
-          <Link href="/profil" className="flex items-center gap-3 p-3 rounded-2xl bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] shadow-sm hover:shadow-md transition-all group">
-            <div className="h-10 w-10 rounded-xl bg-[color:var(--profile-primary)] flex items-center justify-center text-white shrink-0 shadow-inner group-hover:rotate-6 transition-transform">
-              <span className="text-xs font-black uppercase">{user.name.substring(0, 2)}</span>
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-xs font-black text-[color:var(--profile-text)] truncate leading-none mb-1 font-display">{user.name}</span>
-              <span className="text-[9px] font-bold text-[color:var(--profile-muted)] uppercase tracking-wider flex items-center gap-1 font-sans">
-                <div className="w-1 h-1 rounded-full bg-[color:var(--profile-accent)] animate-pulse" />
-                {roles[0] || 'admin'}
-              </span>
-            </div>
           </Link>
         </div>
       </aside>

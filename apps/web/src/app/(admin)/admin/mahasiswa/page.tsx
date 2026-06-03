@@ -82,16 +82,6 @@ export default function MahasiswaIndexPage(): React.JSX.Element {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Direktori Mahasiswa"
-        subtitle="Pusat data mahasiswa, status akademik, fakultas, dan kelengkapan profil"
-        actions={
-          <Link href="/admin/mahasiswa/sinkronisasi" className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-4 py-2.5 text-sm font-bold text-white shadow-sm hover:bg-cyan-700">
-            <RefreshCw size={15} /> Sinkronisasi
-          </Link>
-        }
-      />
-
       <div className="rounded-3xl bg-gradient-to-br from-cyan-950 via-cyan-800 to-emerald-700 p-6 text-white shadow-sm">
         <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
           <div>
@@ -99,7 +89,10 @@ export default function MahasiswaIndexPage(): React.JSX.Element {
             <h2 className="mt-2 text-3xl font-black tracking-tight">{isLoading ? 'Memuat...' : total.toLocaleString('id-ID')} Mahasiswa</h2>
             <p className="mt-2 text-sm text-cyan-50">Filter cepat berdasarkan nama, NIM, fakultas, status, dan urutan tabel.</p>
           </div>
-          {isFetching && <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-black uppercase">Memperbarui...</span>}
+          
+          <Link href="/admin/mahasiswa/sinkronisasi" className="inline-flex items-center gap-2 rounded-xl bg-white/15 px-4 py-2.5 text-sm font-black text-white ring-1 ring-white/25 hover:bg-white/20">
+            <RefreshCw size={15} /> Sinkronisasi
+          </Link>
         </div>
       </div>
 

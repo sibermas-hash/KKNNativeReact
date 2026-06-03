@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\V1\Admin\DplRegistrationController;
 use App\Http\Controllers\Api\V1\Admin\DplSyncController;
 use App\Http\Controllers\Api\V1\Admin\EligibilityController;
 use App\Http\Controllers\Api\V1\Admin\EvaluasiController;
+use App\Http\Controllers\Api\V1\Admin\ExternalParticipantController;
 use App\Http\Controllers\Api\V1\Admin\FakultasController;
 use App\Http\Controllers\Api\V1\Admin\GeneratorNilaiController;
 use App\Http\Controllers\Api\V1\Admin\GradeController;
@@ -123,7 +124,13 @@ Route::prefix('admin')
         Route::delete('/document-templates/{documentTemplate}', [DocumentTemplateController::class, 'destroy']);
         Route::get('/document-templates/{documentTemplate}/download', [DocumentTemplateController::class, 'download'])->name('api.v1.admin.document-templates.download');
 
-        // Registrations — static routes BEFORE dynamic {param} routes
+        // External participants
+        Route::get('/peserta-eksternal/template', [ExternalParticipantController::class, 'template']);
+        Route::get('/peserta-eksternal/batches', [ExternalParticipantController::class, 'batches']);
+        Route::post('/peserta-eksternal/batches', [ExternalParticipantController::class, 'storeBatch']);
+        Route::post('/peserta-eksternal/import', [ExternalParticipantController::class, 'import'])->middleware('throttle:5,1');
+        Route::get('/peserta-eksternal/export', [ExternalParticipantController::class, 'export']);
+        Route::get('/peserta-eksternal', [ExternalParticipantController::class, 'index']);
         Route::get('/pendaftaran/export', [PesertaKknController::class, 'export']);
         Route::get('/pendaftaran/export-biodata', [PesertaKknController::class, 'exportBiodata']);
         Route::get('/pendaftaran/export-bpjs', [PesertaKknController::class, 'exportBpjs']);

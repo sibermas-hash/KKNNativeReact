@@ -75,14 +75,35 @@ export function NavButton({ href, icon: Icon, label }: {
   );
 }
 
+const HEADER_VARIANTS = [
+  { keys: ['dashboard', 'statistik', 'operasional'], eyebrow: 'SENTRAL OPERASIONAL', bg: 'from-cyan-600 to-slate-950' },
+  { keys: ['mahasiswa', 'peserta', 'registrasi', 'pendaftaran', 'wawancara', 'dispensasi', 'kelayakan'], eyebrow: 'MANAJEMEN MAHASISWA', bg: 'from-emerald-600 to-slate-950' },
+  { keys: ['kelompok', 'penempatan', 'lokasi', 'dpl'], eyebrow: 'PENEMPATAN', bg: 'from-amber-500 to-slate-950' },
+  { keys: ['laporan', 'monitoring', 'program kerja'], eyebrow: 'MONITORING KEGIATAN', bg: 'from-violet-600 to-slate-950' },
+  { keys: ['nilai', 'rekapitulasi', 'evaluasi', 'yudisium'], eyebrow: 'PENILAIAN & OUTPUT', bg: 'from-rose-600 to-slate-950' },
+  { keys: ['pengaturan', 'sistem', 'pengguna', 'audit', 'sinkron', 'database', 'fakultas', 'prodi', 'playground'], eyebrow: 'KONFIGURASI SISTEM', bg: 'from-zinc-700 to-black' },
+  { keys: ['warta', 'konten', 'notifikasi', 'unduhan', 'chat'], eyebrow: 'MANAJEMEN KONTEN', bg: 'from-sky-600 to-slate-950' },
+];
+
+function headerVariant(title: string, subtitle?: string): { eyebrow: string; bg: string } {
+  const haystack = `${title} ${subtitle ?? ''}`.toLowerCase();
+  return HEADER_VARIANTS.find(v => v.keys.some(k => haystack.includes(k))) ?? { eyebrow: 'SIBERMAS', bg: 'from-cyan-600 to-slate-950' };
+}
+
 export function PageHeader({ title, subtitle, actions }: { title: string; subtitle?: string; actions?: React.ReactNode }): React.JSX.Element {
+  const variant = headerVariant(title, subtitle);
   return (
-    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-black text-slate-900 tracking-tight">{title}</h1>
-        {subtitle && <p className="text-sm text-slate-500">{subtitle}</p>}
+    <div className={clsx('relative overflow-hidden rounded-2xl bg-gradient-to-r p-6 text-white shadow-sm ring-1 ring-white/10', variant.bg)}>
+      <div className="pointer-events-none absolute -right-10 -top-16 h-44 w-44 rounded-full bg-white/10 blur-2xl" />
+      <div className="pointer-events-none absolute -bottom-20 left-1/3 h-40 w-40 rounded-full bg-cyan-300/10 blur-3xl" />
+      <div className="relative flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="max-w-3xl space-y-2">
+          <p className="text-xs font-black uppercase tracking-[0.25em] text-white/75">{variant.eyebrow}</p>
+          <h1 className="text-2xl font-black tracking-tight md:text-3xl">{title}</h1>
+          {subtitle && <p className="text-sm leading-6 text-white/85">{subtitle}</p>}
+        </div>
+        {actions && <div className="flex shrink-0 flex-wrap items-center gap-3">{actions}</div>}
       </div>
-      {actions && <div className="flex items-center gap-3">{actions}</div>}
     </div>
   );
 }

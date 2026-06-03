@@ -84,6 +84,8 @@ export const updateProfileSchema = z.object({
   shirt_size: z.enum(['', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL']).optional(),
   birth_place: z.string().max(100).optional(),
   birth_date: z.string().optional(),
+  external_faculty: z.string().max(150).optional(),
+  external_study_program: z.string().max(150).optional(),
   jabatan: z.string().max(100).optional(),
   kelas_jabatan: z.string().max(50).optional(),
   tugas_tambahan: z.string().max(150).optional(),

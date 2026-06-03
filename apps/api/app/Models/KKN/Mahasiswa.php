@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -52,6 +53,7 @@ class Mahasiswa extends Model
         'master_synced_at',
         'api_email',
         'manually_edited_fields',
+        'origin_type',
     ];
 
     protected function casts(): array
@@ -130,6 +132,16 @@ class Mahasiswa extends Model
     public function peserta(): HasMany
     {
         return $this->hasMany(PesertaKkn::class, 'mahasiswa_id');
+    }
+
+    public function externalProfile(): HasOne
+    {
+        return $this->hasOne(ExternalStudentProfile::class, 'mahasiswa_id');
+    }
+
+    public function isExternal(): bool
+    {
+        return $this->origin_type === 'external';
     }
 
     public function kegiatan(): HasMany

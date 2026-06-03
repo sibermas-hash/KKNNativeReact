@@ -93,6 +93,32 @@ class EligibilityService
         // 2. Resolve Settings
         $settings = $preloadedData['settings'] ?? $this->getSettings();
 
+        if (($mahasiswa->origin_type ?? 'internal') === 'external') {
+            return [
+                'mahasiswa_id' => $mahasiswa->id,
+                'nim' => $mahasiswa->nim,
+                'nama' => $mahasiswa->nama,
+                'prodi_nama' => $mahasiswa->prodi?->nama ?? null,
+                'fakultas_nama' => $mahasiswa->fakultas?->nama ?? $mahasiswa->prodi?->fakultas?->nama ?? null,
+                'sks_completed' => $mahasiswa->sks_completed,
+                'gpa' => $mahasiswa->gpa,
+                'is_bta_ppi_passed' => true,
+                'has_health_certificate' => true,
+                'has_parent_permission' => true,
+                'checks' => [
+                    'external_participant' => [
+                        'passed' => true,
+                        'key' => 'external_participant',
+                        'message' => 'Peserta eksternal KKN Reguler: syarat akademik internal tidak diberlakukan.',
+                    ],
+                ],
+                'is_eligible' => true,
+                'issues' => [],
+                'issue_count' => 0,
+                'has_dispensasi' => false,
+            ];
+        }
+
         // 3. Build checks — audit mode hanya cek persyaratan akademik
         $checks = [];
 

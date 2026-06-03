@@ -28,7 +28,7 @@ function normalizeStatus(status?: string): string | undefined {
 
 export default function StudentDashboard(): React.JSX.Element {
   const { user } = useAuthStore();
-  const { currentPhase, activePeriod } = usePeriodStore();
+  const { currentPhase, activePeriod, isLoading: isPeriodLoading } = usePeriodStore();
   const queryClient = useQueryClient();
   const [showPopup, setShowPopup] = useState(false);
 
@@ -50,6 +50,7 @@ export default function StudentDashboard(): React.JSX.Element {
   const dailyReportCount = (data?.daily_report_count as number) || 0;
   const workProgramCount = (data?.work_program_count as number) || 0;
   const finalReport = data?.final_report as Record<string, unknown> | null | undefined;
+  const student = data?.student as { name?: string; avatar?: string; nim?: string } | null | undefined;
 
   const normalizedStatus = normalizeStatus(registration?.status as string);
   const isCompleted = normalizedStatus === 'completed';
@@ -64,17 +65,23 @@ export default function StudentDashboard(): React.JSX.Element {
   const dplName = ((group?.lecturer as Record<string, unknown>)?.name as string) || 'Belum Ditentukan';
   const leader = group?.leader as { name?: string; is_self?: boolean } | null | undefined;
   const leaderName = leader?.name ? (leader.is_self ? `${leader.name} (Anda)` : leader.name) : 'Sedang Ditentukan';
-  const periodName = (activePeriod?.name as string) || 'Periode KKN';
+  const periodData = registration?.period as { name?: string; jenis?: string; jenis_code?: string; jenis_color?: string } | null | undefined;
+  const periodName = periodData?.name || (activePeriod?.name as string) || 'Periode KKN';
   // REGULER-005 fix: jenis KKN dari response dashboard (periode.jenis_*)
-  const periodData = registration?.period as { jenis?: string; jenis_code?: string; jenis_color?: string } | null | undefined;
   const jenisKknLabel = periodData?.jenis || '';
   const jenisKknCode = periodData?.jenis_code || '';
+  const displayName = student?.name || user?.name || 'Mahasiswa';
+  const studentNim = student?.nim || user?.nim || user?.username || '-';
+  const selectedKknMeta = [jenisKknLabel, jenisKknCode].filter(Boolean).join(' · ');
   // Audit F-13 fix: ambil dari backend SystemSetting (key `min_daily_reports`, default 30).
   const minLogbook = Number(data?.min_daily_reports) || 30;
   const phaseOrder = ['upcoming', 'registration', 'placement', 'execution', 'grading', 'finished'];
-  const rawPhaseRank = phaseOrder.indexOf(String(currentPhase || activePeriod?.current_phase || 'upcoming'));
+  const phaseValue = String(currentPhase || activePeriod?.current_phase || '');
+  const phaseReady = !isPeriodLoading && !!phaseValue;
+  const rawPhaseRank = phaseOrder.indexOf(phaseValue || 'upcoming');
   const phaseRank = rawPhaseRank >= 0 ? rawPhaseRank : 0;
-  const isPhaseAtLeast = (phase: string) => phaseRank >= phaseOrder.indexOf(phase);
+  const isPhaseAtLeast = (phase: string) => phaseReady && phaseRank >= phaseOrder.indexOf(phase);
+  const canRegister = phaseReady && ['registration', 'placement'].includes(phaseValue);
   const dashboardNavItems = [
     { href: '/mahasiswa/laporan-harian', icon: ClipboardList, label: 'Logbook Harian', minPhase: 'execution', lockReason: 'Aktif saat fase pelaksanaan KKN.' },
     { href: '/mahasiswa/program-kerja', icon: Presentation, label: 'Program Kerja', minPhase: 'execution', lockReason: 'Aktif saat fase pelaksanaan KKN.' },
@@ -98,7 +105,7 @@ export default function StudentDashboard(): React.JSX.Element {
 
   const progressPercent = Math.floor((phases.filter((p) => p.done).length / phases.length) * 100);
 
-  const shouldShowPopup = isApproved && registration && !registration.notification_shown;
+  const shouldShowPopup = (isApproved || isRejected) && registration && !registration.notification_shown;
   useEffect(() => { if (shouldShowPopup) setShowPopup(true); }, [shouldShowPopup]);
 
   const handleClosePopup = useCallback(() => {
@@ -191,27 +198,34 @@ export default function StudentDashboard(): React.JSX.Element {
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-6 pb-12">
         {/* HEADER */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[color:var(--profile-border)] pb-6">
+        <div className="flex flex-col gap-4 border-b border-[color:var(--profile-border)] pb-6 xl:flex-row xl:items-start xl:justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-[color:var(--profile-soft)]0 animate-pulse" />
+              <div className="h-2 w-2 rounded-full bg-[color:var(--profile-soft)] animate-pulse" />
               <span className="text-[10px] font-black text-[color:var(--profile-soft-text)] uppercase tracking-[0.2em]">Sistem Informasi KKN</span>
             </div>
             <h1 className="text-2xl font-black text-[color:var(--profile-text)] tracking-tight">
-              Selamat Datang, {user?.name?.split(' ')[0] || 'Mahasiswa'}.
+              Selamat Datang, {displayName.split(' ')[0] || 'Mahasiswa'}.
             </h1>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[color:var(--profile-muted)]">
+              NIM {studentNim}
+            </p>
           </div>
-          <div className="flex items-center gap-4 bg-[color:var(--profile-surface)] ring-1 ring-[color:var(--profile-border)] rounded-lg px-4 py-3">
-            <div className="flex flex-col border-r border-[color:var(--profile-border)] pr-4">
-              <span className="text-[8px] font-black text-[color:var(--profile-muted)] uppercase mb-0.5">Status Registrasi</span>
-              <StatusBadge status={registration?.status as string || 'unregistered'} />
+          <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[36rem] xl:grid-cols-3">
+            <div className="flex min-h-[4.5rem] flex-col justify-between rounded-xl bg-[color:var(--profile-surface)] px-4 py-3 ring-1 ring-[color:var(--profile-border)]">
+              <span className="text-[8px] font-black text-[color:var(--profile-muted)] uppercase tracking-[0.18em]">Status Registrasi</span>
+              <StatusBadge status={normalizedStatus || 'unregistered'} />
             </div>
-            <div className="flex flex-col">
-              <span className="text-[8px] font-black text-[color:var(--profile-muted)] uppercase mb-0.5">Tahun Akademik</span>
-              <span className="text-xs font-black text-[color:var(--profile-text)] uppercase tracking-tight">{periodName}</span>
-              {jenisKknLabel && (
-                <span className="text-[9px] font-bold text-[color:var(--profile-soft-text)] uppercase tracking-tight mt-0.5">
-                  {jenisKknLabel}{jenisKknCode ? ` · ${jenisKknCode}` : ''}
+            <div className="flex min-h-[4.5rem] flex-col justify-between rounded-xl bg-[color:var(--profile-surface)] px-4 py-3 ring-1 ring-[color:var(--profile-border)]">
+              <span className="text-[8px] font-black text-[color:var(--profile-muted)] uppercase tracking-[0.18em]">Nomor Induk</span>
+              <span className="break-all text-sm font-black tracking-tight text-[color:var(--profile-text)]">{studentNim}</span>
+            </div>
+            <div className="flex min-h-[4.5rem] min-w-0 flex-col justify-between rounded-xl bg-[color:var(--profile-surface)] px-4 py-3 ring-1 ring-[color:var(--profile-border)] sm:col-span-2 xl:col-span-1">
+              <span className="text-[8px] font-black text-[color:var(--profile-muted)] uppercase tracking-[0.18em]">Periode</span>
+              <span className="text-xs font-black uppercase leading-snug tracking-tight text-[color:var(--profile-text)]">{periodName}</span>
+              {selectedKknMeta && (
+                <span className="text-[10px] font-bold uppercase tracking-tight text-[color:var(--profile-soft-text)]">
+                  Jenis KKN: {selectedKknMeta}
                 </span>
               )}
             </div>
@@ -296,10 +310,10 @@ export default function StudentDashboard(): React.JSX.Element {
                     </p>
                   </div>
                   <Link
-                    href={registration ? '/mahasiswa/cek-pendaftaran' : '/mahasiswa/pendaftaran'}
-                    className="inline-flex h-12 px-8 bg-[color:var(--profile-primary)] hover:bg-[color:var(--profile-soft)]0 text-white rounded-lg text-xs font-black uppercase tracking-widest transition-all items-center gap-3 active:scale-95 shadow-lg shadow-black/10"
+                    href={showKknTools ? '/mahasiswa/posko' : (registration ? '/mahasiswa/cek-pendaftaran' : (canRegister ? '/mahasiswa/pendaftaran' : `/phase-blocked?phase=${encodeURIComponent(phaseValue || 'upcoming')}&required=registration,placement`))}
+                    className="inline-flex h-12 px-8 bg-[color:var(--profile-primary)] hover:bg-[color:var(--profile-soft)] text-white rounded-lg text-xs font-black uppercase tracking-widest transition-all items-center gap-3 active:scale-95 shadow-lg shadow-black/10"
                   >
-                    {registration ? 'Cek Detail Status' : 'Mulai Pendaftaran'} <ArrowRight size={16} />
+                    {showKknTools ? 'Lihat Posko' : (registration ? 'Cek Detail Status' : (canRegister ? 'Mulai Pendaftaran' : 'Fase Belum Dibuka'))} <ArrowRight size={16} />
                   </Link>
                 </div>
               </div>
@@ -348,15 +362,21 @@ export default function StudentDashboard(): React.JSX.Element {
           <div className="lg:col-span-4 space-y-6">
             <div className="bg-[color:var(--profile-surface)] ring-1 ring-[color:var(--profile-border)] rounded-xl p-6 shadow-sm">
               <h3 className="text-xs font-black text-[color:var(--profile-text)] uppercase tracking-widest mb-4 flex items-center gap-2">
-                <LayoutGrid size={16} className="text-[color:var(--profile-primary)]" /> Menu Navigasi
+                <LayoutGrid size={16} className="text-[color:var(--profile-primary)]" /> {showKknTools ? 'Menu Navigasi' : 'Aksi Cepat'}
               </h3>
               {!showKknTools ? (
-                <div className="rounded-lg border border-amber-100 bg-amber-50 p-4 text-xs font-semibold text-amber-800">
-                  Fitur KKN seperti Logbook, Program Kerja, Posko, Laporan Akhir, dan Sertifikat akan dibuka setelah pendaftaran disetujui dan fase sesuai.
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <Link href={registration ? '/mahasiswa/cek-pendaftaran' : '/mahasiswa/pendaftaran'} className="rounded-lg bg-amber-600 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-white hover:bg-amber-700">{registration ? 'Cek Status' : 'Daftar KKN'}</Link>
-                    <Link href="/profil" className="rounded-lg bg-[color:var(--profile-surface)] px-3 py-2 text-[10px] font-black uppercase tracking-wider text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100">Lengkapi Profil</Link>
-                  </div>
+                <div className="space-y-3">
+                  <Link href={showKknTools ? '/mahasiswa/posko' : (registration ? '/mahasiswa/cek-pendaftaran' : (canRegister ? '/mahasiswa/pendaftaran' : `/phase-blocked?phase=${encodeURIComponent(phaseValue || 'upcoming')}&required=registration,placement`))} className="flex items-center justify-between rounded-lg bg-[color:var(--profile-soft)] px-4 py-3 text-xs font-black uppercase tracking-wider text-[color:var(--profile-text)] ring-1 ring-[color:var(--profile-border)] transition-colors hover:bg-[color:var(--profile-primary)] hover:text-white">
+                    <span>{registration ? 'Cek Status Pendaftaran' : (canRegister ? 'Daftar KKN' : 'Fase Belum Dibuka')}</span>
+                    <ArrowRight size={14} />
+                  </Link>
+                  <Link href="/profil" className="flex items-center justify-between rounded-lg bg-[color:var(--profile-surface)] px-4 py-3 text-xs font-black uppercase tracking-wider text-[color:var(--profile-text)] ring-1 ring-[color:var(--profile-border)] transition-colors hover:bg-[color:var(--profile-soft)]">
+                    <span>Lengkapi Profil</span>
+                    <ArrowRight size={14} />
+                  </Link>
+                  <p className="text-[11px] font-semibold leading-relaxed text-[color:var(--profile-muted)]">
+                    Menu KKN lengkap akan terbuka otomatis setelah pendaftaran disetujui dan fase berjalan sesuai periodenya.
+                  </p>
                 </div>
               ) : (
               <div className="grid gap-2">

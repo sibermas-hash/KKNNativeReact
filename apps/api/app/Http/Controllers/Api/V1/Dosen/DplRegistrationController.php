@@ -44,6 +44,10 @@ class DplRegistrationController extends Controller
             return $this->error('VALIDATION_ERROR', 'Data dosen Anda tidak ditemukan dalam sistem.', 422);
         }
 
+        if (blank($dosen->nidn)) {
+            return $this->error('VALIDATION_ERROR', 'Anda harus memiliki NIDN untuk mendaftar sebagai DPL.', 422);
+        }
+
         $hasPassedWorkshop = PesertaWorkshop::where('user_id', $user->id)
             ->where('is_passed', true)
             ->exists();

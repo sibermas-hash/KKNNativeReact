@@ -80,6 +80,7 @@ export default function DaftarDplPage(): React.JSX.Element {
           <p className="font-bold mb-1">Informasi Pendaftaran DPL</p>
           <ul className="list-disc list-inside space-y-0.5 text-xs">
             <li>Pendaftaran akan diverifikasi oleh admin</li>
+            <li>Dosen wajib memiliki NIDN dan telah lulus Workshop Pembekalan DPL</li>
             <li>Penempatan kelompok/lokasi sepenuhnya ditentukan oleh admin</li>
             <li>Setelah disetujui, Anda dapat mengakses menu DPL</li>
           </ul>

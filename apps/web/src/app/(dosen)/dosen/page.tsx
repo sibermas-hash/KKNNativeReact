@@ -7,7 +7,7 @@ import { dosenApi } from '@/lib/api';
 import { useAuthStore } from '@/stores';
 import { StatCard, NavButton } from '@/components/ui/shared';
 import Link from 'next/link';
-import { Users, ClipboardList, MapPin, FileText, Star, BookOpen, Calendar } from 'lucide-react';
+import { Users, ClipboardList, MapPin, FileText, Star, BookOpen, Calendar, UserCheck } from 'lucide-react';
 
 export default function DosenDashboard(): React.JSX.Element {
   const { user } = useAuthStore();
@@ -66,7 +66,7 @@ export default function DosenDashboard(): React.JSX.Element {
               <div key={p.id as number} className="flex items-center justify-between rounded-xl border border-slate-100 px-4 py-3">
                 <p className="text-sm font-bold text-slate-800">{((p.periode as Record<string, unknown>)?.name as string) || '-'}</p>
                 <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 border border-emerald-100 rounded px-2 py-0.5 uppercase tracking-wider">
-                  Max {p.max_kelompok_kkn as number} kelompok
+                  {String(p.status || 'pending')}
                 </span>
               </div>
             ))}
@@ -77,11 +77,17 @@ export default function DosenDashboard(): React.JSX.Element {
       <div className="rounded-2xl bg-white ring-1 ring-slate-200 p-5 shadow-sm">
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Menu</p>
         <div className="space-y-1">
-          {isDpl && <NavButton href="/dosen/beranda-dpl" icon={MapPin} label="Beranda DPL" />}
-          <NavButton href="/dosen/laporan-harian" icon={ClipboardList} label="Laporan Harian" />
-          <NavButton href="/dosen/laporan-akhir" icon={FileText} label="Laporan Akhir" />
-          <NavButton href="/dosen/evaluasi" icon={Star} label="Evaluasi" />
-          <NavButton href="/dosen/monitoring" icon={Users} label="Monitoring" />
+          <NavButton href="/dosen/workshops" icon={BookOpen} label="Workshop" />
+          <NavButton href="/dosen/daftar-dpl" icon={UserCheck} label="Daftar DPL" />
+          {isDpl && (
+            <>
+              <NavButton href="/dosen/beranda-dpl" icon={MapPin} label="Beranda DPL" />
+              <NavButton href="/dosen/laporan-harian" icon={ClipboardList} label="Review Laporan Harian" />
+              <NavButton href="/dosen/laporan-akhir" icon={FileText} label="Laporan Akhir" />
+              <NavButton href="/dosen/evaluasi" icon={Star} label="Evaluasi" />
+              <NavButton href="/dosen/monitoring" icon={Users} label="Monitoring" />
+            </>
+          )}
         </div>
       </div>
     </div>

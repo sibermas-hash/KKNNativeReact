@@ -90,11 +90,12 @@ class ExternalParticipantController extends Controller
                     'name' => $nama,
                     'email' => $row['email'] ?? null,
                     'phone' => $row['no_hp'] ?? $row['phone'] ?? null,
+                    'address' => $row['alamat'] ?? $row['address'] ?? null,
                     'is_active' => true,
                     'must_change_password' => true,
                     'password' => $password,
                 ]);
-                $user->assignRole('mahasiswa');
+                $user->assignRole('student');
                 $mahasiswa = Mahasiswa::create([
                     'user_id' => $user->id,
                     'nim' => $username,

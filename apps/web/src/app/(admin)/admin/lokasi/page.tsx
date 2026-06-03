@@ -280,7 +280,11 @@ export default function AdminLokasiPage(): React.JSX.Element {
 
   const getExportRows = () => {
     const source = stats.data?.all ?? [];
-    const all = filterRegency ? source.filter((l) => l.regency_name === filterRegency) : source;
+    const all = (filterRegency ? source.filter((l) => l.regency_name === filterRegency) : source).slice().sort((a, b) => {
+      const used = Number(Boolean(b.is_selected_for_kkn)) - Number(Boolean(a.is_selected_for_kkn));
+      if (used) return used;
+      return `${a.regency_name ?? ''} ${a.district_name ?? ''} ${a.village_name ?? ''}`.localeCompare(`${b.regency_name ?? ''} ${b.district_name ?? ''} ${b.village_name ?? ''}`);
+    });
     if (!all.length) {
       toast.error('Data belum tersedia');
       return;

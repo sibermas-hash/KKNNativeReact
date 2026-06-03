@@ -16,6 +16,49 @@ class DplRegistrationController extends Controller
 {
     use ApiResponse;
 
+
+
+    /**
+     * GET /dosen/dpl-eligibility
+     */
+    public function eligibility(): JsonResponse
+    {
+        $user = auth()->user();
+        $dosen = $user->dosen;
+
+        if (! $dosen) {
+            return $this->success(['eligible' => false, 'has_nidn' => false, 'has_passed_workshop' => false, 'registrations' => [], 'reasons' => ['Data dosen Anda tidak ditemukan dalam sistem.']]);
+        }
+
+        $hasNidn = filled($dosen->nidn);
+        $hasPassedWorkshop = PesertaWorkshop::where('user_id', $user->id)->where('is_passed', true)->exists();
+        $reasons = [];
+        if (! $hasNidn) $reasons[] = 'NIDN belum terisi.';
+        if (! $hasPassedWorkshop) $reasons[] = 'Belum tercatat lulus Workshop Pembekalan DPL.';
+
+        $registrations = DplPeriod::where('dosen_id', $dosen->id)
+            ->with('periode:id,name,current_phase')
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn ($item) => [
+                'id' => $item->id,
+                'periode_id' => $item->periode_id,
+                'periode_name' => $item->periode?->name,
+                'status' => $item->status,
+                'is_active' => (bool) $item->is_active,
+                'created_at' => $item->created_at?->toISOString(),
+            ])->values();
+
+        return $this->success([
+            'eligible' => $hasNidn && $hasPassedWorkshop,
+            'has_nidn' => $hasNidn,
+            'nidn' => $dosen->nidn,
+            'has_passed_workshop' => $hasPassedWorkshop,
+            'registrations' => $registrations,
+            'reasons' => $reasons,
+        ]);
+    }
+
     /**
      * GET /dosen/available-periods
      * Return active periods that dosen can register as DPL for.

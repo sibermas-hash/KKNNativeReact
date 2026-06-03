@@ -23,6 +23,15 @@ export default function DaftarDplPage(): React.JSX.Element {
     },
   });
 
+  const { data: eligibilityData } = useQuery({
+    queryKey: ['dosen', 'dpl-eligibility'],
+    queryFn: async () => {
+      const res = await api.get('/dosen/dpl-eligibility');
+      return (res as { data?: unknown }).data ?? res;
+    },
+  });
+
+  const eligibility = (eligibilityData || {}) as { eligible?: boolean; has_nidn?: boolean; has_passed_workshop?: boolean; reasons?: string[]; registrations?: Array<{ id: number; periode_name?: string; status?: string }> };
   const periods = (Array.isArray(periodsData) ? periodsData : []) as Array<{ id: number; name: string; is_active?: boolean }>;
   const selectedPeriod = periods.find((period) => String(period.id) === formData.periode_id);
 
@@ -48,6 +57,10 @@ export default function DaftarDplPage(): React.JSX.Element {
       return;
     }
     setSignature((prev) => ({ ...prev, nip: prev.nip || user?.username || '' }));
+    if (eligibility.eligible === false) {
+      toast.error('Anda belum memenuhi syarat pendaftaran DPL');
+      return;
+    }
     setShowStatement(true);
   };
 
@@ -87,6 +100,24 @@ export default function DaftarDplPage(): React.JSX.Element {
         </div>
       </div>
 
+      <div className={`rounded-2xl border p-4 ${eligibility.eligible ? 'border-emerald-200 bg-emerald-50 text-emerald-900' : 'border-amber-200 bg-amber-50 text-amber-900'}`}>
+        <p className="text-sm font-black">Status Kelayakan DPL</p>
+        <div className="mt-2 grid gap-2 text-xs font-bold md:grid-cols-2">
+          <span>NIDN: {eligibility.has_nidn ? 'Terisi' : 'Belum terisi'}</span>
+          <span>Workshop: {eligibility.has_passed_workshop ? 'Lulus' : 'Belum lulus'}</span>
+        </div>
+        {eligibility.reasons && eligibility.reasons.length > 0 && (
+          <ul className="mt-3 list-disc space-y-1 pl-5 text-xs">
+            {eligibility.reasons.map((reason) => <li key={reason}>{reason}</li>)}
+          </ul>
+        )}
+        {eligibility.registrations && eligibility.registrations.length > 0 && (
+          <div className="mt-3 space-y-1 text-xs">
+            {eligibility.registrations.map((reg) => <p key={reg.id}>Pendaftaran {reg.periode_name || '-'}: <strong>{reg.status}</strong></p>)}
+          </div>
+        )}
+      </div>
+
       <form onSubmit={handleSubmit} className="rounded-2xl bg-white ring-1 ring-slate-200 p-6 space-y-5">
         <div>
           <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-2">Periode KKN <span className="text-red-500">*</span></label>
@@ -104,7 +135,7 @@ export default function DaftarDplPage(): React.JSX.Element {
         </div>
 
         <div className="flex gap-3 pt-2">
-          <button type="submit" disabled={submitMut.isPending || periodsLoading || periods.length === 0} className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
+          <button type="submit" disabled={submitMut.isPending || periodsLoading || periods.length === 0 || eligibility.eligible === false} className="flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors">
             <UserCheck size={16} />
             {submitMut.isPending ? 'Mengirim...' : 'Daftar Sebagai DPL'}
           </button>

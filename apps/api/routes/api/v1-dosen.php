@@ -36,6 +36,7 @@ Route::prefix('dosen')
             ->name('api.v1.dosen.workshops.certificate.download');
 
         // Pendaftaran DPL
+        Route::get('/dpl-eligibility', [DplRegistrationController::class, 'eligibility'])->name('api.v1.dosen.dpl-eligibility');
         Route::get('/available-periods', [DplRegistrationController::class, 'availablePeriods'])->name('api.v1.dosen.available-periods');
         Route::post('/daftar-dpl', [DplRegistrationController::class, 'store'])->name('api.v1.dosen.daftar-dpl');
     });

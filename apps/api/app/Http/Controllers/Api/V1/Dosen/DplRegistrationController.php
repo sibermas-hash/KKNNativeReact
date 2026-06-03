@@ -31,7 +31,7 @@ class DplRegistrationController extends Controller
         }
 
         $hasNidn = filled($dosen->nidn);
-        $hasPassedWorkshop = PesertaWorkshop::where('user_id', $user->id)->where('is_passed', true)->exists();
+        $hasPassedWorkshop = PesertaWorkshop::where('user_id', $user->id)->where('is_passed', true)->where('attendance_status', 'attended')->exists();
         $reasons = [];
         if (! $hasNidn) $reasons[] = 'NIDN belum terisi.';
         if (! $hasPassedWorkshop) $reasons[] = 'Belum tercatat hadir dan lulus Workshop Pembekalan DPL.';

@@ -279,14 +279,16 @@ export default function AdminLokasiPage(): React.JSX.Element {
   };
 
   const exportCsv = () => {
-    const all = stats.data?.all ?? [];
+    const source = stats.data?.all ?? [];
+    const all = filterRegency ? source.filter((l) => l.regency_name === filterRegency) : source;
     if (!all.length) {
       toast.error('Data belum tersedia');
       return;
     }
-    const headers = ['id', 'village_name', 'district_name', 'regency_name', 'address', 'latitude', 'longitude', 'capacity', 'fakultas'];
+    const headers = ['id', 'diceklist', 'village_name', 'district_name', 'regency_name', 'address', 'latitude', 'longitude', 'capacity', 'fakultas'];
     const rows = all.map((l) => [
       l.id,
+      l.is_selected_for_kkn ? 'YA' : 'TIDAK',
       l.village_name ?? '',
       l.district_name ?? '',
       l.regency_name ?? '',
@@ -301,10 +303,11 @@ export default function AdminLokasiPage(): React.JSX.Element {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `lokasi-kkn-${Date.now()}.csv`;
+    const suffix = filterRegency ? filterRegency.toLowerCase().replace(/\s+/g, '-') : 'semua-kabupaten';
+    a.download = `lokasi-kkn-reguler-${suffix}-${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success(`${all.length} lokasi diexport`);
+    toast.success(`${all.length} lokasi diexport${filterRegency ? ' untuk ' + filterRegency : ''}`);
   };
 
   return (
@@ -322,7 +325,7 @@ export default function AdminLokasiPage(): React.JSX.Element {
             disabled={!stats.data}
             className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm font-bold text-slate-700 disabled:opacity-50 flex items-center gap-2"
           >
-            <Download className="h-4 w-4" /> Export CSV
+            <Download className="h-4 w-4" /> Export CSV {filterRegency ? filterRegency : 'Semua Kabupaten'}
           </button>
           <button onClick={openCreate} className="h-10 rounded-lg bg-teal-600 px-4 text-sm font-bold text-white flex items-center gap-2">
             <Plus className="h-4 w-4" /> Tambah Lokasi
@@ -379,6 +382,8 @@ export default function AdminLokasiPage(): React.JSX.Element {
       )}
 
       {/* Filter + search */}
+      <p className="text-xs text-slate-500">Export mengikuti filter kabupaten. Pilih kabupaten dulu untuk cek per-kabupaten.</p>
+
       <div className="flex flex-wrap gap-3 items-center">
         <form onSubmit={submitSearch} className="flex gap-2 flex-1 min-w-72">
           <div className="relative flex-1">

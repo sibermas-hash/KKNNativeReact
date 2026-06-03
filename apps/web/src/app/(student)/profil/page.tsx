@@ -54,7 +54,8 @@ type ForwardGeocodeResult = {
 };
 
 type ChangeRequest = { id: number; requested_changes: Record<string, { old: unknown; new: unknown }>; created_at: string };
-type StudentProfile = { nim?: string; gpa?: number; sks_completed?: number; status_bta_ppi?: string | null; faculty?: { nama?: string }; prodi?: { nama?: string }; missing_biodata_fields?: string[]; missing_address_fields?: string[]; biodata_complete?: boolean; address_verified?: boolean; address_verified_at?: string | null; [key: string]: unknown };
+type ExternalProfile = { external_nim?: string; home_university?: string; external_faculty?: string | null; external_study_program?: string | null; external_email?: string | null; external_phone?: string | null };
+type StudentProfile = { nim?: string; gpa?: number; sks_completed?: number; status_bta_ppi?: string | null; faculty?: { nama?: string }; prodi?: { nama?: string }; external_profile?: ExternalProfile | null; missing_biodata_fields?: string[]; missing_address_fields?: string[]; biodata_complete?: boolean; address_verified?: boolean; address_verified_at?: string | null; [key: string]: unknown };
 type LecturerProfile = { nip?: string; faculty?: { nama?: string }; missing_biodata_fields?: string[]; biodata_complete?: boolean; jabatan?: string; status_aktif?: string; status_pegawai?: string; has_workshop?: boolean; workshop_date?: string; is_cpns?: boolean; is_tugas_belajar?: boolean; [key: string]: unknown };
 
 type TypographyKeys = { page: string; eyebrow: string; heading: string; body: string; label: string; button: string; meta: string };
@@ -125,6 +126,8 @@ const FIELD_LABELS: Record<string, string> = {
   address_lng: 'Longitude Alamat KTP',
   address_verified_at: 'Verifikasi Alamat',
   avatar: 'Foto Profil Formal',
+  external_faculty: 'Fakultas Asal',
+  external_study_program: 'Prodi Asal',
 };
 
 function dashboardPathFor(roles: string[]) {
@@ -515,6 +518,8 @@ export default function ProfilePage(): React.JSX.Element {
   const roles = user?.roles ?? [];
   const isStudent = !!student;
   const isLecturer = !!lecturer;
+  const externalProfile = student?.external_profile ?? null;
+  const isExternalStudent = !!externalProfile;
   const addressValue = watch('address');
   const addressLat = watch('address_lat');
   const addressLng = watch('address_lng');
@@ -686,6 +691,8 @@ export default function ProfilePage(): React.JSX.Element {
         shirt_size: ['S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL', '5XL', ''].includes((nextStudent?.shirt_size as string) ?? '') ? ((nextStudent?.shirt_size as '' | 'S' | 'M' | 'L' | 'XL' | 'XXL' | '3XL' | '4XL' | '5XL') ?? '') : '',
         birth_place: ((nextStudent?.birth_place ?? nextLecturer?.tempat_lahir) as string) ?? '',
         birth_date: ((nextStudent?.birth_date ?? nextLecturer?.birth_date) as string) ?? '',
+        external_faculty: (nextStudent?.external_profile?.external_faculty as string) ?? '',
+        external_study_program: (nextStudent?.external_profile?.external_study_program as string) ?? '',
         nama_gelar: (nextLecturer?.nama_gelar as string) ?? '',
         nidn: (nextLecturer?.nidn as string) ?? '',
         dosen_nik: (nextLecturer?.nik as string) ?? '',
@@ -957,6 +964,8 @@ export default function ProfilePage(): React.JSX.Element {
                 {isStudent && <SelectInput label="Ukuran Baju / Jaket" registration={register('shirt_size')} disabled={!isEditing} options={SHIRT_SIZE_OPTIONS} error={errors.shirt_size?.message} />}
               </div>
             </section>
+
+            {isExternalStudent && <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5"><h2 className={`flex items-center gap-2 ${typography.label} text-[color:var(--profile-text)]`}><GraduationCap size={16} /> Data Kampus Asal</h2><div className="grid grid-cols-1 gap-4 md:grid-cols-2"><TextInput label="NIM Asal" value={externalProfile?.external_nim ?? '-'} disabled /><TextInput label="Kampus Asal" value={externalProfile?.home_university ?? '-'} disabled /><TextInput label="Fakultas Asal" registration={register('external_faculty')} disabled={!isEditing} error={errors.external_faculty?.message} /><TextInput label="Prodi Asal" registration={register('external_study_program')} disabled={!isEditing} error={errors.external_study_program?.message} /></div><div className={`flex gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] transition-colors ${typography.meta}`}><Info size={18} className="shrink-0" />Jika data sudah terisi dari import, cukup cek. Jika kosong atau salah, lengkapi/perbaiki di sini.</div></section>}
 
             {isStudent && <StudentAddressSection register={register} errors={errors} isEditing={isEditing} typography={typography} />}
 

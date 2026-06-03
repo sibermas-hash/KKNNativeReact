@@ -32,8 +32,10 @@ class ProfileController extends Controller
     public function show(Request $request): JsonResponse
     {
         $user = $request->user();
-        $user->load(['mahasiswa.fakultas', 'mahasiswa.prodi', 'dosen.fakultas', 'fakultas']);
+        $user->load(['mahasiswa.fakultas', 'mahasiswa.prodi', 'mahasiswa.externalProfile', 'dosen.fakultas', 'fakultas']);
         $mahasiswa = $user->mahasiswa;
+        $mahasiswa?->loadMissing('externalProfile');
+        $externalProfile = $mahasiswa?->externalProfile;
         $dosen = $user->dosen;
 
         $pending = ProfileChangeRequest::where('user_id', $user->id)
@@ -52,7 +54,10 @@ class ProfileController extends Controller
             'gender' => $mahasiswa->gender,
             'shirt_size' => $mahasiswa->shirt_size,
             'phone' => $user->phone,
-        ])->filter(fn ($value) => blank($value))->keys()->values()->all() : [];
+        ])->merge($mahasiswa && ($mahasiswa->origin_type ?? 'internal') === 'external' ? collect([
+            'external_faculty' => $mahasiswa->externalProfile?->external_faculty,
+            'external_study_program' => $mahasiswa->externalProfile?->external_study_program,
+        ]) : collect())->filter(fn ($value) => blank($value))->keys()->values()->all() : [];
 
         $lecturerMissing = $dosen ? collect([
             'avatar' => $user->avatar,
@@ -89,6 +94,14 @@ class ProfileController extends Controller
                 'address_verified' => filled($user->address_verified_at),
                 'address_verified_at' => $user->address_verified_at?->toIso8601String(),
                 'missing_address_fields' => $addressMissing,
+                'external_profile' => $mahasiswa->externalProfile ? [
+                    'external_nim' => $mahasiswa->externalProfile->external_nim,
+                    'home_university' => $mahasiswa->externalProfile->home_university,
+                    'external_faculty' => $mahasiswa->externalProfile->external_faculty,
+                    'external_study_program' => $mahasiswa->externalProfile->external_study_program,
+                    'external_email' => $mahasiswa->externalProfile->external_email,
+                    'external_phone' => $mahasiswa->externalProfile->external_phone,
+                ] : null,
             ]) : null,
             'lecturer' => $dosen ? array_merge((new DosenResource($dosen))->resolve($request), [
                 'biodata_complete' => $lecturerMissing === [],
@@ -129,6 +142,8 @@ class ProfileController extends Controller
             'shirt_size' => ['nullable', 'string', 'in:S,M,L,XL,XXL,3XL,4XL,5XL'],
             'birth_place' => ['nullable', 'string', 'max:100'],
             'birth_date' => ['nullable', 'date'],
+            'external_faculty' => ['nullable', 'string', 'max:150'],
+            'external_study_program' => ['nullable', 'string', 'max:150'],
             // Dosen fields
             'nama_gelar' => ['nullable', 'string', 'max:255'],
             'nidn' => ['nullable', 'string', 'max:50'],
@@ -190,6 +205,8 @@ class ProfileController extends Controller
         }
         // Build diff: only include fields that actually changed
         $mahasiswa = $user->mahasiswa;
+        $mahasiswa?->loadMissing('externalProfile');
+        $externalProfile = $mahasiswa?->externalProfile;
         $dosen = $user->dosen;
 
         $changes = [];
@@ -210,6 +227,11 @@ class ProfileController extends Controller
             'birth_date' => $mahasiswa->birth_date?->toDateString(),
         ] : [];
 
+        $externalProfileMap = $externalProfile ? [
+            'external_faculty' => $externalProfile->external_faculty,
+            'external_study_program' => $externalProfile->external_study_program,
+        ] : [];
+
         $dosenMap = $dosen ? [
             'nama_gelar' => $dosen->nama_gelar,
             'nidn' => $dosen->nidn,
@@ -227,7 +249,7 @@ class ProfileController extends Controller
             'dosen_alamat' => $dosen->alamat,
         ] : [];
 
-        $currentValues = array_merge($userMap, $mahasiswaMap, $dosenMap);
+        $currentValues = array_merge($userMap, $mahasiswaMap, $externalProfileMap, $dosenMap);
 
         foreach ($validated as $field => $newValue) {
             if ($field === 'address_verified') {
@@ -333,7 +355,7 @@ class ProfileController extends Controller
 
     private function isProfileComplete(User $user): bool
     {
-        $user->loadMissing(['mahasiswa', 'dosen']);
+        $user->loadMissing(['mahasiswa.externalProfile', 'dosen']);
 
         $baseComplete = filled($user->avatar)
             && filled($user->phone)
@@ -349,7 +371,10 @@ class ProfileController extends Controller
                 && filled($user->mahasiswa->birth_place)
                 && filled($user->mahasiswa->birth_date)
                 && filled($user->mahasiswa->gender)
-                && filled($user->mahasiswa->shirt_size);
+                && filled($user->mahasiswa->shirt_size)
+                && (($user->mahasiswa->origin_type ?? 'internal') !== 'external'
+                    || (filled($user->mahasiswa->externalProfile?->external_faculty)
+                        && filled($user->mahasiswa->externalProfile?->external_study_program)));
         }
 
         if ($user->dosen) {
@@ -369,11 +394,13 @@ class ProfileController extends Controller
     {
         $userFields = ['name', 'email', 'phone', 'address', 'address_village_name', 'address_district_name', 'address_regency_name', 'address_postal_code', 'address_lat', 'address_lng', 'address_registered_at', 'address_verified_at'];
         $mahasiswaFields = ['nik', 'mother_name', 'gender', 'shirt_size', 'birth_place', 'birth_date'];
+        $externalProfileFields = ['external_faculty', 'external_study_program'];
         $dosenFields = ['nama_gelar', 'nidn', 'dosen_nik', 'jabatan', 'kelas_jabatan', 'tugas_tambahan', 'golongan', 'pangkat', 'no_rekening', 'nama_bank', 'npwp', 'gender', 'birth_date', 'dosen_alamat'];
 
         $userUpdate = [];
         $mahasiswaUpdate = [];
         $dosenUpdate = [];
+        $externalProfileUpdate = [];
 
         foreach ($changes as $field => $value) {
             $new = is_array($value) ? ($value['new'] ?? null) : $value;
@@ -381,6 +408,8 @@ class ProfileController extends Controller
                 $userUpdate[$field] = $new;
             } elseif (in_array($field, $mahasiswaFields, true)) {
                 $mahasiswaUpdate[$field] = $new;
+            } elseif (in_array($field, $externalProfileFields, true)) {
+                $externalProfileUpdate[$field] = $new;
             } elseif (in_array($field, $dosenFields, true)) {
                 $dosenUpdate[match ($field) {
                     'dosen_nik' => 'nik',
@@ -401,6 +430,10 @@ class ProfileController extends Controller
         if ($mahasiswa && $mahasiswaUpdate) {
             $mahasiswa->fill($mahasiswaUpdate)->save();
             $mahasiswa->lockFields(array_keys($mahasiswaUpdate));
+        }
+
+        if ($mahasiswa?->externalProfile && $externalProfileUpdate) {
+            $mahasiswa->externalProfile->fill($externalProfileUpdate)->save();
         }
 
         if ($dosen && $dosenUpdate) {

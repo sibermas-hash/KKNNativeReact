@@ -56,7 +56,7 @@ export default function PesertaEksternalPage(): React.JSX.Element {
 
     <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
       <h2 className="mb-4 font-bold text-slate-800">Import CSV</h2>
-      <p className="mb-3 text-xs text-slate-500">Kolom: nama,nim,kampus_asal,fakultas_asal,prodi_asal,jenis_kelamin,email,no_hp</p>
+      <p className="mb-3 text-xs text-slate-500">Kolom: nama,nim,kampus_asal,fakultas_asal,prodi_asal,jenis_kelamin,email,no_hp,tanggal_lahir,alamat</p>
       <div className="flex flex-wrap gap-3">
         <select value={batchId} onChange={e=>setBatchId(e.target.value)} className="min-w-[280px] rounded-xl border px-3 py-2 text-sm"><option value="">Pilih batch</option>{batches.map(b=><option key={b.id} value={b.id}>{b.home_university} · {b.target_regency ?? '-'} · {b.students_count ?? 0} peserta</option>)}</select>
         <input type="file" accept=".csv,text/csv" onChange={e=>setFile(e.target.files?.[0] ?? null)} className="rounded-xl border px-3 py-2 text-sm" />

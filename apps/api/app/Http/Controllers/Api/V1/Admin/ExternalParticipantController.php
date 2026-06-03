@@ -104,6 +104,8 @@ class ExternalParticipantController extends Controller
                     'batch_year' => (int) now()->year,
                     'gender' => strtoupper(substr((string)($row['jenis_kelamin'] ?? $row['gender'] ?? ''),0,1)) ?: null,
                     'phone' => $row['no_hp'] ?? $row['phone'] ?? null,
+                    'birth_date' => $row['tgl_lahir'] ?? $row['tanggal_lahir'] ?? $row['birth_date'] ?? null,
+                    'alamat' => $row['alamat'] ?? $row['address'] ?? null,
                     'status_aktif' => 'aktif',
                     'sks_completed' => 0,
                     'gpa' => 0,

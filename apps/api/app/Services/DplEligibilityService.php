@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\KKN\Dosen;
 use App\Models\KKN\DplPeriod;
+use App\Models\KKN\PesertaWorkshop;
 
 class DplEligibilityService
 {
@@ -48,11 +49,22 @@ class DplEligibilityService
             return $baseCheck;
         }
 
-        // Check if Dosen has attended workshop (using new has_workshop flag)
-        if (! $dosen->has_workshop) {
+        if (blank($dosen->nidn)) {
             return [
                 'eligible' => false,
-                'reason' => 'Dosen belum mengikuti Workshop Metodologi PKM.',
+                'reason' => 'Dosen wajib memiliki NIDN untuk ditugaskan sebagai DPL.',
+            ];
+        }
+
+        $hasPassedWorkshop = PesertaWorkshop::where('user_id', $dosen->user_id)
+            ->where('is_passed', true)
+            ->where('attendance_status', 'attended')
+            ->exists();
+
+        if (! $hasPassedWorkshop) {
+            return [
+                'eligible' => false,
+                'reason' => 'Dosen belum tercatat hadir dan lulus Workshop Pembekalan DPL.',
             ];
         }
 

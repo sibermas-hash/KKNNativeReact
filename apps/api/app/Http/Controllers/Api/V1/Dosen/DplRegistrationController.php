@@ -34,7 +34,7 @@ class DplRegistrationController extends Controller
         $hasPassedWorkshop = PesertaWorkshop::where('user_id', $user->id)->where('is_passed', true)->exists();
         $reasons = [];
         if (! $hasNidn) $reasons[] = 'NIDN belum terisi.';
-        if (! $hasPassedWorkshop) $reasons[] = 'Belum tercatat lulus Workshop Pembekalan DPL.';
+        if (! $hasPassedWorkshop) $reasons[] = 'Belum tercatat hadir dan lulus Workshop Pembekalan DPL.';
 
         $registrations = DplPeriod::where('dosen_id', $dosen->id)
             ->with('periode:id,name,current_phase')
@@ -93,10 +93,11 @@ class DplRegistrationController extends Controller
 
         $hasPassedWorkshop = PesertaWorkshop::where('user_id', $user->id)
             ->where('is_passed', true)
+            ->where('attendance_status', 'attended')
             ->exists();
 
         if (! $hasPassedWorkshop) {
-            return $this->error('VALIDATION_ERROR', 'Anda harus lulus Workshop Pembekalan DPL terlebih dahulu.', 422);
+            return $this->error('VALIDATION_ERROR', 'Anda harus hadir dan lulus Workshop Pembekalan DPL terlebih dahulu.', 422);
         }
 
         $validated = $request->validate([

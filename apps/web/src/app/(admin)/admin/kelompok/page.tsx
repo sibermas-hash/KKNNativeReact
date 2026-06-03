@@ -21,7 +21,6 @@ import {
 } from 'lucide-react';
 
 type Period = { id: number; name?: string; periode?: string; is_active?: boolean; jenis_kkn?: { code?: string; name?: string } };
-type LokasiOption = { id: number; village_name?: string; district_name?: string; regency_name?: string };
 
 type Kelompok = {
   id: number;
@@ -69,7 +68,7 @@ export default function AdminKelompokPage(): React.JSX.Element {
   const fileRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
   const [showCreate, setShowCreate] = useState(manualMode);
-  const [createForm, setCreateForm] = useState({ periode_id: initialPeriodeId, code: '', nama_kelompok: '', capacity: '15', location_id: '' });
+  const [createForm, setCreateForm] = useState({ periode_id: initialPeriodeId, code: '', nama_kelompok: '', capacity: '15', lokasi_manual: '' });
 
   const periodsQ = useQuery({
     queryKey: ['admin', 'periode', 'kelompok-filter'],
@@ -84,23 +83,14 @@ export default function AdminKelompokPage(): React.JSX.Element {
   const allPeriodItems = periodsQ.data ?? [];
   const periodItems = jenisKey ? allPeriodItems.filter((p) => { const hay = `${p.jenis_kkn?.code ?? ''} ${p.jenis_kkn?.name ?? ''} ${p.name ?? ''} ${p.periode ?? ''}`.toLowerCase(); return hay.includes(jenisKey.replace(/_/g, ' ')) || hay.includes(jenisKey); }) : allPeriodItems;
 
-  const lokasiQ = useQuery({
-    queryKey: ['admin', 'lokasi', 'kelompok-create'],
-    queryFn: async () => {
-      const res = await rawApi.get('/admin/lokasi', { params: { per_page: 9999 } });
-      const body = res.data as { data?: LokasiOption[] };
-      return body.data ?? [];
-    },
-    enabled: showCreate,
-  });
 
   const createMut = useMutation({
     mutationFn: async () => {
-      const payload = { periode_id: Number(createForm.periode_id), code: createForm.code.trim(), nama_kelompok: createForm.nama_kelompok.trim(), capacity: Number(createForm.capacity || 15), location_id: createForm.location_id ? Number(createForm.location_id) : null };
+      const payload = { periode_id: Number(createForm.periode_id), code: createForm.code.trim(), nama_kelompok: createForm.nama_kelompok.trim(), capacity: Number(createForm.capacity || 15), lokasi_manual: createForm.lokasi_manual.trim() || null, location_id: null };
       const res = await rawApi.post('/admin/kelompok', payload);
       return res.data;
     },
-    onSuccess: () => { toast.success('Kelompok manual dibuat'); setShowCreate(false); setCreateForm({ periode_id: periodeId, code: '', nama_kelompok: '', capacity: '15', location_id: '' }); qc.invalidateQueries({ queryKey: ['admin', 'kelompok'] }); },
+    onSuccess: () => { toast.success('Kelompok manual dibuat'); setShowCreate(false); setCreateForm({ periode_id: periodeId, code: '', nama_kelompok: '', capacity: '15', lokasi_manual: '' }); qc.invalidateQueries({ queryKey: ['admin', 'kelompok'] }); },
     onError: (e: unknown) => { const msg = (e as { response?: { data?: { message?: string } } }).response?.data?.message ?? 'Gagal membuat kelompok'; toast.error(msg); },
   });
 
@@ -531,7 +521,7 @@ export default function AdminKelompokPage(): React.JSX.Element {
               <label className="block text-sm font-bold">Periode<select required className="mt-1 h-10 w-full rounded-lg border px-3" value={createForm.periode_id} onChange={(e) => { setCreateForm({ ...createForm, periode_id: e.target.value }); setPeriodeId(e.target.value); }}><option value="">Pilih periode</option>{periodItems.map((p) => <option key={p.id} value={p.id}>{p.name || p.periode || 'Periode #' + p.id}</option>)}</select></label>
               <label className="block text-sm font-bold">Kode Kelompok<input required className="mt-1 h-10 w-full rounded-lg border px-3" value={createForm.code} onChange={(e) => setCreateForm({ ...createForm, code: e.target.value })} placeholder="MISAL: NUS-01" /></label>
               <label className="block text-sm font-bold">Nama Kelompok<input required className="mt-1 h-10 w-full rounded-lg border px-3" value={createForm.nama_kelompok} onChange={(e) => setCreateForm({ ...createForm, nama_kelompok: e.target.value })} placeholder="Kelompok Nusantara 1" /></label>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3"><label className="block text-sm font-bold">Kapasitas<input type="number" min="1" className="mt-1 h-10 w-full rounded-lg border px-3" value={createForm.capacity} onChange={(e) => setCreateForm({ ...createForm, capacity: e.target.value })} /></label><label className="block text-sm font-bold">Lokasi<select className="mt-1 h-10 w-full rounded-lg border px-3" value={createForm.location_id} onChange={(e) => setCreateForm({ ...createForm, location_id: e.target.value })}><option value="">Belum ditentukan</option>{(lokasiQ.data ?? []).map((l) => <option key={l.id} value={l.id}>{l.village_name} — {l.district_name}, {l.regency_name}</option>)}</select></label></div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3"><label className="block text-sm font-bold">Kapasitas<input type="number" min="1" className="mt-1 h-10 w-full rounded-lg border px-3" value={createForm.capacity} onChange={(e) => setCreateForm({ ...createForm, capacity: e.target.value })} /></label><label className="block text-sm font-bold">Lokasi Manual<input required className="mt-1 h-10 w-full rounded-lg border px-3" value={createForm.lokasi_manual} onChange={(e) => setCreateForm({ ...createForm, lokasi_manual: e.target.value })} placeholder="Malaysia / Kampus UIN Saizu / Rumah masing-masing" /></label></div>
               <div className="flex justify-end gap-2 pt-2"><button type="button" onClick={() => setShowCreate(false)} className="h-10 rounded-lg border px-4 text-sm font-bold">Batal</button><button disabled={createMut.isPending} className="h-10 rounded-lg bg-amber-600 px-4 text-sm font-bold text-white disabled:opacity-50">{createMut.isPending ? 'Menyimpan...' : 'Simpan Kelompok'}</button></div>
             </form>
           </div>

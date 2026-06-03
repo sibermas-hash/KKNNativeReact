@@ -125,6 +125,7 @@ Route::prefix('admin')
         Route::get('/document-templates/{documentTemplate}/download', [DocumentTemplateController::class, 'download'])->name('api.v1.admin.document-templates.download');
 
         // External participants
+        Route::get('/peserta-eksternal/template', [ExternalParticipantController::class, 'template']);
         Route::get('/peserta-eksternal/batches', [ExternalParticipantController::class, 'batches']);
         Route::post('/peserta-eksternal/batches', [ExternalParticipantController::class, 'storeBatch']);
         Route::post('/peserta-eksternal/import', [ExternalParticipantController::class, 'import'])->middleware('throttle:5,1');

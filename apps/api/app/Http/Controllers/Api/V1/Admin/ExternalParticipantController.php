@@ -154,4 +154,17 @@ class ExternalParticipantController extends Controller
         fclose($fh);
         return $rows;
     }
+    public function template()
+    {
+        $rows = [
+            ['nama','nim','kampus_asal','fakultas_asal','prodi_asal','jenis_kelamin','email','no_hp','tanggal_lahir','alamat'],
+            ['Contoh Mahasiswa','EXT001','Universitas Contoh','Fakultas Contoh','Program Studi Contoh','L','contoh@email.test','08123456789','2005-01-01','Alamat lengkap'],
+        ];
+        $csv = collect($rows)->map(fn ($row) => implode(',', array_map(fn ($v) => '"'.str_replace('"', '""', $v).'"', $row)))->implode("\n")."\n";
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="template-peserta-eksternal.csv"',
+        ]);
+    }
 }

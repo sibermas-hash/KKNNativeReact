@@ -29,6 +29,7 @@ class KelompokKknResource extends JsonResource
             'status' => $this->status,
             'location' => $lokasi,
             'lokasi' => $lokasi,
+            'lokasi_manual' => $this->lokasi_manual,
             'dpl' => $dosen,
             'dosen' => $dosen,
             'ketua_dpl' => new DosenResource($this->whenLoaded('dosen') ? $this->ketua_dpl : null),

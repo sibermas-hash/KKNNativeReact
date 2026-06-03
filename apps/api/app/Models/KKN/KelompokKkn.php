@@ -23,6 +23,7 @@ class KelompokKkn extends Model
     protected $fillable = [
         'periode_id',
         'location_id',
+        'lokasi_manual',
         'nama_kelompok',
         'code',
         'token',

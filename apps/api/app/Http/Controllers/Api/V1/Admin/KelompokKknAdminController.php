@@ -95,6 +95,7 @@ class KelompokKknAdminController extends Controller
         $validated = $request->validate([
             'periode_id' => ['required', 'exists:periode,id'],
             'location_id' => ['nullable', 'exists:lokasi,id'],
+            'lokasi_manual' => ['nullable', 'string', 'max:255'],
             'nama_kelompok' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:50'],
             'capacity' => ['nullable', 'integer', 'min:1'],
@@ -112,6 +113,7 @@ class KelompokKknAdminController extends Controller
         $kelompok->update($request->validate([
             'nama_kelompok' => ['sometimes', 'string', 'max:255'],
             'location_id' => ['nullable', 'exists:lokasi,id'],
+            'lokasi_manual' => ['nullable', 'string', 'max:255'],
             'capacity' => ['nullable', 'integer', 'min:1'],
             'status' => ['nullable', 'string'],
         ]));

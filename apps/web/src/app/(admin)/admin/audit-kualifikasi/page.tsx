@@ -3,7 +3,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { rawApi } from '@/lib/api';
-import { PageHeader } from '@/components/ui/shared';
 import {
   Users, CheckCircle2, XCircle, Search, Download, ChevronLeft, ChevronRight,
   Filter, BarChart3, AlertTriangle, ChevronDown, ChevronUp, GraduationCap,
@@ -135,11 +134,6 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Audit Kualifikasi"
-        subtitle="Pemeriksaan otomatis kelayakan mahasiswa untuk pendaftaran KKN"
-      />
-
       <div className="rounded-3xl bg-gradient-to-br from-cyan-950 via-cyan-800 to-emerald-700 p-6 text-white shadow-sm">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>

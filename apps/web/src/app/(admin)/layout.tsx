@@ -41,10 +41,10 @@ const getNavGroups = (pathname: string, roles: string[]) => {
       { label: 'Direktori Mahasiswa', href: '/admin/mahasiswa', icon: Users },
       { label: 'Audit Kelayakan', href: '/admin/audit-kualifikasi', icon: ShieldCheck },
       { label: 'Dispensasi', href: '/admin/dispensasi', icon: Award },
+      { label: 'Peserta Eksternal', href: '/admin/peserta-eksternal', icon: Globe },
       { label: 'Registrasi Mahasiswa', href: '/admin/pendaftaran', icon: ClipboardList },
       { label: 'Wawancara', href: '/admin/wawancara', icon: FileCheck },
       { label: 'Peserta KKN', href: '/admin/peserta-kkn', icon: UserCheck },
-      { label: 'Peserta Eksternal', href: '/admin/peserta-eksternal', icon: Globe },
       { label: 'Transfer Peserta', href: '/admin/transfer-peserta', icon: ArrowRightLeft },
     ]},
     { title: 'MANAJEMEN DOSEN', items: [

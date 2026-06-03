@@ -20,7 +20,21 @@ type JenisInfo = {
   placement_mode_label?: string;
 };
 interface Registration { id: number; mahasiswa?: { nama?: string; nim?: string; fakultas?: { nama?: string } }; periode?: { name?: string; jenis_kkn?: JenisInfo }; status: string; document_summary?: DocSummary }
-type ApiList = { items: Registration[]; meta?: { current_page?: number; last_page?: number; total?: number } };
+type RegistrationStats = {
+  total: number;
+  reviewable: number;
+  pending: number;
+  document_submitted: number;
+  document_verified: number;
+  approved: number;
+  rejected: number;
+  by_status?: Record<string, number>;
+};
+type ApiList = {
+  items: Registration[];
+  meta?: { current_page?: number; last_page?: number; total?: number };
+  stats?: RegistrationStats;
+};
 type PeriodOption = { id: number; name?: string; jenis_kkn?: JenisInfo | null; jenis?: JenisInfo | null; jenis_kkn_id?: number };
 type JenisCard = {
   id: string;
@@ -85,8 +99,8 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
     queryKey: ['admin', 'registrations', { status, search, periodeId, jenisKknId, page }],
     queryFn: async () => {
       const res = await rawApi.get('/admin/pendaftaran', { params: { status, search, periode_id: periodeId || undefined, jenis_kkn_id: jenisKknId || undefined, page, per_page: 25 } });
-      const envelope = res.data as { data?: Registration[]; meta?: ApiList['meta'] };
-      return { items: envelope.data ?? [], meta: envelope.meta };
+      const envelope = res.data as { data?: Registration[]; meta?: ApiList['meta']; stats?: RegistrationStats };
+      return { items: envelope.data ?? [], meta: envelope.meta, stats: envelope.stats };
     },
     placeholderData: keepPreviousData,
     staleTime: 0,
@@ -96,9 +110,9 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
   });
   const registrations = data?.items ?? [];
   const meta = data?.meta;
-  const totalRegistrations = meta?.total ?? registrations.length;
-  const reviewableCount = registrations.filter((registration) => REVIEWABLE.includes(registration.status)).length;
-  const submittedCount = registrations.filter((registration) => registration.status === 'document_submitted').length;
+  const totalRegistrations = data?.stats?.total ?? meta?.total ?? registrations.length;
+  const reviewableCount = data?.stats?.reviewable ?? registrations.filter((registration) => REVIEWABLE.includes(registration.status)).length;
+  const submittedCount = data?.stats?.document_submitted ?? registrations.filter((registration) => registration.status === 'document_submitted').length;
   const jenisCards = Array.from(activePeriods.reduce<Map<string, JenisCard>>((map, period) => {
     const jenis = period.jenis_kkn ?? period.jenis;
     const id = jenis?.id ?? period.jenis_kkn_id;

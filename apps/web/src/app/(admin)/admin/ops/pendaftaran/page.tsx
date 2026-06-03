@@ -4,8 +4,8 @@ import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient, keepPreviousData } from '@tanstack/react-query';
 import { adminApi, rawApi } from '@/lib/api';
 import Link from 'next/link';
-import { ClipboardList, CheckCircle2, XCircle, Eye, Download } from 'lucide-react';
-import { StatusBadge, PageHeader, EmptyState } from '@/components/ui/shared';
+import { ClipboardList, CheckCircle2, XCircle, Eye, Download, Clock } from 'lucide-react';
+import { StatusBadge, EmptyState } from '@/components/ui/shared';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { toast } from 'sonner';
 import { useSearchParams } from 'next/navigation';
@@ -20,7 +20,21 @@ type JenisInfo = {
   placement_mode_label?: string;
 };
 interface Registration { id: number; mahasiswa?: { nama?: string; nim?: string; fakultas?: { nama?: string } }; periode?: { name?: string; jenis_kkn?: JenisInfo }; status: string; document_summary?: DocSummary }
-type ApiList = { items: Registration[]; meta?: { current_page?: number; last_page?: number; total?: number } };
+type RegistrationStats = {
+  total: number;
+  reviewable: number;
+  pending: number;
+  document_submitted: number;
+  document_verified: number;
+  approved: number;
+  rejected: number;
+  by_status?: Record<string, number>;
+};
+type ApiList = {
+  items: Registration[];
+  meta?: { current_page?: number; last_page?: number; total?: number };
+  stats?: RegistrationStats;
+};
 type PeriodOption = { id: number; name?: string; jenis_kkn?: JenisInfo | null; jenis?: JenisInfo | null; jenis_kkn_id?: number };
 type JenisCard = {
   id: string;
@@ -85,14 +99,20 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
     queryKey: ['admin', 'registrations', { status, search, periodeId, jenisKknId, page }],
     queryFn: async () => {
       const res = await rawApi.get('/admin/pendaftaran', { params: { status, search, periode_id: periodeId || undefined, jenis_kkn_id: jenisKknId || undefined, page, per_page: 25 } });
-      const envelope = res.data as { data?: Registration[]; meta?: ApiList['meta'] };
-      return { items: envelope.data ?? [], meta: envelope.meta };
+      const envelope = res.data as { data?: Registration[]; meta?: ApiList['meta']; stats?: RegistrationStats };
+      return { items: envelope.data ?? [], meta: envelope.meta, stats: envelope.stats };
     },
     placeholderData: keepPreviousData,
-    refetchOnWindowFocus: false,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchInterval: 10000,
   });
   const registrations = data?.items ?? [];
   const meta = data?.meta;
+  const totalRegistrations = data?.stats?.total ?? meta?.total ?? registrations.length;
+  const reviewableCount = data?.stats?.reviewable ?? registrations.filter((registration) => REVIEWABLE.includes(registration.status)).length;
+  const submittedCount = data?.stats?.document_submitted ?? registrations.filter((registration) => registration.status === 'document_submitted').length;
   const jenisCards = Array.from(activePeriods.reduce<Map<string, JenisCard>>((map, period) => {
     const jenis = period.jenis_kkn ?? period.jenis;
     const id = jenis?.id ?? period.jenis_kkn_id;
@@ -130,8 +150,30 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
   const submitReject = () => { const reason = rejectReason.trim(); if (reason.length < 5) return toast.error('Alasan minimal 5 karakter'); if (rejectTarget) rejectMutation.mutate({ id: rejectTarget.id, reason }); };
   const exportFile = async (format: 'xlsx' | 'pdf') => { try { const res = await rawApi.get('/admin/pendaftaran/export', { params: { format, status: status || undefined, periode_id: periodeId || undefined, jenis_kkn_id: jenisKknId || undefined, limit: 50000 }, responseType: 'blob' }); const blob = res.data as Blob; const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'peserta-kkn-lengkap-' + new Date().toISOString().slice(0,10) + '.' + format; a.click(); URL.revokeObjectURL(url); } catch { toast.error('Gagal export ' + format.toUpperCase()); } };
 
-  return <div className="mx-auto max-w-[1440px] space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-    <PageHeader title="Validasi Dokumen KKN" subtitle="Review dokumen mahasiswa, approve atau minta revisi." />
+  return <div className="space-y-6">
+    <div className="rounded-3xl bg-gradient-to-br from-cyan-950 via-cyan-800 to-emerald-700 p-6 text-white shadow-sm">
+      <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+        <div>
+          <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-100">Pendaftaran KKN</p>
+          <h2 className="mt-2 text-3xl font-black tracking-tight">Validasi Dokumen KKN</h2>
+          <p className="mt-2 max-w-2xl text-sm text-cyan-50">Review dokumen mahasiswa, setujui pendaftaran, atau minta revisi dalam satu layar.</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="rounded-2xl bg-white/10 px-4 py-3 ring-1 ring-white/15">
+            <p className="text-[10px] font-black uppercase tracking-wider text-cyan-100">Total Pendaftaran</p>
+            <p className="mt-1 text-2xl font-black">{totalRegistrations.toLocaleString('id-ID')}</p>
+          </div>
+          <div className="rounded-2xl bg-white/10 px-4 py-3 ring-1 ring-white/15">
+            <p className="text-[10px] font-black uppercase tracking-wider text-cyan-100">Perlu Review</p>
+            <p className="mt-1 text-2xl font-black">{reviewableCount.toLocaleString('id-ID')}</p>
+          </div>
+          <div className="rounded-2xl bg-white/10 px-4 py-3 ring-1 ring-white/15">
+            <p className="text-[10px] font-black uppercase tracking-wider text-cyan-100">Dokumen Masuk</p>
+            <p className="mt-1 text-2xl font-black">{submittedCount.toLocaleString('id-ID')}</p>
+          </div>
+        </div>
+      </div>
+    </div>
     {jenisCards.length > 0 && <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -160,6 +202,7 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
       </div>
     </div>}
     <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+      <div className="mb-3 flex items-center gap-2 text-xs font-bold text-slate-500"><Clock size={14} className="text-cyan-600" /> Data auto-refresh tiap 10 detik.</div>
       <div className="flex flex-wrap gap-3">
         <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cari nama/NIM" className="h-10 w-60 rounded-xl border border-slate-200 px-4 text-sm font-bold" />
         <select value={status} onChange={(e) => setStatus(e.target.value)} className="h-10 rounded-xl border border-slate-200 px-4 text-sm font-bold"><option value="">Semua Status</option><option value="document_submitted">Dokumen Masuk</option><option value="pending">Belum Upload</option><option value="document_verified">Dokumen Terverifikasi</option><option value="approved">Disetujui</option><option value="rejected">Ditolak</option></select>

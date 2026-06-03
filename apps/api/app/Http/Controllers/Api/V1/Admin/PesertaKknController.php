@@ -142,7 +142,7 @@ class PesertaKknController extends Controller
         $sort = (string) $request->input('sort', 'created_at');
         $direction = strtolower((string) $request->input('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
 
-        $query = PesertaKkn::with(['mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'mahasiswa.externalUniversity', 'kelompok', 'periode.jenisKkn', 'dokumen', 'collaborationLetter'])
+        $baseQuery = PesertaKkn::query()
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
             ->when($request->input('entry_scheme'), fn ($q, $s) => $q->where('entry_scheme', $s))
             ->when($request->input('origin_type'), fn ($q, $s) => $q->whereHas('mahasiswa', fn ($m) => $m->where('origin_type', $s)))
@@ -163,6 +163,26 @@ class PesertaKknController extends Controller
                 });
             });
 
+        $this->scopeByFaculty($baseQuery);
+
+        $statusCounts = (clone $baseQuery)
+            ->select('status', DB::raw('COUNT(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $stats = [
+            'total' => (int) $statusCounts->sum(),
+            'reviewable' => (int) (($statusCounts['pending'] ?? 0) + ($statusCounts['document_submitted'] ?? 0) + ($statusCounts['document_verified'] ?? 0)),
+            'pending' => (int) ($statusCounts['pending'] ?? 0),
+            'document_submitted' => (int) ($statusCounts['document_submitted'] ?? 0),
+            'document_verified' => (int) ($statusCounts['document_verified'] ?? 0),
+            'approved' => (int) ($statusCounts['approved'] ?? 0),
+            'rejected' => (int) ($statusCounts['rejected'] ?? 0),
+            'by_status' => $statusCounts,
+        ];
+
+        $query = $baseQuery->with(['mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'mahasiswa.externalUniversity', 'kelompok', 'periode.jenisKkn', 'dokumen', 'collaborationLetter']);
+
         if ($sort === 'first_uploaded_at') {
             $query->leftJoinSub(
                 DokumenPesertaKkn::query()
@@ -180,9 +200,11 @@ class PesertaKknController extends Controller
             $query->orderBy('peserta_kkn.created_at', $direction);
         }
 
-        $this->scopeByFaculty($query);
+        $response = $this->successCollection(PesertaKknResource::collection($query->paginate(min((int) $request->input('per_page', 25), 100))));
+        $payload = $response->getData(true);
+        $payload['stats'] = $stats;
 
-        return $this->successCollection(PesertaKknResource::collection($query->paginate(min((int) $request->input('per_page', 25), 100))));
+        return response()->json($payload, $response->getStatusCode());
     }
 
     public function show(PesertaKkn $pesertaKkn): JsonResponse

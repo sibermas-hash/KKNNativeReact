@@ -60,7 +60,7 @@ class ParticipantController extends Controller
                 'origin_type' => 'external',
                 'external_university_id' => $externalUniversityId,
                 'external_nim' => $data['external_nim'],
-                'nim' => 'EXT-'.$externalUniversityId.'-'.$data['external_nim'],
+                'nim' => $data['external_nim'],
                 'nama' => $data['nama'],
                 'nik' => $data['nik'] ?? null,
                 'gender' => $data['gender'] ?? null,

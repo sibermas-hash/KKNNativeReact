@@ -80,11 +80,10 @@ class ExternalParticipantController extends Controller
                 $nim = trim((string) ($row['nim'] ?? $row['nim_asal'] ?? $row['external_nim'] ?? ''));
                 if ($nama === '' || $nim === '') { $skipped++; continue; }
                 if (ExternalStudentProfile::where('batch_id', $batch->id)->where('external_nim', $nim)->exists()) { $skipped++; continue; }
-                $slug = Str::slug($batch->home_university, '');
-                $username = strtolower(substr($slug, 0, 12).'_'.$nim);
+                $username = 'X-'.strtoupper($nim);
                 $base = $username; $n = 1;
-                while (User::where('username', $username)->exists()) { $username = $base.'_'.$n++; }
-                $password = Str::random(10);
+                while (User::where('username', $username)->exists()) { $username = $base.'-'.$n++; }
+                $password = 'KknReguler#2026!';
                 $user = User::create([
                     'username' => $username,
                     'name' => $nama,

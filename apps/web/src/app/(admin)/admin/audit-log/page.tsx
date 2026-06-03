@@ -74,41 +74,41 @@ export default function AuditLogPage(): React.JSX.Element {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Audit Log" subtitle="Riwayat perubahan data — siapa, apa, kapan" />
+      <PageHeader title="Riwayat Aktivitas Admin" subtitle="Pantau perubahan penting: siapa melakukan apa, kapan, dan pada data apa." />
 
       {/* Filters */}
       <div className="rounded-2xl bg-white p-5 ring-1 ring-slate-200 shadow-sm">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
           <label className="block">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase">Severity</span>
+            <span className="text-[11px] font-semibold text-slate-500 uppercase">Tingkat Risiko</span>
             <select
               value={severity}
               onChange={(e) => { setSeverity(e.target.value as Severity); setPage(1); }}
               className="mt-1 w-full h-9 rounded-lg border border-slate-200 px-2 text-sm"
             >
               <option value="">Semua</option>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
+              <option value="low">Rendah</option>
+              <option value="medium">Sedang</option>
+              <option value="high">Tinggi</option>
             </select>
           </label>
 
           <label className="block">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase">Model</span>
+            <span className="text-[11px] font-semibold text-slate-500 uppercase">Jenis Data</span>
             <input
               value={modelType}
               onChange={(e) => { setModelType(e.target.value); setPage(1); }}
-              placeholder="Mahasiswa, NilaiKkn…"
+              placeholder="Contoh: Mahasiswa, NilaiKkn"
               className="mt-1 w-full h-9 rounded-lg border border-slate-200 px-3 text-sm"
             />
           </label>
 
           <label className="block">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase">Aksi</span>
+            <span className="text-[11px] font-semibold text-slate-500 uppercase">Aktivitas</span>
             <input
               value={action}
               onChange={(e) => { setAction(e.target.value); setPage(1); }}
-              placeholder="CREATE, UPDATE, DELETE…"
+              placeholder="Contoh: CREATE, UPDATE, DELETE"
               className="mt-1 w-full h-9 rounded-lg border border-slate-200 px-3 text-sm"
             />
           </label>
@@ -153,7 +153,7 @@ export default function AuditLogPage(): React.JSX.Element {
       ) : logs.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl bg-white p-12 shadow-sm ring-1 ring-slate-200">
           <ClipboardList className="mb-3 h-10 w-10 text-slate-300" />
-          <p className="text-sm text-slate-500">Tidak ada log yang cocok.</p>
+          <p className="text-sm text-slate-500">Tidak ada riwayat yang cocok dengan filter.</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -176,7 +176,7 @@ export default function AuditLogPage(): React.JSX.Element {
                       </span>
                       {log.model_basename && (
                         <span className="text-xs font-semibold text-slate-600">
-                          on {log.model_basename}
+                          pada {log.model_basename}
                           {log.model_id ? ` #${log.model_id}` : ''}
                         </span>
                       )}
@@ -191,7 +191,7 @@ export default function AuditLogPage(): React.JSX.Element {
                       <p className="mt-1.5 text-sm text-slate-700 truncate">{log.description}</p>
                     )}
                     <p className="mt-1 text-xs text-slate-400">
-                      oleh {log.user?.name || '-'} · {formatDateTime(log.created_at)}
+                      Dilakukan oleh {log.user?.name || '-'} · {formatDateTime(log.created_at)}
                     </p>
                   </div>
                 </div>

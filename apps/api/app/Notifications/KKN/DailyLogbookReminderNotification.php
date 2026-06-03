@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Notifications\KKN;
 
+use App\Notifications\Channels\WaGatewayChannel;
+use App\Notifications\Concerns\ResolvesNotificationChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -11,7 +13,7 @@ use Illuminate\Notifications\Notification;
 
 class DailyLogbookReminderNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, ResolvesNotificationChannels;
 
     public function __construct(
         public string $periodName,
@@ -20,7 +22,7 @@ class DailyLogbookReminderNotification extends Notification implements ShouldQue
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return $this->preferredChannels($notifiable, ['mail', 'database', WaGatewayChannel::class]);
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -44,6 +46,16 @@ class DailyLogbookReminderNotification extends Notification implements ShouldQue
         return $mail
             ->action('Isi Logbook Sekarang', url('/student/daily-reports'))
             ->line("Periode: {$this->periodName}");
+    }
+
+    public function toWaGateway(object $notifiable): string
+    {
+        return ($this->missedDays >= 2 ? '⚠️' : '⏰').' *Pengingat Logbook Harian KKN*
+
+Periode: '.$this->periodName.'
+'.($this->missedDays >= 2 ? 'Anda belum mengisi logbook '.$this->missedDays.' hari. Segera isi untuk menghindari sanksi.' : 'Jangan lupa mengisi logbook kegiatan harian KKN hari ini.').'
+
+Buka: '.url('/student/daily-reports');
     }
 
     public function toArray(object $notifiable): array

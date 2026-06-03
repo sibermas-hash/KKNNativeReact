@@ -45,7 +45,7 @@ class DashboardController extends Controller
 
         // Only superadmin sees system-level links
         if ($user->hasRole('superadmin')) {
-            $quickLinks[] = ['label' => 'Pengaturan Sistem', 'route' => 'admin.pengaturan.sistem'];
+            $quickLinks[] = ['label' => 'Pengaturan Sistem', 'route' => 'admin.pengguna'];
             $quickLinks[] = ['label' => 'Monitoring', 'route' => 'admin.monitoring'];
             $quickLinks[] = ['label' => 'Database Sync', 'route' => 'admin.database-sync'];
             $quickLinks[] = ['label' => 'Pengguna', 'route' => 'admin.pengguna'];

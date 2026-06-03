@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Models\KKN\NilaiKkn;
+use App\Notifications\Channels\WaGatewayChannel;
+use App\Notifications\Concerns\ResolvesNotificationChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -12,7 +14,7 @@ use Illuminate\Notifications\Notification;
 
 class ScorePublished extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, ResolvesNotificationChannels;
 
     public function __construct(
         public NilaiKkn $score
@@ -23,7 +25,7 @@ class ScorePublished extends Notification implements ShouldQueue
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'mail'];
+        return $this->preferredChannels($notifiable, ['database', 'mail', WaGatewayChannel::class]);
     }
 
     /**
@@ -42,6 +44,15 @@ class ScorePublished extends Notification implements ShouldQueue
             ->action('Lihat Nilai', url('/student/evaluations'))
             ->line('Terima kasih atas partisipasi Anda dalam program KKN.')
             ->salutation("Wassalamu'alaikum, Tim LPPM UIN SAIZU");
+    }
+
+    public function toWaGateway(object $notifiable): string
+    {
+        return '🎓 *Nilai KKN Dirilis*
+
+Nilai akhir: '.($this->score->total_score ?? 0).' ('.($this->score->letter_grade ?? '-').')
+
+Buka: '.url('/student/evaluations');
     }
 
     /**

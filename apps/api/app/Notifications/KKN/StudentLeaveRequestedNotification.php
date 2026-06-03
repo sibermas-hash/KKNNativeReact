@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Notifications\KKN;
 
 use App\Models\KKN\IzinMeninggalkan;
+use App\Notifications\Channels\WaGatewayChannel;
+use App\Notifications\Concerns\ResolvesNotificationChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -12,7 +14,7 @@ use Illuminate\Notifications\Notification;
 
 class StudentLeaveRequestedNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, ResolvesNotificationChannels;
 
     public function __construct(
         public IzinMeninggalkan $izin
@@ -20,7 +22,7 @@ class StudentLeaveRequestedNotification extends Notification implements ShouldQu
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return $this->preferredChannels($notifiable, ['mail', 'database', WaGatewayChannel::class]);
     }
 
     public function toMail(object $notifiable): MailMessage

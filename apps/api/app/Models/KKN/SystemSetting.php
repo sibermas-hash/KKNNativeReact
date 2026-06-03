@@ -48,6 +48,7 @@ class SystemSetting extends Model
         'ai_fallback_key',
         'ai_tertiary_key',
         'storage_secret',
+        'wa_gateway_api_key',
     ];
 
     /**

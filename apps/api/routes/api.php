@@ -82,6 +82,10 @@ Route::prefix('v1')->group(function () {
             ->middleware('throttle:auth_challenge')
             ->name('api.v1.auth.login');
 
+        Route::get('/google/redirect', [AuthController::class, 'googleRedirect'])->middleware('throttle:auth_challenge')->name('api.v1.auth.google.redirect');
+        Route::get('/google/callback', [AuthController::class, 'googleCallback'])->middleware('throttle:auth_challenge')->name('api.v1.auth.google.callback');
+        Route::post('/google/otp-verify', [AuthController::class, 'googleOtpVerify'])->middleware('throttle:auth_challenge')->name('api.v1.auth.google.otp');
+
         Route::post('/2fa-verify', [AuthController::class, 'twoFactorVerify'])
             ->middleware('throttle:auth_challenge')
             ->name('api.v1.auth.2fa-verify');

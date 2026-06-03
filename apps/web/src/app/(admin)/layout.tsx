@@ -85,29 +85,36 @@ const getNavGroups = (pathname: string, roles: string[]) => {
   ];
 
   const systemGroups = [
-    { title: 'INTELIJEN & SYNC', items: [
-      { label: 'Intelijen Sistem', href: '/admin/audit-log', icon: Terminal },
-      { label: 'Log Aktivitas User', href: '/admin/activity-log', icon: Activity },
-      { label: 'AI Playground', href: '/admin/playground', icon: Sparkles },
-      { label: 'Sinkron SIAKAD', href: '/admin/sinkron-siakad', icon: Play },
-      { label: 'Log Sinkronisasi', href: '/admin/database-sync', icon: RefreshCw },
-      { label: 'Monitoring Sistem', href: '/admin/monitoring', icon: Activity },
+    { title: 'KONFIGURASI SISTEM', items: [
+      { label: 'Pengaturan Global', href: '/admin/pengaturan/sistem', icon: Cpu },
+      { label: 'Pengaturan Notifikasi', href: '/admin/pengaturan/notifikasi', icon: Bell },
+      { label: 'Template Sertifikat', href: '/admin/pengaturan/sertifikat', icon: Award },
+      { label: 'Skema Penilaian', href: '/admin/pengaturan/penilaian', icon: Settings },
     ]},
-    { title: 'KONFIGURASI GLOBAL', items: [
+    { title: 'MASTER DATA', items: [
+      { label: 'Fakultas & Prodi', href: '/admin/fakultas', icon: Building2 },
+    ]},
+    { title: 'PENGGUNA & MODERASI', items: [
       { label: 'Manajemen Pengguna', href: '/admin/pengguna', icon: UserCog },
       { label: 'Perubahan Profil', href: '/admin/profile-change-requests', icon: UserCheck },
       { label: 'Moderasi Foto', href: '/admin/avatar-moderation', icon: Camera },
-      { label: 'Fakultas & Prodi', href: '/admin/fakultas', icon: Building2 },
-      { label: 'Pengaturan Global', href: '/admin/pengaturan/sistem', icon: Cpu },
-      { label: 'Pengaturan Notifikasi', href: '/admin/pengaturan/notifikasi', icon: Bell },
-      { label: 'Skema Penilaian', href: '/admin/pengaturan/penilaian', icon: Settings },
-      { label: 'Template Sertifikat', href: '/admin/pengaturan/sertifikat', icon: Award },
+    ]},
+    { title: 'INTEGRASI & SINKRONISASI', items: [
+      { label: 'Sinkron SIAKAD', href: '/admin/sinkron-siakad', icon: Play },
+      { label: 'Log Sinkronisasi', href: '/admin/database-sync', icon: RefreshCw },
+      { label: 'AI Playground', href: '/admin/playground', icon: Sparkles },
+    ]},
+    { title: 'KEAMANAN & MONITORING', items: [
+      { label: 'Riwayat Aktivitas Admin', href: '/admin/audit-log', icon: Terminal },
+      { label: 'Log Aktivitas User', href: '/admin/activity-log', icon: Activity },
+      { label: 'Monitoring Sistem', href: '/admin/monitoring', icon: Activity },
     ]},
   ];
 
-  if (isSystem) return isSuperadmin ? systemGroups : [];
-  if (isBlog) return contentGroups;
-  return operationalGroups;
+  // Stable sidebar: do not swap menus per route. Keep one consistent admin navigation.
+  return isSuperadmin
+    ? [...operationalGroups, ...contentGroups, ...systemGroups]
+    : [...operationalGroups, ...contentGroups];
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }): React.JSX.Element {

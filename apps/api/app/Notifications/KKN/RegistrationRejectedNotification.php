@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Notifications\KKN;
 
 use App\Models\KKN\PesertaKkn;
+use App\Notifications\Channels\WaGatewayChannel;
+use App\Notifications\Concerns\ResolvesNotificationChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -12,7 +14,7 @@ use Illuminate\Notifications\Notification;
 
 class RegistrationRejectedNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, ResolvesNotificationChannels;
 
     public function __construct(
         public PesertaKkn $registration,
@@ -22,7 +24,7 @@ class RegistrationRejectedNotification extends Notification implements ShouldQue
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return $this->preferredChannels($notifiable, ['mail', 'database', WaGatewayChannel::class]);
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -36,6 +38,17 @@ class RegistrationRejectedNotification extends Notification implements ShouldQue
             ->line('Anda dapat memperbaiki data atau dokumen yang diminta, lalu mengajukan ulang melalui portal SIBERMAS.')
             ->action('Perbaiki & Ajukan Ulang', url('/student/registration'))
             ->line('Jika ada pertanyaan, silakan hubungi kantor LPPM.');
+    }
+
+    public function toWaGateway(object $notifiable): string
+    {
+        return '❌ *Pendaftaran KKN Ditolak*
+
+Periode: '.$this->periodName.'
+Alasan: '.$this->reason.'
+
+Silakan perbaiki data/dokumen lalu ajukan ulang.
+Buka: '.url('/student/registration');
     }
 
     public function toArray(object $notifiable): array

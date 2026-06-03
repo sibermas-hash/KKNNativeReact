@@ -152,7 +152,7 @@ class User extends Authenticatable
         return match ($channel) {
             'database' => $prefs['in_app'] ?? true,
             'mail', 'email' => $prefs['email'] ?? true,
-            'fcm', 'push' => $prefs['push'] ?? true,
+            'fcm', 'push', App\Notifications\Channels\FcmChannel::class => $prefs['push'] ?? true,
             'wa', 'whatsapp' => $prefs['wa'] ?? true,
             default => true,
         };

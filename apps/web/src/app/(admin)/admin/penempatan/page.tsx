@@ -15,7 +15,7 @@ const MANUAL = [
 
 export default function PenempatanKknPage(): React.JSX.Element {
   const params = useSearchParams();
-  const mode = params.get("mode") ?? "otomatis";
+  const mode = params?.get("mode") ?? "otomatis";
   const isManual = mode === "manual";
 
   return (

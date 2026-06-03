@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Notifications\KKN;
 
+use App\Notifications\Channels\WaGatewayChannel;
+use App\Notifications\Concerns\ResolvesNotificationChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -11,7 +13,7 @@ use Illuminate\Notifications\Notification;
 
 class GroupPlacementConfirmedNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, ResolvesNotificationChannels;
 
     public function __construct(
         public string $groupName,
@@ -21,7 +23,7 @@ class GroupPlacementConfirmedNotification extends Notification implements Should
 
     public function via(object $notifiable): array
     {
-        return ['mail', 'database'];
+        return $this->preferredChannels($notifiable, ['mail', 'database', WaGatewayChannel::class]);
     }
 
     public function toMail(object $notifiable): MailMessage
@@ -39,6 +41,17 @@ class GroupPlacementConfirmedNotification extends Notification implements Should
             ->line('Harap mempersiapkan diri dan memantau informasi selanjutnya melalui portal.')
             ->action('Lihat Kelompok Saya', url('/student/dashboard'))
             ->line('Terima kasih dan semoga sukses melaksanakan KKN.');
+    }
+
+    public function toWaGateway(object $notifiable): string
+    {
+        return '📍 *Penempatan Kelompok KKN Dikonfirmasi*
+
+Kelompok: '.$this->groupName.'
+Periode: '.$this->periodName.($this->locationName ? '
+Lokasi: '.$this->locationName : '').'
+
+Buka: '.url('/student/dashboard');
     }
 
     public function toArray(object $notifiable): array

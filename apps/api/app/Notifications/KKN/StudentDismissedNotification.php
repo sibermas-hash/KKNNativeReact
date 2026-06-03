@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Notifications\KKN;
 
+use App\Notifications\Channels\WaGatewayChannel;
+use App\Notifications\Concerns\ResolvesNotificationChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -11,7 +13,7 @@ use Illuminate\Notifications\Notification;
 
 class StudentDismissedNotification extends Notification implements ShouldQueue
 {
-    use Queueable;
+    use Queueable, ResolvesNotificationChannels;
 
     protected $mahasiswa;
 
@@ -25,7 +27,7 @@ class StudentDismissedNotification extends Notification implements ShouldQueue
 
     public function via($notifiable): array
     {
-        return ['mail', 'database'];
+        return $this->preferredChannels($notifiable, ['mail', 'database', WaGatewayChannel::class]);
     }
 
     public function toMail($notifiable): MailMessage

@@ -54,6 +54,7 @@ use App\Http\Controllers\Api\V1\Admin\SiakadSyncAdminController;
 use App\Http\Controllers\Api\V1\Admin\StudentSyncController;
 use App\Http\Controllers\Api\V1\Admin\StudentTransferController;
 use App\Http\Controllers\Api\V1\Admin\SystemSettingController;
+use App\Http\Controllers\Api\V1\Admin\WaGatewayAdminController;
 use App\Http\Controllers\Api\V1\Admin\TahunAkademikController;
 use App\Http\Controllers\Api\V1\Admin\UserActivityController;
 use App\Http\Controllers\Api\V1\Admin\UserController;
@@ -359,8 +360,9 @@ Route::prefix('admin')
             Route::post('/pengaturan/sistem/ai/test', [SystemSettingController::class, 'testAiConnection']);
             Route::patch('/pengaturan/sistem/ai/update', [SystemSettingController::class, 'updateAiSettings']);
             Route::delete('/pengaturan/sistem/ai/key', [SystemSettingController::class, 'removeAiKey']);
-            Route::post('/pengaturan/sistem/reset-pendaftaran', [SystemSettingController::class, 'resetPendaftaran'])
-                ->middleware('throttle:2,60');
+            Route::get('/pengaturan/notifikasi/wa', [WaGatewayAdminController::class, 'show']);
+            Route::patch('/pengaturan/notifikasi/wa', [WaGatewayAdminController::class, 'update']);
+            Route::post('/pengaturan/notifikasi/wa/test', [WaGatewayAdminController::class, 'test'])->middleware('throttle:3,1');
         });
         Route::middleware('role:superadmin')->group(function () {
             Route::get('/audit-log', [LogAuditController::class, 'index']);

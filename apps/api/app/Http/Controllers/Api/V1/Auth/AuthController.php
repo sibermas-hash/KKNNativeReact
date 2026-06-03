@@ -18,9 +18,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\Validation\ValidationException;
 
@@ -165,6 +169,61 @@ class AuthController extends Controller
         return $this->success([
             'user' => $this->buildUserData($user),
         ], 'Login berhasil.')
+            ->withCookie(cookie('sibermas_token', $token, $expiry / 60, '/', null, $isSecure, true, false, 'Strict'));
+    }
+
+
+    public function googleRedirect(Request $request): RedirectResponse|JsonResponse
+    {
+        $clientId = (string) env('GOOGLE_CLIENT_ID');
+        $redirectUri = (string) env('GOOGLE_REDIRECT_URI', env('APP_URL').'/api/v1/auth/google/callback');
+        if ($clientId === '' || $redirectUri === '') return $this->error('GOOGLE_NOT_CONFIGURED', 'Google Login belum dikonfigurasi.', 503);
+        $state = Str::random(40);
+        Cache::put('google_oauth_state:'.$state, true, now()->addMinutes(10));
+        $query = http_build_query(['client_id' => $clientId, 'redirect_uri' => $redirectUri, 'response_type' => 'code', 'scope' => 'openid email profile', 'state' => $state, 'prompt' => 'select_account']);
+        return redirect()->away('https://accounts.google.com/o/oauth2/v2/auth?'.$query);
+    }
+
+    public function googleCallback(Request $request): RedirectResponse
+    {
+        $frontend = rtrim((string) env('FRONTEND_URL', 'https://sibermas.uinsaizu.ac.id'), '/');
+        $state = (string) $request->query('state', '');
+        $code = (string) $request->query('code', '');
+        if ($state === '' || ! Cache::pull('google_oauth_state:'.$state) || $code === '') return redirect()->away($frontend.'/login?google_error=invalid_state');
+        try {
+            $token = Http::asForm()->post('https://oauth2.googleapis.com/token', ['client_id' => env('GOOGLE_CLIENT_ID'), 'client_secret' => env('GOOGLE_CLIENT_SECRET'), 'redirect_uri' => env('GOOGLE_REDIRECT_URI', env('APP_URL').'/api/v1/auth/google/callback'), 'grant_type' => 'authorization_code', 'code' => $code])->throw()->json();
+            $profile = Http::withToken($token['access_token'] ?? '')->get('https://www.googleapis.com/oauth2/v3/userinfo')->throw()->json();
+            $email = strtolower((string) ($profile['email'] ?? ''));
+            if ($email === '' || ! (bool) ($profile['email_verified'] ?? false)) return redirect()->away($frontend.'/login?google_error=failed');
+            $user = User::whereRaw('LOWER(email) = ?', [$email])->where('is_active', true)->first();
+            if (! $user) { ActivityLogger::log('login_google', 'failed', null, ['email' => $email, 'reason' => 'not_registered']); return redirect()->away($frontend.'/login?google_error=failed'); }
+            $otp = (string) random_int(100000, 999999);
+            $challenge = Str::random(48);
+            Cache::put('google_login_challenge:'.$challenge, ['user_id' => $user->id, 'otp_hash' => Hash::make($otp), 'attempts' => 0, 'expires_at' => now()->addMinutes(5)->timestamp], now()->addMinutes(5));
+            Mail::raw("Kode OTP login Google SIBERMAS: {$otp}
+Berlaku 5 menit. Jangan bagikan kode ini.", fn ($m) => $m->to($user->email)->subject('OTP Login Google SIBERMAS'));
+            return redirect()->away($frontend.'/login/google-otp?challenge='.$challenge);
+        } catch (\Throwable $e) { report($e); return redirect()->away($frontend.'/login?google_error=server'); }
+    }
+
+    public function googleOtpVerify(Request $request): JsonResponse
+    {
+        $data = $request->validate(['challenge_token' => ['required', 'string'], 'code' => ['required', 'digits:6']]);
+        $key = 'google_login_challenge:'.$data['challenge_token'];
+        $challenge = Cache::get($key);
+        if (! is_array($challenge)) return $this->error('OTP_EXPIRED', 'Kode OTP kedaluwarsa.', 422);
+        if (($challenge['attempts'] ?? 0) >= 5) { Cache::forget($key); return $this->error('OTP_LOCKED', 'Terlalu banyak percobaan OTP.', 423); }
+        if (! Hash::check($data['code'], (string) $challenge['otp_hash'])) { $challenge['attempts'] = ((int) ($challenge['attempts'] ?? 0)) + 1; $ttl = max(1, (int) (($challenge['expires_at'] ?? now()->timestamp) - now()->timestamp)); Cache::put($key, $challenge, now()->addSeconds($ttl)); return $this->error('OTP_INVALID', 'Kode OTP salah.', 422); }
+        Cache::forget($key);
+        $user = User::find((int) $challenge['user_id']);
+        if (! $user || ! $user->is_active) return $this->error('USER_INACTIVE', 'Akun tidak aktif.', 403);
+        Auth::login($user, true);
+        if ($request->hasSession()) $request->session()->regenerate();
+        $token = $user->createToken('web')->plainTextToken;
+        $isSecure = app()->environment('production') ? true : $request->secure();
+        $expiry = 60 * 60 * 24 * 7;
+        ActivityLogger::log('login_google', 'success', $user->id);
+        return $this->success(['user' => $this->buildUserData($user)], 'Login Google berhasil.')
             ->withCookie(cookie('sibermas_token', $token, $expiry / 60, '/', null, $isSecure, true, false, 'Strict'));
     }
 

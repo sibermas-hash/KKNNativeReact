@@ -6,13 +6,15 @@ namespace App\Notifications\KKN;
 
 use App\Models\KKN\InterviewSchedule;
 use App\Notifications\Channels\FcmChannel;
+use App\Notifications\Channels\WaGatewayChannel;
+use App\Notifications\Concerns\ResolvesNotificationChannels;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class InterviewScheduledNotification extends Notification
 {
-    use Queueable;
+    use Queueable, ResolvesNotificationChannels;
 
     public function __construct(
         private readonly InterviewSchedule $schedule,
@@ -20,7 +22,7 @@ class InterviewScheduledNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database', 'mail', FcmChannel::class];
+        return $this->preferredChannels($notifiable, ['database', 'mail', FcmChannel::class, WaGatewayChannel::class]);
     }
 
     public function toDatabase(object $notifiable): array

@@ -20,7 +20,7 @@ const ITEMS = [
   { label: 'Rekapitulasi',      href: '/admin/rekapitulasi',       icon: BarChart3,       group: 'Halaman' },
   { label: 'Jenis KKN',         href: '/admin/jenis-kkn',          icon: GraduationCap,   group: 'Master Data' },
   { label: 'Periode',           href: '/admin/periode',            icon: LayoutDashboard, group: 'Master Data' },
-  { label: 'Pengaturan Sistem', href: '/admin/pengaturan/sistem',  icon: Settings,        group: 'Sistem' },
+  { label: 'Pusat Administrasi Sistem', href: '/admin/pengaturan/sistem',  icon: Settings,        group: 'Sistem' },
   { label: 'Manajemen Pengguna',href: '/admin/pengguna',           icon: Users,           group: 'Sistem', superadminOnly: true },
 ];
 

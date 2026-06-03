@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { rawApi } from '@/lib/api';
 import { toast } from 'sonner';
@@ -143,6 +143,14 @@ export default function AdminKelompokPage(): React.JSX.Element {
 
   const regencies = useMemo(() => Object.keys(stats.byRegency).sort(), [stats.byRegency]);
 
+  // auto-select first matching manual period from jenis_kkn URL (e.g. nusantara)
+  useEffect(() => {
+    if (!manualMode || !jenisKey || periodeId || periodItems.length === 0) return;
+    const first = periodItems[0];
+    setPeriodeId(String(first.id));
+    setCreateForm((prev) => ({ ...prev, periode_id: String(first.id) }));
+  }, [manualMode, jenisKey, periodeId, periodItems]);
+
   const items = listQ.data?.data ?? [];
   const meta = listQ.data?.meta;
 
@@ -273,7 +281,7 @@ export default function AdminKelompokPage(): React.JSX.Element {
 
       {manualMode && (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          <b>Mode manual non-Reguler.</b> Filter/kelola kelompok untuk jenis KKN ini di sistem Sibermas. Buat kelompok via Import Excel atau tombol tambah manual akan disiapkan di halaman ini.
+          <b>Mode manual non-Reguler.</b> Terfilter otomatis sesuai jenis KKN dari tombol sebelumnya. Filter/kelola kelompok untuk jenis KKN ini di sistem Sibermas. Buat kelompok via Import Excel atau tombol tambah manual akan disiapkan di halaman ini.
           <div className="mt-3 flex flex-wrap gap-2">
             <button onClick={() => fileRef.current?.click()} className="rounded-lg bg-amber-700 px-3 py-2 text-xs font-bold text-white">Import Kelompok Manual</button>
             <Link href={`/admin/dosen/penugasan?jenis_kkn=${jenisKey}`} className="rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-bold text-amber-800">Lanjut Assign DPL</Link>

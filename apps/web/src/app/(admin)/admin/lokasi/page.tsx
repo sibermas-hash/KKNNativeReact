@@ -340,7 +340,14 @@ export default function AdminLokasiPage(): React.JSX.Element {
         <StatCard label="Kurang Kelompok" value={kurangKelompok} color={kurangKelompok > 0 ? 'rose' : 'emerald'} />
         <StatCard label="Mahasiswa Belum Tertampung" value={kurangMahasiswa} color={kurangMahasiswa > 0 ? 'rose' : 'emerald'} />
       </div>
-      <p className="text-xs text-slate-500">Realtime tiap 10 detik. Acuan: {totalPesertaRealtime.toLocaleString('id-ID')} peserta final · kebutuhan kelompok @15 mahasiswa/kelompok: {kebutuhanKelompok.toLocaleString('id-ID')}.</p>
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-white px-4 py-3 text-sm shadow-sm">
+        <p className="text-xs text-slate-500">Realtime tiap 10 detik. Acuan: {totalPesertaRealtime.toLocaleString('id-ID')} peserta final · kebutuhan kelompok @15 mahasiswa/kelompok: {kebutuhanKelompok.toLocaleString('id-ID')}.</p>
+        {selected.size > 0 && kurangKelompok === 0 && kurangMahasiswa === 0 ? (
+          <a href="/admin/plotting-otomatis?jenis_kkn=reguler" className="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-black text-white hover:bg-emerald-700">Lanjut Plotting Otomatis →</a>
+        ) : (
+          <span className="rounded-lg bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700">Lengkapi checklist sampai kekurangan = 0 untuk lanjut plotting.</span>
+        )}
+      </div>
 
       {/* Per-regency cards */}
       {stats.data && (

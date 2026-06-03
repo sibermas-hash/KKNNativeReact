@@ -73,6 +73,10 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
       return { data: body } as ApiRes;
     },
     placeholderData: keepPreviousData,
+    staleTime: 0,
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
+    refetchInterval: 10000,
   });
 
   const payload = (raw ?? {}) as Record<string, unknown>;

@@ -7,7 +7,7 @@ import { rawApi } from '@/lib/api';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { FileX, Plus, X, Shield } from 'lucide-react';
-import { PageHeader, ConfirmDialog, EmptyState } from '@/components/ui/shared';
+import { ConfirmDialog, EmptyState } from '@/components/ui/shared';
 
 const REQUIREMENT_OPTIONS = [
   { value: 'min_sks', label: 'Minimal SKS' },
@@ -88,11 +88,17 @@ export default function DispensasiPage(): React.JSX.Element {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <PageHeader title="Dispensasi KKN" subtitle="Bebaskan mahasiswa dari persyaratan tertentu." />
-        <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-cyan-700">
-          <Plus size={16} /> Tambah
-        </button>
+      <div className="rounded-3xl bg-gradient-to-br from-cyan-950 via-cyan-800 to-emerald-700 p-6 text-white shadow-sm">
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-[11px] font-black uppercase tracking-[0.22em] text-cyan-100">Dispensasi KKN</p>
+            <h2 className="mt-2 text-3xl font-black tracking-tight">{dispensasi.length.toLocaleString('id-ID')} Dispensasi Aktif</h2>
+            <p className="mt-2 max-w-2xl text-sm text-cyan-50">Bebaskan mahasiswa dari persyaratan tertentu dan pantau riwayat dispensasi dalam satu layar.</p>
+          </div>
+          <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-2 rounded-xl bg-white/15 px-4 py-2.5 text-sm font-black text-white ring-1 ring-white/25 hover:bg-white/20">
+            <Plus size={16} /> Tambah
+          </button>
+        </div>
       </div>
 
       <ConfirmDialog

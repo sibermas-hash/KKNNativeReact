@@ -278,7 +278,7 @@ export default function AdminLokasiPage(): React.JSX.Element {
     setPage(1);
   };
 
-  const exportCsv = () => {
+  const getExportRows = () => {
     const source = stats.data?.all ?? [];
     const all = filterRegency ? source.filter((l) => l.regency_name === filterRegency) : source;
     if (!all.length) {
@@ -298,16 +298,24 @@ export default function AdminLokasiPage(): React.JSX.Element {
       l.capacity ?? '',
       l.faculty?.nama ?? l.faculty?.name ?? '',
     ]);
-    const csv = [headers.join(','), ...rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','))].join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    const suffix = filterRegency ? filterRegency.toLowerCase().replace(/\s+/g, '-') : 'semua-kabupaten';
-    a.download = `lokasi-kkn-reguler-${suffix}-${Date.now()}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success(`${all.length} lokasi diexport${filterRegency ? ' untuk ' + filterRegency : ''}`);
+    return { headers, rows, count: all.length, suffix: filterRegency ? filterRegency.toLowerCase().replace(/\s+/g, '-') : 'semua-kabupaten' };
+  };
+
+  const exportExcel = () => {
+    const data = getExportRows();
+    if (!data) { toast.error('Belum ada lokasi'); return; }
+    const table = '<table><thead><tr>' + data.headers.map((h) => '<th>' + h + '</th>').join('') + '</tr></thead><tbody>' + data.rows.map((r) => '<tr>' + r.map((v) => '<td>' + String(v).replace(/[<&>]/g, (c) => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c] ?? c)) + '</td>').join('') + '</tr>').join('') + '</tbody></table>';
+    const blob = new Blob(['\ufeff' + table], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `lokasi-kkn-reguler-${data.suffix}-${Date.now()}.xls`; a.click(); URL.revokeObjectURL(url);
+    toast.success(`${data.count} lokasi diexport Excel${filterRegency ? ' untuk ' + filterRegency : ''}`);
+  };
+
+  const exportPdf = () => {
+    const data = getExportRows();
+    if (!data) { toast.error('Belum ada lokasi'); return; }
+    const title = `Lokasi KKN Reguler - ${filterRegency || 'Semua Kabupaten'}`;
+    const table = '<html><head><title>'+title+'</title><style>body{font-family:Arial,sans-serif;font-size:11px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:4px}th{background:#f1f5f9}h1{font-size:16px}</style></head><body><h1>'+title+'</h1><table><thead><tr>' + data.headers.map((h) => '<th>' + h + '</th>').join('') + '</tr></thead><tbody>' + data.rows.map((r) => '<tr>' + r.map((v) => '<td>' + String(v).replace(/[<&>]/g, (c) => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c] ?? c)) + '</td>').join('') + '</tr>').join('') + '</tbody></table></body></html>';
+    const w = window.open('', '_blank'); if (!w) { toast.error('Popup diblokir browser'); return; } w.document.write(table); w.document.close(); w.focus(); w.print();
   };
 
   return (
@@ -321,11 +329,18 @@ export default function AdminLokasiPage(): React.JSX.Element {
         </div>
         <div className="flex gap-2">
           <button
-            onClick={exportCsv}
+            onClick={exportPdf}
             disabled={!stats.data}
             className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm font-bold text-slate-700 disabled:opacity-50 flex items-center gap-2"
           >
-            <Download className="h-4 w-4" /> Export CSV {filterRegency ? filterRegency : 'Semua Kabupaten'}
+            <Download className="h-4 w-4" /> Export PDF
+          </button>
+          <button
+            onClick={exportExcel}
+            disabled={!stats.data}
+            className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm font-bold text-slate-700 disabled:opacity-50 flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" /> Export Excel {filterRegency ? filterRegency : 'Semua Kabupaten'}
           </button>
           <button onClick={openCreate} className="h-10 rounded-lg bg-teal-600 px-4 text-sm font-bold text-white flex items-center gap-2">
             <Plus className="h-4 w-4" /> Tambah Lokasi

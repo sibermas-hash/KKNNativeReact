@@ -57,11 +57,6 @@ class EnsureProfileCompleted
     {
         $user->loadMissing(['mahasiswa', 'dosen']);
 
-        // Dosen/DPL: bypass profile completeness — data kepegawaian diisi bertahap
-        if ($user->hasRole('dosen') || $user->hasRole('dpl')) {
-            return true;
-        }
-
         // Mahasiswa: full address + biodata required
         $baseComplete = filled($user->avatar)
             && filled($user->phone)

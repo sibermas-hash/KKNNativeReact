@@ -334,11 +334,6 @@ class AuthController extends Controller
     {
         $user->loadMissing(['mahasiswa', 'dosen']);
 
-        // Dosen/DPL: always considered complete — data kepegawaian diisi bertahap
-        if ($user->hasRole('dosen') || $user->hasRole('dpl')) {
-            return true;
-        }
-
         // Mahasiswa: core address + biodata required
         // Note: address_lat, address_lng, address_verified_at, and address_postal_code
         // are auto-filled by map picker / geocoding. If the map fails to load on

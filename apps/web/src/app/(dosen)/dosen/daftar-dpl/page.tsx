@@ -11,7 +11,6 @@ export default function DaftarDplPage(): React.JSX.Element {
   const qc = useQueryClient();
   const [formData, setFormData] = useState({
     periode_id: '',
-    max_kelompok: '',
     notes: '',
   });
 
@@ -29,7 +28,7 @@ export default function DaftarDplPage(): React.JSX.Element {
     mutationFn: (data: Record<string, unknown>) => dosenApi.daftarDpl(data),
     onSuccess: () => {
       toast.success('Pendaftaran DPL berhasil dikirim');
-      setFormData({ periode_id: '', max_kelompok: '', notes: '' });
+      setFormData({ periode_id: '', notes: '' });
       qc.invalidateQueries({ queryKey: ['dosen', 'dashboard'] });
     },
     onError: (err: unknown) => {
@@ -40,13 +39,12 @@ export default function DaftarDplPage(): React.JSX.Element {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.periode_id || !formData.max_kelompok) {
-      toast.error('Periode dan jumlah kelompok wajib diisi');
+    if (!formData.periode_id) {
+      toast.error('Periode wajib diisi');
       return;
     }
     submitMut.mutate({
       periode_id: parseInt(formData.periode_id),
-      max_kelompok_kkn: parseInt(formData.max_kelompok),
       notes: formData.notes || null,
     });
   };
@@ -88,23 +86,6 @@ export default function DaftarDplPage(): React.JSX.Element {
           </select>
           {periodsLoading && <p className="text-xs text-slate-400 mt-1">Memuat periode...</p>}
           <p className="text-xs text-slate-500 mt-1">Pilih periode KKN yang akan Anda bimbing</p>
-        </div>
-
-        <div>
-          <label className="block text-xs font-black text-slate-700 uppercase tracking-wider mb-2">
-            Maksimal Kelompok <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="number"
-            min="1"
-            max="10"
-            value={formData.max_kelompok}
-            onChange={(e) => setFormData({ ...formData, max_kelompok: e.target.value })}
-            className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
-            placeholder="Contoh: 3"
-            required
-          />
-          <p className="text-xs text-slate-500 mt-1">Jumlah maksimal kelompok yang dapat Anda bimbing (1-10)</p>
         </div>
 
         <div>

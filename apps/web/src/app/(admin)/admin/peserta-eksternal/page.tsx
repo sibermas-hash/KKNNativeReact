@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { rawApi } from '@/lib/api';
-import { Users } from 'lucide-react';
+import { Download, Users } from 'lucide-react';
 
 type Batch = { id:number; home_university:string; program_name?:string; target_regency?:string|null; students_count?:number; periode?:{ name?:string; periode?:number } };
 type Row = { id:number; external_nim:string; home_university:string; external_faculty?:string|null; external_study_program?:string|null; mahasiswa?:{ nama?:string; nim?:string; peserta?:Array<{ status:string; kelompok?:{ nama_kelompok?:string; lokasi?:{ regency_name?:string } } }> } };
@@ -50,7 +50,7 @@ export default function PesertaEksternalPage(): React.JSX.Element {
     </section>
 
     <section className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
-      <div className="flex items-center gap-2 border-b p-4 font-bold text-slate-800"><Users size={18}/> Daftar Peserta Eksternal</div>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b p-4"><div className="flex items-center gap-2 font-bold text-slate-800"><Users size={18}/> Daftar Peserta Eksternal</div><a className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-3 py-2 text-xs font-black text-white hover:bg-slate-800" href="/api/v1/admin/peserta-eksternal/export"><Download size={14}/> Export CSV</a></div>
       <div className="overflow-x-auto"><table className="min-w-full text-sm"><thead className="bg-slate-50 text-left text-xs uppercase text-slate-500"><tr><th className="w-14 px-4 py-3 text-center">No</th><th className="px-4 py-3">Nama</th><th className="px-4 py-3">NIM Asal</th><th className="px-4 py-3">Kampus</th><th className="px-4 py-3">Fak/Prodi Asal</th><th className="px-4 py-3">Kelompok</th></tr></thead><tbody>{rows.length === 0 ? <tr><td className="px-4 py-6 text-center text-slate-500" colSpan={6}>Belum ada peserta eksternal.</td></tr> : rows.map((r, idx)=>{const p=r.mahasiswa?.peserta?.[0]; return <tr key={r.id} className="border-t"><td className="px-4 py-3 text-center text-slate-500">{idx + 1}</td><td className="px-4 py-3 font-medium">{r.mahasiswa?.nama ?? '-'}</td><td className="px-4 py-3">{r.external_nim}</td><td className="px-4 py-3">{r.home_university}</td><td className="px-4 py-3">{r.external_faculty ?? '-'} / {r.external_study_program ?? '-'}</td><td className="px-4 py-3">{p?.kelompok?.nama_kelompok ?? 'Belum ditempatkan'} {p?.kelompok?.lokasi?.regency_name ? `(${p.kelompok.lokasi.regency_name})` : ''}</td></tr>})}</tbody></table></div>
     </section>
   </main>;

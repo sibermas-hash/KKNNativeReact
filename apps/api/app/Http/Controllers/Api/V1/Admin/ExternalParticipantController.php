@@ -154,6 +154,43 @@ class ExternalParticipantController extends Controller
         fclose($fh);
         return $rows;
     }
+    public function export(Request $request)
+    {
+        $rows = ExternalStudentProfile::query()
+            ->with(['batch.periode', 'mahasiswa.user', 'mahasiswa.peserta.kelompok.lokasi'])
+            ->when($request->filled('batch_id'), fn ($q) => $q->where('batch_id', $request->integer('batch_id')))
+            ->oldest('id')
+            ->get();
+
+        $header = ['no','nama','username','nim_asal','kampus_asal','fakultas_asal','prodi_asal','periode','target_kabupaten','kelompok','lokasi_kelompok','status_peserta','no_hp','email'];
+        $lines = [$header];
+        foreach ($rows as $i => $row) {
+            $peserta = $row->mahasiswa?->peserta?->first();
+            $kelompok = $peserta?->kelompok;
+            $lines[] = [
+                $i + 1,
+                $row->mahasiswa?->nama ?? '',
+                $row->mahasiswa?->user?->username ?? $row->mahasiswa?->nim ?? '',
+                $row->external_nim,
+                $row->home_university,
+                $row->external_faculty ?? '',
+                $row->external_study_program ?? '',
+                $row->batch?->periode?->name ?? '',
+                $row->batch?->target_regency ?? '',
+                $kelompok?->nama_kelompok ?? '',
+                $kelompok?->lokasi?->regency_name ?? '',
+                $peserta?->status ?? '',
+                $row->mahasiswa?->phone ?? $row->mahasiswa?->user?->phone ?? '',
+                $row->mahasiswa?->user?->email ?? '',
+            ];
+        }
+        $csv = collect($lines)->map(fn ($line) => implode(',', array_map(fn ($v) => '"'.str_replace('"', '""', (string) $v).'"', $line)))->implode("\n")."\n";
+
+        return response($csv, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="peserta-eksternal-'.now()->format('Ymd-His').'.csv"',
+        ]);
+    }
     public function template()
     {
         $rows = [

@@ -129,7 +129,9 @@ Route::prefix('admin')
         Route::get('/peserta-eksternal/batches', [ExternalParticipantController::class, 'batches']);
         Route::post('/peserta-eksternal/batches', [ExternalParticipantController::class, 'storeBatch']);
         Route::post('/peserta-eksternal/import', [ExternalParticipantController::class, 'import'])->middleware('throttle:5,1');
-        Route::get('/peserta-eksternal', [ExternalParticipantController::class, 'index']);        Route::get('/pendaftaran/export', [PesertaKknController::class, 'export']);
+        Route::get('/peserta-eksternal/export', [ExternalParticipantController::class, 'export']);
+        Route::get('/peserta-eksternal', [ExternalParticipantController::class, 'index']);
+        Route::get('/pendaftaran/export', [PesertaKknController::class, 'export']);
         Route::get('/pendaftaran/export-biodata', [PesertaKknController::class, 'exportBiodata']);
         Route::get('/pendaftaran/export-bpjs', [PesertaKknController::class, 'exportBpjs']);
         Route::get('/pendaftaran/berkas/unduh', [PesertaKknController::class, 'downloadDocument']);

@@ -16,9 +16,12 @@ import {
   Download,
   Filter,
   Eye,
+  Plus,
+  X,
 } from 'lucide-react';
 
-type Period = { id: number; name?: string; periode?: string; is_active?: boolean };
+type Period = { id: number; name?: string; periode?: string; is_active?: boolean; jenis_kkn?: { code?: string; name?: string } };
+type LokasiOption = { id: number; village_name?: string; district_name?: string; regency_name?: string };
 
 type Kelompok = {
   id: number;
@@ -65,6 +68,8 @@ export default function AdminKelompokPage(): React.JSX.Element {
   const [confirmId, setConfirmId] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
+  const [showCreate, setShowCreate] = useState(manualMode);
+  const [createForm, setCreateForm] = useState({ periode_id: initialPeriodeId, code: '', nama_kelompok: '', capacity: '15', location_id: '' });
 
   const periodsQ = useQuery({
     queryKey: ['admin', 'periode', 'kelompok-filter'],
@@ -76,7 +81,28 @@ export default function AdminKelompokPage(): React.JSX.Element {
       return (inner?.data ?? inner?.items ?? []) as Period[];
     },
   });
-  const periodItems = periodsQ.data ?? [];
+  const allPeriodItems = periodsQ.data ?? [];
+  const periodItems = jenisKey ? allPeriodItems.filter((p) => { const hay = `${p.jenis_kkn?.code ?? ''} ${p.jenis_kkn?.name ?? ''} ${p.name ?? ''} ${p.periode ?? ''}`.toLowerCase(); return hay.includes(jenisKey.replace(/_/g, ' ')) || hay.includes(jenisKey); }) : allPeriodItems;
+
+  const lokasiQ = useQuery({
+    queryKey: ['admin', 'lokasi', 'kelompok-create'],
+    queryFn: async () => {
+      const res = await rawApi.get('/admin/lokasi', { params: { per_page: 9999 } });
+      const body = res.data as { data?: LokasiOption[] };
+      return body.data ?? [];
+    },
+    enabled: showCreate,
+  });
+
+  const createMut = useMutation({
+    mutationFn: async () => {
+      const payload = { periode_id: Number(createForm.periode_id), code: createForm.code.trim(), nama_kelompok: createForm.nama_kelompok.trim(), capacity: Number(createForm.capacity || 15), location_id: createForm.location_id ? Number(createForm.location_id) : null };
+      const res = await rawApi.post('/admin/kelompok', payload);
+      return res.data;
+    },
+    onSuccess: () => { toast.success('Kelompok manual dibuat'); setShowCreate(false); setCreateForm({ periode_id: periodeId, code: '', nama_kelompok: '', capacity: '15', location_id: '' }); qc.invalidateQueries({ queryKey: ['admin', 'kelompok'] }); },
+    onError: (e: unknown) => { const msg = (e as { response?: { data?: { message?: string } } }).response?.data?.message ?? 'Gagal membuat kelompok'; toast.error(msg); },
+  });
 
   const listQ = useQuery({
     queryKey: ['admin', 'kelompok', { periodeId, page, perPage, searchTerm }],
@@ -229,6 +255,11 @@ export default function AdminKelompokPage(): React.JSX.Element {
           >
             <Download className="h-4 w-4" /> Export CSV
           </button>
+          {manualMode && (
+            <button onClick={() => setShowCreate(true)} className="h-10 rounded-lg bg-amber-600 px-4 text-sm font-bold text-white flex items-center gap-2">
+              <Plus className="h-4 w-4" /> Buat Kelompok Manual
+            </button>
+          )}
           <button
             onClick={() => fileRef.current?.click()}
             disabled={importing}
@@ -483,6 +514,21 @@ export default function AdminKelompokPage(): React.JSX.Element {
           </div>
         )}
       </div>
+
+      {showCreate && (
+        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4">
+            <div className="flex items-center justify-between"><h2 className="font-black text-lg text-slate-900">Buat Kelompok Manual</h2><button onClick={() => setShowCreate(false)} className="rounded-lg p-1 hover:bg-slate-100"><X className="h-5 w-5" /></button></div>
+            <form onSubmit={(e) => { e.preventDefault(); createMut.mutate(); }} className="space-y-3">
+              <label className="block text-sm font-bold">Periode<select required className="mt-1 h-10 w-full rounded-lg border px-3" value={createForm.periode_id} onChange={(e) => { setCreateForm({ ...createForm, periode_id: e.target.value }); setPeriodeId(e.target.value); }}><option value="">Pilih periode</option>{periodItems.map((p) => <option key={p.id} value={p.id}>{p.name || p.periode || 'Periode #' + p.id}</option>)}</select></label>
+              <label className="block text-sm font-bold">Kode Kelompok<input required className="mt-1 h-10 w-full rounded-lg border px-3" value={createForm.code} onChange={(e) => setCreateForm({ ...createForm, code: e.target.value })} placeholder="MISAL: NUS-01" /></label>
+              <label className="block text-sm font-bold">Nama Kelompok<input required className="mt-1 h-10 w-full rounded-lg border px-3" value={createForm.nama_kelompok} onChange={(e) => setCreateForm({ ...createForm, nama_kelompok: e.target.value })} placeholder="Kelompok Nusantara 1" /></label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3"><label className="block text-sm font-bold">Kapasitas<input type="number" min="1" className="mt-1 h-10 w-full rounded-lg border px-3" value={createForm.capacity} onChange={(e) => setCreateForm({ ...createForm, capacity: e.target.value })} /></label><label className="block text-sm font-bold">Lokasi<select className="mt-1 h-10 w-full rounded-lg border px-3" value={createForm.location_id} onChange={(e) => setCreateForm({ ...createForm, location_id: e.target.value })}><option value="">Belum ditentukan</option>{(lokasiQ.data ?? []).map((l) => <option key={l.id} value={l.id}>{l.village_name} — {l.district_name}, {l.regency_name}</option>)}</select></label></div>
+              <div className="flex justify-end gap-2 pt-2"><button type="button" onClick={() => setShowCreate(false)} className="h-10 rounded-lg border px-4 text-sm font-bold">Batal</button><button disabled={createMut.isPending} className="h-10 rounded-lg bg-amber-600 px-4 text-sm font-bold text-white disabled:opacity-50">{createMut.isPending ? 'Menyimpan...' : 'Simpan Kelompok'}</button></div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Confirm delete modal */}
       {confirmId !== null && (

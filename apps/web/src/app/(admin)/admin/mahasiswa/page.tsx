@@ -4,8 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { rawApi } from '@/lib/api';
 import { useDeferredValue, useState } from 'react';
 import Link from 'next/link';
-import { BookOpen, Building2, Filter, GraduationCap, Search, Users, ArrowUpDown, ArrowUp, ArrowDown, RefreshCw } from 'lucide-react';
-import { PageHeader } from '@/components/ui/shared';
+import { Filter, Search, Users, ArrowUpDown, ArrowUp, ArrowDown, RefreshCw } from 'lucide-react';
 
 interface Mahasiswa {
   id: number;

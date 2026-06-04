@@ -21,17 +21,17 @@ export function UsersFilterBar(props: Props) {
 
   return (
     <section className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200">
-      <div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(260px,1fr)_160px_160px_190px_110px_auto] lg:items-center">
-        <div className="relative">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-12 xl:items-center">
+        <div className="relative min-w-0 sm:col-span-2 xl:col-span-4">
           <label htmlFor="search-users" className="sr-only">Cari Pengguna</label>
           <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input id="search-users" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Cari nama, username, NIM/NIP, email..." autoComplete="off" className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm font-semibold focus:border-cyan-400 focus:outline-none focus:ring-3 focus:ring-cyan-50" />
         </div>
-        <SelectFilter id="filter-role" ariaLabel="Role" value={roleFilter} onChange={(value) => { setRoleFilter(value); setPage(1); }} options={[{ value: '', label: 'Semua Role' }, ...roleOptions]} />
-        <SelectFilter id="filter-status" ariaLabel="Status Akun" value={statusFilter} onChange={(value) => { setStatusFilter(value); setPage(1); }} options={statusOptions} />
-        <SelectFilter id="filter-faculty" ariaLabel="Fakultas" value={facultyFilter} onChange={(value) => { setFacultyFilter(value); setPage(1); }} options={[{ value: '', label: 'Semua Fakultas' }, ...faculties.map((f) => ({ value: String(f.id), label: f.nama }))]} />
-        <SelectFilter id="users-per-batch" ariaLabel="Per Batch" value={String(perPage)} onChange={(value) => { setPerPage(Number(value)); setPage(1); }} options={[10,25,50,100].map((size) => ({ value: String(size), label: `${size}/batch` }))} />
-        <button type="button" onClick={resetFilters} disabled={!hasActiveFilters} className="h-10 rounded-xl border border-slate-200 px-3 text-xs font-black uppercase text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">
+        <SelectFilter className="min-w-0 xl:col-span-2" id="filter-role" ariaLabel="Role" value={roleFilter} onChange={(value) => { setRoleFilter(value); setPage(1); }} options={[{ value: '', label: 'Semua Role' }, ...roleOptions]} />
+        <SelectFilter className="min-w-0 xl:col-span-2" id="filter-status" ariaLabel="Status Akun" value={statusFilter} onChange={(value) => { setStatusFilter(value); setPage(1); }} options={statusOptions} />
+        <SelectFilter className="min-w-0 xl:col-span-2" id="filter-faculty" ariaLabel="Fakultas" value={facultyFilter} onChange={(value) => { setFacultyFilter(value); setPage(1); }} options={[{ value: '', label: 'Semua Fakultas' }, ...faculties.map((f) => ({ value: String(f.id), label: f.nama }))]} />
+        <SelectFilter className="min-w-0 xl:col-span-1" id="users-per-batch" ariaLabel="Per Batch" value={String(perPage)} onChange={(value) => { setPerPage(Number(value)); setPage(1); }} options={[10,25,50,100].map((size) => ({ value: String(size), label: `${size}/batch` }))} />
+        <button type="button" onClick={resetFilters} disabled={!hasActiveFilters} className="h-10 rounded-xl border border-slate-200 px-3 text-xs font-black uppercase text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 xl:col-span-1">
           <span className="inline-flex items-center justify-center gap-1"><RotateCcw size={14} /> Reset</span>
         </button>
       </div>
@@ -50,9 +50,9 @@ export function UsersFilterBar(props: Props) {
   );
 }
 
-type SelectProps = { id: string; ariaLabel: string; value: string; onChange: (value: string) => void; options: Array<{ value: string; label: string }> };
-function SelectFilter({ id, ariaLabel, value, onChange, options }: SelectProps) {
-  return <div><label htmlFor={id} className="sr-only">{ariaLabel}</label><select id={id} aria-label={ariaLabel} value={value} onChange={(e) => onChange(e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold focus:border-cyan-400 focus:outline-none focus:ring-3 focus:ring-cyan-50">{options.map((option) => <option key={option.value || 'all'} value={option.value}>{option.label}</option>)}</select></div>;
+type SelectProps = { id: string; ariaLabel: string; value: string; onChange: (value: string) => void; options: Array<{ value: string; label: string }>; className?: string };
+function SelectFilter({ id, ariaLabel, value, onChange, options, className = '' }: SelectProps) {
+  return <div className={className}><label htmlFor={id} className="sr-only">{ariaLabel}</label><select id={id} aria-label={ariaLabel} value={value} onChange={(e) => onChange(e.target.value)} className="h-10 w-full min-w-0 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold focus:border-cyan-400 focus:outline-none focus:ring-3 focus:ring-cyan-50">{options.map((option) => <option key={option.value || 'all'} value={option.value}>{option.label}</option>)}</select></div>;
 }
 
 function FilterChip({ label, onClear }: { label: string; onClear: () => void }) {

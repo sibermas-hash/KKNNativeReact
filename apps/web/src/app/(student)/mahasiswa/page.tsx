@@ -11,7 +11,7 @@ import {
   MapPin, ArrowRight, ClipboardList, CheckCircle2, MessageCircle,
   Presentation, AlertTriangle, Target,
   ScrollText, LayoutGrid, UserCheck, Users, Lightbulb, Plane, Star, Image,
-  GraduationCap, ShieldCheck, Activity,
+  GraduationCap, ShieldCheck, Activity, Send,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { StatusBadge } from '@/components/ui/shared';
@@ -31,6 +31,7 @@ export default function StudentDashboard(): React.JSX.Element {
   const { currentPhase, activePeriod } = usePeriodStore();
   const queryClient = useQueryClient();
   const [showPopup, setShowPopup] = useState(false);
+  const [showTelegramPopup, setShowTelegramPopup] = useState(false);
 
   
 
@@ -101,6 +102,10 @@ export default function StudentDashboard(): React.JSX.Element {
 
   const shouldShowPopup = isApproved && registration && !registration.notification_shown;
   useEffect(() => { if (shouldShowPopup) setShowPopup(true); }, [shouldShowPopup]);
+  useEffect(() => {
+    const dismissed = window.localStorage.getItem('sibermas.telegram.join.dismissed');
+    if (!dismissed) setShowTelegramPopup(true);
+  }, []);
 
   const handleClosePopup = useCallback(() => {
     setShowPopup(false);
@@ -109,6 +114,11 @@ export default function StudentDashboard(): React.JSX.Element {
     }
   }, [notificationMutation, registration?.id, registration?.notification_shown]);
 
+  const handleCloseTelegramPopup = useCallback(() => {
+    window.localStorage.setItem('sibermas.telegram.join.dismissed', '1');
+    setShowTelegramPopup(false);
+  }, []);
+
   // Escape key handler for modal accessibility
   useEffect(() => {
     if (!showPopup) return;
@@ -116,6 +126,13 @@ export default function StudentDashboard(): React.JSX.Element {
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [handleClosePopup, showPopup]);
+
+  useEffect(() => {
+    if (!showTelegramPopup || showPopup) return;
+    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') handleCloseTelegramPopup(); };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [handleCloseTelegramPopup, showPopup, showTelegramPopup]);
 
   if (isError) {
     return (
@@ -186,6 +203,35 @@ export default function StudentDashboard(): React.JSX.Element {
             <button onClick={handleClosePopup} className="w-full mt-8 h-12 bg-[color:var(--profile-primary)] hover:opacity-90 text-white text-xs font-black uppercase tracking-widest rounded-lg shadow-lg shadow-black/10 transition-all active:scale-[0.98]">
               Selesai & Mengerti
             </button>
+          </div>
+        </div>
+      )}
+
+      {showTelegramPopup && !showPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="telegram-popup-title">
+          <div className="bg-[color:var(--profile-surface)] rounded-xl shadow-2xl max-w-md w-full p-8 border ring-1 ring-[color:var(--profile-border)]">
+            <div className="text-center">
+              <div className="h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-6 bg-sky-50 text-sky-600">
+                <Send size={32} />
+              </div>
+              <h2 id="telegram-popup-title" className="text-xl font-black text-[color:var(--profile-text)] uppercase tracking-tight mb-2">
+                Bergabung ke Grup Telegram
+              </h2>
+              <p className="text-sm text-[color:var(--profile-muted)] mb-6 font-medium leading-relaxed">
+                Seluruh mahasiswa KKN wajib bergabung ke grup Telegram resmi SIBERMAS untuk menerima informasi, pengumuman, dan koordinasi terbaru.
+              </p>
+              <div className="rounded-lg bg-sky-50 p-4 text-sm font-bold text-sky-900 ring-1 ring-sky-100">
+                t.me/sibermasuinsaizu
+              </div>
+            </div>
+            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+              <button onClick={handleCloseTelegramPopup} className="h-12 rounded-lg border border-[color:var(--profile-border)] text-xs font-black uppercase tracking-widest text-[color:var(--profile-muted)] hover:bg-[color:var(--profile-soft)] transition-all">
+                Nanti Saja
+              </button>
+              <a href="https://t.me/sibermasuinsaizu" target="_blank" rel="noopener noreferrer" onClick={handleCloseTelegramPopup} className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-sky-600 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-sky-900/10 transition-all hover:bg-sky-700 active:scale-[0.98]">
+                Gabung Sekarang <ArrowRight size={16} />
+              </a>
+            </div>
           </div>
         </div>
       )}

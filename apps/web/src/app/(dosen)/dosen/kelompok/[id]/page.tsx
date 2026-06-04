@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@sibermas/constants';
 import { dplApi } from '@/lib/api';
 import { useParams } from 'next/navigation';
+import { BackButton } from '@/components/ui/shared';
 
 export default function GroupDetailPage(): React.JSX.Element {
   const params = useParams<{ id: string }>();
@@ -26,6 +27,7 @@ export default function GroupDetailPage(): React.JSX.Element {
 
   return (
     <div className="space-y-6">
+      <BackButton href="/dosen/kelompok" label="Kembali ke Kelompok" />
       <h1 className="text-2xl font-bold text-slate-800">{d.name as string}</h1>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">

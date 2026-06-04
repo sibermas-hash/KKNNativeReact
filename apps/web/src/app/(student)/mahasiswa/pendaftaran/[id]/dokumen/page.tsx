@@ -7,6 +7,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { AlertCircle, CheckCircle2, FileText, Upload } from 'lucide-react';
+import { BackButton } from '@/components/ui/shared';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB — matches backend RegistrationDocumentService
 const ALLOWED_TYPES = ['application/pdf'];
@@ -175,6 +176,7 @@ export default function UploadDokumenPage(): React.JSX.Element {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
+      <BackButton href="/mahasiswa/pendaftaran" label="Kembali ke Pendaftaran" />
       <div>
         <h1 className="text-2xl font-bold text-slate-800">Upload Dokumen Persyaratan</h1>
         <p className="mt-1 text-sm text-slate-500">Format: PDF. Maksimal 5 MB per file.</p>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { rawApi } from '@/lib/api';
-import { PageHeader } from '@/components/ui/shared';
+import { BackButton, PageHeader } from '@/components/ui/shared';
 import { toast } from 'sonner';
 import { ArrowRightLeft, Search, Users } from 'lucide-react';
 
@@ -65,6 +65,7 @@ export default function TransferPesertaPage(): React.JSX.Element {
 
   return (
     <div className="space-y-6">
+      <BackButton href="/admin/peserta-kkn" label="Kembali ke Peserta" />
       <PageHeader title="Transfer Peserta" subtitle="Pindahkan peserta gagal wawancara ke jenis KKN non-wawancara dengan aman." />
 
       {/* Filters */}

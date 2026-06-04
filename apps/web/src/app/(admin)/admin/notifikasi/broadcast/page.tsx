@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { AlertTriangle, Bell, CheckCircle2, Info, Megaphone, Send, Users } from 'lucide-react';
 import { adminApi, api } from '@/lib/api';
 import { useAuthStore } from '@/stores';
-import { PageHeader } from '@/components/ui/shared';
+import { BackButton, PageHeader } from '@/components/ui/shared';
 
 type Priority = 'info' | 'success' | 'warning' | 'danger';
 type TargetKind = 'all' | 'role' | 'fakultas' | 'user_ids';
@@ -129,6 +129,7 @@ export default function BroadcastPage(): React.JSX.Element {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
+      <BackButton href="/admin/dashboard" label="Kembali ke Dashboard" />
       <PageHeader
         title="Kirim Pengumuman"
         subtitle="Broadcast ke in-app, email (bila diizinkan), dan push notification mobile"

@@ -85,6 +85,9 @@ export default async function CertificateVerifyPage({
       </header>
 
       <main className="mx-auto max-w-2xl px-6 py-12">
+        <Link href="/" className="mb-6 inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black uppercase tracking-wider text-slate-600 shadow-sm hover:bg-slate-50">
+          ← Kembali ke Beranda
+        </Link>
         <h1 className="mb-8 text-center text-3xl font-bold text-slate-800">Verifikasi Sertifikat</h1>
 
         {isServiceDown ? (

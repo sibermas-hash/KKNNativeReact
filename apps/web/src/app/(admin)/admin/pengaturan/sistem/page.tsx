@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api';
 import { Settings } from 'lucide-react';
-import { PageHeader, EmptyState } from '@/components/ui/shared';
+import { BackButton, EmptyState, PageHeader } from '@/components/ui/shared';
 
 export default function SystemSettingsPage(): React.JSX.Element {
   const { data, isLoading } = useQuery({
@@ -19,6 +19,7 @@ export default function SystemSettingsPage(): React.JSX.Element {
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      <BackButton href="/admin/dashboard" label="Kembali ke Dashboard" />
       <PageHeader title="Pusat Administrasi Sistem" subtitle="Kelola konfigurasi global, keamanan, integrasi, dan status operasional SIBERMAS." />
 
       {isLoading ? (

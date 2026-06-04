@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { dplApi } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { PageHeader } from '@/components/ui/shared';
+import { BackButton, PageHeader } from '@/components/ui/shared';
 
 type Group = { id: number; name: string; code: string };
 
@@ -45,6 +45,7 @@ export default function CreateMonitoringPage(): React.JSX.Element {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
+      <BackButton href="/dosen/monitoring" label="Kembali ke Monitoring" />
       <PageHeader title="Catat Kunjungan Monitoring" />
 
       <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">

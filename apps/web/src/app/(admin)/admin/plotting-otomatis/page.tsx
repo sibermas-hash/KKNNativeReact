@@ -16,6 +16,7 @@ import {
   Filter,
   Search,
   RefreshCw,
+  ArrowLeft,
 } from 'lucide-react';
 
 type Period = { id: number; name?: string; periode?: string };
@@ -423,6 +424,7 @@ export default function AutoPlottingPage(): React.JSX.Element {
 
   return (
     <div className="space-y-6 p-6">
+      <a href="/admin/penempatan" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black uppercase tracking-wider text-slate-600 shadow-sm hover:bg-slate-50"><ArrowLeft size={14} /> Kembali ke Penempatan</a>
       <div className="rounded-xl border border-teal-200 bg-teal-50 p-4 text-sm text-teal-900">
         <b>Plotting otomatis hanya untuk KKN Reguler.</b> KKN non-Reguler memakai workflow manual lewat Penempatan KKN → TAB Manual.
       </div>

@@ -3,7 +3,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api';
 import { toast } from 'sonner';
-import { PageHeader } from '@/components/ui/shared';
+import { BackButton, PageHeader } from '@/components/ui/shared';
 
 type Config = { id: number; komponen?: string; name?: string; bobot?: number; weight?: number; deskripsi?: string; description?: string };
 
@@ -33,6 +33,7 @@ export default function PengaturanPenilaianPage(): React.JSX.Element {
 
   return (
     <div className="mx-auto max-w-[1100px] space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+      <BackButton href="/admin/dashboard" label="Kembali ke Dashboard" />
       <PageHeader title="Pengaturan Penilaian" subtitle="Audit bobot komponen nilai KKN. Perubahan hanya untuk superadmin." />
 
       {isLoading ? (

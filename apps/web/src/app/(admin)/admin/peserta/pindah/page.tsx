@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { BackButton } from '@/components/ui/shared';
 
 export default function StudentTransferPage(): React.JSX.Element {
   const [, _setSearch] = useState('');
@@ -18,6 +19,7 @@ export default function StudentTransferPage(): React.JSX.Element {
 
   return (
     <div className="space-y-6">
+      <BackButton href="/admin/peserta-kkn" label="Kembali ke Peserta" />
       <h1 className="text-2xl font-bold text-slate-800">Transfer Mahasiswa</h1>
       <div className="rounded-2xl bg-white p-6 shadow-sm">
         <p className="text-sm text-slate-500 mb-4">Pindahkan mahasiswa dari satu kelompok ke kelompok lain dalam periode yang sama.</p>

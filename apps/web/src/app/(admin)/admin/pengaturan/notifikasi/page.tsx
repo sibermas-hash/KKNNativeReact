@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api';
 import { toast } from 'sonner';
 import { Bell, Mail, MessageCircle, Save, Send, Smartphone } from 'lucide-react';
-import { PageHeader } from '@/components/ui/shared';
+import { BackButton, PageHeader } from '@/components/ui/shared';
 import { rawApi } from '@/lib/api';
 
 type NotifDefaults = { in_app: boolean; email: boolean; push: boolean; wa: boolean };
@@ -97,6 +97,7 @@ export default function NotificationSettingsPage() {
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      <BackButton href="/admin/dashboard" label="Kembali ke Dashboard" />
       <PageHeader title="Pengaturan Notifikasi" subtitle="Konfigurasi default saluran notifikasi untuk seluruh pengguna sistem" />
 
       {isLoading ? (

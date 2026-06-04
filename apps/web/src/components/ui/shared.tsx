@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import clsx from 'clsx';
-import { ArrowRight } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 type StatusType = 'approved' | 'completed' | 'pending' | 'rejected' | 'draft' | 'revision' | 'submitted' | string;
 
@@ -71,6 +71,18 @@ export function NavButton({ href, icon: Icon, label }: {
       </div>
       <span className="text-xs font-bold text-slate-700 group-hover:text-emerald-900 transition-colors uppercase tracking-tight">{label}</span>
       <ArrowRight size={14} className="ml-auto text-slate-200 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" />
+    </Link>
+  );
+}
+
+export function BackButton({ href, label = 'Kembali' }: { href: string; label?: string }): React.JSX.Element {
+  return (
+    <Link
+      href={href}
+      className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black uppercase tracking-wider text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-slate-900"
+    >
+      <ArrowLeft size={14} />
+      {label}
     </Link>
   );
 }

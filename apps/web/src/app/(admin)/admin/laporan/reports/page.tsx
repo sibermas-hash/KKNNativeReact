@@ -6,7 +6,7 @@ import type { ApiResponse, PaginationMeta } from '@sibermas/shared-types';
 import { apiUrl, rawApi } from '@/lib/api';
 import Link from 'next/link';
 import { FileText, Search, Eye, Download } from 'lucide-react';
-import { PageHeader, DataTable, StatusBadge, StatCard, EmptyState } from '@/components/ui/shared';
+import { BackButton, PageHeader, DataTable, StatusBadge, StatCard, EmptyState } from '@/components/ui/shared';
 
 const TYPE_LABELS: Record<string, string> = {
   final_report: 'Laporan Akhir',
@@ -50,6 +50,7 @@ export default function AdminReportsPage(): React.JSX.Element {
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      <BackButton href="/admin/dashboard" label="Kembali ke Dashboard" />
       <PageHeader
         title="Manajemen Laporan"
         subtitle="Kelola seluruh laporan dan dokumen yang diunggah mahasiswa"

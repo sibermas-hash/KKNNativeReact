@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { Award } from 'lucide-react';
-import { PageHeader, EmptyState } from '@/components/ui/shared';
+import { BackButton, PageHeader, EmptyState } from '@/components/ui/shared';
 
 export default function CertificateConfigPage(): React.JSX.Element {
   const { data, isLoading } = useQuery({
@@ -16,6 +16,7 @@ export default function CertificateConfigPage(): React.JSX.Element {
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      <BackButton href="/admin/dashboard" label="Kembali ke Dashboard" />
       <PageHeader title="Konfigurasi Sertifikat" subtitle="Template dan format sertifikat KKN" />
 
       {isLoading ? (

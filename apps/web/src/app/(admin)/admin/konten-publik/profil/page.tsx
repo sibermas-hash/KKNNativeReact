@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { BookOpenText, Save, RefreshCw } from 'lucide-react';
-import { PageHeader } from '@/components/ui/shared';
+import { BackButton, PageHeader } from '@/components/ui/shared';
 
 export default function AdminKontenProfilPage(): React.JSX.Element {
   const qc = useQueryClient();
@@ -52,6 +52,7 @@ export default function AdminKontenProfilPage(): React.JSX.Element {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 space-y-8">
+      <BackButton href="/admin/dashboard" label="Kembali ke Dashboard" />
       <PageHeader
         title="Profil Lembaga"
         subtitle="Manajemen narasi institusional, visi, dan misi LPPM UIN SAIZU"

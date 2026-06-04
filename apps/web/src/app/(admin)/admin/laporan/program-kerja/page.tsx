@@ -20,6 +20,7 @@ import {
   RefreshCw,
   Layers,
   Users,
+  ArrowLeft,
 } from 'lucide-react';
 
 type Proker = {
@@ -168,6 +169,7 @@ export default function AdminProkerPage(): React.JSX.Element {
 
   return (
     <div className="space-y-6 p-6">
+      <a href="/admin/dashboard" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black uppercase tracking-wider text-slate-600 shadow-sm hover:bg-slate-50"><ArrowLeft size={14} /> Kembali ke Dashboard</a>
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h1 className="text-2xl font-black uppercase text-slate-900">Monitoring Program Kerja</h1>

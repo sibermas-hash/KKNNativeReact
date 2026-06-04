@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi } from '@/lib/api';
 import { useState, useEffect } from 'react';
 import { Layers3, Plus, Save, Trash2, RefreshCw } from 'lucide-react';
-import { PageHeader } from '@/components/ui/shared';
+import { BackButton, PageHeader } from '@/components/ui/shared';
 
 type SchemeColor = 'emerald' | 'blue' | 'amber' | 'slate';
 interface SchemeItem { title: string; description: string; color: SchemeColor }
@@ -62,6 +62,7 @@ export default function AdminKontenSkemaPage(): React.JSX.Element {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10 space-y-8">
+      <BackButton href="/admin/dashboard" label="Kembali ke Dashboard" />
       <PageHeader
         title="Skema KKN"
         subtitle="Kelola daftar skema/jenis KKN yang ditampilkan di halaman publik"

@@ -6,6 +6,7 @@ import { dplApi } from '@/lib/api';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import { BackButton } from '@/components/ui/shared';
 
 export default function DplFinalReportDetailPage(): React.JSX.Element {
   const params = useParams<{ id: string }>();
@@ -40,6 +41,7 @@ export default function DplFinalReportDetailPage(): React.JSX.Element {
 
   return (
     <div className="mx-auto max-w-3xl space-y-6">
+      <BackButton href="/dosen/laporan-akhir" label="Kembali ke Laporan Akhir" />
       <h1 className="text-2xl font-bold text-slate-800">Detail Laporan Akhir</h1>
       <div className="rounded-2xl bg-white p-6 shadow-sm">
         <p className="text-sm text-slate-500">{(data.mahasiswa as Record<string, unknown>)?.name as string || '-'}</p>

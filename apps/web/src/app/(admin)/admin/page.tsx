@@ -4,7 +4,9 @@ import React from 'react';
 import { useAuthStore } from '@/stores';
 import { useRouter } from 'next/navigation';
 import { motion, useMotionValue, useTransform, useSpring, AnimatePresence } from 'framer-motion';
-import { LayoutDashboard, Newspaper, Settings2, ArrowUpRight, Power, Sparkles } from 'lucide-react';
+import { ArrowUpRight, Power, Sparkles } from 'lucide-react';
+import { HugeiconsIcon } from '@hugeicons/react';
+import { Analytics01Icon, NewsIcon, Settings02Icon } from '@hugeicons/core-free-icons';
 import Image from 'next/image';
 import { useRef, useState } from 'react';
 
@@ -15,7 +17,7 @@ type AreaDef = {
   sub: string;
   description: string;
   href: string;
-  icon: typeof LayoutDashboard;
+  icon: React.ComponentProps<typeof HugeiconsIcon>['icon'];
   color: string;
   iconBg: string;
   badgeColor: string;
@@ -32,7 +34,7 @@ const ALL_AREAS: AreaDef[] = [
     sub: 'Operasional',
     description: 'Pendaftaran, kelompok, laporan harian, penilaian, dan seluruh siklus operasional KKN.',
     href: '/admin/dashboard',
-    icon: LayoutDashboard,
+    icon: Analytics01Icon,
     color: '#0891b2',
     iconBg: 'bg-cyan-50 text-cyan-600',
     badgeColor: 'bg-cyan-50 text-cyan-700 border-cyan-100',
@@ -46,7 +48,7 @@ const ALL_AREAS: AreaDef[] = [
     sub: 'Konten Publik',
     description: 'Warta utama, pusat unduhan, profil lembaga, dan skema KKN di halaman publik.',
     href: '/admin/warta-utama',
-    icon: Newspaper,
+    icon: NewsIcon,
     color: '#16a34a',
     iconBg: 'bg-green-50 text-green-600',
     badgeColor: 'bg-green-50 text-green-700 border-green-100',
@@ -60,7 +62,7 @@ const ALL_AREAS: AreaDef[] = [
     sub: 'Administrasi',
     description: 'Kelola konfigurasi global, pengguna, integrasi, keamanan, audit, dan monitoring SIBERMAS.',
     href: '/admin/pengguna',
-    icon: Settings2,
+    icon: Settings02Icon,
     color: '#d97706',
     iconBg: 'bg-amber-50 text-amber-600',
     badgeColor: 'bg-amber-50 text-amber-700 border-amber-100',
@@ -87,7 +89,6 @@ function Card({ area, index }: { area: AreaDef; index: number }) {
   };
   const onLeave = () => { mx.set(0); my.set(0); setHovered(false); };
 
-  const Icon = area.icon;
 
   return (
     <motion.a
@@ -153,7 +154,7 @@ function Card({ area, index }: { area: AreaDef; index: number }) {
           transition={{ type: 'spring', stiffness: 400, damping: 15 }}
           className={`flex h-12 w-12 items-center justify-center rounded-2xl ${area.iconBg}`}
         >
-          <Icon size={22} strokeWidth={2} />
+          <HugeiconsIcon icon={area.icon} size={24} strokeWidth={1.8} />
         </motion.div>
       </div>
 

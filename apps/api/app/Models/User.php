@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Models\KKN\DeviceToken;
 use App\Models\KKN\Dosen;
+use App\Models\KKN\ExternalUniversity;
 use App\Models\KKN\Fakultas;
 use App\Models\KKN\LaporanAkhir;
 use App\Models\KKN\Mahasiswa;
@@ -60,6 +61,7 @@ class User extends Authenticatable
         'address_registered_at',
         'address_verified_at',
         'fakultas_id',
+        'external_university_id',
         'manually_edited_fields',
         'notification_preferences',
     ];
@@ -78,6 +80,7 @@ class User extends Authenticatable
         'address_registered_at' => 'datetime',
         'address_verified_at' => 'datetime',
         'fakultas_id' => 'integer',
+        'external_university_id' => 'integer',
         'password' => 'hashed',
         'manually_edited_fields' => 'array',
         'notification_preferences' => 'array',
@@ -167,6 +170,11 @@ class User extends Authenticatable
     public function fakultas(): BelongsTo
     {
         return $this->belongsTo(Fakultas::class, 'fakultas_id');
+    }
+
+    public function externalUniversity(): BelongsTo
+    {
+        return $this->belongsTo(ExternalUniversity::class, 'external_university_id');
     }
 
     public function mahasiswa(): HasOne

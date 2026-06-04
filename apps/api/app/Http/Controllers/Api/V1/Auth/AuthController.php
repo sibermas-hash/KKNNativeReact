@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
+use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use App\Models\User;
 use App\Services\ActivityLogger;
@@ -96,8 +97,24 @@ class AuthController extends Controller
             ]);
         }
 
+        $authLoginValue = $loginValue;
+
+        if (Str::startsWith(Str::upper($loginValue), 'X-')) {
+            $externalNim = substr($loginValue, 2);
+            $externalStudent = Mahasiswa::query()
+                ->where('origin_type', 'external')
+                ->where('nim', $externalNim)
+                ->whereHas('user', fn ($q) => $q->where('is_active', true))
+                ->with('user:id,username')
+                ->first();
+
+            if ($externalStudent?->user?->username) {
+                $authLoginValue = $externalStudent->user->username;
+            }
+        }
+
         $credentials = [
-            'username' => $loginValue,
+            'username' => $authLoginValue,
             'password' => $request->input('password'),
             'is_active' => true,
         ];

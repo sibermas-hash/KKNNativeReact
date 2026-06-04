@@ -1,7 +1,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import Image from 'next/image';
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/stores';
@@ -112,10 +111,10 @@ const getNavGroups = (pathname: string, roles: string[]) => {
     ]},
   ];
 
-  // Stable sidebar: do not swap menus per route. Keep one consistent admin navigation.
-  return isSuperadmin
-    ? [...operationalGroups, ...contentGroups, ...systemGroups]
-    : [...operationalGroups, ...contentGroups];
+  // Hub-separated sidebar: each admin portal shows only its own menu cluster.
+  if (isSystem) return isSuperadmin ? systemGroups : [];
+  if (isBlog) return contentGroups;
+  return operationalGroups;
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
@@ -197,10 +196,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="h-28 px-6 flex flex-col justify-center sticky top-0 z-10 bg-[color:var(--profile-surface-strong)]">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 flex items-center justify-center rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-input)] p-1.5 shadow-sm shrink-0">
-              <Image src="/images/logo_uinsaizu.png" alt="Logo UIN" width={48} height={48} className="h-full w-full object-contain" />
+              <img src="/images/logo_uinsaizu.png" alt="Logo UIN" className="h-full w-full object-contain" />
             </div>
             <div className="h-12 w-12 flex items-center justify-center rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-input)] p-1 shadow-sm shrink-0">
-              <Image src="/images/Logo_SIBERMAS.png" alt="Logo SIBERMAS" width={48} height={48} className="h-full w-full object-contain" />
+              <img src="/images/Logo_SIBERMAS.png" alt="Logo SIBERMAS" className="h-full w-full object-contain" />
             </div>
           </div>
           <div className="mt-4">

@@ -97,7 +97,7 @@ class ExternalParticipantController extends Controller
                 $user->assignRole('student');
                 $mahasiswa = Mahasiswa::create([
                     'user_id' => $user->id,
-                    'nim' => $username,
+                    'nim' => $nim,
                     'nama' => $nama,
                     'fakultas_id' => $faculty->id,
                     'prodi_id' => $prodi->id,

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
-use App\Exports\PesertaKknFullExport;
 use App\Http\Controllers\Controller;
+use App\Exports\BiodataPesertaExport;
 use App\Http\Resources\Api\V1\PesertaKknResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\DokumenPesertaKkn;
@@ -23,7 +23,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class PesertaKknController extends Controller
 {
@@ -114,52 +113,103 @@ class PesertaKknController extends Controller
         return $pesertaKkn->mahasiswa?->fakultas_id === $facultyId;
     }
 
-
-    public function stats(): JsonResponse
+    public function summary(Request $request): JsonResponse
     {
-        $query = PesertaKkn::query();
+        $query = PesertaKkn::query()->whereNull('deleted_at');
         $this->scopeByFaculty($query);
 
-        $counts = $query
-            ->selectRaw("
-                COUNT(*) as total,
-                COUNT(*) FILTER (WHERE status = 'pending') as pending,
-                COUNT(*) FILTER (WHERE status = 'document_submitted') as document_submitted,
-                COUNT(*) FILTER (WHERE status = 'document_verified') as document_verified,
-                COUNT(*) FILTER (WHERE status = 'interview_scheduled') as interview_scheduled,
-                COUNT(*) FILTER (WHERE status = 'interview_passed') as interview_passed,
-                COUNT(*) FILTER (WHERE status = 'approved') as approved,
-                COUNT(*) FILTER (WHERE status = 'rejected') as rejected,
-                COUNT(*) FILTER (WHERE status NOT IN ('pending','document_submitted','document_verified','interview_scheduled','interview_passed','approved','rejected')) as other
-            ")
-            ->first();
+        $counts = (clone $query)
+            ->select('status', DB::raw('COUNT(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status');
 
-        return $this->success($counts);
+        $total = (int) $counts->sum();
+        $review = (int) (($counts['pending'] ?? 0) + ($counts['document_submitted'] ?? 0) + ($counts['interview_scheduled'] ?? 0));
+        $approved = (int) ($counts['approved'] ?? 0);
+        $rejected = (int) ($counts['rejected'] ?? 0);
+
+        return $this->success([
+            'total' => $total,
+            'review' => $review,
+            'approved' => $approved,
+            'rejected' => $rejected,
+            'by_status' => $counts,
+        ]);
     }
 
     public function index(Request $request): JsonResponse
     {
-        $format = strtolower((string) $request->input("format", "json"));
-        $query = PesertaKkn::with(['mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'kelompok', 'periode.jenisKkn', 'dokumen'])
+        $sort = (string) $request->input('sort', 'created_at');
+        $direction = strtolower((string) $request->input('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
+
+        $baseQuery = PesertaKkn::query()
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
+            ->when($request->input('entry_scheme'), fn ($q, $s) => $q->where('entry_scheme', $s))
+            ->when($request->input('origin_type'), fn ($q, $s) => $q->whereHas('mahasiswa', fn ($m) => $m->where('origin_type', $s)))
+            ->when($request->input('fakultas_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $id)))
+            ->when($request->input('prodi_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('prodi_id', $id)))
+            ->when($request->input('external_university_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('external_university_id', $id)))
+            ->when($request->input('status_group') === 'unprocessed', fn ($q) => $q->whereIn('status', ['pending', 'document_submitted']))
+            ->when($request->input('status_group') === 'processed', fn ($q) => $q->whereIn('status', ['approved', 'rejected', 'interview_scheduled']))
             ->when($request->input('periode_id'), fn ($q, $id) => $q->where('periode_id', $id))
             ->when($request->input('jenis_kkn_id'), fn ($q, $id) => $q->whereHas('periode', fn ($p) => $p->where('jenis_kkn_id', $id)))
-            ->when($request->input('angkatan'), fn ($q, $a) => $q->whereHas('periode', fn ($p) => $p->where('periode', $a)))
             ->when($request->input('search'), function ($q, $s) {
                 // nim encrypted at rest — LIKE impossible; exact-NIM via bidx.
                 $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $s);
                 $q->whereHas('mahasiswa', function ($q2) use ($escaped, $s) {
-                    $q2->where('nama', 'like', "%{$escaped}%");
+                    $q2->where('nama', 'like', "%{$escaped}%")
+                        ->orWhere('external_nim', 'like', "%{$escaped}%");
                     if (preg_match('/^\d{6,20}$/', trim($s))) {
                         $q2->orWhere('nim_bidx', Mahasiswa::computeBlindIndex(trim($s)));
                     }
                 });
-            })
-            ->orderByDesc('created_at');
+            });
 
-        $this->scopeByFaculty($query);
+        $this->scopeByFaculty($baseQuery);
 
-        return $this->successCollection(PesertaKknResource::collection($query->paginate(min((int) $request->input('per_page', 25), 100))));
+        $statusCounts = (clone $baseQuery)
+            ->select('status', DB::raw('COUNT(*) as total'))
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        $stats = [
+            'total' => (int) $statusCounts->sum(),
+            'reviewable' => (int) (($statusCounts['pending'] ?? 0) + ($statusCounts['document_submitted'] ?? 0) + ($statusCounts['document_verified'] ?? 0)),
+            'pending' => (int) ($statusCounts['pending'] ?? 0),
+            'document_submitted' => (int) ($statusCounts['document_submitted'] ?? 0),
+            'document_verified' => (int) ($statusCounts['document_verified'] ?? 0),
+            'approved' => (int) ($statusCounts['approved'] ?? 0),
+            'rejected' => (int) ($statusCounts['rejected'] ?? 0),
+            'interview_scheduled' => (int) ($statusCounts['interview_scheduled'] ?? 0),
+            'interview_passed' => (int) ($statusCounts['interview_passed'] ?? 0),
+            'interview_failed' => (int) ($statusCounts['interview_failed'] ?? 0),
+            'by_status' => $statusCounts,
+        ];
+
+        $query = $baseQuery->with(['mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'mahasiswa.externalUniversity', 'kelompok', 'periode.jenisKkn', 'dokumen', 'collaborationLetter']);
+
+        if ($sort === 'first_uploaded_at') {
+            $query->leftJoinSub(
+                DokumenPesertaKkn::query()
+                    ->select('peserta_kkn_id', DB::raw('MIN(uploaded_at) as first_uploaded_at'))
+                    ->groupBy('peserta_kkn_id'),
+                'doc_first_uploads',
+                'doc_first_uploads.peserta_kkn_id',
+                '=',
+                'peserta_kkn.id'
+            )
+                ->select('peserta_kkn.*')
+                ->orderByRaw('doc_first_uploads.first_uploaded_at IS NULL')
+                ->orderBy('doc_first_uploads.first_uploaded_at', $direction);
+        } else {
+            $query->orderBy('peserta_kkn.created_at', $direction);
+        }
+
+        $response = $this->successCollection(PesertaKknResource::collection($query->paginate(min((int) $request->input('per_page', 25), 100))));
+        $payload = $response->getData(true);
+        $payload['stats'] = $stats;
+
+        return response()->json($payload, $response->getStatusCode());
     }
 
     public function show(PesertaKkn $pesertaKkn): JsonResponse
@@ -167,7 +217,7 @@ class PesertaKknController extends Controller
         if (! $this->canAccessPeserta($pesertaKkn)) {
             return $this->error('FORBIDDEN', 'Anda tidak memiliki akses ke data mahasiswa ini.', 403);
         }
-        $pesertaKkn->load(['mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'kelompok.lokasi', 'periode.jenisKkn', 'dokumen']);
+        $pesertaKkn->load(['mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'kelompok.lokasi', 'periode', 'dokumen']);
 
         return $this->success(new PesertaKknResource($pesertaKkn));
     }
@@ -181,15 +231,26 @@ class PesertaKknController extends Controller
             return $this->error('FORBIDDEN', 'Anda tidak memiliki akses ke data mahasiswa ini.', 403);
         }
 
-        try {
-            app(RegistrationApprovalService::class)->approve($pesertaKkn, (int) auth()->id());
-        } catch (ValidationException $e) {
-            $firstMessage = collect($e->errors())->flatten()->first() ?? 'Pendaftaran tidak dapat disetujui.';
-
-            return $this->error('VALIDATION_ERROR', (string) $firstMessage, 422);
+        // Audit R9-008 fix: re-run eligibility before flipping status=approved.
+        // Previously admin bypass ini memungkinkan mahasiswa yang kehilangan
+        // syarat akademik setelah daftar (misal SKS turun via SIAKAD sync)
+        // tetap lolos approval. Superadmin boleh bypass lewat flag ?force=1
+        // untuk edge-case valid (contoh: dispensasi manual).
+        $force = (bool) request()->boolean('force');
+        if (! $force || ! auth()->user()?->hasRole('superadmin')) {
+            $eligibility = $this->checkApprovalEligibility($pesertaKkn);
+            if (! $eligibility['eligible']) {
+                return $this->error(
+                    'VALIDATION_ERROR',
+                    'Mahasiswa tidak memenuhi syarat approval: '.$eligibility['first_message'],
+                    422,
+                );
+            }
         }
 
-        return $this->success(new PesertaKknResource($pesertaKkn->refresh()->load(['mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'kelompok', 'periode', 'dokumen'])), 'Pendaftaran disetujui.');
+        $pesertaKkn->update(['status' => 'approved', 'approved_at' => now(), 'approved_by' => auth()->id()]);
+
+        return $this->success(new PesertaKknResource($pesertaKkn->refresh()), 'Pendaftaran disetujui.');
     }
 
     public function reject(Request $request, PesertaKkn $pesertaKkn): JsonResponse
@@ -201,16 +262,9 @@ class PesertaKknController extends Controller
             return $this->error('FORBIDDEN', 'Anda tidak memiliki akses ke data mahasiswa ini.', 403);
         }
         $request->validate(['rejection_reason' => ['required', 'string', 'max:500']]);
+        $pesertaKkn->update(['status' => 'rejected', 'last_rejected_at' => now(), 'last_rejected_by' => auth()->id(), 'rejection_reason' => $request->input('rejection_reason')]);
 
-        try {
-            app(RegistrationApprovalService::class)->reject($pesertaKkn, (string) $request->input('rejection_reason'), (int) auth()->id());
-        } catch (ValidationException $e) {
-            $firstMessage = collect($e->errors())->flatten()->first() ?? 'Pendaftaran tidak dapat ditolak.';
-
-            return $this->error('VALIDATION_ERROR', (string) $firstMessage, 422);
-        }
-
-        return $this->success(new PesertaKknResource($pesertaKkn->refresh()->load(['mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'kelompok', 'periode', 'dokumen'])), 'Pendaftaran ditolak.');
+        return $this->success(new PesertaKknResource($pesertaKkn->refresh()), 'Pendaftaran ditolak.');
     }
 
     public function assignGroup(Request $request, PesertaKkn $pesertaKkn): JsonResponse
@@ -322,14 +376,115 @@ class PesertaKknController extends Controller
         }
         $request->validate(['ids' => ['required', 'array'], 'ids.*' => ['integer']]);
 
-        $approved = app(RegistrationApprovalService::class)->bulkApprove(
-            $request->input('ids'),
-            (int) auth()->id(),
-            false,
-            null,
-        );
+        $force = (bool) $request->boolean('force');
+        $isSuperadmin = (bool) auth()->user()?->hasRole('superadmin');
 
-        return $this->success(['approved_count' => $approved], "{$approved} pendaftaran berhasil disetujui.");
+        $query = PesertaKkn::with(['mahasiswa.prodi.fakultas', 'mahasiswa.fakultas', 'periode.jenisKkn'])
+            ->whereIn('id', $request->input('ids'))
+            ->where('status', 'pending');
+        $this->scopeByFaculty($query);
+
+        $approved = 0;
+        $skipped = [];
+        $auditQueue = [];
+
+        // Audit fix (2026-05-12): bulk approve sebelumnya loop `cursor()` tanpa
+        // transaction/lock — dua admin bulk-approve bersamaan bisa double-update.
+        // Sekarang tiap peserta di-lock via `lockForUpdate()` dan status
+        // di-re-check setelah lock didapat (double-check locking). Audit log
+        // di-queue dan dispatch setelah semua row selesai untuk hindari
+        // overhead per-iterasi.
+        foreach ($query->cursor() as $peserta) {
+            /** @var PesertaKkn $peserta */
+            $result = DB::transaction(function () use ($peserta, $force, $isSuperadmin) {
+                // Lock baris — kalau request lain approve duluan, kita lihat
+                // status baru dan skip.
+                $locked = PesertaKkn::whereKey($peserta->id)->lockForUpdate()->first();
+
+                if ($locked === null || $locked->status !== 'pending') {
+                    return [
+                        'status' => 'race_skip',
+                        'id' => $peserta->id,
+                        'nim' => $peserta->mahasiswa?->nim,
+                        'nama' => $peserta->mahasiswa?->nama,
+                        'reason' => 'Sudah di-proses oleh request lain',
+                    ];
+                }
+
+                $forceBypass = false;
+                $bypassedReasons = null;
+
+                if (! ($force && $isSuperadmin)) {
+                    $eligibility = $this->checkApprovalEligibility($peserta);
+                    if (! $eligibility['eligible']) {
+                        return [
+                            'status' => 'ineligible',
+                            'id' => $peserta->id,
+                            'nim' => $peserta->mahasiswa?->nim,
+                            'nama' => $peserta->mahasiswa?->nama,
+                            'reason' => $eligibility['first_message'],
+                        ];
+                    }
+                } else {
+                    $eligibility = $this->checkApprovalEligibility($peserta);
+                    if (! $eligibility['eligible']) {
+                        $forceBypass = true;
+                        $bypassedReasons = $eligibility['messages'] ?? [$eligibility['first_message'] ?? 'unknown'];
+                    }
+                }
+
+                $locked->update([
+                    'status' => 'approved',
+                    'approved_at' => now(),
+                    'approved_by' => auth()->id(),
+                ]);
+
+                return [
+                    'status' => 'approved',
+                    'peserta_id' => $locked->id,
+                    'nim' => $peserta->mahasiswa?->nim,
+                    'force_bypass' => $forceBypass,
+                    'bypassed_reasons' => $bypassedReasons,
+                ];
+            });
+
+            if (($result['status'] ?? null) === 'approved') {
+                $approved++;
+                if (! empty($result['force_bypass'])) {
+                    $auditQueue[] = $result;
+                }
+            } else {
+                $skipped[] = [
+                    'id' => $result['id'] ?? $peserta->id,
+                    'nim' => $result['nim'] ?? $peserta->mahasiswa?->nim,
+                    'nama' => $result['nama'] ?? $peserta->mahasiswa?->nama,
+                    'reason' => $result['reason'] ?? 'unknown',
+                ];
+            }
+        }
+
+        // R13-API-005: force-approve audit log — dispatch di luar transaction
+        // supaya tidak menahan koneksi DB saat Redis/queue call.
+        foreach ($auditQueue as $entry) {
+            AuditService::log(
+                'FORCE_APPROVE',
+                "Superadmin force-approved peserta id={$entry['peserta_id']} (NIM {$entry['nim']}) melewati pengecekan eligibility",
+                PesertaKkn::find($entry['peserta_id']),
+                null,
+                ['skipped_eligibility' => $entry['bypassed_reasons']],
+            );
+        }
+
+        $message = "{$approved} pendaftaran berhasil disetujui.";
+        if ($skipped !== []) {
+            $message .= ' '.count($skipped).' dilewati karena tidak memenuhi syarat atau sudah di-proses.';
+        }
+
+        return $this->success([
+            'approved_count' => $approved,
+            'skipped_count' => count($skipped),
+            'skipped' => $skipped,
+        ], $message);
     }
 
     public function bulkReject(Request $request): JsonResponse
@@ -338,131 +493,63 @@ class PesertaKknController extends Controller
             return $this->error('FORBIDDEN', 'Admin fakultas hanya memiliki akses baca (read-only).', 403);
         }
         $request->validate(['ids' => ['required', 'array'], 'ids.*' => ['integer'], 'rejection_reason' => ['required', 'string', 'max:500']]);
-
-        $count = app(RegistrationApprovalService::class)->bulkReject(
-            $request->input('ids'),
-            (string) $request->input('rejection_reason'),
-            (int) auth()->id(),
-            false,
-            null,
-        );
+        $query = PesertaKkn::whereIn('id', $request->input('ids'))->where('status', 'pending');
+        $this->scopeByFaculty($query);
+        $count = $query->update(['status' => 'rejected', 'last_rejected_at' => now(), 'last_rejected_by' => auth()->id(), 'rejection_reason' => $request->input('rejection_reason')]);
 
         return $this->success(['rejected_count' => $count], "{$count} pendaftaran ditolak.");
     }
 
-    public function export(Request $request): JsonResponse|\Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\Response
+    public function export(): JsonResponse
     {
-        $format = strtolower((string) $request->input("format", "json"));
-        $query = PesertaKkn::with([
-            "mahasiswa:id,user_id,nim,nama,fakultas_id,prodi_id,batch_year,gender,birth_place,birth_date,sks_completed,gpa,status_bta_ppi,semester,nik,mother_name,shirt_size,is_paid_ukt,alamat,phone,status_aktif,marital_status,is_eligible,eligibility_issues",
-            "mahasiswa.user:id,name,email,phone,address,is_active,last_login_at,password_changed_at",
-            "mahasiswa.fakultas:id,nama,code",
-            "mahasiswa.prodi:id,nama,code",
-            "kelompok:id,nama_kelompok,code",
-            "periode:id,jenis_kkn_id,name,periode,start_date,end_date,registration_start,registration_end",
-            "periode.jenisKkn:id,name,code",
-        ])
-            ->when($request->input("status"), fn ($q, $v) => $q->where("status", $v))
-            ->when($request->input("periode_id"), fn ($q, $v) => $q->where("periode_id", $v))
-            ->when($request->input("jenis_kkn_id"), fn ($q, $v) => $q->whereHas("periode", fn ($p) => $p->where("jenis_kkn_id", $v)))
-            ->when($request->input("fakultas_id"), fn ($q, $v) => $q->whereHas("mahasiswa", fn ($m) => $m->where("fakultas_id", $v)))
-            ->when($request->input("prodi_id"), fn ($q, $v) => $q->whereHas("mahasiswa", fn ($m) => $m->where("prodi_id", $v)))
-            ->orderByDesc("created_at")
-            ->limit(min((int) $request->input("limit", 10000), 50000));
-
+        $query = PesertaKkn::with(['mahasiswa.user', 'kelompok', 'periode'])->orderByDesc('created_at')->limit(5000);
         $this->scopeByFaculty($query);
 
-        $data = $query->get()->map(fn (PesertaKkn $p) => [
-            "registration_id" => $p->id,
-            "status_pendaftaran" => $p->status,
-            "tanggal_daftar" => $p->registration_date?->toDateTimeString(),
-            "approved_at" => $p->approved_at?->toDateTimeString(),
-            "nim" => $p->mahasiswa?->nim,
-            "nama" => $p->mahasiswa?->nama,
-            "email" => $p->mahasiswa?->user?->email,
-            "phone" => $p->mahasiswa?->phone ?? $p->mahasiswa?->user?->phone,
-            "alamat" => $p->mahasiswa?->alamat ?? $p->mahasiswa?->user?->address,
-            "nik" => $p->mahasiswa?->nik,
-            "ibu_kandung" => $p->mahasiswa?->mother_name,
-            "jenis_kelamin" => $p->mahasiswa?->gender,
-            "tempat_lahir" => $p->mahasiswa?->birth_place,
-            "tanggal_lahir" => $p->mahasiswa?->birth_date?->toDateString(),
-            "status_nikah" => $p->mahasiswa?->marital_status,
-            "ukuran_kaos" => $p->mahasiswa?->shirt_size,
-            "angkatan" => $p->mahasiswa?->batch_year,
-            "semester" => $p->mahasiswa?->semester,
-            "sks" => $p->mahasiswa?->sks_completed,
-            "ipk" => $p->mahasiswa?->gpa,
-            "status_bta_ppi" => $p->mahasiswa?->status_bta_ppi,
-            "is_paid_ukt" => $p->mahasiswa?->is_paid_ukt,
-            "status_aktif" => $p->mahasiswa?->status_aktif,
-            "is_eligible" => $p->mahasiswa?->is_eligible,
-            "fakultas_id" => $p->mahasiswa?->fakultas_id,
-            "fakultas" => $p->mahasiswa?->fakultas?->nama,
-            "prodi_id" => $p->mahasiswa?->prodi_id,
-            "prodi" => $p->mahasiswa?->prodi?->nama,
-            "periode_id" => $p->periode_id,
-            "periode" => $p->periode?->name,
-            "jenis_kkn_id" => $p->periode?->jenis_kkn_id,
-            "jenis_kkn" => $p->periode?->jenisKkn?->name,
-            "kelompok_id" => $p->kelompok_id,
-            "kelompok" => $p->kelompok?->nama_kelompok,
-            "role_kelompok" => $p->role,
-        ])->values();
+        $data = $query->cursor()
+            ->map(fn ($item) => (new PesertaKknResource($item))->resolve(request()))
+            ->values()
+            ->all();
 
-        ActivityLogger::log("pii_export", "success", $request->user()?->id, ["export_type" => "peserta_full_no_avatar", "format" => $format, "filters" => $request->only(["status", "periode_id", "jenis_kkn_id", "fakultas_id", "prodi_id"]), "record_count" => count($data), "faculty_scope" => $this->getFacultyScope()]);
-
-        if (in_array($format, ["xlsx", "excel"], true)) {
-            return Excel::download(new PesertaKknFullExport($data), "peserta-kkn-lengkap-".now()->format("Ymd-His").".xlsx");
-        }
-
-        if ($format === "pdf") {
-            return Pdf::loadView("admin.exports.peserta_kkn_full", ["rows" => $data])->setPaper("a4", "landscape")->download("peserta-kkn-lengkap-".now()->format("Ymd-His").".pdf");
-        }
-
-        return $this->success($data, "Export data lengkap berhasil. ".count($data)." data diekspor.");
+        return $this->success($data, 'Export berhasil. '.count($data).' data diekspor.');
     }
-    public function exportBiodata(Request $request): JsonResponse
+
+    public function exportBiodata(Request $request)
     {
         $periodeId = $request->input('periode_id');
 
         $query = PesertaKkn::with([
-            'mahasiswa:id,nim,nama,nik,mother_name,gpa,sks_completed,fakultas_id',
-            'mahasiswa.user:id,name,email,phone,address',
+            'mahasiswa:id,user_id,nim,nama,nik,mother_name,gpa,sks_completed,fakultas_id,prodi_id,birth_place,birth_date,gender,shirt_size,phone,alamat,marital_status,batch_year,semester,status_bta_ppi,status_aktif,is_paid_ukt,is_eligible,eligibility_issues,eligibility_computed_at,master_id,master_synced_at',
+            'mahasiswa.user:id,username,name,email,phone,address,address_village_name,address_district_name,address_regency_name,address_postal_code,address_lat,address_lng,address_verified_at,address_registered_at',
             'mahasiswa.fakultas:id,nama',
             'mahasiswa.prodi:id,nama',
             'kelompok:id,nama_kelompok,code',
+            'periode:id,name',
         ])
             ->when($periodeId, fn ($q, $id) => $q->where('periode_id', $id))
-            ->where('status', 'approved');
+            ->when($request->input('jenis_kkn_id'), fn ($q, $id) => $q->whereHas('periode', fn ($p) => $p->where('jenis_kkn_id', $id)))
+            ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status))
+            ->when($request->input('status_group') === 'unprocessed', fn ($q) => $q->whereIn('status', ['pending', 'document_submitted']))
+            ->when($request->input('status_group') === 'processed', fn ($q) => $q->whereIn('status', ['approved', 'rejected', 'interview_scheduled']))
+            ->when(! $request->filled('status') && ! $request->filled('status_group'), fn ($q) => $q->where('status', 'approved'))
+            ->when($request->input('search'), function ($q, $s) {
+                $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $s);
+                $q->whereHas('mahasiswa', fn ($m) => $m->where('nama', 'ILIKE', "%{$escaped}%"));
+            })
+            ->orderBy('id');
 
         $this->scopeByFaculty($query);
 
-        $data = $query->get()
-            ->map(fn ($p) => [
-                'nim' => $p->mahasiswa?->nim,
-                'nama' => $p->mahasiswa?->nama,
-                'nik' => $p->mahasiswa?->nik,
-                'ibu_kandung' => $p->mahasiswa?->mother_name,
-                'email' => $p->mahasiswa?->user?->email,
-                'phone' => $p->mahasiswa?->user?->phone,
-                'alamat' => $p->mahasiswa?->user?->address,
-                'fakultas' => $p->mahasiswa?->fakultas?->nama,
-                'prodi' => $p->mahasiswa?->prodi?->nama,
-                'ipk' => $p->mahasiswa?->gpa,
-                'sks' => $p->mahasiswa?->sks_completed,
-                'kelompok' => $p->kelompok?->nama_kelompok,
-            ]);
+        $recordCount = (clone $query)->count();
 
         // PII audit trail (R11 audit-pendaftaran fix)
         ActivityLogger::log('pii_export', 'success', $request->user()?->id, [
             'export_type' => 'biodata',
             'periode_id' => $periodeId ? (int) $periodeId : null,
-            'record_count' => count($data),
+            'record_count' => $recordCount,
             'faculty_scope' => $this->getFacultyScope(),
         ]);
 
-        return $this->success($data, 'Export biodata berhasil. '.count($data).' data.');
+        return Excel::download(new BiodataPesertaExport($query), 'biodata-peserta-kkn-'.now()->format('Ymd-His').'.xlsx');
     }
 
     public function exportBpjs(Request $request): JsonResponse

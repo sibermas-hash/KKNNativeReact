@@ -42,16 +42,9 @@ Route::get('/ready', [HealthController::class, 'ready'])->name('api.ready');
 // New JSON API for Next.js SPA and React Native mobile app.
 
 Route::prefix('v1')->group(function () {
-    // Versioned server time alias for @sibermas/api-client serverTime.get()
-    Route::get('/server-time', function () {
-        return response()->json([
-            'server_unix_ms' => now()->getTimestampMs(),
-        ]);
-    })->middleware('throttle:30,1');
-
     // Public endpoints — no auth required. Uses named 'public' tier
     // (30/min IP-based) defined in AppServiceProvider.
-    Route::prefix('public')->middleware(['throttle:public', \Spatie\ResponseCache\Middlewares\CacheResponse::class])->group(function () {
+    Route::prefix('public')->middleware('throttle:public')->group(function () {
         Route::get('/home', [PublicController::class, 'home'])->name('api.v1.public.home');
         Route::get('/announcements', [PublicController::class, 'announcements'])->name('api.v1.public.announcements');
         Route::get('/announcements/{slug}', [PublicController::class, 'announcementBySlug'])->name('api.v1.public.announcements.show');
@@ -65,7 +58,6 @@ Route::prefix('v1')->group(function () {
         Route::get('/locations', [PublicController::class, 'locations'])->name('api.v1.public.locations');
         Route::get('/downloads', [PublicController::class, 'downloads'])->name('api.v1.public.downloads');
         Route::get('/verify-certificate/{token}', [PublicController::class, 'verifyCertificate'])->name('api.v1.public.verify-certificate');
-        Route::get("/countdown/active", [\App\Http\Controllers\Api\V1\Admin\CountdownSettingController::class, "active"])->name("api.v1.public.countdown.active");
     });
 
     // Auth — public. Uses named 'auth_challenge' tier (10/min IP-based)
@@ -73,9 +65,7 @@ Route::prefix('v1')->group(function () {
     // enumeration (narrower wins over auth_challenge anyway).
     Route::prefix('auth')->group(function () {
         Route::get('/captcha', [AuthController::class, 'captcha'])
-            // CAPTCHA generation is public read traffic; keep login/2FA strict,
-            // but allow more headroom here to avoid false 429s on shared NATs.
-            ->middleware('throttle:public')
+            ->middleware('throttle:auth_challenge')
             ->name('api.v1.auth.captcha');
 
         Route::post('/login', [AuthController::class, 'login'])
@@ -160,8 +150,6 @@ Route::prefix('v1')->group(function () {
             Route::get('/chat-attachment/{message}', [PrivateFileController::class, 'chatAttachment'])
                 ->middleware('signed')
                 ->name('api.v1.files.chat-attachment');
-            Route::get('/leave-evidence/{izin}', [PrivateFileController::class, 'leaveEvidence'])
-                ->name('api.v1.files.leave-evidence');
         });
 
     // Student routes
@@ -172,6 +160,9 @@ Route::prefix('v1')->group(function () {
 
     // Admin routes
     require __DIR__.'/api/v1-admin.php';
+
+    // External LPPM routes
+    require __DIR__.'/api/v1-external.php';
 });
 
 // ── Notifications & Attendance (versioned aliases untuk unified client) ────

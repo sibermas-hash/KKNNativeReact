@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { ApiResponse, PaginationMeta } from '@sibermas/shared-types';
 import { adminApi, rawApi } from '@/lib/api';
 import { mutationErrorHandler } from '@/lib/utils';
-import { Users, UserPlus, Eye, EyeOff, X, ShieldAlert } from 'lucide-react';
+import { Users, UserPlus, Eye, EyeOff, X, ShieldAlert, Search, RotateCcw, SlidersHorizontal, Mail, UserCircle, CheckCircle2, Ban, KeyRound, PencilLine, Shield } from 'lucide-react';
 import { PageHeader, EmptyState, ResponsiveTable } from '@/components/ui/shared';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { toast } from 'sonner';
@@ -94,6 +94,19 @@ type FacultyOption = {
 
 const EMPTY_CREATE_FORM = { username: '', name: '', email: '', role: 'student', fakultas_id: '' };
 const EMPTY_EDIT: EditForm = { user: {}, mahasiswa: {}, dosen: {} };
+
+
+const normalizeAvatarUrl = (url?: string | null): string | null => {
+  if (!url) return null;
+  return url.replace('/api/storage/', '/storage/');
+};
+
+const roleBadgeClass = (role: string) => {
+  if (role === 'superadmin') return 'bg-rose-50 text-rose-700 ring-rose-200';
+  if (role === 'admin' || role === 'faculty_admin') return 'bg-amber-50 text-amber-700 ring-amber-200';
+  if (role === 'dosen' || role === 'dpl') return 'bg-violet-50 text-violet-700 ring-violet-200';
+  return 'bg-cyan-50 text-cyan-700 ring-cyan-200';
+};
 
 export default function AdminUsersPage(): React.JSX.Element {
   const queryClient = useQueryClient();
@@ -397,21 +410,21 @@ export default function AdminUsersPage(): React.JSX.Element {
         onClick={() => toggleMutation.mutate(u.id)}
         disabled={(toggleMutation.isPending && toggleMutation.variables === u.id) || (u.id === currentUser?.id && !!u.is_active)}
         title={u.id === currentUser?.id && u.is_active ? 'Akun Anda sendiri tidak dapat dinonaktifkan.' : undefined}
-        className={`px-3 py-1.5 rounded-lg text-xs font-black disabled:opacity-50 ${u.is_active ? 'bg-rose-50 text-rose-700 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}`}
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black disabled:opacity-50 ${u.is_active ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 ring-1 ring-rose-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 ring-1 ring-emerald-100'}`}
       >
-        {u.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+        {u.is_active ? <Ban size={13} /> : <CheckCircle2 size={13} />} {u.is_active ? 'Nonaktifkan' : 'Aktifkan'}
       </button>
       <button
         onClick={() => { setEditForm(EMPTY_EDIT); setEditingId(u.id); }}
-        className="px-3 py-1.5 rounded-lg text-xs font-black bg-cyan-50 text-cyan-700 hover:bg-cyan-100"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black bg-cyan-50 text-cyan-700 hover:bg-cyan-100 ring-1 ring-cyan-100"
       >
-        Edit Data
+        <PencilLine size={13} /> Edit
       </button>
       <button
         onClick={() => { setEditingUser(u); setEditRole(u.roles?.[0] || 'student'); }}
-        className="px-3 py-1.5 rounded-lg text-xs font-black bg-slate-100 text-slate-700 hover:bg-slate-200"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black bg-slate-100 text-slate-700 hover:bg-slate-200 ring-1 ring-slate-200"
       >
-        Ubah Role
+        <Shield size={13} /> Role
       </button>
       <button
         onClick={() => {
@@ -419,9 +432,9 @@ export default function AdminUsersPage(): React.JSX.Element {
           setResetConfirmUser(u);
         }}
         title="Reset password ke default DDMMYYYY dari tanggal lahir"
-        className="px-3 py-1.5 rounded-lg text-xs font-black bg-amber-50 text-amber-700 hover:bg-amber-100 disabled:opacity-50"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black bg-amber-50 text-amber-700 hover:bg-amber-100 ring-1 ring-amber-100 disabled:opacity-50"
       >
-        Reset Password
+        <KeyRound size={13} /> Reset
       </button>
     </div>
   );
@@ -430,16 +443,34 @@ export default function AdminUsersPage(): React.JSX.Element {
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       <PageHeader
         title="Manajemen Pengguna"
-        subtitle="Kelola akun pengguna sistem"
+        subtitle="Pusat kontrol akun, role, status akses, dan reset kredensial pengguna SIBERMAS."
         actions={
           <button
             onClick={toggleCreateForm}
-            className="px-4 py-2 bg-cyan-600 text-white rounded-xl text-xs font-black uppercase flex items-center gap-2 hover:bg-cyan-700"
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-xs font-black uppercase text-slate-900 shadow-sm ring-1 ring-white/70 hover:bg-cyan-50"
           >
-            <UserPlus size={14} /> Tambah
+            <UserPlus size={14} /> {showForm ? 'Tutup Form' : 'Tambah Pengguna'}
           </button>
         }
       />
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total hasil</p>
+          <p className="mt-2 text-2xl font-black text-slate-900 tabular-nums">{meta?.total ?? users.length}</p>
+          <p className="text-xs font-semibold text-slate-500">pengguna sesuai filter</p>
+        </div>
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Batch aktif</p>
+          <p className="mt-2 text-2xl font-black text-slate-900 tabular-nums">{meta?.current_page ?? page}/{meta?.last_page ?? 1}</p>
+          <p className="text-xs font-semibold text-slate-500">{perPage} pengguna per batch</p>
+        </div>
+        <div className="rounded-2xl bg-slate-950 p-5 text-white shadow-sm">
+          <p className="text-[10px] font-black uppercase tracking-widest text-white/50">Filter aktif</p>
+          <p className="mt-2 text-2xl font-black tabular-nums">{activeFilterCount}</p>
+          <p className="text-xs font-semibold text-white/60">search, role, status, fakultas</p>
+        </div>
+      </div>
 
       {showForm && (
         <form
@@ -514,20 +545,23 @@ export default function AdminUsersPage(): React.JSX.Element {
         </form>
       )}
 
-      <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+      <div className="rounded-3xl bg-white/95 p-5 shadow-sm ring-1 ring-slate-200">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
           <div className="flex flex-1 flex-col gap-3">
             <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
               <div className="w-full xl:col-span-2">
                 <label htmlFor="search-users" className="text-[10px] font-black text-slate-500 uppercase">Cari Pengguna</label>
+                <div className="relative mt-1">
+                  <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input
                   id="search-users"
                   value={search}
                   onChange={(e) => { setSearch(e.target.value); setPage(1); }}
                   placeholder="Cari nama, username, atau email..."
                   autoComplete="off"
-                  className="mt-1 w-full h-10 bg-slate-50 border border-slate-200 rounded-xl px-4 text-sm font-bold"
+                  className="w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl pl-9 pr-4 text-sm font-bold focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-50"
                 />
+                </div>
               </div>
 
               <div className="w-full">
@@ -539,7 +573,7 @@ export default function AdminUsersPage(): React.JSX.Element {
                     setRoleFilter(e.target.value);
                     setPage(1);
                   }}
-                  className="mt-1 w-full h-10 bg-slate-50 border border-slate-200 rounded-xl px-3 text-sm font-bold"
+                  className="mt-1 w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl px-3 text-sm font-bold focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-50"
                 >
                   <option value="">Semua Role</option>
                   {roleOptions.map((option) => (
@@ -557,7 +591,7 @@ export default function AdminUsersPage(): React.JSX.Element {
                     setStatusFilter(e.target.value);
                     setPage(1);
                   }}
-                  className="mt-1 w-full h-10 bg-slate-50 border border-slate-200 rounded-xl px-3 text-sm font-bold"
+                  className="mt-1 w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl px-3 text-sm font-bold focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-50"
                 >
                   {statusOptions.map((option) => (
                     <option key={option.value || 'all'} value={option.value}>{option.label}</option>
@@ -576,7 +610,7 @@ export default function AdminUsersPage(): React.JSX.Element {
                     setFacultyFilter(e.target.value);
                     setPage(1);
                   }}
-                  className="mt-1 w-full h-10 bg-slate-50 border border-slate-200 rounded-xl px-3 text-sm font-bold"
+                  className="mt-1 w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl px-3 text-sm font-bold focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-50"
                 >
                   <option value="">Semua Fakultas</option>
                   {faculties.map((faculty) => (
@@ -594,7 +628,7 @@ export default function AdminUsersPage(): React.JSX.Element {
                     setPerPage(Number(e.target.value));
                     setPage(1);
                   }}
-                  className="mt-1 w-full h-10 bg-slate-50 border border-slate-200 rounded-xl px-3 text-sm font-bold"
+                  className="mt-1 w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl px-3 text-sm font-bold focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-50"
                 >
                   {[10, 25, 50, 100].map((size) => (
                     <option key={size} value={size}>{size} pengguna</option>
@@ -606,16 +640,16 @@ export default function AdminUsersPage(): React.JSX.Element {
                 <button
                   type="button"
                   onClick={resetFilters}
-                  className="h-10 rounded-xl border border-slate-200 px-4 text-xs font-black uppercase text-slate-600 hover:bg-slate-50"
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 px-4 text-xs font-black uppercase text-slate-600 hover:bg-slate-50"
                 >
-                  Reset Filter ({activeFilterCount})
+                  <RotateCcw size={14} /> Reset ({activeFilterCount})
                 </button>
               )}
             </div>
           </div>
 
-          <div className="text-xs font-semibold text-slate-500">
-            {isFetching && !isLoading ? 'Memuat batch baru...' : batchLabel}
+          <div className="inline-flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 text-xs font-black text-slate-600 ring-1 ring-slate-200">
+            <SlidersHorizontal size={14} /> {isFetching && !isLoading ? 'Memuat batch baru...' : batchLabel}
           </div>
         </div>
       </div>
@@ -648,8 +682,20 @@ export default function AdminUsersPage(): React.JSX.Element {
                 label: 'Pengguna',
                 render: (u) => (
                   <div>
-                    <p className="font-black text-slate-900">{String(u.name || '-')}</p>
-                    <p className="text-xs text-slate-400">@{String(u.username || '-')}</p>
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-cyan-50 text-cyan-700 ring-1 ring-cyan-100">
+                        {normalizeAvatarUrl(u.avatar_url) ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={normalizeAvatarUrl(u.avatar_url) ?? ''} alt={String(u.name || 'Avatar pengguna')} className="h-full w-full object-cover" loading="lazy" />
+                        ) : (
+                          <UserCircle size={20} />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-black text-slate-900">{String(u.name || '-')}</p>
+                        <p className="text-xs font-semibold text-slate-400">@{String(u.username || '-')}</p>
+                      </div>
+                    </div>
                   </div>
                 ),
               },
@@ -658,7 +704,7 @@ export default function AdminUsersPage(): React.JSX.Element {
                 label: 'Kontak',
                 hideOnMobile: true,
                 render: (u) => (
-                  <span className="text-sm text-slate-600">{String(u.email || '-')}</span>
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600"><Mail size={14} className="text-slate-400" />{String(u.email || '-')}</span>
                 ),
               },
               {
@@ -669,7 +715,7 @@ export default function AdminUsersPage(): React.JSX.Element {
                     {(u.roles?.length ? u.roles : ['-']).map((role) => (
                       <span
                         key={`${u.id}-${role}`}
-                        className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-slate-600"
+                        className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ring-1 ${roleBadgeClass(role)}`}
                       >
                         {roleLabelMap[role] ?? role}
                       </span>
@@ -681,8 +727,8 @@ export default function AdminUsersPage(): React.JSX.Element {
                 key: 'status',
                 label: 'Status',
                 render: (u) => (
-                  <span className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ${u.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'}`}>
-                    {u.is_active ? 'Aktif' : 'Nonaktif'}
+                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ring-1 ${u.is_active ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-rose-50 text-rose-700 ring-rose-200'}`}>
+                    {u.is_active ? <CheckCircle2 size={12} /> : <Ban size={12} />} {u.is_active ? 'Aktif' : 'Nonaktif'}
                   </span>
                 ),
               },
@@ -766,9 +812,9 @@ export default function AdminUsersPage(): React.JSX.Element {
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 <div className="h-16 w-16 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm shrink-0">
-                  {detailData?.user?.avatar_url ? (
+                  {normalizeAvatarUrl(detailData?.user?.avatar_url) ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={detailData.user.avatar_url} alt={detailData.user.name || 'Avatar pengguna'} className="h-full w-full object-cover" />
+                    <img src={normalizeAvatarUrl(detailData?.user?.avatar_url) ?? ''} alt={detailData?.user?.name || 'Avatar pengguna'} className="h-full w-full object-cover" />
                   ) : (
                     <div className="flex h-full w-full items-center justify-center bg-cyan-50 text-lg font-black text-cyan-700">
                       {(detailData?.user?.name || editForm.user.name || '?').toString().slice(0, 1).toUpperCase()}

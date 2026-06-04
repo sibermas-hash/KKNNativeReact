@@ -26,6 +26,11 @@ class Mahasiswa extends Model
 
     protected $fillable = [
         'user_id',
+        'origin_type',
+        'external_university_id',
+        'external_nim',
+        'external_faculty_name',
+        'external_prodi_name',
         'nim',
         'nim_bidx',
         'nik',
@@ -60,6 +65,7 @@ class Mahasiswa extends Model
     {
         return [
             'birth_date' => 'date',
+            'external_university_id' => 'integer',
             'sks_completed' => 'integer',
             'semester' => 'integer',
             'gpa' => 'float',
@@ -117,6 +123,11 @@ class Mahasiswa extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function externalUniversity(): BelongsTo
+    {
+        return $this->belongsTo(ExternalUniversity::class, 'external_university_id');
     }
 
     public function fakultas(): BelongsTo

@@ -73,7 +73,7 @@ export function UserRowActions({ user: u, currentUserId, toggleMutation, onEdit,
 
   return (
     <>
-      <button ref={buttonRef} type="button" onClick={() => setOpen((value) => !value)} aria-haspopup="menu" aria-expanded={open} className="inline-flex cursor-pointer list-none items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-[11px] font-black uppercase text-white shadow-sm hover:bg-cyan-700">
+      <button ref={buttonRef} type="button" onClick={() => setOpen((value) => !value)} aria-haspopup="menu" aria-expanded={open} data-menu="user-row-actions" className="inline-flex cursor-pointer list-none items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-[11px] font-black uppercase text-white shadow-sm hover:bg-cyan-700">
         Aksi <ChevronDown size={13} className={`transition ${open ? 'rotate-180' : ''}`} />
       </button>
       {menu}

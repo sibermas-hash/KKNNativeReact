@@ -20,6 +20,9 @@ import { CreateUserForm } from './components/CreateUserForm';
 import { RoleDialog } from './components/RoleDialog';
 import { ResetPasswordConfirm } from './components/ResetPasswordConfirm';
 import { EditUserDialog } from './components/EditUserDialog';
+import { AnimatePresence, motion } from 'motion/react';
+
+const PAGE_ENTER = { hidden: { opacity: 0, y: 14, filter: 'blur(5px)' }, show: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.36, ease: 'easeOut' } } };
 
 export default function AdminUsersPage(): React.JSX.Element {
   const currentUser = useAuthStore((state) => state.user);
@@ -246,8 +249,14 @@ export default function AdminUsersPage(): React.JSX.Element {
   );
 
   return (
-    <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
-      <PageHeader
+    <motion.div
+      className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8"
+      initial="hidden"
+      animate="show"
+      variants={{ show: { transition: { staggerChildren: 0.055, delayChildren: 0.02 } } }}
+    >
+      <motion.div variants={PAGE_ENTER}>
+        <PageHeader
         title="Manajemen Pengguna"
         subtitle="Pusat kontrol akun, role, status akses, dan reset kredensial pengguna SIBERMAS."
         actions={
@@ -259,15 +268,24 @@ export default function AdminUsersPage(): React.JSX.Element {
           </button>
         }
       />
+      </motion.div>
 
-      <UsersStats meta={meta} users={users} page={page} perPage={perPage} activeFilterCount={activeFilterCount} />
+      <motion.div variants={PAGE_ENTER}>
+        <UsersStats meta={meta} users={users} page={page} perPage={perPage} activeFilterCount={activeFilterCount} />
+      </motion.div>
 
+      <AnimatePresence>
       {showForm && (
-        <div
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
           className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-4 backdrop-blur-sm"
           onClick={(e) => { if (e.target === e.currentTarget) { setShowForm(false); resetCreateForm(); } }}
           onKeyDown={(e) => { if (e.key === 'Escape') { setShowForm(false); resetCreateForm(); } }}
         >
+          <motion.div initial={{ opacity: 0, y: 18, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 12, scale: 0.98 }} transition={{ duration: 0.22, ease: 'easeOut' }}>
           <CreateUserForm
             form={form}
             setForm={setForm}
@@ -279,10 +297,13 @@ export default function AdminUsersPage(): React.JSX.Element {
             createMutation={createMutation}
             onCancel={() => { setShowForm(false); resetCreateForm(); }}
           />
-        </div>
+          </motion.div>
+        </motion.div>
       )}
+      </AnimatePresence>
 
-      <UsersFilterBar
+      <motion.div variants={PAGE_ENTER}>
+        <UsersFilterBar
         search={search}
         setSearch={setSearch}
         roleFilter={roleFilter}
@@ -302,8 +323,10 @@ export default function AdminUsersPage(): React.JSX.Element {
         isLoading={isLoading}
         batchLabel={batchLabel}
       />
+      </motion.div>
 
-      <UsersTable
+      <motion.div variants={PAGE_ENTER}>
+        <UsersTable
         users={users}
         meta={meta}
         batchLabel={batchLabel}
@@ -314,6 +337,7 @@ export default function AdminUsersPage(): React.JSX.Element {
         setPage={setPage}
         rowActions={renderActions}
       />
+      </motion.div>
 
       <RoleDialog
         user={editingUser}
@@ -342,6 +366,6 @@ export default function AdminUsersPage(): React.JSX.Element {
         onClose={() => setResetConfirmUser(null)}
         resetPwMutation={resetPwMutation}
       />
-    </div>
+    </motion.div>
   );
 }

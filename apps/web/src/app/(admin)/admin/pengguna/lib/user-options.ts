@@ -1,6 +1,13 @@
 import type { EditForm } from './user-types';
 
-export const EMPTY_CREATE_FORM = { username: '', name: '', email: '', role: 'student', fakultas_id: '' };
+export const EMPTY_CREATE_FORM = {
+  username: '',
+  name: '',
+  email: '',
+  role: 'student',
+  fakultas_id: '',
+  mahasiswa: { nim: '', prodi_id: '', batch_year: String(new Date().getFullYear()), semester: '', gender: '', phone: '' },
+};
 export const EMPTY_EDIT: EditForm = { user: {}, mahasiswa: {}, dosen: {} };
 
 export const roleOptions = [

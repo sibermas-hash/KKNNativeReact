@@ -78,8 +78,16 @@ class UserController extends Controller
             'email' => ['nullable', 'email', 'unique:users,email'],
             'password' => ['required', 'string', ...User::PASSWORD_REQUIREMENTS],
             'role' => ['required', 'string', Rule::in(['superadmin', 'admin', 'faculty_admin', 'external_lppm_admin', 'dosen', 'dpl', 'student'])],
-            'fakultas_id' => ['nullable', 'exists:fakultas,id'],
+            'fakultas_id' => ['nullable', 'required_if:role,student', 'exists:fakultas,id'],
             'external_university_id' => ['nullable', 'required_if:role,external_lppm_admin', 'exists:external_universities,id'],
+            'mahasiswa' => ['nullable', 'array'],
+            'mahasiswa.nim' => ['required_if:role,student', 'string', 'max:20', 'unique:mahasiswa,nim'],
+            'mahasiswa.prodi_id' => ['required_if:role,student', 'integer', 'exists:prodi,id'],
+            'mahasiswa.batch_year' => ['required_if:role,student', 'integer', 'min:2000', 'max:'.((int) date('Y') + 1)],
+            'mahasiswa.semester' => ['nullable', 'integer', 'min:1', 'max:20'],
+            'mahasiswa.gender' => ['nullable', Rule::in(['L', 'P'])],
+            'mahasiswa.phone' => ['nullable', 'string', 'max:30'],
+            'mahasiswa.status_aktif' => ['nullable', 'string', 'max:50'],
         ]);
         $externalUniversityId = $validated['external_university_id'] ?? null;
         if ($validated['role'] === 'external_lppm_admin') {
@@ -89,10 +97,40 @@ class UserController extends Controller
             )->validate()['external_university_id'];
         }
 
-        $user = User::create(['username' => $validated['username'], 'name' => $validated['name'], 'email' => $validated['email'] ?? null, 'password' => Hash::make($validated['password']), 'must_change_password' => true, 'is_active' => true, 'fakultas_id' => $validated['fakultas_id'] ?? null, 'external_university_id' => $externalUniversityId]);
-        $user->assignRole($validated['role']);
+        $user = DB::transaction(function () use ($validated, $externalUniversityId) {
+            $user = User::create([
+                'username' => $validated['username'],
+                'name' => $validated['name'],
+                'email' => $validated['email'] ?? null,
+                'password' => Hash::make($validated['password']),
+                'must_change_password' => true,
+                'is_active' => true,
+                'fakultas_id' => $validated['fakultas_id'] ?? null,
+                'external_university_id' => $externalUniversityId,
+            ]);
+            $user->assignRole($validated['role']);
 
-        return $this->created(new UserResource($user->load(['roles', 'externalUniversity'])), 'Pengguna berhasil ditambahkan.');
+            if ($validated['role'] === 'student') {
+                $mahasiswa = $validated['mahasiswa'];
+                Mahasiswa::create([
+                    'user_id' => $user->id,
+                    'nim' => $mahasiswa['nim'],
+                    'nama' => $validated['name'],
+                    'fakultas_id' => $validated['fakultas_id'],
+                    'prodi_id' => $mahasiswa['prodi_id'],
+                    'batch_year' => $mahasiswa['batch_year'],
+                    'semester' => $mahasiswa['semester'] ?? null,
+                    'gender' => $mahasiswa['gender'] ?? null,
+                    'phone' => $mahasiswa['phone'] ?? null,
+                    'status_aktif' => $mahasiswa['status_aktif'] ?? 'Aktif',
+                    'api_email' => $validated['email'] ?? null,
+                ]);
+            }
+
+            return $user;
+        });
+
+        return $this->created(new UserResource($user->load(['roles', 'externalUniversity', 'mahasiswa'])), 'Pengguna berhasil ditambahkan.');
     }
 
     public function toggleActive(User $user): JsonResponse

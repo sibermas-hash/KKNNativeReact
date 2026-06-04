@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import type { ApiResponse } from '@sibermas/shared-types';
 import { adminApi, rawApi } from '@/lib/api';
-import type { FacultyOption, PaginatedUsersResponse, User } from '../lib/user-types';
+import type { FacultyOption, PaginatedUsersResponse, ProdiOption, User } from '../lib/user-types';
 
 type UseAdminUsersParams = {
   deferredSearch: string;
@@ -48,5 +48,14 @@ export function useAdminUsers(params: UseAdminUsersParams) {
     enabled,
   });
 
-  return { usersQuery, facultiesQuery };
+  const prodiQuery = useQuery<ProdiOption[]>({
+    queryKey: ['admin', 'prodi', 'user-create'],
+    queryFn: async () => {
+      const response = await rawApi.get<ApiResponse<ProdiOption[]>>('/admin/prodi');
+      return response.data.data ?? [];
+    },
+    enabled,
+  });
+
+  return { usersQuery, facultiesQuery, prodiQuery };
 }

@@ -80,3 +80,9 @@ export type FacultyOption = {
   id: number;
   nama: string;
 };
+
+export type ProdiOption = {
+  id: number;
+  nama: string;
+  fakultas_id?: number | null;
+};

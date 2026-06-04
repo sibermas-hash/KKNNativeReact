@@ -74,7 +74,7 @@ export default function AdminUsersPage(): React.JSX.Element {
     setShowForm(true);
   };
 
-  const { usersQuery, facultiesQuery } = useAdminUsers({
+  const { usersQuery, facultiesQuery, prodiQuery } = useAdminUsers({
     deferredSearch,
     roleFilter,
     statusFilter,
@@ -85,6 +85,7 @@ export default function AdminUsersPage(): React.JSX.Element {
   });
   const { data, isLoading, isFetching, isError, error, refetch } = usersQuery;
   const { data: facultiesData } = facultiesQuery;
+  const { data: prodiData } = prodiQuery;
 
   const { data: detailData, isLoading: detailLoading, isError: detailError, error: detailQueryError } = useUserDetail(editingId, isSuperadmin);
 
@@ -170,6 +171,7 @@ export default function AdminUsersPage(): React.JSX.Element {
   const detailErrorMessage = detailError ? mutationErrorHandler(detailQueryError) : null;
 
   const faculties = facultiesData ?? [];
+  const prodi = prodiData ?? [];
 
   if (!isSuperadmin) {
     return (
@@ -270,6 +272,7 @@ export default function AdminUsersPage(): React.JSX.Element {
             form={form}
             setForm={setForm}
             faculties={faculties}
+            prodi={prodi}
             passwordRef={passwordRef}
             showCreatePassword={showCreatePassword}
             setShowCreatePassword={setShowCreatePassword}

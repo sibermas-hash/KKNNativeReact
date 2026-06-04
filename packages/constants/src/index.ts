@@ -24,7 +24,7 @@ export const QUERY_KEYS = {
     dplEvaluation: ['student', 'dpl-evaluation'] as const,
     rekapitulasi: ['student', 'rekapitulasi'] as const,
     posko: ['student', 'posko'] as const,
-    chat: ["student", "chat"] as const,
+
   },
   dpl: {
     dashboard: ['dpl', 'dashboard'] as const,

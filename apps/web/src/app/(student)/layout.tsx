@@ -224,18 +224,18 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         <main className="flex-1 p-4 lg:p-8 text-[color:var(--profile-text)]">{children}</main>
       </div>
 
-      {pathname !== '/mahasiswa/chat' && (
-        <Link
-          href="/mahasiswa/chat"
-          aria-label="Chat Admin"
-          title="Chat Admin"
-          className="fixed bottom-5 right-5 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-[color:var(--profile-primary)] text-white shadow-2xl shadow-black/20 ring-4 ring-[color:var(--profile-surface)] transition-all hover:-translate-y-0.5 hover:opacity-90 focus:outline-none focus:ring-4 focus:ring-[color:var(--profile-soft)] md:bottom-6 md:right-6"
-        >
-          <MessageCircle className="h-6 w-6" strokeWidth={2.5} />
-          <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full border-2 border-white bg-rose-500" />
-          <span className="sr-only">Chat Admin</span>
-        </Link>
-      )}
+      <a
+        href="https://t.me/Sibermas58"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Chat Admin Sibermas via Telegram"
+        title="Chat Admin Sibermas via Telegram"
+        className="fixed bottom-5 right-5 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-sky-600 text-white shadow-2xl shadow-black/20 ring-4 ring-[color:var(--profile-surface)] transition-all hover:-translate-y-0.5 hover:bg-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-200 md:bottom-6 md:right-6"
+      >
+        <MessageCircle className="h-6 w-6" strokeWidth={2.5} />
+        <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full border-2 border-white bg-rose-500" />
+        <span className="sr-only">Chat Admin Sibermas via Telegram</span>
+      </a>
     </div>
   );
 }

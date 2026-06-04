@@ -65,12 +65,7 @@ export function studentEndpoints(client: AxiosInstance) {
       store: (data: FormData) => client.post('/student/poster-potensi-desa', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
     },
     notificationShown: (id: number) => client.patch(`/student/peserta-kkn/${id}/notification-shown`),
-    chat: {
-      index: () => client.get('/chat'),
-      store: (data: { subject: string; message: string; priority?: 'normal' | 'urgent' }) => client.post('/chat', data),
-      show: (id: number) => client.get(`/chat/${id}`),
-      sendMessage: (id: number, data: FormData | { message: string }) => client.post(`/chat/${id}/messages`, data),
-    },
+
     // GAP-1: document upload for registration
     documents: (periodeId: number, data: FormData) =>
       client.post(`/student/registration/${periodeId}/documents`, data),

@@ -66,12 +66,12 @@ export default function SupportPage() {
             </div>
 
             <a 
-              href="https://chat.whatsapp.com/BETotRSgFDGJ67FF1ScBcu"
+              href="https://t.me/Sibermas58"
               target="_blank"
               rel="noopener noreferrer"
               className="mt-8 flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold tracking-wide transition-colors shadow-sm"
             >
-              Gabung Grup WhatsApp <ExternalLink size={18} />
+              Chat Admin via Telegram <ExternalLink size={16} />
             </a>
           </div>
 
@@ -92,7 +92,7 @@ export default function SupportPage() {
               <ShieldAlert size={40} className="text-emerald-300 mb-4 relative z-10" />
               <h3 className="font-bold text-emerald-900 mb-2 relative z-10">Segera Hadir: Live Chat SIBERMAS</h3>
               <p className="text-sm text-slate-500 leading-relaxed relative z-10">
-                Pengalaman konsultasi yang lebih personal sedang kami racik! Ke depannya, Anda tidak perlu pindah aplikasi—langsung <i>chatting</i> dengan Admin secara <i>real-time</i> dari dalam dashboard SIBERMAS.
+                Sistem chat internal sudah dialihkan ke Telegram. Silakan hubungi Admin Sibermas melalui Telegram untuk bantuan cepat.
               </p>
             </div>
           </div>

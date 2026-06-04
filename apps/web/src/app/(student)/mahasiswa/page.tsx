@@ -8,7 +8,7 @@ import { QUERY_KEYS } from '@sibermas/constants';
 import { studentApi } from '@/lib/api';
 import { useAuthStore, usePeriodStore } from '@/stores';
 import {
-  MapPin, ArrowRight, ClipboardList, CheckCircle2, MessageCircle,
+  MapPin, ArrowRight, ClipboardList, CheckCircle2,
   Presentation, AlertTriangle, Target,
   ScrollText, LayoutGrid, UserCheck, Users, Lightbulb, Plane, Star, Image,
   GraduationCap, ShieldCheck, Activity, Send,
@@ -32,7 +32,7 @@ export default function StudentDashboard(): React.JSX.Element {
   const queryClient = useQueryClient();
   const [showPopup, setShowPopup] = useState(false);
   const [showTelegramPopup, setShowTelegramPopup] = useState(false);
-  const [showTelegramBadge, setShowTelegramBadge] = useState(false);
+
 
   
 
@@ -87,7 +87,7 @@ export default function StudentDashboard(): React.JSX.Element {
     { href: '/mahasiswa/evaluasi', icon: Star, label: 'Hasil Evaluasi', minPhase: 'grading', lockReason: 'Aktif setelah penilaian dibuka.' },
     { href: '/mahasiswa/evaluasi-dpl', icon: UserCheck, label: 'Evaluasi DPL', minPhase: 'grading', lockReason: 'Aktif saat fase penilaian.' },
     { href: '/mahasiswa/izin', icon: Plane, label: 'Izin Absensi', minPhase: 'execution', lockReason: 'Aktif saat fase pelaksanaan KKN.' },
-    { href: '/mahasiswa/chat', icon: MessageCircle, label: 'Chat Konsultasi', minPhase: 'registration', lockReason: 'Aktif setelah registrasi.' },
+
     { href: '/mahasiswa/poster', icon: Image, label: 'Poster KKN', minPhase: 'execution', lockReason: 'Aktif saat fase pelaksanaan KKN.' },
   ];
 
@@ -107,8 +107,6 @@ export default function StudentDashboard(): React.JSX.Element {
     const dismissed = window.localStorage.getItem('sibermas.telegram.join.dismissed');
     if (!dismissed) setShowTelegramPopup(true);
 
-    const contacted = window.localStorage.getItem('sibermas.telegram.admin.contacted');
-    if (!contacted) setShowTelegramBadge(true);
   }, []);
 
   const handleClosePopup = useCallback(() => {
@@ -123,10 +121,6 @@ export default function StudentDashboard(): React.JSX.Element {
     setShowTelegramPopup(false);
   }, []);
 
-  const handleOpenAdminTelegram = useCallback(() => {
-    window.localStorage.setItem('sibermas.telegram.admin.contacted', '1');
-    setShowTelegramBadge(false);
-  }, []);
 
   // Escape key handler for modal accessibility
   useEffect(() => {
@@ -245,19 +239,6 @@ export default function StudentDashboard(): React.JSX.Element {
         </div>
       )}
 
-      <a
-        href="https://t.me/Sibermas58"
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={handleOpenAdminTelegram}
-        aria-label="Chat Admin Sibermas via Telegram"
-        className="fixed bottom-5 right-5 z-40 flex h-16 w-16 items-center justify-center rounded-full border-4 border-white bg-sky-600 text-white shadow-2xl shadow-sky-900/25 transition-all hover:scale-105 hover:bg-sky-700 active:scale-95"
-      >
-        <MessageCircle size={30} strokeWidth={2.6} />
-        {showTelegramBadge && (
-          <span className="absolute -right-1 -top-1 h-4 w-4 rounded-full border-2 border-white bg-red-500" aria-hidden="true" />
-        )}
-      </a>
 
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6 pt-6 pb-12">
         {/* HEADER */}

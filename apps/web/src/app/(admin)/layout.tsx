@@ -18,12 +18,12 @@ import {
   Layers, BarChart3, ShieldCheck, Award, RefreshCw, Shuffle, BookOpen,
   Activity, History, Cpu, UserCheck, FileCheck, GraduationCap, Settings,
   UserCog, Globe, Terminal, Newspaper, Download, Menu, Power, Building2,
-  Play, Megaphone, Bell, Camera, Sparkles, MessageCircle, ArrowRightLeft,
+  Play, Megaphone, Bell, Camera, Sparkles, ArrowRightLeft,
 } from 'lucide-react';
 
 const getNavGroups = (pathname: string, roles: string[]) => {
   const isSuperadmin = roles.includes('superadmin');
-  const isBlog = pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi') || pathname.includes('/admin/chat') || pathname.includes('/admin/konten-publik');
+  const isBlog = pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi') || pathname.includes('/admin/konten-publik');
   const isSystem = pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/prodi') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/konfigurasi-penilaian') || pathname.includes('/admin/monitoring');
 
   const operationalGroups = [
@@ -75,7 +75,7 @@ const getNavGroups = (pathname: string, roles: string[]) => {
     { title: 'MANAJEMEN KONTEN', items: [
       { label: 'Warta Utama', href: '/admin/warta-utama', icon: Newspaper },
       { label: 'Kirim Pengumuman', href: '/admin/notifikasi/broadcast', icon: Megaphone },
-      { label: 'Chat Konsultasi', href: '/admin/chat', icon: MessageCircle },
+
       { label: 'Pusat Unduhan', href: '/admin/unduhan', icon: Download },
     ]},
     { title: 'INFORMASI LEMBAGA', items: [
@@ -136,7 +136,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pageTitle = activeNav?.item.label ?? (pathname === '/admin' ? 'Hub Utama' : 'SIBERMAS');
   const pageContext = activeNav?.group ?? (pathname === '/admin' ? 'Pusat Navigasi' : 'Operasional');
   const ActiveHeaderIcon = activeNav?.item.icon ?? LayoutDashboard;
-  const isBlog = useMemo(() => pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi') || pathname.includes('/admin/chat'), [pathname]);
+  const isBlog = useMemo(() => pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi'), [pathname]);
   const isSystem = useMemo(() => pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/prodi') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/monitoring'), [pathname]);
 
   useEffect(() => {

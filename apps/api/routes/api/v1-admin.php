@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Api\V1\Admin\ActivityAuditController;
 use App\Http\Controllers\Api\V1\Admin\AiHealthController;
-use App\Http\Controllers\Api\V1\Admin\AdminChatController;
+
 use App\Http\Controllers\Api\V1\Admin\AnnouncementController;
 use App\Http\Controllers\Api\V1\Admin\AvatarModerationController;
 use App\Http\Controllers\Api\V1\Admin\AutoPlottingController;
@@ -346,13 +346,6 @@ Route::prefix('admin')
                 ->middleware('throttle:10,1');
         });
 
-        // Chat Konsultasi — admin side (PRD_CHAT_SYSTEM.md)
-        Route::prefix('chat')->group(function () {
-            Route::get('/', [AdminChatController::class, 'index']);
-            Route::get('/{conversation}', [AdminChatController::class, 'show']);
-            Route::post('/{conversation}/reply', [AdminChatController::class, 'reply'])->middleware('throttle:30,1');
-            Route::patch('/{conversation}/close', [AdminChatController::class, 'close']);
-        });
 
         // Comprehensive Report (LP2M executive summary PDF)
         Route::get('/report/comprehensive/{periode}', [ComprehensiveReportController::class, 'download'])

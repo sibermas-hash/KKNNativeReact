@@ -12,7 +12,7 @@ use App\Http\Controllers\Api\V1\PeriodContextController;
 use App\Http\Controllers\Api\V1\PrivateFileController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\PublicController;
-use App\Http\Controllers\Api\V1\Student\ChatController;
+
 use App\Http\Controllers\Api\V1\TotpController;
 use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\HealthController;
@@ -114,15 +114,6 @@ Route::prefix('v1')->group(function () {
             Route::patch('/notification-preferences', [ProfileController::class, 'updateNotificationPreferences'])->name('api.v1.profile.notification-preferences.update');
         });
 
-    // Chat Konsultasi (PRD_CHAT_SYSTEM.md) — mahasiswa/dosen ↔ superadmin
-    Route::prefix('chat')
-        ->middleware(['auth:sanctum', 'not_locked'])
-        ->group(function () {
-            Route::get('/', [ChatController::class, 'index']);
-            Route::post('/', [ChatController::class, 'store'])->middleware('throttle:10,1');
-            Route::get('/{conversation}', [ChatController::class, 'show']);
-            Route::post('/{conversation}/messages', [ChatController::class, 'sendMessage'])->middleware('throttle:20,1');
-        });
 
     // 2FA (TOTP) — Google Authenticator compatible
     Route::prefix('2fa')
@@ -147,9 +138,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/workshop-certificates/{participant}', [PrivateFileController::class, 'workshopCertificate'])
                 ->middleware('signed')
                 ->name('api.v1.files.workshop-certificate');
-            Route::get('/chat-attachment/{message}', [PrivateFileController::class, 'chatAttachment'])
-                ->middleware('signed')
-                ->name('api.v1.files.chat-attachment');
+
         });
 
     // Student routes

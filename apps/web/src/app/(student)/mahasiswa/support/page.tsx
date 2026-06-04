@@ -38,12 +38,12 @@ export default function SupportPage() {
           </div>
 
           <a 
-            href="https://chat.whatsapp.com/BETotRSgFDGJ67FF1ScBcu"
+            href="https://t.me/Sibermas58"
             target="_blank"
             rel="noopener noreferrer"
             className="mt-6 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold transition-colors"
           >
-            Gabung Grup WhatsApp <ExternalLink size={16} />
+            Chat Admin via Telegram <ExternalLink size={16} />
           </a>
         </div>
 
@@ -55,18 +55,18 @@ export default function SupportPage() {
             </div>
             <div>
               <h2 className="text-lg font-bold text-[color:var(--profile-text)]">Live Chat SIBERMAS</h2>
-              <p className="text-sm text-[color:var(--profile-muted)]">Chat langsung di dalam aplikasi</p>
+              <p className="text-sm text-[color:var(--profile-muted)]">Dialihkan ke Telegram</p>
             </div>
           </div>
           
           <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-[color:var(--profile-soft)] rounded-xl border border-dashed border-[color:var(--profile-border)]">
             <ShieldAlert size={32} className="text-[color:var(--profile-muted)] mb-3" />
             <h3 className="font-bold text-[color:var(--profile-text)] mb-1">Sedang Dalam Pengembangan</h3>
-            <p className="text-xs text-[color:var(--profile-muted)]">Sistem chat terintegrasi sedang dibangun. Untuk sementara waktu, silakan gunakan fasilitas Helpdesk WhatsApp.</p>
+            <p className="text-xs text-[color:var(--profile-muted)]">Sistem chat internal sudah dialihkan ke Telegram. Silakan hubungi admin melalui tombol Telegram.</p>
           </div>
 
-          <Link href="/mahasiswa/chat" className="mt-6 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[color:var(--profile-soft)] text-[color:var(--profile-muted)] hover:text-[color:var(--profile-text)] border border-[color:var(--profile-border)] font-bold transition-colors">
-            Lihat Modul Chat Admin
+          <Link href="https://t.me/Sibermas58" target="_blank" rel="noopener noreferrer" className="mt-6 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[color:var(--profile-soft)] text-[color:var(--profile-muted)] hover:text-[color:var(--profile-text)] border border-[color:var(--profile-border)] font-bold transition-colors">
+            Buka Telegram Admin
           </Link>
         </div>
       </div>

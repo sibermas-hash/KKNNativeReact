@@ -12,7 +12,7 @@ use App\Http\Controllers\Api\V1\Admin\InterviewController;
 use App\Http\Controllers\Api\V1\Admin\LegacyKknTrackingController;
 use App\Http\Controllers\Api\V1\Admin\PesertaKknListController;
 use App\Http\Controllers\Api\V1\Admin\TransferPesertaController;
-use App\Http\Controllers\Api\V1\Admin\AdminChatController;
+
 use App\Http\Controllers\Api\V1\Admin\AnnouncementController;
 use App\Http\Controllers\Api\V1\Admin\AvatarModerationController;
 use App\Http\Controllers\Api\V1\Admin\BulkCertificateDownloadController;
@@ -158,7 +158,7 @@ class EnsureAdminAuthorization
         AvatarModerationController::class => 'manage-users',
 
         // Chat Konsultasi (PRD_CHAT_SYSTEM.md)
-        AdminChatController::class => 'manage-content',
+
 
         // Reports
         RekapNilaiController::class => 'manage-reports',

@@ -32,6 +32,7 @@ use App\Http\Controllers\Api\V1\Admin\DplRegistrationController;
 use App\Http\Controllers\Api\V1\Admin\DplSyncController;
 use App\Http\Controllers\Api\V1\Admin\EligibilityController;
 use App\Http\Controllers\Api\V1\Admin\EvaluasiController;
+use App\Http\Controllers\Api\V1\Admin\ExternalParticipantController;
 use App\Http\Controllers\Api\V1\Admin\ExternalUniversityController;
 use App\Http\Controllers\Api\V1\Admin\FakultasController;
 use App\Http\Controllers\Api\V1\Admin\GeneratorNilaiController;
@@ -133,6 +134,7 @@ class EnsureAdminAuthorization
         // must re-check 'manage-participants' at the controller level)
         PesertaKknController::class => 'view-participants',
         StudentTransferController::class => 'view-participants',
+        ExternalParticipantController::class => 'manage-participants',
         ExternalUniversityController::class => 'manage-participants',
         CollaborationLetterController::class => 'manage-participants',
 
@@ -217,14 +219,15 @@ class EnsureAdminAuthorization
         $controller = $route->getController();
         if (! $controller) {
             // R-003 follow-up: if an admin-prefixed route has no controller
-            // (i.e., is a closure), it's invisible to PERMISSION_MAP. Log so
-            // it's discoverable, but let it through — the outer role middleware
-            // on the admin group is still in effect.
+            // (i.e., is a closure), it's invisible to PERMISSION_MAP. Block it
+            // so admin routes cannot bypass the per-feature permission gate.
             if (str_contains($request->path(), 'api/v1/admin/')) {
-                Log::warning('Closure route under /admin bypasses EnsureAdminAuthorization permission map', [
+                Log::error('Closure route under /admin blocked by EnsureAdminAuthorization', [
                     'uri' => $request->path(),
                     'user_id' => $request->user()?->id,
                 ]);
+
+                abort(500, 'Admin route authorization is not configured.');
             }
 
             return $next($request);

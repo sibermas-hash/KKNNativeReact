@@ -155,7 +155,7 @@ Route::prefix('v1')->group(function () {
 });
 
 // ── Notifications & Attendance (versioned aliases untuk unified client) ────
-Route::middleware(['auth:sanctum', 'throttle:60,1'])->prefix('v1')->group(function () {
+Route::middleware(['auth:sanctum', 'role:student', 'throttle:60,1'])->prefix('v1')->group(function () {
     Route::prefix('notifications')->name('api.v1.notifications.')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])->name('index');
         Route::get('/unread', [NotificationController::class, 'unread'])->name('unread');
@@ -195,7 +195,7 @@ Route::get('/server-time', function () {
 })->middleware('throttle:30,1');
 
 // Notifications & Devices
-Route::middleware(['auth:sanctum', 'throttle:60,1'])->name('api.')->group(function () {
+Route::middleware(['auth:sanctum', 'role:student', 'throttle:60,1'])->name('api.')->group(function () {
     Route::prefix('notifications')->name('notifications.')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])->name('index');
         Route::get('/unread', [NotificationController::class, 'unread'])->name('unread');

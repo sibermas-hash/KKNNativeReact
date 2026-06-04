@@ -1,4 +1,4 @@
-import { RotateCcw, Search, SlidersHorizontal, X } from 'lucide-react';
+import { RotateCcw, Search, X } from 'lucide-react';
 import type { FacultyOption } from '../lib/user-types';
 import { roleLabelMap, roleOptions, statusOptions } from '../lib/user-options';
 
@@ -14,53 +14,47 @@ type Props = {
 };
 
 export function UsersFilterBar(props: Props) {
-  const { search, setSearch, roleFilter, setRoleFilter, statusFilter, setStatusFilter, facultyFilter, setFacultyFilter, perPage, setPerPage, setPage, faculties, hasActiveFilters, activeFilterCount, resetFilters, isFetching, isLoading, batchLabel } = props;
+  const { search, setSearch, roleFilter, setRoleFilter, statusFilter, setStatusFilter, facultyFilter, setFacultyFilter, perPage, setPerPage, setPage, faculties, hasActiveFilters, activeFilterCount, resetFilters, isFetching, isLoading } = props;
   const facultyName = faculties.find((f) => String(f.id) === facultyFilter)?.nama;
   const statusLabel = statusOptions.find((option) => option.value === statusFilter)?.label;
   const clear = (fn: (value: string) => void) => { fn(''); setPage(1); };
 
   return (
-    <div className="rounded-3xl bg-white/95 p-5 shadow-sm ring-1 ring-slate-200">
-      <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
-        <div className="flex flex-1 flex-col gap-3">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-            <div className="w-full xl:col-span-2">
-              <label htmlFor="search-users" className="text-[10px] font-black text-slate-500 uppercase">Cari Pengguna</label>
-              <div className="relative mt-1">
-                <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input id="search-users" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Cari nama, username, NIM/NIP, atau email..." autoComplete="off" className="w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl pl-9 pr-4 text-sm font-bold focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-50" />
-              </div>
-            </div>
-            <SelectFilter id="filter-role" label="Role" value={roleFilter} onChange={(value) => { setRoleFilter(value); setPage(1); }} options={[{ value: '', label: 'Semua Role' }, ...roleOptions]} />
-            <SelectFilter id="filter-status" label="Status Akun" value={statusFilter} onChange={(value) => { setStatusFilter(value); setPage(1); }} options={statusOptions} />
-          </div>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-            <SelectFilter id="filter-faculty" label="Fakultas" value={facultyFilter} onChange={(value) => { setFacultyFilter(value); setPage(1); }} options={[{ value: '', label: 'Semua Fakultas' }, ...faculties.map((f) => ({ value: String(f.id), label: f.nama }))]} className="w-full sm:max-w-xs" />
-            <SelectFilter id="users-per-batch" label="Per Batch" value={String(perPage)} onChange={(value) => { setPerPage(Number(value)); setPage(1); }} options={[10,25,50,100].map((size) => ({ value: String(size), label: `${size} pengguna` }))} className="w-full sm:w-40" />
-            {hasActiveFilters && <button type="button" onClick={resetFilters} className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 px-4 text-xs font-black uppercase text-slate-600 hover:bg-slate-50"><RotateCcw size={14} /> Reset ({activeFilterCount})</button>}
-          </div>
-          {hasActiveFilters && (
-            <div className="flex flex-wrap gap-2 pt-1">
-              {search && <FilterChip label={`Cari: ${search}`} onClear={() => clear(setSearch)} />}
-              {roleFilter && <FilterChip label={`Role: ${roleLabelMap[roleFilter] ?? roleFilter}`} onClear={() => clear(setRoleFilter)} />}
-              {statusFilter && <FilterChip label={`Status: ${statusLabel ?? statusFilter}`} onClear={() => clear(setStatusFilter)} />}
-              {facultyFilter && <FilterChip label={`Fakultas: ${facultyName ?? facultyFilter}`} onClear={() => clear(setFacultyFilter)} />}
-            </div>
-          )}
+    <section className="rounded-2xl bg-white p-3 shadow-sm ring-1 ring-slate-200">
+      <div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(260px,1fr)_160px_160px_190px_110px_auto] lg:items-center">
+        <div className="relative">
+          <label htmlFor="search-users" className="sr-only">Cari Pengguna</label>
+          <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input id="search-users" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Cari nama, username, NIM/NIP, email..." autoComplete="off" className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-3 text-sm font-semibold focus:border-cyan-400 focus:outline-none focus:ring-3 focus:ring-cyan-50" />
         </div>
-        <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-xs font-black text-slate-500 ring-1 ring-slate-200">
-          <SlidersHorizontal size={14} /> {isFetching && !isLoading ? 'Memuat batch baru...' : batchLabel}
-        </div>
+        <SelectFilter id="filter-role" ariaLabel="Role" value={roleFilter} onChange={(value) => { setRoleFilter(value); setPage(1); }} options={[{ value: '', label: 'Semua Role' }, ...roleOptions]} />
+        <SelectFilter id="filter-status" ariaLabel="Status Akun" value={statusFilter} onChange={(value) => { setStatusFilter(value); setPage(1); }} options={statusOptions} />
+        <SelectFilter id="filter-faculty" ariaLabel="Fakultas" value={facultyFilter} onChange={(value) => { setFacultyFilter(value); setPage(1); }} options={[{ value: '', label: 'Semua Fakultas' }, ...faculties.map((f) => ({ value: String(f.id), label: f.nama }))]} />
+        <SelectFilter id="users-per-batch" ariaLabel="Per Batch" value={String(perPage)} onChange={(value) => { setPerPage(Number(value)); setPage(1); }} options={[10,25,50,100].map((size) => ({ value: String(size), label: `${size}/batch` }))} />
+        <button type="button" onClick={resetFilters} disabled={!hasActiveFilters} className="h-10 rounded-xl border border-slate-200 px-3 text-xs font-black uppercase text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40">
+          <span className="inline-flex items-center justify-center gap-1"><RotateCcw size={14} /> Reset</span>
+        </button>
       </div>
-    </div>
+
+      {(hasActiveFilters || (isFetching && !isLoading)) && (
+        <div className="mt-2 flex min-h-7 flex-wrap gap-2 border-t border-slate-100 pt-2">
+          {isFetching && !isLoading && <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-black text-slate-500">Memuat...</span>}
+          {search && <FilterChip label={`Cari: ${search}`} onClear={() => clear(setSearch)} />}
+          {roleFilter && <FilterChip label={`Role: ${roleLabelMap[roleFilter] ?? roleFilter}`} onClear={() => clear(setRoleFilter)} />}
+          {statusFilter && <FilterChip label={`Status: ${statusLabel ?? statusFilter}`} onClear={() => clear(setStatusFilter)} />}
+          {facultyFilter && <FilterChip label={`Fakultas: ${facultyName ?? facultyFilter}`} onClear={() => clear(setFacultyFilter)} />}
+          {hasActiveFilters && <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-black text-slate-500">{activeFilterCount} aktif</span>}
+        </div>
+      )}
+    </section>
   );
 }
 
-type SelectProps = { id: string; label: string; value: string; onChange: (value: string) => void; options: Array<{ value: string; label: string }>; className?: string };
-function SelectFilter({ id, label, value, onChange, options, className = 'w-full' }: SelectProps) {
-  return <div className={className}><label htmlFor={id} className="text-[10px] font-black text-slate-500 uppercase">{label}</label><select id={id} value={value} onChange={(e) => onChange(e.target.value)} className="mt-1 w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl px-3 text-sm font-bold focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-50">{options.map((option) => <option key={option.value || 'all'} value={option.value}>{option.label}</option>)}</select></div>;
+type SelectProps = { id: string; ariaLabel: string; value: string; onChange: (value: string) => void; options: Array<{ value: string; label: string }> };
+function SelectFilter({ id, ariaLabel, value, onChange, options }: SelectProps) {
+  return <div><label htmlFor={id} className="sr-only">{ariaLabel}</label><select id={id} aria-label={ariaLabel} value={value} onChange={(e) => onChange(e.target.value)} className="h-10 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold focus:border-cyan-400 focus:outline-none focus:ring-3 focus:ring-cyan-50">{options.map((option) => <option key={option.value || 'all'} value={option.value}>{option.label}</option>)}</select></div>;
 }
 
 function FilterChip({ label, onClear }: { label: string; onClear: () => void }) {
-  return <button type="button" onClick={onClear} className="inline-flex items-center gap-1.5 rounded-full bg-cyan-50 px-3 py-1.5 text-[11px] font-black text-cyan-800 ring-1 ring-cyan-100 hover:bg-cyan-100">{label}<X size={12} /></button>;
+  return <button type="button" onClick={onClear} className="inline-flex items-center gap-1.5 rounded-full bg-cyan-50 px-2.5 py-1 text-[11px] font-black text-cyan-800 ring-1 ring-cyan-100 hover:bg-cyan-100">{label}<X size={12} /></button>;
 }

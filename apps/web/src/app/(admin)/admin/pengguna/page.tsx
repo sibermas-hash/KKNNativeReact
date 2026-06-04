@@ -1,18 +1,22 @@
 'use client';
 
 import { mutationErrorHandler } from '@/lib/utils';
-import { Users, UserPlus, Eye, EyeOff, X, ShieldAlert, Search, RotateCcw, SlidersHorizontal, Mail, UserCircle, CheckCircle2, Ban, KeyRound, PencilLine, Shield } from 'lucide-react';
-import { PageHeader, EmptyState, ResponsiveTable } from '@/components/ui/shared';
+import { UserPlus, Eye, EyeOff, X, ShieldAlert } from 'lucide-react';
+import { PageHeader } from '@/components/ui/shared';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '@/stores';
 import type { DosenDetail, EditForm, MahasiswaDetail, User } from './lib/user-types';
-import { EMPTY_CREATE_FORM, EMPTY_EDIT, roleLabelMap, roleOptions, statusOptions } from './lib/user-options';
-import { normalizeAvatarUrl, roleBadgeClass, stripUndefined } from './lib/user-helpers';
+import { EMPTY_CREATE_FORM, EMPTY_EDIT, roleOptions } from './lib/user-options';
+import { normalizeAvatarUrl, stripUndefined } from './lib/user-helpers';
 import { useUserFilters } from './hooks/useUserFilters';
 import { useAdminUsers } from './hooks/useAdminUsers';
 import { useUserDetail } from './hooks/useUserDetail';
 import { useUserMutations } from './hooks/useUserMutations';
+import { UsersStats } from './components/UsersStats';
+import { UsersFilterBar } from './components/UsersFilterBar';
+import { UsersTable } from './components/UsersTable';
+import { UserRowActions } from './components/UserRowActions';
 
 export default function AdminUsersPage(): React.JSX.Element {
   const currentUser = useAuthStore((state) => state.user);
@@ -226,38 +230,14 @@ export default function AdminUsersPage(): React.JSX.Element {
     : `Menampilkan ${users.length} pengguna`;
 
   const renderActions = (u: User) => (
-    <div className="flex flex-wrap justify-end gap-2">
-      <button
-        onClick={() => toggleMutation.mutate(u.id)}
-        disabled={(toggleMutation.isPending && toggleMutation.variables === u.id) || (u.id === currentUser?.id && !!u.is_active)}
-        title={u.id === currentUser?.id && u.is_active ? 'Akun Anda sendiri tidak dapat dinonaktifkan.' : undefined}
-        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black disabled:opacity-50 ${u.is_active ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 ring-1 ring-rose-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 ring-1 ring-emerald-100'}`}
-      >
-        {u.is_active ? <Ban size={13} /> : <CheckCircle2 size={13} />} {u.is_active ? 'Nonaktifkan' : 'Aktifkan'}
-      </button>
-      <button
-        onClick={() => { setEditForm(EMPTY_EDIT); setEditingId(u.id); }}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black bg-cyan-50 text-cyan-700 hover:bg-cyan-100 ring-1 ring-cyan-100"
-      >
-        <PencilLine size={13} /> Edit
-      </button>
-      <button
-        onClick={() => { setEditingUser(u); setEditRole(u.roles?.[0] || 'student'); }}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black bg-slate-100 text-slate-700 hover:bg-slate-200 ring-1 ring-slate-200"
-      >
-        <Shield size={13} /> Role
-      </button>
-      <button
-        onClick={() => {
-
-          setResetConfirmUser(u);
-        }}
-        title="Reset password ke default DDMMYYYY dari tanggal lahir"
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black bg-amber-50 text-amber-700 hover:bg-amber-100 ring-1 ring-amber-100 disabled:opacity-50"
-      >
-        <KeyRound size={13} /> Reset
-      </button>
-    </div>
+    <UserRowActions
+      user={u}
+      currentUserId={currentUser?.id}
+      toggleMutation={toggleMutation}
+      onEdit={(user) => { setEditForm(EMPTY_EDIT); setEditingId(user.id); }}
+      onRole={(user) => { setEditingUser(user); setEditRole(user.roles?.[0] || 'student'); }}
+      onReset={setResetConfirmUser}
+    />
   );
 
   return (
@@ -275,23 +255,7 @@ export default function AdminUsersPage(): React.JSX.Element {
         }
       />
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total hasil</p>
-          <p className="mt-2 text-2xl font-black text-slate-900 tabular-nums">{meta?.total ?? users.length}</p>
-          <p className="text-xs font-semibold text-slate-500">pengguna sesuai filter</p>
-        </div>
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Batch aktif</p>
-          <p className="mt-2 text-2xl font-black text-slate-900 tabular-nums">{meta?.current_page ?? page}/{meta?.last_page ?? 1}</p>
-          <p className="text-xs font-semibold text-slate-500">{perPage} pengguna per batch</p>
-        </div>
-        <div className="rounded-2xl bg-slate-950 p-5 text-white shadow-sm">
-          <p className="text-[10px] font-black uppercase tracking-widest text-white/50">Filter aktif</p>
-          <p className="mt-2 text-2xl font-black tabular-nums">{activeFilterCount}</p>
-          <p className="text-xs font-semibold text-white/60">search, role, status, fakultas</p>
-        </div>
-      </div>
+      <UsersStats meta={meta} users={users} page={page} perPage={perPage} activeFilterCount={activeFilterCount} />
 
       {showForm && (
         <form
@@ -366,222 +330,38 @@ export default function AdminUsersPage(): React.JSX.Element {
         </form>
       )}
 
-      <div className="rounded-3xl bg-white/95 p-5 shadow-sm ring-1 ring-slate-200">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
-          <div className="flex flex-1 flex-col gap-3">
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-              <div className="w-full xl:col-span-2">
-                <label htmlFor="search-users" className="text-[10px] font-black text-slate-500 uppercase">Cari Pengguna</label>
-                <div className="relative mt-1">
-                  <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                <input
-                  id="search-users"
-                  value={search}
-                  onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                  placeholder="Cari nama, username, atau email..."
-                  autoComplete="off"
-                  className="w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl pl-9 pr-4 text-sm font-bold focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-50"
-                />
-                </div>
-              </div>
+      <UsersFilterBar
+        search={search}
+        setSearch={setSearch}
+        roleFilter={roleFilter}
+        setRoleFilter={setRoleFilter}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        facultyFilter={facultyFilter}
+        setFacultyFilter={setFacultyFilter}
+        perPage={perPage}
+        setPerPage={setPerPage}
+        setPage={setPage}
+        faculties={faculties}
+        hasActiveFilters={hasActiveFilters}
+        activeFilterCount={activeFilterCount}
+        resetFilters={resetFilters}
+        isFetching={isFetching}
+        isLoading={isLoading}
+        batchLabel={batchLabel}
+      />
 
-              <div className="w-full">
-                <label htmlFor="filter-role" className="text-[10px] font-black text-slate-500 uppercase">Role</label>
-                <select
-                  id="filter-role"
-                  value={roleFilter}
-                  onChange={(e) => {
-                    setRoleFilter(e.target.value);
-                    setPage(1);
-                  }}
-                  className="mt-1 w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl px-3 text-sm font-bold focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-50"
-                >
-                  <option value="">Semua Role</option>
-                  {roleOptions.map((option) => (
-                    <option key={option.value} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="w-full">
-                <label htmlFor="filter-status" className="text-[10px] font-black text-slate-500 uppercase">Status Akun</label>
-                <select
-                  id="filter-status"
-                  value={statusFilter}
-                  onChange={(e) => {
-                    setStatusFilter(e.target.value);
-                    setPage(1);
-                  }}
-                  className="mt-1 w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl px-3 text-sm font-bold focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-50"
-                >
-                  {statusOptions.map((option) => (
-                    <option key={option.value || 'all'} value={option.value}>{option.label}</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-              <div className="w-full sm:max-w-xs">
-                <label htmlFor="filter-faculty" className="text-[10px] font-black text-slate-500 uppercase">Fakultas</label>
-                <select
-                  id="filter-faculty"
-                  value={facultyFilter}
-                  onChange={(e) => {
-                    setFacultyFilter(e.target.value);
-                    setPage(1);
-                  }}
-                  className="mt-1 w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl px-3 text-sm font-bold focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-50"
-                >
-                  <option value="">Semua Fakultas</option>
-                  {faculties.map((faculty) => (
-                    <option key={faculty.id} value={faculty.id}>{faculty.nama}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="w-full sm:w-40">
-                <label htmlFor="users-per-batch" className="text-[10px] font-black text-slate-500 uppercase">Per Batch</label>
-                <select
-                  id="users-per-batch"
-                  value={perPage}
-                  onChange={(e) => {
-                    setPerPage(Number(e.target.value));
-                    setPage(1);
-                  }}
-                  className="mt-1 w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl px-3 text-sm font-bold focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-50"
-                >
-                  {[10, 25, 50, 100].map((size) => (
-                    <option key={size} value={size}>{size} pengguna</option>
-                  ))}
-                </select>
-              </div>
-
-              {hasActiveFilters && (
-                <button
-                  type="button"
-                  onClick={resetFilters}
-                  className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 px-4 text-xs font-black uppercase text-slate-600 hover:bg-slate-50"
-                >
-                  <RotateCcw size={14} /> Reset ({activeFilterCount})
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="inline-flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 text-xs font-black text-slate-600 ring-1 ring-slate-200">
-            <SlidersHorizontal size={14} /> {isFetching && !isLoading ? 'Memuat batch baru...' : batchLabel}
-          </div>
-        </div>
-      </div>
-
-      {isLoading ? (
-        <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-16 animate-pulse rounded-2xl bg-slate-200" />)}</div>
-      ) : listErrorMessage ? (
-        <div className="rounded-2xl bg-rose-50 border border-rose-200 p-6 text-center space-y-3">
-          <p className="text-sm font-bold text-rose-700">Gagal memuat data pengguna.</p>
-          <p className="text-sm text-rose-700">{listErrorMessage}</p>
-          <button
-            onClick={() => refetch()}
-            className="px-4 py-2 bg-rose-600 text-white rounded-xl text-xs font-black hover:bg-rose-700"
-          >
-            Coba Lagi
-          </button>
-        </div>
-      ) : users.length === 0 ? (
-        <EmptyState
-          icon={<Users size={40} />}
-          title="Belum ada pengguna"
-          description={hasActiveFilters ? 'Tidak ada pengguna yang cocok dengan filter saat ini.' : 'Tidak ada pengguna yang ditemukan.'}
-        />
-      ) : (
-        <div className="space-y-4">
-          <ResponsiveTable
-            columns={[
-              {
-                key: 'user',
-                label: 'Pengguna',
-                render: (u) => (
-                  <div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-cyan-50 text-cyan-700 ring-1 ring-cyan-100">
-                        {normalizeAvatarUrl(u.avatar_url) ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={normalizeAvatarUrl(u.avatar_url) ?? ''} alt={String(u.name || 'Avatar pengguna')} className="h-full w-full object-cover" loading="lazy" />
-                        ) : (
-                          <UserCircle size={20} />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-black text-slate-900">{String(u.name || '-')}</p>
-                        <p className="text-xs font-semibold text-slate-400">@{String(u.username || '-')}</p>
-                      </div>
-                    </div>
-                  </div>
-                ),
-              },
-              {
-                key: 'email',
-                label: 'Kontak',
-                hideOnMobile: true,
-                render: (u) => (
-                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600"><Mail size={14} className="text-slate-400" />{String(u.email || '-')}</span>
-                ),
-              },
-              {
-                key: 'role',
-                label: 'Role',
-                render: (u) => (
-                  <div className="flex flex-wrap gap-1">
-                    {(u.roles?.length ? u.roles : ['-']).map((role) => (
-                      <span
-                        key={`${u.id}-${role}`}
-                        className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ring-1 ${roleBadgeClass(role)}`}
-                      >
-                        {roleLabelMap[role] ?? role}
-                      </span>
-                    ))}
-                  </div>
-                ),
-              },
-              {
-                key: 'status',
-                label: 'Status',
-                render: (u) => (
-                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ring-1 ${u.is_active ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-rose-50 text-rose-700 ring-rose-200'}`}>
-                    {u.is_active ? <CheckCircle2 size={12} /> : <Ban size={12} />} {u.is_active ? 'Aktif' : 'Nonaktif'}
-                  </span>
-                ),
-              },
-            ]}
-            data={users}
-            keyExtractor={(u) => u.id}
-            rowActions={renderActions}
-          />
-
-          {meta && meta.last_page > 1 && (
-            <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:flex-row sm:items-center sm:justify-between">
-              <span className="text-xs font-semibold text-slate-500">{batchLabel}</span>
-              <div className="flex gap-2 self-end sm:self-auto">
-                <button
-                  onClick={() => setPage((currentPage) => Math.max(1, currentPage - 1))}
-                  disabled={meta.current_page <= 1}
-                  className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-700 hover:bg-slate-200 disabled:opacity-50"
-                >
-                  {'<'} Sebelumnya
-                </button>
-                <button
-                  onClick={() => setPage((currentPage) => Math.min(meta.last_page, currentPage + 1))}
-                  disabled={meta.current_page >= meta.last_page}
-                  className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-700 hover:bg-slate-200 disabled:opacity-50"
-                >
-                  Berikutnya {'>'}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+      <UsersTable
+        users={users}
+        meta={meta}
+        batchLabel={batchLabel}
+        hasActiveFilters={hasActiveFilters}
+        listErrorMessage={listErrorMessage}
+        isLoading={isLoading}
+        refetch={refetch}
+        setPage={setPage}
+        rowActions={renderActions}
+      />
 
       {editingUser && (
         <div

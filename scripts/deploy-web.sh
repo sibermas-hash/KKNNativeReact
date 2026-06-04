@@ -25,6 +25,7 @@ TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:web
 mkdir -p apps/web/.next/standalone/apps/web/public apps/web/.next/standalone/apps/web/.next/static
 cp -R apps/web/public/. apps/web/.next/standalone/apps/web/public/
 cp -R apps/web/.next/static/. apps/web/.next/standalone/apps/web/.next/static/
+chmod o+rx apps/web/.next apps/web/.next/standalone apps/web/.next/standalone/apps apps/web/.next/standalone/apps/web
 chmod -R u+rwX,g+rX,o+rX apps/web/.next/static apps/web/.next/standalone/apps/web/public apps/web/.next/standalone/apps/web/.next/static
 rm -rf apps/web/.next/cache apps/web/.next/standalone/apps/web/.next/cache 2>/dev/null || true
 

@@ -1,30 +1,40 @@
 'use client';
 
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { ApiResponse } from '@sibermas/shared-types';
-import { adminApi, rawApi } from '@/lib/api';
 import { mutationErrorHandler } from '@/lib/utils';
 import { Users, UserPlus, Eye, EyeOff, X, ShieldAlert, Search, RotateCcw, SlidersHorizontal, Mail, UserCircle, CheckCircle2, Ban, KeyRound, PencilLine, Shield } from 'lucide-react';
 import { PageHeader, EmptyState, ResponsiveTable } from '@/components/ui/shared';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
-import { toast } from 'sonner';
-import { useState, useRef, useEffect, useDeferredValue } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '@/stores';
-import type { DosenDetail, EditForm, FacultyOption, MahasiswaDetail, PaginatedUsersResponse, User, UserDetailPayload } from './lib/user-types';
+import type { DosenDetail, EditForm, MahasiswaDetail, User } from './lib/user-types';
 import { EMPTY_CREATE_FORM, EMPTY_EDIT, roleLabelMap, roleOptions, statusOptions } from './lib/user-options';
 import { normalizeAvatarUrl, roleBadgeClass, stripUndefined } from './lib/user-helpers';
+import { useUserFilters } from './hooks/useUserFilters';
+import { useAdminUsers } from './hooks/useAdminUsers';
+import { useUserDetail } from './hooks/useUserDetail';
+import { useUserMutations } from './hooks/useUserMutations';
 
 export default function AdminUsersPage(): React.JSX.Element {
-  const queryClient = useQueryClient();
   const currentUser = useAuthStore((state) => state.user);
   const isSuperadmin = (currentUser?.roles ?? []).includes('superadmin');
-  const [search, setSearch] = useState('');
-  const deferredSearch = useDeferredValue(search.trim());
-  const [roleFilter, setRoleFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [facultyFilter, setFacultyFilter] = useState('');
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(25);
+  const {
+    search,
+    setSearch,
+    deferredSearch,
+    roleFilter,
+    setRoleFilter,
+    statusFilter,
+    setStatusFilter,
+    facultyFilter,
+    setFacultyFilter,
+    page,
+    setPage,
+    perPage,
+    setPerPage,
+    activeFilterCount,
+    hasActiveFilters,
+    resetFilters,
+  } = useUserFilters();
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(EMPTY_CREATE_FORM);
   const [showCreatePassword, setShowCreatePassword] = useState(false);
@@ -57,46 +67,19 @@ export default function AdminUsersPage(): React.JSX.Element {
     setShowForm(true);
   };
 
-  const { data, isLoading, isFetching, isError, error, refetch } = useQuery<PaginatedUsersResponse>({
-    queryKey: ['admin', 'users', { search: deferredSearch, roleFilter, statusFilter, facultyFilter, page, perPage }],
-    queryFn: async () => {
-      const response = await rawApi.get<ApiResponse<User[]>>('/admin/pengguna', {
-        params: {
-          search: deferredSearch || undefined,
-          role: roleFilter || undefined,
-          is_active: statusFilter === '' ? undefined : statusFilter === 'active',
-          fakultas_id: facultyFilter || undefined,
-          page,
-          per_page: perPage,
-        },
-      });
-
-      return {
-        data: response.data.data ?? [],
-        meta: response.data.meta,
-      };
-    },
-    enabled: isSuperadmin,
-    placeholderData: (previousData) => previousData,
-  });
-
-  const { data: detailData, isLoading: detailLoading, isError: detailError, error: detailQueryError } = useQuery<UserDetailPayload | null>({
-    queryKey: ['admin', 'users', 'detail', editingId],
-    queryFn: async () => {
-      if (editingId === null) return null;
-      return await adminApi.users.show(editingId) as unknown as UserDetailPayload;
-    },
-    enabled: editingId !== null && isSuperadmin,
-  });
-
-  const { data: facultiesData } = useQuery<FacultyOption[]>({
-    queryKey: ['admin', 'fakultas', 'user-filters'],
-    queryFn: async () => {
-      const res = await adminApi.master.faculties.index({});
-      return res as unknown as FacultyOption[];
-    },
+  const { usersQuery, facultiesQuery } = useAdminUsers({
+    deferredSearch,
+    roleFilter,
+    statusFilter,
+    facultyFilter,
+    page,
+    perPage,
     enabled: isSuperadmin,
   });
+  const { data, isLoading, isFetching, isError, error, refetch } = usersQuery;
+  const { data: facultiesData } = facultiesQuery;
+
+  const { data: detailData, isLoading: detailLoading, isError: detailError, error: detailQueryError } = useUserDetail(editingId, isSuperadmin);
 
   // Audit fix (2026-05-13): sync detail → form DILAKUKAN di useEffect, bukan
   // di render body. Sebelumnya `if (detailData && editForm.user.id !== ...) setEditForm()`
@@ -166,56 +149,12 @@ export default function AdminUsersPage(): React.JSX.Element {
     });
   }, [detailData]);
 
-  const createMutation = useMutation({
-    mutationFn: (data: Record<string, unknown>) => adminApi.users.store(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
-      resetCreateForm();
-      setShowForm(false);
-      toast.success('Pengguna ditambahkan');
-    },
-    onError: (queryError: unknown) => toast.error(mutationErrorHandler(queryError)),
-  });
-
-  const toggleMutation = useMutation({
-    mutationFn: (id: number) => adminApi.users.toggleStatus(id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'users'] }); toast.success('Status diubah'); },
-    onError: (queryError: unknown) => toast.error(mutationErrorHandler(queryError)),
-  });
-
-  const roleMutation = useMutation({
-    mutationFn: ({ id, role }: { id: number; role: string }) => adminApi.users.updateRole(id, { role }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
-      setEditingUser(null);
-      toast.success('Role berhasil diubah');
-    },
-    onError: (queryError: unknown) => toast.error(mutationErrorHandler(queryError)),
-  });
-
-  const resetPwMutation = useMutation({
-    mutationFn: (id: number) => adminApi.users.resetPassword(id),
-    onSuccess: (res: unknown) => {
-      setResetConfirmUser(null);
-      const data = res as { delivery?: string };
-      toast.success(
-        data?.delivery === 'default_ddmmyyyy'
-          ? 'Password direset ke default DDMMYYYY. User wajib ganti password saat login.'
-          : 'Password berhasil direset.'
-      );
-    },
-    onError: (queryError: unknown) => toast.error(mutationErrorHandler(queryError)),
-  });
-
-  const editMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: number; payload: Record<string, unknown> }) =>
-      adminApi.users.update(id, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
-      closeEditModal();
-      toast.success('Data pengguna berhasil diperbarui.');
-    },
-    onError: (queryError: unknown) => toast.error(mutationErrorHandler(queryError)),
+  const { createMutation, toggleMutation, roleMutation, resetPwMutation, editMutation } = useUserMutations({
+    resetCreateForm,
+    setShowForm,
+    setEditingUser,
+    setResetConfirmUser,
+    closeEditModal,
   });
 
   const users = data?.data ?? [];
@@ -224,8 +163,6 @@ export default function AdminUsersPage(): React.JSX.Element {
   const detailErrorMessage = detailError ? mutationErrorHandler(detailQueryError) : null;
 
   const faculties = facultiesData ?? [];
-  const activeFilterCount = [deferredSearch, roleFilter, statusFilter, facultyFilter].filter(Boolean).length;
-  const hasActiveFilters = activeFilterCount > 0;
 
   if (!isSuperadmin) {
     return (
@@ -287,14 +224,6 @@ export default function AdminUsersPage(): React.JSX.Element {
   const batchLabel = meta
     ? `Batch ${meta.current_page} dari ${meta.last_page} • ${meta.from ?? 0}-${meta.to ?? 0} dari ${meta.total} pengguna`
     : `Menampilkan ${users.length} pengguna`;
-
-  const resetFilters = () => {
-    setSearch('');
-    setRoleFilter('');
-    setStatusFilter('');
-    setFacultyFilter('');
-    setPage(1);
-  };
 
   const renderActions = (u: User) => (
     <div className="flex flex-wrap justify-end gap-2">

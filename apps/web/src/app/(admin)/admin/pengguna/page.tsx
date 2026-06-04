@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { ApiResponse, PaginationMeta } from '@sibermas/shared-types';
+import type { ApiResponse } from '@sibermas/shared-types';
 import { adminApi, rawApi } from '@/lib/api';
 import { mutationErrorHandler } from '@/lib/utils';
 import { Users, UserPlus, Eye, EyeOff, X, ShieldAlert, Search, RotateCcw, SlidersHorizontal, Mail, UserCircle, CheckCircle2, Ban, KeyRound, PencilLine, Shield } from 'lucide-react';
@@ -10,103 +10,9 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { toast } from 'sonner';
 import { useState, useRef, useEffect, useDeferredValue } from 'react';
 import { useAuthStore } from '@/stores';
-
-interface User {
-  id: number;
-  name: string;
-  username: string;
-  email?: string | null;
-  roles?: string[];
-  is_active?: boolean;
-  fakultas_id?: number | null;
-  avatar_url?: string | null;
-}
-
-interface MahasiswaDetail {
-  id: number;
-  nim: string;
-  nama: string;
-  nik?: string | null;
-  mother_name?: string | null;
-  birth_place?: string | null;
-  birth_date?: string | null;
-  gender?: string | null;
-  shirt_size?: string | null;
-  marital_status?: string | null;
-  phone?: string | null;
-  alamat?: string | null;
-  api_email?: string | null;
-  fakultas_id?: number | null;
-  prodi_id?: number | null;
-  batch_year?: number | null;
-  semester?: number | null;
-  sks_completed?: number | null;
-  gpa?: number | null;
-  is_paid_ukt?: boolean;
-  status_bta_ppi?: string | null;
-  status_aktif?: string | null;
-}
-
-interface DosenDetail {
-  id: number;
-  nip: string;
-  nama: string;
-  nama_gelar?: string | null;
-  nidn?: string | null;
-  nik?: string | null;
-  phone?: string | null;
-  jabatan?: string | null;
-  pangkat?: string | null;
-  golongan?: string | null;
-  pendidikan_terakhir?: string | null;
-  birth_date?: string | null;
-  tempat_lahir?: string | null;
-  gender?: string | null;
-  alamat?: string | null;
-  status_aktif?: string | null;
-  status_pegawai?: string | null;
-  is_cpns?: boolean;
-  is_tugas_belajar?: boolean;
-  fakultas_id?: number | null;
-}
-
-interface UserDetailPayload {
-  user: User;
-  mahasiswa: MahasiswaDetail | null;
-  dosen: DosenDetail | null;
-}
-
-type EditForm = {
-  user: Partial<User>;
-  mahasiswa: Partial<MahasiswaDetail>;
-  dosen: Partial<DosenDetail>;
-};
-
-type PaginatedUsersResponse = {
-  data: User[];
-  meta?: PaginationMeta;
-};
-
-type FacultyOption = {
-  id: number;
-  nama: string;
-};
-
-const EMPTY_CREATE_FORM = { username: '', name: '', email: '', role: 'student', fakultas_id: '' };
-const EMPTY_EDIT: EditForm = { user: {}, mahasiswa: {}, dosen: {} };
-
-
-const normalizeAvatarUrl = (url?: string | null): string | null => {
-  if (!url) return null;
-  return url.replace('/api/storage/', '/storage/');
-};
-
-const roleBadgeClass = (role: string) => {
-  if (role === 'superadmin') return 'bg-rose-50 text-rose-700 ring-rose-200';
-  if (role === 'admin' || role === 'faculty_admin') return 'bg-amber-50 text-amber-700 ring-amber-200';
-  if (role === 'dosen' || role === 'dpl') return 'bg-violet-50 text-violet-700 ring-violet-200';
-  return 'bg-cyan-50 text-cyan-700 ring-cyan-200';
-};
+import type { DosenDetail, EditForm, FacultyOption, MahasiswaDetail, PaginatedUsersResponse, User, UserDetailPayload } from './lib/user-types';
+import { EMPTY_CREATE_FORM, EMPTY_EDIT, roleLabelMap, roleOptions, statusOptions } from './lib/user-options';
+import { normalizeAvatarUrl, roleBadgeClass, stripUndefined } from './lib/user-helpers';
 
 export default function AdminUsersPage(): React.JSX.Element {
   const queryClient = useQueryClient();
@@ -317,20 +223,6 @@ export default function AdminUsersPage(): React.JSX.Element {
   const listErrorMessage = isError ? mutationErrorHandler(error) : null;
   const detailErrorMessage = detailError ? mutationErrorHandler(detailQueryError) : null;
 
-  const roleOptions = [
-    { value: 'student', label: 'Mahasiswa' },
-    { value: 'dosen', label: 'Dosen' },
-    { value: 'dpl', label: 'DPL' },
-    { value: 'admin', label: 'Admin' },
-    { value: 'faculty_admin', label: 'Admin Fakultas' },
-    { value: 'superadmin', label: 'Superadmin' },
-  ];
-  const statusOptions = [
-    { value: '', label: 'Semua Status' },
-    { value: 'active', label: 'Aktif' },
-    { value: 'inactive', label: 'Nonaktif' },
-  ];
-  const roleLabelMap = Object.fromEntries(roleOptions.map((option) => [option.value, option.label]));
   const faculties = facultiesData ?? [];
   const activeFilterCount = [deferredSearch, roleFilter, statusFilter, facultyFilter].filter(Boolean).length;
   const hasActiveFilters = activeFilterCount > 0;
@@ -1017,20 +909,6 @@ export default function AdminUsersPage(): React.JSX.Element {
 }
 
 /* ─── Field components ──────────────────────────────────────────────── */
-
-function stripUndefined<T extends Record<string, unknown>>(value: T): T {
-  return Object.fromEntries(
-    Object.entries(value)
-      .filter(([, entryValue]) => entryValue !== undefined)
-      .map(([key, entryValue]) => {
-        if (entryValue && typeof entryValue === 'object' && !Array.isArray(entryValue)) {
-          return [key, stripUndefined(entryValue as Record<string, unknown>)];
-        }
-
-        return [key, entryValue];
-      }),
-  ) as T;
-}
 
 function TextField({
   label,

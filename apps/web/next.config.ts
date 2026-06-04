@@ -160,7 +160,7 @@ const nextConfig: NextConfig = {
   webpack: (config) => {
     config.resolve.alias.canvas = false;
     config.output = config.output || {};
-    config.output.hashSalt = 'sibermas-20260602-cache-reset';
+    config.output.hashSalt = `sibermas-${process.env.NEXT_BUILD_ID || '20260605-cf-403-bypass'}`;
     return config;
   },
 

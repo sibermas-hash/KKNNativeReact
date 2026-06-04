@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore, usePeriodStore } from '@/stores';
 import { studentApi } from '@/lib/api';
+import { dashboardPathForRoles } from '@/lib/role-routing';
 import { QUERY_KEYS, ROLE_LABELS, PHASE_LABELS } from '@sibermas/constants';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -41,14 +42,6 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/mahasiswa/sertifikat', label: 'Sertifikat', icon: Award, phases: ['grading', 'finished'] },
   { href: '/profil', label: 'Profil', icon: UserCircle, phases: null },
 ];
-
-function dashboardPathForRoles(roles: string[] = []): string {
-  if (roles.some((role) => ['superadmin', 'admin', 'faculty_admin'].includes(role))) return '/admin';
-  if (roles.includes('external_lppm_admin')) return '/external/dashboard';
-  if (roles.some((role) => ['dosen', 'dpl'].includes(role))) return '/dosen';
-  if (roles.includes('student')) return '/mahasiswa';
-  return '/';
-}
 
 export default function StudentLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
   const router = useRouter();

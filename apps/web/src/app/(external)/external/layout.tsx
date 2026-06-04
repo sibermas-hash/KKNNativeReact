@@ -6,6 +6,7 @@ import { useEffect } from 'react';
 import { useAuthStore } from '@/stores';
 import { LayoutDashboard, Users, FileCheck, Power } from 'lucide-react';
 import { api } from '@/lib/api';
+import { dashboardPathForRoles } from '@/lib/role-routing';
 
 const items = [
   { href: '/external/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -17,7 +18,11 @@ export default function ExternalLayout({ children }: { children: React.ReactNode
   const { user, clearUser } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
-  useEffect(() => { if (user && !user.roles?.includes('external_lppm_admin')) router.replace('/'); }, [user, router]);
+  useEffect(() => {
+    if (user && !user.roles?.includes('external_lppm_admin')) {
+      router.replace(dashboardPathForRoles(user.roles ?? []));
+    }
+  }, [user, router]);
   const logout = async () => { try { await api.post('/auth/logout'); } catch {} clearUser(); router.replace('/login'); };
   return <div className="min-h-screen bg-[color:var(--profile-bg)] text-[color:var(--profile-text)] flex">
     <aside className="w-64 border-r border-[color:var(--profile-border)] bg-[color:var(--profile-surface)] p-4 hidden md:block">

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore, usePeriodStore } from '@/stores';
+import { dashboardPathForRoles } from '@/lib/role-routing';
 import { ROLE_LABELS, PHASE_LABELS } from '@sibermas/constants';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -53,13 +54,13 @@ export default function DosenLayout({ children }: { children: React.ReactNode })
       if (!user.password_changed_at) { router.replace('/ganti-password'); return; }
       if (!user.profile_complete || user.must_change_password) { router.replace('/profil'); return; }
       const roles = user.roles || [];
-      if (!roles.includes('dosen') && !roles.includes('dpl') && !roles.includes('admin')) router.replace('/');
+      if (!roles.includes('dosen') && !roles.includes('dpl')) { router.replace(dashboardPathForRoles(roles)); return; }
     }
   }, [isLoading, isAuthenticated, user, router]);
 
   // Guard: redirect non-DPL from DPL-only pages
   const roles = user?.roles || [];
-  const isDpl = roles.includes('dpl') || roles.includes('admin');
+  const isDpl = roles.includes('dpl');
   const dplOnlyPaths = ['/dosen/beranda-dpl', '/dosen/kelompok', '/dosen/laporan-harian', '/dosen/monitoring', '/dosen/izin', '/dosen/evaluasi', '/dosen/laporan-akhir', '/dosen/umpan-balik-peserta'];
   const isOnDplPage = dplOnlyPaths.some(p => pathname === p || pathname.startsWith(p + '/'));
   useEffect(() => {

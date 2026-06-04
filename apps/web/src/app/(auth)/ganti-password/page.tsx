@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { api, authApi } from '@/lib/api';
+import { dashboardPathForRoles } from '@/lib/role-routing';
 import { resetAuthState, useAuthStore } from '@/stores';
 import type { User } from '@sibermas/shared-types';
 import { toast } from 'sonner';
@@ -14,12 +15,6 @@ const ParticleBackground = dynamic(
 );
 import { motion } from 'framer-motion';
 
-function dashboardPathFor(roles: string[]) {
-  if (roles.some((role) => ['admin', 'admin', 'faculty_admin'].includes(role))) return '/admin';
-  if (roles.some((role) => ['dosen', 'dpl'].includes(role))) return '/dosen';
-  if (roles.includes('student')) return '/mahasiswa';
-  return '/';
-}
 
 function maskPassword(value: string) {
   if (value.length <= 5) return `${value.slice(0, 1)}${'x'.repeat(Math.max(0, value.length - 2))}${value.slice(-1)}`;
@@ -106,7 +101,7 @@ export default function ChangePasswordPage(): React.JSX.Element {
         setUser(freshUser);
       }
 
-      const redirectPath = (isFirstLogin || !freshUser?.profile_complete) ? '/profil' : dashboardPathFor(freshUser?.roles ?? []);
+      const redirectPath = (isFirstLogin || !freshUser?.profile_complete) ? '/profil' : dashboardPathForRoles(freshUser?.roles ?? []);
       setSuccessRedirectPath(redirectPath);
       setSuccess(true);
       setTimeout(() => router.replace(redirectPath), 3500);

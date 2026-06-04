@@ -6,7 +6,7 @@ import { adminApi } from '@/lib/api';
 import { toast } from 'sonner';
 import { PageHeader, ConfirmDialog } from '@/components/ui/shared';
 import { Plus, Pencil, Trash2, Building2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface Fakultas {
   id: number;

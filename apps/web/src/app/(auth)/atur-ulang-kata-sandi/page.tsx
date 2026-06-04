@@ -13,7 +13,7 @@ const ParticleBackground = dynamic(
   () => import('@/components/ui/particle-background').then((m) => ({ default: m.ParticleBackground })),
   { ssr: false }
 );
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import Link from 'next/link';
 
 export default function ResetPasswordPage(): React.JSX.Element {

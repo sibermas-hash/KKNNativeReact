@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminApi, rawApi } from '@/lib/api';
 import { useAuthStore, usePeriodStore } from '@/stores';
-import { motion, AnimatePresence, useInView } from 'framer-motion';
+import { motion, AnimatePresence, useInView } from 'motion/react';
 import dynamicImport from 'next/dynamic';
 import { ActivityStatsWidget } from '@/components/admin/activity-stats-widget';
 

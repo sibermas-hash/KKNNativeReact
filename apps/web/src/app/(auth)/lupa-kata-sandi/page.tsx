@@ -14,7 +14,7 @@ const ParticleBackground = dynamic(
   { ssr: false }
 );
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 export default function ForgotPasswordPage(): React.JSX.Element {
   const [loading, setLoading] = useState(false);

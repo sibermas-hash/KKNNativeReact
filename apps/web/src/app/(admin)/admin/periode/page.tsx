@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { PageHeader, ConfirmDialog } from '@/components/ui/shared';
 import { Plus, Pencil, Trash2, Calendar, ChevronRight, ArrowRight, Layers } from 'lucide-react';
 import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 
 interface Period {
   id: number;

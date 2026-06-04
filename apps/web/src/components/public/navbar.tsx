@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Menu, X, CircleHelp } from 'lucide-react';
-import { useScroll, useTransform, motion, AnimatePresence } from 'framer-motion';
+import { useScroll, useTransform, motion, AnimatePresence } from 'motion/react';
 import { useAuthStore } from '@/stores';
 
 // Assign motion components to local constants. Workaround untuk Next.js 15 SWC

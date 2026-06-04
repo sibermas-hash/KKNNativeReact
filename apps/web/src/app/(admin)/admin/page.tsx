@@ -3,7 +3,7 @@ import React from 'react';
 
 import { useAuthStore } from '@/stores';
 import { useRouter } from 'next/navigation';
-import { motion, useMotionValue, useTransform, useSpring, AnimatePresence } from 'framer-motion';
+import { motion, useMotionValue, useTransform, useSpring, AnimatePresence } from 'motion/react';
 import { ArrowUpRight, Power, Sparkles } from 'lucide-react';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { Analytics01Icon, NewsIcon, Settings02Icon } from '@hugeicons/core-free-icons';

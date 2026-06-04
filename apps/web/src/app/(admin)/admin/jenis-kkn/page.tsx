@@ -7,7 +7,7 @@ import { PageHeader, ConfirmDialog } from '@/components/ui/shared';
 import { Plus, Pencil, Trash2, CheckCircle, XCircle, X, RefreshCw, Settings, CheckCircle2, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { useState, useRef, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'motion/react';
 
 /* ── Types ── */
 interface ReqConfig {

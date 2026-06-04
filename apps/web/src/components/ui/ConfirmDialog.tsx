@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import clsx from 'clsx';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 
 const CONFIRM_COLORS = {
   danger: 'bg-rose-600 hover:bg-rose-700',

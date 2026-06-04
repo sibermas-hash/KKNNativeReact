@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiUrl, studentApi } from '@/lib/api';
 import { FileText, CloudUpload, CheckCircle2, Clock, AlertCircle, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 export default function FinalReportPage(): React.JSX.Element {
   

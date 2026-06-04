@@ -3,7 +3,7 @@
 import { Fragment, useMemo, useState, useTransition } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'motion/react';
 import { clsx } from 'clsx';
 import { Plus, Trash2, CheckCircle2, RefreshCw, LibraryBig, ArrowUpDown, ChevronDown, History, Activity } from 'lucide-react';
 import { toast } from 'sonner';

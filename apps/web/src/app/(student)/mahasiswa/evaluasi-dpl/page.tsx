@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { studentApi } from '@/lib/api';
 import { Star, MessageSquare, Send, CheckCircle2, UserCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 
 type Aspect = { id: string; label: string; description: string };
 

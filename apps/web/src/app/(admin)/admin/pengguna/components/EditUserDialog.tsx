@@ -29,12 +29,12 @@ export function EditUserDialog(props: Props) {
         >
           <form
             onSubmit={handleSubmitEdit}
-            className="bg-white rounded-2xl p-6 w-full max-w-3xl shadow-xl space-y-6 my-auto max-h-[90vh] overflow-y-auto"
+            className="my-auto max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200"
             role="dialog"
             aria-modal="true"
             aria-labelledby="edit-data-title"
           >
-            <div className="flex items-start justify-between">
+            <div className="flex items-start justify-between border-b border-slate-100 px-6 py-5">
               <div className="flex items-center gap-4">
                 <div className="h-16 w-16 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm shrink-0">
                   {normalizeAvatarUrl(detailData?.user?.avatar_url) ? (
@@ -71,7 +71,7 @@ export function EditUserDialog(props: Props) {
             ) : (
               <>
                 {/* User-level */}
-                <section className="space-y-3">
+                <section className="space-y-3 px-6 pt-6">
                   <h4 className="text-xs font-black text-slate-700 uppercase tracking-wide">Akun</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <label className="block">
@@ -113,7 +113,7 @@ export function EditUserDialog(props: Props) {
 
                 {/* Mahasiswa */}
                 {detailData?.mahasiswa && (
-                  <section className="space-y-3">
+                  <section className="space-y-3 px-6 pt-6">
                     <h4 className="text-xs font-black text-slate-700 uppercase tracking-wide">Data Mahasiswa</h4>
                     <div className="text-[10px] font-bold text-slate-500">
                       NIM: <code className="bg-slate-100 px-2 py-0.5 rounded text-slate-700">{editForm.mahasiswa.nim}</code> (locked)
@@ -154,7 +154,7 @@ export function EditUserDialog(props: Props) {
 
                 {/* Dosen */}
                 {detailData?.dosen && (
-                  <section className="space-y-3">
+                  <section className="space-y-3 px-6 pt-6">
                     <h4 className="text-xs font-black text-slate-700 uppercase tracking-wide">Data Dosen</h4>
                     <div className="text-[10px] font-bold text-slate-500">
                       NIP: <code className="bg-slate-100 px-2 py-0.5 rounded text-slate-700">{editForm.dosen.nip}</code> (locked)
@@ -200,7 +200,7 @@ export function EditUserDialog(props: Props) {
               </>
             )}
 
-            <div className="flex gap-3 justify-end pt-3 border-t border-slate-100">
+            <div className="mt-6 flex justify-end gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4">
               <button
                 type="button"
                 onClick={closeEditModal}

@@ -19,9 +19,15 @@ type Props = {
 
 export function CreateUserForm({ form, setForm, faculties, passwordRef, showCreatePassword, setShowCreatePassword, createMutation, onCancel }: Props) {
   return (
-    <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate({ ...form, fakultas_id: form.fakultas_id ? Number(form.fakultas_id) : null, password: passwordRef.current?.value || '' }); }} className="bg-white rounded-2xl p-6 ring-1 ring-slate-200 shadow-sm space-y-4">
+    <form onSubmit={(e) => { e.preventDefault(); createMutation.mutate({ ...form, fakultas_id: form.fakultas_id ? Number(form.fakultas_id) : null, password: passwordRef.current?.value || '' }); }} className="my-auto w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-2xl ring-1 ring-slate-200" role="dialog" aria-modal="true" aria-labelledby="create-user-title">
+      <div className="border-b border-slate-100 px-6 py-5">
+        <p className="text-[10px] font-black uppercase tracking-wide text-cyan-600">Akun baru</p>
+        <h3 id="create-user-title" className="text-lg font-black text-slate-900">Tambah Pengguna</h3>
+        <p className="mt-1 text-xs text-slate-500">Isi identitas dasar, role, fakultas, dan password awal.</p>
+      </div>
+      <div className="max-h-[70vh] space-y-4 overflow-y-auto p-6">
       <div className="rounded-xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-xs text-cyan-900">
-        <b>Tambah pengguna:</b> untuk akun mahasiswa, isi <b>Username dengan NIM</b>, pilih role <b>Mahasiswa</b>, dan fakultas bila perlu. Password wajib minimal 8 karakter serta mengandung huruf besar, huruf kecil, angka, dan simbol.
+        <b>Tips:</b> untuk akun mahasiswa, isi <b>Username dengan NIM</b>, pilih role <b>Mahasiswa</b>, dan fakultas bila perlu. Password wajib minimal 8 karakter serta mengandung huruf besar, huruf kecil, angka, dan simbol.
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div><label htmlFor="create-username" className="text-[10px] font-black text-slate-500 uppercase">Username</label><input id="create-username" placeholder={form.role === 'student' ? 'NIM / username mahasiswa' : 'Username'} value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} autoComplete="username" className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1" required /></div>
@@ -38,7 +44,8 @@ export function CreateUserForm({ form, setForm, faculties, passwordRef, showCrea
         <div><label htmlFor="create-role" className="text-[10px] font-black text-slate-500 uppercase">Role</label><select id="create-role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1">{roleOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
         <div><label htmlFor="create-fakultas" className="text-[10px] font-black text-slate-500 uppercase">Fakultas</label><select id="create-fakultas" value={form.fakultas_id} onChange={(e) => setForm({ ...form, fakultas_id: e.target.value })} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1"><option value="">Tidak diset / Semua Fakultas</option>{faculties.map((f) => <option key={f.id} value={f.id}>{f.nama}</option>)}</select></div>
       </div>
-      <div className="flex gap-3"><button type="submit" disabled={createMutation.isPending} className="px-6 py-2 bg-cyan-600 text-white rounded-xl text-xs font-black uppercase hover:bg-cyan-700 disabled:opacity-50">Simpan</button><button type="button" onClick={onCancel} className="px-6 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200">Batal</button></div>
+      </div>
+      <div className="flex justify-end gap-3 border-t border-slate-100 bg-slate-50 px-6 py-4"><button type="button" onClick={onCancel} className="px-6 py-2 bg-white text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-100 ring-1 ring-slate-200">Batal</button><button type="submit" disabled={createMutation.isPending} className="px-6 py-2 bg-cyan-600 text-white rounded-xl text-xs font-black uppercase hover:bg-cyan-700 disabled:opacity-50">{createMutation.isPending ? 'Menyimpan...' : 'Simpan'}</button></div>
     </form>
   );
 }

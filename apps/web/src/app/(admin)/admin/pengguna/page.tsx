@@ -261,16 +261,22 @@ export default function AdminUsersPage(): React.JSX.Element {
       <UsersStats meta={meta} users={users} page={page} perPage={perPage} activeFilterCount={activeFilterCount} />
 
       {showForm && (
-        <CreateUserForm
-          form={form}
-          setForm={setForm}
-          faculties={faculties}
-          passwordRef={passwordRef}
-          showCreatePassword={showCreatePassword}
-          setShowCreatePassword={setShowCreatePassword}
-          createMutation={createMutation}
-          onCancel={() => { setShowForm(false); resetCreateForm(); }}
-        />
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-4 backdrop-blur-sm"
+          onClick={(e) => { if (e.target === e.currentTarget) { setShowForm(false); resetCreateForm(); } }}
+          onKeyDown={(e) => { if (e.key === 'Escape') { setShowForm(false); resetCreateForm(); } }}
+        >
+          <CreateUserForm
+            form={form}
+            setForm={setForm}
+            faculties={faculties}
+            passwordRef={passwordRef}
+            showCreatePassword={showCreatePassword}
+            setShowCreatePassword={setShowCreatePassword}
+            createMutation={createMutation}
+            onCancel={() => { setShowForm(false); resetCreateForm(); }}
+          />
+        </div>
       )}
 
       <UsersFilterBar

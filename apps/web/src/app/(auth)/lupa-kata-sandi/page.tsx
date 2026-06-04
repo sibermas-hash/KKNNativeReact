@@ -33,7 +33,7 @@ export default function ForgotPasswordPage(): React.JSX.Element {
     try {
       await api.post('/auth/lupa-kata-sandi', data);
       setSubmitted(true);
-      toast.success('Instruksi pemulihan telah dikirim!');
+      toast.success('Jika email terdaftar, instruksi pemulihan telah dikirim.');
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: { message?: string } } } };
       toast.error(e?.response?.data?.error?.message || 'Gagal memproses permintaan');
@@ -90,7 +90,7 @@ export default function ForgotPasswordPage(): React.JSX.Element {
                 <div className="space-y-2">
                   <h1 className="text-2xl font-black text-emerald-950 uppercase tracking-tight">Cek Email Anda</h1>
                   <p className="text-sm text-slate-500 font-medium leading-relaxed">
-                    Kami telah mengirimkan tautan pemulihan kata sandi ke email Anda. Silakan periksa kotak masuk atau folder spam.
+                    Jika email terdaftar, kami akan mengirimkan tautan pemulihan kata sandi. Silakan periksa kotak masuk atau folder spam.
                   </p>
                 </div>
                 <Link href="/login" className="inline-flex items-center gap-2 text-sm font-black text-emerald-600 hover:text-emerald-700 uppercase tracking-widest transition-all">
@@ -117,20 +117,25 @@ export default function ForgotPasswordPage(): React.JSX.Element {
                 {/* Form */}
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Alamat Email Terdaftar</label>
+                    <label htmlFor="forgot-password-email" className="text-[10px] font-black text-cyan-600 uppercase tracking-widest ml-1">Alamat Email Terdaftar</label>
                     <div className="relative group">
                       <div className="absolute left-4 top-1/2 -translate-y-1/2 text-emerald-400 group-focus-within:text-emerald-600 transition-colors">
                         <Mail size={16} />
                       </div>
                       <input
                         {...register('email')}
+                        id="forgot-password-email"
                         type="email"
-                        className="w-full h-12 bg-white/60 border border-white focus:bg-white rounded-xl pl-[3.2rem] pr-4 text-sm font-bold text-emerald-950 placeholder:text-emerald-800/40 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none"
+                        required
+                        autoComplete="email"
+                        aria-invalid={!!errors.email}
+                        aria-describedby={errors.email ? 'forgot-password-email-error' : undefined}
+                        className="w-full h-12 bg-white/60 border border-white focus:bg-white rounded-xl pl-[3.2rem] pr-4 text-sm font-bold text-emerald-950 placeholder:text-emerald-800/60 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none"
                         placeholder="nama@email.com"
                         autoFocus
                       />
                     </div>
-                    {errors.email && <p className="text-[10px] font-bold text-rose-500 ml-1">{errors.email.message}</p>}
+                    {errors.email && <p id="forgot-password-email-error" className="text-[10px] font-bold text-rose-500 ml-1">{errors.email.message}</p>}
                   </div>
 
                   <button

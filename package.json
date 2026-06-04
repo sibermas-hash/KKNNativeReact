@@ -12,6 +12,7 @@
         "test": "pnpm --filter @sibermas/schemas test 2>/dev/null; pnpm --filter @sibermas/api-client test 2>/dev/null; pnpm --filter web test 2>/dev/null",
         "type-check": "pnpm --filter web type-check",
         "ci:guard": "node scripts/ci-guard.mjs",
+        "deploy:web": "bash scripts/deploy-web.sh",
         "dev:web": "pnpm --filter web dev",
         "dev:api": "cd apps/api && php artisan serve"
     },

@@ -57,7 +57,8 @@ export default function StudentDashboard(): React.JSX.Element {
   const isPending = normalizedStatus === 'pending';
   const isRejected = normalizedStatus === 'rejected';
   const isGroupPinned = isApproved && !!group;
-  const showKknTools = isApproved || isCompleted;
+  const isAwaitingPlacement = isApproved && !group && !isCompleted;
+  const showKknTools = isGroupPinned || isCompleted;
 
   const groupName = (group?.name as string) || 'Belum Ditentukan';
   const groupLocation = ((group?.location as Record<string, unknown>)?.name as string) || '-';
@@ -285,14 +286,22 @@ export default function StudentDashboard(): React.JSX.Element {
                 <div className="relative z-10 space-y-6">
                   <div className="space-y-2">
                     <h3 className="text-xl font-black uppercase tracking-tight">
-                      {isRejected ? 'Perbaikan Berkas Diperlukan' : isPending ? 'Audit Pendaftaran Berjalan' : 'Belum Terdaftar?'}
+                      {isRejected
+                        ? 'Perbaikan Berkas Diperlukan'
+                        : isAwaitingPlacement
+                          ? 'Menunggu Plotting Kelompok'
+                          : isPending
+                            ? 'Audit Pendaftaran Berjalan'
+                            : 'Belum Terdaftar?'}
                     </h3>
                     <p className="text-sm font-medium text-[color:var(--profile-muted)] max-w-xl leading-relaxed">
                       {isRejected
                         ? `Alasan: "${registration?.rejection_reason}"`
-                        : isPending
-                          ? 'Sistem sedang meninjau berkas Anda. Mohon tunggu hingga admin atau DPL memberikan validasi status.'
-                          : 'Daftarkan diri Anda sekarang untuk mengikuti program KKN.'}
+                        : isAwaitingPlacement
+                          ? 'Pendaftaran Anda sudah disetujui. Saat ini sistem menunggu proses plotting/penempatan kelompok oleh panitia.'
+                          : isPending
+                            ? 'Sistem sedang meninjau berkas Anda. Mohon tunggu hingga admin atau DPL memberikan validasi status.'
+                            : 'Daftarkan diri Anda sekarang untuk mengikuti program KKN.'}
                     </p>
                   </div>
                   <Link

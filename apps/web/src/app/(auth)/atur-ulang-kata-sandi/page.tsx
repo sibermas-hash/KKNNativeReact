@@ -22,9 +22,13 @@ export default function ResetPasswordPage(): React.JSX.Element {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [serverErrors, setServerErrors] = useState<string[]>([]);
+  const [isInvalidLink, setIsInvalidLink] = useState(false);
 
-  const token = searchParams?.get('token');
-  const email = searchParams?.get('email');
+  const [initialToken] = useState(() => searchParams?.get('token') || '');
+  const [initialEmail] = useState(() => searchParams?.get('email') || '');
+
+  const token = initialToken;
+  const email = initialEmail;
 
   const {
     register,
@@ -36,14 +40,14 @@ export default function ResetPasswordPage(): React.JSX.Element {
   });
 
   useEffect(() => {
-    if (token) setValue('token', token);
-    if (email) setValue('email', email);
-    
     if (!token || !email) {
-      toast.error('Token atau email tidak valid.');
-      router.replace('/login');
+      setIsInvalidLink(true);
       return;
     }
+
+    setIsInvalidLink(false);
+    setValue('token', token);
+    setValue('email', email);
 
     // Bersihkan token dari URL untuk mencegah kebocoran via browser history,
     // referrer header, atau server log. Gunakan window.location langsung
@@ -51,7 +55,7 @@ export default function ResetPasswordPage(): React.JSX.Element {
     if (typeof window !== 'undefined') {
       window.history.replaceState(null, '', window.location.pathname);
     }
-  }, [token, email, setValue, router]);
+  }, [token, email, setValue]);
 
   const onSubmit = async (data: ResetPasswordFormData) => {
     setLoading(true);
@@ -135,8 +139,36 @@ export default function ResetPasswordPage(): React.JSX.Element {
               </div>
             )}
 
-            {/* Form */}
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {isInvalidLink ? (
+              <div className="space-y-5">
+                <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 flex gap-3 shadow-sm">
+                  <AlertCircle className="text-amber-500 shrink-0 mt-0.5" size={16} />
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-black text-amber-700 uppercase tracking-widest">Link Tidak Valid</p>
+                    <p className="text-xs font-medium text-amber-950 leading-relaxed">
+                      Link atur ulang kata sandi tidak lengkap atau sudah kedaluwarsa. Silakan minta link reset baru melalui halaman lupa kata sandi.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid gap-3">
+                  <Link
+                    href="/lupa-kata-sandi"
+                    className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl flex items-center justify-center gap-2 group transition-all shadow-lg shadow-blue-100 active:scale-[0.98]"
+                  >
+                    <span className="text-[11px] font-bold uppercase tracking-widest">Kirim Ulang Link Reset</span>
+                    <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="w-full h-12 bg-white/60 hover:bg-white text-blue-700 border border-blue-100 rounded-xl flex items-center justify-center gap-2 transition-all"
+                  >
+                    <span className="text-[11px] font-bold uppercase tracking-widest">Kembali ke Login</span>
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <input type="hidden" {...register('token')} />
               <input type="hidden" {...register('email')} />
 
@@ -203,6 +235,7 @@ export default function ResetPasswordPage(): React.JSX.Element {
                 </button>
               </div>
             </form>
+            )}
           </div>
         </div>
       </motion.div>

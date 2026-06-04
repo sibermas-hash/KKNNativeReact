@@ -82,7 +82,7 @@ export function ActivityStatsWidget() {
           <h2 className="text-sm font-black uppercase tracking-wide text-slate-700">Aktivitas Sistem</h2>
           <p className="text-xs text-slate-500 mt-0.5">Monitoring login, password, dan aktivitas pengguna hari ini.</p>
         </div>
-        <Link href="/admin/activity-log" className="flex items-center gap-1 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition-colors">
+        <Link href="/admin/activity-log" prefetch={false} className="flex items-center gap-1 rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition-colors">
           Lihat Semua <ArrowRight size={12} />
         </Link>
       </header>
@@ -138,7 +138,7 @@ export function ActivityStatsWidget() {
                   <span className="text-slate-400">—</span>
                   <span className="text-slate-500">{ACTION_LABELS[a.action] || a.action}</span>
                   {a.ip && a.status === 'failed' && (
-                    <span className="text-slate-400 text-[10px] ml-1">({a.ip})</span>
+                    <span className="min-w-0 truncate text-slate-400 text-[10px] ml-1" title={a.ip}>({a.ip})</span>
                   )}
                 </div>
                 <span className="text-[10px] text-slate-400 shrink-0 ml-2">{formatTime(a.time)}</span>

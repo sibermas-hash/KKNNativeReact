@@ -313,7 +313,7 @@ export default function AdminDashboardPage(): React.JSX.Element {
               <div className="absolute bottom-0 left-0 right-0 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: c.color }} />
             </motion.div>
           );
-          return c.href ? <Link key={c.label} href={c.href}>{card}</Link> : card;
+          return c.href ? <Link key={c.label} href={c.href} prefetch={false}>{card}</Link> : card;
         })}
       </div>
 
@@ -323,7 +323,7 @@ export default function AdminDashboardPage(): React.JSX.Element {
             <p className="text-sm font-semibold text-slate-700">Status Onboarding Mahasiswa</p>
             <p className="text-[11px] text-slate-400 font-sans">Akun mahasiswa keseluruhan, bukan hanya peserta periode aktif.</p>
           </div>
-          <Link href="/admin/mahasiswa" className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 font-sans flex items-center gap-1">
+          <Link href="/admin/mahasiswa" prefetch={false} className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 font-sans flex items-center gap-1">
             Lihat mahasiswa <ArrowRight size={10} />
           </Link>
         </div>
@@ -413,7 +413,7 @@ export default function AdminDashboardPage(): React.JSX.Element {
                   </span>
                 )}
               </div>
-              <Link href="/admin/pendaftaran" className="text-[11px] font-semibold text-slate-400 hover:text-slate-700 transition-colors font-sans flex items-center gap-1">
+              <Link href="/admin/pendaftaran" prefetch={false} className="text-[11px] font-semibold text-slate-400 hover:text-slate-700 transition-colors font-sans flex items-center gap-1">
                 Semua <ArrowRight size={10} />
               </Link>
             </div>
@@ -436,7 +436,7 @@ export default function AdminDashboardPage(): React.JSX.Element {
                         <p className="text-xs font-bold text-amber-800">{pendingCount} menunggu</p>
                         <p className="text-[10px] text-amber-600 font-sans">Perlu validasi segera</p>
                       </div>
-                      <Link href="/admin/pendaftaran"
+                      <Link href="/admin/pendaftaran" prefetch={false}
                         className="shrink-0 rounded-lg bg-amber-500 text-white px-2.5 py-1.5 text-[10px] font-bold hover:bg-amber-600 transition-colors font-sans">
                         Proses
                       </Link>
@@ -491,7 +491,7 @@ export default function AdminDashboardPage(): React.JSX.Element {
         <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-3 font-sans">Navigasi Cepat</p>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
           {NAV.map(item => (
-            <Link key={item.href} href={item.href}
+            <Link key={item.href} href={item.href} prefetch={false}
               className="flex flex-col items-center gap-2 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors group">
               <item.icon size={16} className="text-slate-500 group-hover:text-slate-800 transition-colors" strokeWidth={2} />
               <span className="text-[10px] font-semibold text-slate-500 group-hover:text-slate-800 transition-colors text-center font-sans">{item.label}</span>

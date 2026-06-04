@@ -23,6 +23,8 @@ use App\Http\Controllers\Api\V1\Admin\DplSyncController;
 use App\Http\Controllers\Api\V1\Admin\EligibilityController;
 use App\Http\Controllers\Api\V1\Admin\EvaluasiController;
 use App\Http\Controllers\Api\V1\Admin\ExternalParticipantController;
+use App\Http\Controllers\Api\V1\Admin\ExternalUniversityController;
+use App\Http\Controllers\Api\V1\Admin\CollaborationLetterController;
 use App\Http\Controllers\Api\V1\Admin\FakultasController;
 use App\Http\Controllers\Api\V1\Admin\GeneratorNilaiController;
 use App\Http\Controllers\Api\V1\Admin\GradeController;
@@ -123,6 +125,14 @@ Route::prefix('admin')
         Route::patch('/document-templates/{documentTemplate}', [DocumentTemplateController::class, 'update']);
         Route::delete('/document-templates/{documentTemplate}', [DocumentTemplateController::class, 'destroy']);
         Route::get('/document-templates/{documentTemplate}/download', [DocumentTemplateController::class, 'download'])->name('api.v1.admin.document-templates.download');
+
+        // External collaboration
+        Route::apiResource('external-universities', ExternalUniversityController::class)->only(['index', 'store', 'update', 'destroy']);
+        Route::get('/collaboration-letters', [CollaborationLetterController::class, 'index']);
+        Route::get('/collaboration-letters/{letter}', [CollaborationLetterController::class, 'show']);
+        Route::post('/collaboration-letters/{letter}/verify', [CollaborationLetterController::class, 'verify']);
+        Route::post('/collaboration-letters/{letter}/reject', [CollaborationLetterController::class, 'reject']);
+        Route::patch('/collaboration-letters/{letter}', [CollaborationLetterController::class, 'update']);
 
         // External participants
         Route::get('/peserta-eksternal/template', [ExternalParticipantController::class, 'template']);

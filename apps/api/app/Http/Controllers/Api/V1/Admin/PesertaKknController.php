@@ -146,6 +146,8 @@ class PesertaKknController extends Controller
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
             ->when($request->input('entry_scheme'), fn ($q, $s) => $q->where('entry_scheme', $s))
             ->when($request->input('origin_type'), fn ($q, $s) => $q->whereHas('mahasiswa', fn ($m) => $m->where('origin_type', $s)))
+            ->when($request->input('fakultas_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $id)))
+            ->when($request->input('prodi_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('prodi_id', $id)))
             ->when($request->input('external_university_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('external_university_id', $id)))
             ->when($request->input('status_group') === 'unprocessed', fn ($q) => $q->whereIn('status', ['pending', 'document_submitted']))
             ->when($request->input('status_group') === 'processed', fn ($q) => $q->whereIn('status', ['approved', 'rejected', 'interview_scheduled']))
@@ -178,6 +180,9 @@ class PesertaKknController extends Controller
             'document_verified' => (int) ($statusCounts['document_verified'] ?? 0),
             'approved' => (int) ($statusCounts['approved'] ?? 0),
             'rejected' => (int) ($statusCounts['rejected'] ?? 0),
+            'interview_scheduled' => (int) ($statusCounts['interview_scheduled'] ?? 0),
+            'interview_passed' => (int) ($statusCounts['interview_passed'] ?? 0),
+            'interview_failed' => (int) ($statusCounts['interview_failed'] ?? 0),
             'by_status' => $statusCounts,
         ];
 

@@ -55,6 +55,16 @@ class MahasiswaResource extends JsonResource
             'fakultas' => $fakultas,
             'prodi' => $prodi,
             'profile_completion' => $this->profile_completion,
+            'origin_type' => $this->origin_type,
+            'external_nim' => $this->external_nim,
+            'external_faculty_name' => $this->external_faculty_name,
+            'external_prodi_name' => $this->external_prodi_name,
+            'external_university_id' => $this->external_university_id,
+            'external_university' => $this->whenLoaded('externalUniversity', fn () => [
+                'id' => $this->externalUniversity?->id,
+                'name' => $this->externalUniversity?->name,
+                'code' => $this->externalUniversity?->code,
+            ]),
 
             // User account info (loaded via whenLoaded to avoid N+1)
             'user' => $this->when($this->relationLoaded('user') && $this->user, function () {

@@ -18,8 +18,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -28,9 +26,48 @@ class UserController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = User::with(['fakultas', 'externalUniversity', 'roles'])->when($request->input('search'), fn ($q, $s) => $q->where('name', 'like', "%{$s}%")->orWhere('username', 'like', "%{$s}%"))->when($request->input('role'), fn ($q, $r) => $q->role($r))->orderByDesc('created_at');
+        if (! auth()->user()?->hasRole('superadmin')) {
+            return $this->forbidden('Hanya superadmin yang dapat mengelola pengguna.');
+        }
 
-        return $this->successCollection(UserResource::collection($query->paginate(25)));
+        $validated = $request->validate([
+            'search' => ['nullable', 'string', 'max:255'],
+            'role' => ['nullable', 'string', Rule::in(['superadmin', 'admin', 'faculty_admin', 'external_lppm_admin', 'dosen', 'dpl', 'student'])],
+            'is_active' => ['nullable', 'boolean'],
+            'fakultas_id' => ['nullable', 'integer', 'exists:fakultas,id'],
+            'per_page' => ['nullable', 'integer', 'min:10', 'max:100'],
+        ]);
+
+        $query = User::with(['fakultas', 'externalUniversity', 'roles', 'mahasiswa.fakultas', 'dosen.fakultas'])
+            ->when($validated['search'] ?? null, function ($q, string $s) {
+                $escaped = str_replace(['%', '_'], ['\%', '\_'], trim($s));
+                $q->where(function ($qq) use ($escaped) {
+                    $qq->where('name', 'like', "%{$escaped}%")
+                        ->orWhere('username', 'like', "%{$escaped}%")
+                        ->orWhere('email', 'like', "%{$escaped}%");
+                });
+            })
+            ->when($validated['role'] ?? null, fn ($q, string $r) => $q->role($r))
+            ->when(array_key_exists('is_active', $validated), fn ($q) => $q->where('is_active', (bool) $validated['is_active']))
+            ->when($validated['fakultas_id'] ?? null, function ($q, int $id) {
+                $q->where(function ($qq) use ($id) {
+                    $qq->where('fakultas_id', $id)
+                        ->orWhereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $id))
+                        ->orWhereHas('dosen', fn ($d) => $d->where('fakultas_id', $id));
+                });
+            })
+            ->orderByRaw("CASE WHEN EXISTS (
+                SELECT 1
+                FROM peserta_kkn pk
+                INNER JOIN mahasiswa m ON m.id = pk.mahasiswa_id
+                WHERE m.user_id = users.id
+                  AND pk.deleted_at IS NULL
+                  AND pk.status IN ('submitted', 'approved', 'document_submitted', 'document_verified')
+            ) THEN 0 ELSE 1 END")
+            ->orderByRaw("CASE WHEN avatar IS NOT NULL AND avatar <> '' THEN 0 ELSE 1 END")
+            ->orderByDesc('created_at');
+
+        return $this->successCollection(UserResource::collection($query->paginate($validated['per_page'] ?? 25)));
     }
 
     public function store(Request $request): JsonResponse
@@ -39,15 +76,23 @@ class UserController extends Controller
             'username' => ['required', 'string', 'max:255', 'unique:users,username'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'unique:users,email'],
-            'password' => ['required', 'string', User::PASSWORD_REQUIREMENTS],
+            'password' => ['required', 'string', ...User::PASSWORD_REQUIREMENTS],
             'role' => ['required', 'string', Rule::in(['superadmin', 'admin', 'faculty_admin', 'external_lppm_admin', 'dosen', 'dpl', 'student'])],
             'fakultas_id' => ['nullable', 'exists:fakultas,id'],
             'external_university_id' => ['nullable', 'required_if:role,external_lppm_admin', 'exists:external_universities,id'],
         ]);
-        $user = User::create(['username' => $validated['username'], 'name' => $validated['name'], 'email' => $validated['email'] ?? null, 'password' => Hash::make($validated['password']), 'must_change_password' => true, 'is_active' => true, 'fakultas_id' => $validated['fakultas_id'] ?? null, 'external_university_id' => $validated['external_university_id'] ?? null]);
+        $externalUniversityId = $validated['external_university_id'] ?? null;
+        if ($validated['role'] === 'external_lppm_admin') {
+            $externalUniversityId = validator(
+                ['external_university_id' => $request->input('external_university_id')],
+                ['external_university_id' => ['required', 'exists:external_universities,id']]
+            )->validate()['external_university_id'];
+        }
+
+        $user = User::create(['username' => $validated['username'], 'name' => $validated['name'], 'email' => $validated['email'] ?? null, 'password' => Hash::make($validated['password']), 'must_change_password' => true, 'is_active' => true, 'fakultas_id' => $validated['fakultas_id'] ?? null, 'external_university_id' => $externalUniversityId]);
         $user->assignRole($validated['role']);
 
-        return $this->created(new UserResource($user->load('roles')), 'Pengguna berhasil ditambahkan.');
+        return $this->created(new UserResource($user->load(['roles', 'externalUniversity'])), 'Pengguna berhasil ditambahkan.');
     }
 
     public function toggleActive(User $user): JsonResponse
@@ -242,24 +287,27 @@ class UserController extends Controller
             return $this->forbidden('Hanya superadmin yang dapat mereset password pengguna.');
         }
 
-        $tempPassword = Str::random(12);
-        $user->update(['password' => Hash::make($tempPassword), 'must_change_password' => true]);
+        $birthDate = Mahasiswa::where('user_id', $user->id)->value('birth_date')
+            ?? Dosen::where('user_id', $user->id)->value('birth_date');
 
-        // Send password via email if available; never return plaintext in JSON response
-        if ($user->email) {
-            try {
-                Mail::raw(
-                    "Password sementara akun {$user->username}: {$tempPassword}\n\nSilakan ganti password setelah login.",
-                    fn ($m) => $m->to($user->email)->subject('Password Sementara SIBERMAS')
-                );
-            } catch (\Throwable) {
-                // Mail failure should not block the response
-            }
+        if (! $birthDate) {
+            return $this->error('BIRTH_DATE_MISSING', 'Tanggal lahir pengguna belum tersedia. Isi tanggal lahir sebelum reset password default.', 422);
         }
 
+        $defaultPassword = \Carbon\Carbon::parse($birthDate)->format('dmY');
+        $user->update(['password' => Hash::make($defaultPassword), 'must_change_password' => true]);
+
+        AuditService::log(
+            'SUPERADMIN_RESET_PASSWORD',
+            sprintf('Superadmin reset password default DDMMYYYY untuk user id=%d (%s)', $user->id, $user->username),
+            $user,
+            [],
+            ['delivery' => 'default_ddmmyyyy']
+        );
+
         return $this->success(
-            ['username' => $user->username, 'email_sent' => (bool) $user->email],
-            'Password sementara berhasil dibuat.'.($user->email ? ' Dikirim ke email.' : ' Tidak ada email terdaftar.')
+            ['username' => $user->username, 'delivery' => 'default_ddmmyyyy'],
+            'Password berhasil direset ke default DDMMYYYY. User wajib mengganti password saat login.'
         );
     }
 

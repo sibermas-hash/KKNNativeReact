@@ -89,6 +89,15 @@ type PlotResult = {
 
 type LogEntry = { time: string; type: 'info' | 'success' | 'warn' | 'error'; message: string };
 
+type ExternalKebumenResult = {
+  periode_id?: number | null;
+  summary?: { external_unplaced?: number; internal_unplaced?: number; locations_kebumen?: number; groups_needed?: number; internal_needed?: number; can_apply?: boolean };
+  groups?: Array<{ no: number; code: string; name: string; location?: { village_name?: string; district_name?: string; regency_name?: string } | null; external_members?: Member[]; internal_members?: Member[]; stats?: { total?: number; external?: number; internal?: number; male?: number; female?: number } }>;
+  warnings?: string[];
+  applied?: boolean;
+  message?: string;
+};
+
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
     if (document.querySelector(`script[src="${src}"]`)) {
@@ -117,6 +126,7 @@ export default function AutoPlottingPage(): React.JSX.Element {
   ]);
   const [runStartedAt, setRunStartedAt] = useState<number | null>(null);
   const [runDuration, setRunDuration] = useState<number | null>(null);
+  const [externalResult, setExternalResult] = useState<ExternalKebumenResult | null>(null);
 
   const addLog = (type: LogEntry['type'], message: string) => {
     setLogs((prev) => [...prev, { time: new Date().toLocaleTimeString('id-ID'), type, message }]);
@@ -195,6 +205,46 @@ export default function AutoPlottingPage(): React.JSX.Element {
         'Gagal';
       addLog('error', `Apply gagal: ${msg}`);
       toast.error('Apply gagal: ' + msg);
+    },
+  });
+
+
+  const externalPreview = useMutation({
+    mutationFn: async () => {
+      addLog('info', 'Preview plotting peserta eksternal Kebumen...');
+      const res = await rawApi.post('/admin/plotting-otomatis/external-kebumen/preview', { periode_id: periodeId || undefined }, { timeout: 120000 });
+      const body = res.data as { data?: ExternalKebumenResult };
+      return (body?.data ?? (res.data as ExternalKebumenResult)) as ExternalKebumenResult;
+    },
+    onSuccess: (data) => {
+      setExternalResult(data);
+      addLog('success', `Preview Kebumen: ${data.summary?.groups_needed ?? 0} kelompok, ${data.summary?.external_unplaced ?? 0} eksternal`);
+      (data.warnings ?? []).forEach((w) => addLog('warn', w));
+      toast.success('Preview eksternal Kebumen selesai');
+    },
+    onError: (err: unknown) => {
+      const msg = (err as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message ?? (err as { message?: string })?.message ?? 'Gagal';
+      addLog('error', `Preview Kebumen gagal: ${msg}`);
+      toast.error('Preview Kebumen gagal: ' + msg);
+    },
+  });
+
+  const externalApply = useMutation({
+    mutationFn: async () => {
+      addLog('warn', 'MODE REAL: menerapkan plotting eksternal Kebumen...');
+      const res = await rawApi.post('/admin/plotting-otomatis/external-kebumen/apply', { periode_id: (externalResult?.periode_id ?? periodeId) || undefined, confirm: true }, { timeout: 180000 });
+      const body = res.data as { data?: ExternalKebumenResult };
+      return (body?.data ?? (res.data as ExternalKebumenResult)) as ExternalKebumenResult;
+    },
+    onSuccess: (data) => {
+      setExternalResult(data);
+      addLog(data.applied ? 'success' : 'warn', data.message || 'Apply Kebumen selesai');
+      toast.success(data.message || 'Apply Kebumen selesai');
+    },
+    onError: (err: unknown) => {
+      const msg = (err as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message ?? (err as { message?: string })?.message ?? 'Gagal';
+      addLog('error', `Apply Kebumen gagal: ${msg}`);
+      toast.error('Apply Kebumen gagal: ' + msg);
     },
   });
 
@@ -449,6 +499,23 @@ export default function AutoPlottingPage(): React.JSX.Element {
           {apply.isPending ? 'Menerapkan...' : 'Terapkan Real'}
         </button>
         <button
+          disabled={externalPreview.isPending}
+          onClick={() => externalPreview.mutate()}
+          className="h-10 rounded-lg bg-amber-600 px-4 text-sm font-bold text-white disabled:opacity-50 flex items-center gap-2"
+        >
+          {externalPreview.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Users className="h-4 w-4" />}
+          Preview Eksternal Kebumen
+        </button>
+        <button
+          disabled={!externalResult?.summary?.can_apply || externalApply.isPending}
+          onClick={() => {
+            if (confirm('MODE REAL: terapkan plotting peserta eksternal Kebumen ke DB produksi?')) externalApply.mutate();
+          }}
+          className="h-10 rounded-lg bg-orange-700 px-4 text-sm font-bold text-white disabled:opacity-50 flex items-center gap-2"
+        >
+          {externalApply.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+          Apply Eksternal Kebumen
+        </button>        <button
           disabled={!result}
           onClick={reset}
           className="h-10 rounded-lg border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 disabled:opacity-50"
@@ -471,6 +538,29 @@ export default function AutoPlottingPage(): React.JSX.Element {
         )}
       </div>
 
+      {externalResult && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-950">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <p className="font-black uppercase">Plotting Eksternal Kebumen</p>
+              <p>Periode #{externalResult.periode_id ?? '-'} • {externalResult.summary?.groups_needed ?? 0} kelompok • {externalResult.summary?.external_unplaced ?? 0} eksternal • butuh {externalResult.summary?.internal_needed ?? 0} internal</p>
+            </div>
+            <span className={externalResult.summary?.can_apply ? 'rounded-full bg-emerald-100 px-3 py-1 text-xs font-black text-emerald-700' : 'rounded-full bg-rose-100 px-3 py-1 text-xs font-black text-rose-700'}>
+              {externalResult.summary?.can_apply ? 'SIAP APPLY' : 'BELUM SIAP'}
+            </span>
+          </div>
+          {(externalResult.warnings ?? []).length > 0 && <ul className="mb-3 list-disc pl-5 text-rose-700">{(externalResult.warnings ?? []).map((w, i) => <li key={i}>{w}</li>)}</ul>}
+          <div className="grid gap-2 md:grid-cols-2">
+            {(externalResult.groups ?? []).map((g) => (
+              <div key={g.code} className="rounded-xl border border-amber-200 bg-white p-3">
+                <p className="font-black">{g.name}</p>
+                <p className="text-xs text-slate-600">{g.location?.village_name ?? '-'}, {g.location?.district_name ?? '-'} • eksternal {g.stats?.external ?? 0}, internal {g.stats?.internal ?? 0}, total {g.stats?.total ?? 0}</p>
+                <p className="mt-1 text-xs">Eksternal: {(g.external_members ?? []).map((m) => m.nama).join(', ') || '-'}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {simulate.isPending && (
         <div className="rounded-xl border border-teal-200 bg-teal-50 p-4 text-sm text-teal-900 flex items-center gap-3">
           <Loader2 className="h-5 w-5 animate-spin" />

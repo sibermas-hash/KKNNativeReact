@@ -1,7 +1,6 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import Image from 'next/image';
 import { useEffect, useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore } from '@/stores';
@@ -22,9 +21,10 @@ import {
   Play, Megaphone, Bell, Camera, Sparkles, MessageCircle, ArrowRightLeft,
 } from 'lucide-react';
 
-const getNavGroups = (_pathname: string, roles: string[]) => {
-  const normalizedRoles = roles.map((role) => String(role).toLowerCase());
-  const isSuperadmin = normalizedRoles.includes('superadmin') || normalizedRoles.includes('super-admin');
+const getNavGroups = (pathname: string, roles: string[]) => {
+  const isSuperadmin = roles.includes('superadmin');
+  const isBlog = pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi') || pathname.includes('/admin/chat') || pathname.includes('/admin/konten-publik');
+  const isSystem = pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/prodi') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/konfigurasi-penilaian') || pathname.includes('/admin/monitoring');
 
   const operationalGroups = [
     { title: 'SENTRAL OPERASIONAL', items: [
@@ -111,10 +111,10 @@ const getNavGroups = (_pathname: string, roles: string[]) => {
     ]},
   ];
 
-  // Stable sidebar: do not swap menus per route. Keep one consistent admin navigation.
-  return isSuperadmin
-    ? [...operationalGroups, ...contentGroups, ...systemGroups]
-    : [...operationalGroups, ...contentGroups];
+  // Hub-separated sidebar: each admin portal shows only its own menu cluster.
+  if (isSystem) return isSuperadmin ? systemGroups : [];
+  if (isBlog) return contentGroups;
+  return operationalGroups;
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
@@ -125,8 +125,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Must be before any early returns — Rules of Hooks
-  const roles = useMemo(() => user?.roles || [], [user?.roles]);
-  const navGroups = useMemo(() => getNavGroups(pathname, roles), [pathname, roles]);
+  const navGroups = useMemo(() => getNavGroups(pathname, user?.roles || []), [pathname, user?.roles]);
   const activeNav = useMemo(() => {
     for (const group of navGroups) {
       const item = group.items.find(i => pathname === i.href || pathname.startsWith(i.href + '/'));
@@ -137,6 +136,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pageTitle = activeNav?.item.label ?? (pathname === '/admin' ? 'Hub Utama' : 'SIBERMAS');
   const pageContext = activeNav?.group ?? (pathname === '/admin' ? 'Pusat Navigasi' : 'Operasional');
   const ActiveHeaderIcon = activeNav?.item.icon ?? LayoutDashboard;
+  const isBlog = useMemo(() => pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi') || pathname.includes('/admin/chat'), [pathname]);
   const isSystem = useMemo(() => pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/prodi') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/monitoring'), [pathname]);
 
   useEffect(() => {
@@ -157,6 +157,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
   }, [isLoading, isAuthenticated, user, router, pathname, isSystem, fetchUser]);
 
+  const roles = user?.roles || [];
   const hasAdminRole = roles.includes('superadmin') || roles.includes('admin') || roles.includes('faculty_admin');
 
   const handleLogout = async () => {
@@ -195,21 +196,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <div className="h-28 px-6 flex flex-col justify-center sticky top-0 z-10 bg-[color:var(--profile-surface-strong)]">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 flex items-center justify-center rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-input)] p-1.5 shadow-sm shrink-0">
-              <Image src="/images/logo_uinsaizu.png" alt="Logo UIN" width={48} height={48} className="h-full w-full object-contain" />
+              <img src="/images/logo_uinsaizu.png" alt="Logo UIN" className="h-full w-full object-contain" />
             </div>
-            <Link href="/profil" title="Buka Profil" aria-label="Buka Profil" onClick={() => setSidebarOpen(false)} className="h-12 w-12 flex items-center justify-center rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-input)] p-1 shadow-sm shrink-0 transition-all hover:bg-[color:var(--profile-soft)] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[color:var(--profile-accent)]">
-              <Image src="/images/Logo_SIBERMAS.png" alt="Logo SIBERMAS" width={48} height={48} className="h-full w-full object-contain" />
-            </Link>
+            <div className="h-12 w-12 flex items-center justify-center rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-input)] p-1 shadow-sm shrink-0">
+              <img src="/images/Logo_SIBERMAS.png" alt="Logo SIBERMAS" className="h-full w-full object-contain" />
+            </div>
           </div>
           <div className="mt-4">
             <h1 className="text-base font-black leading-none tracking-tight flex items-center gap-2 font-display uppercase text-[color:var(--profile-text)]">
-              {isSystem ? 'SYSTEM REGISTRY' : (
+              {isBlog ? 'CONTENT HUB' : isSystem ? 'SYSTEM REGISTRY' : (
                 <span><span className="text-[color:var(--profile-primary)]">SIBER</span><span className="text-[color:var(--profile-accent)]">MAS</span></span>
               )}
               <span className={clsx('h-1.5 w-1.5 rounded-full animate-pulse bg-[color:var(--profile-accent)]')} />
             </h1>
             <p className="text-[9px] font-bold text-[color:var(--profile-muted)] mt-2 font-sans tracking-wider leading-relaxed uppercase">
-              {isSystem ? 'Infrastruktur Data' : 'Otomasi Operasional'}
+              {isBlog ? 'Eksistensi Digital' : isSystem ? 'Infrastruktur Data' : 'Otomasi Operasional'}
             </p>
           </div>
         </div>
@@ -259,6 +260,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/admin" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[10px] font-black text-[color:var(--profile-muted)] uppercase tracking-widest hover:bg-[color:var(--profile-soft)] hover:text-[color:var(--profile-text)] transition-all group border border-transparent hover:border-[color:var(--profile-border)]">
             <Shuffle className="h-4 w-4 text-[color:var(--profile-muted)] group-hover:text-[color:var(--profile-primary)] transition-colors" />
             Kembali ke Hub Utama
+          </Link>
+        </div>
+
+        {/* Profile */}
+        <div className="p-4">
+          <Link href="/profil" className="flex items-center gap-3 p-3 rounded-2xl bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] shadow-sm hover:shadow-md transition-all group">
+            <div className="h-10 w-10 rounded-xl bg-[color:var(--profile-primary)] flex items-center justify-center text-white shrink-0 shadow-inner group-hover:rotate-6 transition-transform">
+              <span className="text-xs font-black uppercase">{user.name.substring(0, 2)}</span>
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs font-black text-[color:var(--profile-text)] truncate leading-none mb-1 font-display">{user.name}</span>
+              <span className="text-[9px] font-bold text-[color:var(--profile-muted)] uppercase tracking-wider flex items-center gap-1 font-sans">
+                <div className="w-1 h-1 rounded-full bg-[color:var(--profile-accent)] animate-pulse" />
+                {roles[0] || 'admin'}
+              </span>
+            </div>
           </Link>
         </div>
       </aside>

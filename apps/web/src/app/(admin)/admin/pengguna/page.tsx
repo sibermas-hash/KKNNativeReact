@@ -1,22 +1,25 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api, adminApi } from '@/lib/api';
-import { Users, UserPlus, Eye, EyeOff, X } from 'lucide-react';
-import { PageHeader, EmptyState } from '@/components/ui/shared';
+import type { ApiResponse, PaginationMeta } from '@sibermas/shared-types';
+import { adminApi, rawApi } from '@/lib/api';
+import { mutationErrorHandler } from '@/lib/utils';
+import { Users, UserPlus, Eye, EyeOff, X, ShieldAlert, Search, RotateCcw, SlidersHorizontal, Mail, UserCircle, CheckCircle2, Ban, KeyRound, PencilLine, Shield } from 'lucide-react';
+import { PageHeader, EmptyState, ResponsiveTable } from '@/components/ui/shared';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { toast } from 'sonner';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useDeferredValue } from 'react';
+import { useAuthStore } from '@/stores';
 
 interface User {
   id: number;
   name: string;
   username: string;
-  email: string;
+  email?: string | null;
   roles?: string[];
   is_active?: boolean;
   fakultas_id?: number | null;
-  external_university_id?: number | null;
+  avatar_url?: string | null;
 }
 
 interface MahasiswaDetail {
@@ -79,13 +82,45 @@ type EditForm = {
   dosen: Partial<DosenDetail>;
 };
 
+type PaginatedUsersResponse = {
+  data: User[];
+  meta?: PaginationMeta;
+};
+
+type FacultyOption = {
+  id: number;
+  nama: string;
+};
+
+const EMPTY_CREATE_FORM = { username: '', name: '', email: '', role: 'student', fakultas_id: '' };
 const EMPTY_EDIT: EditForm = { user: {}, mahasiswa: {}, dosen: {} };
+
+
+const normalizeAvatarUrl = (url?: string | null): string | null => {
+  if (!url) return null;
+  return url.replace('/api/storage/', '/storage/');
+};
+
+const roleBadgeClass = (role: string) => {
+  if (role === 'superadmin') return 'bg-rose-50 text-rose-700 ring-rose-200';
+  if (role === 'admin' || role === 'faculty_admin') return 'bg-amber-50 text-amber-700 ring-amber-200';
+  if (role === 'dosen' || role === 'dpl') return 'bg-violet-50 text-violet-700 ring-violet-200';
+  return 'bg-cyan-50 text-cyan-700 ring-cyan-200';
+};
 
 export default function AdminUsersPage(): React.JSX.Element {
   const queryClient = useQueryClient();
+  const currentUser = useAuthStore((state) => state.user);
+  const isSuperadmin = (currentUser?.roles ?? []).includes('superadmin');
   const [search, setSearch] = useState('');
+  const deferredSearch = useDeferredValue(search.trim());
+  const [roleFilter, setRoleFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [facultyFilter, setFacultyFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(25);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ username: '', name: '', email: '', role: 'student', external_university_id: '' });
+  const [form, setForm] = useState(EMPTY_CREATE_FORM);
   const [showCreatePassword, setShowCreatePassword] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [editRole, setEditRole] = useState('student');
@@ -94,33 +129,67 @@ export default function AdminUsersPage(): React.JSX.Element {
   const [resetConfirmUser, setResetConfirmUser] = useState<User | null>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
 
-  const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['admin', 'users', { search }],
+  const resetCreateForm = () => {
+    setForm(EMPTY_CREATE_FORM);
+    setShowCreatePassword(false);
+    if (passwordRef.current) passwordRef.current.value = '';
+  };
+
+  const closeEditModal = () => {
+    setEditingId(null);
+    setEditForm(EMPTY_EDIT);
+  };
+
+  const toggleCreateForm = () => {
+    if (showForm) {
+      setShowForm(false);
+      resetCreateForm();
+      return;
+    }
+
+    resetCreateForm();
+    setShowForm(true);
+  };
+
+  const { data, isLoading, isFetching, isError, error, refetch } = useQuery<PaginatedUsersResponse>({
+    queryKey: ['admin', 'users', { search: deferredSearch, roleFilter, statusFilter, facultyFilter, page, perPage }],
     queryFn: async () => {
-      const res = await adminApi.users.index({ search });
-      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
+      const response = await rawApi.get<ApiResponse<User[]>>('/admin/pengguna', {
+        params: {
+          search: deferredSearch || undefined,
+          role: roleFilter || undefined,
+          is_active: statusFilter === '' ? undefined : statusFilter === 'active',
+          fakultas_id: facultyFilter || undefined,
+          page,
+          per_page: perPage,
+        },
+      });
+
+      return {
+        data: response.data.data ?? [],
+        meta: response.data.meta,
+      };
     },
+    enabled: isSuperadmin,
+    placeholderData: (previousData) => previousData,
   });
 
-  const { data: detailData, isLoading: detailLoading, isError: detailError } = useQuery({
+  const { data: detailData, isLoading: detailLoading, isError: detailError, error: detailQueryError } = useQuery<UserDetailPayload | null>({
     queryKey: ['admin', 'users', 'detail', editingId],
     queryFn: async () => {
       if (editingId === null) return null;
-      const res = await adminApi.users.show(editingId);
-      return (((res as unknown as { data?: unknown })?.data ?? res) as { data?: UserDetailPayload })?.data
-        ?? ((res as unknown as UserDetailPayload));
+      return await adminApi.users.show(editingId) as unknown as UserDetailPayload;
     },
-    enabled: editingId !== null,
+    enabled: editingId !== null && isSuperadmin,
   });
 
-  const { data: externalUniversities = [] } = useQuery({
-    queryKey: ['admin', 'external-universities', 'users-form'],
+  const { data: facultiesData } = useQuery<FacultyOption[]>({
+    queryKey: ['admin', 'fakultas', 'user-filters'],
     queryFn: async () => {
-      const res = await api.get('/admin/external-universities', { params: { per_page: 100 } });
-      const payload = (res as { data?: unknown }).data ?? res;
-      if (Array.isArray(payload)) return payload as { id: number; name: string }[];
-      return ((payload as { data?: { data?: { id: number; name: string }[] } }).data?.data ?? []) as { id: number; name: string }[];
+      const res = await adminApi.master.faculties.index({});
+      return res as unknown as FacultyOption[];
     },
+    enabled: isSuperadmin,
   });
 
   // Audit fix (2026-05-13): sync detail → form DILAKUKAN di useEffect, bukan
@@ -139,7 +208,6 @@ export default function AdminUsersPage(): React.JSX.Element {
         email: u.email ?? '',
         is_active: !!u.is_active,
         fakultas_id: u.fakultas_id ?? null,
-        external_university_id: u.external_university_id ?? null,
       },
       mahasiswa: mahasiswa
         ? {
@@ -196,17 +264,17 @@ export default function AdminUsersPage(): React.JSX.Element {
     mutationFn: (data: Record<string, unknown>) => adminApi.users.store(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+      resetCreateForm();
       setShowForm(false);
       toast.success('Pengguna ditambahkan');
-      if (passwordRef.current) passwordRef.current.value = '';
     },
-    onError: () => toast.error('Gagal menambahkan pengguna'),
+    onError: (queryError: unknown) => toast.error(mutationErrorHandler(queryError)),
   });
 
   const toggleMutation = useMutation({
     mutationFn: (id: number) => adminApi.users.toggleStatus(id),
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['admin', 'users'] }); toast.success('Status diubah'); },
-    onError: () => toast.error('Gagal mengubah status pengguna'),
+    onError: (queryError: unknown) => toast.error(mutationErrorHandler(queryError)),
   });
 
   const roleMutation = useMutation({
@@ -216,20 +284,21 @@ export default function AdminUsersPage(): React.JSX.Element {
       setEditingUser(null);
       toast.success('Role berhasil diubah');
     },
-    onError: (error: unknown) => toast.error((error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Gagal mengubah role'),
+    onError: (queryError: unknown) => toast.error(mutationErrorHandler(queryError)),
   });
 
   const resetPwMutation = useMutation({
     mutationFn: (id: number) => adminApi.users.resetPassword(id),
     onSuccess: (res: unknown) => {
-      const data = (res as { data?: { data?: { email_sent?: boolean } } })?.data?.data;
+      setResetConfirmUser(null);
+      const data = res as { delivery?: string };
       toast.success(
-        data?.email_sent
-          ? 'Password sementara dikirim ke email.'
-          : 'Password sementara dibuat (user tidak punya email — hubungi manual).'
+        data?.delivery === 'default_ddmmyyyy'
+          ? 'Password direset ke default DDMMYYYY. User wajib ganti password saat login.'
+          : 'Password berhasil direset.'
       );
     },
-    onError: () => toast.error('Gagal reset password'),
+    onError: (queryError: unknown) => toast.error(mutationErrorHandler(queryError)),
   });
 
   const editMutation = useMutation({
@@ -237,18 +306,16 @@ export default function AdminUsersPage(): React.JSX.Element {
       adminApi.users.update(id, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
-      setEditingId(null);
-      setEditForm(EMPTY_EDIT);
+      closeEditModal();
       toast.success('Data pengguna berhasil diperbarui.');
     },
-    onError: (error: unknown) =>
-      toast.error(
-        (error as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error
-          ?.message || 'Gagal memperbarui data.'
-      ),
+    onError: (queryError: unknown) => toast.error(mutationErrorHandler(queryError)),
   });
 
-  const users = (data as unknown as User[]) || [];
+  const users = data?.data ?? [];
+  const meta = data?.meta;
+  const listErrorMessage = isError ? mutationErrorHandler(error) : null;
+  const detailErrorMessage = detailError ? mutationErrorHandler(detailQueryError) : null;
 
   const roleOptions = [
     { value: 'student', label: 'Mahasiswa' },
@@ -256,9 +323,34 @@ export default function AdminUsersPage(): React.JSX.Element {
     { value: 'dpl', label: 'DPL' },
     { value: 'admin', label: 'Admin' },
     { value: 'faculty_admin', label: 'Admin Fakultas' },
-    { value: 'external_lppm_admin', label: 'Admin LPPM Kampus Luar' },
     { value: 'superadmin', label: 'Superadmin' },
   ];
+  const statusOptions = [
+    { value: '', label: 'Semua Status' },
+    { value: 'active', label: 'Aktif' },
+    { value: 'inactive', label: 'Nonaktif' },
+  ];
+  const roleLabelMap = Object.fromEntries(roleOptions.map((option) => [option.value, option.label]));
+  const faculties = facultiesData ?? [];
+  const activeFilterCount = [deferredSearch, roleFilter, statusFilter, facultyFilter].filter(Boolean).length;
+  const hasActiveFilters = activeFilterCount > 0;
+
+  if (!isSuperadmin) {
+    return (
+      <div className="max-w-xl mx-auto mt-16">
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-amber-800">
+          <ShieldAlert className="h-5 w-5 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-bold">Akses khusus superadmin.</p>
+            <p className="text-xs mt-1">
+              Manajemen pengguna, perubahan role, dan reset password hanya tersedia untuk superadmin
+              karena memengaruhi akses seluruh sistem.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleSubmitEdit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -279,15 +371,15 @@ export default function AdminUsersPage(): React.JSX.Element {
     if (hasMahasiswa) {
       const { nim: _nim, ...rest } = editForm.mahasiswa;
       void _nim;
-      payload.mahasiswa = rest;
+      payload.mahasiswa = stripUndefined(rest as Record<string, unknown>);
     }
     if (hasDosen) {
       const { nip: _nip, ...rest } = editForm.dosen;
       void _nip;
-      payload.dosen = rest;
+      payload.dosen = stripUndefined(rest as Record<string, unknown>);
     }
 
-    editMutation.mutate({ id: editingId, payload });
+    editMutation.mutate({ id: editingId, payload: stripUndefined(payload) });
   };
 
   const updateUserField = <K extends keyof User>(key: K, value: User[K]) => {
@@ -300,44 +392,112 @@ export default function AdminUsersPage(): React.JSX.Element {
     setEditForm((prev) => ({ ...prev, dosen: { ...prev.dosen, [key]: value } }));
   };
 
+  const batchLabel = meta
+    ? `Batch ${meta.current_page} dari ${meta.last_page} • ${meta.from ?? 0}-${meta.to ?? 0} dari ${meta.total} pengguna`
+    : `Menampilkan ${users.length} pengguna`;
+
+  const resetFilters = () => {
+    setSearch('');
+    setRoleFilter('');
+    setStatusFilter('');
+    setFacultyFilter('');
+    setPage(1);
+  };
+
+  const renderActions = (u: User) => (
+    <div className="flex flex-wrap justify-end gap-2">
+      <button
+        onClick={() => toggleMutation.mutate(u.id)}
+        disabled={(toggleMutation.isPending && toggleMutation.variables === u.id) || (u.id === currentUser?.id && !!u.is_active)}
+        title={u.id === currentUser?.id && u.is_active ? 'Akun Anda sendiri tidak dapat dinonaktifkan.' : undefined}
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black disabled:opacity-50 ${u.is_active ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 ring-1 ring-rose-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 ring-1 ring-emerald-100'}`}
+      >
+        {u.is_active ? <Ban size={13} /> : <CheckCircle2 size={13} />} {u.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+      </button>
+      <button
+        onClick={() => { setEditForm(EMPTY_EDIT); setEditingId(u.id); }}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black bg-cyan-50 text-cyan-700 hover:bg-cyan-100 ring-1 ring-cyan-100"
+      >
+        <PencilLine size={13} /> Edit
+      </button>
+      <button
+        onClick={() => { setEditingUser(u); setEditRole(u.roles?.[0] || 'student'); }}
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black bg-slate-100 text-slate-700 hover:bg-slate-200 ring-1 ring-slate-200"
+      >
+        <Shield size={13} /> Role
+      </button>
+      <button
+        onClick={() => {
+
+          setResetConfirmUser(u);
+        }}
+        title="Reset password ke default DDMMYYYY dari tanggal lahir"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-black bg-amber-50 text-amber-700 hover:bg-amber-100 ring-1 ring-amber-100 disabled:opacity-50"
+      >
+        <KeyRound size={13} /> Reset
+      </button>
+    </div>
+  );
+
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       <PageHeader
         title="Manajemen Pengguna"
-        subtitle="Kelola akun pengguna sistem"
+        subtitle="Pusat kontrol akun, role, status akses, dan reset kredensial pengguna SIBERMAS."
         actions={
           <button
-            onClick={() => setShowForm(!showForm)}
-            className="px-4 py-2 bg-cyan-600 text-white rounded-xl text-xs font-black uppercase flex items-center gap-2 hover:bg-cyan-700"
+            onClick={toggleCreateForm}
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-xs font-black uppercase text-slate-900 shadow-sm ring-1 ring-white/70 hover:bg-cyan-50"
           >
-            <UserPlus size={14} /> Tambah
+            <UserPlus size={14} /> {showForm ? 'Tutup Form' : 'Tambah Pengguna'}
           </button>
         }
       />
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Total hasil</p>
+          <p className="mt-2 text-2xl font-black text-slate-900 tabular-nums">{meta?.total ?? users.length}</p>
+          <p className="text-xs font-semibold text-slate-500">pengguna sesuai filter</p>
+        </div>
+        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Batch aktif</p>
+          <p className="mt-2 text-2xl font-black text-slate-900 tabular-nums">{meta?.current_page ?? page}/{meta?.last_page ?? 1}</p>
+          <p className="text-xs font-semibold text-slate-500">{perPage} pengguna per batch</p>
+        </div>
+        <div className="rounded-2xl bg-slate-950 p-5 text-white shadow-sm">
+          <p className="text-[10px] font-black uppercase tracking-widest text-white/50">Filter aktif</p>
+          <p className="mt-2 text-2xl font-black tabular-nums">{activeFilterCount}</p>
+          <p className="text-xs font-semibold text-white/60">search, role, status, fakultas</p>
+        </div>
+      </div>
 
       {showForm && (
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            createMutation.mutate({ ...form, external_university_id: form.external_university_id ? Number(form.external_university_id) : null, password: passwordRef.current?.value || '' });
+            createMutation.mutate({ ...form, fakultas_id: form.fakultas_id ? Number(form.fakultas_id) : null, password: passwordRef.current?.value || '' });
           }}
-          className="bg-[color:var(--profile-surface)] rounded-2xl p-6 ring-1 ring-[color:var(--profile-border)] shadow-sm space-y-4"
+          className="bg-white rounded-2xl p-6 ring-1 ring-slate-200 shadow-sm space-y-4"
         >
+          <div className="rounded-xl border border-cyan-100 bg-cyan-50 px-4 py-3 text-xs text-cyan-900">
+            <b>Tambah pengguna:</b> untuk akun mahasiswa, isi <b>Username dengan NIM</b>, pilih role <b>Mahasiswa</b>, dan fakultas bila perlu. Password wajib minimal 8 karakter serta mengandung huruf besar, huruf kecil, angka, dan simbol.
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label htmlFor="create-username" className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase">Username</label>
-              <input id="create-username" placeholder="Username" value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} autoComplete="username" className="w-full h-10 bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] rounded-lg px-3 text-sm mt-1" required />
+              <label htmlFor="create-username" className="text-[10px] font-black text-slate-500 uppercase">Username</label>
+              <input id="create-username" placeholder={form.role === 'student' ? 'NIM / username mahasiswa' : 'Username'} value={form.username} onChange={(e) => setForm({ ...form, username: e.target.value })} autoComplete="username" className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1" required />
             </div>
             <div>
-              <label htmlFor="create-name" className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase">Nama</label>
-              <input id="create-name" placeholder="Nama Lengkap" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full h-10 bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] rounded-lg px-3 text-sm mt-1" required />
+              <label htmlFor="create-name" className="text-[10px] font-black text-slate-500 uppercase">Nama</label>
+              <input id="create-name" placeholder={form.role === 'student' ? 'Nama mahasiswa' : 'Nama lengkap'} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1" required />
             </div>
             <div>
-              <label htmlFor="create-email" className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase">Email</label>
-              <input id="create-email" placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} autoComplete="email" className="w-full h-10 bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] rounded-lg px-3 text-sm mt-1" />
+              <label htmlFor="create-email" className="text-[10px] font-black text-slate-500 uppercase">Email</label>
+              <input id="create-email" placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} autoComplete="email" className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1" />
             </div>
             <div>
-              <label htmlFor="create-password" className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase">Password</label>
+              <label htmlFor="create-password" className="text-[10px] font-black text-slate-500 uppercase">Password</label>
               <div className="relative mt-1">
                 <input
                   id="create-password"
@@ -345,57 +505,161 @@ export default function AdminUsersPage(): React.JSX.Element {
                   type={showCreatePassword ? 'text' : 'password'}
                   ref={passwordRef}
                   autoComplete="new-password"
-                  className="w-full h-10 bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] rounded-lg px-3 pr-10 text-sm"
+                  className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 pr-10 text-sm"
                   required
                 />
+                <p className="mt-1 text-[10px] text-slate-500">Contoh valid: <code>Abcd1234!</code></p>
                 <button
                   type="button"
                   onClick={() => setShowCreatePassword(!showCreatePassword)}
                   aria-label={showCreatePassword ? 'Sembunyikan password' : 'Tampilkan password'}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-[color:var(--profile-muted)] hover:text-[color:var(--profile-text)]"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-slate-500 hover:text-slate-700"
                 >
                   {showCreatePassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
             <div>
-              <label htmlFor="create-role" className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase">Role</label>
-              <select id="create-role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="w-full h-10 bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] rounded-lg px-3 text-sm mt-1">
+              <label htmlFor="create-role" className="text-[10px] font-black text-slate-500 uppercase">Role</label>
+              <select id="create-role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1">
                 {roleOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </div>
-            {form.role === 'external_lppm_admin' && <div>
-              <label className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase">Kampus Luar</label>
-              <select value={form.external_university_id} onChange={(e) => setForm({ ...form, external_university_id: e.target.value })} className="w-full h-10 bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] rounded-lg px-3 text-sm mt-1" required>
-                <option value="">Pilih kampus luar</option>
-                {externalUniversities.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
+            <div>
+              <label htmlFor="create-fakultas" className="text-[10px] font-black text-slate-500 uppercase">Fakultas</label>
+              <select
+                id="create-fakultas"
+                value={form.fakultas_id}
+                onChange={(e) => setForm({ ...form, fakultas_id: e.target.value })}
+                className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1"
+              >
+                <option value="">Tidak diset / Semua Fakultas</option>
+                {faculties.map((f) => <option key={f.id} value={f.id}>{f.nama}</option>)}
               </select>
-            </div>}
+            </div>
           </div>
           <div className="flex gap-3">
             <button type="submit" disabled={createMutation.isPending} className="px-6 py-2 bg-cyan-600 text-white rounded-xl text-xs font-black uppercase hover:bg-cyan-700 disabled:opacity-50">Simpan</button>
-            <button type="button" onClick={() => { setShowForm(false); if (passwordRef.current) passwordRef.current.value = ''; }} className="px-6 py-2 bg-slate-100 text-[color:var(--profile-text)] rounded-xl text-xs font-bold hover:bg-slate-200">Batal</button>
+            <button type="button" onClick={() => { setShowForm(false); resetCreateForm(); }} className="px-6 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200">Batal</button>
           </div>
         </form>
       )}
 
-      <div>
-        <label htmlFor="search-users" className="sr-only">Cari pengguna</label>
-        <input
-          id="search-users"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Cari pengguna..."
-          autoComplete="off"
-          className="w-full max-w-sm h-10 bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] rounded-xl px-4 text-sm font-bold"
-        />
+      <div className="rounded-3xl bg-white/95 p-5 shadow-sm ring-1 ring-slate-200">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
+          <div className="flex flex-1 flex-col gap-3">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="w-full xl:col-span-2">
+                <label htmlFor="search-users" className="text-[10px] font-black text-slate-500 uppercase">Cari Pengguna</label>
+                <div className="relative mt-1">
+                  <Search size={15} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                <input
+                  id="search-users"
+                  value={search}
+                  onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                  placeholder="Cari nama, username, atau email..."
+                  autoComplete="off"
+                  className="w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl pl-9 pr-4 text-sm font-bold focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-50"
+                />
+                </div>
+              </div>
+
+              <div className="w-full">
+                <label htmlFor="filter-role" className="text-[10px] font-black text-slate-500 uppercase">Role</label>
+                <select
+                  id="filter-role"
+                  value={roleFilter}
+                  onChange={(e) => {
+                    setRoleFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="mt-1 w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl px-3 text-sm font-bold focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-50"
+                >
+                  <option value="">Semua Role</option>
+                  {roleOptions.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="w-full">
+                <label htmlFor="filter-status" className="text-[10px] font-black text-slate-500 uppercase">Status Akun</label>
+                <select
+                  id="filter-status"
+                  value={statusFilter}
+                  onChange={(e) => {
+                    setStatusFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="mt-1 w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl px-3 text-sm font-bold focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-50"
+                >
+                  {statusOptions.map((option) => (
+                    <option key={option.value || 'all'} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <div className="w-full sm:max-w-xs">
+                <label htmlFor="filter-faculty" className="text-[10px] font-black text-slate-500 uppercase">Fakultas</label>
+                <select
+                  id="filter-faculty"
+                  value={facultyFilter}
+                  onChange={(e) => {
+                    setFacultyFilter(e.target.value);
+                    setPage(1);
+                  }}
+                  className="mt-1 w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl px-3 text-sm font-bold focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-50"
+                >
+                  <option value="">Semua Fakultas</option>
+                  {faculties.map((faculty) => (
+                    <option key={faculty.id} value={faculty.id}>{faculty.nama}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="w-full sm:w-40">
+                <label htmlFor="users-per-batch" className="text-[10px] font-black text-slate-500 uppercase">Per Batch</label>
+                <select
+                  id="users-per-batch"
+                  value={perPage}
+                  onChange={(e) => {
+                    setPerPage(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="mt-1 w-full h-11 bg-slate-50 border border-slate-200 rounded-2xl px-3 text-sm font-bold focus:border-cyan-400 focus:outline-none focus:ring-4 focus:ring-cyan-50"
+                >
+                  {[10, 25, 50, 100].map((size) => (
+                    <option key={size} value={size}>{size} pengguna</option>
+                  ))}
+                </select>
+              </div>
+
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={resetFilters}
+                  className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl border border-slate-200 px-4 text-xs font-black uppercase text-slate-600 hover:bg-slate-50"
+                >
+                  <RotateCcw size={14} /> Reset ({activeFilterCount})
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="inline-flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 text-xs font-black text-slate-600 ring-1 ring-slate-200">
+            <SlidersHorizontal size={14} /> {isFetching && !isLoading ? 'Memuat batch baru...' : batchLabel}
+          </div>
+        </div>
       </div>
 
       {isLoading ? (
         <div className="space-y-3">{[1, 2, 3].map((i) => <div key={i} className="h-16 animate-pulse rounded-2xl bg-slate-200" />)}</div>
-      ) : isError ? (
+      ) : listErrorMessage ? (
         <div className="rounded-2xl bg-rose-50 border border-rose-200 p-6 text-center space-y-3">
           <p className="text-sm font-bold text-rose-700">Gagal memuat data pengguna.</p>
+          <p className="text-sm text-rose-700">{listErrorMessage}</p>
           <button
             onClick={() => refetch()}
             className="px-4 py-2 bg-rose-600 text-white rounded-xl text-xs font-black hover:bg-rose-700"
@@ -404,43 +668,97 @@ export default function AdminUsersPage(): React.JSX.Element {
           </button>
         </div>
       ) : users.length === 0 ? (
-        <EmptyState icon={<Users size={40} />} title="Belum ada pengguna" description="Tidak ada pengguna yang ditemukan." />
+        <EmptyState
+          icon={<Users size={40} />}
+          title="Belum ada pengguna"
+          description={hasActiveFilters ? 'Tidak ada pengguna yang cocok dengan filter saat ini.' : 'Tidak ada pengguna yang ditemukan.'}
+        />
       ) : (
-        <div className="space-y-3">
-          {users.map((u) => (
-            <div key={String(u.id)} className="flex items-center justify-between bg-[color:var(--profile-surface)] rounded-2xl p-5 ring-1 ring-[color:var(--profile-border)] shadow-sm">
-              <div>
-                <p className="font-black text-[color:var(--profile-text)]">{String(u.name || '-')} ({String(u.username || '-')})</p>
-                <p className="text-xs text-[color:var(--profile-muted)]">{String(u.email || '-')} | Role: {(u.roles as string[])?.join(', ') || '-'}</p>
-              </div>
-              <div className="flex gap-2 flex-wrap">
+        <div className="space-y-4">
+          <ResponsiveTable
+            columns={[
+              {
+                key: 'user',
+                label: 'Pengguna',
+                render: (u) => (
+                  <div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-cyan-50 text-cyan-700 ring-1 ring-cyan-100">
+                        {normalizeAvatarUrl(u.avatar_url) ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={normalizeAvatarUrl(u.avatar_url) ?? ''} alt={String(u.name || 'Avatar pengguna')} className="h-full w-full object-cover" loading="lazy" />
+                        ) : (
+                          <UserCircle size={20} />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-black text-slate-900">{String(u.name || '-')}</p>
+                        <p className="text-xs font-semibold text-slate-400">@{String(u.username || '-')}</p>
+                      </div>
+                    </div>
+                  </div>
+                ),
+              },
+              {
+                key: 'email',
+                label: 'Kontak',
+                hideOnMobile: true,
+                render: (u) => (
+                  <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-600"><Mail size={14} className="text-slate-400" />{String(u.email || '-')}</span>
+                ),
+              },
+              {
+                key: 'role',
+                label: 'Role',
+                render: (u) => (
+                  <div className="flex flex-wrap gap-1">
+                    {(u.roles?.length ? u.roles : ['-']).map((role) => (
+                      <span
+                        key={`${u.id}-${role}`}
+                        className={`inline-flex rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ring-1 ${roleBadgeClass(role)}`}
+                      >
+                        {roleLabelMap[role] ?? role}
+                      </span>
+                    ))}
+                  </div>
+                ),
+              },
+              {
+                key: 'status',
+                label: 'Status',
+                render: (u) => (
+                  <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wide ring-1 ${u.is_active ? 'bg-emerald-50 text-emerald-700 ring-emerald-200' : 'bg-rose-50 text-rose-700 ring-rose-200'}`}>
+                    {u.is_active ? <CheckCircle2 size={12} /> : <Ban size={12} />} {u.is_active ? 'Aktif' : 'Nonaktif'}
+                  </span>
+                ),
+              },
+            ]}
+            data={users}
+            keyExtractor={(u) => u.id}
+            rowActions={renderActions}
+          />
+
+          {meta && meta.last_page > 1 && (
+            <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:flex-row sm:items-center sm:justify-between">
+              <span className="text-xs font-semibold text-slate-500">{batchLabel}</span>
+              <div className="flex gap-2 self-end sm:self-auto">
                 <button
-                  onClick={() => toggleMutation.mutate(u.id)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-black ${u.is_active ? 'bg-rose-50 text-rose-700 hover:bg-rose-100' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'}`}
+                  onClick={() => setPage((currentPage) => Math.max(1, currentPage - 1))}
+                  disabled={meta.current_page <= 1}
+                  className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-700 hover:bg-slate-200 disabled:opacity-50"
                 >
-                  {u.is_active ? 'Nonaktifkan' : 'Aktifkan'}
+                  {'<'} Sebelumnya
                 </button>
                 <button
-                  onClick={() => setEditingId(u.id)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-black bg-cyan-50 text-cyan-700 hover:bg-cyan-100"
+                  onClick={() => setPage((currentPage) => Math.min(meta.last_page, currentPage + 1))}
+                  disabled={meta.current_page >= meta.last_page}
+                  className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-black text-slate-700 hover:bg-slate-200 disabled:opacity-50"
                 >
-                  Edit Data
-                </button>
-                <button
-                  onClick={() => { setEditingUser(u); setEditRole(u.roles?.[0] || 'student'); }}
-                  className="px-3 py-1.5 rounded-lg text-xs font-black bg-slate-100 text-[color:var(--profile-text)] hover:bg-slate-200"
-                >
-                  Ubah Role
-                </button>
-                <button
-                  onClick={() => setResetConfirmUser(u)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-black bg-amber-50 text-amber-700 hover:bg-amber-100"
-                >
-                  Reset Password
+                  Berikutnya {'>'}
                 </button>
               </div>
             </div>
-          ))}
+          )}
         </div>
       )}
 
@@ -451,27 +769,27 @@ export default function AdminUsersPage(): React.JSX.Element {
           onKeyDown={(e) => { if (e.key === 'Escape') setEditingUser(null); }}
         >
           <div
-            className="bg-[color:var(--profile-surface)] rounded-2xl p-6 w-full max-w-sm shadow-xl space-y-5"
+            className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-xl space-y-5"
             role="dialog"
             aria-modal="true"
             aria-labelledby="ubah-role-title"
           >
-            <h3 id="ubah-role-title" className="font-black text-[color:var(--profile-text)] text-lg">Ubah Role Pengguna</h3>
+            <h3 id="ubah-role-title" className="font-black text-slate-900 text-lg">Ubah Role Pengguna</h3>
             <div>
-              <p className="text-sm font-bold text-[color:var(--profile-text)]">{editingUser.name}</p>
-              <p className="text-xs text-[color:var(--profile-muted)] mb-3">{editingUser.username}</p>
-              <label className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase" htmlFor="edit-role-select">Role Baru</label>
+              <p className="text-sm font-bold text-slate-700">{editingUser.name}</p>
+              <p className="text-xs text-slate-500 mb-3">{editingUser.username}</p>
+              <label className="text-[10px] font-black text-slate-500 uppercase" htmlFor="edit-role-select">Role Baru</label>
               <select
                 id="edit-role-select"
                 value={editRole}
                 onChange={(e) => setEditRole(e.target.value)}
-                className="w-full h-10 bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] rounded-lg px-3 text-sm mt-1"
+                className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1"
               >
                 {roleOptions.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
               </select>
             </div>
             <div className="flex gap-3 justify-end">
-              <button type="button" onClick={() => setEditingUser(null)} className="px-4 py-2 bg-slate-100 text-[color:var(--profile-text)] rounded-xl text-xs font-bold hover:bg-slate-200">Batal</button>
+              <button type="button" onClick={() => setEditingUser(null)} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200">Batal</button>
               <button type="button" onClick={() => roleMutation.mutate({ id: editingUser.id, role: editRole })} disabled={roleMutation.isPending} className="px-4 py-2 bg-cyan-600 text-white rounded-xl text-xs font-black hover:bg-cyan-700 disabled:opacity-50">Simpan</button>
             </div>
           </div>
@@ -481,26 +799,39 @@ export default function AdminUsersPage(): React.JSX.Element {
       {editingId !== null && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto"
-          onClick={(e) => { if (e.target === e.currentTarget) { setEditingId(null); setEditForm(EMPTY_EDIT); } }}
-          onKeyDown={(e) => { if (e.key === 'Escape') { setEditingId(null); setEditForm(EMPTY_EDIT); } }}
+          onClick={(e) => { if (e.target === e.currentTarget) closeEditModal(); }}
+          onKeyDown={(e) => { if (e.key === 'Escape') closeEditModal(); }}
         >
           <form
             onSubmit={handleSubmitEdit}
-            className="bg-[color:var(--profile-surface)] rounded-2xl p-6 w-full max-w-3xl shadow-xl space-y-6 my-auto max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-2xl p-6 w-full max-w-3xl shadow-xl space-y-6 my-auto max-h-[90vh] overflow-y-auto"
             role="dialog"
             aria-modal="true"
             aria-labelledby="edit-data-title"
           >
             <div className="flex items-start justify-between">
-              <div>
-                <h3 id="edit-data-title" className="font-black text-[color:var(--profile-text)] text-lg">Edit Data Pengguna</h3>
-                <p className="text-xs text-[color:var(--profile-muted)] mt-1">NIM / NIP di-lock (tidak dapat diubah).</p>
+              <div className="flex items-center gap-4">
+                <div className="h-16 w-16 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 shadow-sm shrink-0">
+                  {normalizeAvatarUrl(detailData?.user?.avatar_url) ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={normalizeAvatarUrl(detailData?.user?.avatar_url) ?? ''} alt={detailData?.user?.name || 'Avatar pengguna'} className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center bg-cyan-50 text-lg font-black text-cyan-700">
+                      {(detailData?.user?.name || editForm.user.name || '?').toString().slice(0, 1).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h3 id="edit-data-title" className="font-black text-slate-900 text-lg">Edit Data Pengguna</h3>
+                  <p className="text-xs text-slate-500 mt-1">NIM / NIP di-lock (tidak dapat diubah).</p>
+                  <p className="text-[11px] font-semibold text-slate-400 mt-1">Foto profil/Avatar ditampilkan untuk verifikasi visual.</p>
+                </div>
               </div>
               <button
                 type="button"
-                onClick={() => { setEditingId(null); setEditForm(EMPTY_EDIT); }}
+                onClick={closeEditModal}
                 aria-label="Tutup"
-                className="text-[color:var(--profile-muted)] hover:text-[color:var(--profile-text)]"
+                className="text-slate-500 hover:text-slate-700"
               >
                 <X size={20} />
               </button>
@@ -508,54 +839,43 @@ export default function AdminUsersPage(): React.JSX.Element {
 
             {detailLoading ? (
               <div className="h-48 animate-pulse rounded-xl bg-slate-100" />
-            ) : detailError ? (
+            ) : detailErrorMessage ? (
               <div className="rounded-xl bg-rose-50 border border-rose-200 p-4 text-sm text-rose-700">
-                Gagal memuat detail pengguna. Tutup modal ini dan coba lagi.
+                {detailErrorMessage}
               </div>
             ) : (
               <>
                 {/* User-level */}
                 <section className="space-y-3">
-                  <h4 className="text-xs font-black text-[color:var(--profile-text)] uppercase tracking-wide">Akun</h4>
+                  <h4 className="text-xs font-black text-slate-700 uppercase tracking-wide">Akun</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <label className="block">
-                      <span className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase">Username</span>
+                      <span className="text-[10px] font-black text-slate-400 uppercase">Username</span>
                       <input
                         value={String(editForm.user.username ?? '')}
                         onChange={(e) => updateUserField('username', e.target.value)}
-                        className="w-full h-10 bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] rounded-lg px-3 text-sm mt-1"
+                        className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1"
                       />
                     </label>
                     <label className="block">
-                      <span className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase">Nama (Akun)</span>
+                      <span className="text-[10px] font-black text-slate-400 uppercase">Nama (Akun)</span>
                       <input
                         value={String(editForm.user.name ?? '')}
                         onChange={(e) => updateUserField('name', e.target.value)}
-                        className="w-full h-10 bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] rounded-lg px-3 text-sm mt-1"
+                        className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1"
                       />
                     </label>
-                    <label className="block">
-                      <span className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase">Email</span>
+                    <label className="block sm:col-span-2">
+                      <span className="text-[10px] font-black text-slate-400 uppercase">Email</span>
                       <input
                         type="email"
                         value={String(editForm.user.email ?? '')}
                         onChange={(e) => updateUserField('email', e.target.value)}
                         placeholder="Kosongkan jika belum ada"
-                        className="w-full h-10 bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] rounded-lg px-3 text-sm mt-1"
+                        className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1"
                       />
                     </label>
-                    {editingUser?.roles?.includes('external_lppm_admin') && <label className="block">
-                      <span className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase">Kampus Luar</span>
-                      <select
-                        value={editForm.user.external_university_id ?? ''}
-                        onChange={(e) => updateUserField('external_university_id', e.target.value ? Number(e.target.value) : null)}
-                        className="w-full h-10 bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] rounded-lg px-3 text-sm mt-1"
-                      >
-                        <option value="">Pilih kampus luar</option>
-                        {externalUniversities.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
-                      </select>
-                    </label>}
-                    <label className="flex items-center gap-2 text-xs font-bold text-[color:var(--profile-muted)]">
+                    <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
                       <input
                         type="checkbox"
                         checked={!!editForm.user.is_active}
@@ -569,9 +889,9 @@ export default function AdminUsersPage(): React.JSX.Element {
                 {/* Mahasiswa */}
                 {detailData?.mahasiswa && (
                   <section className="space-y-3">
-                    <h4 className="text-xs font-black text-[color:var(--profile-text)] uppercase tracking-wide">Data Mahasiswa</h4>
-                    <div className="text-[10px] font-bold text-[color:var(--profile-muted)]">
-                      NIM: <code className="bg-slate-100 px-2 py-0.5 rounded text-[color:var(--profile-text)]">{editForm.mahasiswa.nim}</code> (locked)
+                    <h4 className="text-xs font-black text-slate-700 uppercase tracking-wide">Data Mahasiswa</h4>
+                    <div className="text-[10px] font-bold text-slate-500">
+                      NIM: <code className="bg-slate-100 px-2 py-0.5 rounded text-slate-700">{editForm.mahasiswa.nim}</code> (locked)
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <TextField label="Nama Lengkap" value={editForm.mahasiswa.nama} onChange={(v) => updateMahasiswaField('nama', v)} />
@@ -595,7 +915,7 @@ export default function AdminUsersPage(): React.JSX.Element {
                       <div className="sm:col-span-2">
                         <TextField label="Alamat" value={editForm.mahasiswa.alamat} onChange={(v) => updateMahasiswaField('alamat', v)} />
                       </div>
-                      <label className="flex items-center gap-2 text-xs font-bold text-[color:var(--profile-muted)]">
+                      <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
                         <input
                           type="checkbox"
                           checked={!!editForm.mahasiswa.is_paid_ukt}
@@ -610,9 +930,9 @@ export default function AdminUsersPage(): React.JSX.Element {
                 {/* Dosen */}
                 {detailData?.dosen && (
                   <section className="space-y-3">
-                    <h4 className="text-xs font-black text-[color:var(--profile-text)] uppercase tracking-wide">Data Dosen</h4>
-                    <div className="text-[10px] font-bold text-[color:var(--profile-muted)]">
-                      NIP: <code className="bg-slate-100 px-2 py-0.5 rounded text-[color:var(--profile-text)]">{editForm.dosen.nip}</code> (locked)
+                    <h4 className="text-xs font-black text-slate-700 uppercase tracking-wide">Data Dosen</h4>
+                    <div className="text-[10px] font-bold text-slate-500">
+                      NIP: <code className="bg-slate-100 px-2 py-0.5 rounded text-slate-700">{editForm.dosen.nip}</code> (locked)
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <TextField label="Nama Lengkap" value={editForm.dosen.nama} onChange={(v) => updateDosenField('nama', v)} />
@@ -633,7 +953,7 @@ export default function AdminUsersPage(): React.JSX.Element {
                       <div className="sm:col-span-2">
                         <TextField label="Alamat" value={editForm.dosen.alamat} onChange={(v) => updateDosenField('alamat', v)} />
                       </div>
-                      <label className="flex items-center gap-2 text-xs font-bold text-[color:var(--profile-muted)]">
+                      <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
                         <input
                           type="checkbox"
                           checked={!!editForm.dosen.is_cpns}
@@ -641,7 +961,7 @@ export default function AdminUsersPage(): React.JSX.Element {
                         />
                         CPNS
                       </label>
-                      <label className="flex items-center gap-2 text-xs font-bold text-[color:var(--profile-muted)]">
+                      <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
                         <input
                           type="checkbox"
                           checked={!!editForm.dosen.is_tugas_belajar}
@@ -655,11 +975,11 @@ export default function AdminUsersPage(): React.JSX.Element {
               </>
             )}
 
-            <div className="flex gap-3 justify-end pt-3 border-t border-[color:var(--profile-border)]">
+            <div className="flex gap-3 justify-end pt-3 border-t border-slate-100">
               <button
                 type="button"
-                onClick={() => { setEditingId(null); setEditForm(EMPTY_EDIT); }}
-                className="px-4 py-2 bg-slate-100 text-[color:var(--profile-text)] rounded-xl text-xs font-bold hover:bg-slate-200"
+                onClick={closeEditModal}
+                className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-200"
               >
                 Batal
               </button>
@@ -686,10 +1006,10 @@ export default function AdminUsersPage(): React.JSX.Element {
         title="Reset Password"
         description={
           resetConfirmUser
-            ? `Password sementara akan dibuat untuk ${resetConfirmUser.name} (${resetConfirmUser.username}) dan dikirim ke email jika tersedia.`
+            ? `Password ${resetConfirmUser.name} (${resetConfirmUser.username}) akan direset ke default DDMMYYYY berdasarkan tanggal lahir. User wajib mengganti password setelah login.`
             : ''
         }
-        confirmText="Reset"
+        confirmText="Reset ke DDMMYYYY"
         variant="warning"
       />
     </div>
@@ -697,6 +1017,20 @@ export default function AdminUsersPage(): React.JSX.Element {
 }
 
 /* ─── Field components ──────────────────────────────────────────────── */
+
+function stripUndefined<T extends Record<string, unknown>>(value: T): T {
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([, entryValue]) => entryValue !== undefined)
+      .map(([key, entryValue]) => {
+        if (entryValue && typeof entryValue === 'object' && !Array.isArray(entryValue)) {
+          return [key, stripUndefined(entryValue as Record<string, unknown>)];
+        }
+
+        return [key, entryValue];
+      }),
+  ) as T;
+}
 
 function TextField({
   label,
@@ -713,13 +1047,13 @@ function TextField({
 }) {
   return (
     <label className="block">
-      <span className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase">{label}</span>
+      <span className="text-[10px] font-black text-slate-400 uppercase">{label}</span>
       <input
         type={type}
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full h-10 bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] rounded-lg px-3 text-sm mt-1"
+        className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1"
       />
     </label>
   );
@@ -738,13 +1072,13 @@ function NumberField({
 }) {
   return (
     <label className="block">
-      <span className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase">{label}</span>
+      <span className="text-[10px] font-black text-slate-400 uppercase">{label}</span>
       <input
         type="number"
         step={step}
         value={value === null || value === undefined ? '' : value}
         onChange={(e) => onChange(e.target.value === '' ? null : Number(e.target.value))}
-        className="w-full h-10 bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] rounded-lg px-3 text-sm mt-1"
+        className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1"
       />
     </label>
   );
@@ -763,11 +1097,11 @@ function SelectField({
 }) {
   return (
     <label className="block">
-      <span className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase">{label}</span>
+      <span className="text-[10px] font-black text-slate-400 uppercase">{label}</span>
       <select
         value={value ?? ''}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full h-10 bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] rounded-lg px-3 text-sm mt-1"
+        className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm mt-1"
       >
         {options.map((o) => (
           <option key={o.value} value={o.value}>

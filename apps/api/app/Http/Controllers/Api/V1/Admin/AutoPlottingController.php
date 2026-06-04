@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
 use App\Services\KKN\AutoPlottingService;
+use App\Services\KKN\ExternalKebumenPlottingService;
 use App\Models\KKN\Periode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -80,6 +81,28 @@ class AutoPlottingController extends Controller
         } finally {
             optional($lock)->release();
         }
+    }
+    public function externalKebumenPreview(Request $request, ExternalKebumenPlottingService $service): JsonResponse
+    {
+        $data = $request->validate([
+            'periode_id' => ['nullable', 'exists:periode,id'],
+        ]);
+
+        return $this->success($service->preview(isset($data['periode_id']) ? (int) $data['periode_id'] : null));
+    }
+
+    public function externalKebumenApply(Request $request, ExternalKebumenPlottingService $service): JsonResponse
+    {
+        if (auth()->user()?->hasRole('faculty_admin')) {
+            return $this->error('FORBIDDEN', 'Admin fakultas tidak boleh menerapkan plotting.', 403);
+        }
+
+        $data = $request->validate([
+            'periode_id' => ['nullable', 'exists:periode,id'],
+            'confirm' => ['accepted'],
+        ]);
+
+        return $this->success($service->apply(isset($data['periode_id']) ? (int) $data['periode_id'] : null));
     }
     private function isRegularPeriod(int $periodeId): bool
     {

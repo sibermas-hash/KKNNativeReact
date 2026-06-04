@@ -304,7 +304,7 @@ export default function LoginPage(): React.JSX.Element {
             </AnimatePresence>
 
             {/* Form */}
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form method="post" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div className="space-y-5">
                 <input type="hidden" {...register('captcha_id')} />
                 {/* Username */}
@@ -341,6 +341,7 @@ export default function LoginPage(): React.JSX.Element {
                       {...register('password')}
                       data-testid="login-password"
                       type={showPassword ? 'text' : 'password'}
+                      autoComplete="current-password"
                       className="w-full h-12 bg-white/60 border border-white focus:bg-white rounded-xl pl-[3.2rem] pr-11 text-sm font-bold text-emerald-950 placeholder:text-emerald-800/40 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-none shadow-sm"
                       placeholder="••••••••"
                     />

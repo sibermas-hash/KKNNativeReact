@@ -87,7 +87,9 @@ const NAV = [
   { href: '/admin/rekapitulasi',   icon: BarChart3,     label: 'Rekap Nilai' },
 ];
 
-const ENTER = { hidden: { opacity: 0, y: 16 }, show: { opacity: 1, y: 0 } };
+const ENTER = { hidden: { opacity: 0, y: 16, filter: 'blur(6px)' }, show: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.42, ease: 'easeOut' } } };
+const CARD_HOVER = { y: -5, scale: 1.012, transition: { duration: 0.22, ease: 'easeOut' } };
+const CARD_TAP = { scale: 0.985 };
 
 export default function AdminDashboardPage(): React.JSX.Element {
   const { user } = useAuthStore();
@@ -167,7 +169,7 @@ export default function AdminDashboardPage(): React.JSX.Element {
       className="space-y-6 font-display"
       initial="hidden"
       animate="show"
-      variants={{ show: { transition: { staggerChildren: 0.06 } } }}
+      variants={{ show: { transition: { staggerChildren: 0.055, delayChildren: 0.03 } } }}
     >
       {/* ── Header ── */}
       <motion.div variants={ENTER} className="relative overflow-hidden rounded-[2rem] border border-emerald-100 bg-gradient-to-br from-white via-emerald-50/70 to-cyan-50/60 p-5 shadow-[0_24px_80px_rgba(15,118,110,0.10)] sm:p-6">
@@ -295,8 +297,9 @@ export default function AdminDashboardPage(): React.JSX.Element {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {STAT_CARDS.map((c, i) => {
           const card = (
-            <motion.div key={c.label} variants={ENTER}
-              className="relative overflow-hidden rounded-2xl border border-white/70 bg-white/85 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(15,118,110,0.14)] cursor-default">
+            <motion.div key={c.label} variants={ENTER} whileHover={CARD_HOVER} whileTap={c.href ? CARD_TAP : undefined}
+              className="group relative overflow-hidden rounded-2xl border border-white/70 bg-white/85 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur transition-shadow duration-300 hover:shadow-[0_24px_70px_rgba(15,118,110,0.14)] cursor-default">
+              <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-60" style={{ background: c.color }} />
               {c.alert && (
                 <span className="absolute top-3 right-3 flex h-2 w-2">
                   <span className="animate-ping absolute h-full w-full rounded-full opacity-60" style={{ background: c.color }} />

@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuthStore, usePeriodStore } from '@/stores';
-import { ROLE_LABELS, PHASE_LABELS } from '@sibermas/constants';
+import { studentApi } from '@/lib/api';
+import { QUERY_KEYS, ROLE_LABELS, PHASE_LABELS } from '@sibermas/constants';
 import Link from 'next/link';
 import Image from 'next/image';
 import { clsx } from 'clsx';
@@ -40,6 +42,14 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/profil', label: 'Profil', icon: UserCircle, phases: null },
 ];
 
+function dashboardPathForRoles(roles: string[] = []): string {
+  if (roles.some((role) => ['superadmin', 'admin', 'faculty_admin'].includes(role))) return '/admin';
+  if (roles.includes('external_lppm_admin')) return '/external/dashboard';
+  if (roles.some((role) => ['dosen', 'dpl'].includes(role))) return '/dosen';
+  if (roles.includes('student')) return '/mahasiswa';
+  return '/';
+}
+
 export default function StudentLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
   const router = useRouter();
   const pathname = usePathname() ?? "";
@@ -48,22 +58,43 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const { config: themeConfig } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isProfilePage = pathname === '/profil';
+  const { data: dashboardData } = useQuery<Record<string, unknown> | null>({
+    queryKey: QUERY_KEYS.student.dashboard,
+    queryFn: () => studentApi.dashboard() as unknown as Promise<Record<string, unknown> | null>,
+    enabled: isAuthenticated && !!user?.roles?.includes('student') && !isProfilePage,
+  });
+  const registration = dashboardData?.registration as { status?: string; group?: unknown; period?: { name?: string; current_phase?: string } | null } | null | undefined;
+  const headerPeriodName = registration?.period?.name || activePeriod?.name || 'SIBERMAS';
+  const effectivePhase = registration?.period?.current_phase || currentPhase || 'upcoming';
+  const normalizedRegistrationStatus = String(registration?.status || '').toLowerCase();
+  const hasRegistration = !!registration;
+  const hasGroup = !!registration?.group;
+  const canRegister = !hasRegistration || ['rejected', 'ditolak', 'gugur'].includes(normalizedRegistrationStatus);
+  const visibleNavItems = NAV_ITEMS.filter((item) => {
+    if (item.href === '/mahasiswa/pendaftaran') return canRegister;
+    if (item.href === '/mahasiswa/cek-pendaftaran') return hasRegistration;
+    if (item.href === '/mahasiswa/posko') return hasGroup;
+    if (item.phases !== null && !item.phases.includes(effectivePhase)) return false;
+    return true;
+  });
   const currentNavItem = NAV_ITEMS.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
-  const isPhaseAllowed = !currentNavItem?.phases || currentNavItem.phases.includes(currentPhase || '');
+  const isPhaseAllowed = !currentNavItem?.phases || currentNavItem.phases.includes(effectivePhase);
 
   useEffect(() => {
     if (isLoading) return;
     if (!isAuthenticated) { router.replace('/login'); return; }
     if (user) {
       if (!user.password_changed_at) { router.replace('/ganti-password'); return; }
+      const roles = user.roles ?? [];
+      const isStudentRole = roles.includes('student');
       if (user.must_change_password && !isProfilePage) { router.replace('/profil'); return; }
+      if (!isStudentRole) { router.replace(dashboardPathForRoles(roles)); return; }
       if (isProfilePage) return;
-      if (!user.roles?.includes('student')) { router.replace('/'); return; }
       if (!isPhaseAllowed && currentNavItem) {
-        router.replace(`/phase-blocked?phase=${encodeURIComponent(currentPhase || 'upcoming')}&required=${encodeURIComponent(currentNavItem.phases?.join(',') || '')}`);
+        router.replace(`/phase-blocked?phase=${encodeURIComponent(effectivePhase)}&required=${encodeURIComponent(currentNavItem.phases?.join(',') || '')}`);
       }
     }
-  }, [isLoading, isAuthenticated, isProfilePage, user, router, isPhaseAllowed, currentNavItem, currentPhase]);
+  }, [isLoading, isAuthenticated, isProfilePage, user, router, isPhaseAllowed, currentNavItem, effectivePhase]);
 
   if (isLoading || !isAuthenticated || !user) {
     return (
@@ -77,6 +108,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     clearUser();
     router.replace('/');
   };
+  const roleLabel = ROLE_LABELS[user.roles?.[0] || 'student'] || user.roles?.[0] || 'Mahasiswa';
 
   return (
     <div className="app-readable min-h-screen font-sans transition-colors duration-500" style={{ ...themeConfig.vars, background: themeConfig.backdrop }}>
@@ -119,7 +151,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         <div className="px-4 py-2">
           <div className="rounded-xl bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] p-3">
             <p className="text-[9px] font-black text-[color:var(--profile-soft-text)] uppercase tracking-[0.15em]">
-              {ROLE_LABELS[user.roles?.[0] || 'student']}
+              {roleLabel}
             </p>
             <p className="text-sm font-black text-[color:var(--profile-text)] truncate mt-0.5">{user.name}</p>
             {user.nim && <p className="text-[10px] font-bold text-[color:var(--profile-muted)] mt-0.5">{user.nim}</p>}
@@ -127,10 +159,10 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         </div>
 
         {/* Phase indicator */}
-        {currentPhase && (
+        {effectivePhase && (
           <div className="mx-4 mb-2 rounded-lg bg-[color:var(--profile-warning)] border border-[color:var(--profile-border)] px-3 py-2">
             <p className="text-[9px] font-black text-[color:var(--profile-warning-text)] uppercase tracking-wider">
-              Fase: {PHASE_LABELS[currentPhase] || currentPhase}
+              Fase: {PHASE_LABELS[effectivePhase] || effectivePhase}
             </p>
           </div>
         )}
@@ -141,7 +173,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             MENU UTAMA
           </h3>
           <div className="space-y-1">
-            {NAV_ITEMS.filter((item) => item.phases === null || item.phases.includes(currentPhase || 'upcoming')).map((item) => {
+            {visibleNavItems.map((item) => {
               const isActive = !item.external && (pathname === item.href || ((item.href !== '/mahasiswa' && item.href !== '/dosen') && pathname.startsWith(item.href + '/')));
               const linkProps = item.external ? { target: "_blank", rel: "noopener noreferrer" } : {};
               return (
@@ -183,7 +215,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
               <span className="text-xs font-black text-[color:var(--profile-text)] truncate leading-none mb-1 font-display">{user.name}</span>
               <span className="text-[9px] font-bold text-[color:var(--profile-muted)] uppercase tracking-wider flex items-center gap-1 font-sans">
                 <div className="w-1 h-1 rounded-full bg-[color:var(--profile-accent)] animate-pulse" />
-                Mahasiswa
+                {roleLabel}
               </span>
             </div>
           </Link>
@@ -204,14 +236,14 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
               <Menu className="h-5 w-5" />
             </button>
             <h2 className="text-[1.1rem] font-black text-[color:var(--profile-text)] uppercase tracking-tighter font-display leading-none">
-              {activePeriod ? activePeriod.name : 'SIBERMAS'}
+              {headerPeriodName}
             </h2>
           </div>
           <div className="flex items-center gap-3">
             <NotificationBell />
             <ThemeSwitcher className="hidden md:flex" />
             <span className="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] rounded-md text-xs font-medium text-[color:var(--profile-soft-text)]">
-              <GraduationCap size={12} /> Mahasiswa
+              <GraduationCap size={12} /> {roleLabel}
             </span>
             <button onClick={handleLogout} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[color:var(--profile-muted)] hover:text-[color:var(--profile-danger-text)] hover:bg-[color:var(--profile-danger)] rounded-lg transition-colors">
               <Power className="h-4 w-4" />

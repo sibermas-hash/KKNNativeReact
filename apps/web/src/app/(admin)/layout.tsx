@@ -257,7 +257,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Hub switcher */}
         <div className="px-4 py-2 border-t border-[color:var(--profile-border)]">
-          <Link href="/admin" className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[10px] font-black text-[color:var(--profile-muted)] uppercase tracking-widest hover:bg-[color:var(--profile-soft)] hover:text-[color:var(--profile-text)] transition-all group border border-transparent hover:border-[color:var(--profile-border)]">
+          <Link href="/admin" prefetch={false} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[10px] font-black text-[color:var(--profile-muted)] uppercase tracking-widest hover:bg-[color:var(--profile-soft)] hover:text-[color:var(--profile-text)] transition-all group border border-transparent hover:border-[color:var(--profile-border)]">
             <Shuffle className="h-4 w-4 text-[color:var(--profile-muted)] group-hover:text-[color:var(--profile-primary)] transition-colors" />
             Kembali ke Hub Utama
           </Link>
@@ -265,7 +265,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* Profile */}
         <div className="p-4">
-          <Link href="/profil" className="flex items-center gap-3 p-3 rounded-2xl bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] shadow-sm hover:shadow-md transition-all group">
+          <Link href="/profil" prefetch={false} className="flex items-center gap-3 p-3 rounded-2xl bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] shadow-sm hover:shadow-md transition-all group">
             <div className="h-10 w-10 rounded-xl bg-[color:var(--profile-primary)] flex items-center justify-center text-white shrink-0 shadow-inner group-hover:rotate-6 transition-transform">
               <span className="text-xs font-black uppercase">{user.name.substring(0, 2)}</span>
             </div>

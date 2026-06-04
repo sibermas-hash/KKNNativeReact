@@ -48,7 +48,7 @@ export function UsersFilterBar(props: Props) {
             </div>
           )}
         </div>
-        <div className="inline-flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 text-xs font-black text-slate-600 ring-1 ring-slate-200">
+        <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2 text-xs font-black text-slate-500 ring-1 ring-slate-200">
           <SlidersHorizontal size={14} /> {isFetching && !isLoading ? 'Memuat batch baru...' : batchLabel}
         </div>
       </div>

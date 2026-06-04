@@ -2,6 +2,10 @@ import axios, { type AxiosInstance, type AxiosResponse, type InternalAxiosReques
 import type { ApiResponse } from '@sibermas/shared-types';
 
 function handleResponse<T = unknown>(response: AxiosResponse<ApiResponse<T>>): T {
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
   if (response.config.responseType === 'blob' || response.config.responseType === 'arraybuffer') {
     return response.data as T;
   }

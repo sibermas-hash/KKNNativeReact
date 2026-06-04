@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { forgotPasswordSchema, type ForgotPasswordFormData } from '@sibermas/schemas';
-import { api } from '@/lib/api';
+import { authApi } from '@/lib/api';
 import { toast } from 'sonner';
 import { Mail, ArrowLeft, Send, CheckCircle2, RefreshCw, Home } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -31,7 +31,7 @@ export default function ForgotPasswordPage(): React.JSX.Element {
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setLoading(true);
     try {
-      await api.post('/auth/lupa-kata-sandi', data);
+      await authApi.forgotPassword(data);
       setSubmitted(true);
       toast.success('Jika email terdaftar, instruksi pemulihan telah dikirim.');
     } catch (err: unknown) {

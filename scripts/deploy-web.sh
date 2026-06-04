@@ -22,6 +22,10 @@ TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:packages
 echo "[4/6] build web"
 rm -rf apps/web/.next
 TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:web
+mkdir -p apps/web/.next/standalone/apps/web/public apps/web/.next/standalone/apps/web/.next/static
+cp -R apps/web/public/. apps/web/.next/standalone/apps/web/public/
+cp -R apps/web/.next/static/. apps/web/.next/standalone/apps/web/.next/static/
+chmod -R u+rwX,g+rX,o+rX apps/web/.next/static apps/web/.next/standalone/apps/web/public apps/web/.next/standalone/apps/web/.next/static
 rm -rf apps/web/.next/cache apps/web/.next/standalone/apps/web/.next/cache 2>/dev/null || true
 
 echo "[5/6] restart pm2"

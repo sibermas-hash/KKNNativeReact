@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\ActivityLogger;
 use App\Services\CaptchaService;
 use App\Services\MasterLoginProvisioningService;
+use App\Services\PasswordResetDispatchGuard;
 use App\Services\PeriodContextService;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Auth\Events\PasswordReset;
@@ -37,6 +38,7 @@ class AuthController extends Controller
         private readonly CaptchaService $captchaService,
         private readonly PeriodContextService $periodContextService,
         private readonly MasterLoginProvisioningService $masterLoginProvisioning,
+        private readonly PasswordResetDispatchGuard $passwordResetDispatchGuard,
     ) {}
 
     /**
@@ -304,29 +306,21 @@ Berlaku 5 menit. Jangan bagikan kode ini.", fn ($m) => $m->to($user->email)->sub
 
         $email = Str::lower(trim((string) $request->input('email')));
         $ip = (string) $request->ip();
-        $emailKey = 'forgot-password:email:'.sha1($email);
         $ipKey = 'forgot-password:ip:'.sha1($ip);
         $silentMessage = 'Jika email terdaftar, tautan pengaturan ulang kata sandi akan dikirim dalam beberapa menit.';
 
         // Anti-spam SMTP guard. Tetap 204 agar tidak bocor akun ada/tidak.
-        // Per email: 1 email / 60 detik, max 3 email / 24 jam.
         // Per IP: max 10 request email / 10 menit.
-        if (
-            RateLimiter::tooManyAttempts($emailKey.':minute', 1) ||
-            RateLimiter::tooManyAttempts($emailKey.':day', 3) ||
-            RateLimiter::tooManyAttempts($ipKey.':10min', 10)
-        ) {
+        if (RateLimiter::tooManyAttempts($ipKey.':10min', 10)) {
             return $this->noContent($silentMessage);
         }
 
-        RateLimiter::hit($emailKey.':minute', 60);
-        RateLimiter::hit($emailKey.':day', 86400);
         RateLimiter::hit($ipKey.':10min', 600);
 
         // Fire-and-forget; we don't leak the actual status to the caller.
         // Password reset must use the email currently registered in users.email
         // (profile/DB source of truth). Do not infer/replace with another domain.
-        Password::sendResetLink(['email' => $email]);
+        $this->passwordResetDispatchGuard->send($email, ['source' => 'forgot-password-api']);
 
         return $this->noContent($silentMessage);
     }

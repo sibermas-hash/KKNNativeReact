@@ -11,12 +11,12 @@ use App\Models\KKN\Dosen;
 use App\Models\KKN\Fakultas;
 use App\Models\User;
 use App\Services\MasterApiService;
+use App\Services\PasswordResetDispatchGuard;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Password;
 
 class DplSyncController extends Controller
 {
@@ -131,7 +131,7 @@ class DplSyncController extends Controller
                         $userEmail = $user->email;
                         DB::afterCommit(function () use ($userEmail, $nip) {
                             try {
-                                Password::sendResetLink(['email' => $userEmail]);
+                                app(PasswordResetDispatchGuard::class)->send((string) $userEmail, ['source' => 'auto-sync-reset']);
                             } catch (\Throwable $e) {
                                 Log::warning('DplSyncController reset-link dispatch failed', [
                                     'nip' => $nip, 'error' => $e->getMessage(),

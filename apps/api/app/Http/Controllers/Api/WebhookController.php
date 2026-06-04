@@ -13,12 +13,12 @@ use App\Models\User;
 use App\Models\WebhookEvent;
 use App\Services\MasterApi\SiakadRecordFilter;
 use App\Services\StudentSyncService;
+use App\Services\PasswordResetDispatchGuard;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Password;
 
 class WebhookController extends Controller
 {
@@ -305,7 +305,7 @@ class WebhookController extends Controller
                     $userEmail = $user->email;
                     DB::afterCommit(function () use ($userEmail, $nip) {
                         try {
-                            Password::sendResetLink(['email' => $userEmail]);
+                            app(PasswordResetDispatchGuard::class)->send((string) $userEmail, ['source' => 'auto-sync-reset']);
                             Log::info('Dosen password-reset link dispatched', ['nip' => $nip, 'email' => $userEmail]);
                         } catch (\Throwable $e) {
                             Log::warning('Failed to send initial reset link for new dosen', [

@@ -9,13 +9,14 @@ use App\Models\KKN\Dosen;
 use App\Models\KKN\Fakultas;
 use App\Models\User;
 use App\Services\MasterApiService;
+use App\Services\PasswordResetDispatchGuard;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Password;
+
 
 class SyncDosenJob implements ShouldBeUnique, ShouldQueue
 {
@@ -207,7 +208,7 @@ class SyncDosenJob implements ShouldBeUnique, ShouldQueue
                 $userEmail = $user->email;
                 DB::afterCommit(function () use ($userEmail, $nip) {
                     try {
-                        Password::sendResetLink(['email' => $userEmail]);
+                        app(PasswordResetDispatchGuard::class)->send($userEmail, ['source' => 'sync-dosen-job', 'nip' => $nip]);
                     } catch (\Throwable $e) {
                         Log::warning('SyncDosenJob reset-link dispatch failed', [
                             'nip' => $nip, 'error' => $e->getMessage(),

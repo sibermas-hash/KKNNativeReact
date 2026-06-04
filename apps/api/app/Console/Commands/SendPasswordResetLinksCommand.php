@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Models\User;
+use App\Services\PasswordResetDispatchGuard;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Password;
 
 /**
  * Replacement for the old `users:reset-default-password` command.
@@ -94,12 +94,14 @@ class SendPasswordResetLinksCommand extends Command
 
         $sent = 0;
         $failed = 0;
+        $guard = app(PasswordResetDispatchGuard::class);
 
-        $query->chunkById($batchSize, function ($users) use (&$sent, &$failed, $delayMs) {
+        $query->chunkById($batchSize, function ($users) use (&$sent, &$failed, $delayMs, $guard) {
             foreach ($users as $user) {
                 try {
-                    Password::sendResetLink(['email' => $user->email]);
-                    $sent++;
+                    $guard->send((string) $user->email, ['source' => 'users-send-reset-links', 'user_id' => $user->id], force: true)
+                        ? $sent++
+                        : $failed++;
                 } catch (\Throwable $e) {
                     $failed++;
                     Log::warning('users:send-reset-links — dispatch failed', [

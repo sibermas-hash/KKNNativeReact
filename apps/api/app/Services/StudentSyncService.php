@@ -11,10 +11,10 @@ use App\Models\KKN\Prodi;
 use App\Models\User;
 use App\Services\MasterApi\MasterDataSanitizer;
 use App\Services\MasterApi\SiakadRecordFilter;
+use App\Services\PasswordResetDispatchGuard;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Password;
 
 class StudentSyncService
 {
@@ -243,7 +243,7 @@ class StudentSyncService
                     $nim = $data['nim'];
                     DB::afterCommit(function () use ($userEmail, $nim) {
                         try {
-                            Password::sendResetLink(['email' => $userEmail]);
+                            app(PasswordResetDispatchGuard::class)->send((string) $userEmail, ['source' => 'auto-sync-reset']);
                             Log::info('Mahasiswa password-reset link dispatched', ['nim' => $nim, 'email' => $userEmail]);
                         } catch (\Throwable $e) {
                             Log::warning('Failed to send initial reset link for new mahasiswa', [

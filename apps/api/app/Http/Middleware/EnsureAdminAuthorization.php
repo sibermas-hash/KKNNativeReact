@@ -45,7 +45,7 @@ use App\Http\Controllers\Api\V1\Admin\KknRequirementController;
 use App\Http\Controllers\Api\V1\Admin\KonfigurasiPenilaianController;
 use App\Http\Controllers\Api\V1\Admin\LaporanAkhirAdminController;
 use App\Http\Controllers\Api\V1\Admin\LogAuditController;
-use App\Http\Controllers\Api\V1\Admin\LogbookPdfController as AdminLogbookPdfController;
+use App\Http\Controllers\Api\V1\Admin\LogbookPdfController;
 use App\Http\Controllers\Api\V1\Admin\LokasiController;
 use App\Http\Controllers\Api\V1\Admin\MonitoringController;
 use App\Http\Controllers\Api\V1\Admin\NotificationBroadcastController;
@@ -68,6 +68,7 @@ use App\Http\Controllers\Api\V1\Admin\SystemSettingController;
 use App\Http\Controllers\Api\V1\Admin\TahunAkademikController;
 use App\Http\Controllers\Api\V1\Admin\UserActivityController;
 use App\Http\Controllers\Api\V1\Admin\UserController;
+use App\Http\Controllers\Api\V1\Admin\WaGatewayAdminController;
 use App\Http\Controllers\Api\V1\Admin\WorkshopController;
 use App\Http\Controllers\Api\V1\Admin\YudisiumController;
 use Closure;
@@ -167,12 +168,13 @@ class EnsureAdminAuthorization
         RekapitulasiController::class => 'manage-reports',
         ReportExportController::class => 'manage-reports',
         ComprehensiveReportController::class => 'manage-reports',
-        AdminLogbookPdfController::class => 'manage-reports',
+        LogbookPdfController::class => 'manage-reports',
         MonitoringController::class => 'manage-settings',
 
         // Settings
         CertificateConfigController::class => 'manage-settings',
         SystemSettingController::class => 'manage-settings',
+        WaGatewayAdminController::class => 'manage-settings',
         PlaygroundController::class => 'manage-settings',
 
         // Database sync / imports

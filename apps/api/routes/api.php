@@ -179,7 +179,7 @@ Route::middleware(['auth:sanctum', 'role:student', 'throttle:60,1'])->prefix('v1
 });
 
 // ── AI Chat Assistant ──────────────────────────────────────────────────────
-Route::middleware(['auth:sanctum', 'throttle:20,1'])->prefix('v1/ai')->group(function () {
+Route::middleware(['auth:sanctum', 'role:student|dosen|dpl|external_lppm_admin|admin|faculty_admin|superadmin', 'throttle:20,1'])->prefix('v1/ai')->group(function () {
     Route::get('/history', [AiAssistantController::class, 'history'])->name('api.v1.ai.history');
     Route::post('/chat', [AiAssistantController::class, 'chat'])->name('api.v1.ai.chat');
     Route::delete('/clear', [AiAssistantController::class, 'clear'])->name('api.v1.ai.clear');

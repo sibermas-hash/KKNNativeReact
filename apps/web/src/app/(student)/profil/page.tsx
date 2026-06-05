@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
-import { AlertCircle, BadgeCheck, Camera, GraduationCap, IdCard, Info, LayoutDashboard, Lock, LogOut, Medal, PencilLine, RefreshCw, Save, User as UserIcon } from 'lucide-react';
+import { AlertCircle, BadgeCheck, Camera, ChevronDown, GraduationCap, IdCard, Info, LayoutDashboard, Lock, LogOut, Medal, PencilLine, RefreshCw, Save, User as UserIcon } from 'lucide-react';
 import type { User } from '@sibermas/shared-types';
 import { useTheme } from '@/components/ui/theme-provider';
 import { THEMES, THEME_KEYS, THEME_TYPOGRAPHY, SOFT_CLASS, PRIMARY_CLASS, MUTED_TEXT_CLASS, ACCENT_TEXT_CLASS, FIELD_CLASS, type ThemeKey, type ThemeDefinition } from '@/lib/theme-config';
@@ -360,7 +360,7 @@ function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, su
   const dashboardDisabled = profileStatusKnown && !profileComplete;
 
   return (
-    <div ref={refTarget} className={cx('flex flex-col gap-4 p-4 sm:p-5 sm:flex-row sm:items-end sm:justify-between border border-[color:var(--profile-border)]', themeConfig.shadow, surfaceClass)} style={{ borderRadius: 'var(--profile-radius)' }}>
+    <div ref={refTarget} className={cx('flex flex-col gap-4 p-4 sm:p-5 sm:flex-row sm:items-end sm:justify-between border border-[color:var(--profile-border)] transition hover:-translate-y-0.5 hover:shadow-2xl animate-in fade-in slide-in-from-top-2 duration-500', themeConfig.shadow, surfaceClass)} style={{ borderRadius: 'var(--profile-radius)' }}>
       <div className="space-y-1">
         <div className="flex items-center gap-2"><UserIcon size={16} className={accentTextClass} /><span className={`${typography.eyebrow} ${accentTextClass}`}>Pengaturan Akun</span></div>
         <h1 className={`${typography.heading} text-xl sm:text-2xl drop-shadow-sm`}>Pusat Data Profil</h1>
@@ -381,12 +381,12 @@ function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, su
             onClick={onDashboard}
             disabled={dashboardDisabled}
             title={dashboardDisabled ? 'Dashboard aktif setelah biodata dan alamat KTP lengkap.' : 'Buka dashboard'}
-            className={cx('inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-center transition disabled:cursor-not-allowed disabled:opacity-55 sm:w-auto', typography.button, softClass, dashboardDisabled && 'border border-dashed border-[color:var(--profile-border)] opacity-50')}
+            className={cx('inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl px-4 py-2 text-center shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-55 sm:w-auto', typography.button, softClass, dashboardDisabled && 'border border-dashed border-[color:var(--profile-border)] opacity-50')}
           >
             <LayoutDashboard size={16} />
             Dashboard
           </button>
-          <button type="button" onClick={onToggleEdit} disabled={!!pendingRequest && pendingRequest.status === 'pending' && profileComplete} className={cx('inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 disabled:opacity-50 sm:w-auto', typography.button, primaryClass)}><PencilLine size={16} />{isEditing ? 'Batal' : profileComplete ? 'Edit Profil' : 'Lengkapi Profil'}</button>
+          <button type="button" onClick={onToggleEdit} disabled={!!pendingRequest && pendingRequest.status === 'pending' && profileComplete} className={cx('inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl px-4 py-2 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 sm:w-auto', typography.button, primaryClass)}><PencilLine size={16} />{isEditing ? 'Batal' : profileComplete ? 'Edit Profil' : 'Lengkapi Profil'}</button>
 
         </div>
         {dashboardDisabled && <p className={cx('text-left sm:text-right', typography.meta, mutedTextClass)}>Dashboard akan aktif setelah biodata dan alamat KTP lengkap.</p>}
@@ -398,13 +398,14 @@ function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, su
 function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, lecturer, isStudent, isLecturer, avatarLoading, typography, themeConfig, surfaceStrongClass, onAvatarChange }: ProfileSidebarProps) {
   const avatarModerationStatus = user.avatar_moderation_status;
   const avatarModerationReason = user.avatar_moderation_reason?.trim() || null;
+  const [showPhotoGuide, setShowPhotoGuide] = useState(false);
   const avatarNeedsManualReview = avatarModerationStatus === 'pending'
     && !!avatarModerationReason
     && /server ai tidak tersedia|menunggu verifikasi admin|manual/i.test(avatarModerationReason);
 
   return (
-    <div className="space-y-4 sm:space-y-5">
-      <div ref={avatarRef} className={cx('flex flex-col items-center gap-4 p-4 text-center sm:p-5 border border-[color:var(--profile-border)]', themeConfig.shadow, surfaceStrongClass)} style={{ borderRadius: 'var(--profile-radius)' }}>
+    <div className="space-y-4 sm:space-y-5 animate-in fade-in slide-in-from-left-2 duration-500">
+      <div ref={avatarRef} className={cx('flex flex-col items-center gap-4 p-4 text-center sm:p-5 border border-[color:var(--profile-border)] transition hover:-translate-y-0.5 hover:shadow-2xl', themeConfig.shadow, surfaceStrongClass)} style={{ borderRadius: 'var(--profile-radius)' }}>
         <button type="button" onClick={() => avatarInputRef.current?.click()} className="relative h-20 w-20 overflow-hidden rounded-full border-2 border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] sm:h-24 sm:w-24 transition-all duration-300 hover:scale-105 hover:shadow-xl">
           {user.avatar_url ? <img src={user.avatar_url} alt={user.name} className="h-full w-full object-cover" /> : <span className="flex h-full w-full flex-col items-center justify-center px-3 text-center text-[10px] font-black uppercase tracking-wider text-[color:var(--profile-soft-text)]"><Camera size={20} className="mb-1" />Foto Formal</span>}
           {avatarLoading && <span className="absolute inset-0 flex items-center justify-center bg-[color:var(--profile-surface)]/70"><RefreshCw className="animate-spin text-[color:var(--profile-accent)]" /></span>}
@@ -412,9 +413,13 @@ function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, l
         <div><p className={`${typography.label} text-[color:var(--profile-text)] drop-shadow-sm`}>{user.name}</p><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>{user.username}</p>{student?.nim && <p className={`${typography.meta} text-[color:var(--profile-muted)] flex items-center gap-1`}><Lock size={12} className="text-amber-500" /> NIM: {student.nim}</p>}{lecturer?.nip && <p className={`${typography.meta} text-[color:var(--profile-muted)] flex items-center gap-1`}><Lock size={12} className="text-amber-500" /> NIP: {lecturer.nip}</p>}</div>
         <div className="space-y-2">
           <button type="button" onClick={() => avatarInputRef.current?.click()} className={cx('inline-flex items-center gap-2 rounded-lg px-3 py-2', typography.meta, SOFT_CLASS)}><Camera size={14} /><span className="whitespace-normal">Upload Foto Formal HD</span></button>
-          <div className={`${typography.meta} max-w-72 rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-warning)] p-3 text-left text-[color:var(--profile-warning-text)]`}>
-            <p className="font-black uppercase tracking-wide">Syarat Foto Profil</p>
-            <p className="mt-1">Foto dipakai untuk sertifikat. Sistem akan menolak otomatis jika tidak sesuai.</p>
+          <div className={`${typography.meta} max-w-72 rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-warning)] p-3 text-left text-[color:var(--profile-warning-text)] shadow-sm`}>
+            <button type="button" onClick={() => setShowPhotoGuide((v) => !v)} className="flex w-full items-center justify-between gap-2 text-left font-black uppercase tracking-wide">
+              <span>Syarat Foto Profil</span>
+              <ChevronDown size={14} className={cx('transition-transform', showPhotoGuide && 'rotate-180')} />
+            </button>
+            <p className="mt-1">Foto dipakai untuk sertifikat. Klik untuk detail aturan.</p>
+            {showPhotoGuide && <div className="animate-in fade-in slide-in-from-top-1 duration-200">
             <ul className="mt-2 list-disc space-y-1 pl-4">
               <li>Pas foto formal satu orang, wajah jelas menghadap kamera.</li>
               <li>Latar belakang merah polos/solid, bukan ruangan, pemandangan, twibbon, atau editan ramai.</li>
@@ -433,6 +438,7 @@ function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, l
                 <p>Selfie, twibbon/watermark, background kelas/rumah, tanpa jas almamater, foto ramai, blur/gelap.</p>
               </div>
             </div>
+            </div>}
           </div>
           {avatarModerationStatus === 'pending' && (
             <div className={cx(
@@ -457,7 +463,7 @@ function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, l
         </div>
         <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={onAvatarChange} aria-label="Upload foto profil" title="Pilih file foto profil" />
       </div>
-      <div ref={statusRef} className={cx('space-y-4 p-4 sm:p-5 border border-[color:var(--profile-border)]', themeConfig.shadow, surfaceStrongClass)} style={{ borderRadius: 'var(--profile-radius)' }}>
+      <div ref={statusRef} className={cx('space-y-4 p-4 sm:p-5 border border-[color:var(--profile-border)] transition hover:-translate-y-0.5 hover:shadow-2xl', themeConfig.shadow, surfaceStrongClass)} style={{ borderRadius: 'var(--profile-radius)' }}>
         <h3 className={typography.label}>Informasi Status</h3>
         <StatusRow label="Biodata" typography={typography} complete={student?.biodata_complete ?? lecturer?.biodata_complete ?? true} subtitle={(student?.biodata_complete ?? lecturer?.biodata_complete) ? 'Telah lengkap' : 'Belum lengkap'} />
         {isStudent && <StatusRow label="Alamat KTP" typography={typography} complete={!!student?.address_complete} subtitle={student?.address_complete ? 'Alamat tertulis lengkap' : 'Belum lengkap'} />}
@@ -933,7 +939,7 @@ export default function ProfilePage(): React.JSX.Element {
       />
 
       {pendingRequest && profileComplete && pendingRequest.status !== 'approved' && (
-        <div className={cx('rounded-xl border border-[color:var(--profile-border)] p-4 text-sm shadow-sm transition-colors duration-500', pendingRequest.status === 'rejected' ? 'bg-[color:var(--profile-danger)] text-[color:var(--profile-danger-text)]' : 'bg-[color:var(--profile-warning)] text-[color:var(--profile-warning-text)]')}>
+        <div className={cx('rounded-2xl border border-[color:var(--profile-border)] p-4 text-sm shadow-sm transition-colors duration-500 animate-in fade-in slide-in-from-top-2', pendingRequest.status === 'rejected' ? 'bg-[color:var(--profile-danger)] text-[color:var(--profile-danger-text)]' : 'bg-[color:var(--profile-warning)] text-[color:var(--profile-warning-text)]')}>
           {pendingRequest.status === 'rejected' ? (
             <>Permintaan perubahan profil ditolak. Alasan: <strong>{pendingRequest.rejection_reason || 'Tidak ada alasan.'}</strong></>
           ) : (
@@ -941,7 +947,7 @@ export default function ProfilePage(): React.JSX.Element {
           )}
         </div>
       )}
-      {missingFields.length > 0 && <div className="flex gap-3 rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-warning)] p-4 shadow-sm transition-colors duration-500"><AlertCircle size={18} className="mt-0.5 shrink-0 text-[color:var(--profile-warning-text)]" /><p className="text-sm text-[color:var(--profile-warning-text)]">Tahap awal wajib review dan melengkapi data berikut: <strong>{missingFields.map((f) => FIELD_LABELS[f] ?? f).join(', ')}</strong>. Pengisian awal disimpan langsung, edit setelah lengkap akan menunggu approval admin.</p></div>}
+      {missingFields.length > 0 && <div className="flex gap-3 rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-warning)] p-4 shadow-sm transition-colors duration-500 animate-in fade-in slide-in-from-top-2"><AlertCircle size={18} className="mt-0.5 shrink-0 text-[color:var(--profile-warning-text)]" /><p className="text-sm text-[color:var(--profile-warning-text)]">Tahap awal wajib review dan melengkapi data berikut: <strong>{missingFields.map((f) => FIELD_LABELS[f] ?? f).join(', ')}</strong>. Pengisian awal disimpan langsung, edit setelah lengkap akan menunggu approval admin.</p></div>}
  
        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
          <ProfileSidebar
@@ -961,7 +967,7 @@ export default function ProfilePage(): React.JSX.Element {
          />
  
          <div className="lg:col-span-2">
-           <form ref={setTutorialTargetRef('form')} onSubmit={handleSubmit(onSubmit, onSubmitInvalid)} className={cx('space-y-4 p-4 sm:space-y-6 sm:p-6 border border-[color:var(--profile-border)]', themeConfig.shadow, surfaceClass)} style={{ borderRadius: 'var(--profile-radius)' }}>
+           <form ref={setTutorialTargetRef('form')} onSubmit={handleSubmit(onSubmit, onSubmitInvalid)} className={cx('space-y-4 p-4 sm:space-y-6 sm:p-6 border border-[color:var(--profile-border)] transition hover:shadow-2xl animate-in fade-in slide-in-from-right-2 duration-500', themeConfig.shadow, surfaceClass)} style={{ borderRadius: 'var(--profile-radius)' }}>
              <section className="space-y-4">
                <h2 className={`flex items-center gap-2 ${typography.label} text-[color:var(--profile-text)]`}><IdCard size={16} /> Data Pribadi & Kontak</h2>
                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -984,7 +990,7 @@ export default function ProfilePage(): React.JSX.Element {
  
              {isLecturer && <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5"><h2 className={`${typography.label} text-[color:var(--profile-text)]`}>Data Kepegawaian, Keuangan & Pajak</h2><div className="grid grid-cols-1 gap-4 md:grid-cols-2"><TextInput label="Nama Bergelar" registration={register('nama_gelar')} disabled={!isEditing} /><TextInput label="NIDN" registration={register('nidn')} disabled={!isEditing} /><TextInput label="NIK Dosen" registration={register('dosen_nik')} disabled={!isEditing} /><TextInput label="Jabatan Fungsional" registration={register('jabatan')} disabled={!isEditing} /><TextInput label="Kelas Jabatan" registration={register('kelas_jabatan')} disabled={!isEditing} /><TextInput label="Tugas Tambahan" registration={register('tugas_tambahan')} disabled={!isEditing} /><TextInput label="Golongan" registration={register('golongan')} disabled={!isEditing} /><TextInput label="Pangkat" registration={register('pangkat')} disabled={!isEditing} /><TextArea label="Alamat Dosen" registration={register('dosen_alamat')} disabled={!isEditing} /><TextInput label="No. Rekening" registration={register('no_rekening')} disabled={!isEditing} /><TextInput label="Nama Bank" registration={register('nama_bank')} disabled={!isEditing} /><TextInput label="NPWP" registration={register('npwp')} disabled={!isEditing} /><TextInput label="Status Aktif" value={(lecturer?.status_aktif as string) ?? '-'} disabled /><TextInput label="Status Pegawai" value={(lecturer?.status_pegawai as string) ?? '-'} disabled /><TextInput label="Workshop DPL" value={lecturer?.has_workshop ? `Sudah (${(lecturer?.workshop_date as string) ?? '-'})` : 'Belum'} disabled /></div><div className={`flex gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] transition-colors ${typography.meta}`}><Info size={18} className="shrink-0" />Kolom yang tidak relevan untuk proses KKN seperti tanggal pensiun dan pendidikan terakhir tidak ditampilkan. Pengisian awal disimpan langsung; perubahan setelah profil lengkap menunggu persetujuan admin.</div></section>}
  
-             {isEditing && <button type="submit" disabled={isSubmitting || !isDirty || (!!pendingRequest && pendingRequest.status === 'pending' && profileComplete)} className={cx('flex h-11 w-full items-center justify-center gap-2 rounded-lg px-6 disabled:opacity-50 sm:w-auto', typography.button, primaryClass)}>{isSubmitting ? 'Menyimpan...' : profileComplete ? 'Ajukan Perubahan' : 'Simpan & Lanjutkan'}<Save size={16} /></button>}
+             {isEditing && <button type="submit" disabled={isSubmitting || !isDirty || (!!pendingRequest && pendingRequest.status === 'pending' && profileComplete)} className={cx('flex h-11 w-full items-center justify-center gap-2 rounded-xl px-6 shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 sm:w-auto', typography.button, primaryClass)}>{isSubmitting ? 'Menyimpan...' : profileComplete ? 'Ajukan Perubahan' : 'Simpan & Lanjutkan'}<Save size={16} /></button>}
            </form>
  
            <div className="mt-4 sm:mt-6">
@@ -999,13 +1005,13 @@ export default function ProfilePage(): React.JSX.Element {
  }
 
 function TextInput({ label, registration, value, type = 'text', step, disabled, error }: { label: string; registration?: Record<string, unknown>; value?: string; type?: string; step?: string; disabled?: boolean; error?: string }) {
-  return <div className="space-y-1.5"><label className="text-sm font-medium text-[color:var(--profile-text)]">{label}</label><input type={type} step={step} {...registration} value={registration ? undefined : value} disabled={disabled} className={cx('h-10 w-full rounded-lg border px-3 text-sm tracking-[-0.01em]', fieldClass)} />{error && <p className="text-xs text-rose-600">{error}</p>}</div>;
+  return <div className="space-y-1.5"><label className="text-sm font-medium text-[color:var(--profile-text)]">{label}</label><input type={type} step={step} {...registration} value={registration ? undefined : value} disabled={disabled} className={cx('h-10 w-full rounded-xl border px-3 text-sm tracking-[-0.01em] shadow-sm transition focus:-translate-y-0.5 focus:shadow-md', fieldClass)} />{error && <p className="text-xs text-rose-600">{error}</p>}</div>;
 }
 
 function TextArea({ label, registration, disabled, error }: { label: string; registration?: Record<string, unknown>; disabled?: boolean; error?: string }) {
-  return <div className="space-y-1.5"><label className="text-sm font-medium text-[color:var(--profile-text)]">{label}</label><textarea {...registration} disabled={disabled} rows={3} className={cx('w-full rounded-lg border px-3 py-2 text-sm leading-6 tracking-[-0.01em]', fieldClass)} />{error && <p className="text-xs text-rose-600">{error}</p>}</div>;
+  return <div className="space-y-1.5"><label className="text-sm font-medium text-[color:var(--profile-text)]">{label}</label><textarea {...registration} disabled={disabled} rows={3} className={cx('w-full rounded-xl border px-3 py-2 text-sm leading-6 tracking-[-0.01em] shadow-sm transition focus:-translate-y-0.5 focus:shadow-md', fieldClass)} />{error && <p className="text-xs text-rose-600">{error}</p>}</div>;
 }
 
 function SelectInput({ label, registration, disabled, options, error }: { label: string; registration?: Record<string, unknown>; disabled?: boolean; options: string[][]; error?: string }) {
-  return <div className="space-y-1.5"><label className="text-sm font-medium text-[color:var(--profile-text)]">{label}</label><select {...registration} disabled={disabled} className={cx('h-10 w-full rounded-lg border px-3 text-sm tracking-[-0.01em]', fieldClass)}>{options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>{error && <p className="text-xs text-rose-600">{error}</p>}</div>;
+  return <div className="space-y-1.5"><label className="text-sm font-medium text-[color:var(--profile-text)]">{label}</label><select {...registration} disabled={disabled} className={cx('h-10 w-full rounded-xl border px-3 text-sm tracking-[-0.01em] shadow-sm transition focus:-translate-y-0.5 focus:shadow-md', fieldClass)}>{options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>{error && <p className="text-xs text-rose-600">{error}</p>}</div>;
 }

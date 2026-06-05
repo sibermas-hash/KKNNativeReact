@@ -96,14 +96,14 @@ export default function MahasiswaIndexPage(): React.JSX.Element {
       </div>
 
       {/* Filter */}
-      <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+      <div className="rounded-3xl bg-white/95 p-4 shadow-sm ring-1 ring-slate-200 transition hover:shadow-md">
       <div className="flex flex-col gap-3 md:flex-row md:items-center">
         <div className="relative flex-1">
           <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1); }}
-            className="h-10 w-full rounded-xl border border-slate-200 pl-9 pr-4 text-sm focus:border-cyan-500 outline-none"
+            className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/60 pl-9 pr-4 text-sm font-medium outline-none transition focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100"
             placeholder="Cari nama atau NIM..."
           />
         </div>
@@ -112,7 +112,7 @@ export default function MahasiswaIndexPage(): React.JSX.Element {
           <select
             value={fakultasId}
             onChange={e => { setFakultasId(e.target.value); setPage(1); }}
-            className="h-10 rounded-xl border border-slate-200 px-3 text-sm focus:border-cyan-500 outline-none"
+            className="h-11 rounded-xl border border-slate-200 bg-slate-50/60 px-3 text-sm font-medium outline-none transition focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100"
           >
             <option value="">Semua Fakultas</option>
             {(fakultasList ?? []).map(f => (
@@ -120,7 +120,7 @@ export default function MahasiswaIndexPage(): React.JSX.Element {
             ))}
           </select>
           {(search || fakultasId) && (
-            <button onClick={() => { setSearch(''); setFakultasId(''); setPage(1); }} className="h-10 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-600 hover:bg-slate-50">
+            <button onClick={() => { setSearch(''); setFakultasId(''); setPage(1); }} className="h-11 rounded-xl border border-slate-200 px-3 text-xs font-bold text-slate-600 transition hover:bg-slate-50 hover:text-cyan-700">
               Reset
             </button>
           )}
@@ -130,18 +130,17 @@ export default function MahasiswaIndexPage(): React.JSX.Element {
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-cyan-100">
-          <p className="text-[10px] font-black uppercase tracking-wider text-cyan-600">Total</p>
-          <p className="text-2xl font-black text-cyan-800">{isLoading ? '...' : total.toLocaleString('id-ID')}</p>
-        </div>
-        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-emerald-100">
-          <p className="text-[10px] font-black uppercase tracking-wider text-emerald-600">Halaman</p>
-          <p className="text-2xl font-black text-emerald-800">{page} / {lastPage}</p>
-        </div>
-        <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-violet-100">
-          <p className="text-[10px] font-black uppercase tracking-wider text-violet-600">Per Halaman</p>
-          <p className="text-2xl font-black text-violet-800">25</p>
-        </div>
+        {[
+          { label: 'Total', value: isLoading ? '...' : total.toLocaleString('id-ID'), tone: 'from-cyan-500 to-blue-600', ring: 'ring-cyan-100' },
+          { label: 'Halaman', value: `${page} / ${lastPage}`, tone: 'from-emerald-500 to-teal-600', ring: 'ring-emerald-100' },
+          { label: 'Per Halaman', value: '25', tone: 'from-violet-500 to-fuchsia-600', ring: 'ring-violet-100' },
+        ].map(item => (
+          <div key={item.label} className={`group overflow-hidden rounded-2xl bg-white p-4 shadow-sm ring-1 ${item.ring} transition hover:-translate-y-0.5 hover:shadow-lg`}>
+            <div className={`mb-3 h-1.5 w-16 rounded-full bg-gradient-to-r ${item.tone}`} />
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-400">{item.label}</p>
+            <p className="mt-1 text-2xl font-black text-slate-900">{item.value}</p>
+          </div>
+        ))}
       </div>
 
       {/* Table */}
@@ -159,7 +158,7 @@ export default function MahasiswaIndexPage(): React.JSX.Element {
           <p className="text-xs text-slate-400 mt-1">Coba ubah kata kunci atau filter fakultas.</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+        <div className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-slate-200">
           <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
             <div>
               <p className="text-xs font-black uppercase tracking-wider text-slate-500">Daftar Mahasiswa</p>
@@ -183,7 +182,7 @@ export default function MahasiswaIndexPage(): React.JSX.Element {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {students.map(m => (
-                <tr key={m.id} className="hover:bg-slate-50/50 transition-colors">
+                <tr key={m.id} className="transition-colors hover:bg-cyan-50/40">
                   <td className="p-3 font-mono text-xs font-bold text-cyan-700">{m.nim || '-'}</td>
                   <td className="p-3">
                     <Link href={`/admin/mahasiswa/${m.id}`} className="font-bold text-slate-800 hover:text-cyan-700 hover:underline">

@@ -386,7 +386,7 @@ function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, su
             <LayoutDashboard size={16} />
             Dashboard
           </button>
-          <button type="button" onClick={onToggleEdit} disabled={!!pendingRequest && profileComplete} className={cx('inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 disabled:opacity-50 sm:w-auto', typography.button, primaryClass)}><PencilLine size={16} />{isEditing ? 'Batal' : profileComplete ? 'Edit Profil' : 'Lengkapi Profil'}</button>
+          <button type="button" onClick={onToggleEdit} disabled={!!pendingRequest && pendingRequest.status === 'pending' && profileComplete} className={cx('inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 disabled:opacity-50 sm:w-auto', typography.button, primaryClass)}><PencilLine size={16} />{isEditing ? 'Batal' : profileComplete ? 'Edit Profil' : 'Lengkapi Profil'}</button>
 
         </div>
         {dashboardDisabled && <p className={cx('text-left sm:text-right', typography.meta, mutedTextClass)}>Dashboard akan aktif setelah biodata dan alamat KTP lengkap.</p>}

@@ -76,6 +76,8 @@ return [
         'password' => env('KKN_SUPERADMIN_PASSWORD'),
     ],
 
+    'faculty_admin_password' => env('KKN_FACULTY_ADMIN_PASSWORD'),
+
     'maintenance' => [
         'driver' => 'file',
     ],

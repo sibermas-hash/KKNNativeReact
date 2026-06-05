@@ -676,6 +676,7 @@ export default function ProfilePage(): React.JSX.Element {
       setProfileData({ student: nextStudent, lecturer: nextLecturer, pending: r?.pending_change_request ?? null });
       reset({
         name: user.name ?? '',
+        email: user.email ?? '',
         phone: (r?.user?.phone ?? (user as unknown as { phone?: string }).phone ?? '') as string,
         address: (r?.user?.address ?? (user as unknown as { address?: string }).address ?? '') as string,
         address_village_name: (r?.user?.address_village_name ?? (user as unknown as { address_village_name?: string }).address_village_name ?? '') as string,
@@ -955,7 +956,7 @@ export default function ProfilePage(): React.JSX.Element {
              <section className="space-y-4">
                <h2 className={`flex items-center gap-2 ${typography.label} text-[color:var(--profile-text)]`}><IdCard size={16} /> Data Pribadi & Kontak</h2>
                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                 <TextInput label="Email Sistem" value={user.email ?? '-'} disabled />
+                 <TextInput label="Email Sistem" registration={register('email')} disabled={!isEditing} error={errors.email?.message} />
                  <TextInput label="Nama Lengkap" registration={register('name')} disabled={!isEditing} error={errors.name?.message} />
                  <TextInput label="Nomor HP / WA" registration={register('phone')} disabled={!isEditing} error={errors.phone?.message} />
                  {isStudent && <TextInput label="NIK (KTP)" registration={register('nik')} disabled={!isEditing} error={errors.nik?.message} />}

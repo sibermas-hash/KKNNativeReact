@@ -231,6 +231,7 @@ export default function RegistrationStatusPage(): React.JSX.Element {
       toast.success("Pendaftaran berhasil dibatalkan");
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.registration.status });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.kknDaftar });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.dashboard });
     },
     onError: (err: unknown) => {
       const e = err as { response?: { data?: { error?: { message?: string } } } };

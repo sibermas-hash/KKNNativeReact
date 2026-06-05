@@ -19,6 +19,30 @@ class TransferPesertaController extends Controller
 {
     use ApiResponse;
 
+    private function facultyScopeId(): ?int
+    {
+        $user = auth()->user();
+
+        return $user?->hasRole('faculty_admin') && $user->fakultas_id
+            ? (int) $user->fakultas_id
+            : null;
+    }
+
+    private function scopeByFaculty($query): void
+    {
+        if ($facultyId = $this->facultyScopeId()) {
+            $query->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
+        }
+    }
+
+    private function ensurePesertaInFacultyScope(PesertaKkn $peserta): void
+    {
+        if ($facultyId = $this->facultyScopeId()) {
+            $peserta->loadMissing('mahasiswa');
+            abort_unless($peserta->mahasiswa?->fakultas_id === $facultyId, 403, 'Anda tidak memiliki akses ke peserta ini.');
+        }
+    }
+
     /**
      * List peserta yang bisa di-transfer (interview_failed, atau admin mau pindah manual).
      */
@@ -38,6 +62,8 @@ class TransferPesertaController extends Controller
                 });
             })
             ->orderBy('id');
+
+        $this->scopeByFaculty($query);
 
         return $this->success(['data' => $query->get()]);
     }
@@ -69,6 +95,8 @@ class TransferPesertaController extends Controller
 
         $peserta = PesertaKkn::with(['mahasiswa', 'periode.jenisKkn'])->withCount(['attendances', 'locationDispensations'])->findOrFail($validated['peserta_kkn_id']);
         $targetPeriode = Periode::with('jenisKkn')->findOrFail($validated['target_periode_id']);
+
+        $this->ensurePesertaInFacultyScope($peserta);
 
         if ($peserta->status !== 'interview_failed') {
             return $this->error('Hanya peserta dengan status gagal wawancara yang dapat ditransfer.', 422);

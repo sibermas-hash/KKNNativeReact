@@ -24,13 +24,45 @@ class GeneratorNilaiController extends Controller
         private readonly GradeExportService $exportService
     ) {}
 
+    private function facultyScopeId(): ?int
+    {
+        $user = auth()->user();
+
+        return $user?->hasRole('faculty_admin') && $user->fakultas_id
+            ? (int) $user->fakultas_id
+            : null;
+    }
+
+    private function scopeGroupsByFaculty($query): void
+    {
+        if ($facultyId = $this->facultyScopeId()) {
+            $query->whereHas('peserta.mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
+        }
+    }
+
+    private function ensureGroupInFacultyScope(KelompokKkn $group): void
+    {
+        if ($facultyId = $this->facultyScopeId()) {
+            abort_unless(
+                PesertaKkn::where('kelompok_id', $group->id)
+                    ->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId))
+                    ->exists(),
+                403,
+                'Anda tidak memiliki akses ke kelompok ini.'
+            );
+        }
+    }
+
     public function index(Request $request): JsonResponse
     {
         $periodId = $request->input('periode_id');
 
         $groups = KelompokKkn::when($periodId, fn ($q) => $q->where('periode_id', $periodId))
-            ->withCount('peserta')
-            ->get();
+            ->withCount('peserta');
+
+        $this->scopeGroupsByFaculty($groups);
+
+        $groups = $groups->get();
 
         return $this->success([
             'groups' => $groups->map(fn ($g) => [
@@ -44,7 +76,10 @@ class GeneratorNilaiController extends Controller
 
     public function students(KelompokKkn $kelompokKkn): JsonResponse
     {
+        $this->ensureGroupInFacultyScope($kelompokKkn);
+
         $students = PesertaKkn::where('kelompok_id', $kelompokKkn->id)
+            ->when($this->facultyScopeId(), fn ($q, $facultyId) => $q->whereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $facultyId)))
             ->where('status', 'approved')
             ->with(['mahasiswa.user', 'mahasiswa.nilai' => fn ($q) => $q->where('kelompok_id', $kelompokKkn->id)])
             ->get();
@@ -72,7 +107,13 @@ class GeneratorNilaiController extends Controller
         foreach ($validated['scores'] as $item) {
             // Verify student is registered in the specified group
             $inGroup = PesertaKkn::where('kelompok_id', $item['kelompok_id'])
-                ->whereHas('mahasiswa', fn ($q) => $q->where('user_id', $item['user_id']))
+                ->whereHas('mahasiswa', function ($q) use ($item) {
+                    $q->where('user_id', $item['user_id']);
+
+                    if ($facultyId = $this->facultyScopeId()) {
+                        $q->where('fakultas_id', $facultyId);
+                    }
+                })
                 ->whereIn('status', ['approved', 'pending'])
                 ->exists();
 
@@ -109,6 +150,7 @@ class GeneratorNilaiController extends Controller
                 $join->on('ks.user_id', '=', 'u.id')->on('ks.kelompok_id', '=', 'g.id');
             })
             ->when($periodeId, fn ($q) => $q->where('g.periode_id', $periodeId))
+            ->when($this->facultyScopeId(), fn ($q, $facultyId) => $q->where('s.fakultas_id', $facultyId))
             ->whereIn('r.status', ['approved', 'pending'])
             ->select(['u.id as user_id', 'u.name', 's.nim', 'g.id as kelompok_id', 'g.code as group_code', 'ks.discipline_score as discipline', 'ks.attitude_score as attitude'])
             ->orderBy('g.code')->orderBy('u.name')
@@ -122,6 +164,8 @@ class GeneratorNilaiController extends Controller
      */
     public function exportExcel(KelompokKkn $kelompokKkn)
     {
+        $this->ensureGroupInFacultyScope($kelompokKkn);
+
         $students = $this->getStudentsForGroup($kelompokKkn);
 
         return $this->exportService->exportExcel($kelompokKkn, $students);
@@ -132,6 +176,8 @@ class GeneratorNilaiController extends Controller
      */
     public function exportPdf(KelompokKkn $kelompokKkn)
     {
+        $this->ensureGroupInFacultyScope($kelompokKkn);
+
         $students = $this->getStudentsForGroup($kelompokKkn);
 
         return $this->exportService->exportPdf($kelompokKkn, $students);
@@ -146,16 +192,20 @@ class GeneratorNilaiController extends Controller
 
         $groups = KelompokKkn::with(['lokasi', 'dosen.user', 'periode.tahunAkademik'])
             ->where('periode_id', $periodeId)
-            ->orderBy('code')
-            ->cursor();
+            ->orderBy('code');
+
+        $this->scopeGroupsByFaculty($groups);
+
+        $groups = $groups->cursor();
 
         return $this->exportService->exportZip($groups, fn (KelompokKkn $g) => $this->getStudentsForGroup($g));
     }
 
     private function getStudentsForGroup(KelompokKkn $group): array
     {
-        $registrations = PesertaKkn::with(['mahasiswa:id,user_id,nim,nama'])
+        $registrations = PesertaKkn::with(['mahasiswa:id,user_id,nim,nama,fakultas_id'])
             ->where('kelompok_id', $group->id)
+            ->when($this->facultyScopeId(), fn ($q, $facultyId) => $q->whereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $facultyId)))
             ->whereIn('status', ['approved', 'pending'])
             ->get();
 

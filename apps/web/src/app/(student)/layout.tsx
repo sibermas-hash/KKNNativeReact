@@ -52,9 +52,9 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isProfilePage = pathname === '/profil';
   const { data: dashboardData } = useQuery<Record<string, unknown> | null>({
-    queryKey: QUERY_KEYS.student.dashboard,
+    queryKey: [...QUERY_KEYS.student.dashboard, user?.id],
     queryFn: () => studentApi.dashboard() as unknown as Promise<Record<string, unknown> | null>,
-    enabled: isAuthenticated && !!user?.roles?.includes('student'),
+    enabled: isAuthenticated && !!user?.roles?.includes('student') && !!user?.id,
     staleTime: 0,
     refetchOnMount: 'always',
     refetchOnWindowFocus: true,

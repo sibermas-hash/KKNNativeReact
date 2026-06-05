@@ -319,7 +319,10 @@ class RekapNilaiController extends Controller
 
         GenerateMassCertificatesJob::dispatch(
             (int) $validated['periode_id'],
-            ['ids' => $validated['ids'] ?? []],
+            [
+                'ids' => $validated['ids'] ?? [],
+                'fakultas_id' => $this->facultyScopeId(),
+            ],
             auth()->id()
         );
 

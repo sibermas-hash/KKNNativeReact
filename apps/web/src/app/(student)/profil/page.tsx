@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { QUERY_KEYS } from '@sibermas/constants';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
@@ -484,6 +486,7 @@ function StudentAddressSection({ register, errors, isEditing, typography }: Stud
 
 export default function ProfilePage(): React.JSX.Element {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { user, isAuthenticated, isLoading, fetchUser, clearUser, setUser } = useAuthStore();
   const { theme, setTheme, config: themeConfig, typography, surfaceClass, surfaceStrongClass } = useTheme();
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -760,6 +763,7 @@ export default function ProfilePage(): React.JSX.Element {
 
       toast.success(successMessage);
       await fetchUser(true);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.dashboard });
       setProfileCompleteCookie(complete);
       if (complete) {
         const freshUser = useAuthStore.getState().user;
@@ -847,6 +851,7 @@ export default function ProfilePage(): React.JSX.Element {
 
       const res = await profileApi.get() as unknown as Record<string, unknown>;
       setProfileData({ student: (res?.student as StudentProfile) ?? null, lecturer: (res?.lecturer as LecturerProfile) ?? null, pending: (res?.pending_change_request as ChangeRequest) ?? null });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.dashboard });
     } catch {
       // Don't revert — the file is saved server-side. Just warn.
       toast.warning('Foto sudah terunggah, tetapi data profil gagal dimuat ulang. Segarkan halaman untuk sinkron.');

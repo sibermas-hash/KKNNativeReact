@@ -15,12 +15,40 @@ class RekapitulasiController extends Controller
 {
     use ApiResponse;
 
+    private function facultyScopeId(): ?int
+    {
+        $user = auth()->user();
+
+        return $user?->hasRole('faculty_admin') && $user->fakultas_id
+            ? (int) $user->fakultas_id
+            : null;
+    }
+
+    private function scopeGroupsByFaculty($query): void
+    {
+        if ($facultyId = $this->facultyScopeId()) {
+            $query->whereHas('peserta.mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
+        }
+    }
+
+    private function ensureGroupInFacultyScope(KelompokKkn $group): void
+    {
+        if ($facultyId = $this->facultyScopeId()) {
+            abort_unless(
+                $group->peserta()->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId))->exists(),
+                403,
+                'Anda tidak memiliki akses ke kelompok ini.'
+            );
+        }
+    }
+
     public function index(Request $request): JsonResponse
     {
         $kelompokId = $request->integer('kelompok_id');
 
         if ($kelompokId) {
             $kelompok = KelompokKkn::with(['lokasi', 'periode', 'dosen'])->findOrFail($kelompokId);
+            $this->ensureGroupInFacultyScope($kelompok);
 
             $rekapitulasi = RekapitulasiKegiatan::where('kelompok_id', $kelompokId)
                 ->orderBy('uraian_kegiatan')
@@ -44,8 +72,11 @@ class RekapitulasiController extends Controller
 
         // Daftar semua kelompok yang punya rekapitulasi
         $kelompokList = KelompokKkn::with(['lokasi', 'periode'])
-            ->whereHas('rekapitulasiKegiatan')
-            ->orderBy('nama_kelompok')
+            ->whereHas('rekapitulasiKegiatan');
+
+        $this->scopeGroupsByFaculty($kelompokList);
+
+        $kelompokList = $kelompokList->orderBy('nama_kelompok')
             ->get()
             ->map(fn ($k) => [
                 'id' => $k->id,

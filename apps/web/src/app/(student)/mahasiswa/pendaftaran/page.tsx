@@ -236,6 +236,7 @@ export default function RegistrationFormPage(): React.JSX.Element {
     onSuccess: (_data, periodeId) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.kknDaftar });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.registration.form });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.dashboard });
       router.push(`/mahasiswa/pendaftaran/${periodeId}/dokumen`);
     },
     onError: (err: unknown) => {

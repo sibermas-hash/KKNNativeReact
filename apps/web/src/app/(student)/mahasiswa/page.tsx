@@ -37,8 +37,9 @@ export default function StudentDashboard(): React.JSX.Element {
   
 
   const { data, isLoading, isError, error } = useQuery<Record<string, unknown> | null>({
-    queryKey: QUERY_KEYS.student.dashboard,
+    queryKey: [...QUERY_KEYS.student.dashboard, user?.id],
     queryFn: () => studentApi.dashboard() as unknown as Promise<Record<string, unknown> | null>,
+    enabled: !!user?.id,
   });
 
   const notificationMutation = useMutation({

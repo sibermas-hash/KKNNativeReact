@@ -388,6 +388,11 @@ class EligibilityController extends Controller
 
     public function checkStudent(Mahasiswa $mahasiswa, Request $request): JsonResponse
     {
+        $user = auth()->user();
+        if ($user?->hasRole('faculty_admin')) {
+            abort_unless($mahasiswa->fakultas_id === $user->fakultas_id, 403, 'Anda tidak memiliki akses ke mahasiswa ini.');
+        }
+
         $periodeId = $request->integer('periode_id') ?: null;
         $result = $this->eligibilityService->checkEligibility($mahasiswa, $periodeId);
 
@@ -550,6 +555,9 @@ class EligibilityController extends Controller
         foreach ($validated['updates'] as $item) {
             $mahasiswa = Mahasiswa::find($item['mahasiswa_id']);
             if ($mahasiswa === null) {
+                continue;
+            }
+            if (auth()->user()?->hasRole('faculty_admin') && $mahasiswa->fakultas_id !== auth()->user()?->fakultas_id) {
                 continue;
             }
             $mahasiswa->sks_completed = (int) $item['sks_completed'];

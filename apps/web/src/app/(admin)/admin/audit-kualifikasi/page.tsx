@@ -150,7 +150,7 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+        <div className="group rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-lg">
           <div className="flex items-center gap-3">
             <div className="rounded-xl bg-slate-100 p-2.5"><Users className="h-5 w-5 text-slate-600" /></div>
             <div>
@@ -159,7 +159,7 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
             </div>
           </div>
         </div>
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+        <div className="group rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-lg">
           <div className="flex items-center gap-3">
             <div className="rounded-xl bg-emerald-50 p-2.5"><ShieldCheck className="h-5 w-5 text-emerald-600" /></div>
             <div>
@@ -169,7 +169,7 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
           </div>
         </div>
 
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+        <div className="group rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-lg">
           <div className="flex items-center gap-3">
             <div className="rounded-xl bg-cyan-50 p-2.5"><GraduationCap className="h-5 w-5 text-cyan-600" /></div>
             <div>
@@ -178,7 +178,7 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
             </div>
           </div>
         </div>
-        <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+        <div className="group rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 transition hover:-translate-y-0.5 hover:shadow-lg">
           <div className="flex items-center gap-3">
             <div className="rounded-xl bg-amber-50 p-2.5"><AlertTriangle className="h-5 w-5 text-amber-600" /></div>
             <div>
@@ -189,12 +189,12 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
         </div>
       </div>
 
-      <div className="rounded-2xl border border-cyan-100 bg-cyan-50 p-4 text-sm text-cyan-900">
+      <div className="rounded-3xl border border-cyan-100 bg-gradient-to-r from-cyan-50 to-emerald-50 p-4 text-sm text-cyan-900 shadow-sm">
         <div className="flex items-start gap-2"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><div><b>Cara kerja:</b> Sistem memeriksa syarat akademik (SKS, IPK, semester, BTA-PPI, UKT) secara otomatis. Mahasiswa yang memenuhi semua syarat akan muncul di tab "Boleh Daftar". Dokumen fisik diperiksa saat proses approval pendaftaran.</div></div>
       </div>
 
       {/* Toolbar */}
-      <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
+      <div className="rounded-3xl bg-white/95 p-4 shadow-sm ring-1 ring-slate-200 transition hover:shadow-md">
       <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex flex-wrap items-center gap-2">
 

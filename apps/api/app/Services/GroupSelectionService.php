@@ -24,6 +24,12 @@ class GroupSelectionService
 
     private const DEFAULT_MALE_TARGET_PERCENT = 30.0;
 
+    /**
+     * Ops hold: Prodi Manajemen Zakat dan Wakaf (MZW/Mazawa) should remain in
+     * placement phase and must not be assigned to any KKN group until hold is lifted.
+     */
+    private const PLOTTING_HELD_PRODI_IDS = [14];
+
     public static function activeRegistrationStatuses(): array
     {
         return self::ACTIVE_REGISTRATION_STATUSES;
@@ -67,6 +73,8 @@ class GroupSelectionService
             return $registration;
         }
 
+        $this->assertStudentNotPlottingHeld($mahasiswa);
+
         $previousGroupId = $registration->kelompok_id;
 
         if ($registration->kelompok_id) {
@@ -104,6 +112,7 @@ class GroupSelectionService
 
     public function validateGroupAcceptance(KelompokKkn $group, Mahasiswa $mahasiswa, ?int $excludingRegistrationId = null): void
     {
+        $this->assertStudentNotPlottingHeld($mahasiswa);
         $this->assertGroupCanAcceptStudent($group, $mahasiswa, $excludingRegistrationId);
     }
 
@@ -258,6 +267,15 @@ class GroupSelectionService
         if ($lockDate && now()->greaterThanOrEqualTo($lockDate->startOfDay())) {
             throw ValidationException::withMessages([
                 'kelompok_id' => 'Tidak bisa keluar kelompok karena sudah memasuki masa kunci H-7 sebelum pelaksanaan.',
+            ]);
+        }
+    }
+
+    private function assertStudentNotPlottingHeld(Mahasiswa $mahasiswa): void
+    {
+        if (in_array((int) $mahasiswa->prodi_id, self::PLOTTING_HELD_PRODI_IDS, true)) {
+            throw ValidationException::withMessages([
+                'kelompok_id' => 'Mahasiswa Prodi Manajemen Zakat dan Wakaf sedang ditahan di fase plotting dan tidak dapat ditempatkan ke kelompok.',
             ]);
         }
     }

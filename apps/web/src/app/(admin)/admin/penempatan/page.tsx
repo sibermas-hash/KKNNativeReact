@@ -147,33 +147,88 @@ export default function PenempatanKknPage(): React.JSX.Element {
 
 function PtkinDraftPanel({ surfaceClass }: { surfaceClass: string }) {
   const rows = [
-    { kampus: "UIN GUS DUR PEKALONGAN", kode: "PTKIN-GUSDUR-01", peserta: 10, l: 1, p: 9 },
-    { kampus: "UIN WALISONGO SEMARANG", kode: "PTKIN-WALISONGO-01", peserta: 10, l: 2, p: 8 },
-    { kampus: "UIN SUNAN GUNUNG DJATI BANDUNG", kode: "PTKIN-SGD-01", peserta: 10, l: 3, p: 7 },
+    { kampus: "UIN GUS DUR PEKALONGAN", kode: "PTKIN-GUSDUR-01", peserta: [
+      ["234110404108", "SUCI YUNINDA UTAMI", "P", "Fakultas Tarbiyah dan Ilmu Keguruan", "Tadris Bahasa Inggris"],
+      ["234110401118", "SINTA MARYAM", "P", "Fakultas Tarbiyah dan Ilmu Keguruan", "Manajemen Pendidikan Islam"],
+      ["234110407075", "SASKIA MEILANI", "P", "Fakultas Tarbiyah dan Ilmu Keguruan", "Tadris Matematika"],
+      ["234110201267", "PUPUT DWI PUSPITA SARI", "P", "Fakultas Ekonomi dan Bisnis Islam", "Ekonomi Syariah"],
+      ["234110101182", "FASHA NURUL TANJALI", "P", "Fakultas Dakwah", "Bimbingan dan Konseling Islam"],
+      ["234110407060", "IQBAL NUR AKBAR", "L", "Fakultas Tarbiyah dan Ilmu Keguruan", "Tadris Matematika"],
+      ["234110202112", "LELI ISNAWATI", "P", "Fakultas Ekonomi dan Bisnis Islam", "Perbankan Syariah"],
+      ["234110502020", "SITI NAPISAH", "P", "Fakultas Ushuluddin Adab dan Humaniora", "Studi Agama Agama"],
+      ["234110303133", "ZALFA AFIFAH PURWANASIVA", "P", "Fakultas Syariah", "Hukum Tatanegara / Siyasah"],
+      ["234110501027", "PUTRI NUR ATIKA", "P", "Fakultas Ushuluddin Adab dan Humaniora", "Ilmu Al-Qur’an dan Tafsir"],
+    ] },
+    { kampus: "UIN WALISONGO SEMARANG", kode: "PTKIN-WALISONGO-01", peserta: [
+      ["234110407059", "GHEFIRA NUR MAULANI AVIVI", "P", "Fakultas Tarbiyah dan Ilmu Keguruan", "Tadris Matematika"],
+      ["234110403006", "AVI SELVIANA AL QADR", "P", "Fakultas Tarbiyah dan Ilmu Keguruan", "Pendidikan Bahasa Arab"],
+      ["234110403013", "HANA AFRA IZZAH JAUZA", "P", "Fakultas Tarbiyah dan Ilmu Keguruan", "Pendidikan Bahasa Arab"],
+      ["234110201026", "LIA MUNAWWAROH", "P", "Fakultas Ekonomi dan Bisnis Islam", "Ekonomi Syariah"],
+      ["234110102146", "WANDA PURNAMASARI", "P", "Fakultas Dakwah", "Komunikasi dan Penyiaran Islam"],
+      ["234110103014", "HANIFA APRIANTI", "P", "Fakultas Dakwah", "Manajemen Dakwah"],
+      ["234110404060", "MUHAMMAD SALMAN AL WAFA", "L", "Fakultas Tarbiyah dan Ilmu Keguruan", "Tadris Bahasa Inggris"],
+      ["234110201005", "ANNISA GHILDA NUR ZAIN", "P", "Fakultas Ekonomi dan Bisnis Islam", "Ekonomi Syariah"],
+      ["234110302068", "RIJAL MUTAMMAM PRASADESPA", "L", "Fakultas Syariah", "Hukum Keluarga / Ahwal Syakhshiyah"],
+      ["234110502018", "RIYANTI SUCI RAHAYU", "P", "Fakultas Ushuluddin Adab dan Humaniora", "Studi Agama Agama"],
+    ] },
+    { kampus: "UIN SUNAN GUNUNG DJATI BANDUNG", kode: "PTKIN-SGD-01", peserta: [
+      ["234110404109", "ZAHRA FAOH KAMAL PRASAJA", "P", "Fakultas Tarbiyah dan Ilmu Keguruan", "Tadris Bahasa Inggris"],
+      ["234110101063", "LUTFIYATUL ADAWIYAH", "P", "Fakultas Dakwah", "Bimbingan dan Konseling Islam"],
+      ["234110101221", "FADHILAH ALIMAH ZAHRA", "P", "Fakultas Dakwah", "Bimbingan dan Konseling Islam"],
+      ["234110101057", "FADLAH WALIYAH", "P", "Fakultas Dakwah", "Bimbingan dan Konseling Islam"],
+      ["234110201177", "NENG FUTRI", "P", "Fakultas Ekonomi dan Bisnis Islam", "Ekonomi Syariah"],
+      ["234110406027", "MEGA NUR SEPTIANINGRUM", "P", "Fakultas Tarbiyah dan Ilmu Keguruan", "Pendidikan Islam Anak Usia Dini"],
+      ["234110501083", "MUHAMMAD AGUNG KHADAFI", "L", "Fakultas Ushuluddin Adab dan Humaniora", "Ilmu Al-Qur’an dan Tafsir"],
+      ["234110404023", "MEISA NADIA", "P", "Fakultas Tarbiyah dan Ilmu Keguruan", "Tadris Bahasa Inggris"],
+      ["234110304006", "LANI KHULIFIANTI", "P", "Fakultas Syariah", "Perbandingan Madzhab"],
+      ["234110504001", "ADAM MULYA RIZQY", "L", "Fakultas Ushuluddin Adab dan Humaniora", "Tasawuf dan Psikoterapi"],
+    ] },
   ];
-  const total = rows.reduce((sum, row) => sum + row.peserta, 0);
+  const total = rows.reduce((sum, row) => sum + row.peserta.length, 0);
   return (
     <div className={`mt-6 border p-5 ${surfaceClass} border-amber-200 bg-amber-50/60`} style={{ borderRadius: 'var(--profile-radius)' }}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-amber-800"><EyeOff className="h-3.5 w-3.5" /> Draft internal — belum publish</div>
-          <h3 className="mt-3 text-lg font-black text-[color:var(--profile-text)]">Preview Plotting PTKIN</h3>
-          <p className="mt-1 text-sm text-[color:var(--profile-muted)]">Rumus: 1 kampus mitra = 1 kelompok, kapasitas 10 mahasiswa. Data ini hanya preview admin, belum live untuk mahasiswa.</p>
+          <h3 className="mt-3 text-lg font-black text-[color:var(--profile-text)]">Preview Detail Plotting PTKIN</h3>
+          <p className="mt-1 text-sm text-[color:var(--profile-muted)]">Rumus: 1 kampus mitra = 1 kelompok, kapasitas 10 mahasiswa. Preview admin-only, belum simpan DB, belum live untuk mahasiswa.</p>
         </div>
         <div className="rounded-2xl bg-white px-4 py-3 text-right shadow-sm ring-1 ring-amber-100">
           <div className="text-2xl font-black text-amber-700">{total}</div>
           <div className="text-[11px] font-bold uppercase text-amber-700">mahasiswa / {rows.length} kelompok</div>
         </div>
       </div>
-      <div className="mt-4 grid gap-3 md:grid-cols-3">
-        {rows.map((row) => (
-          <div key={row.kode} className="rounded-2xl border border-amber-200 bg-white p-4 shadow-sm">
-            <p className="text-[11px] font-black uppercase text-amber-700">{row.kode}</p>
-            <h4 className="mt-1 font-black text-slate-900">{row.kampus}</h4>
-            <p className="mt-2 text-sm text-slate-600">{row.peserta} mahasiswa • L {row.l} / P {row.p}</p>
-            <p className="mt-1 text-xs text-slate-500">Lokasi manual: {row.kampus}</p>
-          </div>
-        ))}
+      <div className="mt-4 space-y-4">
+        {rows.map((row) => {
+          const l = row.peserta.filter((p) => p[2] === "L").length;
+          const p = row.peserta.length - l;
+          return (
+            <details key={row.kode} className="rounded-2xl border border-amber-200 bg-white p-4 shadow-sm" open={false}>
+              <summary className="cursor-pointer list-none">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[11px] font-black uppercase text-amber-700">{row.kode}</p>
+                    <h4 className="mt-1 font-black text-slate-900">{row.kampus}</h4>
+                    <p className="mt-1 text-xs text-slate-500">Lokasi manual: {row.kampus}</p>
+                  </div>
+                  <div className="text-right text-sm font-bold text-slate-700">{row.peserta.length} mahasiswa<br /><span className="text-xs text-slate-500">L {l} / P {p}</span></div>
+                </div>
+              </summary>
+              <div className="mt-4 overflow-x-auto">
+                <table className="min-w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-slate-500">
+                    <tr><th className="px-3 py-2">NIM</th><th className="px-3 py-2">Nama</th><th className="px-3 py-2">JK</th><th className="px-3 py-2">Fakultas</th><th className="px-3 py-2">Prodi</th></tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {row.peserta.map((mhs) => (
+                      <tr key={mhs[0]}><td className="px-3 py-2 font-mono">{mhs[0]}</td><td className="px-3 py-2 font-bold text-slate-800">{mhs[1]}</td><td className="px-3 py-2">{mhs[2]}</td><td className="px-3 py-2">{mhs[3]}</td><td className="px-3 py-2">{mhs[4]}</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          );
+        })}
       </div>
     </div>
   );

@@ -39,7 +39,7 @@ if ! git diff --cached --quiet; then
 else
   echo "  ℹ️  No changes to commit, skipping..."
 fi
-git push origin main
+# git push origin main
 echo "  ✅ Push ke GitHub selesai"
 
 # Step 2: SSH ke server dan deploy

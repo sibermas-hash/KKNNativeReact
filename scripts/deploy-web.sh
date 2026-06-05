@@ -9,6 +9,13 @@ PM2_NAME="${PM2_NAME:-sibermas-web}"
 
 cd "$APP_DIR"
 
+LOCK_FILE="${DEPLOY_LOCK_FILE:-/tmp/sibermas-web-deploy.lock}"
+exec 9>"$LOCK_FILE"
+if ! flock -n 9; then
+  echo "ERROR: another web deploy is running (lock: $LOCK_FILE)" >&2
+  exit 75
+fi
+
 echo "[1/6] git pull origin ${BRANCH}"
 git fetch origin "$BRANCH"
 git pull --ff-only origin "$BRANCH"

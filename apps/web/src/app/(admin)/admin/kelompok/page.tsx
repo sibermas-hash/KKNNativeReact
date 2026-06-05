@@ -37,6 +37,7 @@ type Kelompok = {
     regency_name?: string;
     full_name?: string;
   };
+  lokasi_manual?: string | null;
   dosen?: { id: number; nama?: string }[];
   periode?: Period;
 };
@@ -81,8 +82,20 @@ export default function AdminKelompokPage(): React.JSX.Element {
     },
   });
   const allPeriodItems = periodsQ.data ?? [];
-  const periodItems = jenisKey ? allPeriodItems.filter((p) => { const hay = `${p.jenis_kkn?.code ?? ''} ${p.jenis_kkn?.name ?? ''} ${p.name ?? ''} ${p.periode ?? ''}`.toLowerCase(); return hay.includes(jenisKey.replace(/_/g, ' ')) || hay.includes(jenisKey); }) : allPeriodItems;
-
+  const normalizeJenis = (value: string): string => value.toLowerCase().replace(/&/g, ' dan ').replace(/[^a-z0-9]+/g, ' ').trim();
+  const jenisAliases: Record<string, string[]> = {
+    kampung_zakat_katana: ['kampung zakat katana', 'kampung zakat dan katana'],
+    kolaborasi_ptkin: ['kolaborasi ptkin'],
+  };
+  const jenisNeedles = jenisKey
+    ? [jenisKey, jenisKey.replace(/_/g, ' '), ...(jenisAliases[jenisKey] ?? [])].map(normalizeJenis).filter(Boolean)
+    : [];
+  const periodItems = jenisNeedles.length
+    ? allPeriodItems.filter((p) => {
+        const hay = normalizeJenis(`${p.jenis_kkn?.code ?? ''} ${p.jenis_kkn?.name ?? ''} ${p.name ?? ''} ${p.periode ?? ''}`);
+        return jenisNeedles.some((needle) => hay.includes(needle));
+      })
+    : allPeriodItems;
 
   const createMut = useMutation({
     mutationFn: async () => {
@@ -125,7 +138,7 @@ export default function AdminKelompokPage(): React.JSX.Element {
     const groupsWithDpl = all.filter((g) => (g.dosen?.length ?? 0) > 0).length;
     const byRegency: Record<string, number> = {};
     all.forEach((g) => {
-      const r = g.lokasi?.regency_name ?? 'Tanpa lokasi';
+      const r = g.lokasi?.regency_name ?? (g.lokasi_manual ? 'Lokasi manual' : 'Tanpa lokasi');
       byRegency[r] = (byRegency[r] ?? 0) + 1;
     });
     return { totalGroups, totalPeserta, totalKapasitas, groupsWithDpl, byRegency };
@@ -146,7 +159,7 @@ export default function AdminKelompokPage(): React.JSX.Element {
 
   const filtered = useMemo(() => {
     if (!filterRegency) return items;
-    return items.filter((g) => g.lokasi?.regency_name === filterRegency);
+    return items.filter((g) => (g.lokasi?.regency_name ?? (g.lokasi_manual ? 'Lokasi manual' : 'Tanpa lokasi')) === filterRegency);
   }, [items, filterRegency]);
 
   const del = useMutation({
@@ -453,6 +466,14 @@ export default function AdminKelompokPage(): React.JSX.Element {
                             <p className="text-slate-500">
                               {g.lokasi.district_name}, {g.lokasi.regency_name}
                             </p>
+                          </div>
+                        </div>
+                      ) : g.lokasi_manual ? (
+                        <div className="flex items-start gap-1.5">
+                          <MapPin className="h-3.5 w-3.5 text-amber-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <p className="font-medium text-slate-700">{g.lokasi_manual}</p>
+                            <p className="text-slate-500">Lokasi manual</p>
                           </div>
                         </div>
                       ) : (

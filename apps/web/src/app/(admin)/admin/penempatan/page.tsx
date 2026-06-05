@@ -117,7 +117,7 @@ export default function PenempatanKknPage(): React.JSX.Element {
                     Buat/Review Kelompok
                   </Link>
                   <Link 
-                    href={`/admin/dosen/penugasan?jenis_kkn=${key}`} 
+                    href={`/admin/dosen/penugasan?jenis_kkn=${key}&mode=manual`}
                     className={`rounded-lg border px-3 py-2 text-xs font-bold ${SOFT_CLASS}`}
                   >
                     Assign DPL

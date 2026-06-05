@@ -50,8 +50,9 @@ class KelompokKknImport implements ToCollection, WithHeadingRow
             }
 
             $location = $this->resolveLocation($row);
-            if (! $location) {
-                $this->errors[] = "Baris {$rowNumber}: data lokasi belum lengkap. Pastikan desa, kecamatan, dan kabupaten terisi.";
+            $lokasiManual = $this->value($row, ['lokasi_manual', 'lokasi', 'manual_location']);
+            if (! $location && ! filled($lokasiManual)) {
+                $this->errors[] = "Baris {$rowNumber}: isi location_id/desa-kecamatan-kabupaten atau lokasi_manual.";
 
                 continue;
             }
@@ -75,7 +76,8 @@ class KelompokKknImport implements ToCollection, WithHeadingRow
 
             $group->fill([
                 'periode_id' => $period->id,
-                'location_id' => $location->id,
+                'location_id' => $location?->id,
+                'lokasi_manual' => $location ? null : $lokasiManual,
                 'nama_kelompok' => $name,
                 'capacity' => $capacity,
                 'status' => $status,

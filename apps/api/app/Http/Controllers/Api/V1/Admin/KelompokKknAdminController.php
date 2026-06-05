@@ -65,14 +65,28 @@ class KelompokKknAdminController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $perPage = max(1, min((int) $request->integer('per_page', 25), 100));
+        $search = trim((string) $request->input('search', ''));
+
         $query = KelompokKkn::with(['lokasi', 'dosen', 'periode'])
             ->withCount('peserta')
             ->when($request->input('periode_id'), fn ($q, $id) => $q->where('periode_id', $id))
+            ->when($search !== '', function ($q) use ($search): void {
+                $q->where(function ($qq) use ($search): void {
+                    $qq->where('code', 'like', "%{$search}%")
+                        ->orWhere('nama_kelompok', 'like', "%{$search}%")
+                        ->orWhere('lokasi_manual', 'like', "%{$search}%")
+                        ->orWhereHas('lokasi', fn ($l) => $l
+                            ->where('village_name', 'like', "%{$search}%")
+                            ->orWhere('district_name', 'like', "%{$search}%")
+                            ->orWhere('regency_name', 'like', "%{$search}%"));
+                });
+            })
             ->orderByDesc('created_at');
 
         $this->scopeByFaculty($query);
 
-        return $this->successCollection(KelompokKknResource::collection($query->paginate(25)));
+        return $this->successCollection(KelompokKknResource::collection($query->paginate($perPage)));
     }
 
     public function show(KelompokKkn $kelompok): JsonResponse

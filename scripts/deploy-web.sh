@@ -27,8 +27,25 @@ echo "[3/6] build packages"
 TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:packages
 
 echo "[4/6] build web"
-rm -rf apps/web/.next
+NEXT_DIR="apps/web/.next"
+BACKUP_NEXT_DIR="apps/web/.next.deploy-backup"
+rm -rf "$BACKUP_NEXT_DIR"
+if [ -d "$NEXT_DIR" ]; then
+  mv "$NEXT_DIR" "$BACKUP_NEXT_DIR"
+fi
+restore_next_on_fail() {
+  local exit_code=$?
+  if [ "$exit_code" -ne 0 ] && [ -d "$BACKUP_NEXT_DIR" ]; then
+    echo "Build/deploy failed; restoring previous .next" >&2
+    rm -rf "$NEXT_DIR"
+    mv "$BACKUP_NEXT_DIR" "$NEXT_DIR"
+  fi
+  exit "$exit_code"
+}
+trap restore_next_on_fail EXIT
 TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:web
+rm -rf "$BACKUP_NEXT_DIR"
+trap - EXIT
 mkdir -p apps/web/.next/standalone/apps/web/public apps/web/.next/standalone/apps/web/.next/static
 cp -R apps/web/public/. apps/web/.next/standalone/apps/web/public/
 cp -R apps/web/.next/static/. apps/web/.next/standalone/apps/web/.next/static/

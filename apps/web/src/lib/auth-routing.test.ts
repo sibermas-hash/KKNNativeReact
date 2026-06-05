@@ -14,7 +14,7 @@ describe('auth routing helpers', () => {
   it('maps roles to the correct dashboard entry point', () => {
     expect(dashboardPathForRoles(['superadmin'])).toBe('/admin');
     expect(dashboardPathForRoles(['dpl'])).toBe('/dosen');
-    expect(dashboardPathForRoles(['student'])).toBe('/mahasiswa');
+    expect(dashboardPathForRoles(['student'])).toBe('/mahasiswa-v2');
     expect(dashboardPathForRoles([])).toBe('/');
   });
 

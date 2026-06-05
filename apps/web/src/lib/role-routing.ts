@@ -2,7 +2,7 @@ export function dashboardPathForRoles(roles: string[] = []): string {
   if (roles.some((role) => ['superadmin', 'admin', 'faculty_admin'].includes(role))) return '/admin';
   if (roles.includes('external_lppm_admin')) return '/external/dashboard';
   if (roles.some((role) => ['dosen', 'dpl'].includes(role))) return '/dosen';
-  if (roles.includes('student')) return '/mahasiswa';
+  if (roles.includes('student')) return '/mahasiswa-v2';
   return '/';
 }
 

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { MapPin, Shuffle, Users, ArrowRight, Settings2, UserPlus, Upload, GraduationCap } from "lucide-react";
+import { MapPin, Shuffle, Users, ArrowRight, Settings2, UserPlus, Upload, GraduationCap, EyeOff } from "lucide-react";
 import { useTheme } from "@/components/ui/theme-provider";
 import { PRIMARY_CLASS, SOFT_CLASS } from "@/lib/theme-config";
 
@@ -138,9 +138,44 @@ export default function PenempatanKknPage(): React.JSX.Element {
             <Action href={`/admin/kelompok?jenis_kkn=${activeJenis}&mode=manual`} icon={<Upload className="h-5 w-5" />} title="3. Import/Export" desc="Import Excel kelompok manual + export CSV" />
             <Action href={`/admin/dosen/penugasan?jenis_kkn=${activeJenis}&mode=manual`} icon={<GraduationCap className="h-5 w-5" />} title="4. Assign DPL" desc={`Tugaskan DPL untuk ${activeLabel}`} />
           </div>
+          {activeJenis === "kolaborasi_ptkin" && <PtkinDraftPanel surfaceClass={surfaceClass} />}
         </section>
       )}
     </main>
+  );
+}
+
+function PtkinDraftPanel({ surfaceClass }: { surfaceClass: string }) {
+  const rows = [
+    { kampus: "UIN GUS DUR PEKALONGAN", kode: "PTKIN-GUSDUR-01", peserta: 10, l: 1, p: 9 },
+    { kampus: "UIN WALISONGO SEMARANG", kode: "PTKIN-WALISONGO-01", peserta: 10, l: 2, p: 8 },
+    { kampus: "UIN SUNAN GUNUNG DJATI BANDUNG", kode: "PTKIN-SGD-01", peserta: 10, l: 3, p: 7 },
+  ];
+  const total = rows.reduce((sum, row) => sum + row.peserta, 0);
+  return (
+    <div className={`mt-6 border p-5 ${surfaceClass} border-amber-200 bg-amber-50/60`} style={{ borderRadius: 'var(--profile-radius)' }}>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-amber-800"><EyeOff className="h-3.5 w-3.5" /> Draft internal — belum publish</div>
+          <h3 className="mt-3 text-lg font-black text-[color:var(--profile-text)]">Preview Plotting PTKIN</h3>
+          <p className="mt-1 text-sm text-[color:var(--profile-muted)]">Rumus: 1 kampus mitra = 1 kelompok, kapasitas 10 mahasiswa. Data ini hanya preview admin, belum live untuk mahasiswa.</p>
+        </div>
+        <div className="rounded-2xl bg-white px-4 py-3 text-right shadow-sm ring-1 ring-amber-100">
+          <div className="text-2xl font-black text-amber-700">{total}</div>
+          <div className="text-[11px] font-bold uppercase text-amber-700">mahasiswa / {rows.length} kelompok</div>
+        </div>
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-3">
+        {rows.map((row) => (
+          <div key={row.kode} className="rounded-2xl border border-amber-200 bg-white p-4 shadow-sm">
+            <p className="text-[11px] font-black uppercase text-amber-700">{row.kode}</p>
+            <h4 className="mt-1 font-black text-slate-900">{row.kampus}</h4>
+            <p className="mt-2 text-sm text-slate-600">{row.peserta} mahasiswa • L {row.l} / P {row.p}</p>
+            <p className="mt-1 text-xs text-slate-500">Lokasi manual: {row.kampus}</p>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 

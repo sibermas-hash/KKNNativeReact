@@ -46,7 +46,7 @@ export function Providers({ children }: { children: ReactNode }): React.JSX.Elem
 
     initAuthToken();
 
-    const uiVersion = 'sidebar-profile-v2';
+    const uiVersion = 'sidebar-profile-v3';
     if (window.localStorage.getItem('sibermas_ui_version') !== uiVersion) {
       window.localStorage.setItem('sibermas_ui_version', uiVersion);
       if ('serviceWorker' in navigator) {

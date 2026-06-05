@@ -183,7 +183,7 @@ export default function AdminDashboardPage(): React.JSX.Element {
               Halo, {user?.name?.split(' ')[0] ?? 'Admin'}
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 font-sans">
-              Ringkasan jumlah total pada periode yang sedang dipilih.
+              Ringkasan operasional periode aktif, dipadatkan untuk keputusan cepat.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               {[

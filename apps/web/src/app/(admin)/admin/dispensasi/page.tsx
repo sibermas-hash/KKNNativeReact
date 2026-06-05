@@ -95,7 +95,7 @@ export default function DispensasiPage(): React.JSX.Element {
             <h2 className="mt-2 text-3xl font-black tracking-tight">{dispensasi.length.toLocaleString('id-ID')} Dispensasi Aktif</h2>
             <p className="mt-2 max-w-2xl text-sm text-cyan-50">Bebaskan mahasiswa dari persyaratan tertentu dan pantau riwayat dispensasi dalam satu layar.</p>
           </div>
-          <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-2 rounded-xl bg-white/15 px-4 py-2.5 text-sm font-black text-white ring-1 ring-white/25 hover:bg-white/20">
+          <button onClick={() => setShowForm(true)} className="inline-flex items-center gap-2 rounded-xl bg-white/15 px-4 py-2.5 text-sm font-black text-white ring-1 ring-white/25 transition hover:-translate-y-0.5 hover:bg-white/20 hover:shadow-lg">
             <Plus size={16} /> Tambah
           </button>
         </div>
@@ -114,7 +114,7 @@ export default function DispensasiPage(): React.JSX.Element {
       {/* Form Modal */}
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-lg rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-white/20">
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-black text-slate-900">Tambah Dispensasi</h3>
               <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-700"><X size={20} /></button>
@@ -122,18 +122,18 @@ export default function DispensasiPage(): React.JSX.Element {
             <div className="space-y-4">
               <div>
                 <label className="block text-xs font-bold text-slate-600 mb-1">NIM Mahasiswa *</label>
-                <input value={form.nim} onChange={e => setForm(p => ({ ...p, nim: e.target.value }))} placeholder="Masukkan NIM" className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600" />
+                <input value={form.nim} onChange={e => setForm(p => ({ ...p, nim: e.target.value }))} placeholder="Masukkan NIM" className="w-full rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-2.5 text-sm outline-none transition focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-600 mb-1">Periode (opsional)</label>
-                <select value={form.periode_id} onChange={e => setForm(p => ({ ...p, periode_id: e.target.value }))} className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600">
+                <select value={form.periode_id} onChange={e => setForm(p => ({ ...p, periode_id: e.target.value }))} className="w-full rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-2.5 text-sm outline-none transition focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100">
                   <option value="">Semua Periode</option>
                   {periods.map(p => <option key={p.id} value={p.id}>{p.name} (Angkatan {p.periode})</option>)}
                 </select>
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-600 mb-1">Alasan *</label>
-                <textarea value={form.alasan} onChange={e => setForm(p => ({ ...p, alasan: e.target.value }))} rows={3} placeholder="Alasan pemberian dispensasi..." className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600" />
+                <textarea value={form.alasan} onChange={e => setForm(p => ({ ...p, alasan: e.target.value }))} rows={3} placeholder="Alasan pemberian dispensasi..." className="w-full rounded-xl border border-slate-200 bg-slate-50/60 px-4 py-3 text-sm outline-none transition focus:border-cyan-500 focus:bg-white focus:ring-4 focus:ring-cyan-100" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-600 mb-1">Syarat yang Dibebaskan</label>
@@ -160,7 +160,7 @@ export default function DispensasiPage(): React.JSX.Element {
       ) : dispensasi.length === 0 ? (
         <EmptyState icon={<FileX size={40} />} title="Belum ada dispensasi" description="Klik Tambah untuk memberikan dispensasi kepada mahasiswa." />
       ) : (
-        <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+        <div className="overflow-x-auto rounded-3xl bg-white shadow-sm ring-1 ring-slate-200">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50">
@@ -174,7 +174,7 @@ export default function DispensasiPage(): React.JSX.Element {
             </thead>
             <tbody>
               {dispensasi.map((d) => (
-                <tr key={d.id} className="border-b border-slate-50 hover:bg-slate-50">
+                <tr key={d.id} className="border-b border-slate-50 transition-colors hover:bg-cyan-50/40">
                   <td className="px-4 py-3 font-mono text-xs font-bold">{d.nim}</td>
                   <td className="px-4 py-3 text-xs text-slate-600">{d.periode?.name ?? 'Semua'}</td>
                   <td className="px-4 py-3 text-xs text-slate-700 max-w-[200px] truncate">{d.alasan}</td>

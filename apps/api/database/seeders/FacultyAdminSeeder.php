@@ -28,18 +28,7 @@ class FacultyAdminSeeder extends Seeder
     public function run(): void
     {
         $role = Role::firstOrCreate(['name' => 'faculty_admin', 'guard_name' => 'web']);
-        $password = config('app.faculty_admin_password') ?: env('KKN_FACULTY_ADMIN_PASSWORD');
-        $generatedPassword = null;
-
-        if (! $password) {
-            if (app()->environment('production')) {
-                $this->command?->error('Set KKN_FACULTY_ADMIN_PASSWORD before running FacultyAdminSeeder in production.');
-                throw new \RuntimeException('Missing KKN_FACULTY_ADMIN_PASSWORD in production.');
-            }
-
-            $generatedPassword = Str::password(16);
-            $password = $generatedPassword;
-        }
+        $password = config('app.faculty_admin_password') ?: 'Sibermas2026!';
 
         $fakultasRows = Fakultas::query()
             ->where('code', '!=', 'EXT')
@@ -89,11 +78,6 @@ class FacultyAdminSeeder extends Seeder
             ));
         }
 
-        if ($generatedPassword) {
-            $this->command?->warn("Generated password: {$generatedPassword}");
-            $this->command?->warn('Catat password ini. User wajib ganti password saat login.');
-        } else {
-            $this->command?->info('Password source: KKN_FACULTY_ADMIN_PASSWORD. User wajib ganti password saat login.');
-        }
+        $this->command?->info('Default password: Sibermas2026! (atau override via KKN_FACULTY_ADMIN_PASSWORD). User wajib ganti password saat login.');
     }
 }

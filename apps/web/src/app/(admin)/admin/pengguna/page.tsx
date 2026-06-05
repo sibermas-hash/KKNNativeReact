@@ -22,7 +22,7 @@ import { ResetPasswordConfirm } from './components/ResetPasswordConfirm';
 import { EditUserDialog } from './components/EditUserDialog';
 import { AnimatePresence, motion } from 'motion/react';
 
-const PAGE_ENTER = { hidden: { opacity: 0, y: 14, filter: 'blur(5px)' }, show: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.36, ease: 'easeOut' } } };
+const PAGE_ENTER = { hidden: { opacity: 0, y: 14, filter: 'blur(5px)' }, show: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.36, ease: 'easeOut' } } } as const;
 
 export default function AdminUsersPage(): React.JSX.Element {
   const currentUser = useAuthStore((state) => state.user);

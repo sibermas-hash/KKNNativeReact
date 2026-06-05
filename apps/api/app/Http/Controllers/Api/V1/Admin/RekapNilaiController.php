@@ -48,12 +48,15 @@ class RekapNilaiController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = NilaiKkn::with(['user', 'kelompok.periode'])->when($request->input('periode_id'), fn ($q, $id) => $q->whereHas('kelompok', fn ($q2) => $q2->where('periode_id', $id)))->when($request->input('kelompok_id'), fn ($q, $id) => $q->where('kelompok_id', $id))->orderByDesc('created_at');
+        $this->scopeByFaculty($query);
 
         return $this->successCollection(NilaiKknResource::collection($query->paginate(25)));
     }
 
     public function finalize(NilaiKkn $score): JsonResponse
     {
+        $this->ensureScoreInFacultyScope($score);
+
         if ($deny = $this->enforceBimbinganRequirement($score)) {
             return $deny;
         }
@@ -75,10 +78,11 @@ class RekapNilaiController extends Controller
             'periode_id' => ['required', 'integer', 'exists:periode,id'],
         ]);
 
-        $scores = NilaiKkn::whereIn('id', $request->input('ids'))
+        $scoresQuery = NilaiKkn::whereIn('id', $request->input('ids'))
             ->whereHas('kelompok', fn ($q) => $q->where('periode_id', $request->input('periode_id')))
-            ->with('kelompok')
-            ->get();
+            ->with('kelompok');
+        $this->scopeByFaculty($scoresQuery);
+        $scores = $scoresQuery->get();
 
         $force = (bool) $request->boolean('force');
         $isSuperadmin = (bool) auth()->user()?->hasRole('superadmin');
@@ -139,11 +143,12 @@ class RekapNilaiController extends Controller
     {
         $periodeId = $request->input('periode_id');
 
-        $scores = NilaiKkn::with(['user', 'kelompok.periode', 'kelompok.lokasi'])
+        $scoresQuery = NilaiKkn::with(['user', 'kelompok.periode', 'kelompok.lokasi'])
             ->when($periodeId, fn ($q, $id) => $q->whereHas('kelompok', fn ($q2) => $q2->where('periode_id', $id)))
             ->where('is_finalized', true)
-            ->orderBy('created_at')
-            ->get();
+            ->orderBy('created_at');
+        $this->scopeByFaculty($scoresQuery);
+        $scores = $scoresQuery->get();
 
         $periode = $periodeId ? Periode::find($periodeId) : null;
 
@@ -157,13 +162,15 @@ class RekapNilaiController extends Controller
     {
         $periodeId = $request->input('periode_id');
 
-        $total = NilaiKkn::when($periodeId, fn ($q, $id) => $q->whereHas('kelompok', fn ($q2) => $q2->where('periode_id', $id)))
-            ->whereNotNull('total_score')
-            ->count();
+        $totalQuery = NilaiKkn::when($periodeId, fn ($q, $id) => $q->whereHas('kelompok', fn ($q2) => $q2->where('periode_id', $id)))
+            ->whereNotNull('total_score');
+        $this->scopeByFaculty($totalQuery);
+        $total = $totalQuery->count();
 
-        $withCert = NilaiKkn::when($periodeId, fn ($q, $id) => $q->whereHas('kelompok', fn ($q2) => $q2->where('periode_id', $id)))
-            ->where('is_finalized', true)
-            ->count();
+        $withCertQuery = NilaiKkn::when($periodeId, fn ($q, $id) => $q->whereHas('kelompok', fn ($q2) => $q2->where('periode_id', $id)))
+            ->where('is_finalized', true);
+        $this->scopeByFaculty($withCertQuery);
+        $withCert = $withCertQuery->count();
 
         $progress = $total > 0 ? round(($withCert / $total) * 100, 1) : 0;
 
@@ -176,6 +183,7 @@ class RekapNilaiController extends Controller
 
     public function downloadWordCertificate(NilaiKkn $score)
     {
+        $this->ensureScoreInFacultyScope($score);
         abort_unless($score->is_finalized, 422, 'Nilai belum difinalisasi. Sertifikat belum dapat diterbitkan.');
 
         $tempFile = app(CertificateService::class)->generateWordForStudent($score);
@@ -190,6 +198,7 @@ class RekapNilaiController extends Controller
      */
     public function downloadCertificate(NilaiKkn $score)
     {
+        $this->ensureScoreInFacultyScope($score);
         abort_unless($score->is_finalized, 422, 'Nilai belum difinalisasi.');
 
         // Authorization: Student can only download their own, DPL can only download their group's students
@@ -225,6 +234,7 @@ class RekapNilaiController extends Controller
             $query->where('kelompok_id', $validated['kelompok_id']);
         }
 
+        $this->scopeByFaculty($query);
         $scores = $query->get();
 
         abort_if($scores->isEmpty(), 404, 'Tidak ada sertifikat yang sudah difinalisasi.');
@@ -234,6 +244,7 @@ class RekapNilaiController extends Controller
 
     public function previewCertificate(NilaiKkn $score)
     {
+        $this->ensureScoreInFacultyScope($score);
         abort_unless($score->is_finalized, 422, 'Nilai belum difinalisasi.');
 
         return app(CertificateService::class)->preview($score);
@@ -249,10 +260,11 @@ class RekapNilaiController extends Controller
     {
         $periodeId = $request->validate(['periode_id' => ['required', 'exists:periode,id']])['periode_id'];
 
-        $scores = NilaiKkn::with(['user', 'kelompok'])
+        $scoresQuery = NilaiKkn::with(['user', 'kelompok'])
             ->whereHas('kelompok', fn ($q) => $q->where('periode_id', $periodeId))
-            ->where('is_finalized', true)
-            ->get();
+            ->where('is_finalized', true);
+        $this->scopeByFaculty($scoresQuery);
+        $scores = $scoresQuery->get();
 
         abort_if($scores->isEmpty(), 404, 'Tidak ada sertifikat yang sudah difinalisasi.');
 
@@ -263,12 +275,14 @@ class RekapNilaiController extends Controller
     {
         $periodeId = $request->input('periode_id');
 
-        $total = NilaiKkn::when($periodeId, fn ($q, $id) => $q->whereHas('kelompok', fn ($q2) => $q2->where('periode_id', $id)))
-            ->count();
+        $totalQuery = NilaiKkn::when($periodeId, fn ($q, $id) => $q->whereHas('kelompok', fn ($q2) => $q2->where('periode_id', $id)));
+        $this->scopeByFaculty($totalQuery);
+        $total = $totalQuery->count();
 
-        $finalized = NilaiKkn::when($periodeId, fn ($q, $id) => $q->whereHas('kelompok', fn ($q2) => $q2->where('periode_id', $id)))
-            ->where('is_finalized', true)
-            ->count();
+        $finalizedQuery = NilaiKkn::when($periodeId, fn ($q, $id) => $q->whereHas('kelompok', fn ($q2) => $q2->where('periode_id', $id)))
+            ->where('is_finalized', true);
+        $this->scopeByFaculty($finalizedQuery);
+        $finalized = $finalizedQuery->count();
 
         return $this->success([
             'total' => $total,
@@ -291,6 +305,7 @@ class RekapNilaiController extends Controller
 
         $query = NilaiKkn::where('is_finalized', true)
             ->whereHas('kelompok', fn ($q) => $q->where('periode_id', $validated['periode_id']));
+        $this->scopeByFaculty($query);
 
         if (! empty($validated['ids'])) {
             $query->whereIn('id', $validated['ids']);
@@ -318,11 +333,12 @@ class RekapNilaiController extends Controller
     {
         $periodeId = $request->input('periode_id');
 
-        $scores = NilaiKkn::with(['user', 'kelompok.periode', 'kelompok.lokasi'])
+        $scoresQuery = NilaiKkn::with(['user', 'kelompok.periode', 'kelompok.lokasi'])
             ->when($periodeId, fn ($q, $id) => $q->whereHas('kelompok', fn ($q2) => $q2->where('periode_id', $id)))
             ->where('is_finalized', true)
-            ->orderBy('created_at')
-            ->get();
+            ->orderBy('created_at');
+        $this->scopeByFaculty($scoresQuery);
+        $scores = $scoresQuery->get();
 
         $periode = $periodeId
             ? Periode::find($periodeId)

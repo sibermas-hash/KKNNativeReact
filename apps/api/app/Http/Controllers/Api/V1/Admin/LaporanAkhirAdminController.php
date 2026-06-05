@@ -16,15 +16,42 @@ class LaporanAkhirAdminController extends Controller
 {
     use ApiResponse;
 
+    private function facultyScopeId(): ?int
+    {
+        $user = auth()->user();
+
+        return $user?->hasRole('faculty_admin') && $user->fakultas_id
+            ? (int) $user->fakultas_id
+            : null;
+    }
+
+    private function scopeByFaculty($query): void
+    {
+        if ($facultyId = $this->facultyScopeId()) {
+            $query->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
+        }
+    }
+
+    private function ensureReportInFacultyScope(LaporanAkhir $report): void
+    {
+        if ($facultyId = $this->facultyScopeId()) {
+            $report->loadMissing('mahasiswa');
+            abort_unless($report->mahasiswa?->fakultas_id === $facultyId, 403, 'Anda tidak memiliki akses ke laporan ini.');
+        }
+    }
+
     public function index(Request $request): JsonResponse
     {
         $query = LaporanAkhir::with(['mahasiswa.user', 'kelompok'])->when($request->input('kelompok_id'), fn ($q, $id) => $q->where('kelompok_id', $id))->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))->orderByDesc('submitted_at');
+
+        $this->scopeByFaculty($query);
 
         return $this->successCollection(LaporanAkhirResource::collection($query->paginate(25)));
     }
 
     public function show(LaporanAkhir $report): JsonResponse
     {
+        $this->ensureReportInFacultyScope($report);
         $report->load(['mahasiswa.user', 'kelompok']);
 
         return $this->success(new LaporanAkhirResource($report));
@@ -32,6 +59,7 @@ class LaporanAkhirAdminController extends Controller
 
     public function updateStatus(Request $request, LaporanAkhir $report): JsonResponse
     {
+        $this->ensureReportInFacultyScope($report);
         $request->validate(['status' => ['required', 'string', 'in:approved,revision'], 'review_notes' => ['nullable', 'string']]);
         $report->update(['status' => $request->input('status'), 'reviewed_by' => auth()->id(), 'reviewed_at' => now(), 'review_notes' => $request->input('review_notes')]);
 
@@ -40,6 +68,7 @@ class LaporanAkhirAdminController extends Controller
 
     public function download(Request $request, LaporanAkhir $report)
     {
+        $this->ensureReportInFacultyScope($report);
         $asset = $request->input('asset');
         $allowedPaths = collect([
             $report->file_path,

@@ -14,7 +14,7 @@ export function HeroTitle({ title, subtitle }: { title: string; subtitle?: React
         staggerChildren: 0.1,
       },
     },
-  };
+  } as const;
 
   const item = {
     hidden: { opacity: 0, y: 30, filter: 'blur(10px)' },
@@ -28,7 +28,7 @@ export function HeroTitle({ title, subtitle }: { title: string; subtitle?: React
         filter: { duration: 0.4, ease: 'easeOut' }
       } 
     },
-  };
+  } as const;
 
   return (
     <div className="flex flex-col items-center">

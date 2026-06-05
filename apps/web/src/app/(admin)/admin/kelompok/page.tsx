@@ -248,11 +248,15 @@ export default function AdminKelompokPage(): React.JSX.Element {
   const periodeName = periodItems.find((p) => String(p.id) === periodeId)?.name ?? initialPeriodeName;
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-start justify-between gap-3 flex-wrap">
+    <div className="space-y-6 p-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <div className="relative overflow-hidden rounded-3xl border border-cyan-100 bg-gradient-to-br from-cyan-50 via-white to-indigo-50 p-6 shadow-sm">
+        <div className="absolute -right-12 -top-12 h-40 w-40 rounded-full bg-cyan-200/30 blur-3xl" />
+        <div className="absolute -bottom-16 left-1/3 h-44 w-44 rounded-full bg-indigo-200/30 blur-3xl" />
+        <div className="relative flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-2xl font-black uppercase text-slate-900">Manajemen Kelompok KKN</h1>
-          <p className="text-sm text-slate-500">
+          <p className="mb-2 inline-flex rounded-full bg-cyan-100 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-cyan-700">Group Operations</p>
+          <h1 className="text-3xl font-black uppercase tracking-tight text-slate-900">Manajemen Kelompok KKN</h1>
+          <p className="mt-1 text-sm text-slate-600">
             {stats.totalGroups} kelompok • {stats.totalPeserta} peserta terplot
             {periodeName ? ` • ${periodeName}` : ''}
           </p>
@@ -262,28 +266,29 @@ export default function AdminKelompokPage(): React.JSX.Element {
           <button
             onClick={exportCsv}
             disabled={!stats.totalGroups}
-            className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm font-bold text-slate-700 disabled:opacity-50 flex items-center gap-2"
+            className="h-10 rounded-xl border border-slate-200 bg-white px-3 text-sm font-bold text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-300 hover:shadow-md disabled:opacity-50 flex items-center gap-2"
           >
             <Download className="h-4 w-4" /> Export CSV
           </button>
           {manualMode && (
-            <button onClick={() => setShowCreate(true)} className="h-10 rounded-lg bg-amber-600 px-4 text-sm font-bold text-white flex items-center gap-2">
+            <button onClick={() => setShowCreate(true)} className="h-10 rounded-xl bg-amber-600 px-4 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-amber-700 hover:shadow-lg flex items-center gap-2">
               <Plus className="h-4 w-4" /> Buat Kelompok Manual
             </button>
           )}
           <button
             onClick={() => fileRef.current?.click()}
             disabled={importing}
-            className="h-10 rounded-lg bg-cyan-600 px-4 text-sm font-bold text-white flex items-center gap-2 disabled:opacity-50"
+            className="h-10 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 px-4 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg flex items-center gap-2 disabled:opacity-50"
           >
             {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
             {importing ? 'Mengimport...' : 'Import Excel'}
           </button>
         </div>
+        </div>
       </div>
 
       {manualMode && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
           <b>Mode manual non-Reguler.</b> Terfilter otomatis sesuai jenis KKN dari tombol sebelumnya. Filter/kelola kelompok untuk jenis KKN ini di sistem Sibermas. Buat kelompok via Import Excel atau tombol tambah manual akan disiapkan di halaman ini.
           <div className="mt-3 flex flex-wrap gap-2">
             <button onClick={() => fileRef.current?.click()} className="rounded-lg bg-amber-700 px-3 py-2 text-xs font-bold text-white">Import Kelompok Manual</button>
@@ -320,7 +325,7 @@ export default function AdminKelompokPage(): React.JSX.Element {
                   setPage(1);
                 }}
                 className={
-                  'rounded-xl border p-3 text-left transition ' +
+                  'rounded-2xl border p-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ' +
                   (filterRegency === reg
                     ? 'border-cyan-500 bg-cyan-50 ring-2 ring-cyan-200'
                     : 'border-slate-200 bg-white hover:border-cyan-300')
@@ -338,7 +343,7 @@ export default function AdminKelompokPage(): React.JSX.Element {
       <div className="flex flex-wrap gap-3 items-center">
         <Filter className="h-4 w-4 text-slate-400" />
         <select
-          className="h-10 rounded-lg border px-3 text-sm min-w-72"
+          className="h-10 rounded-xl border border-slate-200 px-3 text-sm shadow-sm outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100 min-w-72"
           value={periodeId}
           onChange={(e) => {
             setPeriodeId(e.target.value);
@@ -355,7 +360,7 @@ export default function AdminKelompokPage(): React.JSX.Element {
           ))}
         </select>
         <select
-          className="h-10 rounded-lg border px-3 text-sm"
+          className="h-10 rounded-xl border border-slate-200 px-3 text-sm shadow-sm outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100"
           value={filterRegency}
           onChange={(e) => {
             setFilterRegency(e.target.value);
@@ -373,13 +378,13 @@ export default function AdminKelompokPage(): React.JSX.Element {
           <div className="relative flex-1">
             <Search className="h-4 w-4 absolute left-3 top-3 text-slate-400" />
             <input
-              className="h-10 w-full rounded-lg border pl-9 pr-3 text-sm"
+              className="h-10 w-full rounded-xl border border-slate-200 pl-9 pr-3 text-sm shadow-sm outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100"
               placeholder="Cari nama atau kode kelompok..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
           </div>
-          <button type="submit" className="h-10 rounded-lg bg-slate-900 px-4 text-sm font-bold text-white">
+          <button type="submit" className="h-10 rounded-xl bg-slate-900 px-4 text-sm font-bold text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
             Cari
           </button>
           {searchTerm && (
@@ -389,14 +394,14 @@ export default function AdminKelompokPage(): React.JSX.Element {
                 setSearchInput('');
                 setSearchTerm('');
               }}
-              className="h-10 rounded-lg border px-3 text-sm text-slate-600"
+              className="h-10 rounded-xl border border-slate-200 px-3 text-sm shadow-sm outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100 text-slate-600"
             >
               Reset
             </button>
           )}
         </form>
         <select
-          className="h-10 rounded-lg border px-3 text-sm"
+          className="h-10 rounded-xl border border-slate-200 px-3 text-sm shadow-sm outline-none transition focus:border-cyan-400 focus:ring-4 focus:ring-cyan-100"
           value={perPage}
           onChange={(e) => {
             setPerPage(Number(e.target.value));
@@ -409,15 +414,15 @@ export default function AdminKelompokPage(): React.JSX.Element {
         </select>
       </div>
 
-      <p className="text-xs text-slate-500 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2">
+      <p className="text-xs text-slate-600 rounded-2xl bg-amber-50 border border-amber-200 px-4 py-3 shadow-sm">
         💡 Format Excel: <code>kode_kelompok, nama_kelompok, desa, kecamatan, kabupaten, kapasitas</code>. Atau gunakan halaman <Link href="/admin/plotting-otomatis" className="font-bold underline">Plotting Otomatis</Link> untuk generate kelompok dari peserta KKN.
       </p>
 
       {/* Table */}
-      <div className="rounded-xl border bg-white overflow-hidden shadow-sm">
+      <div className="rounded-3xl border border-slate-200 bg-white overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
-            <thead className="bg-slate-50 text-left">
+            <thead className="bg-gradient-to-r from-slate-50 to-cyan-50 text-left">
               <tr className="border-b">
                 <th className="px-4 py-3 font-bold text-slate-600">Kelompok</th>
                 <th className="px-4 py-3 font-bold text-slate-600">Lokasi</th>
@@ -452,7 +457,7 @@ export default function AdminKelompokPage(): React.JSX.Element {
               {filtered.map((g) => {
                 const isPenuh = (g.peserta_count ?? 0) >= (g.capacity ?? 999);
                 return (
-                  <tr key={g.id} className="border-b hover:bg-slate-50">
+                  <tr key={g.id} className="border-b transition-colors hover:bg-cyan-50/40">
                     <td className="px-4 py-2">
                       <p className="font-bold text-slate-900">{g.nama_kelompok ?? '-'}</p>
                       <p className="text-xs text-slate-500 font-mono">{g.code ?? '-'}</p>
@@ -535,8 +540,8 @@ export default function AdminKelompokPage(): React.JSX.Element {
       </div>
 
       {showCreate && (
-        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4">
+        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 space-y-4 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
             <div className="flex items-center justify-between"><h2 className="font-black text-lg text-slate-900">Buat Kelompok Manual</h2><button onClick={() => setShowCreate(false)} className="rounded-lg p-1 hover:bg-slate-100"><X className="h-5 w-5" /></button></div>
             <form onSubmit={(e) => { e.preventDefault(); createMut.mutate(); }} className="space-y-3">
               <label className="block text-sm font-bold">Periode<select required className="mt-1 h-10 w-full rounded-lg border px-3" value={createForm.periode_id} onChange={(e) => { setCreateForm({ ...createForm, periode_id: e.target.value }); setPeriodeId(e.target.value); }}><option value="">Pilih periode</option>{periodItems.map((p) => <option key={p.id} value={p.id}>{p.name || p.periode || 'Periode #' + p.id}</option>)}</select></label>
@@ -551,8 +556,8 @@ export default function AdminKelompokPage(): React.JSX.Element {
 
       {/* Confirm delete modal */}
       {confirmId !== null && (
-        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4">
+        <div className="fixed inset-0 bg-slate-900/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-4 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
             <div>
               <h2 className="font-black text-lg text-rose-700">Hapus Kelompok</h2>
               <p className="text-sm text-slate-600 mt-1">
@@ -592,7 +597,7 @@ function StatCard({ label, value, color = 'slate' }: { label: string; value: num
       ? 'text-amber-700'
       : 'text-slate-900';
   return (
-    <div className="rounded-xl border bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-cyan-200 hover:shadow-md">
       <p className="text-xs uppercase text-slate-500 font-bold">{label}</p>
       <p className={'text-2xl font-black ' + cl}>{value.toLocaleString('id-ID')}</p>
     </div>

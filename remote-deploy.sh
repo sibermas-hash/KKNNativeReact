@@ -200,12 +200,12 @@ echo "  [i] Copying static & public to standalone..."
       (command -v ssh >/dev/null && ssh "${JAIL_PROXY_IP}" service nginx reload) || true
   else
     if [ -n "${SUDO_PASS:-}" ]; then
-      echo "$SUDO_PASS" | sudo -S service php-fpm reload 2>/dev/null || echo "$SUDO_PASS" | sudo -S service php-fpm restart || true
+      echo "$SUDO_PASS" | sudo -S service php-fpm restart 2>/dev/null || echo "$SUDO_PASS" | sudo -S service php_fpm restart || true
       restart_native_web || true
       restart_native_queue || true
       echo "$SUDO_PASS" | sudo -S service nginx reload 2>/dev/null || true
     else
-      service php-fpm reload 2>/dev/null || service php-fpm restart || true
+      service php-fpm restart 2>/dev/null || service php_fpm restart || true
       restart_native_web || true
       restart_native_queue || true
       service nginx reload 2>/dev/null || true

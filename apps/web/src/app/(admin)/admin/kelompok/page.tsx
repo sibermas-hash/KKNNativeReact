@@ -58,6 +58,15 @@ export default function AdminKelompokPage(): React.JSX.Element {
   const initialPeriodeName = (search?.get('periode_name') ?? '').trim();
   const jenisKey = (search?.get('jenis_kkn') ?? '').trim();
   const manualMode = search?.get('mode') === 'manual';
+  const manualLabelMap: Record<string, string> = {
+    nusantara: 'KKN Nusantara',
+    internasional: 'KKN Internasional',
+    tematik: 'KKN Tematik',
+    kolaborasi_ptkin: 'KKN Kolaborasi PTKIN',
+    responsif: 'KKN Responsif',
+    kampung_zakat_katana: 'KKN Kampung Zakat & Katana',
+  };
+  const manualLabel = manualLabelMap[jenisKey] ?? 'KKN Manual Non-Reguler';
 
   const [periodeId, setPeriodeId] = useState<string>(initialPeriodeId);
   const [page, setPage] = useState(1);
@@ -254,10 +263,10 @@ export default function AdminKelompokPage(): React.JSX.Element {
         <div className="absolute -bottom-16 left-1/3 h-44 w-44 rounded-full bg-indigo-200/30 blur-3xl" />
         <div className="relative flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <p className="mb-2 inline-flex rounded-full bg-cyan-100 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-cyan-700">Group Operations</p>
-          <h1 className="text-3xl font-black uppercase tracking-tight text-slate-900">Manajemen Kelompok KKN</h1>
+          <p className="mb-2 inline-flex rounded-full bg-cyan-100 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-cyan-700">{manualMode ? 'Manual Placement' : 'Group Operations'}</p>
+          <h1 className="text-3xl font-black uppercase tracking-tight text-slate-900">{manualMode ? manualLabel : 'Manajemen Kelompok KKN'}</h1>
           <p className="mt-1 text-sm text-slate-600">
-            {stats.totalGroups} kelompok • {stats.totalPeserta} peserta terplot
+            {manualMode ? 'Kelola kelompok manual, lokasi manual, peserta, import/export untuk jenis KKN ini.' : `${stats.totalGroups} kelompok • ${stats.totalPeserta} peserta terplot`}
             {periodeName ? ` • ${periodeName}` : ''}
           </p>
         </div>
@@ -289,10 +298,12 @@ export default function AdminKelompokPage(): React.JSX.Element {
 
       {manualMode && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300">
-          <b>Mode manual non-Reguler.</b> Terfilter otomatis sesuai jenis KKN dari tombol sebelumnya. Filter/kelola kelompok untuk jenis KKN ini di sistem Sibermas. Buat kelompok via Import Excel atau tombol tambah manual akan disiapkan di halaman ini.
+          <b>{manualLabel}.</b> Gunakan switch di Pusat Penempatan untuk pindah jenis KKN. Halaman ini sudah terfilter otomatis untuk jenis ini.
           <div className="mt-3 flex flex-wrap gap-2">
+            <Link href={`/admin/penempatan?mode=manual&jenis=${jenisKey}`} className="rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-bold text-amber-800">← Switch Jenis KKN</Link>
+            <button onClick={() => setShowCreate(true)} className="rounded-lg bg-amber-700 px-3 py-2 text-xs font-bold text-white">Buat Kelompok Manual</button>
             <button onClick={() => fileRef.current?.click()} className="rounded-lg bg-amber-700 px-3 py-2 text-xs font-bold text-white">Import Kelompok Manual</button>
-            <Link href={`/admin/dosen/penugasan?jenis_kkn=${jenisKey}`} className="rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-bold text-amber-800">Lanjut Assign DPL</Link>
+            <Link href={`/admin/dosen/penugasan?jenis_kkn=${jenisKey}&mode=manual`} className="rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs font-bold text-amber-800">Lanjut Assign DPL</Link>
           </div>
         </div>
       )}

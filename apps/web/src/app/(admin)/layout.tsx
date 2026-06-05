@@ -166,7 +166,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     router.replace('/');
   };
 
-  if (isLoading || !isAuthenticated || !user || !hasAdminRole) {
+  const isSuperadmin = roles.includes('superadmin');
+
+  if (isLoading || !isAuthenticated || !user || !hasAdminRole || (!isSuperadmin && isSystem)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent" />

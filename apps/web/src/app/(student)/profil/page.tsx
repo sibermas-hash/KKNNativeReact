@@ -71,6 +71,7 @@ interface ProfileHeaderProps {
   surfaceClass: SurfaceClass;
   isLecturer: boolean;
   profileComplete: boolean;
+  profileStatusKnown: boolean;
   isEditing: boolean;
   pendingRequest: ChangeRequest | null;
   onThemeChange: (key: string) => void;
@@ -154,7 +155,7 @@ const PROFILE_TUTORIAL_STEPS = [
     target: 'intro',
     placement: 'center',
     title: 'Selamat datang di Pusat Data Profil',
-    body: 'Halaman ini menjadi Pusat Informasi KKN. Pastikan data pribadi, kontak, alamat asli sesuai KTP, peta alamat KTP, dan foto formal sudah benar sebelum lanjut.',
+    body: 'Halaman ini menjadi Pusat Informasi KKN. Pastikan data pribadi, kontak, alamat tertulis sesuai KTP, dan foto formal sudah benar sebelum lanjut.',
   },
   {
     target: 'theme',
@@ -353,21 +354,21 @@ function StatusRow({ label, complete, subtitle, typography }: { label: string; c
   );
 }
 
-function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, surfaceClass, isLecturer, profileComplete, isEditing, pendingRequest, onThemeChange, onDashboard, onToggleEdit, onLogout }: ProfileHeaderProps) {
-  const dashboardDisabled = !profileComplete;
+function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, surfaceClass, isLecturer, profileComplete, profileStatusKnown, isEditing, pendingRequest, onThemeChange, onDashboard, onToggleEdit, onLogout }: ProfileHeaderProps) {
+  const dashboardDisabled = profileStatusKnown && !profileComplete;
 
   return (
-    <div ref={refTarget} className={cx('flex flex-col gap-4 rounded-xl p-4 sm:rounded-2xl sm:p-5 sm:flex-row sm:items-end sm:justify-between', 'border border-emerald-100 bg-white shadow-sm shadow-emerald-900/5')}>
+    <div ref={refTarget} className={cx('flex flex-col gap-4 p-4 sm:p-5 sm:flex-row sm:items-end sm:justify-between border border-[color:var(--profile-border)]', themeConfig.shadow, surfaceClass)} style={{ borderRadius: 'var(--profile-radius)' }}>
       <div className="space-y-1">
         <div className="flex items-center gap-2"><UserIcon size={16} className={accentTextClass} /><span className={`${typography.eyebrow} ${accentTextClass}`}>Pengaturan Akun</span></div>
         <h1 className={`${typography.heading} text-xl sm:text-2xl drop-shadow-sm`}>Pusat Data Profil</h1>
-        <p className={`max-w-xl text-xs sm:text-sm ${typography.body} ${mutedTextClass} drop-shadow-sm`}>{isLecturer ? 'Pastikan data kepegawaian dan kontak Anda valid untuk keperluan pembimbingan KKN.' : 'Lengkapi data pribadi, alamat asli sesuai KTP, peta alamat KTP, dan foto formal HD untuk kelancaran proses KKN.'}</p>
+        <p className={`max-w-xl text-xs sm:text-sm ${typography.body} ${mutedTextClass} drop-shadow-sm`}>{isLecturer ? 'Pastikan data kepegawaian dan kontak Anda valid untuk keperluan pembimbingan KKN.' : 'Lengkapi data pribadi, alamat tertulis sesuai KTP, dan foto formal HD untuk kelancaran proses KKN.'}</p>
       </div>
       <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:max-w-[34rem] sm:items-end sm:gap-3">
-        <div ref={themeRef} className={cx('flex flex-wrap justify-center rounded-xl p-1 shadow-inner', 'border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-300')} aria-label="Pilihan tema profil">
+        <div ref={themeRef} className={cx('flex flex-wrap justify-center rounded-xl p-1 shadow-inner', 'border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] text-[color:var(--profile-soft-text)]')} aria-label="Pilihan tema profil">
           {THEME_KEYS.map((key) => (
             <TooltipPrimitive.Root key={key}>
-              <TooltipPrimitive.Trigger asChild><button type="button" onClick={() => onThemeChange(key)} aria-label={`Pilih tema ${THEMES[key].label} - ${THEMES[key].strength}`} aria-pressed={theme === key} className={cx('group relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg transition-all duration-300', theme === key ? 'bg-emerald-700 text-white hover:bg-emerald-800 shadow-sm shadow-emerald-900/20' : 'opacity-70 hover:bg-white/25 hover:opacity-100')}><span className={`h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-gradient-to-br ${THEMES[key].preview} ring-1 ring-white/60 transition-transform group-hover:scale-125`} />{theme === key && <span className="absolute -bottom-0.5 h-1 w-4 rounded-full bg-white/80 shadow-[0_0_14px_rgba(255,255,255,0.8)]" />}</button></TooltipPrimitive.Trigger>
+              <TooltipPrimitive.Trigger asChild><button type="button" onClick={() => onThemeChange(key)} aria-label={`Pilih tema ${THEMES[key].label} - ${THEMES[key].strength}`} aria-pressed={theme === key} className={cx('group relative flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg transition-all duration-300', theme === key ? 'bg-[color:var(--profile-primary)] text-white shadow-sm shadow-black/10' : 'opacity-70 hover:bg-white/25 hover:opacity-100')}><span className={`h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-gradient-to-br ${THEMES[key].preview} ring-1 ring-white/60 transition-transform group-hover:scale-125`} />{theme === key && <span className="absolute -bottom-0.5 h-1 w-4 rounded-full bg-white/80 shadow-[0_0_14px_rgba(255,255,255,0.8)]" />}</button></TooltipPrimitive.Trigger>
               <TooltipPrimitive.Portal><TooltipPrimitive.Content side="bottom" align="center" sideOffset={10} className="z-50 max-w-56 rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-surface-strong)] px-3 py-2 text-left text-[color:var(--profile-text)] shadow-[0_18px_70px_-28px_rgba(0,0,0,0.7)] backdrop-blur-2xl backdrop-saturate-150"><p className={`${THEME_TYPOGRAPHY[key].meta} text-[color:var(--profile-text)]`}>{THEMES[key].label} - {THEMES[key].strength}</p><p className="mt-1 text-[11px] leading-4 text-[color:var(--profile-muted)]">{THEMES[key].description}</p><TooltipPrimitive.Arrow className="fill-[color:var(--profile-surface-strong)]" /></TooltipPrimitive.Content></TooltipPrimitive.Portal>
             </TooltipPrimitive.Root>
           ))}
@@ -378,13 +379,13 @@ function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, su
             onClick={onDashboard}
             disabled={dashboardDisabled}
             title={dashboardDisabled ? 'Dashboard aktif setelah biodata dan alamat KTP lengkap.' : 'Buka dashboard'}
-            className={cx('inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-center transition disabled:cursor-not-allowed disabled:opacity-55 sm:w-auto', typography.button, 'border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-300', dashboardDisabled && 'border border-dashed border-[color:var(--profile-border)]')}
+            className={cx('inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-center transition disabled:cursor-not-allowed disabled:opacity-55 sm:w-auto', typography.button, softClass, dashboardDisabled && 'border border-dashed border-[color:var(--profile-border)] opacity-50')}
           >
             <LayoutDashboard size={16} />
             Dashboard
           </button>
-          <button type="button" onClick={onToggleEdit} disabled={!!pendingRequest && profileComplete} className={cx('inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 disabled:opacity-50 sm:w-auto', typography.button, 'bg-emerald-700 text-white hover:bg-emerald-800 shadow-sm shadow-emerald-900/20')}><PencilLine size={16} />{isEditing ? 'Batal' : profileComplete ? 'Edit Profil' : 'Lengkapi Profil'}</button>
-          <button type="button" onClick={onLogout} aria-label="Keluar dari akun" title="Keluar" className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-rose-200 bg-white px-4 py-2 text-sm font-semibold text-rose-700 transition hover:bg-rose-50 sm:w-auto"><LogOut size={16} /><span>Keluar</span></button>
+          <button type="button" onClick={onToggleEdit} disabled={!!pendingRequest && profileComplete} className={cx('inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 disabled:opacity-50 sm:w-auto', typography.button, primaryClass)}><PencilLine size={16} />{isEditing ? 'Batal' : profileComplete ? 'Edit Profil' : 'Lengkapi Profil'}</button>
+
         </div>
         {dashboardDisabled && <p className={cx('text-left sm:text-right', typography.meta, mutedTextClass)}>Dashboard akan aktif setelah biodata dan alamat KTP lengkap.</p>}
       </div>
@@ -401,16 +402,16 @@ function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, l
 
   return (
     <div className="space-y-4 sm:space-y-5">
-      <div ref={avatarRef} className={cx('flex flex-col items-center gap-4 rounded-xl p-4 text-center sm:rounded-2xl sm:p-5', 'border border-emerald-100 bg-white shadow-sm shadow-emerald-900/5')}>
+      <div ref={avatarRef} className={cx('flex flex-col items-center gap-4 p-4 text-center sm:p-5 border border-[color:var(--profile-border)]', themeConfig.shadow, surfaceStrongClass)} style={{ borderRadius: 'var(--profile-radius)' }}>
         <button type="button" onClick={() => avatarInputRef.current?.click()} className="relative h-20 w-20 overflow-hidden rounded-full border-2 border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] sm:h-24 sm:w-24 transition-all duration-300 hover:scale-105 hover:shadow-xl">
           {user.avatar_url ? <img src={user.avatar_url} alt={user.name} className="h-full w-full object-cover" /> : <span className="flex h-full w-full flex-col items-center justify-center px-3 text-center text-[10px] font-black uppercase tracking-wider text-[color:var(--profile-soft-text)]"><Camera size={20} className="mb-1" />Foto Formal</span>}
           {avatarLoading && <span className="absolute inset-0 flex items-center justify-center bg-[color:var(--profile-surface)]/70"><RefreshCw className="animate-spin text-[color:var(--profile-accent)]" /></span>}
         </button>
         <div><p className={`${typography.label} text-[color:var(--profile-text)] drop-shadow-sm`}>{user.name}</p><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>{user.username}</p>{student?.nim && <p className={`${typography.meta} text-[color:var(--profile-muted)] flex items-center gap-1`}><Lock size={12} className="text-amber-500" /> NIM: {student.nim}</p>}{lecturer?.nip && <p className={`${typography.meta} text-[color:var(--profile-muted)] flex items-center gap-1`}><Lock size={12} className="text-amber-500" /> NIP: {lecturer.nip}</p>}</div>
         <div className="space-y-2">
-          <button type="button" onClick={() => avatarInputRef.current?.click()} className={cx('inline-flex items-center gap-2 rounded-lg px-3 py-2', typography.meta, 'border border-emerald-200 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 hover:border-emerald-300')}><Camera size={14} /><span className="whitespace-normal">Upload Foto Formal HD</span></button>
-          <div className={`${typography.meta} max-w-72 rounded-xl border border-amber-200 bg-amber-50 p-3 text-left text-amber-950`}>
-            <p className="font-black uppercase tracking-wide text-amber-900">Syarat Foto Profil</p>
+          <button type="button" onClick={() => avatarInputRef.current?.click()} className={cx('inline-flex items-center gap-2 rounded-lg px-3 py-2', typography.meta, SOFT_CLASS)}><Camera size={14} /><span className="whitespace-normal">Upload Foto Formal HD</span></button>
+          <div className={`${typography.meta} max-w-72 rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-warning)] p-3 text-left text-[color:var(--profile-warning-text)]`}>
+            <p className="font-black uppercase tracking-wide">Syarat Foto Profil</p>
             <p className="mt-1">Foto dipakai untuk sertifikat. Sistem akan menolak otomatis jika tidak sesuai.</p>
             <ul className="mt-2 list-disc space-y-1 pl-4">
               <li>Pas foto formal satu orang, wajah jelas menghadap kamera.</li>
@@ -418,14 +419,14 @@ function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, l
               <li>Wajib memakai jas almamater/blazer resmi kampus yang terlihat jelas.</li>
               <li>Komposisi kepala sampai dada/bahu, tidak selfie, tidak miring, tidak terpotong.</li>
               <li>Tidak memakai masker, kacamata hitam, filter, watermark, stiker, atau tulisan.</li>
-              <li>Rasio wajib 3:4 portrait. File JPG/PNG/WebP, minimal 300×400 px, maksimal 5 MB.</li>
+              <li>Rasio wajib 3:4 portrait. File JPG/PNG, minimal 300×400 px, maksimal 2 MB.</li>
             </ul>
             <div className="mt-3 grid gap-2 text-[10px] sm:grid-cols-2">
-              <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-2 text-emerald-900">
+              <div className="rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-2 text-[color:var(--profile-soft-text)]">
                 <p className="font-black">Contoh benar ✓</p>
                 <p>Ukuran 600×800 / 900×1200 px, background merah polos, jas almamater terlihat, wajah jelas, crop kepala–dada.</p>
               </div>
-              <div className="rounded-lg border border-rose-200 bg-rose-50 p-2 text-rose-900">
+              <div className="rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-danger)] p-2 text-[color:var(--profile-danger-text)]">
                 <p className="font-black">Contoh salah ✕</p>
                 <p>Selfie, twibbon/watermark, background kelas/rumah, tanpa jas almamater, foto ramai, blur/gelap.</p>
               </div>
@@ -435,32 +436,32 @@ function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, l
             <div className={cx(
               'rounded-lg border px-3 py-2 text-[11px] font-semibold',
               avatarNeedsManualReview
-                ? 'border-amber-300 bg-amber-50 text-amber-900'
-                : 'border-sky-300 bg-sky-50 text-sky-900',
+                ? 'border-[color:var(--profile-border)] bg-[color:var(--profile-warning)] text-[color:var(--profile-warning-text)]'
+                : 'border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] text-[color:var(--profile-soft-text)]',
             )}>
               Status foto: {avatarModerationReason || 'Sedang diverifikasi otomatis oleh sistem.'}
             </div>
           )}
           {avatarModerationStatus === 'approved' && user.avatar_url && (
-            <div className="rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-[11px] font-semibold text-emerald-900">
+            <div className="rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] px-3 py-2 text-[11px] font-semibold text-[color:var(--profile-soft-text)]">
               Status foto: Lolos verifikasi dan siap dipakai pada sertifikat.
             </div>
           )}
           {avatarModerationStatus === 'rejected' && (
-            <div className="rounded-lg border border-rose-300 bg-rose-50 px-3 py-2 text-[11px] font-semibold text-rose-900">
+            <div className="rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-danger)] px-3 py-2 text-[11px] font-semibold text-[color:var(--profile-danger-text)]">
               Status foto: Ditolak. {avatarModerationReason || 'Silakan upload ulang.'}
             </div>
           )}
         </div>
         <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={onAvatarChange} aria-label="Upload foto profil" title="Pilih file foto profil" />
       </div>
-      <div ref={statusRef} className={cx('space-y-4 rounded-xl p-4 sm:rounded-2xl sm:p-5', 'border border-emerald-100 bg-white shadow-sm shadow-emerald-900/5')}>
+      <div ref={statusRef} className={cx('space-y-4 p-4 sm:p-5 border border-[color:var(--profile-border)]', themeConfig.shadow, surfaceStrongClass)} style={{ borderRadius: 'var(--profile-radius)' }}>
         <h3 className={typography.label}>Informasi Status</h3>
         <StatusRow label="Biodata" typography={typography} complete={student?.biodata_complete ?? lecturer?.biodata_complete ?? true} subtitle={(student?.biodata_complete ?? lecturer?.biodata_complete) ? 'Telah lengkap' : 'Belum lengkap'} />
-        {isStudent && <StatusRow label="Alamat KTP" typography={typography} complete={!!student?.address_verified} subtitle={student?.address_verified ? 'Tervalidasi' : 'Belum verifikasi'} />}
+        {isStudent && <StatusRow label="Alamat KTP" typography={typography} complete={!!student?.address_complete} subtitle={student?.address_complete ? 'Alamat tertulis lengkap' : 'Belum lengkap'} />}
         {isStudent && <div className="grid grid-cols-3 gap-3 border-t border-[color:var(--profile-border)] pt-3"><div className="rounded-lg bg-[color:var(--profile-stat)] p-3 text-center transition-colors"><p className="text-lg font-bold text-[color:var(--profile-text)]">{student?.gpa ?? '-'}</p><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>IPK</p></div><div className="rounded-lg bg-[color:var(--profile-stat)] p-3 text-center transition-colors"><p className="text-lg font-bold text-[color:var(--profile-text)]">{student?.sks_completed ?? 0}</p><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>SKS</p></div><div className="rounded-lg bg-[color:var(--profile-stat)] p-3 text-center transition-colors"><p className={`text-sm font-bold ${(student as Record<string, unknown>)?.status_bta_ppi === 'LULUS' ? 'text-emerald-600' : 'text-amber-600'}`}>{((student as Record<string, unknown>)?.status_bta_ppi as string) ?? '-'}</p><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>Status BTA PPI</p></div></div>}
         <div className={`space-y-1 border-t border-[color:var(--profile-border)] pt-2 ${typography.meta} text-[color:var(--profile-muted)]`}><div className="flex items-center gap-1.5"><GraduationCap size={13} />{student?.faculty?.nama || lecturer?.faculty?.nama || user.faculty?.nama || 'Fakultas belum diatur'}</div>{student?.prodi?.nama && <div className="flex items-center gap-1.5"><IdCard size={13} />{student.prodi.nama}</div>}{lecturer?.jabatan && <div className="flex items-center gap-1.5 italic"><Medal size={13} />{lecturer.jabatan}</div>}</div>
-        {isLecturer && <div className="rounded-lg bg-[color:var(--profile-soft)] p-3 transition-colors"><div className="mb-2 flex items-center gap-2"><BadgeCheck size={14} className={accentTextClass} /><span className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--profile-soft-text)]">Kualifikasi DPL</span></div><div className="grid grid-cols-2 gap-2 text-center text-[10px] font-bold"><span className={lecturer?.is_cpns ? 'rounded bg-amber-100 px-2 py-1 text-amber-800' : 'rounded bg-emerald-100 px-2 py-1 text-emerald-800'}>{lecturer?.is_cpns ? 'CPNS' : 'PNS/TETAP'}</span><span className={lecturer?.is_tugas_belajar ? 'rounded bg-rose-100 px-2 py-1 text-rose-800' : 'rounded bg-blue-100 px-2 py-1 text-blue-800'}>{lecturer?.is_tugas_belajar ? 'TUGAS BELAJAR' : 'AKTIF'}</span></div></div>}
+        {isLecturer && <div className="rounded-lg bg-[color:var(--profile-soft)] p-3 transition-colors"><div className="mb-2 flex items-center gap-2"><BadgeCheck size={14} className={accentTextClass} /><span className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--profile-soft-text)]">Kualifikasi DPL</span></div><div className="grid grid-cols-2 gap-2 text-center text-[10px] font-bold"><span className={lecturer?.is_cpns ? 'rounded bg-[color:var(--profile-warning)] px-2 py-1 text-[color:var(--profile-warning-text)]' : 'rounded bg-[color:var(--profile-soft)] px-2 py-1 text-[color:var(--profile-soft-text)]'}>{lecturer?.is_cpns ? 'CPNS' : 'PNS/TETAP'}</span><span className={lecturer?.is_tugas_belajar ? 'rounded bg-[color:var(--profile-danger)] px-2 py-1 text-[color:var(--profile-danger-text)]' : 'rounded bg-blue-100/10 px-2 py-1 text-blue-700 dark:text-blue-300'}>{lecturer?.is_tugas_belajar ? 'TUGAS BELAJAR' : 'AKTIF'}</span></div></div>}
       </div>
     </div>
   );
@@ -471,16 +472,12 @@ function StudentAddressSection({ register, errors, isEditing, typography }: Stud
     <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5">
       <div className="space-y-1">
         <h2 className={`${typography.label} text-[color:var(--profile-text)]`}>Alamat Asli sesuai KTP</h2>
-        <p className={`${typography.meta} text-[color:var(--profile-muted)]`}>Isi alamat asli sesuai KTP, bukan alamat kos atau alamat tinggal sementara. Peta juga harus menunjuk lokasi alamat KTP tersebut.</p>
+        <p className={`${typography.meta} text-[color:var(--profile-muted)]`}>Isi alamat asli sesuai KTP, bukan alamat kos atau alamat tinggal sementara. Alamat tertulis ini menjadi acuan utama data profil.</p>
       </div>
       <TextArea label="Alamat Lengkap sesuai KTP" registration={register('address')} disabled={!isEditing} error={errors.address?.message} />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"><TextInput label="Desa/Kelurahan KTP" registration={register('address_village_name')} disabled={!isEditing} /><TextInput label="Kecamatan KTP" registration={register('address_district_name')} disabled={!isEditing} /><TextInput label="Kabupaten/Kota KTP" registration={register('address_regency_name')} disabled={!isEditing} /><TextInput label="Kode Pos KTP" registration={register('address_postal_code')} disabled={!isEditing} /></div>
-      <div className="rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)]">
-        <p className={`${typography.meta} text-[color:var(--profile-muted)]`}>Fitur peta dinonaktifkan sementara. Cukup isi alamat tertulis sesuai KTP, desa/kelurahan, kecamatan, kabupaten/kota, dan kode pos.</p>
-        <input type="hidden" {...register('address_lat', { valueAsNumber: true })} />
-        <input type="hidden" {...register('address_lng', { valueAsNumber: true })} />
-        <input type="hidden" {...register('address_verified')} value="true" />
-      </div>
+      <input type="hidden" {...register('address_lat', { valueAsNumber: true })} />
+      <input type="hidden" {...register('address_lng', { valueAsNumber: true })} />
     </section>
   );
 }
@@ -795,8 +792,8 @@ export default function ProfilePage(): React.JSX.Element {
       e.target.value = '';
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Ukuran foto maksimal 5 MB.');
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error('Ukuran foto maksimal 2 MB.');
       e.target.value = '';
       return;
     }
@@ -919,6 +916,7 @@ export default function ProfilePage(): React.JSX.Element {
         surfaceClass={surfaceClass}
         isLecturer={isLecturer}
         profileComplete={profileComplete}
+        profileStatusKnown={!!profileData}
         isEditing={isEditing}
         pendingRequest={pendingRequest}
         onThemeChange={changeTheme}
@@ -927,63 +925,63 @@ export default function ProfilePage(): React.JSX.Element {
         onLogout={handleLogout}
       />
 
-      {pendingRequest && profileComplete && <div className="rounded-xl border border-amber-300 bg-[color:var(--profile-warning)] p-4 text-sm text-[color:var(--profile-warning-text)] shadow-sm transition-colors duration-500">Permintaan perubahan profil sedang menunggu persetujuan admin.</div>}
-      {missingFields.length > 0 && <div className="flex gap-3 rounded-xl border border-amber-300 bg-[color:var(--profile-warning)] p-4 shadow-sm transition-colors duration-500"><AlertCircle size={18} className="mt-0.5 shrink-0 text-[color:var(--profile-warning-text)]" /><p className="text-sm text-[color:var(--profile-warning-text)]">Tahap awal wajib review dan melengkapi data berikut: <strong>{missingFields.map((f) => FIELD_LABELS[f] ?? f).join(', ')}</strong>. Pengisian awal disimpan langsung, edit setelah lengkap akan menunggu approval admin.</p></div>}
-
-      <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
-        <ProfileSidebar
-          avatarRef={setTutorialTargetRef('avatar')}
-          statusRef={setTutorialTargetRef('status')}
-          avatarInputRef={avatarInputRef}
-          user={user}
-          student={student}
-          lecturer={lecturer}
-          isStudent={isStudent}
-          isLecturer={isLecturer}
-          avatarLoading={avatarLoading}
-          typography={typography}
-          themeConfig={themeConfig}
-          surfaceStrongClass={surfaceStrongClass}
-          onAvatarChange={handleAvatarChange}
-        />
-
-        <div className="lg:col-span-2">
-          <form ref={setTutorialTargetRef('form')} onSubmit={handleSubmit(onSubmit, onSubmitInvalid)} className={cx('space-y-4 rounded-xl p-4 sm:space-y-6 sm:rounded-2xl sm:p-6', 'border border-emerald-100 bg-white shadow-sm shadow-emerald-900/5')}>
-            <section className="space-y-4">
-              <h2 className={`flex items-center gap-2 ${typography.label} text-[color:var(--profile-text)]`}><IdCard size={16} /> Data Pribadi & Kontak</h2>
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <TextInput label="Email Sistem" value={user.email ?? '-'} disabled />
-                <TextInput label="Nama Lengkap" registration={register('name')} disabled={!isEditing} error={errors.name?.message} />
-                <TextInput label="Nomor HP / WA" registration={register('phone')} disabled={!isEditing} error={errors.phone?.message} />
-                {isStudent && <TextInput label="NIK (KTP)" registration={register('nik')} disabled={!isEditing} error={errors.nik?.message} />}
-                {isLecturer && <TextInput label="NIP / NIDN" value={(lecturer?.nip as string) ?? '-'} disabled />}
-                {isStudent && <TextInput label="Nama Ibu Kandung" registration={register('mother_name')} disabled={!isEditing} error={errors.mother_name?.message} />}
-                {isStudent && <TextInput label="Tempat Lahir" registration={register('birth_place')} disabled={!isEditing} error={errors.birth_place?.message} />}
-                <TextInput label="Tanggal Lahir" type="date" registration={register('birth_date')} disabled={!isEditing} error={errors.birth_date?.message} />
-                <SelectInput label="Jenis Kelamin" registration={register('gender')} disabled={!isEditing} options={[['', 'Pilih'], ['L', 'Laki-laki'], ['P', 'Perempuan']]} error={errors.gender?.message} />
-                {isStudent && <SelectInput label="Ukuran Baju / Jaket" registration={register('shirt_size')} disabled={!isEditing} options={SHIRT_SIZE_OPTIONS} error={errors.shirt_size?.message} />}
-              </div>
-            </section>
-
-            {isExternalStudent && <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5"><h2 className={`flex items-center gap-2 ${typography.label} text-[color:var(--profile-text)]`}><GraduationCap size={16} /> Data Kampus Asal</h2><div className="grid grid-cols-1 gap-4 md:grid-cols-2"><TextInput label="NIM Asal" value={externalProfile?.external_nim ?? '-'} disabled /><TextInput label="Kampus Asal" value={externalProfile?.home_university ?? '-'} disabled /><TextInput label="Fakultas Asal" registration={register('external_faculty')} disabled={!isEditing} error={errors.external_faculty?.message} /><TextInput label="Prodi Asal" registration={register('external_study_program')} disabled={!isEditing} error={errors.external_study_program?.message} /></div><div className={`flex gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] transition-colors ${typography.meta}`}><Info size={18} className="shrink-0" />Jika data sudah terisi dari import, cukup cek. Jika kosong atau salah, lengkapi/perbaiki di sini.</div></section>}
-
-            {isStudent && <StudentAddressSection register={register} errors={errors} isEditing={isEditing} typography={typography} />}
-
-            {isLecturer && <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5"><h2 className={`${typography.label} text-[color:var(--profile-text)]`}>Data Kepegawaian, Keuangan & Pajak</h2><div className="grid grid-cols-1 gap-4 md:grid-cols-2"><TextInput label="Nama Bergelar" registration={register('nama_gelar')} disabled={!isEditing} /><TextInput label="NIDN" registration={register('nidn')} disabled={!isEditing} /><TextInput label="NIK Dosen" registration={register('dosen_nik')} disabled={!isEditing} /><TextInput label="Jabatan Fungsional" registration={register('jabatan')} disabled={!isEditing} /><TextInput label="Kelas Jabatan" registration={register('kelas_jabatan')} disabled={!isEditing} /><TextInput label="Tugas Tambahan" registration={register('tugas_tambahan')} disabled={!isEditing} /><TextInput label="Golongan" registration={register('golongan')} disabled={!isEditing} /><TextInput label="Pangkat" registration={register('pangkat')} disabled={!isEditing} /><TextArea label="Alamat Dosen" registration={register('dosen_alamat')} disabled={!isEditing} /><TextInput label="No. Rekening" registration={register('no_rekening')} disabled={!isEditing} /><TextInput label="Nama Bank" registration={register('nama_bank')} disabled={!isEditing} /><TextInput label="NPWP" registration={register('npwp')} disabled={!isEditing} /><TextInput label="Status Aktif" value={(lecturer?.status_aktif as string) ?? '-'} disabled /><TextInput label="Status Pegawai" value={(lecturer?.status_pegawai as string) ?? '-'} disabled /><TextInput label="Workshop DPL" value={lecturer?.has_workshop ? `Sudah (${(lecturer?.workshop_date as string) ?? '-'})` : 'Belum'} disabled /></div><div className={`flex gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] transition-colors ${typography.meta}`}><Info size={18} className="shrink-0" />Kolom yang tidak relevan untuk proses KKN seperti tanggal pensiun dan pendidikan terakhir tidak ditampilkan. Pengisian awal disimpan langsung; perubahan setelah profil lengkap menunggu persetujuan admin.</div></section>}
-
-            {isEditing && <button type="submit" disabled={isSubmitting || !isDirty || (!!pendingRequest && profileComplete)} className={cx('flex h-11 w-full items-center justify-center gap-2 rounded-lg px-6 disabled:opacity-50 sm:w-auto', typography.button, 'bg-emerald-700 text-white hover:bg-emerald-800 shadow-sm shadow-emerald-900/20')}>{isSubmitting ? 'Menyimpan...' : profileComplete ? 'Ajukan Perubahan' : 'Simpan & Lanjutkan'}<Save size={16} /></button>}
-          </form>
-
-          <div className="mt-4 sm:mt-6">
-            {/* NotificationPreferencesCard hidden — managed via admin dashboard */}
-            <TwoFactorCard />
-          </div>
-        </div>
-      </div>
-      </div>
-    </div>
-  );
-}
+      {pendingRequest && profileComplete && <div className="rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-warning)] p-4 text-sm text-[color:var(--profile-warning-text)] shadow-sm transition-colors duration-500">Permintaan perubahan profil sedang menunggu persetujuan admin.</div>}
+      {missingFields.length > 0 && <div className="flex gap-3 rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-warning)] p-4 shadow-sm transition-colors duration-500"><AlertCircle size={18} className="mt-0.5 shrink-0 text-[color:var(--profile-warning-text)]" /><p className="text-sm text-[color:var(--profile-warning-text)]">Tahap awal wajib review dan melengkapi data berikut: <strong>{missingFields.map((f) => FIELD_LABELS[f] ?? f).join(', ')}</strong>. Pengisian awal disimpan langsung, edit setelah lengkap akan menunggu approval admin.</p></div>}
+ 
+       <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
+         <ProfileSidebar
+           avatarRef={setTutorialTargetRef('avatar')}
+           statusRef={setTutorialTargetRef('status')}
+           avatarInputRef={avatarInputRef}
+           user={user}
+           student={student}
+           lecturer={lecturer}
+           isStudent={isStudent}
+           isLecturer={isLecturer}
+           avatarLoading={avatarLoading}
+           typography={typography}
+           themeConfig={themeConfig}
+           surfaceStrongClass={surfaceStrongClass}
+           onAvatarChange={handleAvatarChange}
+         />
+ 
+         <div className="lg:col-span-2">
+           <form ref={setTutorialTargetRef('form')} onSubmit={handleSubmit(onSubmit, onSubmitInvalid)} className={cx('space-y-4 p-4 sm:space-y-6 sm:p-6 border border-[color:var(--profile-border)]', themeConfig.shadow, surfaceClass)} style={{ borderRadius: 'var(--profile-radius)' }}>
+             <section className="space-y-4">
+               <h2 className={`flex items-center gap-2 ${typography.label} text-[color:var(--profile-text)]`}><IdCard size={16} /> Data Pribadi & Kontak</h2>
+               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                 <TextInput label="Email Sistem" value={user.email ?? '-'} disabled />
+                 <TextInput label="Nama Lengkap" registration={register('name')} disabled={!isEditing} error={errors.name?.message} />
+                 <TextInput label="Nomor HP / WA" registration={register('phone')} disabled={!isEditing} error={errors.phone?.message} />
+                 {isStudent && <TextInput label="NIK (KTP)" registration={register('nik')} disabled={!isEditing} error={errors.nik?.message} />}
+                 {isLecturer && <TextInput label="NIP / NIDN" value={(lecturer?.nip as string) ?? '-'} disabled />}
+                 {isStudent && <TextInput label="Nama Ibu Kandung" registration={register('mother_name')} disabled={!isEditing} error={errors.mother_name?.message} />}
+                 {isStudent && <TextInput label="Tempat Lahir" registration={register('birth_place')} disabled={!isEditing} error={errors.birth_place?.message} />}
+                 <TextInput label="Tanggal Lahir" type="date" registration={register('birth_date')} disabled={!isEditing} error={errors.birth_date?.message} />
+                 <SelectInput label="Jenis Kelamin" registration={register('gender')} disabled={!isEditing} options={[['', 'Pilih'], ['L', 'Laki-laki'], ['P', 'Perempuan']]} error={errors.gender?.message} />
+                 {isStudent && <SelectInput label="Ukuran Baju / Jaket" registration={register('shirt_size')} disabled={!isEditing} options={SHIRT_SIZE_OPTIONS} error={errors.shirt_size?.message} />}
+               </div>
+             </section>
+ 
+             {isExternalStudent && <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5"><h2 className={`flex items-center gap-2 ${typography.label} text-[color:var(--profile-text)]`}><GraduationCap size={16} /> Data Kampus Asal</h2><div className="grid grid-cols-1 gap-4 md:grid-cols-2"><TextInput label="NIM Asal" value={externalProfile?.external_nim ?? '-'} disabled /><TextInput label="Kampus Asal" value={externalProfile?.home_university ?? '-'} disabled /><TextInput label="Fakultas Asal" registration={register('external_faculty')} disabled={!isEditing} error={errors.external_faculty?.message} /><TextInput label="Prodi Asal" registration={register('external_study_program')} disabled={!isEditing} error={errors.external_study_program?.message} /></div><div className={`flex gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] transition-colors ${typography.meta}`}><Info size={18} className="shrink-0" />Jika data sudah terisi dari import, cukup cek. Jika kosong atau salah, lengkapi/perbaiki di sini.</div></section>}
+ 
+             {isStudent && <StudentAddressSection register={register} errors={errors} isEditing={isEditing} typography={typography} />}
+ 
+             {isLecturer && <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5"><h2 className={`${typography.label} text-[color:var(--profile-text)]`}>Data Kepegawaian, Keuangan & Pajak</h2><div className="grid grid-cols-1 gap-4 md:grid-cols-2"><TextInput label="Nama Bergelar" registration={register('nama_gelar')} disabled={!isEditing} /><TextInput label="NIDN" registration={register('nidn')} disabled={!isEditing} /><TextInput label="NIK Dosen" registration={register('dosen_nik')} disabled={!isEditing} /><TextInput label="Jabatan Fungsional" registration={register('jabatan')} disabled={!isEditing} /><TextInput label="Kelas Jabatan" registration={register('kelas_jabatan')} disabled={!isEditing} /><TextInput label="Tugas Tambahan" registration={register('tugas_tambahan')} disabled={!isEditing} /><TextInput label="Golongan" registration={register('golongan')} disabled={!isEditing} /><TextInput label="Pangkat" registration={register('pangkat')} disabled={!isEditing} /><TextArea label="Alamat Dosen" registration={register('dosen_alamat')} disabled={!isEditing} /><TextInput label="No. Rekening" registration={register('no_rekening')} disabled={!isEditing} /><TextInput label="Nama Bank" registration={register('nama_bank')} disabled={!isEditing} /><TextInput label="NPWP" registration={register('npwp')} disabled={!isEditing} /><TextInput label="Status Aktif" value={(lecturer?.status_aktif as string) ?? '-'} disabled /><TextInput label="Status Pegawai" value={(lecturer?.status_pegawai as string) ?? '-'} disabled /><TextInput label="Workshop DPL" value={lecturer?.has_workshop ? `Sudah (${(lecturer?.workshop_date as string) ?? '-'})` : 'Belum'} disabled /></div><div className={`flex gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] transition-colors ${typography.meta}`}><Info size={18} className="shrink-0" />Kolom yang tidak relevan untuk proses KKN seperti tanggal pensiun dan pendidikan terakhir tidak ditampilkan. Pengisian awal disimpan langsung; perubahan setelah profil lengkap menunggu persetujuan admin.</div></section>}
+ 
+             {isEditing && <button type="submit" disabled={isSubmitting || !isDirty || (!!pendingRequest && profileComplete)} className={cx('flex h-11 w-full items-center justify-center gap-2 rounded-lg px-6 disabled:opacity-50 sm:w-auto', typography.button, primaryClass)}>{isSubmitting ? 'Menyimpan...' : profileComplete ? 'Ajukan Perubahan' : 'Simpan & Lanjutkan'}<Save size={16} /></button>}
+           </form>
+ 
+           <div className="mt-4 sm:mt-6">
+             {/* NotificationPreferencesCard hidden — managed via admin dashboard */}
+             <TwoFactorCard />
+           </div>
+         </div>
+       </div>
+       </div>
+     </div>
+   );
+ }
 
 function TextInput({ label, registration, value, type = 'text', step, disabled, error }: { label: string; registration?: Record<string, unknown>; value?: string; type?: string; step?: string; disabled?: boolean; error?: string }) {
   return <div className="space-y-1.5"><label className="text-sm font-medium text-[color:var(--profile-text)]">{label}</label><input type={type} step={step} {...registration} value={registration ? undefined : value} disabled={disabled} className={cx('h-10 w-full rounded-lg border px-3 text-sm tracking-[-0.01em]', fieldClass)} />{error && <p className="text-xs text-rose-600">{error}</p>}</div>;

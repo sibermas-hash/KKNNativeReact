@@ -36,9 +36,11 @@ class DashboardController extends Controller
 
         $activePeriodId = $periodContextService->getActivePeriodId() ?? $periodContextService->getDefaultPeriodId();
 
-        $registration = PesertaKkn::query()
+        $registration = PesertaKkn::withoutGlobalScope('isolasi_periode')
             ->where('mahasiswa_id', $mahasiswa->id)
-            ->when($activePeriodId, fn ($q) => $q->where('periode_id', $activePeriodId))
+            // Jangan tampilkan "Belum Daftar" jika mahasiswa sudah punya peserta_kkn
+            // di periode lain. Prioritaskan periode aktif, fallback ke pendaftaran terbaru.
+            ->when($activePeriodId, fn ($q) => $q->orderByRaw('CASE WHEN periode_id = ? THEN 0 ELSE 1 END', [$activePeriodId]))
             ->with([
                 'periode.jenisKkn',
                 'kelompok.lokasi',
@@ -109,6 +111,7 @@ class DashboardController extends Controller
                     'jenis_code' => $registration->periode->jenisKkn?->code,
                     'jenis_color' => $registration->periode->jenisKkn?->color,
                     'jenis_description' => $registration->periode->jenisKkn?->description,
+                    'current_phase' => $registration->periode->current_phase,
                 ] : null,
                 'group' => $registration->kelompok ? [
                     'id' => $registration->kelompok->id,

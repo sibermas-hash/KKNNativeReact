@@ -56,6 +56,7 @@ export const THEMES: Record<string, ThemeDefinition> = {
       '--profile-font-heading': 'var(--font-display)',
       '--profile-heading-shadow': 'none',
       '--profile-text-shadow': 'none',
+      '--profile-radius': '1rem',
     } as ThemeVars,
   },
   /**
@@ -69,8 +70,8 @@ export const THEMES: Record<string, ThemeDefinition> = {
     frame: 'border',
     shadow: 'shadow-sm',
     backdrop: 'linear-gradient(135deg, #eef2ff 0%, #f0f9ff 50%, #f8fafc 100%)',
-    useGlassLayer: false,
-    useParticles: false,
+    useGlassLayer: true,
+    useParticles: true,
     vars: {
       '--profile-page': '#eef2ff',
       '--profile-text': '#1e1b4b',
@@ -95,6 +96,7 @@ export const THEMES: Record<string, ThemeDefinition> = {
       '--profile-font-heading': 'var(--font-display)',
       '--profile-heading-shadow': 'none',
       '--profile-text-shadow': 'none',
+      '--profile-radius': '1rem',
     } as ThemeVars,
   },
   /**
@@ -108,7 +110,7 @@ export const THEMES: Record<string, ThemeDefinition> = {
     frame: 'border',
     shadow: 'shadow-sm',
     backdrop: 'linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 50%, #fefce8 100%)',
-    useGlassLayer: false,
+    useGlassLayer: true,
     useParticles: false,
     vars: {
       '--profile-page': '#ecfdf5',
@@ -134,6 +136,7 @@ export const THEMES: Record<string, ThemeDefinition> = {
       '--profile-font-heading': 'var(--font-glass)',
       '--profile-heading-shadow': 'none',
       '--profile-text-shadow': 'none',
+      '--profile-radius': '1.5rem',
     } as ThemeVars,
   },
   /**
@@ -147,8 +150,8 @@ export const THEMES: Record<string, ThemeDefinition> = {
     frame: 'border',
     shadow: 'shadow-lg shadow-black/30',
     backdrop: '#0f172a',
-    useGlassLayer: false,
-    useParticles: false,
+    useGlassLayer: true,
+    useParticles: true,
     vars: {
       '--profile-page': '#0f172a',
       '--profile-text': '#e2e8f0',
@@ -173,6 +176,11 @@ export const THEMES: Record<string, ThemeDefinition> = {
       '--profile-font-heading': 'var(--font-display)',
       '--profile-heading-shadow': 'none',
       '--profile-text-shadow': 'none',
+      '--profile-radius': '0.625rem',
+      '--profile-glass-start': 'rgba(30,41,59,0.5)',
+      '--profile-glass-end': 'rgba(15,23,42,0.4)',
+      '--profile-glass-start-strong': 'rgba(22,32,50,0.6)',
+      '--profile-glass-end-strong': 'rgba(11,17,28,0.5)',
     } as ThemeVars,
   },
   /**
@@ -186,7 +194,7 @@ export const THEMES: Record<string, ThemeDefinition> = {
     frame: 'border',
     shadow: 'shadow-sm',
     backdrop: 'linear-gradient(135deg, #fff1f2 0%, #fdf2f8 50%, #fffbeb 100%)',
-    useGlassLayer: false,
+    useGlassLayer: true,
     useParticles: false,
     vars: {
       '--profile-page': '#fff1f2',
@@ -212,6 +220,7 @@ export const THEMES: Record<string, ThemeDefinition> = {
       '--profile-font-heading': 'var(--font-display)',
       '--profile-heading-shadow': 'none',
       '--profile-text-shadow': 'none',
+      '--profile-radius': '1.5rem',
     } as ThemeVars,
   },
 } as const;
@@ -274,14 +283,14 @@ export const GLASS_LAYER_CLASS = 'before:pointer-events-none before:absolute bef
 export function getSurfaceClass(useGlass: boolean) {
   const base = 'relative overflow-hidden bg-[color:var(--profile-surface)] text-[color:var(--profile-text)] transition-all duration-500 ease-out';
   return useGlass
-    ? `${base} bg-[linear-gradient(140deg,rgba(255,255,255,0.34),rgba(255,255,255,0.075)_24%,rgba(255,255,255,0.16)_68%,rgba(255,255,255,0.05))] backdrop-blur-3xl backdrop-saturate-200 ${GLASS_LAYER_CLASS}`
+    ? `${base} bg-[linear-gradient(140deg,var(--profile-glass-start,rgba(255,255,255,0.34)),var(--profile-glass-end,rgba(255,255,255,0.05)))] backdrop-blur-3xl backdrop-saturate-200 ${GLASS_LAYER_CLASS}`
     : base;
 }
 
 export function getSurfaceStrongClass(useGlass: boolean) {
   const base = 'relative overflow-hidden bg-[color:var(--profile-surface-strong)] text-[color:var(--profile-text)] transition-all duration-500 ease-out';
   return useGlass
-    ? `${base} bg-[linear-gradient(140deg,rgba(255,255,255,0.38),rgba(255,255,255,0.09)_28%,rgba(255,255,255,0.18)_68%,rgba(255,255,255,0.06))] backdrop-blur-3xl backdrop-saturate-200 ${GLASS_LAYER_CLASS}`
+    ? `${base} bg-[linear-gradient(140deg,var(--profile-glass-start-strong,rgba(255,255,255,0.38)),var(--profile-glass-end-strong,rgba(255,255,255,0.06)))] backdrop-blur-3xl backdrop-saturate-200 ${GLASS_LAYER_CLASS}`
     : base;
 }
 

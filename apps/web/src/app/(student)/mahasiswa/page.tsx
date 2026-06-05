@@ -67,15 +67,18 @@ export default function StudentDashboard(): React.JSX.Element {
   const dplName = ((group?.lecturer as Record<string, unknown>)?.name as string) || 'Belum Ditentukan';
   const leader = group?.leader as { name?: string; is_self?: boolean } | null | undefined;
   const leaderName = leader?.name ? (leader.is_self ? `${leader.name} (Anda)` : leader.name) : 'Sedang Ditentukan';
-  const periodName = (activePeriod?.name as string) || 'Periode KKN';
+  // Jika mahasiswa sudah punya pendaftaran, label periode harus ikut data pendaftaran
+  // supaya tidak campur dengan active/default period global.
+  const periodData = registration?.period as { name?: string; jenis?: string; jenis_code?: string; jenis_color?: string; current_phase?: string } | null | undefined;
+  const periodName = periodData?.name || (activePeriod?.name as string) || 'Periode KKN';
   // REGULER-005 fix: jenis KKN dari response dashboard (periode.jenis_*)
-  const periodData = registration?.period as { jenis?: string; jenis_code?: string; jenis_color?: string } | null | undefined;
   const jenisKknLabel = periodData?.jenis || '';
   const jenisKknCode = periodData?.jenis_code || '';
   // Audit F-13 fix: ambil dari backend SystemSetting (key `min_daily_reports`, default 30).
   const minLogbook = Number(data?.min_daily_reports) || 30;
   const phaseOrder = ['upcoming', 'registration', 'placement', 'execution', 'grading', 'finished'];
-  const rawPhaseRank = phaseOrder.indexOf(String(currentPhase || activePeriod?.current_phase || 'upcoming'));
+  const effectivePhase = periodData?.current_phase || currentPhase || activePeriod?.current_phase || 'upcoming';
+  const rawPhaseRank = phaseOrder.indexOf(String(effectivePhase));
   const phaseRank = rawPhaseRank >= 0 ? rawPhaseRank : 0;
   const isPhaseAtLeast = (phase: string) => phaseRank >= phaseOrder.indexOf(phase);
   const dashboardNavItems = [
@@ -177,21 +180,34 @@ export default function StudentDashboard(): React.JSX.Element {
               <div className="bg-[color:var(--profile-soft)] rounded-lg p-5 border text-left space-y-4">
                 {isApproved ? (
                   <>
-                    <div className="flex gap-3">
-                      <MapPin size={16} className="text-[color:var(--profile-primary)] shrink-0" />
-                      <div>
-                        <p className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase">Lokasi Penempatan</p>
-                        <p className="text-sm font-bold text-[color:var(--profile-text)]">{groupLocation}</p>
-                        <p className="text-xs text-[color:var(--profile-muted)] font-medium">{groupName}</p>
+                    {group ? (
+                      <>
+                        <div className="flex gap-3">
+                          <MapPin size={16} className="text-[color:var(--profile-primary)] shrink-0" />
+                          <div>
+                            <p className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase">Lokasi Penempatan</p>
+                            <p className="text-sm font-bold text-[color:var(--profile-text)]">{groupLocation}</p>
+                            <p className="text-xs text-[color:var(--profile-muted)] font-medium">{groupName}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-3">
+                          <Users size={16} className="text-[color:var(--profile-primary)] shrink-0" />
+                          <div>
+                            <p className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase">Dosen Pembimbing</p>
+                            <p className="text-sm font-bold text-[color:var(--profile-text)]">{dplName}</p>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex gap-3">
+                        <Users size={16} className="text-[color:var(--profile-primary)] shrink-0" />
+                        <div>
+                          <p className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase">Status Penempatan</p>
+                          <p className="text-sm font-bold text-[color:var(--profile-text)]">Menunggu Plotting Kelompok</p>
+                          <p className="text-xs text-[color:var(--profile-muted)] font-medium">Kelompok, lokasi, dan DPL akan muncul setelah ditetapkan panitia.</p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex gap-3">
-                      <Users size={16} className="text-[color:var(--profile-primary)] shrink-0" />
-                      <div>
-                        <p className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase">Dosen Pembimbing</p>
-                        <p className="text-sm font-bold text-[color:var(--profile-text)]">{dplName}</p>
-                      </div>
-                    </div>
+                    )}
                   </>
                 ) : (
                   <div>
@@ -255,7 +271,7 @@ export default function StudentDashboard(): React.JSX.Element {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[color:var(--profile-border)] pb-6">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <div className="h-2 w-2 rounded-full bg-[color:var(--profile-soft)]0 animate-pulse" />
+              <div className="h-2 w-2 rounded-full bg-[color:var(--profile-primary)] animate-pulse" />
               <span className="text-[10px] font-black text-[color:var(--profile-soft-text)] uppercase tracking-[0.2em]">Sistem Informasi KKN</span>
             </div>
             <h1 className="text-2xl font-black text-[color:var(--profile-text)] tracking-tight">
@@ -366,7 +382,7 @@ export default function StudentDashboard(): React.JSX.Element {
                   </div>
                   <Link
                     href={registration ? '/mahasiswa/cek-pendaftaran' : '/mahasiswa/pendaftaran'}
-                    className="inline-flex h-12 px-8 bg-[color:var(--profile-primary)] hover:bg-[color:var(--profile-soft)]0 text-white rounded-lg text-xs font-black uppercase tracking-widest transition-all items-center gap-3 active:scale-95 shadow-lg shadow-black/10"
+                    className="inline-flex h-12 px-8 bg-[color:var(--profile-primary)] hover:opacity-90 text-white rounded-lg text-xs font-black uppercase tracking-widest transition-all items-center gap-3 active:scale-95 shadow-lg shadow-black/10"
                   >
                     {registration ? 'Cek Detail Status' : 'Mulai Pendaftaran'} <ArrowRight size={16} />
                   </Link>
@@ -421,7 +437,9 @@ export default function StudentDashboard(): React.JSX.Element {
               </h3>
               {!showKknTools ? (
                 <div className="rounded-lg border border-amber-100 bg-amber-50 p-4 text-xs font-semibold text-amber-800">
-                  Fitur KKN seperti Logbook, Program Kerja, Posko, Laporan Akhir, dan Sertifikat akan dibuka setelah pendaftaran disetujui dan fase sesuai.
+                  {isAwaitingPlacement
+                    ? 'Pendaftaran sudah disetujui. Fitur KKN dibuka bertahap setelah plotting kelompok dan fase kegiatan sesuai.'
+                    : 'Fitur KKN seperti Logbook, Program Kerja, Posko, Laporan Akhir, dan Sertifikat akan dibuka setelah pendaftaran disetujui dan fase sesuai.'}
                   <div className="mt-3 flex flex-wrap gap-2">
                     <Link href={registration ? '/mahasiswa/cek-pendaftaran' : '/mahasiswa/pendaftaran'} className="rounded-lg bg-amber-600 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-white hover:bg-amber-700">{registration ? 'Cek Status' : 'Daftar KKN'}</Link>
                     <Link href="/profil" className="rounded-lg bg-[color:var(--profile-surface)] px-3 py-2 text-[10px] font-black uppercase tracking-wider text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100">Lengkapi Profil</Link>
@@ -470,7 +488,7 @@ export default function StudentDashboard(): React.JSX.Element {
               <ul className="space-y-4">
                 <li className="flex gap-3">
                   <div className="h-5 w-5 bg-[color:var(--profile-primary)] text-white rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold">1</div>
-                  <p className="text-xs font-semibold text-[color:var(--profile-text)] leading-relaxed">Pastikan Logbook diisi setiap hari paling lambat pukul 23:59 WIB.</p>
+                  <p className="text-xs font-semibold text-[color:var(--profile-text)] leading-relaxed">{isPhaseAtLeast('execution') ? 'Pastikan Logbook diisi setiap hari paling lambat pukul 23:59 WIB.' : 'Logbook dibuka saat fase pelaksanaan KKN.'}</p>
                 </li>
                 <li className="flex gap-3">
                   <div className="h-5 w-5 bg-[color:var(--profile-primary)] text-white rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold">2</div>

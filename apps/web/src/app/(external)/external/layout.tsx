@@ -15,15 +15,25 @@ const items = [
 ];
 
 export default function ExternalLayout({ children }: { children: React.ReactNode }) {
-  const { user, clearUser } = useAuthStore();
+  const { user, isAuthenticated, isLoading, clearUser, fetchUser } = useAuthStore();
   const router = useRouter();
   const pathname = usePathname();
   useEffect(() => {
+    if (isLoading) return;
+    if (!isAuthenticated) {
+      void fetchUser(true).then((result) => {
+        if (result !== 'authenticated') router.replace(`/login?redirect=${encodeURIComponent(pathname ?? '/external/dashboard')}`);
+      });
+      return;
+    }
     if (user && !user.roles?.includes('external_lppm_admin')) {
       router.replace(dashboardPathForRoles(user.roles ?? []));
     }
-  }, [user, router]);
+  }, [isLoading, isAuthenticated, user, router, pathname, fetchUser]);
   const logout = async () => { try { await api.post('/auth/logout'); } catch {} clearUser(); router.replace('/login'); };
+  if (isLoading || !isAuthenticated || !user || !user.roles?.includes('external_lppm_admin')) {
+    return <div className="flex min-h-screen items-center justify-center bg-slate-50"><div className="h-8 w-8 animate-spin rounded-full border-4 border-cyan-500 border-t-transparent" /></div>;
+  }
   return <div className="min-h-screen bg-[color:var(--profile-bg)] text-[color:var(--profile-text)] flex">
     <aside className="w-64 border-r border-[color:var(--profile-border)] bg-[color:var(--profile-surface)] p-4 hidden md:block">
       <div className="font-black text-lg mb-6">External LPPM</div>

@@ -54,7 +54,10 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const { data: dashboardData } = useQuery<Record<string, unknown> | null>({
     queryKey: QUERY_KEYS.student.dashboard,
     queryFn: () => studentApi.dashboard() as unknown as Promise<Record<string, unknown> | null>,
-    enabled: isAuthenticated && !!user?.roles?.includes('student') && !isProfilePage,
+    enabled: isAuthenticated && !!user?.roles?.includes('student'),
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
   const registration = dashboardData?.registration as { status?: string; group?: unknown; period?: { name?: string; current_phase?: string } | null } | null | undefined;
   const headerPeriodName = registration?.period?.name || activePeriod?.name || 'SIBERMAS';

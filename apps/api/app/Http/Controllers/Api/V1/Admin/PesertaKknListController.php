@@ -17,6 +17,22 @@ class PesertaKknListController extends Controller
 {
     use ApiResponse;
 
+    private function facultyScopeId(): ?int
+    {
+        $user = auth()->user();
+
+        return $user?->hasRole('faculty_admin') && $user->fakultas_id
+            ? (int) $user->fakultas_id
+            : null;
+    }
+
+    private function scopeByFaculty($query): void
+    {
+        if ($facultyId = $this->facultyScopeId()) {
+            $query->whereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $facultyId));
+        }
+    }
+
     /**
      * List peserta KKN final (approved, interview_passed, completed).
      */
@@ -39,6 +55,8 @@ class PesertaKknListController extends Controller
             ->when($request->input('fakultas_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $id)))
             ->when($request->input('prodi_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('prodi_id', $id)))
             ->orderBy('id');
+
+        $this->scopeByFaculty($query);
 
         $paginated = $query->paginate($request->integer('per_page', 25));
 
@@ -63,6 +81,8 @@ class PesertaKknListController extends Controller
             ->when($request->input('prodi_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('prodi_id', $id)))
             ->orderBy('id')
             ->limit(min($request->integer('limit', 50000), 50000));
+
+        $this->scopeByFaculty($query);
 
         $rows = $query->get()->map(fn (PesertaKkn $p) => [
             'registration_id' => $p->id,

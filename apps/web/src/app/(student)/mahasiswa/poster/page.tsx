@@ -5,11 +5,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentApi } from '@/lib/api';
 import Link from 'next/link';
 import { Upload, FileImage, FileText, AlertCircle, CheckCircle, ArrowLeft, Image as ImageIcon, ExternalLink } from 'lucide-react';
+import { useTheme } from '@/components/ui/theme-provider';
+import { PRIMARY_CLASS, SOFT_CLASS } from '@/lib/theme-config';
 
 export default function StudentPosterPage(): React.JSX.Element {
   const qc = useQueryClient();
   const [file, setFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const { config: themeConfig, surfaceClass } = useTheme();
 
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'poster'],
@@ -50,7 +53,7 @@ export default function StudentPosterPage(): React.JSX.Element {
   if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-10 space-y-4">
-        {[1, 2].map((i) => <div key={i} className="h-32 animate-pulse rounded-2xl bg-slate-200" />)}
+        {[1, 2].map((i) => <div key={i} className="h-32 animate-pulse rounded-2xl bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)]" />)}
       </div>
     );
   }
@@ -61,18 +64,21 @@ export default function StudentPosterPage(): React.JSX.Element {
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+      <div 
+        className={`${surfaceClass} border border-[color:var(--profile-border)] ${themeConfig.shadow} p-6`}
+        style={{ borderRadius: 'var(--profile-radius)' }}
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="h-12 w-12 bg-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
+            <div className="h-12 w-12 bg-[color:var(--profile-primary)] rounded-2xl flex items-center justify-center text-white shadow-lg">
               <ImageIcon size={24} />
             </div>
             <div>
-              <h1 className="text-xl font-black text-slate-900 tracking-tight">Poster Peta Potensi Desa</h1>
-              <p className="text-xs text-slate-400">Sesuai Lampiran 10 Panduan KKN</p>
+              <h1 className="text-xl font-black text-[color:var(--profile-text)] tracking-tight">Poster Peta Potensi Desa</h1>
+              <p className="text-xs text-[color:var(--profile-muted)] font-medium">Sesuai Lampiran 10 Panduan KKN</p>
             </div>
           </div>
-          <Link href="/mahasiswa" className="flex items-center gap-2 text-xs font-bold text-slate-500 hover:text-emerald-700 transition-colors">
+          <Link href="/mahasiswa" className="flex items-center gap-2 text-xs font-bold text-[color:var(--profile-muted)] hover:text-[color:var(--profile-primary)] transition-colors">
             <ArrowLeft size={14} /> Dashboard
           </Link>
         </div>
@@ -80,21 +86,24 @@ export default function StudentPosterPage(): React.JSX.Element {
 
       {/* Existing Poster */}
       {existing?.poster_potensi_desa_path && (
-        <div className="bg-white rounded-2xl border border-emerald-100 shadow-sm p-6">
+        <div 
+          className={`${surfaceClass} border border-[color:var(--profile-border)] ${themeConfig.shadow} p-6`}
+          style={{ borderRadius: 'var(--profile-radius)' }}
+        >
           <div className="flex items-start gap-4">
-            <div className="h-10 w-10 bg-emerald-50 rounded-xl flex items-center justify-center text-emerald-600 shrink-0">
+            <div className="h-10 w-10 bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] rounded-xl flex items-center justify-center text-[color:var(--profile-primary)] shrink-0">
               <CheckCircle size={20} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-black text-slate-900">Poster Sudah Diunggah</p>
-              <p className="text-xs text-slate-500 mt-0.5 truncate">{existing.poster_potensi_desa_name}</p>
+              <p className="text-sm font-black text-[color:var(--profile-text)]">Poster Sudah Diunggah</p>
+              <p className="text-xs text-[color:var(--profile-muted)] font-medium mt-0.5 truncate">{existing.poster_potensi_desa_name}</p>
             </div>
             {existing.poster_potensi_desa_name && isImage(existing.poster_potensi_desa_name) ? (
               <a
                 href={posterUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-black hover:bg-emerald-700 transition-colors shrink-0"
+                className={`flex items-center gap-1.5 px-4 py-2 text-white rounded-xl text-xs font-black shrink-0 ${PRIMARY_CLASS}`}
               >
                 <ExternalLink size={12} /> Lihat
               </a>
@@ -102,7 +111,7 @@ export default function StudentPosterPage(): React.JSX.Element {
               <a
                 href={posterUrl}
                 download
-                className="flex items-center gap-1.5 px-4 py-2 bg-slate-700 text-white rounded-xl text-xs font-black hover:bg-slate-800 transition-colors shrink-0"
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black shrink-0 border ${SOFT_CLASS}`}
               >
                 <FileText size={12} /> Unduh
               </a>
@@ -112,18 +121,21 @@ export default function StudentPosterPage(): React.JSX.Element {
       )}
 
       {/* Upload Form */}
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
+      <div 
+        className={`${surfaceClass} border border-[color:var(--profile-border)] ${themeConfig.shadow} p-6 space-y-5`}
+        style={{ borderRadius: 'var(--profile-radius)' }}
+      >
         <div className="flex items-center gap-2">
-          <Upload size={16} className="text-slate-400" />
-          <h2 className="text-sm font-black text-slate-700 uppercase tracking-wider">
+          <Upload size={16} className="text-[color:var(--profile-muted)]" />
+          <h2 className="text-sm font-black text-[color:var(--profile-text)] uppercase tracking-wider">
             {existing?.poster_potensi_desa_path ? 'Ganti Poster' : 'Upload Poster'}
           </h2>
         </div>
 
         {/* Info */}
-        <div className="flex items-start gap-3 p-4 bg-amber-50 rounded-xl border border-amber-100">
-          <AlertCircle size={16} className="text-amber-600 shrink-0 mt-0.5" />
-          <div className="text-xs text-amber-700 space-y-1">
+        <div className="flex items-start gap-3 p-4 bg-[color:var(--profile-warning)] rounded-xl border border-[color:var(--profile-border)]">
+          <AlertCircle size={16} className="text-[color:var(--profile-warning-text)] shrink-0 mt-0.5" />
+          <div className="text-xs text-[color:var(--profile-warning-text)] space-y-1 font-medium">
             <p className="font-bold">Format yang diterima: {poster?.allowed_types?.join(', ') || 'JPG, PNG, PDF'}</p>
             <p>Ukuran maksimal: {(poster as Record<string, unknown>)?.max_size_mb ? `${(poster as Record<string, unknown>).max_size_mb}MB` : '5MB'}</p>
           </div>
@@ -132,7 +144,9 @@ export default function StudentPosterPage(): React.JSX.Element {
         {/* Drop Zone */}
         <label
           className={`flex flex-col items-center justify-center gap-3 w-full rounded-2xl border-2 border-dashed px-6 py-10 cursor-pointer transition-all ${
-            dragOver ? 'border-emerald-400 bg-emerald-50' : 'border-slate-200 hover:border-emerald-300 hover:bg-emerald-50/30'
+            dragOver 
+              ? 'border-[color:var(--profile-primary)] bg-[color:var(--profile-soft)]' 
+              : 'border-[color:var(--profile-border)] hover:border-[color:var(--profile-primary)] hover:bg-[color:var(--profile-soft)]/30'
           }`}
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
@@ -141,18 +155,18 @@ export default function StudentPosterPage(): React.JSX.Element {
           {file ? (
             <>
               {file.type.startsWith('image/') ? (
-                <FileImage size={36} className="text-emerald-500" />
+                <FileImage size={36} className="text-[color:var(--profile-primary)]" />
               ) : (
-                <FileText size={36} className="text-emerald-500" />
+                <FileText size={36} className="text-[color:var(--profile-primary)]" />
               )}
-              <p className="text-sm font-bold text-slate-700 text-center">{file.name}</p>
-              <p className="text-xs text-slate-400">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+              <p className="text-sm font-bold text-[color:var(--profile-text)] text-center">{file.name}</p>
+              <p className="text-xs text-[color:var(--profile-muted)] font-medium">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
             </>
           ) : (
             <>
-              <Upload size={36} className="text-slate-300" />
-              <p className="text-sm font-bold text-slate-500">Drag & drop atau klik untuk pilih file</p>
-              <p className="text-xs text-slate-400">Poster peta potensi desa kelompok</p>
+              <Upload size={36} className="text-[color:var(--profile-muted)] opacity-70" />
+              <p className="text-sm font-bold text-[color:var(--profile-text)] opacity-80">Drag & drop atau klik untuk pilih file</p>
+              <p className="text-xs text-[color:var(--profile-muted)] font-medium">Poster peta potensi desa kelompok</p>
             </>
           )}
           <input
@@ -174,7 +188,7 @@ export default function StudentPosterPage(): React.JSX.Element {
             type="button"
             disabled={!file || mutation.isPending}
             onClick={() => mutation.mutate()}
-            className="flex items-center gap-2 px-8 py-3 bg-emerald-600 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-emerald-700 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-200"
+            className={`flex items-center gap-2 px-8 py-3 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed ${PRIMARY_CLASS}`}
           >
             {mutation.isPending ? (
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -188,3 +202,4 @@ export default function StudentPosterPage(): React.JSX.Element {
     </div>
   );
 }
+

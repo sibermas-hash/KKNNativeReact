@@ -21,6 +21,30 @@ class RekapNilaiController extends Controller
 {
     use ApiResponse;
 
+    private function facultyScopeId(): ?int
+    {
+        $user = auth()->user();
+
+        return $user?->hasRole('faculty_admin') && $user->fakultas_id
+            ? (int) $user->fakultas_id
+            : null;
+    }
+
+    private function scopeByFaculty($query): void
+    {
+        if ($facultyId = $this->facultyScopeId()) {
+            $query->whereHas('user.mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
+        }
+    }
+
+    private function ensureScoreInFacultyScope(NilaiKkn $score): void
+    {
+        if ($facultyId = $this->facultyScopeId()) {
+            $score->loadMissing('user.mahasiswa');
+            abort_unless($score->user?->mahasiswa?->fakultas_id === $facultyId, 403, 'Anda tidak memiliki akses ke nilai ini.');
+        }
+    }
+
     public function index(Request $request): JsonResponse
     {
         $query = NilaiKkn::with(['user', 'kelompok.periode'])->when($request->input('periode_id'), fn ($q, $id) => $q->whereHas('kelompok', fn ($q2) => $q2->where('periode_id', $id)))->when($request->input('kelompok_id'), fn ($q, $id) => $q->where('kelompok_id', $id))->orderByDesc('created_at');

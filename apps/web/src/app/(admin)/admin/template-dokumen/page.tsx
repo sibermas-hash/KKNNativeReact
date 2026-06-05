@@ -5,7 +5,7 @@ import { rawApi } from '@/lib/api';
 import { PageHeader } from '@/components/ui/shared';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Upload, Download, Trash2, FileText, Search, AlertTriangle, Pencil, ShieldCheck } from 'lucide-react';
+import { Upload, Download, Trash2, FileText, Search, AlertTriangle, Pencil, ShieldCheck, Archive, Clock, Sparkles } from 'lucide-react';
 
 interface TemplateItem {
   id: number;
@@ -128,8 +128,11 @@ export default function TemplateDokumenPage(): React.JSX.Element {
     : allTemplates;
 
   const suggestedKeys = [...new Set([...Object.keys(DOCUMENT_KEY_LABELS), ...allTemplates.map(t => t.document_key)])];
+  const usedTemplates = allTemplates.filter(t => !(t.is_deletable ?? true)).length;
+  const totalSize = allTemplates.reduce((sum, t) => sum + (t.file_size ?? 0), 0);
+  const categories = new Set(allTemplates.map(t => t.document_key)).size;
 
-  const INPUT = 'h-11 w-full rounded-xl border border-slate-200 px-4 text-sm font-medium text-slate-800 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none';
+  const INPUT = 'h-11 w-full rounded-xl border border-slate-200/80 bg-white/90 px-4 text-sm font-medium text-slate-800 shadow-sm outline-none transition focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100';
 
   return (
     <div className="space-y-6">
@@ -138,10 +141,35 @@ export default function TemplateDokumenPage(): React.JSX.Element {
         subtitle="Kelola template surat dan dokumen KKN. Upload file baru atau unduh template yang sudah ada."
       />
 
+      <div className="grid gap-4 md:grid-cols-4">
+        {[
+          { label: 'Total Template', value: allTemplates.length, icon: FileText, tone: 'from-cyan-500 to-blue-600' },
+          { label: 'Kategori', value: categories, icon: Archive, tone: 'from-violet-500 to-fuchsia-600' },
+          { label: 'Sedang Dipakai', value: usedTemplates, icon: ShieldCheck, tone: 'from-amber-500 to-orange-600' },
+          { label: 'Total Ukuran', value: formatFileSize(totalSize), icon: Clock, tone: 'from-emerald-500 to-teal-600' },
+        ].map(stat => (
+          <div key={stat.label} className="group overflow-hidden rounded-2xl border border-white/70 bg-white/90 p-4 shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-0.5 hover:shadow-lg">
+            <div className={`mb-3 inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${stat.tone} text-white shadow-lg shadow-slate-200`}>
+              <stat.icon size={18} />
+            </div>
+            <p className="text-[11px] font-black uppercase tracking-[0.18em] text-slate-400">{stat.label}</p>
+            <p className="mt-1 text-2xl font-black text-slate-900">{stat.value}</p>
+          </div>
+        ))}
+      </div>
+
       {/* Form Upload */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-        <h2 className="text-base font-black text-slate-800">Unggah Template Baru</h2>
-        <p className="text-xs text-slate-500">Format: DOC, DOCX, PDF, XLS, XLSX. Maksimal 10 MB. Pastikan kategori sama dengan requirement dokumen.</p>
+      <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm ring-1 ring-slate-100">
+        <div className="border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-cyan-50 px-6 py-5">
+          <div className="flex items-start gap-3">
+            <div className="rounded-2xl bg-cyan-600 p-3 text-white shadow-lg shadow-cyan-100"><Sparkles size={18} /></div>
+            <div>
+              <h2 className="text-base font-black text-slate-900">Unggah Template Baru</h2>
+              <p className="mt-1 text-xs text-slate-500">Format DOC, DOCX, PDF, XLS, XLSX. Maksimal 10 MB. Kategori harus sama dengan requirement dokumen.</p>
+            </div>
+          </div>
+        </div>
+        <div className="space-y-4 p-6">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="space-y-1">
             <label className="text-[11px] font-bold text-slate-500 uppercase">Kategori Dokumen</label>
@@ -164,9 +192,10 @@ export default function TemplateDokumenPage(): React.JSX.Element {
             <input type="file" accept=".doc,.docx,.pdf,.xls,.xlsx" onChange={e => setForm(f => ({ ...f, file: e.target.files?.[0] ?? null }))} className="block w-full text-sm text-slate-500 file:mr-4 file:rounded-xl file:border-0 file:bg-cyan-50 file:px-4 file:py-2.5 file:font-semibold file:text-cyan-700 hover:file:bg-cyan-100" />
           </div>
         </div>
-        <button onClick={() => upload.mutate()} disabled={upload.isPending || !form.document_key || !form.name || !form.file} className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-cyan-700 disabled:opacity-50">
+        <button onClick={() => upload.mutate()} disabled={upload.isPending || !form.document_key || !form.name || !form.file} className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-cyan-100 transition hover:-translate-y-0.5 hover:bg-cyan-700 disabled:opacity-50">
           <Upload size={16} /> {upload.isPending ? 'Mengunggah...' : 'Unggah Template'}
         </button>
+        </div>
       </div>
 
       {/* Daftar Template */}

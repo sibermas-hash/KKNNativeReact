@@ -1,17 +1,19 @@
-'use client';
+"use client";
 
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { QUERY_KEYS } from '@sibermas/constants';
-import { studentApi } from '@/lib/api';
-import { useParams, useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { AlertCircle, CheckCircle2, FileText, Upload } from 'lucide-react';
-import { BackButton } from '@/components/ui/shared';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { QUERY_KEYS } from "@sibermas/constants";
+import { studentApi } from "@/lib/api";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { AlertCircle, CheckCircle2, FileText, Upload } from "lucide-react";
+import { BackButton } from "@/components/ui/shared";
+import { useTheme } from "@/components/ui/theme-provider";
+import { PRIMARY_CLASS, SOFT_CLASS } from "@/lib/theme-config";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB — matches backend RegistrationDocumentService
-const ALLOWED_TYPES = ['application/pdf'];
-const ALLOWED_EXTENSIONS = ['.pdf'];
+const ALLOWED_TYPES = ["application/pdf"];
+const ALLOWED_EXTENSIONS = [".pdf"];
 
 function formatSize(bytes: number) {
   return bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(0)} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -20,8 +22,8 @@ function formatSize(bytes: number) {
 function validateFile(file: File): string | null {
   if (file.size > MAX_FILE_SIZE) return `Ukuran file ${formatSize(file.size)} melebihi batas maksimal 5 MB.`;
   if (!ALLOWED_TYPES.includes(file.type)) {
-    const ext = file.name.split('.').pop()?.toLowerCase();
-    if (!ext || !ALLOWED_EXTENSIONS.includes(`.${ext}`)) return 'Format file tidak didukung. Gunakan PDF.';
+    const ext = file.name.split(".").pop()?.toLowerCase();
+    if (!ext || !ALLOWED_EXTENSIONS.includes(`.${ext}`)) return "Format file tidak didukung. Gunakan PDF.";
   }
   return null;
 }
@@ -54,8 +56,10 @@ export default function UploadDokumenPage(): React.JSX.Element {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
+  const { config: themeConfig, surfaceClass } = useTheme();
+
   const { data: formData, isLoading } = useQuery({
-    queryKey: [...QUERY_KEYS.student.registration.form, 'period-docs', Number(id)],
+    queryKey: [...QUERY_KEYS.student.registration.form, "period-docs", Number(id)],
     queryFn: async () => {
       const res = await studentApi.registration.form();
       return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
@@ -74,10 +78,10 @@ export default function UploadDokumenPage(): React.JSX.Element {
   const mutation = useMutation({
     mutationFn: (fd: FormData) => studentApi.documents(Number(id), fd),
     onSuccess: () => {
-      toast.success('Dokumen berhasil diunggah');
+      toast.success("Dokumen berhasil diunggah");
       setUploadProgress(null);
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.registration.status });
-      router.push('/mahasiswa/cek-pendaftaran');
+      router.push("/mahasiswa/cek-pendaftaran");
     },
     onError: (err: unknown) => {
       setUploadProgress(null);
@@ -88,9 +92,9 @@ export default function UploadDokumenPage(): React.JSX.Element {
         Object.entries(apiErrors).forEach(([key, msgs]) => { fieldErrors[key] = msgs[0]; });
         setErrors(fieldErrors);
         const firstField = Object.keys(apiErrors)[0];
-        toast.error(`Gagal: ${apiErrors[firstField]?.[0] || 'Dokumen tidak valid'}`);
+        toast.error(`Gagal: ${apiErrors[firstField]?.[0] || "Dokumen tidak valid"}`);
       } else {
-        toast.error(e?.response?.data?.message ?? e?.response?.data?.error?.message ?? 'Gagal mengunggah dokumen. Periksa koneksi dan coba lagi.');      }
+        toast.error(e?.response?.data?.message ?? e?.response?.data?.error?.message ?? "Gagal mengunggah dokumen. Periksa koneksi dan coba lagi.");      }
     },
   });
 
@@ -105,10 +109,10 @@ export default function UploadDokumenPage(): React.JSX.Element {
   const registrations = (statusData as { registrations?: Array<{ periode_id?: number; status?: string; rejection_reason?: string | null; dokumen?: UploadedDoc[]; documents?: UploadedDoc[] }> } | undefined)?.registrations ?? [];
   const matchingRegistration = registrations.find((r) => Number(r?.periode_id) === Number(id));
   const rawUploadedDocs: UploadedDoc[] = matchingRegistration?.documents ?? matchingRegistration?.dokumen ?? [];
-  const uploadedDocs: UploadedDoc[] = matchingRegistration?.status === 'rejected' ? [] : rawUploadedDocs;
-  const registrationStatus = String(matchingRegistration?.status ?? '');
+  const uploadedDocs: UploadedDoc[] = matchingRegistration?.status === "rejected" ? [] : rawUploadedDocs;
+  const registrationStatus = String(matchingRegistration?.status ?? "");
   const hasUploadedDocs = uploadedDocs.length > 0;
-  const canUpload = !(['document_verified', 'approved'].includes(registrationStatus) && hasUploadedDocs);
+  const canUpload = !(["document_verified", "approved"].includes(registrationStatus) && hasUploadedDocs);
 
   const handleFileChange = (field: string, file: File | null) => {
     if (file) {
@@ -128,7 +132,7 @@ export default function UploadDokumenPage(): React.JSX.Element {
     e.preventDefault();
 
     if (!canUpload) {
-      toast.info('Dokumen sudah diverifikasi/disetujui admin.');
+      toast.info("Dokumen sudah diverifikasi/disetujui admin.");
       return;
     }
 
@@ -144,18 +148,18 @@ export default function UploadDokumenPage(): React.JSX.Element {
     });
 
     if (missingRequired.length > 0) {
-      toast.error(`Dokumen wajib belum dipilih: ${missingRequired.join(', ')}`);
+      toast.error(`Dokumen wajib belum dipilih: ${missingRequired.join(", ")}`);
       return;
     }
 
     if (Object.keys(errors).length > 0) {
-      toast.error('Perbaiki error pada file yang dipilih sebelum mengirim.');
+      toast.error("Perbaiki error pada file yang dipilih sebelum mengirim.");
       return;
     }
 
     const selectedFiles = Object.entries(files).filter(([, f]) => f !== null);
     if (selectedFiles.length === 0) {
-      toast.error('Pilih minimal satu dokumen untuk diunggah.');
+      toast.error("Pilih minimal satu dokumen untuk diunggah.");
       return;
     }
 
@@ -171,54 +175,71 @@ export default function UploadDokumenPage(): React.JSX.Element {
   };
 
   if (isLoading) {
-    return <div className="mx-auto max-w-2xl"><div className="h-32 animate-pulse rounded-2xl bg-slate-200" /></div>;
+    return (
+      <div className="mx-auto max-w-2xl">
+        <div className="h-32 animate-pulse rounded-2xl bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)]" />
+      </div>
+    );
   }
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <BackButton href="/mahasiswa/pendaftaran" label="Kembali ke Pendaftaran" />
       <div>
-        <h1 className="text-2xl font-bold text-slate-800">Upload Dokumen Persyaratan</h1>
-        <p className="mt-1 text-sm text-slate-500">Format: PDF. Maksimal 5 MB per file.</p>
+        <h1 className="text-2xl font-bold text-[color:var(--profile-text)]">Upload Dokumen Persyaratan</h1>
+        <p className="mt-1 text-sm text-[color:var(--profile-muted)]">Format: PDF. Maksimal 5 MB per file.</p>
       </div>
 
       {!canUpload && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-medium text-amber-800">
+        <div className="rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-warning)] p-4 text-sm font-medium text-[color:var(--profile-warning-text)]">
           Dokumen sudah diverifikasi/disetujui admin. Upload ulang tidak tersedia.
         </div>
       )}
 
-      {registrationStatus === 'rejected' && (
-        <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-800">
+      {registrationStatus === "rejected" && (
+        <div className="rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-danger)] p-4 text-sm font-medium text-[color:var(--profile-danger-text)]">
           Pendaftaran ditolak admin. Silakan upload ulang dokumen yang benar.
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-100">
+      <form 
+        onSubmit={handleSubmit} 
+        className={`space-y-5 border border-[color:var(--profile-border)] p-6 ${themeConfig.shadow} ${surfaceClass}`}
+        style={{ borderRadius: 'var(--profile-radius)' }}
+      >
         {requirements.length === 0 ? (
-          <p className="text-sm text-slate-500">Tidak ada requirement dokumen untuk periode ini.</p>
+          <p className="text-sm text-[color:var(--profile-muted)]">Tidak ada requirement dokumen untuk periode ini.</p>
         ) : requirements.map((requirement) => {
-          const field = String(requirement.field || '');
+          const field = String(requirement.field || "");
           const label = String(requirement.label || field);
-          const description = String(requirement.description || '');
-          const templateUrl = typeof requirement.template_url === 'string' ? requirement.template_url : '';
+          const description = String(requirement.description || "");
+          const templateUrl = typeof requirement.template_url === "string" ? requirement.template_url : "";
           const required = requirement.required !== false;
           const existingDoc = uploadedDocs.find((d) => docMatchesField(d, field));
           const selectedFile = files[field];
           const fieldError = errors[field];
 
           return (
-            <div key={field} className={`rounded-xl border p-4 ${fieldError ? 'border-rose-200 bg-rose-50/50' : existingDoc ? 'border-emerald-200 bg-emerald-50/30' : 'border-slate-100'}`}>
+            <div 
+              key={field} 
+              className={`rounded-xl border p-4 ${
+                fieldError 
+                  ? "border-[color:var(--profile-border)] bg-[color:var(--profile-danger)]" 
+                  : existingDoc 
+                    ? "border-[color:var(--profile-border)] bg-[color:var(--profile-soft)]" 
+                    : "border-[color:var(--profile-border)] bg-[color:var(--profile-surface-strong)]"
+              }`}
+            >
               <div className="mb-3 flex items-start justify-between gap-3">
                 <div>
-                  <label className="mb-1 block text-sm font-semibold text-slate-700">
-                    {label} {required && <span className="text-rose-500">*</span>}
+                  <label className="mb-1 block text-sm font-semibold text-[color:var(--profile-text)]">
+                    {label} {required && <span className="text-[color:var(--profile-danger-text)]">*</span>}
                   </label>
-                  {description && <p className="text-xs text-slate-500">{description}</p>}
+                  {description && <p className="text-xs text-[color:var(--profile-muted)]">{description}</p>}
                 </div>
                 {templateUrl && (
                   <a href={`/api/v1/student/registration/${Number(id)}/documents/${field}/template`} target="_blank" rel="noreferrer"
-                    className="shrink-0 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-semibold text-indigo-700 hover:bg-indigo-100">
+                    className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-semibold ${SOFT_CLASS} border`}>
                     Unduh Template
                   </a>
                 )}
@@ -226,10 +247,10 @@ export default function UploadDokumenPage(): React.JSX.Element {
 
               {/* Previously uploaded indicator */}
               {existingDoc && !selectedFile && (
-                <div className="mb-2 flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-700">
+                <div className="mb-2 flex items-center gap-2 rounded-lg bg-[color:var(--profile-soft)] px-3 py-2 text-xs font-medium text-[color:var(--profile-soft-text)] border border-[color:var(--profile-border)]">
                   <CheckCircle2 size={14} />
-                  <span>Sudah diunggah: {existingDoc.file_name || 'dokumen'}</span>
-                  {existingDoc.uploaded_at && <span className="text-emerald-500">({existingDoc.uploaded_at})</span>}
+                  <span>Sudah diunggah: {existingDoc.file_name || "dokumen"}</span>
+                  {existingDoc.uploaded_at && <span className="text-[color:var(--profile-soft-text)] opacity-85">({existingDoc.uploaded_at})</span>}
                 </div>
               )}
 
@@ -239,19 +260,19 @@ export default function UploadDokumenPage(): React.JSX.Element {
                 name={field}
                 disabled={!canUpload}
                 onChange={(e) => handleFileChange(field, e.target.files?.[0] || null)}
-                className="w-full text-sm text-slate-500 file:mr-4 file:rounded-xl file:border-0 file:bg-teal-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-teal-700 hover:file:bg-teal-100"
+                className="w-full text-sm text-[color:var(--profile-muted)] file:mr-4 file:rounded-xl file:border-0 file:bg-[color:var(--profile-soft)] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[color:var(--profile-soft-text)] hover:file:opacity-90 cursor-pointer file:cursor-pointer disabled:cursor-not-allowed"
               />
 
               {/* Selected file info */}
               {selectedFile && !fieldError && (
-                <p className="mt-1.5 flex items-center gap-1.5 text-xs text-slate-500">
+                <p className="mt-1.5 flex items-center gap-1.5 text-xs text-[color:var(--profile-muted)]">
                   <FileText size={12} /> {selectedFile.name} ({formatSize(selectedFile.size)})
                 </p>
               )}
 
               {/* Error */}
               {fieldError && (
-                <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-rose-600">
+                <p className="mt-1.5 flex items-center gap-1.5 text-xs font-medium text-[color:var(--profile-danger-text)]">
                   <AlertCircle size={12} /> {fieldError}
                 </p>
               )}
@@ -261,8 +282,8 @@ export default function UploadDokumenPage(): React.JSX.Element {
 
         {/* Upload progress */}
         {uploadProgress !== null && (
-          <div className="rounded-lg bg-teal-50 p-3">
-            <div className="flex items-center gap-2 text-xs font-semibold text-teal-700">
+          <div className="rounded-lg bg-[color:var(--profile-soft)] p-3 border border-[color:var(--profile-border)]">
+            <div className="flex items-center gap-2 text-xs font-semibold text-[color:var(--profile-soft-text)]">
               <Upload size={14} className="animate-bounce" /> Mengunggah dokumen...
             </div>
           </div>
@@ -271,9 +292,9 @@ export default function UploadDokumenPage(): React.JSX.Element {
         <button
           type="submit"
           disabled={mutation.isPending || !canUpload || Object.keys(errors).length > 0}
-          className="w-full rounded-xl bg-teal-600 py-3 text-sm font-semibold text-white hover:bg-teal-700 disabled:opacity-50 transition-colors"
+          className={`w-full rounded-xl py-3 text-sm font-black disabled:opacity-50 ${PRIMARY_CLASS}`}
         >
-          {mutation.isPending ? 'Mengunggah...' : 'Kirim Dokumen'}
+          {mutation.isPending ? "Mengunggah..." : "Kirim Dokumen"}
         </button>
       </form>
     </div>

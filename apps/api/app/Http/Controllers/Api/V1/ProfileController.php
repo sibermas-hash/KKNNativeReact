@@ -42,6 +42,10 @@ class ProfileController extends Controller
             ->where('status', 'pending')
             ->latest()
             ->first();
+        $latestRequest = $pending ?: ProfileChangeRequest::where('user_id', $user->id)
+            ->whereIn('status', ['approved', 'rejected'])
+            ->latest()
+            ->first();
 
         $profileComplete = $this->isProfileComplete($user);
 
@@ -109,10 +113,13 @@ class ProfileController extends Controller
             ]) : null,
             'profile_complete' => $profileComplete,
             'is_onboarding' => $user->must_change_password || ! $profileComplete,
-            'pending_change_request' => $pending ? [
-                'id' => $pending->id,
-                'requested_changes' => $pending->requested_changes,
-                'created_at' => $pending->created_at,
+            'pending_change_request' => $latestRequest ? [
+                'id' => $latestRequest->id,
+                'status' => $latestRequest->status,
+                'requested_changes' => $latestRequest->requested_changes,
+                'rejection_reason' => $latestRequest->rejection_reason,
+                'reviewed_at' => $latestRequest->reviewed_at?->toIso8601String(),
+                'created_at' => $latestRequest->created_at?->toIso8601String(),
             ] : null,
         ]);
     }

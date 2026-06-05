@@ -55,7 +55,7 @@ type ForwardGeocodeResult = {
   display_name?: string;
 };
 
-type ChangeRequest = { id: number; requested_changes: Record<string, { old: unknown; new: unknown }>; created_at: string };
+type ChangeRequest = { id: number; status?: 'pending' | 'approved' | 'rejected'; requested_changes: Record<string, { old: unknown; new: unknown }>; rejection_reason?: string | null; reviewed_at?: string | null; created_at: string };
 type ExternalProfile = { external_nim?: string; home_university?: string; external_faculty?: string | null; external_study_program?: string | null; external_email?: string | null; external_phone?: string | null };
 type StudentProfile = { nim?: string; gpa?: number; sks_completed?: number; status_bta_ppi?: string | null; faculty?: { nama?: string }; prodi?: { nama?: string }; external_profile?: ExternalProfile | null; missing_biodata_fields?: string[]; missing_address_fields?: string[]; biodata_complete?: boolean; address_verified?: boolean; address_verified_at?: string | null; [key: string]: unknown };
 type LecturerProfile = { nip?: string; faculty?: { nama?: string }; missing_biodata_fields?: string[]; biodata_complete?: boolean; jabatan?: string; status_aktif?: string; status_pegawai?: string; has_workshop?: boolean; workshop_date?: string; is_cpns?: boolean; is_tugas_belajar?: boolean; [key: string]: unknown };
@@ -931,7 +931,15 @@ export default function ProfilePage(): React.JSX.Element {
         onLogout={handleLogout}
       />
 
-      {pendingRequest && profileComplete && <div className="rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-warning)] p-4 text-sm text-[color:var(--profile-warning-text)] shadow-sm transition-colors duration-500">Permintaan perubahan profil sedang menunggu persetujuan admin.</div>}
+      {pendingRequest && profileComplete && pendingRequest.status !== 'approved' && (
+        <div className={cx('rounded-xl border border-[color:var(--profile-border)] p-4 text-sm shadow-sm transition-colors duration-500', pendingRequest.status === 'rejected' ? 'bg-[color:var(--profile-danger)] text-[color:var(--profile-danger-text)]' : 'bg-[color:var(--profile-warning)] text-[color:var(--profile-warning-text)]')}>
+          {pendingRequest.status === 'rejected' ? (
+            <>Permintaan perubahan profil ditolak. Alasan: <strong>{pendingRequest.rejection_reason || 'Tidak ada alasan.'}</strong></>
+          ) : (
+            <>Permintaan perubahan profil sedang menunggu persetujuan admin.</>
+          )}
+        </div>
+      )}
       {missingFields.length > 0 && <div className="flex gap-3 rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-warning)] p-4 shadow-sm transition-colors duration-500"><AlertCircle size={18} className="mt-0.5 shrink-0 text-[color:var(--profile-warning-text)]" /><p className="text-sm text-[color:var(--profile-warning-text)]">Tahap awal wajib review dan melengkapi data berikut: <strong>{missingFields.map((f) => FIELD_LABELS[f] ?? f).join(', ')}</strong>. Pengisian awal disimpan langsung, edit setelah lengkap akan menunggu approval admin.</p></div>}
  
        <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-3">
@@ -975,7 +983,7 @@ export default function ProfilePage(): React.JSX.Element {
  
              {isLecturer && <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5"><h2 className={`${typography.label} text-[color:var(--profile-text)]`}>Data Kepegawaian, Keuangan & Pajak</h2><div className="grid grid-cols-1 gap-4 md:grid-cols-2"><TextInput label="Nama Bergelar" registration={register('nama_gelar')} disabled={!isEditing} /><TextInput label="NIDN" registration={register('nidn')} disabled={!isEditing} /><TextInput label="NIK Dosen" registration={register('dosen_nik')} disabled={!isEditing} /><TextInput label="Jabatan Fungsional" registration={register('jabatan')} disabled={!isEditing} /><TextInput label="Kelas Jabatan" registration={register('kelas_jabatan')} disabled={!isEditing} /><TextInput label="Tugas Tambahan" registration={register('tugas_tambahan')} disabled={!isEditing} /><TextInput label="Golongan" registration={register('golongan')} disabled={!isEditing} /><TextInput label="Pangkat" registration={register('pangkat')} disabled={!isEditing} /><TextArea label="Alamat Dosen" registration={register('dosen_alamat')} disabled={!isEditing} /><TextInput label="No. Rekening" registration={register('no_rekening')} disabled={!isEditing} /><TextInput label="Nama Bank" registration={register('nama_bank')} disabled={!isEditing} /><TextInput label="NPWP" registration={register('npwp')} disabled={!isEditing} /><TextInput label="Status Aktif" value={(lecturer?.status_aktif as string) ?? '-'} disabled /><TextInput label="Status Pegawai" value={(lecturer?.status_pegawai as string) ?? '-'} disabled /><TextInput label="Workshop DPL" value={lecturer?.has_workshop ? `Sudah (${(lecturer?.workshop_date as string) ?? '-'})` : 'Belum'} disabled /></div><div className={`flex gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] transition-colors ${typography.meta}`}><Info size={18} className="shrink-0" />Kolom yang tidak relevan untuk proses KKN seperti tanggal pensiun dan pendidikan terakhir tidak ditampilkan. Pengisian awal disimpan langsung; perubahan setelah profil lengkap menunggu persetujuan admin.</div></section>}
  
-             {isEditing && <button type="submit" disabled={isSubmitting || !isDirty || (!!pendingRequest && profileComplete)} className={cx('flex h-11 w-full items-center justify-center gap-2 rounded-lg px-6 disabled:opacity-50 sm:w-auto', typography.button, primaryClass)}>{isSubmitting ? 'Menyimpan...' : profileComplete ? 'Ajukan Perubahan' : 'Simpan & Lanjutkan'}<Save size={16} /></button>}
+             {isEditing && <button type="submit" disabled={isSubmitting || !isDirty || (!!pendingRequest && pendingRequest.status === 'pending' && profileComplete)} className={cx('flex h-11 w-full items-center justify-center gap-2 rounded-lg px-6 disabled:opacity-50 sm:w-auto', typography.button, primaryClass)}>{isSubmitting ? 'Menyimpan...' : profileComplete ? 'Ajukan Perubahan' : 'Simpan & Lanjutkan'}<Save size={16} /></button>}
            </form>
  
            <div className="mt-4 sm:mt-6">

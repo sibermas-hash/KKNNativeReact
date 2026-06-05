@@ -113,7 +113,18 @@ class ProfileController extends Controller
             ]) : null,
             'profile_complete' => $profileComplete,
             'is_onboarding' => $user->must_change_password || ! $profileComplete,
-            'pending_change_request' => $latestRequest ? [
+            // Backward-compatible but semantically strict: this field must only
+            // contain an actual pending request. Older web bundles used this
+            // name directly for the yellow "menunggu" banner.
+            'pending_change_request' => $pending ? [
+                'id' => $pending->id,
+                'status' => $pending->status,
+                'requested_changes' => $pending->requested_changes,
+                'rejection_reason' => $pending->rejection_reason,
+                'reviewed_at' => $pending->reviewed_at?->toIso8601String(),
+                'created_at' => $pending->created_at?->toIso8601String(),
+            ] : null,
+            'latest_change_request' => $latestRequest ? [
                 'id' => $latestRequest->id,
                 'status' => $latestRequest->status,
                 'requested_changes' => $latestRequest->requested_changes,

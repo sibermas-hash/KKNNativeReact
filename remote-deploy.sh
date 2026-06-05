@@ -149,9 +149,11 @@ ssh -A -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
 
   echo "  [d] Caching Laravel config/routes..."
   cd "${APP_DIR}/apps/api"
+  php artisan optimize:clear
   php artisan config:cache
   php artisan route:cache
   php artisan event:cache 2>/dev/null || true
+  php artisan tinker --execute="if (blank(config('services.google.client_id')) || blank(config('services.google.redirect_uri'))) { fwrite(STDERR, 'Google OAuth config missing after config:cache'.PHP_EOL); exit(1); }"
   cd "${APP_DIR}"
 
   echo "  [e] Installing JS dependencies..."
@@ -232,6 +234,7 @@ echo "  [i] Copying static & public to standalone..."
 
   echo "  [m] API smoke checks..."
   check_http_status "http://127.0.0.1/api/v1/auth/captcha" "200" "Public auth captcha"
+  check_http_status "http://127.0.0.1/api/v1/auth/google/redirect" "302" "Google OAuth redirect"
   check_http_status "http://127.0.0.1/api/v1/profile" "401" "Protected profile guard"
   check_http_status "http://127.0.0.1/api/v1/admin/dashboard" "401" "Protected admin dashboard guard"
 ENDSSH

@@ -186,6 +186,115 @@ Berikut rincian audit per rute:
 
 ---
 
+### Rute `/mahasiswa/sertifikat` — [sertifikat/page.tsx](file:///Users/macm4/Documents/kknuinsaizu/apps/web/src/app/(student)/mahasiswa/sertifikat/page.tsx)
+* **Status**: **PASS**
+* **Severity**: P3
+* **Visual findings**:
+  * Teks judul halaman, nilai grade, status penilai, dan data tabel bobot menggunakan variabel warna theme `useTheme()`.
+  * Kontras warna dalam mode Midnight sangat tinggi dan terbaca dengan baik.
+* **UX findings**:
+  * Halaman memblokir dengan ramah jika sertifikat belum diterbitkan atau dalam masa asersi (fase penilaian belum selesai).
+* **Data consistency**:
+  * Mengambil nilai grade dan file PDF dari API backend secara aman.
+* **Responsive risk**:
+  * Grid komponen nilai melar dengan sempurna pada layar tablet/mobile.
+
+---
+
+### Rute `/mahasiswa/rekapitulasi` — [rekapitulasi/page.tsx](file:///Users/macm4/Documents/kknuinsaizu/apps/web/src/app/(student)/mahasiswa/rekapitulasi/page.tsx)
+* **Status**: **PASS**
+* **Severity**: P3
+* **Visual findings**:
+  * Tabel rekapitulasi, form input tambah/edit rekapitulasi diselaraskan dengan token `FIELD_CLASS` dan `useTheme()`.
+* **UX findings**:
+  * Interaksi penambahan detail volume, swadaya, dan bantuan program kerja instan dan responsif.
+* **Data consistency**:
+  * Form terikat skema validasi.
+* **Responsive risk**:
+  * Dilindungi `overflow-x-auto` agar tabel tidak memecah layout mobile.
+
+---
+
+### Rute `/mahasiswa/evaluasi-dpl` — [evaluasi-dpl/page.tsx](file:///Users/macm4/Documents/kknuinsaizu/apps/web/src/app/(student)/mahasiswa/evaluasi-dpl/page.tsx)
+* **Status**: **PASS**
+* **Severity**: P3
+* **Visual findings**:
+  * Skala bintang penilaian DPL dan form saran/kritik disesuaikan dengan aksen warna theme.
+* **UX findings**:
+  * Sukses memblokir pengisian berulang jika data evaluasi sudah dikirim dengan tampilan pesan sukses yang terpadu.
+* **Data consistency**:
+  * Mengirimkan aspek rating array beserta komentar terarah ke backend Laravel.
+
+---
+
+### Rute `/mahasiswa/izin/buat` — [izin/buat/page.tsx](file:///Users/macm4/Documents/kknuinsaizu/apps/web/src/app/(student)/mahasiswa/izin/buat/page.tsx)
+* **Status**: **PASS**
+* **Severity**: P3
+* **Visual findings**:
+  * Elemen selector jenis izin, textarea alasan, field tanggal mulai/kembali, dan pengunggah berkas bukti menggunakan token `FIELD_CLASS`.
+* **UX findings**:
+  * Tombol aksi menggunakan token `PRIMARY_CLASS`, tombol kembali melompat secara tepat ke `/mahasiswa/izin`.
+* **Data consistency**:
+  * Payload FormData terkirim bersih ke backend untuk lampiran berkas bukti fisik.
+
+---
+
+### Rute `/mahasiswa/wawancara` — [wawancara/page.tsx](file:///Users/macm4/Documents/kknuinsaizu/apps/web/src/app/(student)/mahasiswa/wawancara/page.tsx)
+* **Status**: **PASS**
+* **Severity**: P3
+* **Visual findings**:
+  * Status kelulusan wawancara (Lulus: Emerald, Gagal: Rose, Menunggu: Amber) menggunakan opacity dynamic border & background agar kontras tetap tinggi di Midnight mode.
+* **UX findings**:
+  * Menampilkan catatan hasil pewawancara dalam box soft style yang elegan.
+* **Responsive risk**:
+  * Grid flex-row berpindah ke flex-col di mobile portrait secara aman.
+
+---
+
+### Rute `/mahasiswa/support` — [support/page.tsx](file:///Users/macm4/Documents/kknuinsaizu/apps/web/src/app/(student)/mahasiswa/support/page.tsx)
+* **Status**: **PASS**
+* **Severity**: P3
+* **Visual findings**:
+  * Kartu kontak bantuan (Helpdesk) dan panduan terintegrasi dengan variabel `surfaceClass` dan shadow config tema.
+* **UX findings**:
+  * Teks panduan mengarahkan ke tautan Telegram resmi LP2M.
+* **Responsive risk**:
+  * Grid beralih natural di layar mobile.
+
+---
+
+### Rute `/mahasiswa/program-kerja` — [program-kerja/page.tsx](file:///Users/macm4/Documents/kknuinsaizu/apps/web/src/app/(student)/mahasiswa/program-kerja/page.tsx)
+* **Status**: **PASS**
+* **Severity**: P3
+* **Visual findings**:
+  * StatCard rekap status program kerja (Disetujui, Menunggu, Revisi, Total) membaca `useTheme()` config dan variabel text dinamis.
+  * Tag kategori program, SDGs, dan target peserta ter-render rapi dengan kontras warna terpadu.
+* **UX findings**:
+  * Kosong state mengarahkan ke CTA pembuatan program kerja pertama secara dinamis.
+
+---
+
+### Rute `/mahasiswa/program-kerja/buat` — [program-kerja/buat/page.tsx](file:///Users/macm4/Documents/kknuinsaizu/apps/web/src/app/(student)/mahasiswa/program-kerja/buat/page.tsx)
+* **Status**: **PASS**
+* **Severity**: P3
+* **Visual findings**:
+  * Seluruh field input judul, kategori, deskripsi, tujuan, sasaran, target peserta, dan anggaran menggunakan `FIELD_CLASS`.
+* **UX findings**:
+  * Validasi error per bidang terikat validasi API ter-render tepat.
+  * Aksi pembatalan (Batal) kembali secara aman ke dashboard program kerja.
+
+---
+
+### Rute `/mahasiswa/program-kerja/[id]` — [program-kerja/[id]/page.tsx](file:///Users/macm4/Documents/kknuinsaizu/apps/web/src/app/(student)/mahasiswa/program-kerja/[id]/page.tsx)
+* **Status**: **PASS**
+* **Severity**: P3
+* **Visual findings**:
+  * Header program, status badge, stat grid, deskripsi/tujuan, dan riwayat revisi proposal dikonfigurasi menggunakan variabel `useTheme()`.
+* **UX findings**:
+  * Link unduh berkas proposal aktif, riwayat peninjauan dari DPL ter-render lengkap di bawah program.
+
+---
+
 ## 2. Panel Dosen (Lecturer UI)
 
 ### Rute `/dosen/beranda-dpl` — [beranda-dpl/page.tsx](file:///Users/macm4/Documents/kknuinsaizu/apps/web/src/app/(dosen)/dosen/beranda-dpl/page.tsx)

@@ -24,6 +24,30 @@ class InterviewController extends Controller
 {
     use ApiResponse;
 
+    private function facultyScopeId(): ?int
+    {
+        $user = auth()->user();
+
+        return $user?->hasRole('faculty_admin') && $user->fakultas_id
+            ? (int) $user->fakultas_id
+            : null;
+    }
+
+    private function scopePesertaByFaculty($query): void
+    {
+        if ($facultyId = $this->facultyScopeId()) {
+            $query->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
+        }
+    }
+
+    private function ensureParticipantInFacultyScope(InterviewParticipant $participant): void
+    {
+        if ($facultyId = $this->facultyScopeId()) {
+            $participant->loadMissing('pesertaKkn.mahasiswa');
+            abort_unless($participant->pesertaKkn?->mahasiswa?->fakultas_id === $facultyId, 403, 'Anda tidak memiliki akses ke peserta ini.');
+        }
+    }
+
     /**
      * List interview schedules with participant counts.
      */
@@ -135,8 +159,11 @@ class InterviewController extends Controller
             $peserta = PesertaKkn::with('mahasiswa.user')
                 ->where('id', $pesertaId)
                 ->where('periode_id', $interview->periode_id)
-                ->whereIn('status', ['approved', 'document_verified'])
-                ->first();
+                ->whereIn('status', ['approved', 'document_verified']);
+
+            $this->scopePesertaByFaculty($peserta);
+
+            $peserta = $peserta->first();
 
             if (! $peserta) {
                 $skipped++;
@@ -182,6 +209,8 @@ class InterviewController extends Controller
             return $this->error('Peserta tidak ditemukan di jadwal ini.', 404);
         }
 
+        $this->ensureParticipantInFacultyScope($participant);
+
         // Revert status if still interview_scheduled
         PesertaKkn::where('id', $participant->peserta_kkn_id)
             ->where('status', 'interview_scheduled')
@@ -200,6 +229,8 @@ class InterviewController extends Controller
         if ($participant->interview_schedule_id !== $interview->id) {
             return $this->error('Peserta tidak ditemukan di jadwal ini.', 404);
         }
+
+        $this->ensureParticipantInFacultyScope($participant);
 
         $validated = $request->validate([
             'result' => ['required', Rule::in(['passed', 'failed'])],
@@ -269,6 +300,13 @@ class InterviewController extends Controller
                     continue;
                 }
 
+                if ($this->facultyScopeId()) {
+                    $participant->loadMissing('pesertaKkn.mahasiswa');
+                    if ($participant->pesertaKkn?->mahasiswa?->fakultas_id !== $this->facultyScopeId()) {
+                        continue;
+                    }
+                }
+
                 $participant->update([
                     'result' => $item['result'],
                     'notes' => $item['notes'] ?? $participant->notes,
@@ -335,6 +373,8 @@ class InterviewController extends Controller
                 });
             });
 
+        $this->scopePesertaByFaculty($query);
+
         $paginated = $query->paginate($request->integer('per_page', 50));
 
         return $this->success([
@@ -367,6 +407,8 @@ class InterviewController extends Controller
                 });
             })
             ->orderBy('id');
+
+        $this->scopePesertaByFaculty($query);
 
         $perPage = $request->integer('per_page', 100);
 

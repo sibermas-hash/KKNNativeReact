@@ -1,5 +1,3 @@
-'use client';
-
 import { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import Link from 'next/link';
@@ -7,12 +5,14 @@ import { studentApi } from '@/lib/api';
 import { Star, MessageSquare, Send, CheckCircle2, UserCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
+import { useTheme } from '@/components/ui/theme-provider';
+import { PRIMARY_CLASS, SOFT_CLASS, FIELD_CLASS } from '@/lib/theme-config';
 
 type Aspect = { id: string; label: string; description: string };
 
 export default function DplEvaluationPage(): React.JSX.Element {
-  
   const [ratings, setRatings] = useState<Record<string, number>>({});
+  const { config: themeConfig, surfaceClass } = useTheme();
   const [comment, setComment] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
@@ -52,7 +52,7 @@ export default function DplEvaluationPage(): React.JSX.Element {
     });
   };
 
-  if (isLoading) return <div className="p-10 text-center animate-pulse text-slate-400 font-bold uppercase tracking-widest">Memuat Form Evaluasi...</div>;
+  if (isLoading) return <div className="p-10 text-center animate-pulse text-[color:var(--profile-muted)] font-black uppercase tracking-widest">Memuat Form Evaluasi...</div>;
 
   const aspects = (formData?.aspects as Aspect[]) || [
     { id: 'komunikasi', label: 'Komunikasi', description: 'Kemudahan dalam berkonsultasi dan berkomunikasi dengan DPL.' },
@@ -65,14 +65,14 @@ export default function DplEvaluationPage(): React.JSX.Element {
     return (
       <div className="max-w-2xl mx-auto py-20 px-4 text-center">
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="space-y-6">
-          <div className="h-24 w-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-emerald-100">
+          <div className="h-24 w-24 bg-emerald-100 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto shadow-lg">
             <CheckCircle2 size={48} />
           </div>
           <div className="space-y-2">
-            <h1 className="text-3xl font-black text-emerald-950 uppercase tracking-tight">Evaluasi Terkirim</h1>
-            <p className="text-slate-500 font-medium">Terima kasih telah memberikan masukan untuk peningkatan kualitas bimbingan KKN.</p>
+            <h1 className="text-3xl font-black text-[color:var(--profile-text)] uppercase tracking-tight">Evaluasi Terkirim</h1>
+            <p className="text-[color:var(--profile-muted)] font-medium">Terima kasih telah memberikan masukan untuk peningkatan kualitas bimbingan KKN.</p>
           </div>
-          <Link href="/mahasiswa" className="inline-flex px-8 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-all">
+          <Link href="/mahasiswa" className={`inline-flex px-8 py-3 rounded-xl font-bold text-sm text-white ${PRIMARY_CLASS}`}>
             Kembali ke Dashboard
           </Link>
         </motion.div>
@@ -82,13 +82,16 @@ export default function DplEvaluationPage(): React.JSX.Element {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-8">
-      <header className="flex items-center gap-6 bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm">
-        <div className="h-16 w-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center">
+      <header 
+        className={`${surfaceClass} flex items-center gap-6 p-6 border border-[color:var(--profile-border)] shadow-sm`}
+        style={{ borderRadius: 'var(--profile-radius)' }}
+      >
+        <div className={`h-16 w-16 rounded-2xl flex items-center justify-center ${SOFT_CLASS}`}>
           <UserCircle size={36} strokeWidth={1.5} />
         </div>
         <div>
-          <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Evaluasi Kinerja DPL</h1>
-          <p className="text-sm text-slate-500 font-medium">Berikan penilaian jujur Anda terhadap Dosen Pembimbing Lapangan.</p>
+          <h1 className="text-2xl font-black text-[color:var(--profile-text)] uppercase tracking-tight">Evaluasi Kinerja DPL</h1>
+          <p className="text-sm text-[color:var(--profile-muted)] font-medium">Berikan penilaian jujur Anda terhadap Dosen Pembimbing Lapangan.</p>
         </div>
       </header>
 
@@ -100,16 +103,17 @@ export default function DplEvaluationPage(): React.JSX.Element {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: idx * 0.1 }}
-              className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow group"
+              className={`${surfaceClass} p-6 border border-[color:var(--profile-border)] shadow-sm hover:shadow-md transition-shadow group`}
+              style={{ borderRadius: 'var(--profile-radius)' }}
             >
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1">
-                  <h3 className="font-black text-slate-800 uppercase tracking-wide flex items-center gap-2">
-                    <span className="text-blue-500 text-xs">0{idx + 1}</span> {aspect.label}
+                  <h3 className="font-black text-[color:var(--profile-text)] uppercase tracking-wide flex items-center gap-2">
+                    <span className="text-[color:var(--profile-primary)] text-xs">0{idx + 1}</span> {aspect.label}
                   </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed max-w-md">{aspect.description}</p>
+                  <p className="text-xs text-[color:var(--profile-muted)] leading-relaxed max-w-md font-medium">{aspect.description}</p>
                 </div>
-                <div className="flex items-center gap-1.5 bg-slate-50 p-2 rounded-2xl">
+                <div className={`flex items-center gap-1.5 p-2 rounded-2xl border ${SOFT_CLASS}`}>
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
@@ -117,8 +121,8 @@ export default function DplEvaluationPage(): React.JSX.Element {
                       onClick={() => setRatings(prev => ({ ...prev, [aspect.id]: star }))}
                       className={`p-2 rounded-xl transition-all ${
                         (ratings[aspect.id] || 0) >= star 
-                          ? 'text-amber-400 bg-amber-50' 
-                          : 'text-slate-300 hover:text-slate-400'
+                          ? 'text-amber-400 dark:text-amber-300 scale-110' 
+                          : 'text-[color:var(--profile-muted)] opacity-55 hover:opacity-100'
                       }`}
                       title={`Beri nilai ${star} bintang`}
                       aria-label={`Beri nilai ${star} bintang`}
@@ -132,8 +136,11 @@ export default function DplEvaluationPage(): React.JSX.Element {
           ))}
         </div>
 
-        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-4">
-          <label className="flex items-center gap-2 text-[10px] font-black text-blue-600 uppercase tracking-widest ml-1">
+        <div 
+          className={`${surfaceClass} p-8 border border-[color:var(--profile-border)] shadow-sm space-y-4`}
+          style={{ borderRadius: 'var(--profile-radius)' }}
+        >
+          <label className="flex items-center gap-2 text-[10px] font-black text-[color:var(--profile-primary)] uppercase tracking-widest ml-1">
             <MessageSquare size={14} /> Kritik & Saran Tambahan
           </label>
           <textarea
@@ -141,14 +148,14 @@ export default function DplEvaluationPage(): React.JSX.Element {
             onChange={(e) => setComment(e.target.value)}
             rows={4}
             placeholder="Tuliskan masukan konstruktif untuk DPL Anda..."
-            className="w-full bg-slate-50 border-none rounded-2xl px-5 py-4 text-sm font-bold focus:ring-4 focus:ring-blue-500/10 transition-all outline-none"
+            className={`w-full rounded-2xl px-5 py-4 text-sm font-bold transition-all outline-none border ${FIELD_CLASS}`}
           />
         </div>
 
         <button 
           type="submit" 
           disabled={mutation.isPending}
-          className="w-full py-5 bg-blue-600 hover:bg-blue-700 text-white rounded-[2rem] font-black uppercase tracking-widest transition-all shadow-xl shadow-blue-200 hover:-translate-y-1 active:scale-95 disabled:opacity-50"
+          className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest transition-all ${PRIMARY_CLASS}`}
         >
           {mutation.isPending ? (
             <div className="flex items-center justify-center gap-3">
@@ -163,10 +170,10 @@ export default function DplEvaluationPage(): React.JSX.Element {
         </button>
       </form>
 
-      <footer className="bg-amber-50 rounded-2xl p-6 border border-amber-100">
+      <footer className="bg-[color:var(--profile-warning)] rounded-2xl p-6 border border-[color:var(--profile-border)]">
         <div className="flex gap-4">
-          <AlertCircle className="text-amber-600 shrink-0" size={20} />
-          <p className="text-xs text-amber-900 font-bold leading-relaxed">
+          <AlertCircle className="text-[color:var(--profile-warning-text)] shrink-0" size={20} />
+          <p className="text-xs text-[color:var(--profile-warning-text)] font-bold leading-relaxed">
             Identitas Anda bersifat anonim. Penilaian ini hanya akan ditampilkan kepada LPPM dalam bentuk agregat untuk kepentingan evaluasi kinerja DPL, tanpa menyebutkan nama mahasiswa.
           </p>
         </div>

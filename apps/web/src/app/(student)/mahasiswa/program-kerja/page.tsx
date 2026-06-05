@@ -5,7 +5,9 @@ import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@sibermas/constants';
 import { studentApi } from '@/lib/api';
 import Link from 'next/link';
-import { Plus, Presentation, Loader2, Target, Globe, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
+import { Plus, Presentation, Target, Globe, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
+import { useTheme } from '@/components/ui/theme-provider';
+import { PRIMARY_CLASS } from '@/lib/theme-config';
 
 type WorkProgram = {
   id: number;
@@ -22,6 +24,8 @@ type WorkProgram = {
 };
 
 export default function WorkProgramsPage(): React.JSX.Element {
+  const { config: themeConfig, surfaceClass } = useTheme();
+
   const { data, isLoading, error } = useQuery({
     queryKey: QUERY_KEYS.student.workPrograms,
     queryFn: async () => {
@@ -54,12 +58,12 @@ export default function WorkProgramsPage(): React.JSX.Element {
     <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-4">
-          <div className="h-14 w-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
+          <div className="h-14 w-14 bg-[color:var(--profile-primary)] rounded-2xl flex items-center justify-center text-white shadow-lg">
             <Presentation size={28} />
           </div>
           <div>
-            <h1 className="text-2xl font-black text-slate-900 tracking-tight uppercase">Program Kerja</h1>
-            <p className="text-sm text-slate-500">
+            <h1 className="text-2xl font-black text-[color:var(--profile-text)] tracking-tight uppercase">Program Kerja</h1>
+            <p className="text-sm text-[color:var(--profile-muted)] font-semibold">
               Kelola program kerja kelompok Anda
               {programs.length > 0 ? ` • ${programs.length} program` : ''}
             </p>
@@ -68,7 +72,7 @@ export default function WorkProgramsPage(): React.JSX.Element {
         {!isPhaseBlocked && (
           <Link
             href="/mahasiswa/program-kerja/buat"
-            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black uppercase tracking-widest text-xs flex items-center gap-2 shadow"
+            className={`px-5 py-2.5 rounded-xl font-black uppercase tracking-widest text-xs flex items-center gap-2 transition-all ${PRIMARY_CLASS}`}
           >
             <Plus size={16} /> Buat Program
           </Link>
@@ -77,10 +81,10 @@ export default function WorkProgramsPage(): React.JSX.Element {
 
       {/* Phase blocked */}
       {isPhaseBlocked && (
-        <div className="rounded-2xl border-2 border-dashed border-amber-200 bg-amber-50 p-8 text-center space-y-3">
-          <AlertCircle className="h-12 w-12 text-amber-600 mx-auto" />
-          <h2 className="text-lg font-black text-amber-900">Belum Bisa Mengakses Program Kerja</h2>
-          <p className="text-sm text-amber-800">{phaseMessage ?? 'Fitur ini hanya tersedia saat fase pelaksanaan KKN.'}</p>
+        <div className="rounded-2xl border border-amber-200 dark:border-amber-800/40 bg-amber-50 dark:bg-amber-950/20 p-8 text-center space-y-3 text-amber-850 dark:text-amber-400">
+          <AlertCircle className="h-12 w-12 text-amber-600 dark:text-amber-450 mx-auto" />
+          <h2 className="text-lg font-black text-amber-900 dark:text-amber-300">Belum Bisa Mengakses Program Kerja</h2>
+          <p className="text-sm text-amber-800 dark:text-amber-400/90 font-medium">{phaseMessage ?? 'Fitur ini hanya tersedia saat fase pelaksanaan KKN.'}</p>
         </div>
       )}
 
@@ -97,21 +101,29 @@ export default function WorkProgramsPage(): React.JSX.Element {
       {/* Loading */}
       {isLoading && (
         <div className="space-y-4">
-          {[1, 2].map((i) => <div key={i} className="h-28 animate-pulse rounded-2xl bg-slate-200" />)}
+          {[1, 2].map((i) => (
+            <div 
+              key={i} 
+              className="h-28 animate-pulse rounded-2xl bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)]" 
+            />
+          ))}
         </div>
       )}
 
       {/* Empty */}
       {!isLoading && !isPhaseBlocked && programs.length === 0 && (
-        <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white p-10 text-center space-y-3">
-          <Presentation className="h-14 w-14 text-slate-300 mx-auto" />
-          <p className="font-black text-slate-900 text-lg">Belum Ada Program Kerja</p>
-          <p className="text-sm text-slate-500 max-w-md mx-auto">
+        <div 
+          className={`border-2 border-dashed border-[color:var(--profile-border)] p-10 text-center space-y-3 ${surfaceClass} ${themeConfig.shadow}`}
+          style={{ borderRadius: 'var(--profile-radius)' }}
+        >
+          <Presentation className="h-14 w-14 text-[color:var(--profile-muted)] mx-auto" />
+          <p className="font-black text-[color:var(--profile-text)] text-lg">Belum Ada Program Kerja</p>
+          <p className="text-sm text-[color:var(--profile-muted)] max-w-md mx-auto font-medium">
             Mulai rancang program kerja KKN kelompok Anda. Setiap program harus selaras dengan SDGs dan tahap ABCD.
           </p>
           <Link
             href="/mahasiswa/program-kerja/buat"
-            className="inline-flex items-center gap-2 mt-2 rounded-xl bg-blue-600 px-5 py-2.5 text-xs font-black uppercase tracking-widest text-white shadow"
+            className={`inline-flex items-center gap-2 mt-2 rounded-xl px-5 py-2.5 text-xs font-black uppercase tracking-widest transition-all ${PRIMARY_CLASS}`}
           >
             <Plus size={14} /> Buat Program Kerja Pertama
           </Link>
@@ -125,35 +137,36 @@ export default function WorkProgramsPage(): React.JSX.Element {
             <Link
               key={p.id}
               href={`/mahasiswa/program-kerja/${p.id}`}
-              className="block bg-white rounded-2xl p-5 border border-slate-100 shadow-sm hover:shadow-md hover:border-blue-200 transition-all group"
+              className={`block p-5 border transition-all group border-[color:var(--profile-border)] hover:border-[color:var(--profile-accent)] ${surfaceClass} ${themeConfig.shadow}`}
+              style={{ borderRadius: 'var(--profile-radius)' }}
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-base font-black text-slate-900 group-hover:text-blue-700 truncate">
+                  <h3 className="text-base font-black text-[color:var(--profile-text)] group-hover:text-[color:var(--profile-accent)] truncate">
                     {p.title ?? 'Tanpa judul'}
                   </h3>
                   {p.description && (
-                    <p className="mt-1 text-sm text-slate-500 line-clamp-2">{p.description}</p>
+                    <p className="mt-1 text-sm text-[color:var(--profile-muted)] line-clamp-2 font-medium">{p.description}</p>
                   )}
                   <div className="mt-3 flex flex-wrap gap-2">
                     {p.kategori && (
-                      <span className="rounded-full bg-slate-100 text-slate-700 px-2 py-0.5 text-xs font-bold capitalize">
+                      <span className="rounded-full bg-[color:var(--profile-soft)] text-[color:var(--profile-text)] px-2 py-0.5 text-xs font-bold capitalize border border-[color:var(--profile-border)]">
                         {p.kategori}
                       </span>
                     )}
                     {p.abcd_stage && (
-                      <span className="rounded-full bg-purple-50 text-purple-700 px-2 py-0.5 text-xs font-bold border border-purple-100 capitalize">
+                      <span className="rounded-full bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-400 px-2 py-0.5 text-xs font-bold border border-purple-100 dark:border-purple-800/40 capitalize">
                         {p.abcd_stage}
                       </span>
                     )}
                     {Array.isArray(p.sdg_goals) && p.sdg_goals.length > 0 && (
-                      <span className="rounded-full bg-blue-50 text-blue-700 px-2 py-0.5 text-xs font-black border border-blue-100 inline-flex items-center gap-1">
+                      <span className="rounded-full bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 px-2 py-0.5 text-xs font-black border border-blue-100 dark:border-blue-800/40 inline-flex items-center gap-1">
                         <Globe size={10} /> SDG {p.sdg_goals.slice(0, 3).join(', ')}
                         {p.sdg_goals.length > 3 && ` +${p.sdg_goals.length - 3}`}
                       </span>
                     )}
                     {p.target_participants && (
-                      <span className="rounded-full bg-cyan-50 text-cyan-700 px-2 py-0.5 text-xs font-bold border border-cyan-100">
+                      <span className="rounded-full bg-cyan-50 dark:bg-cyan-950/20 text-cyan-700 dark:text-cyan-400 px-2 py-0.5 text-xs font-bold border border-cyan-100 dark:border-cyan-800/40">
                         Target {p.target_participants}
                       </span>
                     )}
@@ -170,19 +183,23 @@ export default function WorkProgramsPage(): React.JSX.Element {
 }
 
 function StatCard({ label, value, icon, color }: { label: string; value: number; icon: React.ReactNode; color: 'emerald' | 'amber' | 'rose' | 'blue' }) {
+  const { config: themeConfig, surfaceClass } = useTheme();
   const cl = {
-    emerald: 'text-emerald-700 bg-emerald-50',
-    amber: 'text-amber-700 bg-amber-50',
-    rose: 'text-rose-700 bg-rose-50',
-    blue: 'text-blue-700 bg-blue-50',
+    emerald: 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/20 dark:text-emerald-400 border-emerald-250/40',
+    amber: 'text-amber-700 bg-amber-50 dark:bg-amber-950/20 dark:text-amber-400 border-amber-250/40',
+    rose: 'text-rose-700 bg-rose-50 dark:bg-rose-950/20 dark:text-rose-400 border-rose-250/40',
+    blue: 'text-blue-700 bg-blue-50 dark:bg-blue-950/20 dark:text-blue-400 border-blue-250/40',
   }[color];
   return (
-    <div className="rounded-xl border bg-white p-4 shadow-sm">
+    <div 
+      className={`border p-4 ${surfaceClass} ${themeConfig.shadow}`}
+      style={{ borderRadius: 'var(--profile-radius)' }}
+    >
       <div className="flex items-center justify-between">
-        <p className="text-xs uppercase text-slate-500 font-bold">{label}</p>
-        <div className={'rounded-lg p-1.5 ' + cl}>{icon}</div>
+        <p className="text-xs uppercase text-[color:var(--profile-muted)] font-black tracking-wider">{label}</p>
+        <div className={'rounded-lg p-1.5 border ' + cl}>{icon}</div>
       </div>
-      <p className="text-2xl font-black mt-1 text-slate-900">{value.toLocaleString('id-ID')}</p>
+      <p className="text-2xl font-black mt-1 text-[color:var(--profile-text)] tabular-nums">{value.toLocaleString('id-ID')}</p>
     </div>
   );
 }
@@ -191,14 +208,14 @@ function StatusPill({ status }: { status: string }) {
   const s = status.toLowerCase();
   const cls =
     s === 'approved'
-      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800/40'
       : s === 'pending' || s === 'submitted'
-      ? 'bg-amber-50 text-amber-700 border-amber-200'
+      ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-800/40'
       : s === 'revision'
-      ? 'bg-rose-50 text-rose-700 border-rose-200'
+      ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-800/40'
       : s === 'rejected'
-      ? 'bg-slate-200 text-slate-700 border-slate-300'
-      : 'bg-slate-100 text-slate-600 border-slate-200';
+      ? 'bg-slate-200 text-slate-700 border-slate-350 dark:bg-slate-800/40 dark:text-slate-400 dark:border-slate-700'
+      : 'bg-slate-100 text-slate-650 border-slate-200 dark:bg-slate-900/40 dark:text-slate-400 dark:border-slate-800';
   const text =
     s === 'approved' ? 'Disetujui' :
     s === 'pending' || s === 'submitted' ? 'Menunggu' :

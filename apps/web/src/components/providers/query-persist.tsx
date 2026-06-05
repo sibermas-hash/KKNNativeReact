@@ -40,7 +40,7 @@ export function QueryPersist({ queryClient }: QueryPersistProps): null {
       queryClient: queryClient as any,
       persister: idbPersister,
       maxAge: 1000 * 60 * 60 * 24, // 24 hours
-      buster: '', // cache buster — change to invalidate all persisted data
+      buster: 'profile-change-request-status-v2', // cache buster — change to invalidate all persisted data
       dehydrateOptions: {
         shouldDehydrateQuery: (query) => {
           // Only persist successful queries that aren't stale-only

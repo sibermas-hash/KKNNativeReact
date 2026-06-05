@@ -55,7 +55,7 @@ type ForwardGeocodeResult = {
   display_name?: string;
 };
 
-type ChangeRequest = { id: number; status?: 'pending' | 'approved' | 'rejected'; requested_changes: Record<string, { old: unknown; new: unknown }>; rejection_reason?: string | null; reviewed_at?: string | null; created_at: string };
+type ChangeRequest = { id: number; status: 'pending' | 'approved' | 'rejected'; requested_changes: Record<string, { old: unknown; new: unknown }>; rejection_reason?: string | null; reviewed_at?: string | null; created_at: string };
 type ExternalProfile = { external_nim?: string; home_university?: string; external_faculty?: string | null; external_study_program?: string | null; external_email?: string | null; external_phone?: string | null };
 type StudentProfile = { nim?: string; gpa?: number; sks_completed?: number; status_bta_ppi?: string | null; faculty?: { nama?: string }; prodi?: { nama?: string }; external_profile?: ExternalProfile | null; missing_biodata_fields?: string[]; missing_address_fields?: string[]; biodata_complete?: boolean; address_verified?: boolean; address_verified_at?: string | null; [key: string]: unknown };
 type LecturerProfile = { nip?: string; faculty?: { nama?: string }; missing_biodata_fields?: string[]; biodata_complete?: boolean; jabatan?: string; status_aktif?: string; status_pegawai?: string; has_workshop?: boolean; workshop_date?: string; is_cpns?: boolean; is_tugas_belajar?: boolean; [key: string]: unknown };
@@ -673,7 +673,8 @@ export default function ProfilePage(): React.JSX.Element {
       const r = res as { student?: StudentProfile; lecturer?: LecturerProfile; user?: { phone?: string; address?: string; address_village_name?: string; address_district_name?: string; address_regency_name?: string; address_postal_code?: string; address_verified_at?: string; address_lat?: number; address_lng?: number; mahasiswa?: StudentProfile; dosen?: LecturerProfile }; pending_change_request?: ChangeRequest };
       const nextStudent = r?.student ?? r?.user?.mahasiswa ?? null;
       const nextLecturer = r?.lecturer ?? r?.user?.dosen ?? null;
-      setProfileData({ student: nextStudent, lecturer: nextLecturer, pending: r?.pending_change_request ?? null });
+      const pending = r?.pending_change_request?.status === 'pending' ? r.pending_change_request : null;
+      setProfileData({ student: nextStudent, lecturer: nextLecturer, pending });
       reset({
         name: user.name ?? '',
         email: user.email ?? '',
@@ -741,9 +742,9 @@ export default function ProfilePage(): React.JSX.Element {
 
       try {
         const res = await profileApi.get() as unknown as { student?: StudentProfile; lecturer?: LecturerProfile; pending_change_request?: ChangeRequest; profile_complete?: boolean; user?: { biodata_complete?: boolean; address_complete?: boolean } };
-        setProfileData({ student: res?.student ?? null, lecturer: res?.lecturer ?? null, pending: res?.pending_change_request ?? null });
+        setProfileData({ student: res?.student ?? null, lecturer: res?.lecturer ?? null, pending: res?.pending_change_request?.status === 'pending' ? res.pending_change_request : null });
 
-        if (res?.pending_change_request) {
+        if (res?.pending_change_request?.status === 'pending') {
           successMessage = 'Permintaan perubahan profil dikirim. Menunggu persetujuan admin.';
         } else if (Array.isArray(updateRes?.map_fields_updated) && updateRes.map_fields_updated.length > 0) {
           successMessage = 'Titik peta dan metadata alamat berhasil diperbarui.';
@@ -850,8 +851,8 @@ export default function ProfilePage(): React.JSX.Element {
         setUser({ ...freshUser, avatar_url: `${base}?v=${Date.now()}` });
       }
 
-      const res = await profileApi.get() as unknown as Record<string, unknown>;
-      setProfileData({ student: (res?.student as StudentProfile) ?? null, lecturer: (res?.lecturer as LecturerProfile) ?? null, pending: (res?.pending_change_request as ChangeRequest) ?? null });
+      const res = await profileApi.get() as unknown as Record<string, unknown> & { pending_change_request?: ChangeRequest };
+      setProfileData({ student: (res?.student as StudentProfile) ?? null, lecturer: (res?.lecturer as LecturerProfile) ?? null, pending: res?.pending_change_request?.status === 'pending' ? res.pending_change_request : null });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.dashboard });
     } catch {
       // Don't revert — the file is saved server-side. Just warn.

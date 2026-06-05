@@ -138,6 +138,7 @@ export default function AdminDashboardPage(): React.JSX.Element {
   const periodOptions = availablePeriods ? Object.values(availablePeriods).flat() : [];
   const phaseContext = d?.phase_context as { hint?: string; counters?: Array<{ label: string; value: number; color?: string }>; actions?: Array<{ label: string; route?: string; href?: string; color?: string }> } | undefined;
   const trendData  = (d?.weekly_trend as Array<{ day: string; daftar: number; validasi: number }> | undefined);
+  const hasTrendActivity = !!trendData?.some((x) => (x.daftar || 0) > 0 || (x.validasi || 0) > 0);
   const phaseKey   = (d?.current_phase as string) || (period?.current_phase as string) || currentPhase || 'registration';
   const rawPhaseIdx = PHASES.findIndex(p => p.id === phaseKey);
   const phaseIdx   = rawPhaseIdx >= 0 ? rawPhaseIdx : 0;
@@ -308,11 +309,11 @@ export default function AdminDashboardPage(): React.JSX.Element {
       </motion.div>
 
       {/* ── Stat cards ── */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">
         {STAT_CARDS.map((c, i) => {
           const card = (
             <motion.div key={c.label} variants={ENTER} whileHover={CARD_HOVER} whileTap={c.href ? CARD_TAP : undefined}
-              className="group relative overflow-hidden rounded-2xl border border-white/70 bg-white/85 p-5 shadow-[0_18px_50px_rgba(15,23,42,0.06)] backdrop-blur transition-shadow duration-300 hover:shadow-[0_24px_70px_rgba(15,118,110,0.14)] cursor-default">
+              className="group relative overflow-hidden rounded-2xl border border-white/70 bg-white/85 p-3 shadow-[0_12px_34px_rgba(15,23,42,0.05)] backdrop-blur transition-shadow duration-300 hover:shadow-[0_18px_46px_rgba(15,118,110,0.12)] cursor-default">
               <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-0 blur-2xl transition-opacity duration-300 group-hover:opacity-60" style={{ background: c.color }} />
               {c.alert && (
                 <span className="absolute top-3 right-3 flex h-2 w-2">
@@ -320,11 +321,11 @@ export default function AdminDashboardPage(): React.JSX.Element {
                   <span className="relative h-2 w-2 rounded-full" style={{ background: c.color }} />
                 </span>
               )}
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl ring-1 ring-white/70" style={{ background: c.bg, color: c.color }}>
+              <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl ring-1 ring-white/70" style={{ background: c.bg, color: c.color }}>
                 <c.icon size={17} strokeWidth={2} />
               </div>
-              <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1 font-sans">{c.label}</p>
-              <p className="text-3xl font-black tabular-nums tracking-tight" style={{ color: c.color }}>
+              <p className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest mb-0.5 font-sans">{c.label}</p>
+              <p className="text-2xl font-black tabular-nums tracking-tight" style={{ color: c.color }}>
                 {isLoading ? <span className="inline-block h-7 w-10 animate-pulse rounded bg-slate-100" /> : <Counter to={c.value} delay={0.1 + i * 0.07} />}
               </p>
               <div className="absolute bottom-0 left-0 right-0 h-0.5 opacity-0 group-hover:opacity-100 transition-opacity" style={{ background: c.color }} />
@@ -387,9 +388,11 @@ export default function AdminDashboardPage(): React.JSX.Element {
               <div className="h-full flex items-center justify-center">
                 <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-slate-400" />
               </div>
-            ) : trendData.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-xs text-slate-400 font-sans">
-                Belum ada data pendaftaran minggu ini
+            ) : trendData.length === 0 || !hasTrendActivity ? (
+              <div className="h-full flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 text-center font-sans">
+                <TrendingUp size={20} className="mb-2 text-slate-300" />
+                <p className="text-xs font-bold text-slate-500">Belum ada aktivitas pendaftaran minggu ini</p>
+                <p className="mt-1 text-[11px] text-slate-400">Grafik disembunyikan supaya tidak menampilkan garis kosong.</p>
               </div>
             ) : (
             <ResponsiveContainer width="100%" height="100%">

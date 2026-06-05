@@ -9,12 +9,12 @@ PM2_NAME="${PM2_NAME:-sibermas-web}"
 
 cd "$APP_DIR"
 
-LOCK_FILE="${DEPLOY_LOCK_FILE:-/tmp/sibermas-web-deploy.lock}"
-exec 9>"$LOCK_FILE"
-if ! flock -n 9; then
-  echo "ERROR: another web deploy is running (lock: $LOCK_FILE)" >&2
+LOCK_DIR="${DEPLOY_LOCK_DIR:-/tmp/sibermas-web-deploy.lock}"
+if ! mkdir "$LOCK_DIR" 2>/dev/null; then
+  echo "ERROR: another web deploy is running (lock: $LOCK_DIR)" >&2
   exit 75
 fi
+trap 'rm -rf "$LOCK_DIR"' EXIT
 
 echo "[1/6] git pull origin ${BRANCH}"
 git fetch origin "$BRANCH"
@@ -40,12 +40,12 @@ restore_next_on_fail() {
     rm -rf "$NEXT_DIR"
     mv "$BACKUP_NEXT_DIR" "$NEXT_DIR"
   fi
+  rm -rf "$LOCK_DIR"
   exit "$exit_code"
 }
 trap restore_next_on_fail EXIT
 TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:web
 rm -rf "$BACKUP_NEXT_DIR"
-trap - EXIT
 mkdir -p apps/web/.next/standalone/apps/web/public apps/web/.next/standalone/apps/web/.next/static
 cp -R apps/web/public/. apps/web/.next/standalone/apps/web/public/
 cp -R apps/web/.next/static/. apps/web/.next/standalone/apps/web/.next/static/
@@ -84,3 +84,4 @@ sleep 3
 curl -I -s "http://127.0.0.1:${WEB_PORT}/" | head -5
 
 echo "DONE $(git rev-parse --short HEAD)"
+rm -rf "$LOCK_DIR"

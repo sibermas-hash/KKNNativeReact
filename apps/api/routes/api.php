@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\NotificationStreamController;
 use App\Http\Controllers\Api\PublicDataController;
 use App\Http\Controllers\Api\RegistrationController;
+use App\Http\Controllers\Api\V1\Admin\CountdownSettingController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\PeriodContextController;
 use App\Http\Controllers\Api\V1\PrivateFileController;
@@ -55,6 +56,7 @@ Route::prefix('v1')->group(function () {
         Route::get('/pengumuman', [PublicController::class, 'pengumuman'])->name('api.v1.public.pengumuman');
         Route::get('/pengumuman/{slug}', [PublicController::class, 'announcementBySlug'])->name('api.v1.public.pengumuman.show');
         Route::get('/popup-announcement', [PublicController::class, 'popupAnnouncement'])->name('api.v1.public.popup-announcement');
+        Route::get('/countdown/active', [CountdownSettingController::class, 'active'])->name('api.v1.public.countdown.active');
         Route::get('/locations', [PublicController::class, 'locations'])->name('api.v1.public.locations');
         Route::get('/downloads', [PublicController::class, 'downloads'])->name('api.v1.public.downloads');
         Route::get('/verify-certificate/{token}', [PublicController::class, 'verifyCertificate'])->name('api.v1.public.verify-certificate');

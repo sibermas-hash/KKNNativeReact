@@ -196,7 +196,11 @@ class DashboardController extends Controller
 
         $approved = (clone $query)->count();
         $assigned = (clone $query)->whereNotNull('kelompok_id')->count();
-        $totalGroups = KelompokKkn::where('periode_id', $periodId)->count();
+        $groupsQuery = KelompokKkn::where('periode_id', $periodId);
+        if ($facultyId) {
+            $groupsQuery->whereHas('peserta.mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
+        }
+        $totalGroups = $groupsQuery->count();
         $unassigned = $approved - $assigned;
 
         return [
@@ -228,8 +232,11 @@ class DashboardController extends Controller
 
         $totalStudents = PesertaKkn::where('periode_id', $periodId)
             ->whereIn('status', ['approved', 'active'])
-            ->whereNotNull('kelompok_id')
-            ->count();
+            ->whereNotNull('kelompok_id');
+        if ($facultyId) {
+            $totalStudents->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
+        }
+        $totalStudents = $totalStudents->count();
 
         return [
             'hint' => 'KKN sedang berlangsung. Pantau aktivitas harian mahasiswa.',
@@ -248,15 +255,21 @@ class DashboardController extends Controller
     {
         $totalStudents = PesertaKkn::where('periode_id', $periodId)
             ->whereIn('status', ['approved', 'active'])
-            ->whereNotNull('kelompok_id')
-            ->count();
+            ->whereNotNull('kelompok_id');
+        if ($facultyId) {
+            $totalStudents->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
+        }
+        $totalStudents = $totalStudents->count();
 
         // Subquery: avoid pluck+whereIn round-trip
         $gradedStudents = NilaiKkn::whereHas(
             'kelompok', fn ($q) => $q->where('periode_id', $periodId)
         )
-            ->where('total_score', '>', 0)
-            ->count();
+            ->where('total_score', '>', 0);
+        if ($facultyId) {
+            $gradedStudents->whereHas('user.mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
+        }
+        $gradedStudents = $gradedStudents->count();
         $ungradedStudents = max(0, $totalStudents - $gradedStudents);
 
         return [

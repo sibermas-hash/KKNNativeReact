@@ -19,19 +19,47 @@ class LokasiController extends Controller
 
     private const TARGET_REGENCIES = ['Banyumas', 'Banjarnegara', 'Kebumen', 'Purbalingga', 'Pangandaran'];
 
+    private function facultyScopeId(): ?int
+    {
+        $user = auth()->user();
+
+        return $user?->hasRole('faculty_admin') && $user->fakultas_id
+            ? (int) $user->fakultas_id
+            : null;
+    }
+
+    private function denyFacultyAdminMutation(): void
+    {
+        abort_if($this->facultyScopeId(), 403, 'Admin fakultas hanya memiliki akses baca untuk data lokasi.');
+    }
+
+    private function scopeByFaculty($query): void
+    {
+        if ($facultyId = $this->facultyScopeId()) {
+            $query->where(function ($q) use ($facultyId) {
+                $q->whereNull('fakultas_id')->orWhere('fakultas_id', $facultyId);
+            });
+        }
+    }
+
     public function index(Request $request): JsonResponse
     {
         $lokasi = Lokasi::with('fakultas')
             ->whereIn('regency_name', self::TARGET_REGENCIES)
             ->when($request->input('search'), fn ($q, $s) => $q->where('village_name', 'like', '%'.QueryHelper::escapeLike($s).'%'))
-            ->orderBy('village_name')
-            ->paginate($request->input('per_page', 25));
+            ->orderBy('village_name');
+
+        $this->scopeByFaculty($lokasi);
+
+        $lokasi = $lokasi->paginate($request->input('per_page', 25));
 
         return $this->successCollection(LokasiResource::collection($lokasi));
     }
 
     public function updateSelection(Request $request): JsonResponse
     {
+        $this->denyFacultyAdminMutation();
+
         $validated = $request->validate([
             'ids' => ['required', 'array', 'min:1'],
             'ids.*' => ['integer', 'exists:lokasi,id'],
@@ -47,6 +75,8 @@ class LokasiController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        $this->denyFacultyAdminMutation();
+
         $validated = $request->validate([
             'village_name' => ['required', 'string', 'max:255'],
             'district_name' => ['nullable', 'string', 'max:255'],
@@ -64,6 +94,8 @@ class LokasiController extends Controller
 
     public function update(Request $request, Lokasi $lokasi): JsonResponse
     {
+        $this->denyFacultyAdminMutation();
+
         $lokasi->update($request->validate([
             'village_name' => ['sometimes', 'string', 'max:255'],
             'district_name' => ['nullable', 'string', 'max:255'],
@@ -81,6 +113,8 @@ class LokasiController extends Controller
 
     public function destroy(Lokasi $lokasi): JsonResponse
     {
+        $this->denyFacultyAdminMutation();
+
         // Audit R11-GROUP-018 fix: block delete kalau ada kelompok yang
         // masih mereferensikan lokasi ini. Sebelumnya delete langsung
         // (dan FK cascadeOnDelete akan menghapus kelompok + peserta terkait
@@ -106,6 +140,8 @@ class LokasiController extends Controller
 
     public function import(Request $request): JsonResponse
     {
+        $this->denyFacultyAdminMutation();
+
         $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls,csv', 'max:10240']]);
 
         return $this->success(['imported' => 0], 'Import lokasi selesai.');
@@ -113,7 +149,10 @@ class LokasiController extends Controller
 
     public function export(): JsonResponse
     {
-        return $this->success(LokasiResource::collection(Lokasi::with('fakultas')->orderBy('village_name')->get()));
+        $query = Lokasi::with('fakultas')->orderBy('village_name');
+        $this->scopeByFaculty($query);
+
+        return $this->success(LokasiResource::collection($query->get()));
     }
 
     public function regulerPool(Request $request): JsonResponse
@@ -121,8 +160,11 @@ class LokasiController extends Controller
         $lokasi = Lokasi::query()
             ->with('fakultas')
             ->when($request->input('search'), fn ($q, $s) => $q->where('village_name', 'like', '%'.QueryHelper::escapeLike($s).'%'))
-            ->orderBy('village_name')
-            ->get();
+            ->orderBy('village_name');
+
+        $this->scopeByFaculty($lokasi);
+
+        $lokasi = $lokasi->get();
 
         return $this->success(LokasiResource::collection($lokasi));
     }

@@ -22,6 +22,29 @@ class ExternalParticipantController extends Controller
 {
     use ApiResponse;
 
+    private function facultyScopeId(): ?int
+    {
+        $user = auth()->user();
+
+        return $user?->hasRole('faculty_admin') && $user->fakultas_id
+            ? (int) $user->fakultas_id
+            : null;
+    }
+
+    private function scopeProfilesByFaculty($query): void
+    {
+        if ($facultyId = $this->facultyScopeId()) {
+            $query->whereHas('mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
+        }
+    }
+
+    private function scopeBatchesByFaculty($query): void
+    {
+        if ($facultyId = $this->facultyScopeId()) {
+            $query->whereHas('students.mahasiswa', fn ($q) => $q->where('fakultas_id', $facultyId));
+        }
+    }
+
     public function index(Request $request): JsonResponse
     {
         $query = ExternalStudentProfile::query()
@@ -37,12 +60,17 @@ class ExternalParticipantController extends Controller
             })
             ->latest('id');
 
+        $this->scopeProfilesByFaculty($query);
+
         return $this->success($query->paginate(min((int) $request->query('per_page', 25), 100)));
     }
 
     public function batches(): JsonResponse
     {
-        return $this->success(ExternalKknBatch::withCount('students')->with('periode:id,name,periode')->latest('id')->get());
+        $query = ExternalKknBatch::withCount('students')->with('periode:id,name,periode')->latest('id');
+        $this->scopeBatchesByFaculty($query);
+
+        return $this->success($query->get());
     }
 
     public function storeBatch(Request $request): JsonResponse
@@ -158,8 +186,11 @@ class ExternalParticipantController extends Controller
         $rows = ExternalStudentProfile::query()
             ->with(['batch.periode', 'mahasiswa.user', 'mahasiswa.peserta.kelompok.lokasi'])
             ->when($request->filled('batch_id'), fn ($q) => $q->where('batch_id', $request->integer('batch_id')))
-            ->oldest('id')
-            ->get();
+            ->oldest('id');
+
+        $this->scopeProfilesByFaculty($rows);
+
+        $rows = $rows->get();
 
         $header = ['no','nama','username','nim_asal','kampus_asal','fakultas_asal','prodi_asal','periode','target_kabupaten','kelompok','lokasi_kelompok','status_peserta','no_hp','email'];
         $lines = [$header];

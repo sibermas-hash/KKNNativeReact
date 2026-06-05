@@ -39,7 +39,7 @@ if ! git diff --cached --quiet; then
 else
   echo "  ℹ️  No changes to commit, skipping..."
 fi
-# git push origin main
+git push origin main
 echo "  ✅ Push ke GitHub selesai"
 
 # Step 2: SSH ke server dan deploy
@@ -56,6 +56,7 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
   JAIL_API_IP="$JAIL_API_IP" \
   JAIL_PROXY_IP="$JAIL_PROXY_IP" \
   PUBLIC_BASE_URL="$PUBLIC_BASE_URL" \
+  SUDO_PASS="${SUDO_PASS:-}" \
   bash -s << 'ENDSSH'
   set -euo pipefail
 
@@ -64,12 +65,19 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
   JAIL_WEB_IP="${JAIL_WEB_IP:-}"
   JAIL_API_IP="${JAIL_API_IP:-}"
   JAIL_PROXY_IP="${JAIL_PROXY_IP:-10.0.0.10}"
+  SUDO_PASS="${SUDO_PASS:-}"
 
   restart_native_web() {
     if [ -x /usr/local/etc/rc.d/sibermas_web ]; then
-      service sibermas_web stop 2>/dev/null || true
-    sleep 1
-    service sibermas_web restart
+      if [ -n "${SUDO_PASS:-}" ]; then
+        echo "$SUDO_PASS" | sudo -S service sibermas_web stop 2>/dev/null || true
+        sleep 1
+        echo "$SUDO_PASS" | sudo -S service sibermas_web restart
+      else
+        service sibermas_web stop 2>/dev/null || true
+        sleep 1
+        service sibermas_web restart
+      fi
       return
     fi
 
@@ -78,7 +86,11 @@ ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
 
   restart_native_queue() {
     if [ -x /usr/local/etc/rc.d/sibermas_queue ]; then
-      service sibermas_queue restart
+      if [ -n "${SUDO_PASS:-}" ]; then
+        echo "$SUDO_PASS" | sudo -S service sibermas_queue restart
+      else
+        service sibermas_queue restart
+      fi
       return
     fi
 
@@ -165,8 +177,13 @@ echo "  [i] Copying static & public to standalone..."
   cp -r apps/web/public/.       apps/web/.next/standalone/apps/web/public 2>/dev/null || true
 
   echo "  [j] Fixing permissions..."
-  chown -R ${DEPLOY_USER:-kampelmas}:www apps/web/.next
-  chown -R www:www apps/api/storage apps/api/bootstrap/cache
+  if [ -n "${SUDO_PASS:-}" ]; then
+    echo "$SUDO_PASS" | sudo -S chown -R ${DEPLOY_USER:-kampelmas}:www apps/web/.next || true
+    echo "$SUDO_PASS" | sudo -S chown -R www:www apps/api/storage apps/api/bootstrap/cache || true
+  else
+    chown -R ${DEPLOY_USER:-kampelmas}:www apps/web/.next || true
+    chown -R www:www apps/api/storage apps/api/bootstrap/cache || true
+  fi
   find apps/web/.next/standalone -type d -exec chmod 2775 {} + 2>/dev/null || true
   find apps/web/.next/standalone -type f -exec chmod u+rw,g+r {} + 2>/dev/null || true
 
@@ -182,10 +199,17 @@ echo "  [i] Copying static & public to standalone..."
     jexec nginx-proxy service nginx reload 2>/dev/null || \
       (command -v ssh >/dev/null && ssh "${JAIL_PROXY_IP}" service nginx reload) || true
   else
-    service php-fpm reload 2>/dev/null || service php-fpm restart || true
-    restart_native_web || true
-    restart_native_queue || true
-    service nginx reload 2>/dev/null || true
+    if [ -n "${SUDO_PASS:-}" ]; then
+      echo "$SUDO_PASS" | sudo -S service php-fpm reload 2>/dev/null || echo "$SUDO_PASS" | sudo -S service php-fpm restart || true
+      restart_native_web || true
+      restart_native_queue || true
+      echo "$SUDO_PASS" | sudo -S service nginx reload 2>/dev/null || true
+    else
+      service php-fpm reload 2>/dev/null || service php-fpm restart || true
+      restart_native_web || true
+      restart_native_queue || true
+      service nginx reload 2>/dev/null || true
+    fi
   fi
 
   echo ""

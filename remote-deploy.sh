@@ -50,7 +50,7 @@ echo ""
 # Quoted heredoc (<<'ENDSSH') mencegah expansion di lokal — variable
 # expand di server. Env vars di-pass explicit via `VAR=xxx bash -s` karena
 # FreeBSD sshd default tidak accept SendEnv tanpa konfigurasi server-side.
-ssh -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
+ssh -A -p "$PORT" -o StrictHostKeyChecking=accept-new "$SERVER" \
   APP_DIR="$APP_DIR" \
   JAIL_WEB_IP="$JAIL_WEB_IP" \
   JAIL_API_IP="$JAIL_API_IP" \

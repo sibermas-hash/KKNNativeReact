@@ -87,8 +87,8 @@ const NAV = [
   { href: '/admin/rekapitulasi',   icon: BarChart3,     label: 'Rekap Nilai' },
 ];
 
-const ENTER = { hidden: { opacity: 0, y: 16, filter: 'blur(6px)' }, show: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.42, ease: 'easeOut' } } };
-const CARD_HOVER = { y: -5, scale: 1.012, transition: { duration: 0.22, ease: 'easeOut' } };
+const ENTER = { hidden: { opacity: 0, y: 16, filter: 'blur(6px)' }, show: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.42 } } };
+const CARD_HOVER = { y: -5, scale: 1.012, transition: { duration: 0.22 } };
 const CARD_TAP = { scale: 0.985 };
 
 export default function AdminDashboardPage(): React.JSX.Element {
@@ -184,6 +184,19 @@ export default function AdminDashboardPage(): React.JSX.Element {
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600 font-sans">
               Ringkasan jumlah total pada periode yang sedang dipilih.
             </p>
+            <div className="mt-5 flex flex-wrap gap-2">
+              {[
+                { href: '/admin/pendaftaran', label: 'Validasi cepat' },
+                { href: '/admin/kelompok', label: 'Atur kelompok' },
+                { href: '/admin/laporan/harian', label: 'Pantau laporan' },
+              ].map((a) => (
+                <motion.div key={a.href} whileHover={{ y: -2, scale: 1.02 }} whileTap={CARD_TAP}>
+                  <Link href={a.href} prefetch={false} className="inline-flex items-center gap-2 rounded-full border border-white/70 bg-white/80 px-3.5 py-2 text-[11px] font-black uppercase tracking-wide text-slate-700 shadow-sm backdrop-blur transition-colors hover:bg-white">
+                    {a.label} <ArrowRight size={12} />
+                  </Link>
+                </motion.div>
+              ))}
+            </div>
           </div>
           <div className="flex flex-col gap-2 shrink-0 sm:items-end">
             <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Periode Ringkasan</span>
@@ -206,6 +219,7 @@ export default function AdminDashboardPage(): React.JSX.Element {
         </div>
         <div className="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-emerald-300/25 blur-3xl" />
         <div className="pointer-events-none absolute -bottom-24 left-1/3 h-60 w-60 rounded-full bg-cyan-300/20 blur-3xl" />
+        <div className="pointer-events-none absolute inset-0 opacity-[0.035] [background-image:linear-gradient(to_right,#0f172a_1px,transparent_1px),linear-gradient(to_bottom,#0f172a_1px,transparent_1px)] [background-size:28px_28px]" />
       </motion.div>
 
       {isError && (

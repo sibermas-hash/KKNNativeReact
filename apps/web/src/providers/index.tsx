@@ -46,6 +46,19 @@ export function Providers({ children }: { children: ReactNode }): React.JSX.Elem
 
     initAuthToken();
 
+    const uiVersion = 'sidebar-profile-v2';
+    if (window.localStorage.getItem('sibermas_ui_version') !== uiVersion) {
+      window.localStorage.setItem('sibermas_ui_version', uiVersion);
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((reg) => void reg.unregister())).catch(() => undefined);
+      }
+      if ('caches' in window) {
+        caches.keys().then((keys) => Promise.all(keys.map((key) => caches.delete(key)))).catch(() => undefined);
+      }
+      window.setTimeout(() => window.location.reload(), 250);
+      return;
+    }
+
     const path = window.location.pathname;
     const isProtected = PROTECTED_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
 

@@ -217,6 +217,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </div>
 
+        {!isSuperadmin && (
+          <div className="px-4 py-2">
+            <Link href="/profil" prefetch={false} onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 rounded-2xl bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+              <div className="h-11 w-11 overflow-hidden rounded-2xl bg-[color:var(--profile-primary)] flex items-center justify-center text-white shrink-0 shadow-inner">
+                {user.avatar_url ? <img src={user.avatar_url} alt={user.name} className="h-full w-full object-cover" /> : <span className="text-xs font-black uppercase">{user.name.substring(0, 2)}</span>}
+              </div>
+              <div className="min-w-0">
+                <p className="text-[9px] font-black text-[color:var(--profile-soft-text)] uppercase tracking-[0.15em]">{roles[0] || 'admin'}</p>
+                <p className="text-sm font-black text-[color:var(--profile-text)] truncate mt-0.5">{user.name}</p>
+                <p className="text-[10px] font-bold text-[color:var(--profile-muted)] mt-0.5 truncate">{user.nim || user.username}</p>
+              </div>
+            </Link>
+          </div>
+        )}
+
         {/* Nav */}
         <nav className="flex-1 overflow-y-auto px-4 py-4">
           {/* Cmd+K hint */}
@@ -265,21 +280,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </Link>
         </div>
 
-        {/* Profile */}
-        <div className="p-4">
-          <Link href="/profil" prefetch={false} className="flex items-center gap-3 p-3 rounded-2xl bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] shadow-sm hover:shadow-md transition-all group">
-            <div className="h-10 w-10 rounded-xl bg-[color:var(--profile-primary)] flex items-center justify-center text-white shrink-0 shadow-inner group-hover:rotate-6 transition-transform">
-              <span className="text-xs font-black uppercase">{user.name.substring(0, 2)}</span>
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-xs font-black text-[color:var(--profile-text)] truncate leading-none mb-1 font-display">{user.name}</span>
-              <span className="text-[9px] font-bold text-[color:var(--profile-muted)] uppercase tracking-wider flex items-center gap-1 font-sans">
-                <div className="w-1 h-1 rounded-full bg-[color:var(--profile-accent)] animate-pulse" />
-                {roles[0] || 'admin'}
-              </span>
-            </div>
-          </Link>
-        </div>
+        {isSuperadmin && (
+          <div className="p-4">
+            <Link href="/profil" prefetch={false} className="flex items-center gap-3 p-3 rounded-2xl bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] shadow-sm hover:shadow-md transition-all group">
+              <div className="h-10 w-10 rounded-xl bg-[color:var(--profile-primary)] flex items-center justify-center text-white shrink-0 shadow-inner group-hover:rotate-6 transition-transform">
+                <span className="text-xs font-black uppercase">{user.name.substring(0, 2)}</span>
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs font-black text-[color:var(--profile-text)] truncate leading-none mb-1 font-display">{user.name}</span>
+                <span className="text-[9px] font-bold text-[color:var(--profile-muted)] uppercase tracking-wider flex items-center gap-1 font-sans">
+                  <div className="w-1 h-1 rounded-full bg-[color:var(--profile-accent)] animate-pulse" />
+                  {roles[0] || 'admin'}
+                </span>
+              </div>
+            </Link>
+          </div>
+        )}
       </aside>
 
       {/* Main */}

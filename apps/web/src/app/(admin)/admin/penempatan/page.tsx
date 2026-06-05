@@ -22,17 +22,21 @@ export default function PenempatanKknPage(): React.JSX.Element {
   const { config: themeConfig, surfaceClass } = useTheme();
 
   return (
-    <main className="space-y-6 p-6">
-      <div>
-        <p className="text-xs font-black uppercase tracking-wide text-[color:var(--profile-soft-text)]">Penempatan KKN</p>
-        <h1 className="text-2xl font-black uppercase text-[color:var(--profile-text)]">Pusat Penempatan KKN</h1>
-        <p className="text-sm text-[color:var(--profile-muted)]">Pilih workflow: otomatis untuk KKN Reguler, manual untuk KKN non-Reguler. Semua tetap tercatat di Sibermas.</p>
+    <main className="space-y-6 p-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <div className="relative overflow-hidden rounded-3xl border border-cyan-100 bg-gradient-to-br from-cyan-50 via-white to-indigo-50 p-6 shadow-sm">
+        <div className="absolute -right-16 -top-16 h-44 w-44 rounded-full bg-cyan-200/30 blur-3xl" />
+        <div className="absolute -bottom-16 left-1/3 h-44 w-44 rounded-full bg-indigo-200/30 blur-3xl" />
+        <div className="relative">
+          <p className="mb-2 inline-flex rounded-full bg-cyan-100 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-cyan-700">Penempatan KKN</p>
+          <h1 className="text-3xl font-black uppercase tracking-tight text-[color:var(--profile-text)]">Pusat Penempatan KKN</h1>
+          <p className="mt-2 max-w-3xl text-sm text-[color:var(--profile-muted)]">Pilih workflow: otomatis untuk KKN Reguler, manual untuk KKN non-Reguler. Semua tetap tercatat di Sibermas.</p>
+        </div>
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
         <Link 
           href="/admin/penempatan?mode=otomatis" 
-          className={`p-5 transition border ${
+          className={`group p-5 transition hover:-translate-y-1 hover:shadow-xl border ${
             !isManual 
               ? "border-[color:var(--profile-primary)] bg-[color:var(--profile-soft)] ring-2 ring-[color:var(--profile-ring)]" 
               : `${surfaceClass} border-[color:var(--profile-border)] opacity-60 hover:opacity-100`
@@ -54,7 +58,7 @@ export default function PenempatanKknPage(): React.JSX.Element {
         </Link>
         <Link 
           href="/admin/penempatan?mode=manual" 
-          className={`p-5 transition border ${
+          className={`group p-5 transition hover:-translate-y-1 hover:shadow-xl border ${
             isManual 
               ? "border-[color:var(--profile-primary)] bg-[color:var(--profile-soft)] ring-2 ring-[color:var(--profile-ring)]" 
               : `${surfaceClass} border-[color:var(--profile-border)] opacity-60 hover:opacity-100`
@@ -78,7 +82,7 @@ export default function PenempatanKknPage(): React.JSX.Element {
 
       {!isManual ? (
         <section 
-          className={`border p-6 ${themeConfig.shadow} ${surfaceClass} border-[color:var(--profile-border)]`}
+          className={`border p-6 ${themeConfig.shadow} ${surfaceClass} border-[color:var(--profile-border)] animate-in fade-in slide-in-from-bottom-2 duration-300`}
           style={{ borderRadius: 'var(--profile-radius)' }}
         >
           <div className="text-xs font-black uppercase tracking-wide text-[color:var(--profile-soft-text)]">Workflow Otomatis</div>
@@ -92,7 +96,7 @@ export default function PenempatanKknPage(): React.JSX.Element {
         </section>
       ) : (
         <section 
-          className={`border p-6 ${themeConfig.shadow} ${surfaceClass} border-[color:var(--profile-border)]`}
+          className={`border p-6 ${themeConfig.shadow} ${surfaceClass} border-[color:var(--profile-border)] animate-in fade-in slide-in-from-bottom-2 duration-300`}
           style={{ borderRadius: 'var(--profile-radius)' }}
         >
           <div className="text-xs font-black uppercase tracking-wide text-[color:var(--profile-soft-text)]">Workflow Manual Non-Reguler</div>
@@ -102,7 +106,7 @@ export default function PenempatanKknPage(): React.JSX.Element {
             {MANUAL.map(([key, label]) => (
               <div 
                 key={key} 
-                className={`border p-4 ${themeConfig.shadow} ${surfaceClass} border-[color:var(--profile-border)] flex flex-col justify-between`}
+                className={`border p-4 ${themeConfig.shadow} ${surfaceClass} border-[color:var(--profile-border)] flex flex-col justify-between transition hover:-translate-y-1 hover:border-[color:var(--profile-primary)] hover:shadow-xl`}
                 style={{ borderRadius: 'var(--profile-radius)' }}
               >
                 <div>
@@ -112,13 +116,13 @@ export default function PenempatanKknPage(): React.JSX.Element {
                 <div className="mt-4 flex flex-wrap gap-2">
                   <Link 
                     href={`/admin/kelompok?jenis_kkn=${key}&mode=manual`} 
-                    className={`rounded-lg px-3 py-2 text-xs font-bold ${PRIMARY_CLASS}`}
+                    className={`rounded-xl px-3 py-2 text-xs font-bold shadow-sm transition hover:-translate-y-0.5 ${PRIMARY_CLASS}`}
                   >
                     Buat/Review Kelompok
                   </Link>
                   <Link 
                     href={`/admin/dosen/penugasan?jenis_kkn=${key}&mode=manual`}
-                    className={`rounded-lg border px-3 py-2 text-xs font-bold ${SOFT_CLASS}`}
+                    className={`rounded-xl border px-3 py-2 text-xs font-bold shadow-sm transition hover:-translate-y-0.5 ${SOFT_CLASS}`}
                   >
                     Assign DPL
                   </Link>
@@ -137,10 +141,10 @@ function Action({ href, icon, title, desc }: { href: string; icon: React.ReactNo
   return (
     <Link 
       href={href} 
-      className={`group border p-4 transition hover:-translate-y-0.5 hover:shadow-md ${themeConfig.shadow} ${surfaceClass} border-[color:var(--profile-border)]`}
+      className={`group border p-4 transition hover:-translate-y-1 hover:border-[color:var(--profile-primary)] hover:shadow-xl ${themeConfig.shadow} ${surfaceClass} border-[color:var(--profile-border)]`}
       style={{ borderRadius: 'var(--profile-radius)' }}
     >
-      <div className="mb-3 inline-flex rounded-lg bg-[color:var(--profile-soft)] p-2 text-[color:var(--profile-soft-text)]">{icon}</div>
+      <div className="mb-3 inline-flex rounded-xl bg-[color:var(--profile-soft)] p-2 text-[color:var(--profile-soft-text)] transition group-hover:scale-110">{icon}</div>
       <div className="flex items-center justify-between gap-2">
         <h3 className="font-black text-[color:var(--profile-text)]">{title}</h3>
         <ArrowRight className="h-4 w-4 text-[color:var(--profile-muted)] group-hover:text-[color:var(--profile-text)]" />

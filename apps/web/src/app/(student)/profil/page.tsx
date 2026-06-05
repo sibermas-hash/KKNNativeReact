@@ -413,31 +413,31 @@ function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, l
         <div><p className={`${typography.label} text-[color:var(--profile-text)] drop-shadow-sm`}>{user.name}</p><p className={`${typography.meta} text-[color:var(--profile-muted)]`}>{user.username}</p>{student?.nim && <p className={`${typography.meta} text-[color:var(--profile-muted)] flex items-center gap-1`}><Lock size={12} className="text-amber-500" /> NIM: {student.nim}</p>}{lecturer?.nip && <p className={`${typography.meta} text-[color:var(--profile-muted)] flex items-center gap-1`}><Lock size={12} className="text-amber-500" /> NIP: {lecturer.nip}</p>}</div>
         <div className="space-y-2">
           <button type="button" onClick={() => avatarInputRef.current?.click()} className={cx('inline-flex items-center gap-2 rounded-lg px-3 py-2', typography.meta, SOFT_CLASS)}><Camera size={14} /><span className="whitespace-normal">Upload Foto Formal HD</span></button>
-          <div className={`${typography.meta} max-w-72 rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-warning)] p-3 text-left text-[color:var(--profile-warning-text)] shadow-sm`}>
-            <button type="button" onClick={() => setShowPhotoGuide((v) => !v)} className="flex w-full items-center justify-between gap-2 text-left font-black uppercase tracking-wide">
-              <span>Syarat Foto Profil</span>
+          <div className={`${typography.meta} max-w-72 rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-2 text-left text-[color:var(--profile-soft-text)] shadow-sm`}>
+            <button type="button" onClick={() => setShowPhotoGuide((v) => !v)} className="flex w-full items-center justify-between gap-2 rounded-xl px-2 py-1.5 text-left font-black uppercase tracking-wide transition hover:bg-white/30">
+              <span>{showPhotoGuide ? 'Tutup syarat foto' : 'Lihat syarat foto'}</span>
               <ChevronDown size={14} className={cx('transition-transform', showPhotoGuide && 'rotate-180')} />
             </button>
-            <p className="mt-1">Foto dipakai untuk sertifikat. Klik untuk detail aturan.</p>
-            {showPhotoGuide && <div className="animate-in fade-in slide-in-from-top-1 duration-200">
-            <ul className="mt-2 list-disc space-y-1 pl-4">
-              <li>Pas foto formal satu orang, wajah jelas menghadap kamera.</li>
-              <li>Latar belakang merah polos/solid, bukan ruangan, pemandangan, twibbon, atau editan ramai.</li>
-              <li>Wajib memakai jas almamater/blazer resmi kampus yang terlihat jelas.</li>
-              <li>Komposisi kepala sampai dada/bahu, tidak selfie, tidak miring, tidak terpotong.</li>
-              <li>Tidak memakai masker, kacamata hitam, filter, watermark, stiker, atau tulisan.</li>
-              <li>Rasio wajib 3:4 portrait. File JPG/PNG, minimal 300×400 px, maksimal 2 MB.</li>
-            </ul>
-            <div className="mt-3 grid gap-2 text-[10px] sm:grid-cols-2">
-              <div className="rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-2 text-[color:var(--profile-soft-text)]">
-                <p className="font-black">Contoh benar ✓</p>
-                <p>Ukuran 600×800 / 900×1200 px, background merah polos, jas almamater terlihat, wajah jelas, crop kepala–dada.</p>
+            {showPhotoGuide && <div className="mt-2 rounded-xl bg-[color:var(--profile-warning)] p-3 text-[color:var(--profile-warning-text)] animate-in fade-in slide-in-from-top-1 duration-200">
+              <p className="font-semibold">Foto untuk sertifikat. Sistem menolak otomatis jika tidak sesuai.</p>
+              <ul className="mt-2 list-disc space-y-1 pl-4">
+                <li>Pas foto formal satu orang, wajah jelas menghadap kamera.</li>
+                <li>Latar belakang merah polos/solid.</li>
+                <li>Wajib memakai jas almamater/blazer resmi kampus.</li>
+                <li>Crop kepala sampai dada/bahu, bukan selfie.</li>
+                <li>Tanpa masker, filter, watermark, stiker, atau teks.</li>
+                <li>Rasio 3:4 portrait. JPG/PNG, min. 300×400 px, maks. 2 MB.</li>
+              </ul>
+              <div className="mt-3 grid gap-2 text-[10px]">
+                <div className="rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-2 text-[color:var(--profile-soft-text)]">
+                  <p className="font-black">Contoh benar ✓</p>
+                  <p>600×800 / 900×1200 px, background merah polos, jas terlihat, wajah jelas.</p>
+                </div>
+                <div className="rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-danger)] p-2 text-[color:var(--profile-danger-text)]">
+                  <p className="font-black">Contoh salah ✕</p>
+                  <p>Selfie, twibbon, background ruangan, tanpa jas, blur/gelap.</p>
+                </div>
               </div>
-              <div className="rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-danger)] p-2 text-[color:var(--profile-danger-text)]">
-                <p className="font-black">Contoh salah ✕</p>
-                <p>Selfie, twibbon/watermark, background kelas/rumah, tanpa jas almamater, foto ramai, blur/gelap.</p>
-              </div>
-            </div>
             </div>}
           </div>
           {avatarModerationStatus === 'pending' && (
@@ -451,7 +451,7 @@ function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, l
             </div>
           )}
           {avatarModerationStatus === 'approved' && user.avatar_url && (
-            <div className="rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] px-3 py-2 text-[11px] font-semibold text-[color:var(--profile-soft-text)]">
+            <div className="rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] px-3 py-2 text-[11px] font-semibold text-[color:var(--profile-soft-text)] shadow-sm">
               Status foto: Lolos verifikasi dan siap dipakai pada sertifikat.
             </div>
           )}

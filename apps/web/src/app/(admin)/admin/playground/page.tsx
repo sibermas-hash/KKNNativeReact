@@ -50,7 +50,7 @@ export default function PlaygroundPage() {
     queryKey: ['admin', 'playground', 'models'],
     queryFn: async () => {
       const res = await api.get('/admin/playground/models');
-      return ((res as unknown as { data?: unknown })?.data ?? res) as { providers?: Provider[]; quick_prompts?: QuickPrompt[] };
+      return res as unknown as { providers?: Provider[]; quick_prompts?: QuickPrompt[] };
     },
   });
 
@@ -80,7 +80,7 @@ export default function PlaygroundPage() {
         history: messages.slice(-10).map((m) => ({ role: m.role, content: m.content })),
       };
       const res = await api.post('/admin/playground/chat', payload);
-      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
+      return res as unknown as Record<string, unknown>;
     },
     onSuccess: (data: { answer?: string; model_used?: string; provider_used?: string; usage?: { input_tokens: number; output_tokens: number; total_tokens: number } }, _variables) => {
       setMessages((prev) => [

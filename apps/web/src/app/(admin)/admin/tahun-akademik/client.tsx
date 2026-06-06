@@ -39,7 +39,7 @@ export function TahunAkademikClient({
     queryKey: ['admin', 'tahun-akademik'],
     queryFn: async () => {
       const res = await api.get('/admin/tahun-akademik');
-      const root = (res as { data?: unknown })?.data ?? res;
+      const root = res as unknown;
 
       if (Array.isArray(root)) {
         return root as TahunAkademik[];

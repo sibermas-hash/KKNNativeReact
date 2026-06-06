@@ -52,7 +52,7 @@ export default function BroadcastPage(): React.JSX.Element {
     queryKey: ['admin', 'fakultas-options'],
     queryFn: async () => {
       const res = await api.get('/admin/fakultas');
-      const payload = (res as { data?: unknown }).data ?? res;
+      const payload = res as unknown;
       // Paginated shape or plain array tolerated.
       const arr = (payload as { data?: unknown[] }).data ?? (payload as unknown[]);
       return Array.isArray(arr) ? (arr as Array<{ id: number; nama?: string; short_name?: string }>) : [];
@@ -91,7 +91,7 @@ export default function BroadcastPage(): React.JSX.Element {
       return adminApi.notifications.broadcast(payload as Parameters<typeof adminApi.notifications.broadcast>[0]);
     },
     onSuccess: (res) => {
-      const payload = ((res as { data?: unknown }).data ?? res) as BroadcastResult;
+      const payload = res as unknown as BroadcastResult;
       setLastResult(payload);
       toast.success(`Pengumuman terkirim ke ${payload.total_sent} dari ${payload.total_matched} penerima.`);
       setConfirmed(false);

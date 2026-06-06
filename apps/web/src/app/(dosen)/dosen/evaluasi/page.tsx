@@ -19,7 +19,7 @@ export default function DplEvaluationsPage(): React.JSX.Element {
     queryFn: async () => {
       const res = await dplApi.evaluations.index();
       // API client interceptor unwraps to res.data.data, so res is already the inner object
-      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
+      return res as unknown as Record<string, unknown>;
     },
   });
 

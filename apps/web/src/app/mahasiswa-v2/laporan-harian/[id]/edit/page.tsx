@@ -22,7 +22,7 @@ export default function EditDailyReportPage(): React.JSX.Element {
     queryKey: ['student', 'daily-reports', Number(id)],
     queryFn: async () => {
       const res = await studentApi.dailyReports.show(Number(id));
-      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
+      return res as unknown as Record<string, unknown>;
     },
     enabled: !!id,
   });

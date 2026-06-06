@@ -15,6 +15,7 @@ use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\SertifikatKkn;
+use App\Models\KKN\SystemSetting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -174,6 +175,11 @@ class PublicController extends Controller
                     'groups' => $groupCount,
                     'locations' => $locationCount,
                 ],
+                'schemesContent' => [
+                    'title' => SystemSetting::get('site_schemes_title', ''),
+                    'intro' => SystemSetting::get('site_schemes_intro', ''),
+                    'items' => json_decode((string) SystemSetting::get('site_schemes_items', '[]'), true) ?? [],
+                ],
             ];
         });
 
@@ -181,6 +187,7 @@ class PublicController extends Controller
             'featuredAnnouncements' => AnnouncementResource::collection($data['announcements']),
             'featuredDownloads' => DownloadResource::collection($data['downloads']),
             'stats' => $data['stats'],
+            'schemesContent' => $data['schemesContent'],
             'aboutContent' => [
                 'visi' => config('app.visi', 'Menjadi Lembaga Penelitian dan Pengabdian kepada Masyarakat yang unggul dan kompetitif dalam pengembangan ilmu pengetahuan, teknologi, dan seni yang berbasis pada nilai-nilai moderasi Islam dan kearifan lokal.'),
             ],
@@ -222,3 +229,4 @@ class PublicController extends Controller
         ]);
     }
 }
+

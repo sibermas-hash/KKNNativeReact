@@ -34,6 +34,12 @@ interface DownloadItem {
   external_url?: string;
 }
 
+interface SchemeItem {
+  title: string;
+  description: string;
+  color?: 'emerald' | 'blue' | 'amber' | 'slate';
+}
+
 interface HomeData {
   featuredAnnouncements: Announcement[];
   featuredDownloads: DownloadItem[];
@@ -44,6 +50,11 @@ interface HomeData {
   };
   aboutContent?: {
     visi: string;
+  };
+  schemesContent?: {
+    title: string;
+    intro: string;
+    items: SchemeItem[];
   };
 }
 
@@ -61,6 +72,11 @@ async function getHomeData(): Promise<HomeData> {
     },
     aboutContent: {
       visi: data?.aboutContent?.visi || 'Menjadi Lembaga Penelitian dan Pengabdian kepada Masyarakat yang unggul dan kompetitif dalam pengembangan ilmu pengetahuan, teknologi, dan seni yang berbasis pada nilai-nilai moderasi Islam dan kearifan lokal.'
+    },
+    schemesContent: {
+      title: data?.schemesContent?.title || '',
+      intro: data?.schemesContent?.intro || '',
+      items: data?.schemesContent?.items || [],
     }
   };
 }
@@ -127,9 +143,11 @@ export default async function LandingPage() {
         featuredDownloads={featuredDownloads}
         stats={stats}
         visi={visi}
+        schemesContent={data.schemesContent}
       />
 
       <Footer />
     </div>
   );
 }
+

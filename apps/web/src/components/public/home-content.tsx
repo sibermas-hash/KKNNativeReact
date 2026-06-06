@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowRight, Download, FileText, MapPinned, Newspaper, Users, UserCheck, MapPin } from 'lucide-react';
+import { ArrowRight, Download, FileText, Layers3, MapPinned, Newspaper, Users, UserCheck, MapPin } from 'lucide-react';
 import { RevealOnScroll, StaggerContainer, StaggerItem, GlowCard, CountUp, TextReveal } from '@/components/ui/motion-effects';
 import { apiUrl } from '@/lib/api';
 
@@ -25,6 +25,19 @@ export interface DownloadItem {
   external_url?: string;
 }
 
+interface SchemeItem {
+  title: string;
+  description: string;
+  color?: 'emerald' | 'blue' | 'amber' | 'slate';
+}
+
+const schemeTone: Record<NonNullable<SchemeItem['color']>, string> = {
+  emerald: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  blue: 'border-blue-200 bg-blue-50 text-blue-700',
+  amber: 'border-amber-200 bg-amber-50 text-amber-700',
+  slate: 'border-slate-200 bg-slate-50 text-slate-700',
+};
+
 const formatDate = (dateStr?: string) => {
   if (!dateStr) return 'Informasi terbaru';
   try {
@@ -44,15 +57,62 @@ export function HomeContent({
   featuredDownloads,
   stats,
   visi,
+  schemesContent,
 }: {
   featuredAnnouncement?: Announcement;
   latestAnnouncements: Announcement[];
   featuredDownloads: DownloadItem[];
   stats: { students: number; groups: number; locations: number };
   visi?: string;
+  schemesContent?: {
+    title: string;
+    intro: string;
+    items: SchemeItem[];
+  };
 }): React.JSX.Element {
+  const schemes = (schemesContent?.items ?? []).filter((item) => item.title && item.description);
+
   return (
     <>
+
+      {schemes.length > 0 ? (
+        <section className="border-y border-emerald-100 bg-gradient-to-br from-emerald-950 via-emerald-900 to-slate-950 py-16 text-white sm:py-20">
+          <div className="mx-auto max-w-7xl px-6 lg:px-8">
+            <RevealOnScroll direction="up">
+              <div className="mx-auto max-w-3xl text-center">
+                <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] text-emerald-100">
+                  <Layers3 size={15} /> Skema KKN
+                </p>
+                <h2 className="mt-5 font-display text-3xl font-bold tracking-tight sm:text-4xl">
+                  {schemesContent?.title || 'Skema KKN UIN SAIZU'}
+                </h2>
+                {schemesContent?.intro ? (
+                  <p className="mt-4 text-sm leading-7 text-emerald-50/85 sm:text-base">
+                    {schemesContent.intro}
+                  </p>
+                ) : null}
+              </div>
+            </RevealOnScroll>
+
+            <StaggerContainer className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4" stagger={0.12}>
+              {schemes.map((scheme, index) => (
+                <StaggerItem key={`${scheme.title}-${index}`}>
+                  <GlowCard className="h-full rounded-[1.4rem] border border-white/10 bg-white/[0.06] backdrop-blur">
+                    <div className="p-6">
+                      <div className={`mb-5 inline-flex h-11 w-11 items-center justify-center rounded-2xl border text-sm font-black ${schemeTone[scheme.color ?? 'emerald']}`}>
+                        {index + 1}
+                      </div>
+                      <h3 className="font-display text-lg font-bold text-white">{scheme.title}</h3>
+                      <p className="mt-3 text-sm leading-7 text-emerald-50/75">{scheme.description}</p>
+                    </div>
+                  </GlowCard>
+                </StaggerItem>
+              ))}
+            </StaggerContainer>
+          </div>
+        </section>
+      ) : null}
+
       {/* --- INFORMATION SECTION --- */}
       <section className="bg-white py-14 sm:py-20">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -299,3 +359,4 @@ export function HomeContent({
     </>
   );
 }
+

@@ -29,6 +29,11 @@ export const HomeContent = dynamic<{
   featuredDownloads: DownloadItem[];
   stats: { students: number; groups: number; locations: number };
   visi?: string;
+  schemesContent?: {
+    title: string;
+    intro: string;
+    items: Array<{ title: string; description: string; color?: 'emerald' | 'blue' | 'amber' | 'slate' }>;
+  };
 }>(
   () => import('./home-content').then((m) => ({ default: m.HomeContent })),
   {
@@ -48,3 +53,4 @@ export const HomeContent = dynamic<{
     ),
   }
 );
+

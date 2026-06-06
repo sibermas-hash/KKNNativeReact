@@ -21,15 +21,16 @@ class AutoPlottingController extends Controller
     public function simulate(Request $request, AutoPlottingService $service): JsonResponse
     {
         $data = $request->validate([
-            'periode_id' => ['required', 'exists:periode,id'],
+            'periode_id' => ['nullable', 'exists:periode,id'],
             'group_size' => ['nullable', 'integer', 'min:10', 'max:20'],
         ]);
 
-        if (! $this->isRegularPeriod((int) $data['periode_id'])) {
-            return $this->error('PLOTTING_REGULER_ONLY', 'Plotting otomatis hanya untuk KKN Reguler. KKN non-Reguler menggunakan penempatan manual di Sibermas.', 422);
+        $periodeId = $this->resolveRegularActivePeriodId($data['periode_id'] ?? null);
+        if (! $periodeId) {
+            return $this->error('PLOTTING_REGULER_ONLY', 'Plotting otomatis hanya untuk KKN Reguler aktif. KKN non-Reguler menggunakan penempatan manual di Sibermas.', 422);
         }
 
-        $lock = Cache::lock('auto-plotting:simulate:'.$data['periode_id'], 120);
+        $lock = Cache::lock('auto-plotting:simulate:'.$periodeId, 120);
 
         if (! $lock->get()) {
             return $this->error('PLOTTING_BUSY', 'Simulasi plotting periode ini sedang berjalan. Coba lagi beberapa menit.', 429);
@@ -37,7 +38,7 @@ class AutoPlottingController extends Controller
 
         try {
             $startedAt = microtime(true);
-            $result = $service->simulate((int) $data['periode_id'], (int) ($data['group_size'] ?? 15));
+            $result = $service->simulate($periodeId, (int) ($data['group_size'] ?? 15));
             $result['mode'] = 'simulasi';
             $result['safe_note'] = 'Mode simulasi: tidak menulis/mengubah data real.';
             $result['elapsed_seconds'] = round(microtime(true) - $startedAt, 2);
@@ -55,17 +56,18 @@ class AutoPlottingController extends Controller
         }
 
         $data = $request->validate([
-            'periode_id' => ['required', 'exists:periode,id'],
+            'periode_id' => ['nullable', 'exists:periode,id'],
             'group_size' => ['nullable', 'integer', 'min:10', 'max:20'],
             'confirm' => ['accepted'],
             'mode' => ['required', 'in:real'],
         ]);
 
-        if (! $this->isRegularPeriod((int) $data['periode_id'])) {
-            return $this->error('PLOTTING_REGULER_ONLY', 'Plotting otomatis hanya untuk KKN Reguler. KKN non-Reguler menggunakan penempatan manual di Sibermas.', 422);
+        $periodeId = $this->resolveRegularActivePeriodId($data['periode_id'] ?? null);
+        if (! $periodeId) {
+            return $this->error('PLOTTING_REGULER_ONLY', 'Plotting otomatis hanya untuk KKN Reguler aktif. KKN non-Reguler menggunakan penempatan manual di Sibermas.', 422);
         }
 
-        $lock = Cache::lock('auto-plotting:apply:'.$data['periode_id'], 300);
+        $lock = Cache::lock('auto-plotting:apply:'.$periodeId, 300);
 
         if (! $lock->get()) {
             return $this->error('PLOTTING_BUSY', 'Penerapan plotting periode ini sedang berjalan. Coba lagi beberapa menit.', 429);
@@ -73,7 +75,7 @@ class AutoPlottingController extends Controller
 
         try {
             $startedAt = microtime(true);
-            $result = $service->apply((int) $data['periode_id'], (int) ($data['group_size'] ?? 15));
+            $result = $service->apply($periodeId, (int) ($data['group_size'] ?? 15));
             $result['mode'] = 'simulation_saved';
             $result['safe_note'] = 'Mode simulasi tersimpan: kelompok_id diisi sebagai draft, tetapi dashboard mahasiswa tetap menyembunyikan hasil sampai Super Admin publish Plotting Live/Real.';
             $result['elapsed_seconds'] = round(microtime(true) - $startedAt, 2);
@@ -91,12 +93,17 @@ class AutoPlottingController extends Controller
         }
 
         $data = $request->validate([
-            'periode_id' => ['required', 'exists:periode,id'],
+            'periode_id' => ['nullable', 'exists:periode,id'],
             'confirm' => ['accepted'],
         ]);
 
+        $periodeId = $this->resolveRegularActivePeriodId($data['periode_id'] ?? null);
+        if (! $periodeId) {
+            return $this->error('PLOTTING_REGULER_ONLY', 'Plotting Live/Real otomatis hanya untuk KKN Reguler aktif. KKN non-Reguler memakai publish manual terpisah.', 422);
+        }
+
         $updated = PesertaKkn::query()
-            ->where('periode_id', (int) $data['periode_id'])
+            ->where('periode_id', $periodeId)
             ->where('status', 'approved')
             ->whereNotNull('kelompok_id')
             ->update([
@@ -106,7 +113,7 @@ class AutoPlottingController extends Controller
             ]);
 
         return $this->success([
-            'periode_id' => (int) $data['periode_id'],
+            'periode_id' => $periodeId,
             'published_count' => $updated,
             'mode' => 'live',
         ], 'Plotting Live/Real dipublish. Dashboard mahasiswa sekarang menampilkan kelompok live.');
@@ -134,11 +141,26 @@ class AutoPlottingController extends Controller
 
         return $this->success($service->apply(isset($data['periode_id']) ? (int) $data['periode_id'] : null));
     }
-    private function isRegularPeriod(int $periodeId): bool
+
+    private function resolveRegularActivePeriodId(null|int|string $periodeId): ?int
     {
-        $periode = Periode::with('jenisKkn')->find($periodeId);
-        $code = strtoupper((string) ($periode?->jenisKkn?->code ?? ''));
-        $name = strtoupper((string) ($periode?->jenisKkn?->name ?? $periode?->name ?? ''));
+        $query = Periode::with('jenisKkn')->where('is_active', true);
+
+        if ($periodeId) {
+            $query->whereKey((int) $periodeId);
+        }
+
+        $periode = $query
+            ->get()
+            ->first(fn (Periode $periode): bool => $this->isRegularPeriodModel($periode));
+
+        return $periode?->id;
+    }
+
+    private function isRegularPeriodModel(Periode $periode): bool
+    {
+        $code = strtoupper((string) ($periode->jenisKkn?->code ?? ''));
+        $name = strtoupper((string) ($periode->jenisKkn?->name ?? $periode->name ?? ''));
 
         return str_contains($code, 'REGULER') || str_contains($name, 'REGULER');
     }

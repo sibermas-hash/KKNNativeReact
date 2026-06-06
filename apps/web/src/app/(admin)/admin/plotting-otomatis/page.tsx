@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { rawApi } from '@/lib/api';
 import { toast } from 'sonner';
@@ -19,7 +19,7 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 
-type Period = { id: number; name?: string; periode?: string };
+type Period = { id: number; name?: string; periode?: string; jenis_kkn?: { name?: string; slug?: string } | null; jenis?: string | null; jenis_kkn_slug?: string | null };
 
 type Member = {
   peserta_id: number;
@@ -144,7 +144,15 @@ export default function AutoPlottingPage(): React.JSX.Element {
     },
   });
 
-  const periodItems: Period[] = periods.data ?? [];
+  const periodItems: Period[] = (periods.data ?? []).filter((p) => {
+    const label = `${p.name ?? ''} ${p.periode ?? ''} ${p.jenis ?? ''} ${p.jenis_kkn?.name ?? ''} ${p.jenis_kkn?.slug ?? ''} ${p.jenis_kkn_slug ?? ''}`.toLowerCase();
+    return label.includes('reguler');
+  });
+  const activeRegularPeriod = periodItems[0] ?? null;
+
+  useEffect(() => {
+    if (!periodeId && activeRegularPeriod?.id) setPeriodeId(activeRegularPeriod.id);
+  }, [activeRegularPeriod?.id, periodeId]);
 
   const simulate = useMutation({
     mutationFn: async () => {
@@ -469,21 +477,12 @@ export default function AutoPlottingPage(): React.JSX.Element {
       </div>
 
       <div className="rounded-2xl border bg-white p-5 shadow-sm flex flex-wrap gap-3 items-end">
-        <div>
-          <label className="text-xs font-bold text-slate-500 uppercase">Periode</label>
-          <select
-            className="mt-1 h-10 min-w-72 rounded-lg border px-3"
-            value={periodeId}
-            onChange={(e) => setPeriodeId(e.target.value ? Number(e.target.value) : '')}
-            disabled={periods.isLoading}
-          >
-            <option value="">{periods.isLoading ? 'Memuat...' : 'Pilih periode'}</option>
-            {periodItems.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name || p.periode || `Periode #${p.id}`}
-              </option>
-            ))}
-          </select>
+        <div className="min-w-72 rounded-xl border bg-slate-50 px-4 py-2">
+          <p className="text-xs font-bold text-slate-500 uppercase">Periode otomatis</p>
+          <p className="text-sm font-black text-slate-900">
+            {periods.isLoading ? 'Mendeteksi KKN Reguler aktif...' : activeRegularPeriod ? (activeRegularPeriod.name || activeRegularPeriod.periode || `Periode #${activeRegularPeriod.id}`) : 'KKN Reguler aktif tidak ditemukan'}
+          </p>
+          <p className="text-xs text-slate-500">Dropdown dihapus: sistem selalu memakai KKN Reguler aktif.</p>
         </div>
         <div>
           <label className="text-xs font-bold text-slate-500 uppercase">Anggota/kelompok</label>

@@ -32,7 +32,7 @@ class RekapitulasiController extends Controller
         }
 
         $peserta = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
-            ->where('status', 'approved')
+            ->where('status', 'approved')->where('placement_is_live', true)
             ->with(['kelompok.lokasi', 'kelompok.periode'])
             ->first();
 
@@ -73,7 +73,7 @@ class RekapitulasiController extends Controller
         abort_if(! $mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
 
         $peserta = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
-            ->where('status', 'approved')
+            ->where('status', 'approved')->where('placement_is_live', true)
             ->first();
 
         abort_if(! $peserta?->kelompok_id, 403, 'Anda belum memiliki kelompok KKN aktif.');
@@ -109,7 +109,7 @@ class RekapitulasiController extends Controller
         abort_if(! $mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
 
         $peserta = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
-            ->where('status', 'approved')
+            ->where('status', 'approved')->where('placement_is_live', true)
             ->first();
 
         abort_if(! $peserta?->kelompok_id, 403, 'Anda belum memiliki kelompok KKN aktif.');
@@ -147,7 +147,7 @@ class RekapitulasiController extends Controller
         abort_if(! $mahasiswa, 403, 'Data mahasiswa tidak ditemukan.');
 
         $peserta = PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
-            ->where('status', 'approved')
+            ->where('status', 'approved')->where('placement_is_live', true)
             ->first();
 
         abort_if(! $peserta?->kelompok_id, 403, 'Anda belum memiliki kelompok KKN aktif.');

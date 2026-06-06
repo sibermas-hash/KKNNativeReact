@@ -57,7 +57,7 @@ class IzinController extends Controller
         /** @var User|null $user */
         $user = auth()->user();
         $mahasiswa = $user?->mahasiswa;
-        $registration = $mahasiswa?->peserta()->where('status', 'approved')->first();
+        $registration = $mahasiswa?->peserta()->where('status', 'approved')->where('placement_is_live', true)->first();
 
         if (! $registration?->kelompok_id) {
             return $this->forbidden('Anda belum ditempatkan di kelompok.');

@@ -22,7 +22,7 @@ class FinalReportController extends Controller
     public function index(): JsonResponse
     {
         $mahasiswa = auth()->user()?->mahasiswa;
-        $registration = $mahasiswa?->peserta()->where('status', 'approved')->latest('created_at')->first();
+        $registration = $mahasiswa?->peserta()->where('status', 'approved')->where('placement_is_live', true)->latest('created_at')->first();
 
         if (! $registration?->kelompok_id) {
             return $this->success(['report' => null, 'is_leader' => false]);
@@ -42,7 +42,7 @@ class FinalReportController extends Controller
     public function store(Request $request): JsonResponse
     {
         $mahasiswa = auth()->user()?->mahasiswa;
-        $registration = $mahasiswa?->peserta()->where('status', 'approved')->latest('created_at')->first();
+        $registration = $mahasiswa?->peserta()->where('status', 'approved')->where('placement_is_live', true)->latest('created_at')->first();
 
         if (! $registration?->kelompok_id) {
             return $this->forbidden('Anda belum ditempatkan di kelompok.');

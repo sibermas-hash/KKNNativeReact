@@ -26,7 +26,7 @@ class WorkProgramController extends Controller
         /** @var User|null $user */
         $user = auth()->user();
         $mahasiswa = $user?->mahasiswa;
-        $registration = $mahasiswa?->peserta()->where('status', 'approved')->first();
+        $registration = $mahasiswa?->peserta()->where('status', 'approved')->where('placement_is_live', true)->first();
 
         if (! $registration?->kelompok_id) {
             return $this->success(['programs' => []]);
@@ -55,7 +55,7 @@ class WorkProgramController extends Controller
         /** @var User|null $user */
         $user = auth()->user();
         $mahasiswa = $user?->mahasiswa;
-        $registration = $mahasiswa?->peserta()->where('status', 'approved')->first();
+        $registration = $mahasiswa?->peserta()->where('status', 'approved')->where('placement_is_live', true)->first();
 
         if (! $registration?->kelompok_id) {
             return $this->forbidden('Anda belum ditempatkan di kelompok.');
@@ -101,7 +101,7 @@ class WorkProgramController extends Controller
         /** @var User|null $user */
         $user = auth()->user();
         $mahasiswa = $user?->mahasiswa;
-        $registration = $mahasiswa?->peserta()->where('status', 'approved')->first();
+        $registration = $mahasiswa?->peserta()->where('status', 'approved')->where('placement_is_live', true)->first();
 
         if (strtolower((string) $registration?->role) !== 'ketua') {
             return $this->forbidden('Hanya ketua kelompok yang dapat mengunggah proposal.');

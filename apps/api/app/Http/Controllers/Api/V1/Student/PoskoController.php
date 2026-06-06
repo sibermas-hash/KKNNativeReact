@@ -19,7 +19,7 @@ class PoskoController extends Controller
     public function show(): JsonResponse
     {
         $user = auth()->user();
-        $registration = $user->mahasiswa?->peserta()->where('status', 'approved')->with('kelompok.posko')->latest('created_at')->first();
+        $registration = $user->mahasiswa?->peserta()->where('status', 'approved')->where('placement_is_live', true)->with('kelompok.posko')->latest('created_at')->first();
         $posko = $registration?->kelompok?->posko;
 
         return $this->success([
@@ -38,7 +38,7 @@ class PoskoController extends Controller
     public function store(Request $request): JsonResponse
     {
         $user = auth()->user();
-        $registration = $user->mahasiswa?->peserta()->where('status', 'approved')->with('kelompok.lokasi')->latest('created_at')->first();
+        $registration = $user->mahasiswa?->peserta()->where('status', 'approved')->where('placement_is_live', true)->with('kelompok.lokasi')->latest('created_at')->first();
 
         if (! $registration?->kelompok_id) {
             return $this->forbidden('Anda belum ditempatkan di kelompok.');
@@ -102,7 +102,7 @@ class PoskoController extends Controller
         abort_unless($user, 403);
 
         if ($user->hasRole('student')) {
-            $registration = $user->mahasiswa?->peserta()->where('status', 'approved')->latest('created_at')->first();
+            $registration = $user->mahasiswa?->peserta()->where('status', 'approved')->where('placement_is_live', true)->latest('created_at')->first();
             abort_if(! $registration || $registration->kelompok_id !== $posko->kelompok_id, 403);
         } elseif ($user->hasRole('dpl') && ! $user->hasRole('superadmin')) {
             $dosen = $user->dosen;

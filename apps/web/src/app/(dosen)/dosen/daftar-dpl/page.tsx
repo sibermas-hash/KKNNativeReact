@@ -19,7 +19,7 @@ export default function DaftarDplPage(): React.JSX.Element {
     queryKey: ['dosen', 'available-periods'],
     queryFn: async () => {
       const res = await api.get('/dosen/available-periods');
-      return (res as { data?: unknown }).data ?? res;
+      return res;
     },
   });
 
@@ -27,7 +27,7 @@ export default function DaftarDplPage(): React.JSX.Element {
     queryKey: ['dosen', 'dpl-eligibility'],
     queryFn: async () => {
       const res = await api.get('/dosen/dpl-eligibility');
-      return (res as { data?: unknown }).data ?? res;
+      return res;
     },
   });
 

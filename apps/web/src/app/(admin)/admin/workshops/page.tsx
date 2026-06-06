@@ -180,7 +180,7 @@ function WorkshopFormModal({ workshop, onClose, onSaved }: { workshop?: Workshop
     queryKey: ['admin', 'periods-dropdown'],
     queryFn: async () => {
       const res = await adminApi.periods.index();
-      const rawPeriods = ((res as { data?: unknown })?.data ?? res) as unknown;
+      const rawPeriods = res as unknown;
       return (Array.isArray(rawPeriods) ? rawPeriods : []).map((period) => {
         const item = period as PeriodOption;
         return { id: item.id, name: item.name };
@@ -345,7 +345,7 @@ export default function WorkshopsPage(): React.JSX.Element {
     queryKey: ['admin', 'workshops', { search, status }],
     queryFn: async () => {
       const res = await adminApi.workshops.index({ search: search || undefined, status: status || undefined });
-      const rawWorkshops = ((res as { data?: unknown })?.data ?? res) as unknown;
+      const rawWorkshops = res as unknown;
       return (Array.isArray(rawWorkshops) ? rawWorkshops : []).map((workshop) =>
         normalizeWorkshop(workshop as ApiWorkshop),
       );
@@ -359,7 +359,7 @@ export default function WorkshopsPage(): React.JSX.Element {
       return adminApi.workshops.importMetodologiPkm(fd);
     },
     onSuccess: (res) => {
-      const r = (((res as { data?: { data?: unknown } })?.data?.data ?? (res as { data?: unknown })?.data ?? res) as { matched: number; unmatched: number });
+      const r = res as unknown as { matched: number; unmatched: number };
       setImportResult(r);
       qc.invalidateQueries({ queryKey: ['admin', 'workshops'] });
       toast.success(`Import selesai: ${r.matched} berhasil, ${r.unmatched} tidak ditemukan`);

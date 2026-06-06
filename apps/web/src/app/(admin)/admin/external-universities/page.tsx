@@ -18,7 +18,7 @@ export default function ExternalUniversitiesPage() {
 
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'external-universities'],
-    queryFn: async () => ((await api.get('/admin/external-universities')) as { data?: ExternalUniversity[] })?.data ?? [],
+    queryFn: async () => ((await api.get('/admin/external-universities')) as ExternalUniversity[]) ?? [],
   });
 
   const save = useMutation({

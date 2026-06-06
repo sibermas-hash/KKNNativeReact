@@ -38,7 +38,7 @@ export default function AuditLogDetailPage(): React.JSX.Element {
     queryKey: ['admin', 'audit-log', Number(id)],
     queryFn: async () => {
       const res = await adminApi.auditLog.show(Number(id));
-      return ((res as { data?: unknown }).data ?? res) as AuditLog;
+      return res as unknown as AuditLog;
     },
     enabled: !!id,
   });

@@ -37,7 +37,7 @@ export default function AdminRekapitulasiPage(): React.JSX.Element {
       const res = await (adminApi as unknown as {
         rekapitulasi: { index: (p: Record<string, unknown>) => Promise<unknown> };
       }).rekapitulasi.index({ search: search || undefined, kelompok_id: selectedGroup || undefined });
-      return (res as { data?: unknown }).data ?? res;
+      return res;
     },
   });
 

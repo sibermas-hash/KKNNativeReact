@@ -16,7 +16,7 @@ export default function AdminGradesPage(): React.JSX.Element {
     queryKey: ['admin', 'nilai', { periode_id: selectedPeriodId, search }],
     queryFn: async () => {
       const res = await api.get('/admin/nilai', { params: { periode_id: selectedPeriodId || undefined, search: search || undefined } });
-      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
+      return res as unknown as Record<string, unknown>;
     },
   });
 

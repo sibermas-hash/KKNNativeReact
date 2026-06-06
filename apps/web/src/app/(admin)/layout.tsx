@@ -159,6 +159,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const roles = user?.roles || [];
   const hasAdminRole = roles.includes('superadmin') || roles.includes('admin') || roles.includes('faculty_admin');
+  const activeRole = roles.includes('superadmin') ? 'Superadmin' : roles.includes('admin') ? 'Admin Pusat' : roles.includes('faculty_admin') ? 'Admin Fakultas' : 'Admin';
+  const accessScope = roles.includes('superadmin')
+    ? 'Semua sistem'
+    : roles.includes('admin')
+      ? 'Operasional pusat'
+      : roles.includes('faculty_admin')
+        ? (user?.faculty?.nama ?? user?.faculty?.code ?? 'Fakultas')
+        : 'Admin';
 
   const handleLogout = async () => {
     try { await (await import('@/lib/api')).api.post('/auth/logout'); } catch { /* noop */ }
@@ -322,9 +330,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <NotificationBell />
             <ThemeSwitcher className="hidden md:flex" />
             {(roles.includes('admin') || roles.includes('superadmin') || roles.includes('faculty_admin')) && (
-              <span className="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] rounded-md text-xs font-medium text-[color:var(--profile-soft-text)]">
-                <ShieldCheck size={12} /> Admin
-              </span>
+              <Link href="/profil" prefetch={false} className="hidden min-w-0 max-w-[280px] items-center gap-2 rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] px-3 py-2 text-[color:var(--profile-soft-text)] shadow-sm transition hover:bg-[color:var(--profile-input)] md:flex">
+                <ShieldCheck size={13} className="shrink-0 text-[color:var(--profile-primary)]" />
+                <span className="min-w-0 leading-none">
+                  <span className="block truncate text-[11px] font-black text-[color:var(--profile-text)]">{user.name}</span>
+                  <span className="mt-1 block truncate text-[9px] font-bold uppercase tracking-wider text-[color:var(--profile-muted)]">{activeRole} · {accessScope}</span>
+                </span>
+              </Link>
             )}
             <button onClick={handleLogout} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[color:var(--profile-muted)] hover:text-[color:var(--profile-danger-text)] hover:bg-[color:var(--profile-danger)] rounded-lg transition-colors">
               <Power className="h-4 w-4" />

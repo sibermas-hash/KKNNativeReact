@@ -31,7 +31,7 @@ export default function MahasiswaWawancaraPage(): React.JSX.Element {
     queryKey: ['student', 'wawancara'],
     queryFn: async () => {
       const res = await api.get('/student/wawancara');
-      return ((res as { data?: unknown }).data ?? res) as { interviews: Interview[] };
+      return res as unknown as { interviews: Interview[] };
     },
   });
 

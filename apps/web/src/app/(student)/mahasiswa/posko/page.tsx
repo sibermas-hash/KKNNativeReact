@@ -32,7 +32,7 @@ export default function PoskoPage(): React.JSX.Element {
     queryKey: QUERY_KEYS.student.posko ?? ['student', 'posko'],
     queryFn: async () => {
       const res = await studentApi.posko.show();
-      const body = ((res as { data?: unknown }).data ?? res) as PoskoData;
+      const body = res as unknown as PoskoData;
       return body;
     },
     retry: false,

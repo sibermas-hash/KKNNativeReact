@@ -89,8 +89,7 @@ export default function AdminRegistrationsPage(): React.JSX.Element {
     queryKey: ['admin', 'periods', 'active-registration-review'],
     queryFn: async () => {
       const res = await adminApi.periods.index({ is_active: true, per_page: 100 });
-      const payload = (res as { data?: unknown }).data ?? res;
-      const rows = Array.isArray(payload) ? payload : ((payload as { data?: PeriodOption[] }).data ?? []);
+      const rows = Array.isArray(res) ? res : ((res as { data?: PeriodOption[] }).data ?? []);
       return rows as PeriodOption[];
     },
   });

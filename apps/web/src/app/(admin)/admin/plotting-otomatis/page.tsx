@@ -64,7 +64,7 @@ type GroupResult = {
 };
 
 type PlotResult = {
-  mode?: 'simulasi' | 'real';
+  mode?: 'simulasi' | 'real' | 'simulation_saved' | 'live';
   safe_note?: string;
   meta?: {
     generated_at?: string;
@@ -185,7 +185,7 @@ export default function AutoPlottingPage(): React.JSX.Element {
 
   const apply = useMutation({
     mutationFn: async () => {
-      addLog('warn', 'MODE REAL: menulis kelompok_kkn dan update peserta_kkn.kelompok_id...');
+      addLog('warn', 'Menyimpan Plotting Simulasi: data belum tampil di dashboard mahasiswa...');
       const res = await rawApi.post(
         '/admin/plotting-otomatis/apply',
         { periode_id: periodeId, group_size: groupSize, confirm: true, mode: 'real' },
@@ -206,6 +206,28 @@ export default function AutoPlottingPage(): React.JSX.Element {
         'Gagal';
       addLog('error', `Apply gagal: ${msg}`);
       toast.error('Apply gagal: ' + msg);
+    },
+  });
+
+  const publishLive = useMutation({
+    mutationFn: async () => {
+      addLog('warn', 'PUBLISH LIVE: membuka hasil plotting ke dashboard mahasiswa...');
+      const res = await rawApi.post('/admin/plotting-otomatis/publish', { periode_id: periodeId, confirm: true }, { timeout: 120000 });
+      const body = res.data as { data?: PlotResult; message?: string };
+      return (body?.data ?? (res.data as PlotResult)) as PlotResult;
+    },
+    onSuccess: (data) => {
+      setResult((prev) => prev ? { ...prev, mode: 'live', message: data.message ?? prev.message } : prev);
+      addLog('success', data.message || 'Plotting Live/Real dipublish');
+      toast.success(data.message || 'Plotting Live/Real dipublish');
+    },
+    onError: (err: unknown) => {
+      const msg =
+        (err as { response?: { data?: { message?: string } }; message?: string })?.response?.data?.message ??
+        (err as { message?: string })?.message ??
+        'Gagal';
+      addLog('error', `Publish live gagal: ${msg}`);
+      toast.error('Publish live gagal: ' + msg);
     },
   });
 
@@ -440,9 +462,9 @@ export default function AutoPlottingPage(): React.JSX.Element {
           <p className="font-black text-teal-900">MODE SIMULASI</p>
           <p className="text-sm text-teal-800">Hitung preview saja. Tidak menulis ke DB.</p>
         </div>
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
-          <p className="font-black text-rose-900">MODE REAL</p>
-          <p className="text-sm text-rose-800">Tulis kelompok_kkn dan update peserta_kkn.kelompok_id.</p>
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+          <p className="font-black text-amber-900">PLOTTING SIMULASI → LIVE</p>
+          <p className="text-sm text-amber-800">Simpan simulasi boleh menulis draft kelompok, tapi dashboard mahasiswa tetap hidden sampai Super Admin klik Plotting Live/Real.</p>
         </div>
       </div>
 
@@ -493,12 +515,22 @@ export default function AutoPlottingPage(): React.JSX.Element {
         <button
           disabled={!result || apply.isPending || (result?.summary?.unplaced ?? 1) !== 0 || (result?.summary?.violating_groups ?? 1) !== 0}
           onClick={() => {
-            if (confirm('MODE REAL akan menulis ke DB produksi. Lanjutkan?')) apply.mutate();
+            if (confirm('Simpan sebagai Plotting Simulasi? Hasil belum tampil di dashboard mahasiswa.')) apply.mutate();
+          }}
+          className="h-10 rounded-lg bg-amber-600 px-4 text-sm font-bold text-white disabled:opacity-50 flex items-center gap-2"
+        >
+          {apply.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+          {apply.isPending ? 'Menyimpan...' : 'Simpan Plotting Simulasi'}
+        </button>
+        <button
+          disabled={!periodeId || publishLive.isPending}
+          onClick={() => {
+            if (confirm('PUBLISH LIVE/REAL? Setelah ini hasil plotting tampil di dashboard mahasiswa.')) publishLive.mutate();
           }}
           className="h-10 rounded-lg bg-rose-600 px-4 text-sm font-bold text-white disabled:opacity-50 flex items-center gap-2"
         >
-          {apply.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-          {apply.isPending ? 'Menerapkan...' : 'Terapkan Real'}
+          {publishLive.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
+          {publishLive.isPending ? 'Publish...' : 'Plotting Live/Real'}
         </button>
         <button
           disabled={externalPreview.isPending}

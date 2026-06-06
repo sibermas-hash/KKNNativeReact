@@ -9,6 +9,7 @@ use App\Http\Traits\ApiResponse;
 use App\Services\KKN\AutoPlottingService;
 use App\Services\KKN\ExternalKebumenPlottingService;
 use App\Models\KKN\Periode;
+use App\Models\KKN\PesertaKkn;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -73,8 +74,8 @@ class AutoPlottingController extends Controller
         try {
             $startedAt = microtime(true);
             $result = $service->apply((int) $data['periode_id'], (int) ($data['group_size'] ?? 15));
-            $result['mode'] = 'real';
-            $result['safe_note'] = 'Mode real: menulis kelompok dan update peserta_kkn.kelompok_id.';
+            $result['mode'] = 'simulation_saved';
+            $result['safe_note'] = 'Mode simulasi tersimpan: kelompok_id diisi sebagai draft, tetapi dashboard mahasiswa tetap menyembunyikan hasil sampai Super Admin publish Plotting Live/Real.';
             $result['elapsed_seconds'] = round(microtime(true) - $startedAt, 2);
 
             return $this->success($result);
@@ -82,6 +83,35 @@ class AutoPlottingController extends Controller
             optional($lock)->release();
         }
     }
+
+    public function publish(Request $request): JsonResponse
+    {
+        if (! auth()->user()?->hasRole('superadmin')) {
+            return $this->error('FORBIDDEN', 'Hanya Super Admin yang boleh publish Plotting Live/Real.', 403);
+        }
+
+        $data = $request->validate([
+            'periode_id' => ['required', 'exists:periode,id'],
+            'confirm' => ['accepted'],
+        ]);
+
+        $updated = PesertaKkn::query()
+            ->where('periode_id', (int) $data['periode_id'])
+            ->where('status', 'approved')
+            ->whereNotNull('kelompok_id')
+            ->update([
+                'placement_is_live' => true,
+                'placement_published_at' => now(),
+                'placement_published_by' => auth()->id(),
+            ]);
+
+        return $this->success([
+            'periode_id' => (int) $data['periode_id'],
+            'published_count' => $updated,
+            'mode' => 'live',
+        ], 'Plotting Live/Real dipublish. Dashboard mahasiswa sekarang menampilkan kelompok live.');
+    }
+
     public function externalKebumenPreview(Request $request, ExternalKebumenPlottingService $service): JsonResponse
     {
         $data = $request->validate([

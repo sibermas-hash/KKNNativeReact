@@ -38,7 +38,7 @@ export default function PenempatanKknPage(): React.JSX.Element {
         <div className="relative">
           <p className="mb-2 inline-flex rounded-full bg-cyan-100 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-cyan-700">Penempatan KKN</p>
           <h1 className="text-3xl font-black uppercase tracking-tight text-[color:var(--profile-text)]">Pusat Penempatan KKN</h1>
-          <p className="mt-2 max-w-3xl text-sm text-[color:var(--profile-muted)]">Pilih workflow: otomatis untuk KKN Reguler, manual untuk KKN non-Reguler. Semua tetap tercatat di Sibermas.</p>
+          <p className="mt-2 max-w-3xl text-sm text-[color:var(--profile-muted)]">Pilih workflow: otomatis untuk KKN Reguler, manual untuk KKN non-Reguler. Default aman: Plotting Simulasi dulu, dashboard mahasiswa tetap hidden sampai Super Admin publish Plotting Live/Real.</p>
         </div>
       </div>
 

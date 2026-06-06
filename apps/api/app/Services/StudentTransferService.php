@@ -49,6 +49,9 @@ class StudentTransferService
             $peserta->update([
                 'periode_id' => $targetPeriod->id,
                 'kelompok_id' => $targetGroupId,
+                'placement_is_live' => false,
+                'placement_published_at' => null,
+                'placement_published_by' => null,
                 'status' => 'transferred',
             ]);
 

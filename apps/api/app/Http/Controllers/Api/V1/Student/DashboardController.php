@@ -55,7 +55,11 @@ class DashboardController extends Controller
             ->latest('created_at')
             ->first();
 
-        $activeGroupId = $registration?->kelompok_id;
+        $placementIsLive = (bool) ($registration?->placement_is_live ?? false);
+        $activeGroupId = $placementIsLive ? $registration?->kelompok_id : null;
+        if ($registration && ! $placementIsLive) {
+            $registration->setRelation('kelompok', null);
+        }
 
         $dailyReportCount = ($mahasiswa->id && $activeGroupId)
             ? KegiatanKkn::where('mahasiswa_id', $mahasiswa->id)
@@ -109,6 +113,7 @@ class DashboardController extends Controller
                 'rejection_reason' => $registration->rejection_reason,
                 'role' => $registration->role,
                 'notification_shown' => (bool) $registration->notification_shown,
+                'placement_is_live' => $placementIsLive,
                 'period' => $registration->periode ? [
                     'id' => $registration->periode->id,
                     'name' => $registration->periode->name,

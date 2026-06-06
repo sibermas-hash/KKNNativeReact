@@ -105,6 +105,9 @@ class AutoPlottingService
 
                     PesertaKkn::whereKey($m['peserta_id'])->update([
                         'kelompok_id' => $group->id,
+                        'placement_is_live' => false,
+                        'placement_published_at' => null,
+                        'placement_published_by' => null,
                         'joined_group_at' => now(),
                         'role' => $m['peserta_id'] === $ketuaId ? 'Ketua' : 'Anggota',
                     ]);

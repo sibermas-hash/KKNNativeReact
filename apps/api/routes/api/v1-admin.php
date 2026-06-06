@@ -183,6 +183,7 @@ Route::prefix('admin')
         // Auto Plotting
         Route::post('/plotting-otomatis/simulate', [AutoPlottingController::class, 'simulate']);
         Route::post('/plotting-otomatis/apply', [AutoPlottingController::class, 'apply']);
+        Route::post('/plotting-otomatis/publish', [AutoPlottingController::class, 'publish']);
         Route::post('/plotting-otomatis/external-kebumen/preview', [AutoPlottingController::class, 'externalKebumenPreview']);
         Route::post('/plotting-otomatis/external-kebumen/apply', [AutoPlottingController::class, 'externalKebumenApply']);
 

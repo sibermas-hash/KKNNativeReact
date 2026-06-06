@@ -23,6 +23,9 @@ class PesertaKkn extends Model
         'mahasiswa_id',
         'periode_id',
         'kelompok_id',
+        'placement_is_live',
+        'placement_published_at',
+        'placement_published_by',
         'status',
         'entry_scheme',
         'collaboration_letter_id',
@@ -52,6 +55,9 @@ class PesertaKkn extends Model
             'revision_count' => 'integer',
             'joined_group_at' => 'datetime',
             'group_locked_until' => 'datetime',
+            'placement_is_live' => 'boolean',
+            'placement_published_at' => 'datetime',
+            'placement_published_by' => 'integer',
             // R11 audit-pendaftaran fix — field di fillable tapi sebelumnya
             // tidak di-cast, sehingga strict comparison (PHP 8 strict_types)
             // bisa fail terhadap nilai string "0"/"1" dari PostgreSQL.

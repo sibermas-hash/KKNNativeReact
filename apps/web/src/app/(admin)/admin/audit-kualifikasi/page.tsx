@@ -187,7 +187,7 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
       </div>
 
       <div className="rounded-3xl border border-cyan-100 bg-gradient-to-r from-cyan-50 to-emerald-50 p-4 text-sm text-cyan-900 shadow-sm">
-        <div className="flex items-start gap-2"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><div><b>Cara kerja:</b> Sistem memeriksa syarat akademik (SKS, IPK, semester, BTA-PPI, UKT) secara otomatis. Mahasiswa yang memenuhi semua syarat akan muncul di tab "Boleh Daftar". Dokumen fisik diperiksa saat proses approval pendaftaran.</div></div>
+        <div className="flex items-start gap-2"><AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /><div><b>Cara kerja:</b> Sistem memeriksa syarat akademik (SKS, IPK, semester, BTA-PPI, UKT) secara otomatis. Mahasiswa yang memenuhi semua syarat akan muncul di tab &quot;Boleh Daftar&quot;. Dokumen fisik diperiksa saat proses approval pendaftaran.</div></div>
       </div>
 
       {/* Toolbar */}

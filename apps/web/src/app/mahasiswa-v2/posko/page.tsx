@@ -28,7 +28,7 @@ export default function PoskoPage(): React.JSX.Element {
   const [previewSrc, setPreviewSrc] = useState<string | null>(null);
   const { config: themeConfig, surfaceClass } = useTheme();
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.student.posko ?? ['student', 'posko'],
     queryFn: async () => {
       const res = await studentApi.posko.show();

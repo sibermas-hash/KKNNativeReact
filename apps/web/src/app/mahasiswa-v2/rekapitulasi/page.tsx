@@ -25,7 +25,7 @@ interface RekapItem {
 export default function MahasiswaRekapitulasiPage(): React.JSX.Element {
   const qc = useQueryClient();
   const [showForm, setShowForm] = useState(false);
-  const { config: themeConfig, surfaceClass } = useTheme();
+  const { surfaceClass } = useTheme();
   const [form, setForm] = useState({
     uraian_kegiatan: '', volume: '', satuan: '', swadaya_mhs: '', swadaya_masyarakat: '',
     bantuan_pemerintah: '', donatur_lain: '', jumlah: '', keterangan: '',

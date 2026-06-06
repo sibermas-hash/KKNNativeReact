@@ -5,9 +5,9 @@ import { useQuery } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@sibermas/constants';
 import { studentApi } from '@/lib/api';
 import Link from 'next/link';
-import { Plus, Plane, Loader2, AlertCircle, CheckCircle2, XCircle, Clock, Calendar, MapPin } from 'lucide-react';
+import { Plus, Plane, AlertCircle, CheckCircle2, XCircle, Clock, Calendar, MapPin } from 'lucide-react';
 import { useTheme } from '@/components/ui/theme-provider';
-import { PRIMARY_CLASS, SOFT_CLASS } from '@/lib/theme-config';
+import { PRIMARY_CLASS } from '@/lib/theme-config';
 
 type LeaveRequest = {
   id: number;

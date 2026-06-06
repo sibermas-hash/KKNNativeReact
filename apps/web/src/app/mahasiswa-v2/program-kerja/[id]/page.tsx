@@ -22,7 +22,6 @@ import {
   Tag,
 } from 'lucide-react';
 import { useTheme } from '@/components/ui/theme-provider';
-import { SOFT_CLASS } from '@/lib/theme-config';
 
 type ProposalRevision = {
   id: number;

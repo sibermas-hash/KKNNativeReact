@@ -236,7 +236,7 @@ export default function DplRegistrationPage(): React.JSX.Element {
           <li>Admin memverifikasi dan menyetujui pendaftaran di halaman ini.</li>
           <li>Dosen yang disetujui dapat ditugaskan ke kelompok KKN.</li>
         </ol>
-        <p className="mt-2 text-[10px] text-cyan-600">Tombol "Setujui" tidak aktif jika dosen belum lulus workshop.</p>
+        <p className="mt-2 text-[10px] text-cyan-600">Tombol &quot;Setujui&quot; tidak aktif jika dosen belum lulus workshop.</p>
       </div>
     </div>
   );

@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useTheme } from '@/components/ui/theme-provider';
-import { PRIMARY_CLASS, SOFT_CLASS } from '@/lib/theme-config';
 
 function StatBox({ label, value, icon: Icon, color }: { label: string; value: string | number; icon: React.ComponentType<{ size?: number; className?: string }>; color: string }) {
   const { config: themeConfig, surfaceClass } = useTheme();

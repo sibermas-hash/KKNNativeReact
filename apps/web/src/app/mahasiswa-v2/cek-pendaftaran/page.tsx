@@ -8,7 +8,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { ConfirmDialog } from "@/components/ui/shared";
 import { useTheme } from "@/components/ui/theme-provider";
-import { PRIMARY_CLASS, SOFT_CLASS } from "@/lib/theme-config";
+import { PRIMARY_CLASS } from "@/lib/theme-config";
 import {
   AlertCircle, Calendar, CheckCircle2, Clock, FileCheck, FileUp,
   MapPin, RefreshCw, Trash2, Users, XCircle,

@@ -8,7 +8,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { useState } from "react";
 import { useTheme } from "@/components/ui/theme-provider";
-import { PRIMARY_CLASS, SOFT_CLASS, FIELD_CLASS } from "@/lib/theme-config";
+import { PRIMARY_CLASS, FIELD_CLASS } from "@/lib/theme-config";
 import {
   AlertCircle, BookOpen, Calendar, CheckCircle2, ChevronDown, ChevronRight,
   Clock, FileText, GraduationCap, MapPin, Shield, Users, XCircle,
@@ -55,7 +55,7 @@ function GroupCard({ group }: { group: GroupInfo }) {
   const fillPercent = group.capacity > 0 ? Math.round((group.peserta_count / group.capacity) * 100) : 0;
   const isFull = group.remaining_seats <= 0;
   const needsMale = group.male_count < group.male_min_required;
-  const { config: themeConfig, surfaceClass } = useTheme();
+  const { surfaceClass } = useTheme();
 
   return (
     <div 

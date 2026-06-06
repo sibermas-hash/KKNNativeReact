@@ -26,12 +26,19 @@ type DashboardAnnouncement = {
   content_type?: 'berita' | 'pengumuman';
   published_at?: string | null;
   show_as_popup?: boolean;
+  popup_until?: string | null;
 };
 
 function extractFirstUrl(text: string): string | null {
   const match = text.match(/https?:\/\/[^\s]+|t\.me\/[^\s]+/i);
   if (!match) return null;
   return match[0].startsWith('http') ? match[0] : `https://${match[0]}`;
+}
+
+function isPopupStillValid(popupUntil?: string | null): boolean {
+  if (!popupUntil) return true;
+  const timestamp = new Date(popupUntil).getTime();
+  return Number.isFinite(timestamp) ? timestamp >= Date.now() : true;
 }
 
 function normalizeStatus(status?: string): string | undefined {
@@ -72,7 +79,7 @@ export default function StudentDashboard(): React.JSX.Element {
   const workProgramCount = (data?.work_program_count as number) || 0;
   const finalReport = data?.final_report as Record<string, unknown> | null | undefined;
   const dashboardAnnouncements = (data?.dashboard_announcements as DashboardAnnouncement[] | undefined) ?? [];
-  const popupAnnouncement = dashboardAnnouncements.find((item) => item.show_as_popup && item.id !== dismissedAnnouncementId);
+  const popupAnnouncement = dashboardAnnouncements.find((item) => item.show_as_popup && isPopupStillValid(item.popup_until) && item.id !== dismissedAnnouncementId);
   const popupLink = popupAnnouncement ? extractFirstUrl(`${popupAnnouncement.excerpt ?? ''} ${popupAnnouncement.content ?? ''}`) : null;
 
   const normalizedStatus = normalizeStatus(registration?.status as string);

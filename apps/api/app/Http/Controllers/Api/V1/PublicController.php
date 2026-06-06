@@ -194,6 +194,7 @@ class PublicController extends Controller
     {
         $announcement = Cache::remember('public:popup', 120, fn () =>
             Announcement::activePopup()
+                ->forTarget(Announcement::TARGET_PUBLIC_HOME)
                 ->orderByDesc('published_at')
                 ->first()
         );

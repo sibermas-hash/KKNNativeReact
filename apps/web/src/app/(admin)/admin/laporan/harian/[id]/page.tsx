@@ -23,7 +23,7 @@ export default function AdminDailyReportDetailPage(): React.JSX.Element {
     queryKey: ['admin', 'daily-report', id],
     queryFn: async () => {
       const res = await adminApi.kknOperations.dailyReports.show(Number(id));
-      return (res as { data?: unknown }).data ?? res;
+      return res as unknown;
     },
     enabled: !!id,
   });

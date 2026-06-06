@@ -6,13 +6,9 @@ import { rawApi } from '@/lib/api';
 import { toast } from 'sonner';
 import {
   Loader2,
-  MapPin,
   Search,
   Plus,
-  Pencil,
-  Trash2,
   X,
-  Building2,
   Download,
   ChevronDown,
   ChevronRight,
@@ -197,28 +193,11 @@ export default function AdminLokasiPage(): React.JSX.Element {
     },
   });
 
-  const del = useMutation({
-    mutationFn: async (id: number) => {
-      const res = await rawApi.delete(`/admin/lokasi/${id}`);
-      return res.data;
-    },
-    onSuccess: () => {
-      toast.success('Lokasi dihapus');
-      qc.invalidateQueries({ queryKey: ['admin', 'lokasi'] });
-    },
-    onError: (e: unknown) => {
-      const err = e as { response?: { data?: { message?: string } } };
-      toast.error(err.response?.data?.message ?? 'Gagal menghapus');
-    },
-  });
-
   const items = useMemo(() => list.data?.data ?? [], [list.data?.data]);
 
   useEffect(() => {
     setSelected(new Set(items.filter((l) => l.is_selected_for_kkn).map((l) => l.id)));
   }, [items]);
-  const meta = list.data?.meta;
-
   const filtered = useMemo(() => {
     if (!filterRegency) return items;
     return items.filter((l) => l.regency_name === filterRegency);
@@ -239,7 +218,15 @@ export default function AdminLokasiPage(): React.JSX.Element {
       .catch(() => { toast.error('Gagal menyimpan pilihan lokasi'); qc.invalidateQueries({ queryKey: ['admin', 'lokasi'] }); });
   };
   const stateOf = (ids: number[]) => ({ checked: ids.length > 0 && ids.every(id => selected.has(id)), partial: ids.some(id => selected.has(id)) && !ids.every(id => selected.has(id)) });
-  const toggleSet = (setter: React.Dispatch<React.SetStateAction<Set<string>>>, key: string) => setter(prev => { const next = new Set(prev); next.has(key) ? next.delete(key) : next.add(key); return next; });
+  const toggleSet = (setter: React.Dispatch<React.SetStateAction<Set<string>>>, key: string) => setter(prev => {
+    const next = new Set(prev);
+    if (next.has(key)) {
+      next.delete(key);
+    } else {
+      next.add(key);
+    }
+    return next;
+  });
   const allRegencyKeys = Object.keys(tree);
   const allDistrictKeys = Object.entries(tree).flatMap(([r, ds]) => Object.keys(ds).map((d) => `${r}|${d}`));
   const expandAll = () => { setOpenRegencies(new Set(allRegencyKeys)); setOpenDistricts(new Set(allDistrictKeys)); };

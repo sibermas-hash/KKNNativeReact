@@ -4,9 +4,9 @@ import { useState, useMemo } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { rawApi } from '@/lib/api';
 import {
-  Users, CheckCircle2, XCircle, Search, Download, ChevronLeft, ChevronRight,
-  Filter, BarChart3, AlertTriangle, ChevronDown, ChevronUp, GraduationCap,
-  Building2, Percent, FileSpreadsheet, ShieldCheck
+  Users, CheckCircle2, XCircle, Search, ChevronLeft, ChevronRight,
+  Filter, AlertTriangle, ChevronDown, ChevronUp, GraduationCap,
+  Building2, FileSpreadsheet, ShieldCheck
 } from 'lucide-react';
 
 type Check = { passed: boolean; key: string; message: string; dispensasi?: boolean };
@@ -129,9 +129,6 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
   }, [apiIssueOptions]);
 
   const rate = stats.eligibility_rate ?? 0;
-  const rateColor = rate >= 70 ? 'text-emerald-600' : rate >= 50 ? 'text-amber-600' : 'text-red-600';
-  const barColor = rate >= 70 ? 'bg-emerald-500' : rate >= 50 ? 'bg-amber-500' : 'bg-red-500';
-
   return (
     <div className="space-y-6">
       <div className="rounded-3xl bg-gradient-to-br from-cyan-950 via-cyan-800 to-emerald-700 p-6 text-white shadow-sm">

@@ -43,21 +43,32 @@ export function AdminOnlineUsersSidebar(): React.JSX.Element | null {
 
   if (!isSuperadmin) return null;
 
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="fixed right-5 top-24 z-50 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-emerald-100 bg-white text-emerald-700 shadow-[0_14px_40px_rgba(15,23,42,0.18)] hover:bg-emerald-50"
+        aria-label="Buka user online"
+        title="Buka user online"
+      >
+        <PanelRightOpen size={20} />
+      </button>
+    );
+  }
+
   return (
-    <aside
-      className="fixed bottom-5 right-5 top-24 z-40 flex w-[min(360px,calc(100vw-2.5rem))] flex-col rounded-[2rem] border border-emerald-100 bg-white/95 shadow-[0_24px_80px_rgba(15,23,42,0.18)] backdrop-blur-xl transition-transform duration-300 ease-out"
-      style={{ transform: `translateX(${open ? 0 : 220}px)` }}
-    >
+    <aside className="fixed bottom-5 right-5 top-24 z-40 flex w-[min(360px,calc(100vw-2.5rem))] flex-col rounded-[2rem] border border-emerald-100 bg-white/95 shadow-[0_24px_80px_rgba(15,23,42,0.18)] backdrop-blur-xl">
       <div className="border-b border-slate-100 p-5">
         <div className="flex items-start justify-between gap-3">
           <button
             type="button"
-            onClick={() => setOpen((value) => !value)}
-            className="inline-flex min-w-32 items-center gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-[11px] font-black uppercase tracking-wide text-emerald-700 shadow-sm hover:bg-emerald-100"
-            aria-label={open ? 'Minimize user online' : 'Buka user online'}
+            onClick={() => setOpen(false)}
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-emerald-100 bg-emerald-50 text-emerald-700 shadow-sm hover:bg-emerald-100"
+            aria-label="Minimize user online"
+            title="Minimize user online"
           >
-            {open ? <PanelRightClose size={16} /> : <PanelRightOpen size={16} />}
-            {open ? 'Minimize' : 'Online'}
+            <PanelRightClose size={18} />
           </button>
           <div className="min-w-0 flex-1">
             <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700">

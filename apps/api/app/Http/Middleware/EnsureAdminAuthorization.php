@@ -254,14 +254,9 @@ class EnsureAdminAuthorization
             abort(403, 'Unauthorized access to admin area.');
         }
 
-        // Superadmin bypasses specific permission checks (but not the
-        // existence check below — this is about permission, not mapping).
-        if ($user->hasRole('superadmin')) {
-            return $next($request);
-        }
-
         // Deny-by-default: an admin controller that is NOT in the permission
-        // map is a misconfiguration, not an excuse to grant access.
+        // map is a misconfiguration, not an excuse to grant access — even for
+        // superadmin. Superadmin may bypass permissions, never map coverage.
         if (! array_key_exists($controllerClass, self::PERMISSION_MAP)) {
             Log::error('EnsureAdminAuthorization: controller missing from PERMISSION_MAP', [
                 'controller' => $controllerClass,
@@ -269,6 +264,11 @@ class EnsureAdminAuthorization
                 'route' => $route->getName() ?? $request->path(),
             ]);
             abort(500, 'Authorization misconfiguration. Please contact the administrator.');
+        }
+
+        // Superadmin bypasses specific permission checks only after coverage is verified.
+        if ($user->hasRole('superadmin')) {
+            return $next($request);
         }
 
         $requiredPermission = self::PERMISSION_MAP[$controllerClass];

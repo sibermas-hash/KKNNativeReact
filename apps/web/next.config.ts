@@ -6,30 +6,8 @@ const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
   openAnalyzer: false,
 });
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const withPWA = require("next-pwa")({
-  dest: "public",
-  disable: true,// disabled temporarily: stale SW cached old Next chunks
-  register: false,
-  skipWaiting: true,
-  runtimeCaching: [
-    {
-      urlPattern: /^\/api\/v1\/public\/.*/,
-      handler: "StaleWhileRevalidate",
-      options: { cacheName: "api-public", expiration: { maxEntries: 50, maxAgeSeconds: 300 } },
-    },
-    {
-      urlPattern: /^\/_next\/static\/.*/,
-      handler: "CacheFirst",
-      options: { cacheName: "static-assets", expiration: { maxEntries: 200, maxAgeSeconds: 31536000 } },
-    },
-    {
-      urlPattern: /^\/images\/.*/,
-      handler: "CacheFirst",
-      options: { cacheName: "image-cache", expiration: { maxEntries: 100, maxAgeSeconds: 86400 } },
-    },
-  ],
-});
+// PWA disabled intentionally. Keep next-pwa out of prod dependency graph until SW is re-enabled.
+const withPWA = (config: NextConfig): NextConfig => config;
 
 
 const systemAdminRouteAliases = [

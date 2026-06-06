@@ -2,7 +2,7 @@
 
 import { mutationErrorHandler } from '@/lib/utils';
 import { rawApi } from '@/lib/api';
-import { UserPlus, ShieldAlert, Circle, Wifi, Clock3, MonitorSmartphone } from 'lucide-react';
+import { UserPlus, ShieldAlert, Circle, Wifi, Clock3, MonitorSmartphone, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { PageHeader } from '@/components/ui/shared';
 import { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '@/stores';
@@ -75,6 +75,7 @@ export default function AdminUsersPage(): React.JSX.Element {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editForm, setEditForm] = useState<EditForm>(EMPTY_EDIT);
   const [resetConfirmUser, setResetConfirmUser] = useState<User | null>(null);
+  const [onlineSidebarOpen, setOnlineSidebarOpen] = useState(true);
   const passwordRef = useRef<HTMLInputElement>(null);
 
   const resetCreateForm = () => {
@@ -305,25 +306,41 @@ export default function AdminUsersPage(): React.JSX.Element {
         <UsersStats meta={meta} users={users} page={page} perPage={perPage} activeFilterCount={activeFilterCount} />
       </motion.div>
 
-      <motion.section variants={PAGE_ENTER} className="rounded-[2rem] border border-emerald-100 bg-white p-5 shadow-[0_20px_60px_rgba(15,118,110,0.08)]">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700">
-              <Wifi size={13} /> User Online
+      <motion.aside
+        variants={PAGE_ENTER}
+        animate={{ x: onlineSidebarOpen ? 0 : 304 }}
+        transition={{ duration: 0.24, ease: 'easeOut' }}
+        className="fixed bottom-5 right-5 top-24 z-40 flex w-[min(360px,calc(100vw-2.5rem))] flex-col rounded-[2rem] border border-emerald-100 bg-white/95 shadow-[0_24px_80px_rgba(15,23,42,0.18)] backdrop-blur-xl"
+      >
+        <button
+          type="button"
+          onClick={() => setOnlineSidebarOpen((open) => !open)}
+          className="absolute -left-12 top-5 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-100 bg-white text-emerald-700 shadow-lg hover:bg-emerald-50"
+          aria-label={onlineSidebarOpen ? 'Minimize user online' : 'Buka user online'}
+        >
+          {onlineSidebarOpen ? <PanelRightClose size={18} /> : <PanelRightOpen size={18} />}
+        </button>
+
+        <div className="border-b border-slate-100 p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700">
+                <Wifi size={13} /> User Online
+              </div>
+              <h2 className="mt-2 text-lg font-black tracking-tight text-slate-950">Aktif {onlineUsersQuery.data?.window_minutes ?? 5} menit</h2>
+              <p className="mt-1 text-[11px] font-semibold text-slate-500">Auto-refresh 30 detik.</p>
             </div>
-            <h2 className="mt-2 text-xl font-black tracking-tight text-slate-950">Aktif dalam {onlineUsersQuery.data?.window_minutes ?? 5} menit terakhir</h2>
-            <p className="mt-1 text-xs font-semibold text-slate-500">Realtime ringan dari session aktif. Refresh otomatis tiap 30 detik.</p>
-          </div>
-          <div className="rounded-2xl bg-slate-950 px-4 py-3 text-right text-white shadow-sm">
-            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-200">Online</p>
-            <p className="text-2xl font-black leading-none">{onlineUsersQuery.data?.total ?? 0}</p>
+            <div className="rounded-2xl bg-slate-950 px-4 py-3 text-right text-white shadow-sm">
+              <p className="text-[10px] font-black uppercase tracking-widest text-emerald-200">Online</p>
+              <p className="text-2xl font-black leading-none">{onlineUsersQuery.data?.total ?? 0}</p>
+            </div>
           </div>
         </div>
 
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="flex-1 space-y-3 overflow-y-auto p-4">
           {(onlineUsersQuery.data?.users ?? []).map((onlineUser) => (
-            <div key={onlineUser.id} className="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/70 p-3">
-              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-slate-900 text-white shadow-sm">
+            <div key={onlineUser.id} className="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-3">
+              <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-2xl bg-slate-900 text-white shadow-sm">
                 {onlineUser.avatar_url ? <img src={onlineUser.avatar_url} alt={onlineUser.name} className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center text-xs font-black uppercase">{onlineUser.name.slice(0, 2)}</span>}
                 <span className="absolute bottom-0.5 right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500 shadow-sm" />
               </div>
@@ -341,13 +358,13 @@ export default function AdminUsersPage(): React.JSX.Element {
             </div>
           ))}
           {!onlineUsersQuery.isLoading && (onlineUsersQuery.data?.users ?? []).length === 0 && (
-            <div className="rounded-2xl border border-dashed border-slate-200 p-5 text-sm font-semibold text-slate-500">Belum ada user online dalam jendela waktu ini.</div>
+            <div className="rounded-2xl border border-dashed border-slate-200 p-5 text-sm font-semibold text-slate-500">Belum ada user online.</div>
           )}
           {onlineUsersQuery.isLoading && (
             <div className="rounded-2xl border border-dashed border-emerald-100 p-5 text-sm font-semibold text-emerald-700">Memuat user online...</div>
           )}
         </div>
-      </motion.section>
+      </motion.aside>
 
       <AnimatePresence>
       {showForm && (

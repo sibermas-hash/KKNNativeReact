@@ -453,41 +453,43 @@ export default function AutoPlottingPage(): React.JSX.Element {
   const meta = result?.meta;
 
   return (
-    <div className="space-y-6 p-6">
-      <a href="/admin/penempatan" className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-black uppercase tracking-wider text-slate-600 shadow-sm hover:bg-slate-50"><ArrowLeft size={14} /> Kembali ke Penempatan</a>
-      <div className="rounded-xl border border-teal-200 bg-teal-50 p-4 text-sm text-teal-900">
-        <b>Plotting otomatis hanya untuk KKN Reguler.</b> KKN non-Reguler memakai workflow manual lewat Penempatan KKN → TAB Manual.
-      </div>
-      <div>
-        <h1 className="text-2xl font-black uppercase text-slate-900">Plotting Otomatis KKN Reguler</h1>
-        <p className="text-sm text-slate-500">
-          Algoritma greedy + diversity scoring. Constraint: H1 non-lokal, H2 ukuran kelompok, H3 ≥2 fakultas, H4 ≥3 prodi, S1 gender 20-35%.
-        </p>
+    <div className="min-h-screen space-y-6 bg-[#F7F4EC] p-6 text-[#1F241F]">
+      <a href="/admin/penempatan" className="inline-flex items-center gap-2 rounded-full border border-[#E3DAC7] bg-white/90 px-4 py-2 text-xs font-black uppercase tracking-wider text-[#5B716C] shadow-sm hover:bg-white"><ArrowLeft size={14} /> Kembali ke Penempatan</a>
+      <section className="overflow-hidden rounded-[28px] border border-[#E3DAC7] bg-[#1F241F] p-6 text-white shadow-sm">
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="max-w-3xl">
+            <span className="rounded-full bg-[#C2A14D]/20 px-3 py-1 text-[11px] font-black uppercase tracking-[0.2em] text-[#E7D49B]">Pilot visual refresh</span>
+            <h1 className="mt-4 text-3xl font-black tracking-tight">Plotting Otomatis KKN Reguler</h1>
+            <p className="mt-2 text-sm leading-6 text-white/70">
+              Algoritma greedy + diversity scoring. Simulasi aman: hasil belum tampil ke mahasiswa sebelum Super Admin publish live.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm backdrop-blur">
+            <p className="text-xs font-black uppercase tracking-wider text-[#E7D49B]">Periode otomatis</p>
+            <p className="font-black">
+              {periods.isLoading ? 'Mendeteksi KKN Reguler aktif...' : activeRegularPeriod ? (activeRegularPeriod.name || activeRegularPeriod.periode || `Periode #${activeRegularPeriod.id}`) : 'KKN Reguler aktif tidak ditemukan'}
+            </p>
+            <p className="text-xs text-white/60">Tanpa dropdown. Sistem selalu memakai Reguler aktif.</p>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="rounded-[24px] border border-[#BFD8CF] bg-[#E6F2EF] p-5 shadow-sm">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-[#0F766E]">Mode simulasi</p>
+          <p className="mt-1 text-sm text-[#315E55]">Hitung preview saja. Tidak menulis DB.</p>
+        </div>
+        <div className="rounded-[24px] border border-[#E8D9A9] bg-[#FFF4CD] p-5 shadow-sm">
+          <p className="text-xs font-black uppercase tracking-[0.18em] text-[#8A6414]">Simulasi → live</p>
+          <p className="mt-1 text-sm text-[#7A5A16]">Simpan simulasi menulis draft kelompok, dashboard mahasiswa tetap hidden sampai publish live.</p>
+        </div>
       </div>
 
-      <div className="grid gap-3 md:grid-cols-2">
-        <div className="rounded-2xl border border-teal-200 bg-teal-50 p-4">
-          <p className="font-black text-teal-900">MODE SIMULASI</p>
-          <p className="text-sm text-teal-800">Hitung preview saja. Tidak menulis ke DB.</p>
-        </div>
-        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-          <p className="font-black text-amber-900">PLOTTING SIMULASI → LIVE</p>
-          <p className="text-sm text-amber-800">Simpan simulasi boleh menulis draft kelompok, tapi dashboard mahasiswa tetap hidden sampai Super Admin klik Plotting Live/Real.</p>
-        </div>
-      </div>
-
-      <div className="rounded-2xl border bg-white p-5 shadow-sm flex flex-wrap gap-3 items-end">
-        <div className="min-w-72 rounded-xl border bg-slate-50 px-4 py-2">
-          <p className="text-xs font-bold text-slate-500 uppercase">Periode otomatis</p>
-          <p className="text-sm font-black text-slate-900">
-            {periods.isLoading ? 'Mendeteksi KKN Reguler aktif...' : activeRegularPeriod ? (activeRegularPeriod.name || activeRegularPeriod.periode || `Periode #${activeRegularPeriod.id}`) : 'KKN Reguler aktif tidak ditemukan'}
-          </p>
-          <p className="text-xs text-slate-500">Dropdown dihapus: sistem selalu memakai KKN Reguler aktif.</p>
-        </div>
+      <div className="flex flex-wrap items-end gap-3 rounded-[28px] border border-[#E3DAC7] bg-white/95 p-5 shadow-[0_16px_40px_rgba(31,36,31,.06)]">
         <div>
-          <label className="text-xs font-bold text-slate-500 uppercase">Anggota/kelompok</label>
+          <label className="text-xs font-bold uppercase tracking-wider text-[#5B716C]">Anggota/kelompok</label>
           <input
-            className="mt-1 h-10 w-24 rounded-lg border px-3"
+            className="mt-1 h-11 w-28 rounded-full border border-[#D8E2DF] bg-[#F7F9F8] px-4 text-sm font-bold outline-none focus:ring-4 focus:ring-[rgba(15,118,110,.18)]"
             type="number"
             min={10}
             max={20}
@@ -548,7 +550,8 @@ export default function AutoPlottingPage(): React.JSX.Element {
         >
           {externalApply.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           Apply Eksternal Kebumen
-        </button>        <button
+        </button>
+        <button
           disabled={!result}
           onClick={reset}
           className="h-10 rounded-lg border border-slate-300 bg-white px-4 text-sm font-bold text-slate-700 disabled:opacity-50"

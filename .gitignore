@@ -47,6 +47,7 @@ apps/api/.phpunit.cache/
 apps/web/node_modules/
 apps/web/.next/
 apps/web/.next.prebuild-*/
+apps/web/.next.deploy-backup/
 apps/web/out/
 apps/web/.env.local
 apps/web/.env

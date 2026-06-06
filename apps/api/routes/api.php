@@ -43,6 +43,13 @@ Route::get('/ready', [HealthController::class, 'ready'])->name('api.ready');
 // New JSON API for Next.js SPA and React Native mobile app.
 
 Route::prefix('v1')->group(function () {
+    // Versioned alias for clients whose base URL is already /api/v1.
+    Route::get('/server-time', function () {
+        return response()->json([
+            'server_unix_ms' => now()->getTimestampMs(),
+        ]);
+    })->middleware('throttle:30,1')->name('api.v1.server-time');
+
     // Public endpoints — no auth required. Uses named 'public' tier
     // (30/min IP-based) defined in AppServiceProvider.
     Route::prefix('public')->middleware('throttle:public')->group(function () {
@@ -140,6 +147,9 @@ Route::prefix('v1')->group(function () {
             Route::get('/workshop-certificates/{participant}', [PrivateFileController::class, 'workshopCertificate'])
                 ->middleware('signed')
                 ->name('api.v1.files.workshop-certificate');
+            Route::get('/leave-evidence/{izin}', [PrivateFileController::class, 'leaveEvidence'])
+                ->middleware('signed')
+                ->name('api.v1.files.leave-evidence');
 
         });
 

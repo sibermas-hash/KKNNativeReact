@@ -216,11 +216,14 @@ export function adminEndpoints(client: AxiosInstance) {
 
     interviews: {
       index: (params?: Record<string, unknown>) => client.get('/admin/wawancara', { params }),
-      targets: () => client.get('/admin/wawancara/targets'),
       store: (data: Record<string, unknown>) => client.post('/admin/wawancara', data),
-      sync: (id: number) => client.post(`/admin/wawancara/${id}/sync`),
-      passParticipant: (participantId: number, data: Record<string, unknown>) => client.patch(`/admin/wawancara/participants/${participantId}/pass`, data),
-      transferParticipant: (participantId: number, data: Record<string, unknown>) => client.patch(`/admin/wawancara/participants/${participantId}/transfer`, data),
+      show: (id: number) => client.get(`/admin/wawancara/${id}`),
+      update: (id: number, data: Record<string, unknown>) => client.patch(`/admin/wawancara/${id}`, data),
+      availablePeserta: (id: number, params?: Record<string, unknown>) => client.get(`/admin/wawancara/${id}/available-peserta`, { params }),
+      assignParticipants: (id: number, pesertaKknIds: number[]) => client.post(`/admin/wawancara/${id}/assign`, { peserta_kkn_ids: pesertaKknIds }),
+      removeParticipant: (id: number, participantId: number) => client.delete(`/admin/wawancara/${id}/participants/${participantId}`),
+      recordResult: (id: number, participantId: number, data: Record<string, unknown>) => client.patch(`/admin/wawancara/${id}/participants/${participantId}/result`, data),
+      bulkRecordResult: (id: number, data: Record<string, unknown>) => client.post(`/admin/wawancara/${id}/bulk-result`, data),
       destroy: (id: number) => client.delete(`/admin/wawancara/${id}`),
     },
 
@@ -488,8 +491,6 @@ export function adminEndpoints(client: AxiosInstance) {
       testAi: () => client.post('/admin/pengaturan/sistem/ai/test'),
       updateAi: (data: Record<string, unknown>) => client.patch('/admin/pengaturan/sistem/ai/update', data),
       certificates: () => client.get('/admin/pengaturan/sertifikat'),
-      resetPendaftaran: (data: { confirmation: string; soft?: boolean }) =>
-        client.post('/admin/pengaturan/sistem/reset-pendaftaran', data),
     },
 
     monitoring: {

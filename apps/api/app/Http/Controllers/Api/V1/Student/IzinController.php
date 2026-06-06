@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\IzinService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 
 class IzinController extends Controller
 {
@@ -44,7 +45,7 @@ class IzinController extends Controller
                 'alasan' => $i->alasan,
                 'status' => $i->status,
                 'catatan_dpl' => $i->catatan_dpl,
-                'file_url' => $i->file_bukti ? route('api.v1.files.leave-evidence', $i) : null,
+                'file_url' => $i->file_bukti ? URL::temporarySignedRoute('api.v1.files.leave-evidence', now()->addMinutes(30), $i) : null,
                 'created_at' => $i->created_at?->toIso8601String(),
             ]),
             'akumulasi_tanpa_keterangan' => $this->izinService->hitungAkumulasiTanpaKeterangan($mahasiswa->id),

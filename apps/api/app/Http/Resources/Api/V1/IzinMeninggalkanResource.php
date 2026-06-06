@@ -6,6 +6,7 @@ namespace App\Http\Resources\Api\V1;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\URL;
 
 class IzinMeninggalkanResource extends JsonResource
 {
@@ -26,7 +27,7 @@ class IzinMeninggalkanResource extends JsonResource
             'status' => $this->status,
             'rejection_reason' => $this->catatan_dpl,
             'catatan_dpl' => $this->catatan_dpl,
-            'file_url' => $this->file_bukti ? route('api.v1.files.leave-evidence', $this->resource) : null,
+            'file_url' => $this->file_bukti ? URL::temporarySignedRoute('api.v1.files.leave-evidence', now()->addMinutes(30), $this->resource) : null,
             'mahasiswa' => new MahasiswaResource($this->whenLoaded('mahasiswa')),
             'created_at' => $this->created_at?->toIso8601String(),
         ];

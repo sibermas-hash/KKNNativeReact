@@ -20,7 +20,7 @@ class AiHealthController extends Controller
         $url = rtrim((string) config('ai.router.url', ''), '/');
         $key = (string) config('ai.router.key', '');
         $models = array_values(array_filter(array_map('trim', explode(',', (string) config('ai.router.models', '')))));
-        $primary = (string) config('ai.failover.primary.model', env('AI_PRIMARY_MODEL', ''));
+        $primary = (string) config('ai.failover.primary.model', '');
 
         $issues = [];
         $available = [];

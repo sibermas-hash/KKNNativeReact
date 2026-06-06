@@ -194,8 +194,8 @@ class AuthController extends Controller
 
     public function googleRedirect(Request $request): RedirectResponse|JsonResponse
     {
-        $clientId = (string) config('services.google.client_id', env('GOOGLE_CLIENT_ID'));
-        $redirectUri = (string) config('services.google.redirect_uri', env('GOOGLE_REDIRECT_URI', env('APP_URL').'/api/v1/auth/google/callback'));
+        $clientId = (string) config('services.google.client_id', '');
+        $redirectUri = (string) config('services.google.redirect_uri', config('app.url').'/api/v1/auth/google/callback');
         if ($clientId === '' || $redirectUri === '') return $this->error('GOOGLE_NOT_CONFIGURED', 'Google Login belum dikonfigurasi.', 503);
         $state = Str::random(40);
         Cache::put('google_oauth_state:'.$state, true, now()->addMinutes(10));
@@ -205,12 +205,12 @@ class AuthController extends Controller
 
     public function googleCallback(Request $request): RedirectResponse
     {
-        $frontend = rtrim((string) env('FRONTEND_URL', 'https://sibermas.uinsaizu.ac.id'), '/');
+        $frontend = rtrim((string) config('app.frontend_url', 'https://sibermas.uinsaizu.ac.id'), '/');
         $state = (string) $request->query('state', '');
         $code = (string) $request->query('code', '');
         if ($state === '' || ! Cache::pull('google_oauth_state:'.$state) || $code === '') return redirect()->away($frontend.'/login?google_error=invalid_state');
         try {
-            $token = Http::asForm()->post('https://oauth2.googleapis.com/token', ['client_id' => config('services.google.client_id', env('GOOGLE_CLIENT_ID')), 'client_secret' => config('services.google.client_secret', env('GOOGLE_CLIENT_SECRET')), 'redirect_uri' => config('services.google.redirect_uri', env('GOOGLE_REDIRECT_URI', env('APP_URL').'/api/v1/auth/google/callback')), 'grant_type' => 'authorization_code', 'code' => $code])->throw()->json();
+            $token = Http::asForm()->post('https://oauth2.googleapis.com/token', ['client_id' => config('services.google.client_id', ''), 'client_secret' => config('services.google.client_secret', ''), 'redirect_uri' => config('services.google.redirect_uri', config('app.url').'/api/v1/auth/google/callback'), 'grant_type' => 'authorization_code', 'code' => $code])->throw()->json();
             $profile = Http::withToken($token['access_token'] ?? '')->get('https://www.googleapis.com/oauth2/v3/userinfo')->throw()->json();
             $email = strtolower((string) ($profile['email'] ?? ''));
             if ($email === '' || ! (bool) ($profile['email_verified'] ?? false)) return redirect()->away($frontend.'/login?google_error=failed');

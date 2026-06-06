@@ -307,20 +307,20 @@ export default function WartaUtamaPage(): React.JSX.Element {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <PageHeader
         title="Warta & Pengumuman"
         subtitle="Kelola berita publik, pengumuman popup home, status publikasi, dan kurasi konten."
       />
 
-      <section className="rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-cyan-50/60 to-amber-50/50 p-5 shadow-sm">
+      <section className="rounded-2xl border border-slate-200 bg-gradient-to-br from-white via-cyan-50/60 to-amber-50/50 p-4 shadow-sm sm:rounded-3xl sm:p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-3">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-700 ring-1 ring-cyan-100">
               <Newspaper size={13} /> Manajemen Konten Publik
             </div>
             <div>
-              <h2 className="text-2xl font-black tracking-tight text-slate-900">Warta utama SIBERMAS</h2>
+              <h2 className="text-xl font-black tracking-tight text-slate-900 sm:text-2xl">Warta utama SIBERMAS</h2>
               <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">
                 {activeTab === 'berita'
                   ? 'Artikel publik untuk halaman /berita. Berita penting bisa sekaligus dinaikkan sebagai popup home.'
@@ -332,7 +332,7 @@ export default function WartaUtamaPage(): React.JSX.Element {
             <button
               type="button"
               onClick={() => openCreate(activeTab)}
-              className={`inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-bold text-white shadow-lg transition hover:-translate-y-0.5 ${
+              className={`inline-flex w-full items-center justify-center rounded-2xl px-5 py-3 text-sm font-bold text-white shadow-lg transition hover:-translate-y-0.5 sm:w-auto ${
                 activeTab === 'berita'
                   ? 'bg-cyan-600 shadow-cyan-600/20 hover:bg-cyan-700'
                   : 'bg-amber-600 shadow-amber-600/20 hover:bg-amber-700'
@@ -352,9 +352,9 @@ export default function WartaUtamaPage(): React.JSX.Element {
       </section>
 
       {/* Tab switcher + filters */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm sm:p-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex w-fit items-center gap-1 rounded-xl bg-slate-100 p-1">
+          <div className="grid w-full grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1 sm:inline-flex sm:w-fit">
             <TabButton
               active={activeTab === 'berita'}
               onClick={() => {
@@ -377,13 +377,13 @@ export default function WartaUtamaPage(): React.JSX.Element {
           </div>
 
           <form
-            className="grid gap-2 md:grid-cols-12 xl:min-w-[920px]"
+            className="grid w-full min-w-0 gap-2 sm:grid-cols-2 lg:grid-cols-12 xl:max-w-5xl"
             onSubmit={(event) => {
               event.preventDefault();
               setSearch(searchInput.trim());
             }}
           >
-            <label className="md:col-span-4">
+            <label className="sm:col-span-2 lg:col-span-4">
               <span className="sr-only">Cari judul atau konten</span>
               <input
                 value={searchInput}
@@ -393,7 +393,7 @@ export default function WartaUtamaPage(): React.JSX.Element {
               />
             </label>
             {activeTab === 'berita' && (
-              <label className="md:col-span-3">
+              <label className="sm:col-span-2 lg:col-span-3">
                 <span className="sr-only">Kategori</span>
                 <select
                   value={category}
@@ -407,7 +407,7 @@ export default function WartaUtamaPage(): React.JSX.Element {
                 </select>
               </label>
             )}
-            <label className={activeTab === 'berita' ? 'md:col-span-2' : 'md:col-span-3'}>
+            <label className={activeTab === 'berita' ? 'lg:col-span-2' : 'sm:col-span-1 lg:col-span-3'}>
               <span className="sr-only">Status</span>
               <select
                 value={status}
@@ -420,7 +420,7 @@ export default function WartaUtamaPage(): React.JSX.Element {
                 <option value="popup">Popup home</option>
               </select>
             </label>
-            <label className={activeTab === 'berita' ? 'md:col-span-2' : 'md:col-span-3'}>
+            <label className={activeTab === 'berita' ? 'lg:col-span-2' : 'sm:col-span-1 lg:col-span-3'}>
               <span className="sr-only">Target tampilan</span>
               <select
                 value={target}
@@ -434,7 +434,7 @@ export default function WartaUtamaPage(): React.JSX.Element {
             </label>
             <button
               type="submit"
-              className="h-10 rounded-xl bg-slate-900 px-4 text-sm font-bold text-white hover:bg-slate-800 md:col-span-2"
+              className="h-10 rounded-xl bg-slate-900 px-4 text-sm font-bold text-white hover:bg-slate-800 sm:col-span-2 lg:col-span-2"
             >
               Terapkan
             </button>
@@ -469,18 +469,18 @@ export default function WartaUtamaPage(): React.JSX.Element {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className={`space-y-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ${
+          className={`space-y-4 rounded-2xl bg-white p-4 shadow-sm ring-1 sm:p-6 ${
             isPengumumanMode ? 'ring-amber-200' : 'ring-slate-200'
           }`}
         >
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-3 border-b border-slate-100 pb-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-2">
               {isPengumumanMode ? (
                 <Megaphone size={18} className="text-amber-600" />
               ) : (
                 <Newspaper size={18} className="text-cyan-600" />
               )}
-              <h3 className="text-base font-bold text-slate-800">
+              <h3 className="truncate text-sm font-bold text-slate-800 sm:text-base">
                 {editingId !== null
                   ? isPengumumanMode
                     ? 'Edit Pengumuman'
@@ -490,7 +490,7 @@ export default function WartaUtamaPage(): React.JSX.Element {
                     : 'Tulis Berita Baru'}
               </h3>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center">
               <button
                 type="button"
                 onClick={() =>
@@ -509,14 +509,14 @@ export default function WartaUtamaPage(): React.JSX.Element {
                     announcement_targets: form.announcement_targets,
                   })
                 }
-                className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 inline-flex items-center gap-1.5"
+                className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-200 sm:py-1.5"
               >
                 <Eye size={14} /> Preview
               </button>
               <button
                 type="button"
                 onClick={resetForm}
-                className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs hover:bg-slate-200"
+                className="inline-flex items-center justify-center rounded-lg bg-slate-100 px-3 py-2 text-xs hover:bg-slate-200 sm:py-1.5"
               >
                 Batal
               </button>
@@ -531,7 +531,7 @@ export default function WartaUtamaPage(): React.JSX.Element {
             </div>
           )}
 
-          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 sm:p-4">
             <div className="mb-3">
               <p className="text-sm font-bold text-slate-800">Target Tampilan</p>
               <p className="text-xs text-slate-500">Pilih lokasi tampil. Dashboard mahasiswa hanya terlihat setelah login mahasiswa.</p>
@@ -921,7 +921,7 @@ function PaginationBar({
         Menampilkan <strong>{meta.from ?? 0}</strong>-<strong>{meta.to ?? 0}</strong> dari{' '}
         <strong>{meta.total}</strong> konten
       </p>
-      <div className="flex items-center gap-2">
+      <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:items-center">
         <button
           type="button"
           disabled={meta.current_page <= 1}
@@ -961,7 +961,7 @@ function TabButton({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold transition-colors ${
+      className={`inline-flex w-full items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors sm:w-auto sm:px-4 ${
         active ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
       }`}
     >
@@ -989,10 +989,10 @@ function AnnouncementListItem({
   togglePending: boolean;
 }): React.JSX.Element {
   return (
-    <div className="flex items-start justify-between gap-3 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 sm:flex-row sm:items-start sm:justify-between sm:p-5">
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 flex-wrap">
-          <p className="font-semibold text-slate-800 truncate">{item.title}</p>
+          <p className="min-w-0 max-w-full truncate font-semibold text-slate-800">{item.title}</p>
           {tabMode === 'berita' && item.show_as_popup && (
             <span className="shrink-0 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold text-amber-700 uppercase">
               <Pin size={10} /> JUGA POPUP
@@ -1046,12 +1046,12 @@ function AnnouncementListItem({
         </p>
       </div>
 
-      <div className="flex items-center gap-1.5 shrink-0">
+      <div className="grid w-full grid-cols-4 gap-1.5 sm:flex sm:w-auto sm:shrink-0 sm:items-center">
         <button
           type="button"
           onClick={onPreview}
           title="Preview"
-          className="rounded-lg bg-slate-50 px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-100"
+          className="inline-flex justify-center rounded-lg bg-slate-50 px-2.5 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 sm:py-1.5"
         >
           <Eye size={14} />
         </button>
@@ -1060,7 +1060,7 @@ function AnnouncementListItem({
           onClick={onToggle}
           title={item.is_active ? 'Non-aktifkan' : 'Aktifkan'}
           disabled={togglePending}
-          className={`rounded-lg px-2.5 py-1.5 text-xs font-semibold disabled:opacity-50 ${
+          className={`inline-flex justify-center rounded-lg px-2.5 py-2 text-xs font-semibold disabled:opacity-50 sm:py-1.5 ${
             item.is_active
               ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
               : 'bg-amber-50 text-amber-700 hover:bg-amber-100'
@@ -1072,7 +1072,7 @@ function AnnouncementListItem({
           type="button"
           onClick={onEdit}
           title="Edit"
-          className="rounded-lg bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 hover:bg-blue-100"
+          className="inline-flex justify-center rounded-lg bg-blue-50 px-2.5 py-2 text-xs font-semibold text-blue-700 hover:bg-blue-100 sm:py-1.5"
         >
           <Edit2 size={14} />
         </button>
@@ -1080,7 +1080,7 @@ function AnnouncementListItem({
           type="button"
           onClick={onDelete}
           title="Hapus"
-          className="rounded-lg bg-rose-50 px-2.5 py-1.5 text-xs font-semibold text-rose-700 hover:bg-rose-100"
+          className="inline-flex justify-center rounded-lg bg-rose-50 px-2.5 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100 sm:py-1.5"
         >
           <Trash2 size={14} />
         </button>

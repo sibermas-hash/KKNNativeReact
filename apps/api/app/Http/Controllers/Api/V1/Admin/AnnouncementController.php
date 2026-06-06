@@ -21,16 +21,27 @@ class AnnouncementController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $validated = $request->validate([
+            'search' => ['nullable', 'string', 'max:200'],
+            'category' => ['nullable', 'string', Rule::in(Announcement::CATEGORY_OPTIONS)],
+            'is_active' => ['nullable', 'boolean'],
+            'type' => ['nullable', 'string', Rule::in([Announcement::TYPE_BERITA, Announcement::TYPE_PENGUMUMAN])],
+        ]);
+
         $query = Announcement::query()
-            ->when($request->input('search'), function ($q, $s) {
+            ->when($validated['search'] ?? null, function ($q, $s) {
                 $safe = QueryHelper::escapeLike($s);
-                $q->where('title', 'like', "%{$safe}%");
+                $q->where(function ($inner) use ($safe) {
+                    $inner->where('title', 'like', "%{$safe}%")
+                        ->orWhere('excerpt', 'like', "%{$safe}%")
+                        ->orWhere('content', 'like', "%{$safe}%");
+                });
             })
-            ->when($request->input('category'), fn ($q, $c) => $q->where('category', $c))
+            ->when($validated['category'] ?? null, fn ($q, $c) => $q->where('category', $c))
             ->when($request->filled('is_active'), fn ($q) => $q->where('is_active', $request->boolean('is_active')))
             // Filter berdasarkan content-type ('berita' | 'pengumuman').
             // Shortcut supaya admin UI bisa tab tanpa perlu expand kategori manual.
-            ->ofType($request->input('type'))
+            ->ofType($validated['type'] ?? null)
             ->orderByDesc('published_at');
 
         return $this->successCollection(AnnouncementResource::collection($query->paginate(25)));

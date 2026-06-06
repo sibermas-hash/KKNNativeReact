@@ -2,9 +2,9 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Edit2, Eye, Megaphone, Newspaper, Pin, Power, Trash2, Upload } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { adminApi } from '@/lib/api';
+import { adminApi, rawApi } from '@/lib/api';
 import { ConfirmDialog, PageHeader } from '@/components/ui/shared';
 
 /**
@@ -55,6 +55,22 @@ interface Announcement {
   published_at?: string | null;
 }
 
+interface PaginationMeta {
+  current_page: number;
+  last_page: number;
+  per_page: number;
+  total: number;
+  from: number | null;
+  to: number | null;
+}
+
+interface AnnouncementsEnvelope {
+  data: Announcement[];
+  meta?: PaginationMeta;
+}
+
+type StatusFilter = 'all' | 'active' | 'draft' | 'popup';
+
 /** Form state unified — sebagian field hanya dipakai di mode tertentu. */
 interface FormState {
   title: string;
@@ -82,6 +98,8 @@ const INITIAL_FORM: FormState = {
   remove_image: false,
 };
 
+const EMPTY_ANNOUNCEMENTS: Announcement[] = [];
+
 export default function WartaUtamaPage(): React.JSX.Element {
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState<ContentTab>('berita');
@@ -95,23 +113,54 @@ export default function WartaUtamaPage(): React.JSX.Element {
 
   const [previewItem, setPreviewItem] = useState<Announcement | null>(null);
   const [deleteId, setDeleteId] = useState<number | null>(null);
+  const [searchInput, setSearchInput] = useState('');
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState<BeritaCategory | 'all'>('all');
+  const [status, setStatus] = useState<StatusFilter>('all');
+  const [page, setPage] = useState(1);
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'announcements', activeTab],
+  const previewImageUrl = useMemo(
+    () => (form.image_file ? URL.createObjectURL(form.image_file) : null),
+    [form.image_file],
+  );
+
+  useEffect(() => {
+    return () => {
+      if (previewImageUrl) URL.revokeObjectURL(previewImageUrl);
+    };
+  }, [previewImageUrl]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, search, category, status]);
+
+  const { data, isLoading, isFetching } = useQuery<AnnouncementsEnvelope>({
+    queryKey: ['admin', 'announcements', activeTab, page, search, category, status],
     queryFn: async () => {
-      const res = await adminApi.announcements.indexByType(activeTab);
-      return (res as { data?: unknown })?.data ?? res;
+      const params: Record<string, string | number | boolean> = { type: activeTab, page };
+      if (search.trim()) params.search = search.trim();
+      if (activeTab === 'berita' && category !== 'all') params.category = category;
+      if (status === 'active') params.is_active = true;
+      if (status === 'draft') params.is_active = false;
+      const res = await rawApi.get('/admin/warta-utama', { params });
+      const envelope = res.data as { data?: Announcement[]; meta?: PaginationMeta };
+      const rows = envelope.data ?? [];
+      return {
+        data: status === 'popup' ? rows.filter((item) => item.show_as_popup) : rows,
+        meta: envelope.meta,
+      };
     },
   });
 
-  const announcements: Announcement[] = useMemo(() => {
-    const d = data as unknown;
-    if (Array.isArray(d)) return d as Announcement[];
-    if (d && typeof d === 'object' && 'data' in d) {
-      return ((d as { data: Announcement[] }).data ?? []) as Announcement[];
-    }
-    return [];
-  }, [data]);
+  const announcements = data?.data ?? EMPTY_ANNOUNCEMENTS;
+  const pagination = data?.meta;
+  const visibleStats = useMemo(() => {
+    const total = pagination?.total ?? announcements.length;
+    const active = announcements.filter((item) => item.is_active).length;
+    const popup = announcements.filter((item) => item.show_as_popup).length;
+    const draft = announcements.filter((item) => !item.is_active).length;
+    return { total, active, popup, draft };
+  }, [announcements, pagination?.total]);
 
   const resetForm = () => {
     setForm(INITIAL_FORM);
@@ -250,52 +299,146 @@ export default function WartaUtamaPage(): React.JSX.Element {
     <div className="space-y-6">
       <PageHeader
         title="Warta & Pengumuman"
-        subtitle="Kelola berita publik dan pengumuman popup home."
+        subtitle="Kelola berita publik, pengumuman popup home, status publikasi, dan kurasi konten."
       />
 
-      {/* Tab switcher */}
-      <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1 w-fit">
-        <TabButton
-          active={activeTab === 'berita'}
-          onClick={() => {
-            setActiveTab('berita');
-            if (showForm && formMode !== 'berita') resetForm();
-          }}
-          icon={<Newspaper size={14} />}
-          label="Berita"
-        />
-        <TabButton
-          active={activeTab === 'pengumuman'}
-          onClick={() => {
-            setActiveTab('pengumuman');
-            if (showForm && formMode !== 'pengumuman') resetForm();
-          }}
-          icon={<Megaphone size={14} />}
-          label="Pengumuman"
-        />
-      </div>
-
-      {/* Create button */}
-      {!showForm && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-slate-500">
-            {activeTab === 'berita'
-              ? 'Artikel publik yang tampil di halaman /berita. Bisa opsional dipromosikan sebagai popup home.'
-              : 'Pesan singkat yang otomatis muncul sebagai popup di home publik.'}
-          </p>
-          <button
-            type="button"
-            onClick={() => openCreate(activeTab)}
-            className={`rounded-xl px-4 py-2.5 text-sm font-semibold text-white ${
-              activeTab === 'berita'
-                ? 'bg-cyan-600 hover:bg-cyan-700'
-                : 'bg-amber-600 hover:bg-amber-700'
-            }`}
-          >
-            {activeTab === 'berita' ? '+ Tulis Berita' : '+ Buat Pengumuman'}
-          </button>
+      <section className="rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-cyan-50/60 to-amber-50/50 p-5 shadow-sm">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="space-y-3">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/80 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.2em] text-cyan-700 ring-1 ring-cyan-100">
+              <Newspaper size={13} /> Manajemen Konten Publik
+            </div>
+            <div>
+              <h2 className="text-2xl font-black tracking-tight text-slate-900">Warta utama SIBERMAS</h2>
+              <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">
+                {activeTab === 'berita'
+                  ? 'Artikel publik untuk halaman /berita. Berita penting bisa sekaligus dinaikkan sebagai popup home.'
+                  : 'Pengumuman formal yang otomatis tampil sebagai popup di home publik selama aktif.'}
+              </p>
+            </div>
+          </div>
+          {!showForm && (
+            <button
+              type="button"
+              onClick={() => openCreate(activeTab)}
+              className={`inline-flex items-center justify-center rounded-2xl px-5 py-3 text-sm font-bold text-white shadow-lg transition hover:-translate-y-0.5 ${
+                activeTab === 'berita'
+                  ? 'bg-cyan-600 shadow-cyan-600/20 hover:bg-cyan-700'
+                  : 'bg-amber-600 shadow-amber-600/20 hover:bg-amber-700'
+              }`}
+            >
+              {activeTab === 'berita' ? '+ Tulis Berita' : '+ Buat Pengumuman'}
+            </button>
+          )}
         </div>
-      )}
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <StatCard label="Total terfilter" value={visibleStats.total} tone="cyan" />
+          <StatCard label="Aktif di halaman ini" value={visibleStats.active} tone="emerald" />
+          <StatCard label="Popup di halaman ini" value={visibleStats.popup} tone="amber" />
+          <StatCard label="Draft di halaman ini" value={visibleStats.draft} tone="slate" />
+        </div>
+      </section>
+
+      {/* Tab switcher + filters */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex w-fit items-center gap-1 rounded-xl bg-slate-100 p-1">
+            <TabButton
+              active={activeTab === 'berita'}
+              onClick={() => {
+                setActiveTab('berita');
+                if (showForm && formMode !== 'berita') resetForm();
+              }}
+              icon={<Newspaper size={14} />}
+              label="Berita"
+            />
+            <TabButton
+              active={activeTab === 'pengumuman'}
+              onClick={() => {
+                setActiveTab('pengumuman');
+                setCategory('all');
+                if (showForm && formMode !== 'pengumuman') resetForm();
+              }}
+              icon={<Megaphone size={14} />}
+              label="Pengumuman"
+            />
+          </div>
+
+          <form
+            className="grid gap-2 md:grid-cols-12 xl:min-w-[760px]"
+            onSubmit={(event) => {
+              event.preventDefault();
+              setSearch(searchInput.trim());
+            }}
+          >
+            <label className="md:col-span-5">
+              <span className="sr-only">Cari judul atau konten</span>
+              <input
+                value={searchInput}
+                onChange={(event) => setSearchInput(event.target.value)}
+                placeholder="Cari judul, ringkasan, konten..."
+                className="h-10 w-full rounded-xl border border-slate-200 px-3 text-sm focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-100"
+              />
+            </label>
+            {activeTab === 'berita' && (
+              <label className="md:col-span-3">
+                <span className="sr-only">Kategori</span>
+                <select
+                  value={category}
+                  onChange={(event) => setCategory(event.target.value as BeritaCategory | 'all')}
+                  className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-100"
+                >
+                  <option value="all">Semua kategori</option>
+                  {BERITA_CATEGORY_OPTIONS.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+              </label>
+            )}
+            <label className={activeTab === 'berita' ? 'md:col-span-2' : 'md:col-span-4'}>
+              <span className="sr-only">Status</span>
+              <select
+                value={status}
+                onChange={(event) => setStatus(event.target.value as StatusFilter)}
+                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-100"
+              >
+                <option value="all">Semua status</option>
+                <option value="active">Aktif</option>
+                <option value="draft">Draft</option>
+                <option value="popup">Popup home</option>
+              </select>
+            </label>
+            <button
+              type="submit"
+              className="h-10 rounded-xl bg-slate-900 px-4 text-sm font-bold text-white hover:bg-slate-800 md:col-span-2"
+            >
+              Terapkan
+            </button>
+          </form>
+        </div>
+
+        {(search || category !== 'all' || status !== 'all') && (
+          <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+            <span>Filter aktif:</span>
+            {search && <span className="rounded-full bg-cyan-50 px-2 py-1 font-semibold text-cyan-700">“{search}”</span>}
+            {category !== 'all' && <span className="rounded-full bg-slate-100 px-2 py-1 font-semibold text-slate-700">{category}</span>}
+            {status !== 'all' && <span className="rounded-full bg-amber-50 px-2 py-1 font-semibold text-amber-700">{status}</span>}
+            <button
+              type="button"
+              onClick={() => {
+                setSearchInput('');
+                setSearch('');
+                setCategory('all');
+                setStatus('all');
+              }}
+              className="font-bold text-rose-600 hover:text-rose-700"
+            >
+              Reset
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Form */}
       {showForm && (
@@ -337,7 +480,7 @@ export default function WartaUtamaPage(): React.JSX.Element {
                     show_as_popup: isPengumumanMode ? true : form.show_as_popup,
                     popup_until: form.popup_until || null,
                     popup_dismissable: form.popup_dismissable,
-                    image_url: form.image_file ? URL.createObjectURL(form.image_file) : null,
+                    image_url: previewImageUrl,
                   })
                 }
                 className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 inline-flex items-center gap-1.5"
@@ -620,12 +763,14 @@ export default function WartaUtamaPage(): React.JSX.Element {
       {isLoading ? (
         <div className="h-32 animate-pulse rounded-2xl bg-slate-200" />
       ) : (
-        <div className="space-y-3">
+        <div className={`space-y-3 ${isFetching ? 'opacity-70' : ''}`}>
           {announcements.length === 0 && (
             <div className="rounded-2xl bg-white p-8 text-center text-sm text-slate-500 ring-1 ring-slate-200">
-              {activeTab === 'berita'
-                ? 'Belum ada berita yang ditulis.'
-                : 'Belum ada pengumuman aktif.'}
+              {search || category !== 'all' || status !== 'all'
+                ? 'Tidak ada konten yang cocok dengan filter.'
+                : activeTab === 'berita'
+                  ? 'Belum ada berita yang ditulis.'
+                  : 'Belum ada pengumuman yang ditulis.'}
             </div>
           )}
 
@@ -641,6 +786,10 @@ export default function WartaUtamaPage(): React.JSX.Element {
               togglePending={toggleActiveMutation.isPending}
             />
           ))}
+
+          {pagination && pagination.last_page > 1 && (
+            <PaginationBar meta={pagination} onPageChange={setPage} />
+          )}
         </div>
       )}
 
@@ -668,6 +817,74 @@ export default function WartaUtamaPage(): React.JSX.Element {
 }
 
 // ─── Sub components ──────────────────────────────────────────────────────────
+
+function StatCard({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: 'cyan' | 'emerald' | 'amber' | 'slate';
+}): React.JSX.Element {
+  const tones = {
+    cyan: { dot: 'from-cyan-500 to-sky-600', soft: 'bg-cyan-50' },
+    emerald: { dot: 'from-emerald-500 to-teal-600', soft: 'bg-emerald-50' },
+    amber: { dot: 'from-amber-500 to-orange-600', soft: 'bg-amber-50' },
+    slate: { dot: 'from-slate-600 to-slate-900', soft: 'bg-slate-50' },
+  }[tone];
+
+  return (
+    <div className="rounded-2xl border border-white/80 bg-white/85 p-4 shadow-sm backdrop-blur">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{label}</p>
+        <span className={`h-2.5 w-2.5 rounded-full bg-gradient-to-br ${tones.dot}`} />
+      </div>
+      <p className="mt-2 text-3xl font-black text-slate-900">{value}</p>
+      <div className={`mt-3 h-1.5 rounded-full ${tones.soft}`}>
+        <div className={`h-full w-2/3 rounded-full bg-gradient-to-r ${tones.dot}`} />
+      </div>
+    </div>
+  );
+}
+
+function PaginationBar({
+  meta,
+  onPageChange,
+}: {
+  meta: PaginationMeta;
+  onPageChange: (page: number) => void;
+}): React.JSX.Element {
+  return (
+    <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-600 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+      <p>
+        Menampilkan <strong>{meta.from ?? 0}</strong>-<strong>{meta.to ?? 0}</strong> dari{' '}
+        <strong>{meta.total}</strong> konten
+      </p>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          disabled={meta.current_page <= 1}
+          onClick={() => onPageChange(meta.current_page - 1)}
+          className="rounded-lg border border-slate-200 px-3 py-1.5 font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Sebelumnya
+        </button>
+        <span className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700">
+          {meta.current_page}/{meta.last_page}
+        </span>
+        <button
+          type="button"
+          disabled={meta.current_page >= meta.last_page}
+          onClick={() => onPageChange(meta.current_page + 1)}
+          className="rounded-lg border border-slate-200 px-3 py-1.5 font-semibold text-slate-700 disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Berikutnya
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function TabButton({
   active,

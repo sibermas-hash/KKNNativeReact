@@ -212,7 +212,7 @@ export default function AdminLokasiPage(): React.JSX.Element {
     },
   });
 
-  const items = list.data?.data ?? [];
+  const items = useMemo(() => list.data?.data ?? [], [list.data?.data]);
 
   useEffect(() => {
     setSelected(new Set(items.filter((l) => l.is_selected_for_kkn).map((l) => l.id)));

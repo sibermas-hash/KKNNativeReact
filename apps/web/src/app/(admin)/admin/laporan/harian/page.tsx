@@ -93,7 +93,7 @@ export default function AdminDailyReportsPage(): React.JSX.Element {
     },
   });
 
-  const allReports = statsQ.data ?? [];
+  const allReports = useMemo(() => statsQ.data ?? [], [statsQ.data]);
 
   const stats = useMemo(() => {
     const total = allReports.length;

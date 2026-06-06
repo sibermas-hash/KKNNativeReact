@@ -83,7 +83,7 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
   const students: Student[] = (inner.students ?? []) as Student[];
   const pagination: Pagination = (inner.pagination ?? { current_page: 1, per_page: 20, total: 0, last_page: 1 }) as Pagination;
   const stats: Stats = (inner.stats ?? { total: 0, eligible_count: 0, not_eligible_count: 0, eligibility_rate: 0 }) as Stats;
-  const apiIssueOptions: IssueOption[] = (inner.issue_filters ?? []) as IssueOption[];
+  const apiIssueOptions = useMemo<IssueOption[]>(() => (inner.issue_filters ?? []) as IssueOption[], [inner.issue_filters]);
 
   const handleExport = async () => {
     setIsExporting(true);
@@ -112,7 +112,7 @@ export default function AuditKualifikasiPage(): React.JSX.Element {
   const toggleExpand = (id: number) => setExpandedId(expandedId === id ? null : id);
 
   const issueOptions = useMemo<IssueOption[]>(() => {
-    const fallback = [
+    const fallback: IssueOption[] = [
       { value: 'status_aktif', label: 'Status akademik tidak aktif' },
       { value: 'min_sks', label: 'SKS kurang' },
       { value: 'min_semester', label: 'Semester kurang' },

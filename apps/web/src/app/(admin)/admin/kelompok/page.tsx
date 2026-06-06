@@ -161,9 +161,9 @@ export default function AdminKelompokPage(): React.JSX.Element {
     const first = periodItems[0];
     setPeriodeId(String(first.id));
     setCreateForm((prev) => ({ ...prev, periode_id: String(first.id) }));
-  }, [manualMode, jenisKey, periodeId, periodItems.length]);
+  }, [manualMode, jenisKey, periodeId, periodItems]);
 
-  const items = listQ.data?.data ?? [];
+  const items = useMemo(() => listQ.data?.data ?? [], [listQ.data?.data]);
   const meta = listQ.data?.meta;
 
   const filtered = useMemo(() => {

@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
-import { fetchApi } from '@/lib/server-api';
+import { fetchApiStrict } from '@/lib/server-api';
 import { Navbar } from '@/components/public/navbar';
 import { Footer } from '@/components/public/footer';
 import { FileText, ExternalLink, Smartphone, Shield, Download as DownloadIcon } from 'lucide-react';
 
-export const revalidate = 3600;
+// Harus sinkron langsung dengan /admin/unduhan.
+// Jangan static-cache 1 jam: admin upload/toggle/hapus harus segera terlihat publik.
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function generateMetadata(): Promise<Metadata> {
   return {
@@ -34,8 +37,11 @@ function formatDate(iso?: string): string {
 }
 
 export default async function DownloadsPage() {
-  const data = await fetchApi<{ success: boolean; data: Download[] }>('/public/downloads');
-  const allDownloads = data?.data || [];
+  const result = await fetchApiStrict<{ success: boolean; data: Download[] }>(
+    '/public/downloads',
+    { cache: 'no-store' },
+  );
+  const allDownloads = result.kind === 'ok' ? result.data.data ?? [] : [];
 
   // Pisahkan file aplikasi mobile (APK) dari dokumen biasa. Konvensi:
   // admin set `file_type = 'mobile-app'` ATAU file_name berakhir dengan `.apk`.

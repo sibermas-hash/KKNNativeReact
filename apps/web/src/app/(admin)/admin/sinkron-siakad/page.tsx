@@ -43,9 +43,9 @@ export default function SinkronSiakadPage(): React.JSX.Element {
   const [lastRunAt, setLastRunAt] = useState<string | null>(null);
 
   const backupOnly = useMutation({
-    mutationFn: () => adminApi.siakadSync.backup({ keep_days: keepDays }) as unknown as Promise<{ data: BackupResponse }>,
+    mutationFn: () => adminApi.siakadSync.backup({ keep_days: keepDays }) as unknown as Promise<BackupResponse>,
     onSuccess: (res) => {
-      const payload = (res?.data ?? res) as BackupResponse;
+      const payload = res as BackupResponse;
       setLastBackup(payload);
       setLastSync(null);
       setLastRunAt(new Date().toISOString());
@@ -64,9 +64,9 @@ export default function SinkronSiakadPage(): React.JSX.Element {
         delta: delta,
         source: 'api',
         keep_days: keepDays,
-      }) as unknown as Promise<{ data: SyncResponse }>,
+      }) as unknown as Promise<SyncResponse>,
     onSuccess: (res) => {
-      const payload = (res?.data ?? res) as SyncResponse;
+      const payload = res as SyncResponse;
       setLastSync(payload);
       setLastBackup({ artisan_output: payload.backup?.output, keep_days: keepDays });
       setLastRunAt(new Date().toISOString());

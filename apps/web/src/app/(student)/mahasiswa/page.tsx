@@ -25,7 +25,14 @@ type DashboardAnnouncement = {
   category?: string;
   content_type?: 'berita' | 'pengumuman';
   published_at?: string | null;
+  show_as_popup?: boolean;
 };
+
+function extractFirstUrl(text: string): string | null {
+  const match = text.match(/https?:\/\/[^\s]+|t\.me\/[^\s]+/i);
+  if (!match) return null;
+  return match[0].startsWith('http') ? match[0] : `https://${match[0]}`;
+}
 
 function normalizeStatus(status?: string): string | undefined {
   if (!status) return status;
@@ -42,7 +49,7 @@ export default function StudentDashboard(): React.JSX.Element {
   const { currentPhase, activePeriod } = usePeriodStore();
   const queryClient = useQueryClient();
   const [showPopup, setShowPopup] = useState(false);
-  const [showTelegramPopup, setShowTelegramPopup] = useState(false);
+  const [dismissedAnnouncementId, setDismissedAnnouncementId] = useState<number | null>(null);
 
 
   
@@ -65,6 +72,8 @@ export default function StudentDashboard(): React.JSX.Element {
   const workProgramCount = (data?.work_program_count as number) || 0;
   const finalReport = data?.final_report as Record<string, unknown> | null | undefined;
   const dashboardAnnouncements = (data?.dashboard_announcements as DashboardAnnouncement[] | undefined) ?? [];
+  const popupAnnouncement = dashboardAnnouncements.find((item) => item.show_as_popup && item.id !== dismissedAnnouncementId);
+  const popupLink = popupAnnouncement ? extractFirstUrl(`${popupAnnouncement.excerpt ?? ''} ${popupAnnouncement.content ?? ''}`) : null;
 
   const normalizedStatus = normalizeStatus(registration?.status as string);
   const isCompleted = normalizedStatus === 'completed';
@@ -119,10 +128,6 @@ export default function StudentDashboard(): React.JSX.Element {
 
   const shouldShowPopup = isApproved && registration && !registration.notification_shown;
   useEffect(() => { if (shouldShowPopup) setShowPopup(true); }, [shouldShowPopup]);
-  useEffect(() => {
-    setShowTelegramPopup(true);
-
-  }, []);
 
   const handleClosePopup = useCallback(() => {
     setShowPopup(false);
@@ -131,9 +136,9 @@ export default function StudentDashboard(): React.JSX.Element {
     }
   }, [notificationMutation, registration?.id, registration?.notification_shown]);
 
-  const handleCloseTelegramPopup = useCallback(() => {
-    setShowTelegramPopup(false);
-  }, []);
+  const handleCloseDashboardAnnouncement = useCallback(() => {
+    if (popupAnnouncement?.id) setDismissedAnnouncementId(popupAnnouncement.id);
+  }, [popupAnnouncement?.id]);
 
 
   // Escape key handler for modal accessibility
@@ -145,11 +150,11 @@ export default function StudentDashboard(): React.JSX.Element {
   }, [handleClosePopup, showPopup]);
 
   useEffect(() => {
-    if (!showTelegramPopup || showPopup) return;
-    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') handleCloseTelegramPopup(); };
+    if (!popupAnnouncement || showPopup) return;
+    const onKeyDown = (e: KeyboardEvent) => { if (e.key === 'Escape') handleCloseDashboardAnnouncement(); };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [handleCloseTelegramPopup, showPopup, showTelegramPopup]);
+  }, [handleCloseDashboardAnnouncement, popupAnnouncement, showPopup]);
 
   if (isError) {
     return (
@@ -237,13 +242,13 @@ export default function StudentDashboard(): React.JSX.Element {
         </div>
       )}
 
-      {showTelegramPopup && !showPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="telegram-popup-title">
+      {popupAnnouncement && !showPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="dashboard-announcement-popup-title">
           <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-200 ring-1 ring-black/5">
             <button
               type="button"
-              onClick={handleCloseTelegramPopup}
-              aria-label="Tutup popup Telegram"
+              onClick={handleCloseDashboardAnnouncement}
+              aria-label="Tutup pengumuman"
               className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
             >
               ×
@@ -252,27 +257,37 @@ export default function StudentDashboard(): React.JSX.Element {
               <div className="h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-6 bg-sky-50 text-sky-600">
                 <Send size={32} />
               </div>
-              <h2 id="telegram-popup-title" className="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">
-                Bergabung ke Grup Telegram
+              <h2 id="dashboard-announcement-popup-title" className="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">
+                {popupAnnouncement.title}
               </h2>
-              <p className="text-sm text-slate-600 mb-6 font-medium leading-relaxed">
-                Seluruh mahasiswa KKN wajib bergabung ke grup Telegram resmi SIBERMAS untuk menerima informasi, pengumuman, dan koordinasi terbaru.
-              </p>
-              <div className="rounded-lg bg-sky-50 p-4 text-sm font-bold text-sky-900 ring-1 ring-sky-100">
-                t.me/sibermasuinsaizu
-              </div>
+              {(popupAnnouncement.excerpt || popupAnnouncement.content) && (
+                <p className="text-sm text-slate-600 mb-6 font-medium leading-relaxed whitespace-pre-line">
+                  {popupAnnouncement.excerpt || popupAnnouncement.content}
+                </p>
+              )}
+              {popupLink && (
+                <div className="rounded-lg bg-sky-50 p-4 text-sm font-bold text-sky-900 ring-1 ring-sky-100">
+                  {popupLink.replace(/^https?:\/\//, '')}
+                </div>
+              )}
             </div>
             <div className="mt-8 grid gap-3 sm:grid-cols-2">
               <button
                 type="button"
-                onClick={handleCloseTelegramPopup}
+                onClick={handleCloseDashboardAnnouncement}
                 className="inline-flex h-12 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-xs font-black uppercase tracking-widest text-slate-700 transition hover:bg-slate-50 active:scale-[0.98]"
               >
                 Nanti Saja
               </button>
-              <a href="https://t.me/sibermasuinsaizu" target="_blank" rel="noopener noreferrer" onClick={handleCloseTelegramPopup} className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-sky-900/10 transition hover:bg-sky-700 active:scale-[0.98]">
-                Gabung Sekarang <ArrowRight size={16} />
-              </a>
+              {popupLink ? (
+                <a href={popupLink} target="_blank" rel="noopener noreferrer" onClick={handleCloseDashboardAnnouncement} className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-sky-900/10 transition hover:bg-sky-700 active:scale-[0.98]">
+                  Buka Tautan <ArrowRight size={16} />
+                </a>
+              ) : (
+                <button type="button" onClick={handleCloseDashboardAnnouncement} className="inline-flex h-12 items-center justify-center rounded-lg bg-sky-600 px-4 text-xs font-black uppercase tracking-widest text-white shadow-lg shadow-sky-900/10 transition hover:bg-sky-700 active:scale-[0.98]">
+                  Mengerti
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -222,7 +222,7 @@ export default function RegistrationFormPage(): React.JSX.Element {
     queryKey: QUERY_KEYS.student.kknDaftar,
     queryFn: async () => {
       const res = await studentApi.kknDaftar.index();
-      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
+      return res as unknown as Record<string, unknown>;
     },
   });
 

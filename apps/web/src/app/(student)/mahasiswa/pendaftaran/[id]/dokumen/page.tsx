@@ -62,7 +62,7 @@ export default function UploadDokumenPage(): React.JSX.Element {
     queryKey: [...QUERY_KEYS.student.registration.form, "period-docs", Number(id)],
     queryFn: async () => {
       const res = await studentApi.registration.form();
-      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
+      return res as unknown as Record<string, unknown>;
     },
   });
 
@@ -71,7 +71,7 @@ export default function UploadDokumenPage(): React.JSX.Element {
     queryKey: [...QUERY_KEYS.student.registration.status],
     queryFn: async () => {
       const res = await studentApi.registration.status();
-      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
+      return res as unknown as Record<string, unknown>;
     },
   });
 

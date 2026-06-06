@@ -6,9 +6,9 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\KKN\AttendancePhoto;
-
-use App\Models\KKN\PesertaWorkshop;
 use App\Models\KKN\IzinMeninggalkan;
+use App\Models\KKN\PesertaWorkshop;
+use App\Models\Mahasiswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -25,7 +25,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  * Every endpoint here:
  *   - requires `auth:sanctum`
  *   - checks the caller is entitled to THIS file (owner, group member,
- *     supervising DPL, or superadmin/admin)
+ *     supervising DPL, or admin with explicit scope)
  *   - streams directly from the private disk so paths never leak
  */
 class PrivateFileController extends Controller
@@ -36,7 +36,8 @@ class PrivateFileController extends Controller
      * Allowed to:
      *   - the mahasiswa who took the photo
      *   - DPL supervising the mahasiswa's group
-     *   - superadmin / admin / faculty_admin
+     *   - superadmin / admin
+     *   - faculty_admin only for same-faculty mahasiswa
      */
     public function attendancePhoto(Request $request, AttendancePhoto $photo): BinaryFileResponse
     {
@@ -46,8 +47,10 @@ class PrivateFileController extends Controller
 
         $ownerUserId = $photo->attendance?->mahasiswa?->user_id;
         $supervisingDplUserId = $photo->attendance?->kelompok?->dpl?->user_id;
+        $facultyAllowed = $this->facultyAdminCanAccessMahasiswa($user, $photo->attendance?->mahasiswa);
 
-        $authorized = $user->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])
+        $authorized = $user->hasAnyRole(['superadmin', 'admin'])
+            || $facultyAllowed
             || ($ownerUserId && $user->id === $ownerUserId)
             || ($supervisingDplUserId && $user->id === $supervisingDplUserId);
 
@@ -67,7 +70,7 @@ class PrivateFileController extends Controller
      *
      * Allowed to:
      *   - the dosen who owns the certificate
-     *   - superadmin / admin / faculty_admin
+     *   - superadmin / admin
      */
     public function workshopCertificate(Request $request, PesertaWorkshop $participant): BinaryFileResponse
     {
@@ -76,7 +79,7 @@ class PrivateFileController extends Controller
 
         $ownerUserId = $participant->dosen?->user_id;
 
-        $authorized = $user->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])
+        $authorized = $user->hasAnyRole(['superadmin', 'admin'])
             || ($ownerUserId && $user->id === $ownerUserId);
 
         if (! $authorized) {
@@ -104,8 +107,10 @@ class PrivateFileController extends Controller
 
         $ownerUserId = $izin->mahasiswa?->user_id;
         $supervisingDplUserId = $izin->kelompok?->dpl?->user_id;
+        $facultyAllowed = $this->facultyAdminCanAccessMahasiswa($user, $izin->mahasiswa);
 
-        $authorized = $user->hasAnyRole(['superadmin', 'admin', 'faculty_admin'])
+        $authorized = $user->hasAnyRole(['superadmin', 'admin'])
+            || $facultyAllowed
             || ($ownerUserId && $user->id === $ownerUserId)
             || ($supervisingDplUserId && $user->id === $supervisingDplUserId);
 
@@ -140,5 +145,13 @@ class PrivateFileController extends Controller
             'Content-Type' => $mimeType,
             'Cache-Control' => 'private, no-store',
         ]);
+    }
+
+    private function facultyAdminCanAccessMahasiswa($user, ?Mahasiswa $mahasiswa): bool
+    {
+        return $user->hasRole('faculty_admin')
+            && $user->fakultas_id
+            && $mahasiswa?->fakultas_id
+            && (int) $user->fakultas_id === (int) $mahasiswa->fakultas_id;
     }
 }

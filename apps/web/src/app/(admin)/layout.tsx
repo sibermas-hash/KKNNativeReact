@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { clsx } from 'clsx';
 import { ThemeSwitcher, useTheme } from '@/components/ui/theme-provider';
 import { NotificationBell } from '@/components/ui/notification-bell';
+import { AdminOnlineUsersSidebar } from '@/components/admin/AdminOnlineUsersSidebar';
 
 const CommandPalette = dynamic(
   () => import('@/components/ui/command-palette').then(m => ({ default: m.CommandPalette })),
@@ -186,7 +187,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Hub page: full-page, no sidebar (after auth guard)
   if (pathname === '/admin') {
-    return <>{children}</>;
+    return <>{children}<AdminOnlineUsersSidebar /></>;
   }
 
   return (
@@ -305,6 +306,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         )}
       </aside>
+
+      <AdminOnlineUsersSidebar />
 
       {/* Main */}
       <div className="lg:pl-64 flex flex-col min-h-screen transition-all duration-300 w-full overflow-x-hidden">

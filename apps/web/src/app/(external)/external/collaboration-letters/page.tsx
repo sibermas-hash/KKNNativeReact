@@ -11,7 +11,7 @@ type Letter = { id:number; letter_number?:string; subject?:string; status:string
 const EMPTY={letter_number:'',letter_date:'',subject:'',sender_name:'',sender_position:''};
 export default function ExternalLettersPage(){
  const qc=useQueryClient(); const [open,setOpen]=useState(false); const [form,setForm]=useState(EMPTY); const [file,setFile]=useState<File|null>(null);
- const {data,isLoading}=useQuery({queryKey:['external','letters'],queryFn:async()=>((await api.get('/external/collaboration-letters')) as {data?:{data?:Letter[]}})?.data?.data??[]});
+ const {data,isLoading}=useQuery({queryKey:['external','letters'],queryFn:async()=>((await api.get('/external/collaboration-letters')) as Letter[])??[]});
  const save=useMutation({mutationFn:()=>{const fd=new FormData(); Object.entries(form).forEach(([k,v])=>{ if(v) fd.append(k,v); }); if(file) fd.append('file',file); return api.post('/external/collaboration-letters',fd,{headers:{'Content-Type':'multipart/form-data'}});},onSuccess:()=>{qc.invalidateQueries({queryKey:['external','letters']});toast.success('Surat dibuat');setOpen(false);setForm(EMPTY);setFile(null);},onError:()=>toast.error('Gagal membuat surat')});
  const submit=useMutation({mutationFn:(id:number)=>api.post(`/external/collaboration-letters/${id}/submit`),onSuccess:()=>{qc.invalidateQueries({queryKey:['external','letters']});toast.success('Surat disubmit');},onError:()=>toast.error('Gagal submit')});
  return <div className="space-y-6"><PageHeader title="Surat Kolaborasi" subtitle="Ajukan surat kerja sama KKN" actions={<button onClick={()=>setOpen(true)} className="flex items-center gap-2 rounded-xl bg-cyan-600 px-4 py-2 text-sm font-bold text-white"><Plus size={16}/> Buat Surat</button>}/>

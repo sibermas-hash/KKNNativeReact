@@ -14,9 +14,9 @@ const EMPTY = { periode_id:'', external_nim:'', nama:'', nik:'', gender:'', phon
 
 export default function ExternalParticipantsPage(){
  const qc=useQueryClient(); const [open,setOpen]=useState(false); const [form,setForm]=useState(EMPTY);
- const {data,isLoading}=useQuery({queryKey:['external','participants'],queryFn:async()=>((await api.get('/external/participants')) as {data?:{data?:Participant[]}})?.data?.data??[]});
- const {data:periods=[]}=useQuery({queryKey:['external','periods'],queryFn:async()=>{const res=(await api.get('/external/periodes',{params:{per_page:100}})) as {data?:Period[]|{data?:Period[]}}; return Array.isArray(res.data) ? res.data : (res.data?.data ?? []);}});
- const {data:letters=[]}=useQuery({queryKey:['external','letters','verified'],queryFn:async()=>((await api.get('/external/collaboration-letters',{params:{status:'verified',per_page:100}})) as {data?:{data?:Letter[]}})?.data?.data??[]});
+ const {data,isLoading}=useQuery({queryKey:['external','participants'],queryFn:async()=>((await api.get('/external/participants')) as Participant[])??[]});
+ const {data:periods=[]}=useQuery({queryKey:['external','periods'],queryFn:async()=>((await api.get('/external/periodes',{params:{per_page:100}})) as Period[])??[]});
+ const {data:letters=[]}=useQuery({queryKey:['external','letters','verified'],queryFn:async()=>((await api.get('/external/collaboration-letters',{params:{status:'verified',per_page:100}})) as Letter[])??[]});
  const save=useMutation({mutationFn:()=>api.post('/external/participants',{...form, periode_id:Number(form.periode_id), collaboration_letter_id: form.collaboration_letter_id ? Number(form.collaboration_letter_id) : null}),onSuccess:()=>{qc.invalidateQueries({queryKey:['external','participants']});toast.success('Peserta ditambahkan');setOpen(false);setForm(EMPTY);},onError:()=>toast.error('Gagal tambah peserta')});
  return <div className="space-y-6"><PageHeader title="Peserta Eksternal" subtitle="Data mahasiswa peserta KKN kolaborasi" actions={<button onClick={()=>setOpen(true)} className="flex items-center gap-2 rounded-xl bg-cyan-600 px-4 py-2 text-sm font-bold text-white"><Plus size={16}/> Tambah</button>}/>
  {open&&<div className="rounded-2xl border p-5 space-y-3"><div className="grid md:grid-cols-2 gap-3">

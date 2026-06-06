@@ -61,7 +61,7 @@ class ImportDosenCsv extends Command
                     [
                         'name' => $nama,
                         'email' => $email ?: ($nip.'@uinsaizu.ac.id'),
-                        'password' => Hash::make('Password#123'),
+                        'password' => Hash::make(str()->random(32)),
                         'is_active' => true,
                         'must_change_password' => true,
                     ]

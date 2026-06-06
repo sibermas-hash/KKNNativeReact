@@ -62,7 +62,7 @@ cd /usr/local/www/apache24/data/Sibermas2026
 
 APACHE_BACKEND=1 sh scripts/preflight-freebsd.sh
 
-KKN_SUPERADMIN_PASSWORD='password-kuat' \
+KKN_SUPERADMIN_PASSWORD='<strong-password-from-secret-manager>' \
 bash deploy-freebsd-apache-nginx.sh
 ```
 
@@ -73,7 +73,7 @@ app server via HTTP, gunakan mode eksplisit ini:
 
 ```sh
 EDGE_REVERSE_PROXY=1 \
-KKN_SUPERADMIN_PASSWORD='password-kuat' \
+KKN_SUPERADMIN_PASSWORD='<strong-password-from-secret-manager>' \
 bash deploy-freebsd-apache-nginx.sh
 ```
 
@@ -93,7 +93,7 @@ Untuk staging:
 
 ```sh
 WEB_DOMAIN=staging.example.ac.id \
-KKN_SUPERADMIN_PASSWORD='password-kuat' \
+KKN_SUPERADMIN_PASSWORD='<strong-password-from-secret-manager>' \
 bash deploy-freebsd-apache-nginx.sh
 ```
 

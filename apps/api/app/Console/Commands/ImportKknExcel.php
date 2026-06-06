@@ -117,7 +117,7 @@ class ImportKknExcel extends Command
                     [
                         'name' => $nama,
                         'email' => $nim.'@student.uinsaizu.ac.id',
-                        'password' => Hash::make('Password#123'),
+                        'password' => Hash::make(str()->random(32)),
                         'phone' => $phone,
                         'must_change_password' => true,
                     ]

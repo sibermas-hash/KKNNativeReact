@@ -181,7 +181,7 @@ class SeedDummyBatch extends Command
         // DPL 1 (reuse existing or create)
         $dplUser1 = User::firstOrCreate(
             ['username' => 'dpl_dummy'],
-            ['name' => 'Dr. DPL Simulasi, M.Kom.', 'email' => 'dpl_dummy@uinsaizu.ac.id', 'password' => Hash::make('password'), 'is_active' => true]
+            ['name' => 'Dr. DPL Simulasi, M.Kom.', 'email' => 'dpl_dummy@uinsaizu.ac.id', 'password' => Hash::make(str()->random(32)), 'must_change_password' => true, 'is_active' => true]
         );
         if (method_exists($dplUser1, 'assignRole')) {
             try {
@@ -197,7 +197,7 @@ class SeedDummyBatch extends Command
         // DPL 2
         $dplUser2 = User::firstOrCreate(
             ['username' => 'dpl_dummy2'],
-            ['name' => 'Hj. Aminah, S.Pd., M.Pd.', 'email' => 'dpl_dummy2@uinsaizu.ac.id', 'password' => Hash::make('password'), 'is_active' => true]
+            ['name' => 'Hj. Aminah, S.Pd., M.Pd.', 'email' => 'dpl_dummy2@uinsaizu.ac.id', 'password' => Hash::make(str()->random(32)), 'must_change_password' => true, 'is_active' => true]
         );
         if (method_exists($dplUser2, 'assignRole')) {
             try {
@@ -273,7 +273,7 @@ class SeedDummyBatch extends Command
             [
                 'name' => $data['nama'],
                 'email' => $data['nim'].'@students.uinsaizu.ac.id',
-                'password' => Hash::make('password'),
+                'password' => Hash::make(str()->random(32)), 'must_change_password' => true,
                 'is_active' => true,
                 'phone' => '0812'.rand(10000000, 99999999),
             ]

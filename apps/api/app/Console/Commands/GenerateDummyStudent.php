@@ -76,7 +76,8 @@ class GenerateDummyStudent extends Command
             [
                 'name' => 'Budi Simulasi KKN',
                 'email' => "{$nim}@students.uinsaizu.ac.id",
-                'password' => Hash::make('password'),
+                'password' => Hash::make(str()->random(32)),
+                'must_change_password' => true,
                 'is_active' => true,
                 'phone' => '081234567890',
             ]
@@ -111,7 +112,8 @@ class GenerateDummyStudent extends Command
             [
                 'name' => 'Dr. DPL Simulasi, M.Kom.',
                 'email' => 'dpl_dummy@uinsaizu.ac.id',
-                'password' => Hash::make('password'),
+                'password' => Hash::make(str()->random(32)),
+                'must_change_password' => true,
                 'is_active' => true,
             ]
         );

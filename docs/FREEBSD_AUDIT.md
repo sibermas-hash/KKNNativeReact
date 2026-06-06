@@ -103,7 +103,7 @@ Deploy pertama:
 ```sh
 sh scripts/preflight-freebsd.sh
 sh install-freebsd.sh
-KKN_SUPERADMIN_PASSWORD='password-kuat' bash deploy-freebsd-simple.sh
+KKN_SUPERADMIN_PASSWORD='<strong-password-from-secret-manager>' bash deploy-freebsd-simple.sh
 ```
 
 Redeploy:

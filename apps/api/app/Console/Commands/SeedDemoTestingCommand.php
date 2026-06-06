@@ -526,7 +526,8 @@ PDF;
                 'name' => 'Administrator Demo',
                 'email' => 'admin.demo@local.test',
                 'is_active' => true,
-                'password' => Hash::make('Password#123'),
+                'password' => Hash::make(str()->random(32)),
+                'must_change_password' => true,
                 'fakultas_id' => null,
             ]
         );
@@ -544,7 +545,8 @@ PDF;
                 'name' => 'Admin Fakultas Demo',
                 'email' => 'faculty.admin.demo@local.test',
                 'is_active' => true,
-                'password' => Hash::make('Password#123'),
+                'password' => Hash::make(str()->random(32)),
+                'must_change_password' => true,
                 'fakultas_id' => $facultyData['faculty']->id,
             ]
         );
@@ -567,7 +569,8 @@ PDF;
                 'name' => $name,
                 'email' => $email,
                 'is_active' => true,
-                'password' => Hash::make('Password#123'),
+                'password' => Hash::make(str()->random(32)),
+                'must_change_password' => true,
                 'fakultas_id' => $faculty->id,
             ]
         );
@@ -645,7 +648,8 @@ PDF;
                 'name' => $name,
                 'email' => $email,
                 'is_active' => true,
-                'password' => Hash::make('Password#123'),
+                'password' => Hash::make(str()->random(32)),
+                'must_change_password' => true,
                 'fakultas_id' => $faculty->id,
             ]
         );

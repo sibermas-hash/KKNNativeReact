@@ -9,7 +9,7 @@
 #   - Laravel queue workers via rc.d + daemon(8), no Supervisor
 #
 # Run on the FreeBSD server from the repository root:
-#   KKN_SUPERADMIN_PASSWORD='strong-password' bash deploy-freebsd-apache-nginx.sh
+#   KKN_SUPERADMIN_PASSWORD='<strong-password-from-secret-manager>' bash deploy-freebsd-apache-nginx.sh
 # Optional behind-gateway mode:
 #   EDGE_REVERSE_PROXY=1 bash deploy-freebsd-apache-nginx.sh
 

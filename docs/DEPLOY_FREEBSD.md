@@ -33,7 +33,7 @@ sh scripts/preflight-freebsd.sh
 sh install-freebsd.sh
 
 # 5. Deploy/redeploy aplikasi
-KKN_SUPERADMIN_PASSWORD='ganti-dengan-password-kuat' bash deploy-freebsd-simple.sh
+KKN_SUPERADMIN_PASSWORD='<strong-password-from-secret-manager>' bash deploy-freebsd-simple.sh
 ```
 
 Setelah itu cek:
@@ -72,7 +72,7 @@ Default domain adalah `sibermas.uinsaizu.ac.id`. Untuk staging:
 
 ```sh
 WEB_DOMAIN=staging.example.ac.id \
-KKN_SUPERADMIN_PASSWORD='password-kuat' \
+KKN_SUPERADMIN_PASSWORD='<strong-password-from-secret-manager>' \
 bash deploy-freebsd-simple.sh
 ```
 

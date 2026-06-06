@@ -14,7 +14,7 @@ type Aspect = { id: string; label: string; description: string };
 
 export default function DplEvaluationPage(): React.JSX.Element {
   const [ratings, setRatings] = useState<Record<string, number>>({});
-  const { config: themeConfig, surfaceClass } = useTheme();
+  const { surfaceClass } = useTheme();
   const [comment, setComment] = useState('');
   const [submitted, setSubmitted] = useState(false);
 

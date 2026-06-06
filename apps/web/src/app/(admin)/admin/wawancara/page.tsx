@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminApi, rawApi } from '@/lib/api';
-import { PageHeader, StatusBadge } from '@/components/ui/shared';
+import { rawApi } from '@/lib/api';
+import { PageHeader } from '@/components/ui/shared';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import {
   Plus, Calendar, MapPin, Clock, Users, CheckCircle2, XCircle,
-  ChevronLeft, ChevronRight, Trash2, Search, Filter
+  ChevronLeft, ChevronRight, Trash2, Search
 } from 'lucide-react';
 
 type Schedule = {

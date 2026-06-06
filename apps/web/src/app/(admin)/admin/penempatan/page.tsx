@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { MapPin, Shuffle, Users, ArrowRight, Settings2, UserPlus, Upload, GraduationCap, EyeOff } from "lucide-react";
 import { useTheme } from "@/components/ui/theme-provider";
-import { PRIMARY_CLASS, SOFT_CLASS } from "@/lib/theme-config";
 
 const MANUAL = [
   ["nusantara", "KKN Nusantara"],

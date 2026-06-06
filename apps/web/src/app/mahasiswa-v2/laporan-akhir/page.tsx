@@ -11,7 +11,7 @@ import { PRIMARY_CLASS, SOFT_CLASS, FIELD_CLASS } from '@/lib/theme-config';
 
 export default function FinalReportPage(): React.JSX.Element {
   const queryClient = useQueryClient();
-  const { config: themeConfig, typography, surfaceClass } = useTheme();
+  const { config: themeConfig, surfaceClass } = useTheme();
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState('');
 

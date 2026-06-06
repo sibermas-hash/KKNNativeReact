@@ -7,7 +7,7 @@ import { PageHeader } from '@/components/ui/shared';
 import { toast } from 'sonner';
 import { useParams, useRouter } from 'next/navigation';
 import {
-  ArrowLeft, Calendar, Clock, MapPin, Users, Plus, CheckCircle2, XCircle,
+  ArrowLeft, Calendar, Clock, MapPin, Users, CheckCircle2, XCircle,
   Search, Trash2, UserPlus
 } from 'lucide-react';
 

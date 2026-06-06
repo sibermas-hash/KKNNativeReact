@@ -308,22 +308,22 @@ export default function AdminUsersPage(): React.JSX.Element {
 
       <motion.aside
         variants={PAGE_ENTER}
-        animate={{ x: onlineSidebarOpen ? 0 : 304 }}
+        animate={{ x: onlineSidebarOpen ? 0 : 220 }}
         transition={{ duration: 0.24, ease: 'easeOut' }}
         className="fixed bottom-5 right-5 top-24 z-40 flex w-[min(360px,calc(100vw-2.5rem))] flex-col rounded-[2rem] border border-emerald-100 bg-white/95 shadow-[0_24px_80px_rgba(15,23,42,0.18)] backdrop-blur-xl"
       >
-        <button
-          type="button"
-          onClick={() => setOnlineSidebarOpen((open) => !open)}
-          className="absolute -left-12 top-5 inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-emerald-100 bg-white text-emerald-700 shadow-lg hover:bg-emerald-50"
-          aria-label={onlineSidebarOpen ? 'Minimize user online' : 'Buka user online'}
-        >
-          {onlineSidebarOpen ? <PanelRightClose size={18} /> : <PanelRightOpen size={18} />}
-        </button>
-
         <div className="border-b border-slate-100 p-5">
           <div className="flex items-start justify-between gap-3">
-            <div>
+            <button
+              type="button"
+              onClick={() => setOnlineSidebarOpen((open) => !open)}
+              className="inline-flex min-w-32 items-center gap-2 rounded-2xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-[11px] font-black uppercase tracking-wide text-emerald-700 shadow-sm hover:bg-emerald-100"
+              aria-label={onlineSidebarOpen ? 'Minimize user online' : 'Buka user online'}
+            >
+              {onlineSidebarOpen ? <PanelRightClose size={16} /> : <PanelRightOpen size={16} />}
+              {onlineSidebarOpen ? 'Minimize' : 'Online'}
+            </button>
+            <div className="min-w-0 flex-1">
               <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700">
                 <Wifi size={13} /> User Online
               </div>

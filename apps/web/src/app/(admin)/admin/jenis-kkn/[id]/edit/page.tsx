@@ -102,7 +102,7 @@ export default function JenisKknEditPage(): React.JSX.Element {
     queryKey: ['admin', 'jenis-kkn', id],
     queryFn: async () => {
       const res = await api.get(`/admin/jenis-kkn/${id}`);
-      return (res as { data: unknown }).data ?? res;
+      return res as unknown;
     },
     enabled: !!id,
   });

@@ -74,7 +74,7 @@ export default function JenisKknDetailPage(): React.JSX.Element {
     queryKey: ['admin', 'jenis-kkn', numericId],
     queryFn: async () => {
       const res = await api.get(`/admin/jenis-kkn/${numericId}`);
-      return (res as { data: JenisKknDetail }).data ?? res;
+      return res as unknown as JenisKknDetail;
     },
     enabled: !!numericId,
   });

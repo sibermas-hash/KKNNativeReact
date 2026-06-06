@@ -30,7 +30,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
 }
 
 const PUBLIC_PATHS = ['/', '/login', '/lupa-kata-sandi', '/atur-ulang-kata-sandi', '/ganti-password', '/berita', '/lokasi', '/unduhan', '/verify-certificate', '/phase-blocked', '/pengumuman', '/support'];
-const PROTECTED_PREFIXES = ['/admin', '/external', '/mahasiswa', '/mahasiswa-v2', '/dosen', '/profil', '/ganti-password', '/notifikasi'];
+const PROTECTED_PREFIXES = ['/admin', '/external', '/mahasiswa', '/dosen', '/profil', '/ganti-password', '/notifikasi'];
 const POPUP_PATHS = ['/', '/berita', '/lokasi', '/unduhan', '/pengumuman', '/support'];
 
 export function Providers({ children }: { children: ReactNode }): React.JSX.Element {

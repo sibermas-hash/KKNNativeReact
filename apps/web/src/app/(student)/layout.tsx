@@ -29,17 +29,17 @@ type NavItem = {
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { href: '/mahasiswa-v2', label: 'Dashboard', icon: LayoutDashboard, phases: null },
-  { href: '/mahasiswa-v2/pendaftaran', label: 'Daftar KKN', icon: ClipboardList, phases: ['registration', 'placement'] },
-  { href: '/mahasiswa-v2/cek-pendaftaran', label: 'Status Pendaftaran', icon: FileCheck, phases: ['registration', 'placement'] },
-  { href: '/mahasiswa-v2/posko', label: 'Posko', icon: Home, phases: ['placement', 'execution', 'grading', 'finished'] },
-  { href: '/mahasiswa-v2/laporan-harian', label: 'Logbook Harian', icon: FileText, phases: ['execution', 'grading'] },
-  { href: '/mahasiswa-v2/program-kerja', label: 'Program Kerja', icon: Target, phases: ['execution', 'grading'] },
-  { href: '/mahasiswa-v2/izin', label: 'Izin', icon: Plane, phases: ['execution', 'grading'] },
-  { href: '/mahasiswa-v2/poster', label: 'Poster Potensi Desa', icon: ImageIcon, phases: ['execution', 'grading'] },
-  { href: '/mahasiswa-v2/laporan-akhir', label: 'Laporan Akhir', icon: BookOpen, phases: ['grading', 'finished'] },
-  { href: '/mahasiswa-v2/evaluasi-dpl', label: 'Evaluasi DPL', icon: Star, phases: ['grading', 'finished'] },
-  { href: '/mahasiswa-v2/sertifikat', label: 'Sertifikat', icon: Award, phases: ['grading', 'finished'] },
+  { href: '/mahasiswa', label: 'Dashboard', icon: LayoutDashboard, phases: null },
+  { href: '/mahasiswa/pendaftaran', label: 'Daftar KKN', icon: ClipboardList, phases: ['registration', 'placement'] },
+  { href: '/mahasiswa/cek-pendaftaran', label: 'Status Pendaftaran', icon: FileCheck, phases: ['registration', 'placement'] },
+  { href: '/mahasiswa/posko', label: 'Posko', icon: Home, phases: ['placement', 'execution', 'grading', 'finished'] },
+  { href: '/mahasiswa/laporan-harian', label: 'Logbook Harian', icon: FileText, phases: ['execution', 'grading'] },
+  { href: '/mahasiswa/program-kerja', label: 'Program Kerja', icon: Target, phases: ['execution', 'grading'] },
+  { href: '/mahasiswa/izin', label: 'Izin', icon: Plane, phases: ['execution', 'grading'] },
+  { href: '/mahasiswa/poster', label: 'Poster Potensi Desa', icon: ImageIcon, phases: ['execution', 'grading'] },
+  { href: '/mahasiswa/laporan-akhir', label: 'Laporan Akhir', icon: BookOpen, phases: ['grading', 'finished'] },
+  { href: '/mahasiswa/evaluasi-dpl', label: 'Evaluasi DPL', icon: Star, phases: ['grading', 'finished'] },
+  { href: '/mahasiswa/sertifikat', label: 'Sertifikat', icon: Award, phases: ['grading', 'finished'] },
 ];
 
 export default function StudentLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
@@ -66,9 +66,9 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const hasGroup = !!registration?.group;
   const canRegister = !hasRegistration || ['rejected', 'ditolak', 'gugur'].includes(normalizedRegistrationStatus);
   const visibleNavItems = NAV_ITEMS.filter((item) => {
-    if (item.href === '/mahasiswa-v2/pendaftaran') return canRegister;
-    if (item.href === '/mahasiswa-v2/cek-pendaftaran') return hasRegistration;
-    if (item.href === '/mahasiswa-v2/posko') return hasGroup;
+    if (item.href === '/mahasiswa/pendaftaran') return canRegister;
+    if (item.href === '/mahasiswa/cek-pendaftaran') return hasRegistration;
+    if (item.href === '/mahasiswa/posko') return hasGroup;
     if (item.phases !== null && !item.phases.includes(effectivePhase)) return false;
     return true;
   });
@@ -172,7 +172,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           </h3>
           <div className="space-y-1">
             {visibleNavItems.map((item) => {
-              const isActive = !item.external && (pathname === item.href || ((item.href !== '/mahasiswa-v2' && item.href !== '/dosen') && pathname.startsWith(item.href + '/')));
+              const isActive = !item.external && (pathname === item.href || ((item.href !== '/mahasiswa' && item.href !== '/dosen') && pathname.startsWith(item.href + '/')));
               const linkProps = item.external ? { target: "_blank", rel: "noopener noreferrer" } : {};
               return (
                 <Link

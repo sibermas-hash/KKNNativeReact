@@ -6,7 +6,7 @@ export function dashboardPathForRoles(roles?: string[] | null): string {
 
   if (roleList.some((role) => ADMIN_ROLES.includes(role))) return '/admin';
   if (roleList.some((role) => LECTURER_ROLES.includes(role))) return '/dosen';
-  if (roleList.includes('student')) return '/mahasiswa-v2';
+  if (roleList.includes('student')) return '/mahasiswa';
 
   return '/';
 }

@@ -35,7 +35,7 @@ import { NextRequest, NextResponse } from 'next/server';
  * clicking "Login" appears to do nothing.
  */
 
-const PROTECTED_PREFIXES = ['/admin', '/external', '/mahasiswa', '/mahasiswa-v2', '/dosen', '/profil', '/ganti-password', '/notifikasi'];
+const PROTECTED_PREFIXES = ['/admin', '/external', '/mahasiswa', '/dosen', '/profil', '/ganti-password', '/notifikasi'];
 
 function hasAuthToken(request: NextRequest): boolean {
   // Only trust the HttpOnly cookie. The legacy `sibermas_session` marker is
@@ -86,7 +86,6 @@ export const config = {
     '/admin/:path*',
     '/external/:path*',
     '/mahasiswa/:path*',
-    '/mahasiswa-v2/:path*',
     '/dosen/:path*',
     '/profil/:path*',
     '/ganti-password',

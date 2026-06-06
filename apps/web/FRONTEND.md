@@ -469,8 +469,8 @@ export default function KelompokDetailPage({ params }: { params: { id: string } 
 Buat file `.env.local` di `apps/web/`:
 
 ```env
-# URL API backend Laravel (wajib)
-NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1
+# URL API backend Laravel (wajib di production)
+NEXT_PUBLIC_API_URL=https://sibermas.uinsaizu.ac.id/api/v1
 
 # Sentry (opsional, untuk error monitoring)
 SENTRY_DSN=
@@ -482,8 +482,8 @@ SENTRY_AUTH_TOKEN=
 
 - Variabel dengan prefix `NEXT_PUBLIC_` tersedia di client-side (browser).
 - Variabel tanpa prefix hanya tersedia di server-side (Server Components, API routes, `next.config.ts`).
-- `NEXT_PUBLIC_API_URL` digunakan oleh `src/lib/api.ts` untuk menentukan base URL axios client.
-- Jika `NEXT_PUBLIC_API_URL` tidak di-set, fallback ke `http://localhost:8000/api/v1`.
+- `NEXT_PUBLIC_API_URL` digunakan oleh client API untuk menentukan base URL Laravel.
+- Production wajib mengisi URL eksplisit. Jangan mengandalkan fallback localhost di browser pengguna.
 
 ### Konfigurasi Next.js Terkait
 

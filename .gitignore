@@ -71,6 +71,16 @@ packages/*/dist/
 *.xls
 *.csv
 *.sql
+*.sql.gz
+*.dump
+*.backup
+*.bak
+*.sqlite
+*.sqlite3
+database-backups/
+**/database-backups/
+apps/api/storage/app/backups/
+**/storage/app/backups/
 !template.xlsx
 .db_password.initial
 **/.db_password.initial

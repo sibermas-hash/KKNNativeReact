@@ -18,7 +18,7 @@ export default function StudentPosterPage(): React.JSX.Element {
     queryKey: ['student', 'poster'],
     queryFn: async () => {
       const res = await studentApi.poster.index();
-      return (res as { data?: unknown }).data ?? res;
+      return res;
     },
   });
 

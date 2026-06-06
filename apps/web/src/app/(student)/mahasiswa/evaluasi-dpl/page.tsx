@@ -22,7 +22,7 @@ export default function DplEvaluationPage(): React.JSX.Element {
     queryKey: ['student', 'dpl-evaluation', 'form'],
     queryFn: async () => {
       const res = await studentApi.dplEvaluation.form();
-      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
+      return res as unknown as Record<string, unknown>;
     },
   });
 

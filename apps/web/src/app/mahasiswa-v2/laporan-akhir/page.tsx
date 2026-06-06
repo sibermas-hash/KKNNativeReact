@@ -19,7 +19,7 @@ export default function FinalReportPage(): React.JSX.Element {
     queryKey: ['student', 'final-report'],
     queryFn: async () => {
       const res = await studentApi.finalReport.index();
-      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
+      return res as unknown as Record<string, unknown>;
     },
     retry: false,
   });

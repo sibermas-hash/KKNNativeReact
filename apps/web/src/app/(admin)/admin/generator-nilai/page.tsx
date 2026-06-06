@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import { Users, Download, Save, ChevronRight } from 'lucide-react';
 
 type Group = { id: number; name: string; code: string; member_count: number };
-type Student = { id: number; nama: string; nim: string; nilai: Record<string, unknown> | null };
+type Student = { id: number; user_id: number; nama: string; nim: string; nilai: Record<string, unknown> | null };
 
 const SCORE_FIELDS = [
   { key: 'discipline_score', label: 'Disiplin' },
@@ -44,11 +44,12 @@ export default function GeneratorNilaiPage(): React.JSX.Element {
 
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const payload = Object.entries(scores).map(([userId, s]) => ({
-        user_id: Number(userId),
+      const studentById = new Map(students.map((student) => [student.id, student]));
+      const payload = Object.entries(scores).map(([mahasiswaId, s]) => ({
+        user_id: studentById.get(Number(mahasiswaId))?.user_id,
         kelompok_id: selectedGroup!.id,
         scores: Object.fromEntries(Object.entries(s).filter(([, v]) => v !== '').map(([k, v]) => [k, Number(v)])),
-      }));
+      })).filter((item): item is { user_id: number; kelompok_id: number; scores: Record<string, number> } => typeof item.user_id === 'number');
       await rawApi.post('/admin/generator-nilai/skor', { scores: payload });
     },
     onSuccess: () => {

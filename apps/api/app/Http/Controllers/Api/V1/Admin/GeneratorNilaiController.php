@@ -87,6 +87,7 @@ class GeneratorNilaiController extends Controller
         return $this->success([
             'students' => $students->map(fn ($s) => [
                 'id' => $s->mahasiswa?->id,
+                'user_id' => $s->mahasiswa?->user_id,
                 'nama' => $s->mahasiswa?->nama,
                 'nim' => $s->mahasiswa?->nim,
                 'nilai' => $s->mahasiswa?->nilai?->first() ? new NilaiKknResource($s->mahasiswa->nilai->first()) : null,

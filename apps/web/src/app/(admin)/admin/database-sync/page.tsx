@@ -29,7 +29,7 @@ function ImportSection() {
       return adminApi.dataImport.dosenData(fd);
     },
     onSuccess: (res: unknown) => {
-      const d = ((res as { data?: { updated?: number; not_found?: number; skipped?: number } })?.data ?? res) as { updated?: number; not_found?: number; skipped?: number };
+      const d = res as { updated?: number; not_found?: number; skipped?: number };
       toast.success(`Import dosen: ${d.updated ?? 0} diperbarui, ${d.not_found ?? 0} tidak ditemukan, ${d.skipped ?? 0} dilewati.`);
     },
     onError: () => toast.error('Gagal import data dosen'),
@@ -43,7 +43,7 @@ function ImportSection() {
       return adminApi.dataImport.nilaiKknHistoris(fd);
     },
     onSuccess: (res: unknown) => {
-      const d = ((res as { data?: { imported?: number; not_found?: number } })?.data ?? res) as { imported?: number; not_found?: number };
+      const d = res as { imported?: number; not_found?: number };
       toast.success(`Import nilai: ${d.imported ?? 0} mahasiswa ditandai sudah KKN, ${d.not_found ?? 0} NIM tidak ditemukan.`);
     },
     onError: () => toast.error('Gagal import nilai KKN'),

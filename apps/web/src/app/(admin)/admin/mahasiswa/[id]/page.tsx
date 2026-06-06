@@ -68,8 +68,8 @@ export default function MahasiswaDetailPage(): React.JSX.Element {
   const locksQuery = useQuery({
     queryKey: ['admin', 'mahasiswa', mahasiswaId, 'locks'],
     queryFn: async () => {
-      const res = await adminApi.locks.mahasiswa(mahasiswaId) as unknown as { data?: LocksPayload };
-      return (res?.data ?? res) as LocksPayload;
+      const res = await adminApi.locks.mahasiswa(mahasiswaId);
+      return res as unknown as LocksPayload;
     },
     enabled: Number.isFinite(mahasiswaId) && mahasiswaId > 0,
   });

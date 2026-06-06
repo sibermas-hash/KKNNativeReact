@@ -16,6 +16,7 @@ use App\Models\KKN\SystemSetting;
 use App\Services\GeofenceService;
 use App\Services\KKN\GpsAntiSpoofService;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -97,32 +98,45 @@ class DailyReportController extends Controller
         $this->enforceGpsPolicy($validated, $pendaftaran->kelompok);
         $spoofResult = $this->runAntiSpoof($validated, $mahasiswa->id);
 
-        $kegiatan = KegiatanKkn::create([
-            'mahasiswa_id' => $mahasiswa->id,
-            'kelompok_id' => $pendaftaran->kelompok_id,
-            'date' => $validated['date'],
-            'category' => $validated['category'] ?? null,
-            'title' => strip_tags($validated['title']),
-            'abcd_stage' => $validated['abcd_stage'] ?? null,
-            'activity' => strip_tags($validated['activity']),
-            'reflection' => isset($validated['reflection']) ? strip_tags($validated['reflection']) : null,
-            'social_media_link' => $validated['social_media_link'] ?? null,
-            'latitude' => $validated['latitude'],
-            'longitude' => $validated['longitude'],
-            'gps_accuracy' => $validated['gps_accuracy'] ?? null,
-            'gps_is_mock' => $validated['is_mock_location'] ?? null,
-            'gps_spoof_score' => $spoofResult['score'],
-            'gps_spoof_details' => $spoofResult['suspicions'],
-            'captured_at' => Carbon::parse($validated['captured_at']),
-            'location_source' => 'gps',
-            'location_name' => $validated['location_name'] ?? null,
-            'status' => $spoofResult['action'] === GpsAntiSpoofService::ACTION_FLAG
-                ? KegiatanKkn::STATUS_REVISION
-                : KegiatanKkn::STATUS_SUBMITTED,
-            'review_notes' => $spoofResult['action'] === GpsAntiSpoofService::ACTION_FLAG
-                ? $this->buildSpoofReviewNote($spoofResult)
-                : null,
-        ]);
+        try {
+            $kegiatan = KegiatanKkn::create([
+                'mahasiswa_id' => $mahasiswa->id,
+                'kelompok_id' => $pendaftaran->kelompok_id,
+                'date' => $validated['date'],
+                'category' => $validated['category'] ?? null,
+                'title' => strip_tags($validated['title']),
+                'abcd_stage' => $validated['abcd_stage'] ?? null,
+                'activity' => strip_tags($validated['activity']),
+                'reflection' => isset($validated['reflection']) ? strip_tags($validated['reflection']) : null,
+                'social_media_link' => $validated['social_media_link'] ?? null,
+                'latitude' => $validated['latitude'],
+                'longitude' => $validated['longitude'],
+                'gps_accuracy' => $validated['gps_accuracy'] ?? null,
+                'gps_is_mock' => $validated['is_mock_location'] ?? null,
+                'gps_spoof_score' => $spoofResult['score'],
+                'gps_spoof_details' => $spoofResult['suspicions'],
+                'captured_at' => Carbon::parse($validated['captured_at']),
+                'location_source' => 'gps',
+                'location_name' => $validated['location_name'] ?? null,
+                'status' => $spoofResult['action'] === GpsAntiSpoofService::ACTION_FLAG
+                    ? KegiatanKkn::STATUS_REVISION
+                    : KegiatanKkn::STATUS_SUBMITTED,
+                'review_notes' => $spoofResult['action'] === GpsAntiSpoofService::ACTION_FLAG
+                    ? $this->buildSpoofReviewNote($spoofResult)
+                    : null,
+            ]);
+        } catch (QueryException $e) {
+            $sqlState = (string) $e->getCode();
+            $driverCode = (int) ($e->errorInfo[1] ?? 0);
+
+            if ($sqlState === '23505' || $driverCode === 1062 || $driverCode === 19) {
+                throw ValidationException::withMessages([
+                    'date' => 'Anda sudah membuat laporan untuk tanggal ini. Edit laporan yang ada jika perlu memperbarui.',
+                ]);
+            }
+
+            throw $e;
+        }
 
         if ($request->hasFile('files')) {
             $this->handleFileUploads($request, $kegiatan, $mahasiswa->nim, $validated);

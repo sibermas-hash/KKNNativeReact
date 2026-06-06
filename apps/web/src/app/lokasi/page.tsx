@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { fetchApi } from '@/lib/server-api';
 import { Navbar } from '@/components/public/navbar';
 import { Footer } from '@/components/public/footer';
-import { MapPin } from 'lucide-react';
 import type { MapLocation } from '@/components/public/locations-map';
 import LocationsMapLoader from '@/components/public/locations-map-loader';
 
@@ -29,6 +28,27 @@ type LocationsApiResponse = {
   data?: MapLocation[];
 };
 
+function toNumber(value: string | number | null | undefined): number | null {
+  if (value === null || value === undefined) return null;
+  const n = typeof value === 'number' ? value : parseFloat(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function getGroupCount(loc: MapLocation): number {
+  return loc.group_count ?? (loc.groups?.length ?? 0);
+}
+
+function getStudentCount(loc: MapLocation): number {
+  return (
+    loc.students_count ??
+    (loc.groups?.reduce((sum, g) => sum + (g.peserta_count ?? 0), 0) ?? 0)
+  );
+}
+
+function isPlottedRealLocation(loc: MapLocation): boolean {
+  return toNumber(loc.latitude) !== null && toNumber(loc.longitude) !== null && getGroupCount(loc) > 0;
+}
+
 export default async function LocationsPage() {
   let locations: MapLocation[] = [];
   try {
@@ -44,22 +64,18 @@ export default async function LocationsPage() {
     console.error('[LocationsPage] Failed to fetch locations:', error);
   }
 
-  const totalsOnServer = locations.reduce(
+  // Publik hanya menampilkan data real yang sudah terplotting:
+  // punya koordinat valid + sudah ada kelompok. Desa master tanpa kelompok
+  // tidak ditampilkan supaya peta tidak penuh pin "0".
+  const plottedLocations = locations.filter(isPlottedRealLocation);
+
+  const totalsOnServer = plottedLocations.reduce(
     (acc, loc) => {
-      acc.groups += loc.group_count ?? (loc.groups?.length ?? 0);
-      acc.students +=
-        loc.students_count ??
-        (loc.groups?.reduce((sum, g) => sum + (g.peserta_count ?? 0), 0) ??
-          0);
+      acc.groups += getGroupCount(loc);
+      acc.students += getStudentCount(loc);
       return acc;
     },
     { groups: 0, students: 0 },
-  );
-
-  // Locations yang tidak punya koordinat → tampil sebagai card di bawah peta
-  // (tidak bisa di-plot, tapi tetap terinformasikan ke publik).
-  const locationsWithoutCoords = locations.filter(
-    (loc) => loc.latitude == null || loc.longitude == null,
   );
 
   return (
@@ -79,58 +95,17 @@ export default async function LocationsPage() {
             secara realtime. Klik titik pada peta untuk melihat daftar kelompok &amp;
             jumlah peserta di desa tersebut.
           </p>
-          {locations.length > 0 && (
+          {plottedLocations.length > 0 && (
             <p className="mt-3 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-              {locations.length} lokasi &middot; {totalsOnServer.groups} kelompok &middot;{' '}
-              {totalsOnServer.students} mahasiswa
+              {plottedLocations.length} lokasi terplot &middot; {totalsOnServer.groups}{' '}
+              kelompok &middot; {totalsOnServer.students} mahasiswa
             </p>
           )}
         </div>
 
         <div className="mt-10">
-          <LocationsMapLoader initialLocations={locations} />
+          <LocationsMapLoader initialLocations={plottedLocations} />
         </div>
-
-        {/* Lokasi tanpa koordinat → tampil sebagai card list (fallback) */}
-        {locationsWithoutCoords.length > 0 && (
-          <section className="mt-12">
-            <h2 className="text-sm font-semibold uppercase tracking-[0.14em] text-emerald-700">
-              Lokasi tanpa titik peta ({locationsWithoutCoords.length})
-            </h2>
-            <p className="mt-2 text-xs text-slate-500">
-              Desa berikut terdaftar sebagai lokasi KKN tetapi belum memiliki koordinat
-              untuk ditampilkan di peta.
-            </p>
-            <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {locationsWithoutCoords.map((loc) => (
-                <div
-                  key={loc.id}
-                  className="rounded-[1.4rem] border border-emerald-100 bg-white p-5 shadow-[0_12px_35px_rgba(6,78,59,0.04)]"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-                      <MapPin size={16} />
-                    </div>
-                    <div>
-                      <p className="font-display font-bold text-emerald-950">
-                        {loc.village_name || '-'}
-                      </p>
-                      <p className="mt-1 text-sm text-slate-500">
-                        {loc.district_name ? `Kec. ${loc.district_name}` : ''}
-                        {loc.regency_name ? `, ${loc.regency_name}` : ''}
-                      </p>
-                      {(loc.group_count ?? loc.groups?.length ?? 0) > 0 && (
-                        <p className="mt-2 text-xs font-semibold text-emerald-600">
-                          {loc.group_count ?? loc.groups?.length ?? 0} kelompok
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
       </main>
 
       <Footer />

@@ -110,10 +110,21 @@ function toNumber(value: string | number | null | undefined): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-function hasCoordinates(
+function getGroupCount(loc: MapLocation): number {
+  return loc.group_count ?? (loc.groups?.length ?? 0);
+}
+
+function getStudentCount(loc: MapLocation): number {
+  return (
+    loc.students_count ??
+    (loc.groups?.reduce((sum, g) => sum + (g.peserta_count ?? 0), 0) ?? 0)
+  );
+}
+
+function isPlottedRealLocation(
   loc: MapLocation,
 ): loc is MapLocation & { latitude: number | string; longitude: number | string } {
-  return toNumber(loc.latitude) !== null && toNumber(loc.longitude) !== null;
+  return toNumber(loc.latitude) !== null && toNumber(loc.longitude) !== null && getGroupCount(loc) > 0;
 }
 
 function escapeHtml(value: string): string {
@@ -144,9 +155,8 @@ function buildPopupHtml(loc: MapLocation): string {
   const district = loc.district_name ? escapeHtml(loc.district_name) : '';
   const regency = loc.regency_name ? escapeHtml(loc.regency_name) : '';
   const subtitle = [district ? `Kec. ${district}` : null, regency].filter(Boolean).join(', ');
-  const groupCount = loc.group_count ?? (loc.groups?.length ?? 0);
-  const studentCount =
-    loc.students_count ?? (loc.groups?.reduce((s, g) => s + (g.peserta_count ?? 0), 0) ?? 0);
+  const groupCount = getGroupCount(loc);
+  const studentCount = getStudentCount(loc);
 
   const groupsList = (loc.groups ?? [])
     .map(
@@ -212,22 +222,14 @@ export default function LocationsMap({
   const [mapLoading, setMapLoading] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
-  // Hanya proses lokasi yang punya koordinat valid.
-  const geoLocations = useMemo(() => locations.filter(hasCoordinates), [locations]);
+  // Hanya tampilkan data real yang sudah terplotting:
+  // punya koordinat valid + sudah ada kelompok. Desa master tanpa kelompok
+  // disembunyikan supaya peta tidak penuh pin "0".
+  const geoLocations = useMemo(() => locations.filter(isPlottedRealLocation), [locations]);
 
   const totals = useMemo(() => {
-    const totalGroups = geoLocations.reduce(
-      (sum, loc) => sum + (loc.group_count ?? (loc.groups?.length ?? 0)),
-      0,
-    );
-    const totalStudents = geoLocations.reduce(
-      (sum, loc) =>
-        sum +
-        (loc.students_count ??
-          (loc.groups?.reduce((s, g) => s + (g.peserta_count ?? 0), 0) ??
-            0)),
-      0,
-    );
+    const totalGroups = geoLocations.reduce((sum, loc) => sum + getGroupCount(loc), 0);
+    const totalStudents = geoLocations.reduce((sum, loc) => sum + getStudentCount(loc), 0);
     return { totalLocations: geoLocations.length, totalGroups, totalStudents };
   }, [geoLocations]);
 
@@ -317,7 +319,7 @@ export default function LocationsMap({
 
       const el = document.createElement('div');
       el.className = 'kkn-pin-shell';
-      el.innerHTML = buildMarkerHtml(loc.group_count ?? loc.groups?.length ?? 0);
+      el.innerHTML = buildMarkerHtml(getGroupCount(loc));
 
       const popup = new maplibregl.Popup({
         offset: 34,
@@ -420,7 +422,7 @@ export default function LocationsMap({
       {/* Stats chips */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <StatChip
-          label="Lokasi Aktif"
+          label="Lokasi Terplot"
           value={totals.totalLocations.toLocaleString('id-ID')}
           icon={MapPinIcon}
           tone="sky"
@@ -488,6 +490,12 @@ export default function LocationsMap({
               <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
               Memuat peta…
             </span>
+          </div>
+        )}
+
+        {!mapLoading && geoLocations.length === 0 && (
+          <div className="pointer-events-none absolute inset-x-4 bottom-4 z-10 rounded-2xl bg-white/95 p-4 text-sm text-slate-600 shadow-md ring-1 ring-emerald-100 backdrop-blur-sm sm:left-4 sm:right-auto sm:max-w-sm">
+            Belum ada lokasi KKN yang sudah terplot dengan kelompok aktif.
           </div>
         )}
       </div>

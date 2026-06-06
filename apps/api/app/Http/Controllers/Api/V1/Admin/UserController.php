@@ -70,6 +70,73 @@ class UserController extends Controller
         return $this->successCollection(UserResource::collection($query->paginate($validated['per_page'] ?? 25)));
     }
 
+    public function onlineUsers(Request $request): JsonResponse
+    {
+        if (! auth()->user()?->hasRole('superadmin')) {
+            return $this->forbidden('Hanya superadmin yang dapat melihat pengguna online.');
+        }
+
+        $validated = $request->validate([
+            'minutes' => ['nullable', 'integer', 'min:1', 'max:60'],
+            'limit' => ['nullable', 'integer', 'min:1', 'max:100'],
+        ]);
+
+        $minutes = (int) ($validated['minutes'] ?? 5);
+        $limit = (int) ($validated['limit'] ?? 30);
+        $threshold = now()->subMinutes($minutes)->timestamp;
+
+        $rows = DB::table('sessions')
+            ->join('users', 'users.id', '=', 'sessions.user_id')
+            ->leftJoin('model_has_roles', function ($join) {
+                $join->on('model_has_roles.model_id', '=', 'users.id')
+                    ->where('model_has_roles.model_type', '=', User::class);
+            })
+            ->leftJoin('roles', 'roles.id', '=', 'model_has_roles.role_id')
+            ->whereNotNull('sessions.user_id')
+            ->where('sessions.last_activity', '>=', $threshold)
+            ->select([
+                'users.id',
+                'users.username',
+                'users.name',
+                'users.email',
+                'users.avatar',
+                DB::raw('MAX(sessions.last_activity) as last_activity'),
+                DB::raw('COUNT(DISTINCT sessions.id) as session_count'),
+                DB::raw('MAX(sessions.ip_address) as ip_address'),
+                DB::raw('MAX(sessions.user_agent) as user_agent'),
+                DB::raw("STRING_AGG(DISTINCT roles.name, ',') as roles"),
+            ])
+            ->groupBy('users.id', 'users.username', 'users.name', 'users.email', 'users.avatar')
+            ->orderByDesc('last_activity')
+            ->limit($limit)
+            ->get()
+            ->map(function ($row) {
+                $lastSeen = now()->setTimestamp((int) $row->last_activity);
+
+                return [
+                    'id' => (int) $row->id,
+                    'username' => $row->username,
+                    'name' => $row->name,
+                    'email' => $row->email,
+                    'avatar_url' => $row->avatar ? asset('storage/'.$row->avatar) : null,
+                    'roles' => $row->roles ? explode(',', $row->roles) : [],
+                    'session_count' => (int) $row->session_count,
+                    'ip_address' => $row->ip_address,
+                    'user_agent' => $row->user_agent,
+                    'last_seen_at' => $lastSeen->toIso8601String(),
+                    'last_seen_human' => $lastSeen->diffForHumans(),
+                    'is_online' => true,
+                ];
+            });
+
+        return $this->success([
+            'users' => $rows,
+            'total' => $rows->count(),
+            'window_minutes' => $minutes,
+            'checked_at' => now()->toIso8601String(),
+        ]);
+    }
+
     public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([

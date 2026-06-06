@@ -313,6 +313,7 @@ Route::prefix('admin')
 
         // Users (superadmin only — manage users, roles, passwords)
         Route::middleware('role:superadmin')->group(function () {
+            Route::get('/online-users', [UserController::class, 'onlineUsers']);
             Route::get('/pengguna', [UserController::class, 'index']);
             Route::post('/pengguna', [UserController::class, 'store']);
             Route::get('/pengguna/{user}', [UserController::class, 'show']);

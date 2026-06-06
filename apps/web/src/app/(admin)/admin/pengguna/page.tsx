@@ -1,7 +1,8 @@
 'use client';
 
 import { mutationErrorHandler } from '@/lib/utils';
-import { UserPlus, ShieldAlert } from 'lucide-react';
+import { rawApi } from '@/lib/api';
+import { UserPlus, ShieldAlert, Circle, Wifi, Clock3, MonitorSmartphone } from 'lucide-react';
 import { PageHeader } from '@/components/ui/shared';
 import { useState, useRef, useEffect } from 'react';
 import { useAuthStore } from '@/stores';
@@ -21,6 +22,27 @@ import { RoleDialog } from './components/RoleDialog';
 import { ResetPasswordConfirm } from './components/ResetPasswordConfirm';
 import { EditUserDialog } from './components/EditUserDialog';
 import { AnimatePresence, motion } from 'motion/react';
+import { useQuery } from '@tanstack/react-query';
+
+type OnlineUser = {
+  id: number;
+  username: string;
+  name: string;
+  email?: string | null;
+  avatar_url?: string | null;
+  roles: string[];
+  session_count: number;
+  ip_address?: string | null;
+  user_agent?: string | null;
+  last_seen_human: string;
+};
+
+type OnlineUsersResponse = {
+  users: OnlineUser[];
+  total: number;
+  window_minutes: number;
+  checked_at: string;
+};
 
 const PAGE_ENTER = { hidden: { opacity: 0, y: 14, filter: 'blur(5px)' }, show: { opacity: 1, y: 0, filter: 'blur(0px)', transition: { duration: 0.36, ease: 'easeOut' } } } as const;
 
@@ -87,6 +109,15 @@ export default function AdminUsersPage(): React.JSX.Element {
     enabled: isSuperadmin,
   });
   const { data, isLoading, isFetching, isError, error, refetch } = usersQuery;
+  const onlineUsersQuery = useQuery<OnlineUsersResponse>({
+    queryKey: ['admin', 'online-users'],
+    queryFn: async () => {
+      const response = await rawApi.get<{ data: OnlineUsersResponse }>('/admin/online-users', { params: { minutes: 5, limit: 24 } });
+      return response.data.data;
+    },
+    enabled: isSuperadmin,
+    refetchInterval: 30000,
+  });
   const { data: facultiesData } = facultiesQuery;
   const { data: prodiData } = prodiQuery;
 
@@ -273,6 +304,50 @@ export default function AdminUsersPage(): React.JSX.Element {
       <motion.div variants={PAGE_ENTER}>
         <UsersStats meta={meta} users={users} page={page} perPage={perPage} activeFilterCount={activeFilterCount} />
       </motion.div>
+
+      <motion.section variants={PAGE_ENTER} className="rounded-[2rem] border border-emerald-100 bg-white p-5 shadow-[0_20px_60px_rgba(15,118,110,0.08)]">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-emerald-700">
+              <Wifi size={13} /> User Online
+            </div>
+            <h2 className="mt-2 text-xl font-black tracking-tight text-slate-950">Aktif dalam {onlineUsersQuery.data?.window_minutes ?? 5} menit terakhir</h2>
+            <p className="mt-1 text-xs font-semibold text-slate-500">Realtime ringan dari session aktif. Refresh otomatis tiap 30 detik.</p>
+          </div>
+          <div className="rounded-2xl bg-slate-950 px-4 py-3 text-right text-white shadow-sm">
+            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-200">Online</p>
+            <p className="text-2xl font-black leading-none">{onlineUsersQuery.data?.total ?? 0}</p>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {(onlineUsersQuery.data?.users ?? []).map((onlineUser) => (
+            <div key={onlineUser.id} className="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/70 p-3">
+              <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-2xl bg-slate-900 text-white shadow-sm">
+                {onlineUser.avatar_url ? <img src={onlineUser.avatar_url} alt={onlineUser.name} className="h-full w-full object-cover" /> : <span className="flex h-full w-full items-center justify-center text-xs font-black uppercase">{onlineUser.name.slice(0, 2)}</span>}
+                <span className="absolute bottom-0.5 right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-emerald-500 shadow-sm" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex min-w-0 items-center gap-2">
+                  <p className="truncate text-sm font-black text-slate-950">{onlineUser.name}</p>
+                  <Circle size={8} className="shrink-0 fill-emerald-500 text-emerald-500" />
+                </div>
+                <p className="truncate text-[11px] font-bold text-slate-500">@{onlineUser.username} · {onlineUser.roles[0] ?? 'user'}</p>
+                <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] font-bold text-slate-400">
+                  <span className="inline-flex items-center gap-1"><Clock3 size={11} /> {onlineUser.last_seen_human}</span>
+                  <span className="inline-flex items-center gap-1"><MonitorSmartphone size={11} /> {onlineUser.session_count} sesi</span>
+                </div>
+              </div>
+            </div>
+          ))}
+          {!onlineUsersQuery.isLoading && (onlineUsersQuery.data?.users ?? []).length === 0 && (
+            <div className="rounded-2xl border border-dashed border-slate-200 p-5 text-sm font-semibold text-slate-500">Belum ada user online dalam jendela waktu ini.</div>
+          )}
+          {onlineUsersQuery.isLoading && (
+            <div className="rounded-2xl border border-dashed border-emerald-100 p-5 text-sm font-semibold text-emerald-700">Memuat user online...</div>
+          )}
+        </div>
+      </motion.section>
 
       <AnimatePresence>
       {showForm && (

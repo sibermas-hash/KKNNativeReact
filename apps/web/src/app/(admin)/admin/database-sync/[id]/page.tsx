@@ -28,7 +28,7 @@ export default function DatabaseSyncDetailPage(): React.JSX.Element {
       const res = await (adminApi as unknown as {
         databaseSync: { show: (id: number) => Promise<unknown> };
       }).databaseSync.show(Number(id));
-      return (res as { data?: unknown }).data ?? res;
+      return res;
     },
     enabled: !!id,
   });

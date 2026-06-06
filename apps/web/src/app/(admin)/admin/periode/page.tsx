@@ -94,7 +94,7 @@ export default function PeriodsPage(): React.JSX.Element {
     queryKey: ['admin', 'tahun-akademik'],
     queryFn: async () => {
       const res = await adminApi.master.academicYears.index();
-      return ((res as { data: unknown })?.data ?? res) as Array<{ id: number; year: string; is_active: boolean }>;
+      return res as unknown as Array<{ id: number; year: string; is_active: boolean }>;
     },
   });
 
@@ -102,7 +102,7 @@ export default function PeriodsPage(): React.JSX.Element {
     queryKey: ['admin', 'jenis-kkn'],
     queryFn: async () => {
       const res = await adminApi.master.kknTypes.index();
-      return ((res as { data: unknown })?.data ?? res) as Array<{ id: number; name: string; code: string }>;
+      return res as unknown as Array<{ id: number; name: string; code: string }>;
     },
   });
 

@@ -30,7 +30,7 @@ export default function FakultasPage(): React.JSX.Element {
     queryKey: ['admin', 'fakultas'],
     queryFn: async () => {
       const res = await adminApi.master.faculties.index();
-      return ((res as { data: unknown })?.data ?? res) as Fakultas[];
+      return res as unknown as Fakultas[];
     },
   });
 

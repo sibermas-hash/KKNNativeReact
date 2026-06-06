@@ -37,7 +37,7 @@ export default function NotificationSettingsPage() {
     queryKey: ['admin', 'settings'],
     queryFn: async () => {
       const res = await adminApi.settings.index();
-      return ((res as unknown as { data?: unknown })?.data ?? res) as Record<string, unknown>;
+      return res as unknown as Record<string, unknown>;
     },
   });
 
@@ -124,9 +124,9 @@ export default function NotificationSettingsPage() {
         </div>
       )}
 
-        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 space-y-4">
+        <div id="wa-gateway" className="scroll-mt-24 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 space-y-4">
           <div>
-            <h2 className="text-sm font-black text-slate-700 uppercase tracking-wide">Gateway WhatsApp</h2>
+            <h2 className="text-sm font-black text-slate-700 uppercase tracking-wide">WAHA / Gateway WhatsApp</h2>
             <p className="mt-1 text-xs text-slate-500">Tempel URL, session, API key, batas kirim, lalu kirim pesan test. API key disimpan terenkripsi dan tidak ditampilkan ulang.</p>
           </div>
           <div className="grid gap-4 md:grid-cols-2">

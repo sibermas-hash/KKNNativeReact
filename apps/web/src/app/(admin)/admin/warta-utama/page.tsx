@@ -36,6 +36,7 @@ const BERITA_CATEGORY_OPTIONS = ['BERITA', 'AGENDA', 'PEDOMAN', 'PRESS RELEASE',
 type BeritaCategory = (typeof BERITA_CATEGORY_OPTIONS)[number];
 
 type ContentTab = 'berita' | 'pengumuman';
+type AnnouncementTarget = 'public_home' | 'student_dashboard';
 
 interface Announcement {
   id: number;
@@ -53,6 +54,7 @@ interface Announcement {
   popup_until?: string | null;
   popup_dismissable: boolean;
   published_at?: string | null;
+  announcement_targets?: AnnouncementTarget[];
 }
 
 interface PaginationMeta {
@@ -70,6 +72,7 @@ interface AnnouncementsEnvelope {
 }
 
 type StatusFilter = 'all' | 'active' | 'draft' | 'popup';
+type TargetFilter = 'all' | AnnouncementTarget;
 
 /** Form state unified — sebagian field hanya dipakai di mode tertentu. */
 interface FormState {
@@ -83,6 +86,7 @@ interface FormState {
   is_active: boolean;
   image_file: File | null;
   remove_image: boolean;
+  announcement_targets: AnnouncementTarget[];
 }
 
 const INITIAL_FORM: FormState = {
@@ -96,6 +100,7 @@ const INITIAL_FORM: FormState = {
   is_active: true,
   image_file: null,
   remove_image: false,
+  announcement_targets: ['public_home'],
 };
 
 const EMPTY_ANNOUNCEMENTS: Announcement[] = [];
@@ -117,6 +122,7 @@ export default function WartaUtamaPage(): React.JSX.Element {
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<BeritaCategory | 'all'>('all');
   const [status, setStatus] = useState<StatusFilter>('all');
+  const [target, setTarget] = useState<TargetFilter>('all');
   const [page, setPage] = useState(1);
 
   const previewImageUrl = useMemo(
@@ -132,16 +138,17 @@ export default function WartaUtamaPage(): React.JSX.Element {
 
   useEffect(() => {
     setPage(1);
-  }, [activeTab, search, category, status]);
+  }, [activeTab, search, category, status, target]);
 
   const { data, isLoading, isFetching } = useQuery<AnnouncementsEnvelope>({
-    queryKey: ['admin', 'announcements', activeTab, page, search, category, status],
+    queryKey: ['admin', 'announcements', activeTab, page, search, category, status, target],
     queryFn: async () => {
       const params: Record<string, string | number | boolean> = { type: activeTab, page };
       if (search.trim()) params.search = search.trim();
       if (activeTab === 'berita' && category !== 'all') params.category = category;
       if (status === 'active') params.is_active = true;
       if (status === 'draft') params.is_active = false;
+      if (target !== 'all') params.target = target;
       const res = await rawApi.get('/admin/warta-utama', { params });
       const envelope = res.data as { data?: Announcement[]; meta?: PaginationMeta };
       const rows = envelope.data ?? [];
@@ -198,6 +205,7 @@ export default function WartaUtamaPage(): React.JSX.Element {
       is_active: a.is_active !== false,
       image_file: null,
       remove_image: false,
+      announcement_targets: a.announcement_targets?.length ? a.announcement_targets : ['public_home'],
     });
     setShowForm(true);
   };
@@ -216,6 +224,9 @@ export default function WartaUtamaPage(): React.JSX.Element {
     fd.append('category', formMode === 'pengumuman' ? 'PENGUMUMAN' : form.category);
 
     fd.append('is_active', form.is_active ? '1' : '0');
+    form.announcement_targets.forEach((targetValue) => {
+      fd.append('announcement_targets[]', targetValue);
+    });
 
     // Popup: pengumuman SELALU tampil sebagai popup. Berita opsional.
     const showAsPopup = formMode === 'pengumuman' ? true : form.show_as_popup;
@@ -366,13 +377,13 @@ export default function WartaUtamaPage(): React.JSX.Element {
           </div>
 
           <form
-            className="grid gap-2 md:grid-cols-12 xl:min-w-[760px]"
+            className="grid gap-2 md:grid-cols-12 xl:min-w-[920px]"
             onSubmit={(event) => {
               event.preventDefault();
               setSearch(searchInput.trim());
             }}
           >
-            <label className="md:col-span-5">
+            <label className="md:col-span-4">
               <span className="sr-only">Cari judul atau konten</span>
               <input
                 value={searchInput}
@@ -396,7 +407,7 @@ export default function WartaUtamaPage(): React.JSX.Element {
                 </select>
               </label>
             )}
-            <label className={activeTab === 'berita' ? 'md:col-span-2' : 'md:col-span-4'}>
+            <label className={activeTab === 'berita' ? 'md:col-span-2' : 'md:col-span-3'}>
               <span className="sr-only">Status</span>
               <select
                 value={status}
@@ -409,6 +420,18 @@ export default function WartaUtamaPage(): React.JSX.Element {
                 <option value="popup">Popup home</option>
               </select>
             </label>
+            <label className={activeTab === 'berita' ? 'md:col-span-2' : 'md:col-span-3'}>
+              <span className="sr-only">Target tampilan</span>
+              <select
+                value={target}
+                onChange={(event) => setTarget(event.target.value as TargetFilter)}
+                className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-100"
+              >
+                <option value="all">Semua target</option>
+                <option value="public_home">Public/Home</option>
+                <option value="student_dashboard">Dashboard mahasiswa</option>
+              </select>
+            </label>
             <button
               type="submit"
               className="h-10 rounded-xl bg-slate-900 px-4 text-sm font-bold text-white hover:bg-slate-800 md:col-span-2"
@@ -418,12 +441,13 @@ export default function WartaUtamaPage(): React.JSX.Element {
           </form>
         </div>
 
-        {(search || category !== 'all' || status !== 'all') && (
+        {(search || category !== 'all' || status !== 'all' || target !== 'all') && (
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
             <span>Filter aktif:</span>
             {search && <span className="rounded-full bg-cyan-50 px-2 py-1 font-semibold text-cyan-700">“{search}”</span>}
             {category !== 'all' && <span className="rounded-full bg-slate-100 px-2 py-1 font-semibold text-slate-700">{category}</span>}
             {status !== 'all' && <span className="rounded-full bg-amber-50 px-2 py-1 font-semibold text-amber-700">{status}</span>}
+            {target !== 'all' && <span className="rounded-full bg-emerald-50 px-2 py-1 font-semibold text-emerald-700">{target === 'student_dashboard' ? 'Dashboard mahasiswa' : 'Public/Home'}</span>}
             <button
               type="button"
               onClick={() => {
@@ -431,6 +455,7 @@ export default function WartaUtamaPage(): React.JSX.Element {
                 setSearch('');
                 setCategory('all');
                 setStatus('all');
+                setTarget('all');
               }}
               className="font-bold text-rose-600 hover:text-rose-700"
             >
@@ -481,6 +506,7 @@ export default function WartaUtamaPage(): React.JSX.Element {
                     popup_until: form.popup_until || null,
                     popup_dismissable: form.popup_dismissable,
                     image_url: previewImageUrl,
+                    announcement_targets: form.announcement_targets,
                   })
                 }
                 className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 inline-flex items-center gap-1.5"
@@ -504,6 +530,40 @@ export default function WartaUtamaPage(): React.JSX.Element {
               peringatan, atau perubahan kebijakan. Tidak tampil di halaman &ldquo;Berita&rdquo;.
             </div>
           )}
+
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="mb-3">
+              <p className="text-sm font-bold text-slate-800">Target Tampilan</p>
+              <p className="text-xs text-slate-500">Pilih lokasi tampil. Dashboard mahasiswa hanya terlihat setelah login mahasiswa.</p>
+            </div>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {([
+                ['public_home', 'Public/Home', 'Tampil di halaman publik dan popup home jika aktif.'],
+                ['student_dashboard', 'Dashboard mahasiswa', 'Tampil khusus di dashboard mahasiswa setelah login.'],
+              ] as const).map(([value, label, help]) => {
+                const checked = form.announcement_targets.includes(value);
+                return (
+                  <label key={value} className={`flex cursor-pointer gap-3 rounded-xl border p-3 text-sm transition ${checked ? 'border-cyan-300 bg-white shadow-sm' : 'border-slate-200 bg-white/60'}`}>
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={(event) => {
+                        const targets = event.target.checked
+                          ? [...form.announcement_targets, value]
+                          : form.announcement_targets.filter((targetValue) => targetValue !== value);
+                        setForm({ ...form, announcement_targets: targets.length ? targets : ['public_home'] });
+                      }}
+                      className="mt-1 h-4 w-4 rounded border-slate-300 text-cyan-600 focus:ring-cyan-500"
+                    />
+                    <span>
+                      <span className="block font-bold text-slate-800">{label}</span>
+                      <span className="block text-xs text-slate-500">{help}</span>
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
 
           {/* Title + Category (berita) atau Title only (pengumuman) */}
           {isPengumumanMode ? (
@@ -946,6 +1006,16 @@ function AnnouncementListItem({
           {tabMode === 'berita' && item.category && (
             <span className="shrink-0 rounded-full bg-slate-50 px-2 py-0.5 text-[10px] font-semibold text-slate-600">
               {item.category}
+            </span>
+          )}
+          {(item.announcement_targets ?? []).includes('public_home') && (
+            <span className="shrink-0 rounded-full bg-cyan-50 px-2 py-0.5 text-[10px] font-bold uppercase text-cyan-700">
+              Public/Home
+            </span>
+          )}
+          {(item.announcement_targets ?? []).includes('student_dashboard') && (
+            <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700">
+              Dashboard Mahasiswa
             </span>
           )}
         </div>

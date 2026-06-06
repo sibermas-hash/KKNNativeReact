@@ -28,6 +28,7 @@ class AnnouncementResource extends JsonResource
             'show_as_popup' => (bool) $this->show_as_popup,
             'popup_until' => $this->popup_until?->toIso8601String(),
             'popup_dismissable' => (bool) $this->popup_dismissable,
+            'announcement_targets' => $this->targets(),
             'published_at' => $this->published_at?->toIso8601String(),
             'meta_title' => $this->meta_title,
             'meta_description' => $this->meta_description,

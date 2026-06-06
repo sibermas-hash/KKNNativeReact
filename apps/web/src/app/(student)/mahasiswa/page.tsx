@@ -11,10 +11,21 @@ import {
   MapPin, ArrowRight, ClipboardList, CheckCircle2,
   Presentation, AlertTriangle, Target,
   ScrollText, LayoutGrid, UserCheck, Users, Lightbulb, Plane, Star, Image,
-  GraduationCap, ShieldCheck, Activity, Send,
+  GraduationCap, ShieldCheck, Activity, Send, Megaphone,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { StatusBadge } from '@/components/ui/shared';
+
+type DashboardAnnouncement = {
+  id: number;
+  title: string;
+  slug?: string;
+  content?: string;
+  excerpt?: string;
+  category?: string;
+  content_type?: 'berita' | 'pengumuman';
+  published_at?: string | null;
+};
 
 function normalizeStatus(status?: string): string | undefined {
   if (!status) return status;
@@ -53,6 +64,7 @@ export default function StudentDashboard(): React.JSX.Element {
   const dailyReportCount = (data?.daily_report_count as number) || 0;
   const workProgramCount = (data?.work_program_count as number) || 0;
   const finalReport = data?.final_report as Record<string, unknown> | null | undefined;
+  const dashboardAnnouncements = (data?.dashboard_announcements as DashboardAnnouncement[] | undefined) ?? [];
 
   const normalizedStatus = normalizeStatus(registration?.status as string);
   const isCompleted = normalizedStatus === 'completed';
@@ -295,6 +307,42 @@ export default function StudentDashboard(): React.JSX.Element {
             </div>
           </div>
         </div>
+
+        {dashboardAnnouncements.length > 0 && (
+          <section className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5 shadow-sm">
+            <div className="mb-4 flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+                <Megaphone size={20} />
+              </span>
+              <div>
+                <h2 className="text-sm font-black uppercase tracking-wide text-amber-900">Pengumuman Mahasiswa</h2>
+                <p className="text-xs font-medium text-amber-800/80">Informasi khusus untuk dashboard mahasiswa.</p>
+              </div>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+              {dashboardAnnouncements.slice(0, 5).map((item) => {
+                const href = item.content_type === 'berita' ? `/berita/${item.slug}` : `/pengumuman/${item.slug}`;
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.slug ? href : '#'}
+                    className="rounded-xl border border-amber-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+                  >
+                    <p className="line-clamp-2 text-sm font-black text-slate-900">{item.title}</p>
+                    {(item.excerpt || item.content) && (
+                      <p className="mt-2 line-clamp-2 text-xs font-medium leading-relaxed text-slate-600">
+                        {item.excerpt || item.content}
+                      </p>
+                    )}
+                    <p className="mt-3 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                      {item.published_at ? new Date(item.published_at).toLocaleDateString('id-ID') : 'Pengumuman'}
+                    </p>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* MAIN */}

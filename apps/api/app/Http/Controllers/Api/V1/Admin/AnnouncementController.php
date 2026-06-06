@@ -26,6 +26,7 @@ class AnnouncementController extends Controller
             'category' => ['nullable', 'string', Rule::in(Announcement::CATEGORY_OPTIONS)],
             'is_active' => ['nullable', 'boolean'],
             'type' => ['nullable', 'string', Rule::in([Announcement::TYPE_BERITA, Announcement::TYPE_PENGUMUMAN])],
+            'target' => ['nullable', 'string', Rule::in(Announcement::TARGET_OPTIONS)],
         ]);
 
         $query = Announcement::query()
@@ -42,6 +43,7 @@ class AnnouncementController extends Controller
             // Filter berdasarkan content-type ('berita' | 'pengumuman').
             // Shortcut supaya admin UI bisa tab tanpa perlu expand kategori manual.
             ->ofType($validated['type'] ?? null)
+            ->when($validated['target'] ?? null, fn ($q, $target) => $q->forTarget($target))
             ->orderByDesc('published_at');
 
         return $this->successCollection(AnnouncementResource::collection($query->paginate(25)));
@@ -63,6 +65,8 @@ class AnnouncementController extends Controller
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:500'],
             'meta_keywords' => ['nullable', 'string', 'max:255'],
+            'announcement_targets' => ['nullable', 'array'],
+            'announcement_targets.*' => ['string', Rule::in(Announcement::TARGET_OPTIONS)],
             // If true, a notification is broadcast to all active students after creation.
             'notify_students' => ['nullable', 'boolean'],
         ]);
@@ -76,6 +80,7 @@ class AnnouncementController extends Controller
         if (empty($validated['category'])) {
             $validated['category'] = 'PENGUMUMAN';
         }
+        $validated['announcement_targets'] = $this->normalizeTargets($validated['announcement_targets'] ?? null);
 
         $disk = 'public';
 
@@ -143,6 +148,8 @@ class AnnouncementController extends Controller
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:500'],
             'meta_keywords' => ['nullable', 'string', 'max:255'],
+            'announcement_targets' => ['nullable', 'array'],
+            'announcement_targets.*' => ['string', Rule::in(Announcement::TARGET_OPTIONS)],
         ]);
 
         // Normalize booleans — multipart FormData arrives as string '0'/'1'/'true'/'false'.
@@ -150,6 +157,9 @@ class AnnouncementController extends Controller
             if (array_key_exists($boolField, $validated)) {
                 $validated[$boolField] = filter_var($validated[$boolField], FILTER_VALIDATE_BOOLEAN);
             }
+        }
+        if (array_key_exists('announcement_targets', $validated)) {
+            $validated['announcement_targets'] = $this->normalizeTargets($validated['announcement_targets']);
         }
 
         $disk = 'public';
@@ -217,5 +227,15 @@ class AnnouncementController extends Controller
     public function preview(Announcement $announcement): JsonResponse
     {
         return $this->success(new AnnouncementResource($announcement));
+    }
+
+    private function normalizeTargets(?array $targets): array
+    {
+        $normalized = array_values(array_unique(array_filter(
+            $targets ?? [Announcement::TARGET_PUBLIC_HOME],
+            fn ($target) => in_array($target, Announcement::TARGET_OPTIONS, true)
+        )));
+
+        return $normalized ?: [Announcement::TARGET_PUBLIC_HOME];
     }
 }

@@ -42,6 +42,15 @@ class Announcement extends Model
 
     public const TYPE_BERITA_CATEGORIES = ['BERITA', 'AGENDA', 'PEDOMAN', 'PRESS RELEASE', 'KEMITRAAN'];
 
+    public const TARGET_PUBLIC_HOME = 'public_home';
+
+    public const TARGET_STUDENT_DASHBOARD = 'student_dashboard';
+
+    public const TARGET_OPTIONS = [
+        self::TARGET_PUBLIC_HOME,
+        self::TARGET_STUDENT_DASHBOARD,
+    ];
+
     /**
      * Resolve type dari kategori. Default fallback ke 'berita' supaya
      * kategori baru tidak accidentally bocor sebagai "pengumuman".
@@ -77,6 +86,7 @@ class Announcement extends Model
         'show_as_popup',
         'popup_until',
         'popup_dismissable',
+        'announcement_targets',
     ];
 
     protected $casts = [
@@ -85,6 +95,7 @@ class Announcement extends Model
         'show_as_popup' => 'boolean',
         'popup_until' => 'datetime',
         'popup_dismissable' => 'boolean',
+        'announcement_targets' => 'array',
     ];
 
     public function scopeActive($query)

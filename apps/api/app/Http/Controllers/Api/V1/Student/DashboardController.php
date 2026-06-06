@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Student;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Api\V1\AnnouncementResource;
 use App\Http\Resources\Api\V1\LaporanAkhirResource;
 use App\Http\Traits\ApiResponse;
+use App\Models\KKN\Announcement;
 use App\Models\KKN\KegiatanKkn;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\LaporanAkhir;
@@ -85,6 +87,12 @@ class DashboardController extends Controller
 
         $certificateMinScore = (float) SystemSetting::get('certificate_min_score', '70');
         $minDailyReports = (int) SystemSetting::get('min_daily_reports', '30');
+        $dashboardAnnouncements = Announcement::query()
+            ->active()
+            ->forTarget(Announcement::TARGET_STUDENT_DASHBOARD)
+            ->ordered()
+            ->limit(5)
+            ->get();
 
         return $this->success([
             'student' => [
@@ -146,6 +154,7 @@ class DashboardController extends Controller
             // FE gunakan value ini untuk info "nilai minimum sertifikat" — jangan hardcode di UI.
             'certificate_min_score' => $certificateMinScore,
             'min_daily_reports' => $minDailyReports,
+            'dashboard_announcements' => AnnouncementResource::collection($dashboardAnnouncements),
         ]);
     }
 

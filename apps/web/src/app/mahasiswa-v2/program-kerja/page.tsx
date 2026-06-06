@@ -30,7 +30,7 @@ export default function WorkProgramsPage(): React.JSX.Element {
     queryKey: QUERY_KEYS.student.workPrograms,
     queryFn: async () => {
       const res = await studentApi.workPrograms.index();
-      const body = (res as { data?: unknown }).data ?? res;
+      const body = res;
       return body as { programs?: WorkProgram[]; data?: WorkProgram[]; message?: string };
     },
     retry: false,

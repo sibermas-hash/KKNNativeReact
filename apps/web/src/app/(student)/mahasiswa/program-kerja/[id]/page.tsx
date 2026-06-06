@@ -91,7 +91,7 @@ export default function WorkProgramDetailPage(): React.JSX.Element {
     queryKey: ['student', 'work-program', Number(id)],
     queryFn: async () => {
       const res = await studentApi.workPrograms.show(Number(id));
-      return ((res as { data?: unknown }).data ?? res) as WorkProgram;
+      return res as unknown as WorkProgram;
     },
     enabled: !!id,
   });

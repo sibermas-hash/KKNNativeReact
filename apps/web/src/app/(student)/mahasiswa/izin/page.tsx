@@ -30,7 +30,7 @@ export default function IzinPage(): React.JSX.Element {
     queryKey: QUERY_KEYS.student.leaveRequests,
     queryFn: async () => {
       const res = await studentApi.leaveRequests.index();
-      const body = ((res as { data?: unknown }).data ?? res) as { izin?: LeaveRequest[]; data?: LeaveRequest[]; message?: string };
+      const body = res as unknown as { izin?: LeaveRequest[]; data?: LeaveRequest[]; message?: string };
       return body;
     },
     retry: false,

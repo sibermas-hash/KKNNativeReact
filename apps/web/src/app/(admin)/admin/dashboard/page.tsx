@@ -106,15 +106,6 @@ export default function AdminDashboardPage(): React.JSX.Element {
 
   const roles = user?.roles ?? [];
   const isSuperadmin = roles.includes('superadmin');
-  const activeRole = roles.includes('superadmin') ? 'Superadmin' : roles.includes('admin') ? 'Admin Pusat' : roles.includes('faculty_admin') ? 'Admin Fakultas' : 'Admin';
-  const accessScope = roles.includes('superadmin')
-    ? 'Semua fakultas & seluruh sistem'
-    : roles.includes('admin')
-      ? 'Operasional KKN pusat'
-      : roles.includes('faculty_admin')
-        ? `Fakultas: ${user?.faculty?.nama ?? user?.faculty?.code ?? '-'}`
-        : 'Akses admin terbatas';
-
   const { data: aiHealth } = useQuery({
     queryKey: ['admin', 'ai-health'],
     queryFn: async () => (await rawApi.get('/admin/ai-health')).data as { ok: boolean; message: string; issues?: string[]; checked_at?: string },
@@ -209,17 +200,6 @@ export default function AdminDashboardPage(): React.JSX.Element {
             </div>
           </div>
           <div className="flex flex-col gap-2 shrink-0 sm:items-end">
-            <div className="w-full rounded-2xl border border-white/75 bg-white/85 p-3 text-left shadow-sm backdrop-blur sm:w-80">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.18em] text-emerald-700">
-                <ShieldCheck size={11} /> Sedang Aktif
-              </span>
-              <p className="mt-2 truncate text-sm font-black text-slate-950">{user?.name ?? 'Admin'}</p>
-              <p className="truncate text-[11px] font-bold text-slate-500">{user?.username ?? user?.email ?? '-'}</p>
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                <span className="rounded-full bg-slate-950 px-2.5 py-1 text-[9px] font-black uppercase tracking-wide text-white">{activeRole}</span>
-                <span className="max-w-full truncate rounded-full bg-emerald-100 px-2.5 py-1 text-[9px] font-black uppercase tracking-wide text-emerald-800">{accessScope}</span>
-              </div>
-            </div>
             <span className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Periode Ringkasan</span>
             <div className="relative">
               <select

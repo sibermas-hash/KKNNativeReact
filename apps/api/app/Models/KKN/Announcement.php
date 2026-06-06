@@ -129,6 +129,23 @@ class Announcement extends Model
         return $query;
     }
 
+    public function scopeForTarget($query, string $target)
+    {
+        return $query->whereJsonContains('announcement_targets', $target);
+    }
+
+    public function hasTarget(string $target): bool
+    {
+        return in_array($target, $this->targets(), true);
+    }
+
+    public function targets(): array
+    {
+        $targets = $this->announcement_targets;
+
+        return is_array($targets) ? array_values(array_intersect($targets, self::TARGET_OPTIONS)) : [];
+    }
+
     public function scopeOrdered($query)
     {
         return $query

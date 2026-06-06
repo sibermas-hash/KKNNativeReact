@@ -34,19 +34,19 @@ export default function AdminKontenSkemaPage(): React.JSX.Element {
       const res = await (adminApi as unknown as {
         publicContent: { schemes: () => Promise<unknown> };
       }).publicContent.schemes();
-      return (res as { data?: { title?: string; intro?: string; items?: SchemeItem[] } }).data ?? {};
+      return (res as { data?: { title?: string; intro?: string; schemes?: SchemeItem[] } }).data ?? {};
     },
   });
 
   useEffect(() => {
-    if (data) setForm({ title: data.title ?? '', intro: data.intro ?? '', schemes: data.items ?? [] });
+    if (data) setForm({ title: data.title ?? '', intro: data.intro ?? '', schemes: data.schemes ?? [] });
   }, [data]);
 
   const mutation = useMutation({
     mutationFn: async () => {
       return (adminApi as unknown as {
         publicContent: { updateSchemes: (d: Record<string, unknown>) => Promise<unknown> };
-      }).publicContent.updateSchemes({ title: form.title, intro: form.intro, items: form.schemes });
+      }).publicContent.updateSchemes({ title: form.title, intro: form.intro, schemes: form.schemes });
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'konten-publik', 'skema'] });

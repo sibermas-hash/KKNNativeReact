@@ -117,7 +117,7 @@ export default function AdminDashboardPage(): React.JSX.Element {
     queryKey: ['admin', 'dashboard', { periode_id: selPeriod }],
     queryFn: async () => {
       const res = await adminApi.dashboard({ periode_id: selPeriod || undefined });
-      return (res as { data: unknown })?.data ?? res;
+      return res;
     },
   });
 

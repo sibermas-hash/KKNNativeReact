@@ -60,7 +60,7 @@ export default function MahasiswaDetailPage(): React.JSX.Element {
     queryKey: ['admin', 'mahasiswa', mahasiswaId],
     queryFn: async () => {
       const res = await api.get(`/admin/mahasiswa/${mahasiswaId}`);
-      return (res as { data?: unknown })?.data ?? res;
+      return res;
     },
     enabled: Number.isFinite(mahasiswaId) && mahasiswaId > 0,
   });

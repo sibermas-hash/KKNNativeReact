@@ -57,7 +57,7 @@ export default function MonitoringDashboardPage(): React.JSX.Element {
     queryKey: ['admin', 'monitoring', 'overview'],
     queryFn: async () => {
       const res = await adminApi.monitoring.overview();
-      return ((res as { data?: { data?: OverviewData } })?.data?.data) as OverviewData;
+      return res as unknown as OverviewData;
     },
     refetchInterval: autoRefresh ? 30_000 : false,
   });
@@ -66,7 +66,7 @@ export default function MonitoringDashboardPage(): React.JSX.Element {
     queryKey: ['admin', 'monitoring', 'alerts'],
     queryFn: async () => {
       const res = await adminApi.monitoring.alerts();
-      return ((res as { data?: { data?: AlertEntry[] } })?.data?.data) ?? [];
+      return (res as unknown as AlertEntry[]) ?? [];
     },
     refetchInterval: autoRefresh ? 60_000 : false,
   });

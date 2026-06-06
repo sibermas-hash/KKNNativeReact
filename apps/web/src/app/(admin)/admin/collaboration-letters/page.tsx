@@ -12,7 +12,7 @@ type Letter = { id:number; letter_number?:string; subject?:string; status:string
 export default function AdminCollaborationLettersPage() {
   const qc = useQueryClient();
   const [status, setStatus] = useState('');
-  const { data, isLoading } = useQuery({ queryKey:['admin','collaboration-letters',status], queryFn: async () => ((await api.get('/admin/collaboration-letters', { params: { status: status || undefined } })) as { data?: { data?: Letter[] } })?.data?.data ?? [] });
+  const { data, isLoading } = useQuery({ queryKey:['admin','collaboration-letters',status], queryFn: async () => ((await api.get('/admin/collaboration-letters', { params: { status: status || undefined } })) as Letter[]) ?? [] });
 
   const action = useMutation({
     mutationFn: ({ id, kind }: { id:number; kind:'verify'|'reject' }) => api.post(`/admin/collaboration-letters/${id}/${kind}`, kind === 'reject' ? { notes: prompt('Alasan penolakan') || 'Ditolak' } : {}),

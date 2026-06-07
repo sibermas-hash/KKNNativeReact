@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class FileKegiatanKkn extends Model
 {
     use SoftDeletes;
+
     protected $table = 'file_kegiatan_kkn';
 
     protected $fillable = [

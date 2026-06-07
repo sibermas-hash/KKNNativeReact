@@ -166,13 +166,13 @@ export default function StudentDashboard(): React.JSX.Element {
   if (isError) {
     return (
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12">
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-8 text-center">
-          <AlertTriangle size={40} className="mx-auto mb-4 text-rose-600" />
-          <h2 className="text-lg font-black uppercase tracking-tight text-rose-900">Dashboard gagal dimuat</h2>
-          <p className="mt-2 text-sm font-semibold text-rose-700">
+        <div className="rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-danger)] p-8 text-center">
+          <AlertTriangle size={40} className="mx-auto mb-4 text-[color:var(--profile-danger-text)]" />
+          <h2 className="text-lg font-black uppercase tracking-tight text-[color:var(--profile-danger-text)]">Dashboard gagal dimuat</h2>
+          <p className="mt-2 text-sm font-semibold text-[color:var(--profile-danger-text)] opacity-90">
             Sesi/API bermasalah. Silakan refresh halaman atau login ulang.
           </p>
-          <p className="mt-2 text-[11px] text-rose-500">{String((error as Error)?.message || '')}</p>
+          <p className="mt-2 text-[11px] text-[color:var(--profile-danger-text)] opacity-70">{String((error as Error)?.message || '')}</p>
         </div>
       </div>
     );
@@ -193,7 +193,7 @@ export default function StudentDashboard(): React.JSX.Element {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="popup-status-title">
           <div className="bg-[color:var(--profile-surface)] rounded-xl shadow-2xl max-w-md w-full p-8 border ring-1 ring-[color:var(--profile-border)]">
             <div className="text-center">
-              <div className={clsx('h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-6', isApproved ? 'bg-[color:var(--profile-soft)] text-[color:var(--profile-primary)]' : 'bg-rose-50 text-rose-600')}>
+              <div className={clsx('h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-6', isApproved ? 'bg-[color:var(--profile-soft)] text-[color:var(--profile-primary)]' : 'bg-[color:var(--profile-danger)] text-[color:var(--profile-danger-text)]')}>
                 {isApproved ? <ShieldCheck size={32} /> : <AlertTriangle size={32} />}
               </div>
               <h2 id="popup-status-title" className="text-xl font-black text-[color:var(--profile-text)] uppercase tracking-tight mb-2">
@@ -236,7 +236,7 @@ export default function StudentDashboard(): React.JSX.Element {
                   </>
                 ) : (
                   <div>
-                    <p className="text-[10px] font-black text-rose-600 uppercase mb-1">Catatan Penolakan</p>
+                    <p className="text-[10px] font-black text-[color:var(--profile-danger-text)] uppercase mb-1">Catatan Penolakan</p>
                     <p className="text-sm font-bold text-[color:var(--profile-text)] italic">&ldquo;{String(registration?.rejection_reason || 'Periksa kembali kelengkapan berkas Anda.')}&rdquo;</p>
                   </div>
                 )}
@@ -250,30 +250,30 @@ export default function StudentDashboard(): React.JSX.Element {
       )}
 
       {popupAnnouncement && !showPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="dashboard-announcement-popup-title">
-          <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 border border-slate-200 ring-1 ring-black/5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[color:var(--profile-overlay)] backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="dashboard-announcement-popup-title">
+          <div className="relative bg-[color:var(--profile-surface)] rounded-2xl shadow-2xl max-w-md w-full p-8 border border-[color:var(--profile-border)] ring-1 ring-black/5">
             <button
               type="button"
               onClick={handleCloseDashboardAnnouncement}
               aria-label="Tutup pengumuman"
-              className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+              className="absolute right-4 top-4 inline-flex h-9 w-9 items-center justify-center rounded-full text-[color:var(--profile-muted)] transition hover:bg-[color:var(--profile-soft)] hover:text-[color:var(--profile-text)]"
             >
               ×
             </button>
             <div className="text-center">
-              <div className="h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-6 bg-sky-50 text-sky-600">
+              <div className="h-16 w-16 rounded-full flex items-center justify-center mx-auto mb-6 bg-[color:var(--profile-soft)] text-[color:var(--profile-primary)]">
                 <Send size={32} />
               </div>
-              <h2 id="dashboard-announcement-popup-title" className="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">
+              <h2 id="dashboard-announcement-popup-title" className="text-xl font-black text-[color:var(--profile-text)] uppercase tracking-tight mb-2">
                 {popupAnnouncement.title}
               </h2>
               {(popupAnnouncement.excerpt || popupAnnouncement.content) && (
-                <p className="text-sm text-slate-600 mb-6 font-medium leading-relaxed whitespace-pre-line">
+                <p className="text-sm text-[color:var(--profile-muted)] mb-6 font-medium leading-relaxed whitespace-pre-line">
                   {popupAnnouncement.excerpt || popupAnnouncement.content}
                 </p>
               )}
               {popupLink && (
-                <div className="rounded-lg bg-sky-50 p-4 text-sm font-bold text-sky-900 ring-1 ring-sky-100">
+                <div className="rounded-lg bg-[color:var(--profile-soft)] p-4 text-sm font-bold text-[color:var(--profile-soft-text)] ring-1 ring-[color:var(--profile-border)]">
                   {popupLink.replace(/^https?:\/\//, '')}
                 </div>
               )}
@@ -282,7 +282,7 @@ export default function StudentDashboard(): React.JSX.Element {
               <button
                 type="button"
                 onClick={handleCloseDashboardAnnouncement}
-                className="inline-flex h-12 items-center justify-center rounded-lg border border-slate-300 bg-white px-4 text-xs font-black uppercase tracking-widest text-slate-700 transition hover:bg-slate-50 active:scale-[0.98]"
+                className="inline-flex h-12 items-center justify-center rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-surface)] px-4 text-xs font-black uppercase tracking-widest text-[color:var(--profile-text)] transition hover:bg-[color:var(--profile-soft)] active:scale-[0.98]"
               >
                 Nanti Saja
               </button>
@@ -331,14 +331,14 @@ export default function StudentDashboard(): React.JSX.Element {
         </div>
 
         {dashboardAnnouncements.length > 0 && (
-          <section className="rounded-2xl border border-amber-200 bg-amber-50/80 p-5 shadow-sm">
+          <section className="rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-warning)]/80 p-5 shadow-sm">
             <div className="mb-4 flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[color:var(--profile-soft)] text-[color:var(--profile-soft-text)]">
                 <Megaphone size={20} />
               </span>
               <div>
-                <h2 className="text-sm font-black uppercase tracking-wide text-amber-900">Pengumuman Mahasiswa</h2>
-                <p className="text-xs font-medium text-amber-800/80">Informasi khusus untuk dashboard mahasiswa.</p>
+                <h2 className="text-sm font-black uppercase tracking-wide text-[color:var(--profile-warning-text)]">Pengumuman Mahasiswa</h2>
+                <p className="text-xs font-medium text-[color:var(--profile-warning-text)]/80">Informasi khusus untuk dashboard mahasiswa.</p>
               </div>
             </div>
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -348,15 +348,15 @@ export default function StudentDashboard(): React.JSX.Element {
                   <Link
                     key={item.id}
                     href={item.slug ? href : '#'}
-                    className="rounded-xl border border-amber-200 bg-white p-4 transition hover:-translate-y-0.5 hover:shadow-md"
+                    className="rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-surface)] p-4 transition hover:-translate-y-0.5 hover:shadow-md"
                   >
-                    <p className="line-clamp-2 text-sm font-black text-slate-900">{item.title}</p>
+                    <p className="line-clamp-2 text-sm font-black text-[color:var(--profile-text)]">{item.title}</p>
                     {(item.excerpt || item.content) && (
-                      <p className="mt-2 line-clamp-2 text-xs font-medium leading-relaxed text-slate-600">
+                      <p className="mt-2 line-clamp-2 text-xs font-medium leading-relaxed text-[color:var(--profile-muted)]">
                         {item.excerpt || item.content}
                       </p>
                     )}
-                    <p className="mt-3 text-[10px] font-bold uppercase tracking-wide text-amber-700">
+                    <p className="mt-3 text-[10px] font-bold uppercase tracking-wide text-[color:var(--profile-accent)]">
                       {item.published_at ? new Date(item.published_at).toLocaleDateString('id-ID') : 'Pengumuman'}
                     </p>
                   </Link>
@@ -411,7 +411,7 @@ export default function StudentDashboard(): React.JSX.Element {
                 </div>
               </div>
               <div className="bg-[color:var(--profile-surface)] ring-1 ring-[color:var(--profile-border)] rounded-xl p-5 flex items-center gap-5 shadow-sm">
-                <div className="h-12 w-12 rounded-lg flex items-center justify-center shrink-0 bg-blue-50 text-blue-600">
+                <div className="h-12 w-12 rounded-lg flex items-center justify-center shrink-0 bg-[color:var(--profile-soft)] text-[color:var(--profile-accent)]">
                   <ScrollText size={24} />
                 </div>
                 <div>
@@ -426,7 +426,7 @@ export default function StudentDashboard(): React.JSX.Element {
 
             {/* ACTION CALLOUT */}
             {!showKknTools && (
-              <div className="bg-slate-900 rounded-xl p-8 text-white relative overflow-hidden shadow-xl">
+              <div className="bg-gradient-to-br from-[color:var(--profile-primary)] to-[color:var(--profile-accent)] rounded-xl p-8 text-white relative overflow-hidden shadow-xl">
                 <div className="absolute right-0 top-0 p-8 opacity-10 rotate-12 -mr-10 -mt-10">
                   <GraduationCap size={160} />
                 </div>
@@ -441,7 +441,7 @@ export default function StudentDashboard(): React.JSX.Element {
                             ? 'Audit Pendaftaran Berjalan'
                             : 'Belum Terdaftar?'}
                     </h3>
-                    <p className="text-sm font-medium text-[color:var(--profile-muted)] max-w-xl leading-relaxed">
+                    <p className="text-sm font-medium text-white/80 max-w-xl leading-relaxed">
                       {isRejected
                         ? `Alasan: "${registration?.rejection_reason}"`
                         : isAwaitingPlacement
@@ -507,13 +507,13 @@ export default function StudentDashboard(): React.JSX.Element {
                 <LayoutGrid size={16} className="text-[color:var(--profile-primary)]" /> Menu Navigasi
               </h3>
               {!showKknTools ? (
-                <div className="rounded-lg border border-amber-100 bg-amber-50 p-4 text-xs font-semibold text-amber-800">
+                <div className="rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-warning)] p-4 text-xs font-semibold text-[color:var(--profile-warning-text)]">
                   {isAwaitingPlacement
                     ? 'Pendaftaran sudah disetujui. Fitur KKN dibuka bertahap setelah plotting kelompok dan fase kegiatan sesuai.'
                     : 'Fitur KKN seperti Logbook, Program Kerja, Posko, Laporan Akhir, dan Sertifikat akan dibuka setelah pendaftaran disetujui dan fase sesuai.'}
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <Link href={registration ? '/mahasiswa/cek-pendaftaran' : '/mahasiswa/pendaftaran'} className="rounded-lg bg-amber-600 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-white hover:bg-amber-700">{registration ? 'Cek Status' : 'Daftar KKN'}</Link>
-                    <Link href="/profil" className="rounded-lg bg-[color:var(--profile-surface)] px-3 py-2 text-[10px] font-black uppercase tracking-wider text-amber-700 ring-1 ring-amber-200 hover:bg-amber-100">Lengkapi Profil</Link>
+                    <Link href={registration ? '/mahasiswa/cek-pendaftaran' : '/mahasiswa/pendaftaran'} className="rounded-lg bg-[color:var(--profile-primary)] px-3 py-2 text-[10px] font-black uppercase tracking-wider text-white hover:bg-[color:var(--profile-primary-hover)]">{registration ? 'Cek Status' : 'Daftar KKN'}</Link>
+                    <Link href="/profil" className="rounded-lg bg-[color:var(--profile-surface)] px-3 py-2 text-[10px] font-black uppercase tracking-wider text-[color:var(--profile-warning-text)] ring-1 ring-[color:var(--profile-border)] hover:bg-[color:var(--profile-soft)]">Lengkapi Profil</Link>
                   </div>
                 </div>
               ) : (

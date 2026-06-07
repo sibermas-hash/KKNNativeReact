@@ -12,10 +12,10 @@ use App\Models\KKN\ProgramKerja;
 use App\Models\KKN\ProposalProgramKerja;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class WorkProgramController extends Controller
 {
@@ -143,7 +143,7 @@ class WorkProgramController extends Controller
             return $this->notFound('File proposal tidak ditemukan.');
         }
 
-        return Storage::disk(config("filesystems.default"))->download(
+        return Storage::disk(config('filesystems.default'))->download(
             $proposal->file_path,
             $proposal->file_name ?: basename($proposal->file_path)
         );

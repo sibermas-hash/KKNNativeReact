@@ -59,12 +59,12 @@ type WorkProgram = {
 };
 
 const STATUS_INFO: Record<string, { label: string; cls: string; icon: typeof CheckCircle2 }> = {
-  approved: { label: 'Disetujui', cls: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800/40', icon: CheckCircle2 },
-  pending: { label: 'Menunggu Review', cls: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-800/40', icon: Clock },
-  submitted: { label: 'Menunggu Review', cls: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-800/40', icon: Clock },
-  revision: { label: 'Perlu Revisi', cls: 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-800/40', icon: AlertCircle },
-  rejected: { label: 'Ditolak', cls: 'bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800/40 dark:text-slate-400 dark:border-slate-700', icon: XCircle },
-  draft: { label: 'Draft', cls: 'bg-slate-50 text-slate-650 border-slate-205 dark:bg-slate-900/40 dark:text-slate-400 dark:border-slate-800', icon: FileText },
+  approved: { label: 'Disetujui', cls: 'bg-[color:var(--profile-soft)] text-[color:var(--profile-soft-text)] border-[color:var(--profile-border)]', icon: CheckCircle2 },
+  pending: { label: 'Menunggu Review', cls: 'bg-[color:var(--profile-warning)] text-[color:var(--profile-warning-text)] border-[color:var(--profile-border)]', icon: Clock },
+  submitted: { label: 'Menunggu Review', cls: 'bg-[color:var(--profile-warning)] text-[color:var(--profile-warning-text)] border-[color:var(--profile-border)]', icon: Clock },
+  revision: { label: 'Perlu Revisi', cls: 'bg-[color:var(--profile-warning)] text-[color:var(--profile-warning-text)] border-[color:var(--profile-border)]', icon: AlertCircle },
+  rejected: { label: 'Ditolak', cls: 'bg-[color:var(--profile-danger)] text-[color:var(--profile-danger-text)] border-[color:var(--profile-border)]', icon: XCircle },
+  draft: { label: 'Draft', cls: 'bg-[color:var(--profile-input-disabled)] text-[color:var(--profile-muted)] border-[color:var(--profile-border)]', icon: FileText },
 };
 
 function formatRupiah(n?: number): string {
@@ -145,7 +145,7 @@ export default function WorkProgramDetailPage(): React.JSX.Element {
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="flex-1 min-w-0">
             {data.code && (
-              <span className="inline-block text-xs font-black text-blue-750 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/40 px-2 py-0.5 rounded-lg mb-2">
+              <span className="inline-block text-xs font-black text-[color:var(--profile-soft-text)] bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] px-2 py-0.5 rounded-lg mb-2">
                 {data.code}
               </span>
             )}
@@ -188,7 +188,7 @@ export default function WorkProgramDetailPage(): React.JSX.Element {
               {data.sdg_goals.map((g) => (
                 <span
                   key={g}
-                  className="rounded-full border border-blue-200 dark:border-blue-800/40 bg-blue-50 dark:bg-blue-950/20 px-2.5 py-0.5 text-xs font-black text-blue-750 dark:text-blue-400"
+                  className="rounded-full border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] px-2.5 py-0.5 text-xs font-black text-[color:var(--profile-soft-text)]"
                 >
                   SDG {g}
                 </span>
@@ -239,7 +239,7 @@ export default function WorkProgramDetailPage(): React.JSX.Element {
             href={data.proposal_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-50 dark:bg-blue-950/20 px-4 py-2.5 border border-blue-200 dark:border-blue-800/40 text-xs font-black text-blue-750 dark:text-blue-450 hover:bg-blue-100 dark:hover:bg-blue-950/40 transition-colors uppercase tracking-wider"
+            className="inline-flex items-center gap-2 rounded-xl bg-[color:var(--profile-soft)] px-4 py-2.5 border border-[color:var(--profile-border)] text-xs font-black text-[color:var(--profile-soft-text)] hover:bg-[color:var(--profile-surface-strong)] transition-colors uppercase tracking-wider"
           >
             <Download size={14} />
             {data.proposal_filename ?? 'Lihat Proposal'}
@@ -249,9 +249,9 @@ export default function WorkProgramDetailPage(): React.JSX.Element {
 
       {/* Rejection reason */}
       {status === 'rejected' && data.rejection_reason && (
-        <div className="rounded-2xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/40 p-5">
-          <p className="text-xs font-black uppercase tracking-wider text-rose-800 dark:text-rose-300 mb-1.5">Alasan Penolakan</p>
-          <p className="text-sm text-rose-900 dark:text-rose-400 font-semibold">{data.rejection_reason}</p>
+        <div className="rounded-2xl bg-[color:var(--profile-danger)] border border-[color:var(--profile-border)] p-5">
+          <p className="text-xs font-black uppercase tracking-wider text-[color:var(--profile-danger-text)] mb-1.5">Alasan Penolakan</p>
+          <p className="text-sm text-[color:var(--profile-danger-text)] font-semibold">{data.rejection_reason}</p>
         </div>
       )}
 

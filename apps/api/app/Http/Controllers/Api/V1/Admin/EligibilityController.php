@@ -76,8 +76,8 @@ class EligibilityController extends Controller
                     'eligible_count' => $result['eligible_count'],
                     'not_eligible_count' => $result['not_eligible_count'],
                     'eligibility_rate' => $result['eligibility_rate'],
-                    'registered_count' => \App\Models\KKN\Mahasiswa::where('is_eligible', true)->whereHas('peserta')->count(),
-                    'not_registered_count' => \App\Models\KKN\Mahasiswa::where('is_eligible', true)->whereDoesntHave('peserta')->count(),
+                    'registered_count' => Mahasiswa::where('is_eligible', true)->whereHas('peserta')->count(),
+                    'not_registered_count' => Mahasiswa::where('is_eligible', true)->whereDoesntHave('peserta')->count(),
                 ],
                 'issue_filters' => $issueFilters,
             ]);
@@ -103,7 +103,7 @@ class EligibilityController extends Controller
         if ($search !== '') {
             $query->where(function ($q) use ($search) {
                 $q->where('nim', 'ilike', "%{$search}%")
-                  ->orWhere('nama', 'ilike', "%{$search}%");
+                    ->orWhere('nama', 'ilike', "%{$search}%");
             });
         }
 
@@ -156,9 +156,9 @@ class EligibilityController extends Controller
         return match ($key) {
             'status_aktif' => 'Status akademik aktif',
             'no_prior_completion' => 'Belum pernah lulus KKN',
-            'min_sks' => 'SKS mencukupi (' . ($m->sks_completed ?? 0) . ')',
-            'min_semester' => 'Semester mencukupi (' . ($m->semester ?? 0) . ')',
-            'min_gpa' => 'IPK mencukupi (' . ($m->gpa ? number_format((float) $m->gpa, 2) : '-') . ')',
+            'min_sks' => 'SKS mencukupi ('.($m->sks_completed ?? 0).')',
+            'min_semester' => 'Semester mencukupi ('.($m->semester ?? 0).')',
+            'min_gpa' => 'IPK mencukupi ('.($m->gpa ? number_format((float) $m->gpa, 2) : '-').')',
             'ukt_payment' => $m->is_paid_ukt ? 'UKT sudah lunas' : 'UKT belum lunas',
             'bta_ppi' => 'Lulus BTA-PPI',
             'program_prodi' => 'Program studi sesuai',
@@ -384,7 +384,6 @@ class EligibilityController extends Controller
             ];
         });
     }
-
 
     public function checkStudent(Mahasiswa $mahasiswa, Request $request): JsonResponse
     {

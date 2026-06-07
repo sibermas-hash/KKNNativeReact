@@ -13,7 +13,6 @@ use App\Http\Controllers\Api\V1\PeriodContextController;
 use App\Http\Controllers\Api\V1\PrivateFileController;
 use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\PublicController;
-
 use App\Http\Controllers\Api\V1\TotpController;
 use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\HealthController;
@@ -123,7 +122,6 @@ Route::prefix('v1')->group(function () {
             Route::patch('/notification-preferences', [ProfileController::class, 'updateNotificationPreferences'])->name('api.v1.profile.notification-preferences.update');
         });
 
-
     // 2FA (TOTP) — Google Authenticator compatible
     Route::prefix('2fa')
         ->middleware('auth:sanctum')
@@ -167,7 +165,7 @@ Route::prefix('v1')->group(function () {
 });
 
 // ── Notifications & Attendance (versioned aliases untuk unified client) ────
-Route::middleware(['auth:sanctum', 'role:student', 'throttle:60,1'])->prefix('v1')->group(function () {
+Route::middleware(['auth:sanctum', 'role:student|dosen|dpl|admin|faculty_admin|superadmin', 'throttle:60,1'])->prefix('v1')->group(function () {
     Route::prefix('notifications')->name('api.v1.notifications.')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])->name('index');
         Route::get('/unread', [NotificationController::class, 'unread'])->name('unread');
@@ -207,7 +205,7 @@ Route::get('/server-time', function () {
 })->middleware('throttle:30,1');
 
 // Notifications & Devices
-Route::middleware(['auth:sanctum', 'role:student', 'throttle:60,1'])->name('api.')->group(function () {
+Route::middleware(['auth:sanctum', 'role:student|dosen|dpl|admin|faculty_admin|superadmin', 'throttle:60,1'])->name('api.')->group(function () {
     Route::prefix('notifications')->name('notifications.')->group(function () {
         Route::get('/', [NotificationController::class, 'index'])->name('index');
         Route::get('/unread', [NotificationController::class, 'unread'])->name('unread');

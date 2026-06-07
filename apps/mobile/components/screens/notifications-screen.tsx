@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { notificationsEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
 import { unwrapPaginated } from '@/lib/api-helpers';
-import { colors, radius, spacing, LoadingState, EmptyState, StatusPill, type Tone } from '@/components/ui/primitives';
+import { useStyles, LoadingState, EmptyState, StatusPill, type Tone } from '@/components/ui/primitives';
 
 type Notification = {
   id: string;
@@ -36,6 +36,25 @@ export function NotificationsScreen() {
   const qc = useQueryClient();
   const endpoints = notificationsEndpoints(api);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
+
+  const styles = useStyles((colors) => ({
+    container: { flex: 1, backgroundColor: colors.background },
+    filterRow: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 8, padding: 16, paddingBottom: 8 },
+    filterBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
+    filterBtnActive: { backgroundColor: colors.soft, borderColor: colors.primary },
+    filterText: { fontSize: 11, fontWeight: '800' as const, color: colors.textMuted },
+    filterTextActive: { color: colors.softText },
+    markAllBtn: { marginLeft: 'auto' as const, paddingHorizontal: 10, paddingVertical: 6 },
+    markAllText: { fontSize: 11, fontWeight: '800' as const, color: colors.primary },
+    list: { padding: 16, paddingTop: 0, gap: 10 },
+    card: { backgroundColor: colors.surface, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: colors.border, gap: 6, position: 'relative' as const },
+    cardUnread: { borderColor: colors.primary, backgroundColor: colors.emeraldSoft },
+    cardHeader: { flexDirection: 'row' as const, alignItems: 'center' as const, justifyContent: 'space-between' as const },
+    title: { fontSize: 14, fontWeight: '800' as const, color: colors.text },
+    message: { fontSize: 13, color: colors.textMuted, lineHeight: 19 },
+    time: { fontSize: 10, color: colors.textSubtle, fontWeight: '700' as const },
+    unreadDot: { position: 'absolute' as const, top: 12, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary },
+  }));
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['notifications', filter],
@@ -99,22 +118,3 @@ export function NotificationsScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  filterRow: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: spacing.lg, paddingBottom: spacing.sm },
-  filterBtn: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
-  filterBtnActive: { backgroundColor: colors.soft, borderColor: '#A5F3FC' },
-  filterText: { fontSize: 11, fontWeight: '800', color: colors.textMuted },
-  filterTextActive: { color: colors.softText },
-  markAllBtn: { marginLeft: 'auto', paddingHorizontal: 10, paddingVertical: 6 },
-  markAllText: { fontSize: 11, fontWeight: '800', color: colors.primary },
-  list: { padding: spacing.lg, paddingTop: 0, gap: 10 },
-  card: { backgroundColor: colors.surface, borderRadius: radius.md, padding: spacing.lg, borderWidth: 1, borderColor: colors.border, gap: 6, position: 'relative' },
-  cardUnread: { borderColor: '#A5F3FC', backgroundColor: '#F0FDFA' },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontSize: 14, fontWeight: '800', color: colors.text },
-  message: { fontSize: 13, color: colors.textMuted, lineHeight: 19 },
-  time: { fontSize: 10, color: colors.textSubtle, fontWeight: '700' },
-  unreadDot: { position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: colors.primary },
-});

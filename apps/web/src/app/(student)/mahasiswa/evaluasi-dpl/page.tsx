@@ -67,7 +67,7 @@ export default function DplEvaluationPage(): React.JSX.Element {
     return (
       <div className="max-w-2xl mx-auto py-20 px-4 text-center">
         <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="space-y-6">
-          <div className="h-24 w-24 bg-emerald-100 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto shadow-lg">
+          <div className="h-24 w-24 bg-[color:var(--profile-soft)] text-[color:var(--profile-primary)] rounded-full flex items-center justify-center mx-auto shadow-lg">
             <CheckCircle2 size={48} />
           </div>
           <div className="space-y-2">

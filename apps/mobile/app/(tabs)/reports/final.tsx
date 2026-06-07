@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
-import { View, Text, Alert, TextInput, Linking, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, Alert, TextInput, Linking, TouchableOpacity } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as DocumentPicker from 'expo-document-picker';
 import { studentEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
 import {
-  colors,
+  useTheme,
+  useStyles,
+  useFormStyles,
   FieldLabel,
-  formStyles,
   HeroCard,
   InfoRow,
   InlineAlert,
@@ -34,35 +35,49 @@ function statusTone(status: string) {
   return 'slate' as const;
 }
 
-function EditableSection({
-  title,
-  value,
-  onChangeText,
-  multiline = false,
-}: {
-  title: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  multiline?: boolean;
-}) {
-  return (
-    <View style={styles.formGroup}>
-      <FieldLabel>{title}</FieldLabel>
-      <TextInput
-        style={[formStyles.input, multiline && formStyles.textarea]}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={`Tulis ${title.toLowerCase()} di sini`}
-        placeholderTextColor={colors.textSubtle}
-        multiline={multiline}
-        numberOfLines={multiline ? 4 : 1}
-      />
-    </View>
-  );
-}
-
 export default function FinalReportScreen() {
   const queryClient = useQueryClient();
+  const { colors } = useTheme();
+  const formStyles = useFormStyles();
+  const styles = useStyles((colors) => ({
+    infoCard: { gap: 6 },
+    cardTitle: { color: colors.text, fontSize: 17, fontWeight: '900' as const },
+    downloadButton: { marginTop: 10 },
+    scoreCard: { gap: 10, alignItems: 'flex-start' as const },
+    scoreValue: { color: colors.text, fontSize: 44, fontWeight: '900' as const, fontVariant: ['tabular-nums' as const] },
+    timelineCard: { gap: 14 },
+    timelineItem: { flexDirection: 'row' as const, alignItems: 'flex-start' as const, gap: 12 },
+    timelineDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: colors.borderStrong, marginTop: 4 },
+    timelineDotActive: { backgroundColor: colors.primary },
+    timelineContent: { flex: 1, gap: 2 },
+    timelineDate: { fontSize: 12, color: colors.textMuted, fontWeight: '700' as const },
+    timelineAction: { fontSize: 14, fontWeight: '800' as const, color: colors.text },
+    form: { gap: 16 },
+    formGroup: { gap: 8 },
+    fileBox: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      gap: 12,
+      backgroundColor: colors.emeraldSoft,
+      borderRadius: 8,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: colors.text === '#e2e8f0' ? colors.border : '#A7F3D0',
+    },
+    fileName: { flex: 1, fontSize: 13, color: colors.emerald, fontWeight: '800' as const },
+    removeFileText: { color: colors.rose, fontSize: 13, fontWeight: '800' as const },
+    previewBox: {
+      gap: 5,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surfaceMuted,
+      padding: 12,
+    },
+    previewTitle: { fontSize: 13, color: colors.text, fontWeight: '900' as const },
+    previewText: { fontSize: 13, color: colors.textMuted, lineHeight: 18 },
+  }));
+
   const [formData, setFormData] = useState({
     title: '',
     abstract: '',
@@ -162,6 +177,33 @@ export default function FinalReportScreen() {
       ]
     );
   };
+
+  function EditableSection({
+    title,
+    value,
+    onChangeText,
+    multiline = false,
+  }: {
+    title: string;
+    value: string;
+    onChangeText: (text: string) => void;
+    multiline?: boolean;
+  }) {
+    return (
+      <View style={styles.formGroup}>
+        <FieldLabel>{title}</FieldLabel>
+        <TextInput
+          style={[formStyles.input, multiline && formStyles.textarea]}
+          value={value}
+          onChangeText={onChangeText}
+          placeholder={`Tulis ${title.toLowerCase()} di sini`}
+          placeholderTextColor={colors.textSubtle}
+          multiline={multiline}
+          numberOfLines={multiline ? 4 : 1}
+        />
+      </View>
+    );
+  }
 
   if (isLoading) {
     return <LoadingState label="Memuat laporan akhir..." />;
@@ -293,42 +335,3 @@ export default function FinalReportScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  infoCard: { gap: 6 },
-  cardTitle: { color: colors.text, fontSize: 17, fontWeight: '900' },
-  downloadButton: { marginTop: 10 },
-  scoreCard: { gap: 10, alignItems: 'flex-start' },
-  scoreValue: { color: colors.text, fontSize: 44, fontWeight: '900', fontVariant: ['tabular-nums'] },
-  timelineCard: { gap: 14 },
-  timelineItem: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
-  timelineDot: { width: 12, height: 12, borderRadius: 6, backgroundColor: colors.borderStrong, marginTop: 4 },
-  timelineDotActive: { backgroundColor: colors.primary },
-  timelineContent: { flex: 1, gap: 2 },
-  timelineDate: { fontSize: 12, color: colors.textMuted, fontWeight: '700' },
-  timelineAction: { fontSize: 14, fontWeight: '800', color: colors.text },
-  form: { gap: 16 },
-  formGroup: { gap: 8 },
-  fileBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: '#ECFDF5',
-    borderRadius: 8,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
-  },
-  fileName: { flex: 1, fontSize: 13, color: '#065F46', fontWeight: '800' },
-  removeFileText: { color: colors.rose, fontSize: 13, fontWeight: '800' },
-  previewBox: {
-    gap: 5,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surfaceMuted,
-    padding: 12,
-  },
-  previewTitle: { fontSize: 13, color: colors.text, fontWeight: '900' },
-  previewText: { fontSize: 13, color: colors.textMuted, lineHeight: 18 },
-});

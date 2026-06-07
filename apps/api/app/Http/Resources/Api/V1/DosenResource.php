@@ -28,11 +28,11 @@ class DosenResource extends JsonResource
             'nidn' => $this->nidn,
 
             // R13-SEC-004: financial / identity PII — superadmin only
-            'nik' => $this->when($isSuperadmin, fn() => rescue(fn() => $this->nik)),
-            'phone' => rescue(fn() => $this->phone),
-            'no_rekening' => $this->when($isSuperadmin, fn() => rescue(fn() => $this->no_rekening)),
+            'nik' => $this->when($isSuperadmin, fn () => rescue(fn () => $this->nik)),
+            'phone' => rescue(fn () => $this->phone),
+            'no_rekening' => $this->when($isSuperadmin, fn () => rescue(fn () => $this->no_rekening)),
             'nama_bank' => $this->when($isSuperadmin, $this->nama_bank),
-            'npwp' => $this->when($isSuperadmin, fn() => rescue(fn() => $this->npwp)),
+            'npwp' => $this->when($isSuperadmin, fn () => rescue(fn () => $this->npwp)),
 
             'jabatan' => $this->jabatan,
             'kelas_jabatan' => $this->kelas_jabatan,
@@ -43,7 +43,7 @@ class DosenResource extends JsonResource
             'gender' => $this->gender,
             'birth_date' => $this->birth_date?->toDateString(),
             'tempat_lahir' => $this->tempat_lahir,
-            'alamat' => rescue(fn() => $this->alamat),
+            'alamat' => rescue(fn () => $this->alamat),
             'status_aktif' => $this->status_aktif,
             'status_pegawai' => $this->status_pegawai,
             'is_cpns' => $this->is_cpns,

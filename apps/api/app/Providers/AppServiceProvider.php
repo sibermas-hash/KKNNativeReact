@@ -6,20 +6,21 @@ namespace App\Providers;
 
 use App\Models\KKN\Announcement;
 use App\Models\KKN\Download;
-use App\Models\KKN\KelompokKkn;
-use App\Models\KKN\Lokasi;
 use App\Models\KKN\Evaluasi;
 use App\Models\KKN\IzinMeninggalkan;
 use App\Models\KKN\KegiatanKkn;
+use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\KonfigurasiPenilaian;
 use App\Models\KKN\KonfigurasiSertifikat;
 use App\Models\KKN\Laporan;
 use App\Models\KKN\LogAudit;
+use App\Models\KKN\Lokasi;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\SystemSetting;
+use App\Notifications\Channels\FcmChannel;
 use App\Observers\AuditObserver;
 use App\Observers\PublicCacheObserver;
 use App\Policies\AdminOperationPolicy;
@@ -42,6 +43,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Kreait\Firebase\Contract\Messaging;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -51,16 +53,17 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         // FCM Channel — inject Firebase Messaging if credentials configured
-        $this->app->bind(\App\Notifications\Channels\FcmChannel::class, function ($app) {
+        $this->app->bind(FcmChannel::class, function ($app) {
             $messaging = null;
             try {
                 if (config('firebase.projects.app.credentials.file') || config('firebase.projects.app.credentials')) {
-                    $messaging = $app->make(\Kreait\Firebase\Contract\Messaging::class);
+                    $messaging = $app->make(Messaging::class);
                 }
             } catch (\Throwable) {
                 // Firebase not configured — FcmChannel will use legacy fallback
             }
-            return new \App\Notifications\Channels\FcmChannel($messaging);
+
+            return new FcmChannel($messaging);
         });
 
         $this->app->bind(RegistrationRepositoryInterface::class, RegistrationRepository::class);
@@ -175,12 +178,12 @@ class AppServiceProvider extends ServiceProvider
         if (class_exists('App\Models\KKN\PesertaKkn')) {
             PesertaKkn::observe(AuditObserver::class);
 
-        // 3b. Public cache invalidation
-        Announcement::observe(PublicCacheObserver::class);
-        Download::observe(PublicCacheObserver::class);
-        Lokasi::observe(PublicCacheObserver::class);
-        KelompokKkn::observe(PublicCacheObserver::class);
-        PesertaKkn::observe(PublicCacheObserver::class);
+            // 3b. Public cache invalidation
+            Announcement::observe(PublicCacheObserver::class);
+            Download::observe(PublicCacheObserver::class);
+            Lokasi::observe(PublicCacheObserver::class);
+            KelompokKkn::observe(PublicCacheObserver::class);
+            PesertaKkn::observe(PublicCacheObserver::class);
         }
 
         // 4. Global URL Scheme
@@ -256,7 +259,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             if ($user->hasRole('student')) {
-                return Limit::perMinute(300)->by($key);
+                return Limit::perMinute(60)->by($key);
             }
 
             // Unknown role — treat as guest to avoid granting unintended

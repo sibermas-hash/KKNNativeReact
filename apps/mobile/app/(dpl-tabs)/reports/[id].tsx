@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, Image, Alert, TextInput, RefreshControl } from 'react-native';
+import { View, Text, Image, Alert, TextInput, RefreshControl } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { dplEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
 import {
-  colors,
+  useTheme,
+  useStyles,
+  useFormStyles,
   FieldLabel,
-  formStyles,
   HeroCard,
   InlineAlert,
   LoadingState,
@@ -42,6 +43,18 @@ export default function DplReportDetailScreen() {
   const endpoints = dplEndpoints(api);
   const queryClient = useQueryClient();
   const [revisionNotes, setRevisionNotes] = useState('');
+
+  const { colors } = useTheme();
+  const formStyles = useFormStyles();
+
+  const styles = useStyles((colors) => ({
+    body: { fontSize: 14, color: colors.text, lineHeight: 20 },
+    photoCard: { padding: 0, overflow: 'hidden' },
+    photo: { width: '100%', aspectRatio: 4 / 3, backgroundColor: colors.surfaceMuted },
+    reviewCard: { gap: 12 },
+    divider: { height: 1, backgroundColor: colors.border, marginVertical: 4 },
+    textarea: { minHeight: 90, textAlignVertical: 'top' as const },
+  }));
 
   const { data, isLoading, refetch, isRefetching, error } = useQuery({
     queryKey: ['dpl', 'daily-reports', id],
@@ -207,12 +220,3 @@ export default function DplReportDetailScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  body: { fontSize: 14, color: colors.text, lineHeight: 20 },
-  photoCard: { padding: 0, overflow: 'hidden' },
-  photo: { width: '100%', aspectRatio: 4 / 3, backgroundColor: colors.surfaceMuted },
-  reviewCard: { gap: 12 },
-  divider: { height: 1, backgroundColor: colors.border, marginVertical: 4 },
-  textarea: { minHeight: 90, textAlignVertical: 'top' },
-});

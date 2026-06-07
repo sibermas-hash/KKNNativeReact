@@ -42,6 +42,7 @@ function makeCompleteStudent(KelompokKkn $kelompok, ?int $periodeId, string $rol
         'kelompok_id' => $kelompok->id,
         'status' => 'approved',
         'approved_at' => now(),
+        'placement_is_live' => true,
         'role' => $role,
     ]);
 

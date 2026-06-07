@@ -24,7 +24,7 @@ class CleanupStaleDataCommand extends Command
         $staleResets = DB::table('password_reset_tokens')
             ->where('created_at', '<', $cutoff24h)
             ->count();
-        if (!$dryRun && $staleResets > 0) {
+        if (! $dryRun && $staleResets > 0) {
             DB::table('password_reset_tokens')
                 ->where('created_at', '<', $cutoff24h)
                 ->delete();
@@ -38,7 +38,7 @@ class CleanupStaleDataCommand extends Command
                     ->orWhere('last_used_at', '<', now()->subDays(30));
             })
             ->count();
-        if (!$dryRun && $staleTokens > 0) {
+        if (! $dryRun && $staleTokens > 0) {
             DB::table('personal_access_tokens')
                 ->where(function ($q) {
                     $q->whereNull('last_used_at')
@@ -52,7 +52,7 @@ class CleanupStaleDataCommand extends Command
         $staleSessions = DB::table('sessions')
             ->where('last_activity', '<', time() - (86400 * 7))
             ->count();
-        if (!$dryRun && $staleSessions > 0) {
+        if (! $dryRun && $staleSessions > 0) {
             DB::table('sessions')
                 ->where('last_activity', '<', time() - (86400 * 7))
                 ->delete();
@@ -63,7 +63,7 @@ class CleanupStaleDataCommand extends Command
         $expiredCache = DB::table('cache')
             ->where('expiration', '<', time())
             ->count();
-        if (!$dryRun && $expiredCache > 0) {
+        if (! $dryRun && $expiredCache > 0) {
             DB::table('cache')
                 ->where('expiration', '<', time())
                 ->delete();
@@ -74,7 +74,7 @@ class CleanupStaleDataCommand extends Command
         $oldActivityLogs = DB::table('user_activity_logs')
             ->where('created_at', '<', now()->subDays(90))
             ->count();
-        if (!$dryRun && $oldActivityLogs > 0) {
+        if (! $dryRun && $oldActivityLogs > 0) {
             DB::table('user_activity_logs')
                 ->where('created_at', '<', now()->subDays(90))
                 ->delete();
@@ -85,7 +85,7 @@ class CleanupStaleDataCommand extends Command
         $oldSyncLogs = DB::table('sync_logs')
             ->where('created_at', '<', now()->subDays(60))
             ->count();
-        if (!$dryRun && $oldSyncLogs > 0) {
+        if (! $dryRun && $oldSyncLogs > 0) {
             DB::table('sync_logs')
                 ->where('created_at', '<', now()->subDays(60))
                 ->delete();
@@ -107,21 +107,21 @@ class CleanupStaleDataCommand extends Command
         if (empty($parts)) {
             $logMsg .= 'nothing to clean';
         } else {
-            $logMsg .= implode(', ', $parts) . " | total: {$totalCleaned}";
+            $logMsg .= implode(', ', $parts)." | total: {$totalCleaned}";
         }
 
         Log::info($logMsg);
 
-        if (!$this->option('quiet-log')) {
+        if (! $this->option('quiet-log')) {
             $this->info('');
             $this->info("  {$mode} Cleanup Results:");
-            $this->info('  ' . str_repeat('─', 50));
+            $this->info('  '.str_repeat('─', 50));
             foreach ($results as $key => $count) {
                 $icon = $count > 0 ? '🗑️ ' : '✅';
                 $this->info("  {$icon} {$key}: {$count}");
             }
-            $this->info('  ' . str_repeat('─', 50));
-            $this->info("  Total: {$totalCleaned} rows " . ($dryRun ? 'would be' : '') . " purged");
+            $this->info('  '.str_repeat('─', 50));
+            $this->info("  Total: {$totalCleaned} rows ".($dryRun ? 'would be' : '').' purged');
             $this->info('');
         }
 

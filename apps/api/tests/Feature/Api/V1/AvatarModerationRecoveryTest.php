@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Jobs\ValidateAvatarUploadJob;
 use App\Console\Commands\AvatarRequeuePendingCommand;
+use App\Jobs\ValidateAvatarUploadJob;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;

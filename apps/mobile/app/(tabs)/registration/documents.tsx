@@ -6,7 +6,8 @@ import { Camera, CameraView } from 'expo-camera';
 import { studentEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
 import {
-  colors,
+  useTheme,
+  useStyles,
   EmptyState,
   HeroCard,
   InlineAlert,
@@ -67,6 +68,7 @@ function DocumentItem({
   uploading,
   onPickDocument,
   onScanQRCode,
+  styles,
 }: {
   title: string;
   required: boolean;
@@ -77,6 +79,7 @@ function DocumentItem({
   uploading: boolean;
   onPickDocument: (document: string) => void;
   onScanQRCode: () => void;
+  styles: any;
 }) {
   const isUploaded = Boolean(state?.exists);
 
@@ -121,6 +124,35 @@ export default function RegistrationDocumentsScreen() {
   const [uploadedDocs, setUploadedDocs] = useState<Record<string, ExistingDocument>>({});
 
   const endpoints = studentEndpoints(api);
+  const { colors } = useTheme();
+
+  const styles = useStyles((colors) => ({
+    root: { flex: 1, backgroundColor: colors.background },
+    documentItem: { gap: 12 },
+    documentHeader: { gap: 10 },
+    titleSection: { flexDirection: 'row' as const, alignItems: 'flex-start' as const, justifyContent: 'space-between' as const, gap: 10 },
+    documentTitle: { flex: 1, fontSize: 16, fontWeight: '900' as const, color: colors.text, lineHeight: 21 },
+    documentDescription: { fontSize: 13, color: colors.textMuted, lineHeight: 19 },
+    fileNameText: { fontSize: 12, color: colors.text, fontWeight: '700' as const },
+    documentActions: { flexDirection: 'row' as const, gap: 10 },
+    actionButton: { flex: 1 },
+    actionButtonSmall: { flex: 0.7 },
+    statusCard: { gap: 8 },
+    cardTitle: { fontSize: 17, fontWeight: '900' as const, color: colors.text },
+    statusSummary: { fontSize: 13, color: colors.textMuted, lineHeight: 19 },
+    statusRow: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      justifyContent: 'space-between' as const,
+      gap: 12,
+      paddingVertical: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.borderSoft,
+    },
+    statusLabel: { flex: 1, fontSize: 12, color: colors.textMuted, fontWeight: '800' as const },
+    scannerOverlay: { flex: 1, backgroundColor: 'rgba(17, 24, 39, 0.55)' },
+    closeScanner: { position: 'absolute' as const, top: 54, right: 18, minHeight: 42, paddingVertical: 9 },
+  }));
 
   const { data: statusData, isLoading } = useQuery({
     queryKey: ['student', 'registration', 'status'],
@@ -286,6 +318,7 @@ export default function RegistrationDocumentsScreen() {
                 uploading={uploading}
                 onPickDocument={handlePickDocument}
                 onScanQRCode={scanQRCode}
+                styles={styles}
               />
             ))}
 
@@ -296,15 +329,16 @@ export default function RegistrationDocumentsScreen() {
                   <DocumentItem
                     key={requirement.field}
                     title={requirement.label}
-                  required={requirement.required}
-                  description={requirement.description}
-                  document={requirement.field}
-                  state={uploadedDocs[requirement.field]}
-                  templateUrl={requirement.template_url}
-                  uploading={uploading}
-                  onPickDocument={handlePickDocument}
-                  onScanQRCode={scanQRCode}
-                />
+                    required={requirement.required}
+                    description={requirement.description}
+                    document={requirement.field}
+                    state={uploadedDocs[requirement.field]}
+                    templateUrl={requirement.template_url}
+                    uploading={uploading}
+                    onPickDocument={handlePickDocument}
+                    onScanQRCode={scanQRCode}
+                    styles={styles}
+                  />
                 ))}
               </>
             ) : null}
@@ -348,31 +382,3 @@ export default function RegistrationDocumentsScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.background },
-  documentItem: { gap: 12 },
-  documentHeader: { gap: 10 },
-  titleSection: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 },
-  documentTitle: { flex: 1, fontSize: 16, fontWeight: '900', color: colors.text, lineHeight: 21 },
-  documentDescription: { fontSize: 13, color: colors.textMuted, lineHeight: 19 },
-  fileNameText: { fontSize: 12, color: colors.text, fontWeight: '700' },
-  documentActions: { flexDirection: 'row', gap: 10 },
-  actionButton: { flex: 1 },
-  actionButtonSmall: { flex: 0.7 },
-  statusCard: { gap: 8 },
-  cardTitle: { fontSize: 17, fontWeight: '900', color: colors.text },
-  statusSummary: { fontSize: 13, color: colors.textMuted, lineHeight: 19 },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEF2F7',
-  },
-  statusLabel: { flex: 1, fontSize: 12, color: colors.textMuted, fontWeight: '800' },
-  scannerOverlay: { flex: 1, backgroundColor: 'rgba(17, 24, 39, 0.55)' },
-  closeScanner: { position: 'absolute', top: 54, right: 18, minHeight: 42, paddingVertical: 9 },
-});

@@ -37,6 +37,7 @@ class FacultyAdminSeeder extends Seeder
 
         if ($fakultasRows->isEmpty()) {
             $this->command?->warn('Tidak ada data fakultas internal. Jalankan sync/seed master fakultas dulu.');
+
             return;
         }
 

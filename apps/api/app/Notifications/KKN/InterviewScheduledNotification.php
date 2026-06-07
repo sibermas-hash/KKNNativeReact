@@ -29,7 +29,7 @@ class InterviewScheduledNotification extends Notification
     {
         return [
             'title' => 'Jadwal Wawancara KKN',
-            'message' => "Anda dijadwalkan wawancara pada {$this->schedule->interview_date->format('d M Y')} pukul {$this->schedule->interview_time_start->format('H:i')} - {$this->schedule->interview_time_end->format('H:i')}" . ($this->schedule->location ? " di {$this->schedule->location}" : ''),
+            'message' => "Anda dijadwalkan wawancara pada {$this->schedule->interview_date->format('d M Y')} pukul {$this->schedule->interview_time_start->format('H:i')} - {$this->schedule->interview_time_end->format('H:i')}".($this->schedule->location ? " di {$this->schedule->location}" : ''),
             'type' => 'interview_scheduled',
             'priority' => 'high',
             'action' => '/mahasiswa/wawancara',
@@ -48,10 +48,10 @@ class InterviewScheduledNotification extends Notification
         return (new MailMessage)
             ->subject('Jadwal Wawancara KKN')
             ->greeting("Assalamu'alaikum, {$notifiable->name}")
-            ->line("Anda dijadwalkan untuk wawancara KKN:")
+            ->line('Anda dijadwalkan untuk wawancara KKN:')
             ->line("📅 Tanggal: {$this->schedule->interview_date->format('d M Y')}")
             ->line("🕐 Waktu: {$this->schedule->interview_time_start->format('H:i')} - {$this->schedule->interview_time_end->format('H:i')}")
-            ->line("📍 Lokasi: " . ($this->schedule->location ?? 'Akan diinformasikan'))
+            ->line('📍 Lokasi: '.($this->schedule->location ?? 'Akan diinformasikan'))
             ->line($this->schedule->notes ? "📝 Catatan: {$this->schedule->notes}" : '')
             ->action('Lihat Detail', url('/mahasiswa/wawancara'))
             ->line('Harap hadir tepat waktu. Terima kasih.');
@@ -61,7 +61,7 @@ class InterviewScheduledNotification extends Notification
     {
         return [
             'title' => 'Jadwal Wawancara KKN',
-            'body' => "Wawancara {$this->schedule->interview_date->format('d M Y')} pukul {$this->schedule->interview_time_start->format('H:i')}" . ($this->schedule->location ? " di {$this->schedule->location}" : ''),
+            'body' => "Wawancara {$this->schedule->interview_date->format('d M Y')} pukul {$this->schedule->interview_time_start->format('H:i')}".($this->schedule->location ? " di {$this->schedule->location}" : ''),
             'data' => [
                 'type' => 'interview_scheduled',
                 'action' => '/mahasiswa/wawancara',

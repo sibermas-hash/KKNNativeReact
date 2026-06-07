@@ -9,9 +9,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
 import {
-  colors,
+  useTheme,
+  useStyles,
+  useFormStyles,
   FieldLabel,
-  formStyles,
   HeroCard,
   InlineAlert,
   PrimaryButton,
@@ -44,6 +45,23 @@ export default function DailyReportCreateScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const endpoints = studentEndpoints(api);
+
+  const { colors } = useTheme();
+  const formStyles = useFormStyles();
+  const styles = useStyles((colors, toneMap) => ({
+    form: { gap: 16 },
+    formGroup: { gap: 8 },
+    reflectionInput: { minHeight: 86, textAlignVertical: 'top' },
+    locationInfo: {
+      backgroundColor: colors.emeraldSoft,
+      borderRadius: 8,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    locationText: { fontSize: 13, color: colors.emerald, fontWeight: '800' },
+    actions: { gap: 10, marginTop: 4 },
+  }));
 
   const [title, setTitle] = useState('');
   const [activity, setActivity] = useState('');
@@ -244,17 +262,4 @@ export default function DailyReportCreateScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  form: { gap: 16 },
-  formGroup: { gap: 8 },
-  reflectionInput: { minHeight: 86, textAlignVertical: 'top' },
-  locationInfo: {
-    backgroundColor: '#ECFDF5',
-    borderRadius: 8,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
-  },
-  locationText: { fontSize: 13, color: '#065F46', fontWeight: '800' },
-  actions: { gap: 10, marginTop: 4 },
-});
+

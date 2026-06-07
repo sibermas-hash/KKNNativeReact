@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class DispensasiKkn extends Model
 {
     use SoftDeletes;
+
     protected $table = 'dispensasi_kkn';
 
     protected $fillable = [

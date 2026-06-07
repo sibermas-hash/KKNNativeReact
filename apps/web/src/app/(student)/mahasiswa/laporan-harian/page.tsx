@@ -104,7 +104,7 @@ export default function DailyReportsPage(): React.JSX.Element {
                   <h3 className="text-lg font-black text-[color:var(--profile-text)] group-hover:text-[color:var(--profile-primary)] transition-colors">{String(report.title || '')}</h3>
                   <p className="mt-1 text-sm text-[color:var(--profile-muted)] line-clamp-2">{String(report.activity || '')}</p>
                   {String(report.review_notes || '') && (
-                    <p className="mt-2 text-xs text-rose-600 bg-rose-500/10 border border-rose-500/20 rounded-lg px-3 py-2">Catatan: {String(report.review_notes)}</p>
+                    <p className="mt-2 text-xs text-[color:var(--profile-danger-text)] bg-[color:var(--profile-danger)] border border-[color:var(--profile-border)] rounded-lg px-3 py-2">Catatan: {String(report.review_notes)}</p>
                   )}
                 </div>
                 <div className="text-[color:var(--profile-muted)] group-hover:text-[color:var(--profile-primary)] transition-colors">

@@ -173,9 +173,9 @@ function fmtDate(d?: string) {
 function StatCard({ label, value, icon, color }: { label: string; value: number; icon: React.ReactNode; color: 'emerald' | 'amber' | 'rose' }) {
   const { config: themeConfig, surfaceClass } = useTheme();
   const cl = {
-    emerald: 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800/40',
-    amber: 'text-amber-700 bg-amber-50 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-800/40',
-    rose: 'text-rose-700 bg-rose-50 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-800/40',
+    emerald: 'text-[color:var(--profile-soft-text)] bg-[color:var(--profile-soft)] border-[color:var(--profile-border)]',
+    amber: 'text-[color:var(--profile-warning-text)] bg-[color:var(--profile-warning)] border-[color:var(--profile-border)]',
+    rose: 'text-[color:var(--profile-danger-text)] bg-[color:var(--profile-danger)] border-[color:var(--profile-border)]',
   }[color];
   return (
     <div 
@@ -184,7 +184,7 @@ function StatCard({ label, value, icon, color }: { label: string; value: number;
     >
       <div className="flex items-center justify-between">
         <p className="text-xs uppercase text-[color:var(--profile-muted)] font-bold">{label}</p>
-        <div className={'rounded-lg p-1.5 border border-transparent ' + cl}>{icon}</div>
+        <div className={'rounded-lg p-1.5 border ' + cl}>{icon}</div>
       </div>
       <p className="text-2xl font-black mt-1 text-[color:var(--profile-text)]">{value.toLocaleString('id-ID')}</p>
     </div>
@@ -195,12 +195,12 @@ function StatusPill({ status }: { status: string }) {
   const s = status.toLowerCase();
   const cls =
     s === 'approved'
-      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800/40'
+      ? 'bg-[color:var(--profile-soft)] text-[color:var(--profile-soft-text)] border-[color:var(--profile-border)]'
       : s === 'pending'
-      ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-800/40'
+      ? 'bg-[color:var(--profile-warning)] text-[color:var(--profile-warning-text)] border-[color:var(--profile-border)]'
       : s === 'rejected'
-      ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-800/40'
-      : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700';
+      ? 'bg-[color:var(--profile-danger)] text-[color:var(--profile-danger-text)] border-[color:var(--profile-border)]'
+      : 'bg-[color:var(--profile-surface-strong)] text-[color:var(--profile-muted)] border-[color:var(--profile-border)]';
   const text =
     s === 'approved' ? 'Disetujui' :
     s === 'pending' ? 'Menunggu' :

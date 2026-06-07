@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 class AvatarFileGuard extends Command
 {
     protected $signature = 'avatar:file-guard {--fix : Mark missing avatars as rejected and clear avatar path}';
+
     protected $description = 'Audit DB avatar paths vs storage files; optionally fix missing files.';
 
     public function handle(): int
@@ -18,7 +19,7 @@ class AvatarFileGuard extends Command
         $users = User::query()
             ->whereNotNull('avatar')
             ->whereIn('avatar_moderation_status', ['approved', 'pending'])
-            ->select(['id','name','avatar','avatar_moderation_status','avatar_moderation_reason'])
+            ->select(['id', 'name', 'avatar', 'avatar_moderation_status', 'avatar_moderation_reason'])
             ->get();
 
         $missing = 0;
@@ -42,7 +43,8 @@ class AvatarFileGuard extends Command
             }
         }
 
-        $this->info(json_encode(['checked'=>$users->count(),'missing'=>$missing,'fixed'=>$fixed]));
+        $this->info(json_encode(['checked' => $users->count(), 'missing' => $missing, 'fixed' => $fixed]));
+
         return $missing > 0 && ! $this->option('fix') ? 1 : 0;
     }
 }

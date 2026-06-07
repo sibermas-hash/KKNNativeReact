@@ -22,9 +22,9 @@ export default function DosenDashboard(): React.JSX.Element {
 
   if (isLoading) return (
     <div className="space-y-6">
-      <div className="h-28 animate-pulse rounded-2xl bg-slate-200" />
+      <div className="h-28 animate-pulse rounded-2xl bg-[color:var(--profile-soft)]" />
       <div className="grid grid-cols-2 gap-4">
-        {[1,2].map(i => <div key={i} className="h-24 animate-pulse rounded-xl bg-slate-200" />)}
+        {[1,2].map(i => <div key={i} className="h-24 animate-pulse rounded-xl bg-[color:var(--profile-soft)]" />)}
       </div>
     </div>
   );
@@ -35,10 +35,10 @@ export default function DosenDashboard(): React.JSX.Element {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl bg-gradient-to-br from-emerald-600 to-cyan-700 p-6 text-white shadow-lg">
-        <p className="text-xs font-black uppercase tracking-widest text-emerald-200 mb-1">Selamat datang</p>
+      <div className="rounded-2xl bg-gradient-to-br from-[color:var(--profile-primary)] to-[color:var(--profile-accent)] p-6 text-white shadow-lg">
+        <p className="text-xs font-black uppercase tracking-widest opacity-80 mb-1">Selamat datang</p>
         <h1 className="text-2xl font-black tracking-tight">{user?.name ?? 'Dosen'}</h1>
-        <p className="text-sm text-emerald-100 mt-1">{isDpl ? 'Dosen Pembimbing Lapangan (DPL)' : 'Dosen'}</p>
+        <p className="text-sm opacity-95 mt-1">{isDpl ? 'Dosen Pembimbing Lapangan (DPL)' : 'Dosen'}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -47,25 +47,25 @@ export default function DosenDashboard(): React.JSX.Element {
       </div>
 
       {isDpl && (
-        <Link href="/dosen/beranda-dpl" className="flex items-center justify-between rounded-2xl bg-cyan-50 border border-cyan-200 p-5 hover:bg-cyan-100 transition-colors group">
+        <Link href="/dosen/beranda-dpl" className="flex items-center justify-between rounded-2xl bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] p-5 hover:bg-[color:var(--profile-surface-strong)] transition-colors group">
           <div>
-            <p className="text-xs font-black uppercase tracking-widest text-cyan-600 mb-0.5">Mode DPL Aktif</p>
-            <p className="text-sm font-bold text-cyan-900">Buka Dashboard DPL →</p>
+            <p className="text-xs font-black uppercase tracking-widest text-[color:var(--profile-soft-text)] mb-0.5">Mode DPL Aktif</p>
+            <p className="text-sm font-bold text-[color:var(--profile-text)]">Buka Dashboard DPL →</p>
           </div>
-          <div className="h-10 w-10 rounded-xl bg-cyan-600 flex items-center justify-center text-white group-hover:scale-105 transition-transform">
+          <div className="h-10 w-10 rounded-xl bg-[color:var(--profile-primary)] flex items-center justify-center text-white group-hover:scale-105 transition-transform">
             <Users size={20} />
           </div>
         </Link>
       )}
 
       {periods.length > 0 && (
-        <div className="rounded-2xl bg-white ring-1 ring-slate-200 p-5 shadow-sm">
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Penugasan DPL</p>
+        <div className="rounded-2xl bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] p-5 shadow-sm">
+          <p className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase tracking-widest mb-3">Penugasan DPL</p>
           <div className="space-y-2">
             {periods.map((p) => (
-              <div key={p.id as number} className="flex items-center justify-between rounded-xl border border-slate-100 px-4 py-3">
-                <p className="text-sm font-bold text-slate-800">{((p.periode as Record<string, unknown>)?.name as string) || '-'}</p>
-                <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 border border-emerald-100 rounded px-2 py-0.5 uppercase tracking-wider">
+              <div key={p.id as number} className="flex items-center justify-between rounded-xl border border-[color:var(--profile-border)]/45 px-4 py-3">
+                <p className="text-sm font-bold text-[color:var(--profile-text)]">{((p.periode as Record<string, unknown>)?.name as string) || '-'}</p>
+                <span className="text-[10px] font-black text-[color:var(--profile-soft-text)] bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] rounded px-2 py-0.5 uppercase tracking-wider">
                   {String(p.status || 'pending')}
                 </span>
               </div>
@@ -74,8 +74,8 @@ export default function DosenDashboard(): React.JSX.Element {
         </div>
       )}
 
-      <div className="rounded-2xl bg-white ring-1 ring-slate-200 p-5 shadow-sm">
-        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Menu</p>
+      <div className="rounded-2xl bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] p-5 shadow-sm">
+        <p className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase tracking-widest mb-3">Menu</p>
         <div className="space-y-1">
           <NavButton href="/dosen/workshops" icon={BookOpen} label="Workshop" />
           <NavButton href="/dosen/daftar-dpl" icon={UserCheck} label="Daftar DPL" />

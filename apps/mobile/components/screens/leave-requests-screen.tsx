@@ -1,14 +1,24 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, RefreshControl, Alert } from 'react-native';
+import { View, Text, TextInput, RefreshControl, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import * as DocumentPicker from 'expo-document-picker';
 import { api } from '@/lib/api';
 import { unwrapList } from '@/lib/api-helpers';
 import {
-  colors, radius, spacing, Screen, SectionTitle, SurfaceCard,
-  PrimaryButton, SecondaryButton, StatusPill, EmptyState, LoadingState,
-  FieldLabel, formStyles, type Tone,
+  useTheme,
+  useStyles,
+  useFormStyles,
+  Screen,
+  SectionTitle,
+  SurfaceCard,
+  PrimaryButton,
+  SecondaryButton,
+  StatusPill,
+  EmptyState,
+  LoadingState,
+  FieldLabel,
+  type Tone,
 } from '@/components/ui/primitives';
 
 type LeaveRequest = {
@@ -33,6 +43,19 @@ export function LeaveRequestsScreen() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [file, setFile] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
+
+  const { colors } = useTheme();
+  const formStyles = useFormStyles();
+
+  const styles = useStyles((colors) => ({
+    form: { gap: 12 },
+    formActions: { flexDirection: 'row' as const, gap: 10, marginTop: 4 },
+    list: { gap: 10 },
+    item: { gap: 8 },
+    itemHeader: { flexDirection: 'row' as const, alignItems: 'center' as const, justifyContent: 'space-between' as const },
+    date: { fontSize: 11, color: colors.textSubtle, fontWeight: '700' as const },
+    reason: { fontSize: 13, color: colors.text, lineHeight: 19 },
+  }));
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['student', 'leave-requests'],
@@ -80,13 +103,32 @@ export function LeaveRequestsScreen() {
       {showForm && (
         <SurfaceCard style={styles.form}>
           <FieldLabel required>Alasan Izin</FieldLabel>
-          <TextInput style={[formStyles.input, formStyles.textarea]} value={reason} onChangeText={setReason} placeholder="Jelaskan alasan izin..." multiline />
+          <TextInput
+            style={[formStyles.input, formStyles.textarea]}
+            value={reason}
+            onChangeText={setReason}
+            placeholder="Jelaskan alasan izin..."
+            placeholderTextColor={colors.textSubtle}
+            multiline
+          />
 
           <FieldLabel required>Tanggal Mulai (YYYY-MM-DD)</FieldLabel>
-          <TextInput style={formStyles.input} value={startDate} onChangeText={setStartDate} placeholder="2026-05-10" />
+          <TextInput
+            style={formStyles.input}
+            value={startDate}
+            onChangeText={setStartDate}
+            placeholder="2026-05-10"
+            placeholderTextColor={colors.textSubtle}
+          />
 
           <FieldLabel required>Tanggal Selesai (YYYY-MM-DD)</FieldLabel>
-          <TextInput style={formStyles.input} value={endDate} onChangeText={setEndDate} placeholder="2026-05-12" />
+          <TextInput
+            style={formStyles.input}
+            value={endDate}
+            onChangeText={setEndDate}
+            placeholder="2026-05-12"
+            placeholderTextColor={colors.textSubtle}
+          />
 
           <SecondaryButton label={file ? `📎 ${file.name}` : '📎 Lampiran (opsional)'} onPress={pickFile} />
 
@@ -115,13 +157,3 @@ export function LeaveRequestsScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  form: { gap: 12 },
-  formActions: { flexDirection: 'row', gap: 10, marginTop: 4 },
-  list: { gap: 10 },
-  item: { gap: 8 },
-  itemHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  date: { fontSize: 11, color: colors.textSubtle, fontWeight: '700' },
-  reason: { fontSize: 13, color: colors.text, lineHeight: 19 },
-});

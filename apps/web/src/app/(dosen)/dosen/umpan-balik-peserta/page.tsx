@@ -38,8 +38,8 @@ export default function ParticipantFeedbackPage(): React.JSX.Element {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-start gap-4 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
-        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+      <div className="flex items-start gap-4 rounded-2xl bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] p-6 shadow-sm">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[color:var(--profile-soft)] text-[color:var(--profile-primary)]">
           <MessageSquareQuote size={22} />
         </div>
         <div>
@@ -51,7 +51,7 @@ export default function ParticipantFeedbackPage(): React.JSX.Element {
       </div>
 
       {isLoading ? (
-        <div className="h-32 animate-pulse rounded-2xl bg-slate-200" />
+        <div className="h-32 animate-pulse rounded-2xl bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)]" />
       ) : !summary ? (
         <EmptyState
           icon={<MessageSquareQuote size={40} />}
@@ -69,23 +69,23 @@ export default function ParticipantFeedbackPage(): React.JSX.Element {
 
           <div className="grid gap-6 lg:grid-cols-3">
             <aside className="space-y-4">
-              <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-                <h2 className="text-sm font-bold uppercase tracking-widest text-slate-700">Rata-rata Per Aspek</h2>
+              <section className="rounded-2xl bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] p-5 shadow-sm">
+                <h2 className="text-sm font-bold uppercase tracking-widest text-[color:var(--profile-text)]">Rata-rata Per Aspek</h2>
                 <div className="mt-4 space-y-3">
                   {summary.criterion_averages.map((criterion) => (
-                    <div key={criterion.key} className="rounded-xl bg-slate-50 p-4 ring-1 ring-slate-200">
-                      <p className="text-sm font-semibold text-slate-700">{criterion.label}</p>
-                      <p className="mt-2 text-xl font-bold text-emerald-600">{criterion.average.toFixed(2)}</p>
+                    <div key={criterion.key} className="rounded-xl bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] p-4">
+                      <p className="text-sm font-semibold text-[color:var(--profile-text)]">{criterion.label}</p>
+                      <p className="mt-2 text-xl font-bold text-[color:var(--profile-primary)]">{criterion.average.toFixed(2)}</p>
                     </div>
                   ))}
                 </div>
               </section>
 
-              <section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-                <h2 className="text-sm font-bold uppercase tracking-widest text-slate-700">Sebaran Rekomendasi</h2>
-                <div className="mt-4 space-y-2 text-sm font-semibold text-slate-700">
+              <section className="rounded-2xl bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] p-5 shadow-sm">
+                <h2 className="text-sm font-bold uppercase tracking-widest text-[color:var(--profile-text)]">Sebaran Rekomendasi</h2>
+                <div className="mt-4 space-y-2 text-sm font-semibold text-[color:var(--profile-text)]">
                   {Object.entries(summary.recommendations).map(([key, value]) => (
-                    <div key={key} className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200">
+                    <div key={key} className="flex items-center justify-between rounded-xl bg-[color:var(--profile-soft)] px-4 py-3 border border-[color:var(--profile-border)]">
                       <span className="capitalize">{key.replaceAll('_', ' ')}</span>
                       <span className="font-bold">{value}</span>
                     </div>
@@ -103,18 +103,18 @@ export default function ParticipantFeedbackPage(): React.JSX.Element {
                 />
               ) : (
                 comments.map((comment) => (
-                  <article key={comment.id} className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
-                    <div className="flex flex-wrap items-start justify-between gap-4 border-b border-slate-100 pb-4">
+                  <article key={comment.id} className="rounded-2xl bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] p-5 shadow-sm">
+                    <div className="flex flex-wrap items-start justify-between gap-4 border-b border-[color:var(--profile-border)] pb-4">
                       <div>
-                        <p className="text-sm font-bold uppercase tracking-wide text-slate-800">{comment.group_name}</p>
-                        <p className="mt-1 text-sm text-slate-600">{comment.period_name}</p>
+                        <p className="text-sm font-bold uppercase tracking-wide text-[color:var(--profile-text)]">{comment.group_name}</p>
+                        <p className="mt-1 text-sm text-[color:var(--profile-muted)]">{comment.period_name}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-[11px] font-bold uppercase tracking-widest text-emerald-600">{comment.recommendation}</p>
-                        <p className="mt-1 text-xs text-slate-500">{comment.submitted_at}</p>
+                        <p className="text-[11px] font-bold uppercase tracking-widest text-[color:var(--profile-primary)]">{comment.recommendation}</p>
+                        <p className="mt-1 text-xs text-[color:var(--profile-muted)]">{comment.submitted_at}</p>
                       </div>
                     </div>
-                    <p className="mt-4 text-sm leading-relaxed text-slate-700">{comment.notes}</p>
+                    <p className="mt-4 text-sm leading-relaxed text-[color:var(--profile-text)]">{comment.notes}</p>
                   </article>
                 ))
               )}
@@ -128,14 +128,14 @@ export default function ParticipantFeedbackPage(): React.JSX.Element {
 
 function StatCard({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string | number }) {
   return (
-    <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+    <div className="rounded-2xl bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] p-5 shadow-sm">
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[color:var(--profile-soft)] text-[color:var(--profile-primary)]">
           <Icon size={18} />
         </div>
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-widest text-slate-500">{label}</p>
-          <p className="mt-1 text-xl font-bold text-slate-800">{value}</p>
+          <p className="text-[11px] font-bold uppercase tracking-widest text-[color:var(--profile-muted)]">{label}</p>
+          <p className="mt-1 text-xl font-bold text-[color:var(--profile-text)]">{value}</p>
         </div>
       </div>
     </div>

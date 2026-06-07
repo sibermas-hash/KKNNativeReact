@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Helpers;
 
+use Carbon\Carbon;
 use Illuminate\Support\Str;
 
 class PasswordHelper
@@ -30,7 +31,7 @@ class PasswordHelper
         }
 
         try {
-            return \Carbon\Carbon::parse((string) $birthDate)->format('dmY');
+            return Carbon::parse((string) $birthDate)->format('dmY');
         } catch (\Throwable) {
             return null;
         }

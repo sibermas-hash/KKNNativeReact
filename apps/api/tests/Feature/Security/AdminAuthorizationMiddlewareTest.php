@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 use Spatie\Permission\Models\Role;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 function securityTestUserWithRole(string $role): User
 {
@@ -21,7 +22,8 @@ function securityTestUserWithRole(string $role): User
 
 it('blocks unmapped admin controllers even for superadmin', function () {
     $user = securityTestUserWithRole('superadmin');
-    $controller = new class {
+    $controller = new class
+    {
         public function __invoke()
         {
             return response()->json(['ok' => true]);
@@ -39,7 +41,7 @@ it('blocks unmapped admin controllers even for superadmin', function () {
 
     $middleware->handle($request, fn () => response()->json(['ok' => true]));
 })->throws(
-    Symfony\Component\HttpKernel\Exception\HttpException::class,
+    HttpException::class,
     'Authorization misconfiguration.'
 );
 

@@ -5,7 +5,8 @@ import { studentEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
 import { useAuthUser } from '@/stores';
 import {
-  colors,
+  useTheme,
+  useStyles,
   HeroCard,
   LoadingState,
   PrimaryButton,
@@ -42,6 +43,42 @@ export default function DashboardScreen() {
   const router = useRouter();
   const user = useAuthUser();
   const endpoints = studentEndpoints(api);
+
+  const { colors } = useTheme();
+  const styles = useStyles((colors, toneMap) => ({
+    statusSummary: { alignItems: 'flex-start', gap: 6 },
+    statusMiniLabel: { fontSize: 8, fontWeight: '900', color: colors.textSubtle, textTransform: 'uppercase' },
+    progressCard: { gap: 16 },
+    progressHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+    progressTitle: { flex: 1, color: colors.text, fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
+    progressBadge: { color: colors.emerald, backgroundColor: colors.emeraldSoft, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
+    progressTrack: { height: 6, borderRadius: 999, backgroundColor: colors.borderSoft, overflow: 'hidden' },
+    progressFill: { height: '100%', borderRadius: 999, backgroundColor: colors.emerald },
+    phaseGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+    phaseItem: { width: '31.8%', borderLeftWidth: 4, borderLeftColor: colors.border, borderRadius: 8, padding: 9, backgroundColor: colors.background, gap: 4 },
+    phaseDone: { borderLeftColor: colors.emerald, backgroundColor: colors.emeraldSoft },
+    phaseActive: { borderLeftColor: colors.textSubtle, backgroundColor: colors.surface },
+    phaseNumber: { color: colors.textSubtle, fontSize: 9, fontWeight: '900' },
+    phaseLabel: { color: colors.textMuted, fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
+    phaseLabelDone: { color: colors.emerald },
+    statsGrid: { gap: 12 },
+    calloutCard: { backgroundColor: colors.text === '#e2e8f0' ? colors.surface : colors.text, borderColor: colors.text === '#e2e8f0' ? colors.border : colors.text, gap: 16 },
+    calloutTitle: { color: colors.text === '#e2e8f0' ? colors.text : '#FFFFFF', fontSize: 20, fontWeight: '900', textTransform: 'uppercase', lineHeight: 25 },
+    calloutText: { color: colors.text === '#e2e8f0' ? colors.textMuted : '#CBD5E1', fontSize: 13, fontWeight: '700', lineHeight: 20 },
+    groupCard: { gap: 18 },
+    groupHeader: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+    locationBadge: { width: 48, height: 48, borderRadius: 8, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+    locationBadgeText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
+    groupHeaderCopy: { flex: 1, gap: 4 },
+    groupTitle: { color: colors.text, fontSize: 18, fontWeight: '900', textTransform: 'uppercase', lineHeight: 22 },
+    groupSubtitle: { color: colors.textSubtle, fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
+    infoGrid: { gap: 12 },
+    infoItem: { borderRadius: 8, backgroundColor: colors.surfaceMuted, padding: 12, gap: 4 },
+    infoLabel: { color: colors.textSubtle, fontSize: 9, fontWeight: '900', textTransform: 'uppercase' },
+    infoValue: { color: colors.text, fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
+    menuCard: { gap: 14 },
+    navGrid: { gap: 10 },
+  }));
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['student', 'dashboard'],
@@ -193,37 +230,4 @@ export default function DashboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  statusSummary: { alignItems: 'flex-start', gap: 6 },
-  statusMiniLabel: { fontSize: 8, fontWeight: '900', color: colors.textSubtle, textTransform: 'uppercase' },
-  progressCard: { gap: 16 },
-  progressHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  progressTitle: { flex: 1, color: colors.text, fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
-  progressBadge: { color: colors.emerald, backgroundColor: colors.emeraldSoft, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6, fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
-  progressTrack: { height: 6, borderRadius: 999, backgroundColor: colors.borderSoft, overflow: 'hidden' },
-  progressFill: { height: '100%', borderRadius: 999, backgroundColor: colors.emerald },
-  phaseGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  phaseItem: { width: '31.8%', borderLeftWidth: 4, borderLeftColor: colors.border, borderRadius: 8, padding: 9, backgroundColor: colors.background, gap: 4 },
-  phaseDone: { borderLeftColor: colors.emerald, backgroundColor: 'rgba(236, 253, 245, 0.72)' },
-  phaseActive: { borderLeftColor: colors.textSubtle, backgroundColor: colors.surface },
-  phaseNumber: { color: colors.textSubtle, fontSize: 9, fontWeight: '900' },
-  phaseLabel: { color: colors.textMuted, fontSize: 10, fontWeight: '900', textTransform: 'uppercase' },
-  phaseLabelDone: { color: '#064E3B' },
-  statsGrid: { gap: 12 },
-  calloutCard: { backgroundColor: colors.text, borderColor: colors.text, gap: 16 },
-  calloutTitle: { color: '#FFFFFF', fontSize: 20, fontWeight: '900', textTransform: 'uppercase', lineHeight: 25 },
-  calloutText: { color: '#CBD5E1', fontSize: 13, fontWeight: '700', lineHeight: 20 },
-  groupCard: { gap: 18 },
-  groupHeader: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  locationBadge: { width: 48, height: 48, borderRadius: 8, backgroundColor: colors.emerald, alignItems: 'center', justifyContent: 'center' },
-  locationBadgeText: { color: '#FFFFFF', fontSize: 13, fontWeight: '900' },
-  groupHeaderCopy: { flex: 1, gap: 4 },
-  groupTitle: { color: colors.text, fontSize: 18, fontWeight: '900', textTransform: 'uppercase', lineHeight: 22 },
-  groupSubtitle: { color: colors.textSubtle, fontSize: 11, fontWeight: '900', textTransform: 'uppercase' },
-  infoGrid: { gap: 12 },
-  infoItem: { borderRadius: 8, backgroundColor: colors.background, padding: 12, gap: 4 },
-  infoLabel: { color: colors.textSubtle, fontSize: 9, fontWeight: '900', textTransform: 'uppercase' },
-  infoValue: { color: colors.text, fontSize: 12, fontWeight: '900', textTransform: 'uppercase' },
-  menuCard: { gap: 14 },
-  navGrid: { gap: 10 },
-});
+

@@ -50,7 +50,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const { config: themeConfig } = useTheme();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isProfilePage = pathname === '/profil';
-  const { data: dashboardData } = useQuery<Record<string, unknown> | null>({
+  const { data: dashboardData, isLoading: isDashboardLoading } = useQuery<Record<string, unknown> | null>({
     queryKey: [...QUERY_KEYS.student.dashboard, user?.id],
     queryFn: () => studentApi.dashboard() as unknown as Promise<Record<string, unknown> | null>,
     enabled: isAuthenticated && !!user?.roles?.includes('student') && !!user?.id,
@@ -91,10 +91,10 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
     }
   }, [isLoading, isAuthenticated, isProfilePage, user, router, isPhaseAllowed, currentNavItem, effectivePhase]);
 
-  if (isLoading || !isAuthenticated || !user) {
+  if (isLoading || isDashboardLoading || !isAuthenticated || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-teal-500 border-t-transparent" />
+      <div className="flex min-h-screen items-center justify-center bg-[color:var(--profile-page,#F7F9F8)]">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[color:var(--profile-primary)] border-t-transparent" />
       </div>
     );
   }

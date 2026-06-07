@@ -63,6 +63,7 @@ class DplRegistrationController extends Controller
         $enriched = collect($items)->map(function ($item) use ($passedWorkshopUserIds) {
             $arr = $item->toArray();
             $arr['workshop_passed'] = in_array($item->dosen?->user_id, $passedWorkshopUserIds);
+
             return $arr;
         })->values();
 

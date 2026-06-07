@@ -30,15 +30,15 @@ type Certificate = {
 };
 
 const GRADE_COLORS: Record<string, string> = {
-  A: 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800/40',
-  'A-': 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800/40',
-  'B+': 'text-blue-700 bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-800/40',
-  B: 'text-blue-700 bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-800/40',
-  'B-': 'text-blue-700 bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-800/40',
-  'C+': 'text-amber-700 bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-800/40',
-  C: 'text-amber-700 bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-800/40',
-  D: 'text-orange-700 bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:text-orange-400 dark:border-orange-800/40',
-  E: 'text-rose-700 bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-800/40',
+  A: 'text-[color:var(--profile-soft-text)] bg-[color:var(--profile-soft)] border-[color:var(--profile-border)]',
+  'A-': 'text-[color:var(--profile-soft-text)] bg-[color:var(--profile-soft)] border-[color:var(--profile-border)]',
+  'B+': 'text-[color:var(--profile-soft-text)] bg-[color:var(--profile-soft)] border-[color:var(--profile-border)]',
+  B: 'text-[color:var(--profile-soft-text)] bg-[color:var(--profile-soft)] border-[color:var(--profile-border)]',
+  'B-': 'text-[color:var(--profile-soft-text)] bg-[color:var(--profile-soft)] border-[color:var(--profile-border)]',
+  'C+': 'text-[color:var(--profile-warning-text)] bg-[color:var(--profile-warning)] border-[color:var(--profile-border)]',
+  C: 'text-[color:var(--profile-warning-text)] bg-[color:var(--profile-warning)] border-[color:var(--profile-border)]',
+  D: 'text-[color:var(--profile-warning-text)] bg-[color:var(--profile-warning)] border-[color:var(--profile-border)]',
+  E: 'text-[color:var(--profile-danger-text)] bg-[color:var(--profile-danger)] border-[color:var(--profile-border)]',
 };
 
 export default function CertificatesPage(): React.JSX.Element {
@@ -158,8 +158,8 @@ export default function CertificatesPage(): React.JSX.Element {
                   <div>
                     <p className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase tracking-wider">Status</p>
                     <span className={'mt-1 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-black ' + (s.is_finalized
-                      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800/40'
-                      : 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-800/40')}>
+                      ? 'bg-[color:var(--profile-soft)] text-[color:var(--profile-soft-text)] border-[color:var(--profile-border)]'
+                      : 'bg-[color:var(--profile-warning)] text-[color:var(--profile-warning-text)] border-[color:var(--profile-border)]')}>
                       <CheckCircle2 size={10} /> {s.is_finalized ? 'Final' : 'Sementara'}
                     </span>
                   </div>

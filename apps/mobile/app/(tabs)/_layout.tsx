@@ -2,9 +2,34 @@ import { useEffect } from 'react';
 import { useRouter, Tabs } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { getMobileHomeRoute, isStudentLikeUser, useAuthIsLoading, useAuthUser, useIsAuthenticated } from '@/stores';
-import { colors, radius } from '@/components/ui/primitives';
+import { useTheme, useStyles, radius } from '@/components/ui/primitives';
 
 function TabIcon({ label, focused }: { label: string; focused: boolean }) {
+  const styles = useStyles((colors) => ({
+    tabIcon: {
+      width: 28,
+      height: 24,
+      borderRadius: radius.sm,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surfaceMuted,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    tabIconActive: {
+      borderColor: colors.border,
+      backgroundColor: colors.soft,
+    },
+    tabIconText: {
+      color: colors.textSubtle,
+      fontSize: 10,
+      fontWeight: '900',
+    },
+    tabIconTextActive: {
+      color: colors.accent,
+    },
+  }));
+
   return (
     <View style={[styles.tabIcon, focused && styles.tabIconActive]}>
       <Text style={[styles.tabIconText, focused && styles.tabIconTextActive]}>{label}</Text>
@@ -17,6 +42,7 @@ export default function TabLayout() {
   const isAuthenticated = useIsAuthenticated();
   const isLoading = useAuthIsLoading();
   const user = useAuthUser();
+  const { colors } = useTheme();
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) router.replace('/(auth)/login');
@@ -64,27 +90,3 @@ export default function TabLayout() {
   );
 }
 
-const styles = StyleSheet.create({
-  tabIcon: {
-    width: 28,
-    height: 24,
-    borderRadius: radius.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surfaceMuted,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tabIconActive: {
-    borderColor: colors.border,
-    backgroundColor: colors.soft,
-  },
-  tabIconText: {
-    color: colors.textSubtle,
-    fontSize: 10,
-    fontWeight: '900',
-  },
-  tabIconTextActive: {
-    color: colors.accent,
-  },
-});

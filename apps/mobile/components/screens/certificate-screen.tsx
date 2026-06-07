@@ -1,10 +1,10 @@
-import { View, Text, StyleSheet, Linking } from 'react-native';
+import { View, Text, Linking } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
 import { unwrapList } from '@/lib/api-helpers';
 import {
-  colors, radius, spacing, Screen, SectionTitle, SurfaceCard,
+  useStyles, Screen, SectionTitle, SurfaceCard,
   PrimaryButton, LoadingState, EmptyState, StatusPill, InlineAlert,
 } from '@/components/ui/primitives';
 
@@ -20,6 +20,13 @@ type Certificate = {
 
 export function CertificateScreen() {
   const endpoints = studentEndpoints(api);
+
+  const styles = useStyles((colors) => ({
+    card: { gap: 10 },
+    cardHeader: { flexDirection: 'row' as const, alignItems: 'center' as const, justifyContent: 'space-between' as const },
+    title: { fontSize: 15, fontWeight: '900' as const, color: colors.text, flex: 1 },
+    meta: { fontSize: 12, color: colors.textMuted, fontWeight: '700' as const },
+  }));
 
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'certificates'],
@@ -61,10 +68,3 @@ export function CertificateScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  card: { gap: 10 },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontSize: 15, fontWeight: '900', color: colors.text, flex: 1 },
-  meta: { fontSize: 12, color: colors.textMuted, fontWeight: '700' },
-});

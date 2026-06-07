@@ -123,15 +123,15 @@ class EligibilityService
         $checks = [];
 
         // Check status_aktif — hanya mahasiswa AKTIF yang eligible
-        $statusAktif = strtoupper(trim($mahasiswa->status_aktif ?? ""));
-        if ($statusAktif !== "" && $statusAktif !== "AKTIF") {
-            $checks["status_aktif"] = [
-                "passed" => false,
-                "key" => "status_aktif",
-                "message" => "Status akademik: " . $statusAktif . ". Hanya mahasiswa AKTIF yang dapat mendaftar KKN.",
+        $statusAktif = strtoupper(trim($mahasiswa->status_aktif ?? ''));
+        if ($statusAktif !== '' && $statusAktif !== 'AKTIF') {
+            $checks['status_aktif'] = [
+                'passed' => false,
+                'key' => 'status_aktif',
+                'message' => 'Status akademik: '.$statusAktif.'. Hanya mahasiswa AKTIF yang dapat mendaftar KKN.',
             ];
         } else {
-            $checks["status_aktif"] = ["passed" => true, "key" => "status_aktif", "message" => "Status akademik aktif"];
+            $checks['status_aktif'] = ['passed' => true, 'key' => 'status_aktif', 'message' => 'Status akademik aktif'];
         }
 
         // Cek operasional: hanya untuk konteks pendaftaran

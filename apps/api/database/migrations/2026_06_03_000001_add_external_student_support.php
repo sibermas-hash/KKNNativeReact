@@ -6,7 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::table('mahasiswa', function (Blueprint $table) {
@@ -53,16 +54,23 @@ return new class extends Migration {
             });
         }
     }
+
     public function down(): void
     {
         Schema::dropIfExists('external_student_profiles');
         Schema::dropIfExists('external_kkn_batches');
         Schema::table('kelompok_kkn', function (Blueprint $table) {
-            if (Schema::hasColumn('kelompok_kkn', 'internal_capacity')) $table->dropColumn('internal_capacity');
-            if (Schema::hasColumn('kelompok_kkn', 'external_capacity')) $table->dropColumn('external_capacity');
+            if (Schema::hasColumn('kelompok_kkn', 'internal_capacity')) {
+                $table->dropColumn('internal_capacity');
+            }
+            if (Schema::hasColumn('kelompok_kkn', 'external_capacity')) {
+                $table->dropColumn('external_capacity');
+            }
         });
         Schema::table('mahasiswa', function (Blueprint $table) {
-            if (Schema::hasColumn('mahasiswa', 'origin_type')) $table->dropColumn('origin_type');
+            if (Schema::hasColumn('mahasiswa', 'origin_type')) {
+                $table->dropColumn('origin_type');
+            }
         });
     }
 };

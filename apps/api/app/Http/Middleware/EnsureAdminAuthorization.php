@@ -6,19 +6,14 @@ namespace App\Http\Middleware;
 
 use App\Http\Controllers\Api\V1\Admin\ActivityAuditController;
 use App\Http\Controllers\Api\V1\Admin\AiHealthController;
-use App\Http\Controllers\Api\V1\Admin\AutoPlottingController;
-use App\Http\Controllers\Api\V1\Admin\CountdownSettingController;
-use App\Http\Controllers\Api\V1\Admin\InterviewController;
-use App\Http\Controllers\Api\V1\Admin\LegacyKknTrackingController;
-use App\Http\Controllers\Api\V1\Admin\PesertaKknListController;
-use App\Http\Controllers\Api\V1\Admin\TransferPesertaController;
-
 use App\Http\Controllers\Api\V1\Admin\AnnouncementController;
+use App\Http\Controllers\Api\V1\Admin\AutoPlottingController;
 use App\Http\Controllers\Api\V1\Admin\AvatarModerationController;
 use App\Http\Controllers\Api\V1\Admin\BulkCertificateDownloadController;
 use App\Http\Controllers\Api\V1\Admin\CertificateConfigController;
 use App\Http\Controllers\Api\V1\Admin\CollaborationLetterController;
 use App\Http\Controllers\Api\V1\Admin\ComprehensiveReportController;
+use App\Http\Controllers\Api\V1\Admin\CountdownSettingController;
 use App\Http\Controllers\Api\V1\Admin\DashboardController;
 use App\Http\Controllers\Api\V1\Admin\DatabaseSyncController;
 use App\Http\Controllers\Api\V1\Admin\DataImportController;
@@ -37,6 +32,7 @@ use App\Http\Controllers\Api\V1\Admin\ExternalUniversityController;
 use App\Http\Controllers\Api\V1\Admin\FakultasController;
 use App\Http\Controllers\Api\V1\Admin\GeneratorNilaiController;
 use App\Http\Controllers\Api\V1\Admin\GradeController;
+use App\Http\Controllers\Api\V1\Admin\InterviewController;
 use App\Http\Controllers\Api\V1\Admin\JenisKknController;
 use App\Http\Controllers\Api\V1\Admin\JenisKknDocumentRequirementController;
 use App\Http\Controllers\Api\V1\Admin\KegiatanKknAdminController;
@@ -44,6 +40,7 @@ use App\Http\Controllers\Api\V1\Admin\KelompokKknAdminController;
 use App\Http\Controllers\Api\V1\Admin\KknRequirementController;
 use App\Http\Controllers\Api\V1\Admin\KonfigurasiPenilaianController;
 use App\Http\Controllers\Api\V1\Admin\LaporanAkhirAdminController;
+use App\Http\Controllers\Api\V1\Admin\LegacyKknTrackingController;
 use App\Http\Controllers\Api\V1\Admin\LogAuditController;
 use App\Http\Controllers\Api\V1\Admin\LogbookPdfController;
 use App\Http\Controllers\Api\V1\Admin\LokasiController;
@@ -52,6 +49,7 @@ use App\Http\Controllers\Api\V1\Admin\NotificationBroadcastController;
 use App\Http\Controllers\Api\V1\Admin\PeriodeController;
 use App\Http\Controllers\Api\V1\Admin\PeriodeDocumentTemplateController;
 use App\Http\Controllers\Api\V1\Admin\PesertaKknController;
+use App\Http\Controllers\Api\V1\Admin\PesertaKknListController;
 use App\Http\Controllers\Api\V1\Admin\PlaygroundController;
 use App\Http\Controllers\Api\V1\Admin\ProdiController;
 use App\Http\Controllers\Api\V1\Admin\ProfileChangeRequestController;
@@ -66,6 +64,7 @@ use App\Http\Controllers\Api\V1\Admin\StudentSyncController;
 use App\Http\Controllers\Api\V1\Admin\StudentTransferController;
 use App\Http\Controllers\Api\V1\Admin\SystemSettingController;
 use App\Http\Controllers\Api\V1\Admin\TahunAkademikController;
+use App\Http\Controllers\Api\V1\Admin\TransferPesertaController;
 use App\Http\Controllers\Api\V1\Admin\UserActivityController;
 use App\Http\Controllers\Api\V1\Admin\UserController;
 use App\Http\Controllers\Api\V1\Admin\WaGatewayAdminController;
@@ -162,7 +161,6 @@ class EnsureAdminAuthorization
 
         // Chat Konsultasi (PRD_CHAT_SYSTEM.md)
 
-
         // Reports
         RekapNilaiController::class => 'manage-reports',
         RekapitulasiController::class => 'manage-reports',
@@ -218,8 +216,8 @@ class EnsureAdminAuthorization
             return $next($request);
         }
 
-        $controller = $route->getController();
-        if (! $controller) {
+        $controllerName = $route->getAction('controller') ?? $route->getAction('uses');
+        if (! is_string($controllerName)) {
             // R-003 follow-up: if an admin-prefixed route has no controller
             // (i.e., is a closure), it's invisible to PERMISSION_MAP. Block it
             // so admin routes cannot bypass the per-feature permission gate.
@@ -229,16 +227,20 @@ class EnsureAdminAuthorization
                     'user_id' => $request->user()?->id,
                 ]);
 
-                abort(500, 'Admin route authorization is not configured.');
+                abort(500, 'Authorization misconfiguration. Please contact the administrator.');
             }
 
             return $next($request);
         }
 
-        $controllerClass = get_class($controller);
+        $controllerClass = str_contains($controllerName, '@') ? strstr($controllerName, '@', true) : $controllerName;
 
-        // Only apply to admin controllers.
+        // Only apply to admin controllers; admin URI backed by non-admin controller is a misconfiguration.
         if (! str_starts_with($controllerClass, 'App\\Http\\Controllers\\Api\\V1\\Admin\\')) {
+            if (str_contains($request->path(), 'api/v1/admin/')) {
+                abort(500, 'Authorization misconfiguration. Please contact the administrator.');
+            }
+
             return $next($request);
         }
 

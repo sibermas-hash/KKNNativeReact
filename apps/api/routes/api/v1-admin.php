@@ -2,13 +2,14 @@
 
 use App\Http\Controllers\Api\V1\Admin\ActivityAuditController;
 use App\Http\Controllers\Api\V1\Admin\AiHealthController;
-
 use App\Http\Controllers\Api\V1\Admin\AnnouncementController;
-use App\Http\Controllers\Api\V1\Admin\AvatarModerationController;
 use App\Http\Controllers\Api\V1\Admin\AutoPlottingController;
+use App\Http\Controllers\Api\V1\Admin\AvatarModerationController;
 use App\Http\Controllers\Api\V1\Admin\BulkCertificateDownloadController;
 use App\Http\Controllers\Api\V1\Admin\CertificateConfigController;
+use App\Http\Controllers\Api\V1\Admin\CollaborationLetterController;
 use App\Http\Controllers\Api\V1\Admin\ComprehensiveReportController;
+use App\Http\Controllers\Api\V1\Admin\CountdownSettingController;
 use App\Http\Controllers\Api\V1\Admin\DashboardController;
 use App\Http\Controllers\Api\V1\Admin\DatabaseSyncController;
 use App\Http\Controllers\Api\V1\Admin\DataImportController;
@@ -24,18 +25,18 @@ use App\Http\Controllers\Api\V1\Admin\EligibilityController;
 use App\Http\Controllers\Api\V1\Admin\EvaluasiController;
 use App\Http\Controllers\Api\V1\Admin\ExternalParticipantController;
 use App\Http\Controllers\Api\V1\Admin\ExternalUniversityController;
-use App\Http\Controllers\Api\V1\Admin\CollaborationLetterController;
 use App\Http\Controllers\Api\V1\Admin\FakultasController;
 use App\Http\Controllers\Api\V1\Admin\GeneratorNilaiController;
 use App\Http\Controllers\Api\V1\Admin\GradeController;
+use App\Http\Controllers\Api\V1\Admin\InterviewController;
 use App\Http\Controllers\Api\V1\Admin\JenisKknController;
 use App\Http\Controllers\Api\V1\Admin\JenisKknDocumentRequirementController;
 use App\Http\Controllers\Api\V1\Admin\KegiatanKknAdminController;
 use App\Http\Controllers\Api\V1\Admin\KelompokKknAdminController;
-use App\Http\Controllers\Api\V1\Admin\LegacyKknTrackingController;
 use App\Http\Controllers\Api\V1\Admin\KknRequirementController;
 use App\Http\Controllers\Api\V1\Admin\KonfigurasiPenilaianController;
 use App\Http\Controllers\Api\V1\Admin\LaporanAkhirAdminController;
+use App\Http\Controllers\Api\V1\Admin\LegacyKknTrackingController;
 use App\Http\Controllers\Api\V1\Admin\LogAuditController;
 use App\Http\Controllers\Api\V1\Admin\LogbookPdfController;
 use App\Http\Controllers\Api\V1\Admin\LokasiController;
@@ -44,6 +45,7 @@ use App\Http\Controllers\Api\V1\Admin\NotificationBroadcastController;
 use App\Http\Controllers\Api\V1\Admin\PeriodeController;
 use App\Http\Controllers\Api\V1\Admin\PeriodeDocumentTemplateController;
 use App\Http\Controllers\Api\V1\Admin\PesertaKknController;
+use App\Http\Controllers\Api\V1\Admin\PesertaKknListController;
 use App\Http\Controllers\Api\V1\Admin\PlaygroundController;
 use App\Http\Controllers\Api\V1\Admin\ProdiController;
 use App\Http\Controllers\Api\V1\Admin\ProfileChangeRequestController;
@@ -57,15 +59,13 @@ use App\Http\Controllers\Api\V1\Admin\SiakadSyncAdminController;
 use App\Http\Controllers\Api\V1\Admin\StudentSyncController;
 use App\Http\Controllers\Api\V1\Admin\StudentTransferController;
 use App\Http\Controllers\Api\V1\Admin\SystemSettingController;
-use App\Http\Controllers\Api\V1\Admin\WaGatewayAdminController;
 use App\Http\Controllers\Api\V1\Admin\TahunAkademikController;
+use App\Http\Controllers\Api\V1\Admin\TransferPesertaController;
 use App\Http\Controllers\Api\V1\Admin\UserActivityController;
 use App\Http\Controllers\Api\V1\Admin\UserController;
+use App\Http\Controllers\Api\V1\Admin\WaGatewayAdminController;
 use App\Http\Controllers\Api\V1\Admin\WorkshopController;
 use App\Http\Controllers\Api\V1\Admin\YudisiumController;
-use App\Http\Controllers\Api\V1\Admin\InterviewController;
-use App\Http\Controllers\Api\V1\Admin\PesertaKknListController;
-use App\Http\Controllers\Api\V1\Admin\TransferPesertaController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('admin')
@@ -76,7 +76,7 @@ Route::prefix('admin')
         Route::get('/hub', [DashboardController::class, 'hub']);
         Route::get('/dashboard', [DashboardController::class, 'index']);
         Route::post('/dashboard/switch-phase', [DashboardController::class, 'switchPhase']);
-        
+
         Route::get('/ai-health', [AiHealthController::class, 'show']);
 
         // Periode
@@ -88,8 +88,8 @@ Route::prefix('admin')
         Route::delete('/periode/{periode}/document-templates/{periodDocumentTemplate}', [PeriodeDocumentTemplateController::class, 'destroy']);
 
         // Countdown Settings
-        Route::get("/periode/{periode}/countdown", [\App\Http\Controllers\Api\V1\Admin\CountdownSettingController::class, "show"]);
-        Route::post("/periode/{periode}/countdown", [\App\Http\Controllers\Api\V1\Admin\CountdownSettingController::class, "store"]);
+        Route::get('/periode/{periode}/countdown', [CountdownSettingController::class, 'show']);
+        Route::post('/periode/{periode}/countdown', [CountdownSettingController::class, 'store']);
 
         // Master Data
         Route::apiResource('tahun-akademik', TahunAkademikController::class)->only(['index', 'store', 'update', 'destroy']);
@@ -237,10 +237,10 @@ Route::prefix('admin')
         Route::get('/rekapitulasi', [RekapitulasiController::class, 'index']);
 
         // Legacy KKN Tracking
-        Route::middleware("role:superadmin")->prefix("legacy-kkn")->group(function () {
-            Route::get("/summary", [LegacyKknTrackingController::class, "summary"]);
-            Route::get("/export", [LegacyKknTrackingController::class, "export"]);
-            Route::get("/", [LegacyKknTrackingController::class, "index"]);
+        Route::middleware('role:superadmin')->prefix('legacy-kkn')->group(function () {
+            Route::get('/summary', [LegacyKknTrackingController::class, 'summary']);
+            Route::get('/export', [LegacyKknTrackingController::class, 'export']);
+            Route::get('/', [LegacyKknTrackingController::class, 'index']);
         });
 
         // Generator Nilai
@@ -347,7 +347,6 @@ Route::prefix('admin')
             Route::post('/chat', [PlaygroundController::class, 'chat'])
                 ->middleware('throttle:10,1');
         });
-
 
         // Comprehensive Report (LP2M executive summary PDF)
         Route::get('/report/comprehensive/{periode}', [ComprehensiveReportController::class, 'download'])

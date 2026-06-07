@@ -7,7 +7,6 @@ namespace App\Console\Commands;
 use App\Models\KKN\Mahasiswa;
 use App\Models\User;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -71,9 +70,9 @@ class LockFilledProfilesCommand extends Command
         $dryRun = (bool) $this->option('dry-run');
 
         $this->info('=== Lock Filled Profiles ===');
-        $this->info('Academic fields ALWAYS open: ' . implode(', ', self::ALWAYS_OPEN));
-        $this->info('Lockable mahasiswa fields: ' . implode(', ', self::MHS_LOCKABLE_FIELDS));
-        $this->info('Lockable user fields: ' . implode(', ', self::USER_LOCKABLE_FIELDS));
+        $this->info('Academic fields ALWAYS open: '.implode(', ', self::ALWAYS_OPEN));
+        $this->info('Lockable mahasiswa fields: '.implode(', ', self::MHS_LOCKABLE_FIELDS));
+        $this->info('Lockable user fields: '.implode(', ', self::USER_LOCKABLE_FIELDS));
         $this->newLine();
 
         if ($dryRun) {
@@ -92,12 +91,14 @@ class LockFilledProfilesCommand extends Command
 
         if ($total === 0) {
             $this->info('Nothing to do.');
+
             return 0;
         }
 
-        if (!$dryRun && !$this->option('force')) {
-            if (!$this->confirm("Lock fields for {$total} mahasiswa? Academic fields (SKS, IPK, BTA/PPI, UKT) will remain open.")) {
+        if (! $dryRun && ! $this->option('force')) {
+            if (! $this->confirm("Lock fields for {$total} mahasiswa? Academic fields (SKS, IPK, BTA/PPI, UKT) will remain open.")) {
                 $this->info('Cancelled.');
+
                 return 0;
             }
         }
@@ -117,7 +118,7 @@ class LockFilledProfilesCommand extends Command
                     // Only lock if:
                     // 1. Field has data (not null, not empty)
                     // 2. Field is not already locked
-                    if (!in_array($field, $currentLocks, true)) {
+                    if (! in_array($field, $currentLocks, true)) {
                         $value = $mhs->{$field};
                         if ($value !== null && $value !== '') {
                             $newLocks[] = $field;
@@ -125,8 +126,8 @@ class LockFilledProfilesCommand extends Command
                     }
                 }
 
-                if (!empty($newLocks)) {
-                    if (!$dryRun) {
+                if (! empty($newLocks)) {
+                    if (! $dryRun) {
                         $merged = array_values(array_unique(array_merge($currentLocks, $newLocks)));
                         $mhs->manually_edited_fields = $merged;
                         $mhs->saveQuietly(); // saveQuietly to avoid triggering events
@@ -138,7 +139,7 @@ class LockFilledProfilesCommand extends Command
 
                 // === Lock user fields ===
                 $user = $mhs->user;
-                if (!$user) {
+                if (! $user) {
                     continue;
                 }
 
@@ -146,7 +147,7 @@ class LockFilledProfilesCommand extends Command
                 $newUserLocks = [];
 
                 foreach (self::USER_LOCKABLE_FIELDS as $field) {
-                    if (!in_array($field, $currentUserLocks, true)) {
+                    if (! in_array($field, $currentUserLocks, true)) {
                         $value = $user->{$field};
                         if ($value !== null && $value !== '') {
                             $newUserLocks[] = $field;
@@ -154,8 +155,8 @@ class LockFilledProfilesCommand extends Command
                     }
                 }
 
-                if (!empty($newUserLocks)) {
-                    if (!$dryRun) {
+                if (! empty($newUserLocks)) {
+                    if (! $dryRun) {
                         $merged = array_values(array_unique(array_merge($currentUserLocks, $newUserLocks)));
                         $user->manually_edited_fields = $merged;
                         $user->saveQuietly();
@@ -179,7 +180,7 @@ class LockFilledProfilesCommand extends Command
         if ($dryRun) {
             $this->warn('[DRY RUN] No changes written. Remove --dry-run to apply.');
         } else {
-            $this->info('Done. Profile fields locked. SIAKAD sync will only update: ' . implode(', ', self::ALWAYS_OPEN));
+            $this->info('Done. Profile fields locked. SIAKAD sync will only update: '.implode(', ', self::ALWAYS_OPEN));
             Log::info('sync:lock-filled-profiles completed', [
                 'mhs_locked' => $mhsLocked,
                 'user_locked' => $userLocked,

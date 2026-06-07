@@ -13,6 +13,7 @@ use App\Models\KKN\BimbinganSession;
 use App\Models\KKN\NilaiKkn;
 use App\Models\KKN\Periode;
 use App\Services\CertificateService;
+use App\Services\GradingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
@@ -62,7 +63,7 @@ class RekapNilaiController extends Controller
         }
 
         // G-08 fix: recalc before finalization to ensure total_score is current
-        app(\App\Services\GradingService::class)->calculateFinalGrade($score);
+        app(GradingService::class)->calculateFinalGrade($score);
         $score->refresh();
 
         $score->update(['is_finalized' => true, 'admin_graded_by' => auth()->id(), 'admin_graded_at' => now()]);

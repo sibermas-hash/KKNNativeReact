@@ -194,6 +194,7 @@ class DashboardStatisticsService
             'profile_complete' => (int) $profileComplete,
         ];
     }
+
     /**
      * Get student registration counts by status.
      */

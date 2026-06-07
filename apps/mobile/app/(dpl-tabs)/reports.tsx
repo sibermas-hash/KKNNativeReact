@@ -1,11 +1,11 @@
-import { View, Text, FlatList, StyleSheet, RefreshControl, Alert } from 'react-native';
+import { View, Text, FlatList, RefreshControl, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { dplEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
 import { unwrapList } from '@/lib/api-helpers';
 import {
-  colors,
+  useStyles,
   EmptyState,
   HeroCard,
   LoadingState,
@@ -20,6 +20,20 @@ export default function DplReportsScreen() {
   const endpoints = dplEndpoints(api);
   const queryClient = useQueryClient();
   const router = useRouter();
+
+  const styles = useStyles((colors) => ({
+    container: { flex: 1, backgroundColor: colors.background },
+    content: { padding: 16, gap: 16, paddingBottom: 32 },
+    heroCount: { color: colors.text, fontSize: 28, fontWeight: '900' as const, fontVariant: ['tabular-nums' as const] },
+    card: { gap: 12 },
+    cardHeader: { flexDirection: 'row' as const, alignItems: 'flex-start' as const, justifyContent: 'space-between' as const, gap: 12 },
+    cardCopy: { flex: 1, gap: 3 },
+    cardStudent: { fontSize: 12, color: colors.textMuted, fontWeight: '800' as const },
+    cardTitle: { fontSize: 16, fontWeight: '900' as const, color: colors.text, lineHeight: 21 },
+    cardBody: { fontSize: 13, color: colors.textMuted, lineHeight: 19 },
+    actions: { flexDirection: 'row' as const, gap: 10 },
+    actionButton: { flex: 1 },
+  }));
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['dpl', 'daily-reports'],
@@ -98,17 +112,3 @@ export default function DplReportsScreen() {
     />
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 16, gap: 16, paddingBottom: 32 },
-  heroCount: { color: colors.text, fontSize: 28, fontWeight: '900', fontVariant: ['tabular-nums'] },
-  card: { gap: 12 },
-  cardHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
-  cardCopy: { flex: 1, gap: 3 },
-  cardStudent: { fontSize: 12, color: colors.textMuted, fontWeight: '800' },
-  cardTitle: { fontSize: 16, fontWeight: '900', color: colors.text, lineHeight: 21 },
-  cardBody: { fontSize: 13, color: colors.textMuted, lineHeight: 19 },
-  actions: { flexDirection: 'row', gap: 10 },
-  actionButton: { flex: 1 },
-});

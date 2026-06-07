@@ -62,12 +62,12 @@ class GradeController extends Controller
         ]);
 
         $score = NilaiKkn::updateOrCreate(
-                    ['user_id' => $validated['user_id'], 'kelompok_id' => $validated['kelompok_id']],
-                    array_merge($validated['scores'], [
-                        'admin_graded_by' => auth()->id(),
-                        'admin_graded_at' => now(),
-                    ]),
-                );
+            ['user_id' => $validated['user_id'], 'kelompok_id' => $validated['kelompok_id']],
+            array_merge($validated['scores'], [
+                'admin_graded_by' => auth()->id(),
+                'admin_graded_at' => now(),
+            ]),
+        );
 
         // G-04 fix: recalc after save
         app(GradingService::class)->calculateFinalGrade($score);

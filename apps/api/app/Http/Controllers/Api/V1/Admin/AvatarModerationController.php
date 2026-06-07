@@ -198,6 +198,7 @@ class AvatarModerationController extends Controller
         }
 
         $count = $users->count();
+
         return $this->success(['count' => $count], "{$count} foto ditolak.");
     }
 }

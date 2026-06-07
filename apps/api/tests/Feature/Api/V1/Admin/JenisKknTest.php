@@ -120,6 +120,7 @@ describe('Admin Jenis KKN API', function () {
 
     it('rejects invalid specific prodi ids when creating jenis kkn', function () {
         $prodi = Prodi::factory()->create();
+        $invalidProdiId = ((int) Prodi::max('id')) + 1;
 
         $this->actingAs($this->admin)
             ->postJson('/api/v1/admin/jenis-kkn', [
@@ -128,11 +129,13 @@ describe('Admin Jenis KKN API', function () {
                 'registration_mode' => 'open',
                 'placement_mode' => 'manual_admin',
                 'requirements_config' => [
-                    'specific_prodi_ids' => [$prodi->id, 999999999],
+                    'specific_prodi_ids' => [$prodi->id, $invalidProdiId],
                 ],
             ])
             ->assertStatus(422)
             ->assertJsonPath('error.code', 'VALIDATION_ERROR')
-            ->assertJsonValidationErrors(['requirements_config.specific_prodi_ids.1']);
+            ->assertJsonFragment([
+                'requirements_config.specific_prodi_ids.1' => ['requirements_config.specific_prodi_ids.1 yang dipilih tidak sah.'],
+            ]);
     });
 })->group('admin');

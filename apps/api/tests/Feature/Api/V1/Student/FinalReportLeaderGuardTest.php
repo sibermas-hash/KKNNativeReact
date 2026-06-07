@@ -54,6 +54,7 @@ function createPesertaInKelompok(KelompokKkn $kelompok, ?int $periodeId, string 
         'kelompok_id' => $kelompok->id,
         'status' => 'approved',
         'approved_at' => now(),
+        'placement_is_live' => true,
         'role' => $role,
     ]);
 

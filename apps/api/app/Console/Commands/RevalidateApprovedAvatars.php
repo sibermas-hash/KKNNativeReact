@@ -39,7 +39,7 @@ class RevalidateApprovedAvatars extends Command
         $approved = $rejected = $pending = $missing = $errors = 0;
         $csv = storage_path('logs/avatar-revalidate-approved-'.now()->format('Ymd-His').'.csv');
         $fh = fopen($csv, 'w');
-        fputcsv($fh, ['user_id','name','avatar','old_reason','decision','new_reason']);
+        fputcsv($fh, ['user_id', 'name', 'avatar', 'old_reason', 'decision', 'new_reason']);
 
         foreach ($users as $user) {
             $oldAvatar = $user->avatar;
@@ -109,7 +109,7 @@ class RevalidateApprovedAvatars extends Command
             } catch (\Throwable $e) {
                 $errors++;
                 fputcsv($fh, [$user->id, $user->name, $oldAvatar, $oldReason, 'error', $e->getMessage()]);
-                Log::error('avatar:revalidate-approved error', ['user_id'=>$user->id, 'error'=>$e->getMessage()]);
+                Log::error('avatar:revalidate-approved error', ['user_id' => $user->id, 'error' => $e->getMessage()]);
                 $this->error('  → ERROR: '.$e->getMessage());
             }
 
@@ -117,9 +117,10 @@ class RevalidateApprovedAvatars extends Command
         }
 
         fclose($fh);
-        $summary = compact('approved','rejected','pending','missing','errors','csv');
+        $summary = compact('approved', 'rejected', 'pending', 'missing', 'errors', 'csv');
         $this->info('Done: '.json_encode($summary));
         Log::info('avatar:revalidate-approved done', $summary);
+
         return $errors > 0 ? 1 : 0;
     }
 }

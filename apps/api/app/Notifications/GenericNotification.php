@@ -103,8 +103,10 @@ class GenericNotification extends Notification
         if ($this->action) {
             $text .= "\n\nBuka: ".url($this->action);
         }
+
         return $text;
     }
+
     public function toFcm(mixed $notifiable): array
     {
         return [

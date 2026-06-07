@@ -185,7 +185,6 @@ class JenisKkn extends Model
         return is_array($value) && $value !== [] ? array_map('intval', $value) : null;
     }
 
-
     public function getMinSemesterAttribute(): ?int
     {
         $value = $this->requirements_config['min_semester'] ?? null;

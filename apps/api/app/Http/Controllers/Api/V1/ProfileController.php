@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
-use App\Jobs\ValidateAvatarUploadJob;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\DosenResource;
 use App\Http\Resources\Api\V1\MahasiswaResource;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Http\Traits\ApiResponse;
+use App\Jobs\ValidateAvatarUploadJob;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\SystemSetting;
@@ -472,6 +472,7 @@ class ProfileController extends Controller
         $path = $request->file('avatar')->store('avatars', 'public');
         if (! is_string($path) || $path === '' || $path === '0' || ! Storage::disk('public')->exists($path)) {
             Log::error('Avatar upload failed after store', ['user_id' => $user->id, 'path' => $path]);
+
             return $this->error('Gagal menyimpan file foto. Silakan coba lagi atau hubungi admin.', 500);
         }
 

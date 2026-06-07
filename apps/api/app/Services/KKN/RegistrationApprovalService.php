@@ -135,7 +135,6 @@ class RegistrationApprovalService
         });
     }
 
-
     /**
      * Guard approval: every required registration document must be uploaded and verified before approval.
      */
@@ -168,6 +167,7 @@ class RegistrationApprovalService
 
             if (! $exists) {
                 $errors[] = "{$label} belum diunggah";
+
                 continue;
             }
 

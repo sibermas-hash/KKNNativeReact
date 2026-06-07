@@ -1,8 +1,16 @@
-import { View, Text, FlatList, StyleSheet, RefreshControl } from 'react-native';
+import { View, Text, FlatList, RefreshControl } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
-import { colors, EmptyState, HeroCard, LoadingState, SectionTitle, StatusPill, SurfaceCard } from '@/components/ui/primitives';
+import {
+  useStyles,
+  EmptyState,
+  HeroCard,
+  LoadingState,
+  SectionTitle,
+  StatusPill,
+  SurfaceCard,
+} from '@/components/ui/primitives';
 
 type WorkProgramsResponse = {
   programs?: Record<string, unknown>[];
@@ -21,6 +29,16 @@ function statusTone(status: string) {
 
 export default function ActivitiesScreen() {
   const endpoints = studentEndpoints(api);
+
+  const styles = useStyles((colors) => ({
+    container: { flex: 1, backgroundColor: colors.background },
+    content: { padding: 16, gap: 16, paddingBottom: 32 },
+    heroCount: { color: colors.text, fontSize: 28, fontWeight: '900' as const, fontVariant: ['tabular-nums' as const] },
+    card: { gap: 10 },
+    cardHeader: { flexDirection: 'row' as const, justifyContent: 'space-between' as const, alignItems: 'flex-start' as const, gap: 12 },
+    cardTitle: { flex: 1, fontSize: 16, fontWeight: '800' as const, color: colors.text, lineHeight: 21 },
+    cardBody: { fontSize: 13, color: colors.textMuted, lineHeight: 19 },
+  }));
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['student', 'work-programs'],
@@ -49,7 +67,7 @@ export default function ActivitiesScreen() {
           <HeroCard
             eyebrow="Kegiatan"
             title="Aktivitas Kelompok"
-            subtitle="Daftar program dan aktivitas yang sedang berjalan selama KKN."
+            subtitle="Daftar program and aktivitas yang sedang berjalan selama KKN."
             right={<Text style={styles.heroCount}>{programs.length}</Text>}
           />
           <SectionTitle title="Daftar Kegiatan" subtitle="Status ringkas dari program kerja kelompok." />
@@ -76,13 +94,3 @@ export default function ActivitiesScreen() {
     />
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 16, gap: 16, paddingBottom: 32 },
-  heroCount: { color: colors.text, fontSize: 28, fontWeight: '900', fontVariant: ['tabular-nums'] },
-  card: { gap: 10 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 },
-  cardTitle: { flex: 1, fontSize: 16, fontWeight: '800', color: colors.text, lineHeight: 21 },
-  cardBody: { fontSize: 13, color: colors.textMuted, lineHeight: 19 },
-});

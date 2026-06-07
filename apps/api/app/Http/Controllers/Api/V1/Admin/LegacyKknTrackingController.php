@@ -1,10 +1,50 @@
 <?php
 
 declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\V1\Admin;
-use App\Http\Controllers\Controller; use Illuminate\Http\Request; use Illuminate\Support\Facades\DB;
-class LegacyKknTrackingController extends Controller {
- public function summary(){ $by=DB::table('legacy_kkn_completed_students')->selectRaw('latest_periode_kkn as periode_kkn,tahun_akademik,count(*) total,count(mahasiswa_id) matched')->groupBy('latest_periode_kkn','tahun_akademik')->orderBy('latest_periode_kkn')->get(); return response()->json(['data'=>['total'=>DB::table('legacy_kkn_completed_students')->count(),'matched'=>DB::table('legacy_kkn_completed_students')->whereNotNull('mahasiswa_id')->count(),'unmatched'=>DB::table('legacy_kkn_completed_students')->whereNull('mahasiswa_id')->count(),'nilai_kkn_imported'=>DB::table('nilai_kkn')->whereNotNull('legacy_periode_kkn')->count(),'by_period'=>$by]]); }
- public function index(Request $r){ $q=DB::table('superadmin_legacy_kkn_tracking'); if($s=trim((string)$r->query('search',''))){$like='%'.strtolower($s).'%';$q->where(fn($x)=>$x->whereRaw('lower(nim) like ?',[$like])->orWhereRaw('lower(nama) like ?',[$like])->orWhereRaw("lower(coalesce(dpl,'')) like ?",[$like]));} if($p=$r->query('periode_kkn'))$q->where('periode_kkn',(int)$p); if($st=$r->query('match_status'))$q->where('match_status',$st); return response()->json($q->orderByDesc('periode_kkn')->orderBy('nim')->paginate(min(max((int)$r->integer('per_page',25),1),100))); }
- public function export(){ $q=DB::table('superadmin_legacy_kkn_tracking')->orderBy('periode_kkn')->orderBy('nim'); return response()->streamDownload(function()use($q){$o=fopen('php://output','w'); fputcsv($o,['nim','nama','periode_kkn','tahun_akademik','total_nilai','dpl','source_file','match_status']); $q->chunk(1000,function($rows)use($o){foreach($rows as $x)fputcsv($o,[$x->nim,$x->nama,$x->periode_kkn,$x->tahun_akademik,$x->total_nilai,$x->dpl,$x->source_file,$x->match_status]);}); fclose($o);},'legacy-kkn-tracking.csv',['Content-Type'=>'text/csv']);}
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class LegacyKknTrackingController extends Controller
+{
+    public function summary()
+    {
+        $by = DB::table('legacy_kkn_completed_students')->selectRaw('latest_periode_kkn as periode_kkn,tahun_akademik,count(*) total,count(mahasiswa_id) matched')->groupBy('latest_periode_kkn', 'tahun_akademik')->orderBy('latest_periode_kkn')->get();
+
+        return response()->json(['data' => ['total' => DB::table('legacy_kkn_completed_students')->count(), 'matched' => DB::table('legacy_kkn_completed_students')->whereNotNull('mahasiswa_id')->count(), 'unmatched' => DB::table('legacy_kkn_completed_students')->whereNull('mahasiswa_id')->count(), 'nilai_kkn_imported' => DB::table('nilai_kkn')->whereNotNull('legacy_periode_kkn')->count(), 'by_period' => $by]]);
+    }
+
+    public function index(Request $r)
+    {
+        $q = DB::table('superadmin_legacy_kkn_tracking');
+        if ($s = trim((string) $r->query('search', ''))) {
+            $like = '%'.strtolower($s).'%';
+            $q->where(fn ($x) => $x->whereRaw('lower(nim) like ?', [$like])->orWhereRaw('lower(nama) like ?', [$like])->orWhereRaw("lower(coalesce(dpl,'')) like ?", [$like]));
+        } if ($p = $r->query('periode_kkn')) {
+            $q->where('periode_kkn', (int) $p);
+        } if ($st = $r->query('match_status')) {
+            $q->where('match_status', $st);
+        }
+
+        return response()->json($q->orderByDesc('periode_kkn')->orderBy('nim')->paginate(min(max((int) $r->integer('per_page', 25), 1), 100)));
+    }
+
+    public function export()
+    {
+        $q = DB::table('superadmin_legacy_kkn_tracking')->orderBy('periode_kkn')->orderBy('nim');
+
+        return response()->streamDownload(function () use ($q) {
+            $o = fopen('php://output', 'w');
+            fputcsv($o, ['nim', 'nama', 'periode_kkn', 'tahun_akademik', 'total_nilai', 'dpl', 'source_file', 'match_status']);
+            $q->chunk(1000, function ($rows) use ($o) {
+                foreach ($rows as $x) {
+                    fputcsv($o, [$x->nim, $x->nama, $x->periode_kkn, $x->tahun_akademik, $x->total_nilai, $x->dpl, $x->source_file, $x->match_status]);
+                }
+            });
+            fclose($o);
+        }, 'legacy-kkn-tracking.csv', ['Content-Type' => 'text/csv']);
+    }
 }

@@ -15,6 +15,7 @@ class WaGatewayAdminController extends Controller
     public function show(): JsonResponse
     {
         $apiKey = (string) SystemSetting::get('wa_gateway_api_key', config('wa_gateway.api_key', ''));
+
         return $this->success(['config' => [
             'enabled' => SystemSetting::get('wa_gateway_enabled', config('wa_gateway.enabled') ? '1' : '0') === '1',
             'url' => SystemSetting::get('wa_gateway_url', config('wa_gateway.url', '')),
@@ -40,7 +41,9 @@ class WaGatewayAdminController extends Controller
         SystemSetting::set('wa_gateway_enabled', $data['enabled'] ? '1' : '0');
         SystemSetting::set('wa_gateway_url', $data['url'] ?? '');
         SystemSetting::set('wa_gateway_session', $data['session'] ?? '');
-        if (filled($data['api_key'] ?? null)) SystemSetting::set('wa_gateway_api_key', $data['api_key']);
+        if (filled($data['api_key'] ?? null)) {
+            SystemSetting::set('wa_gateway_api_key', $data['api_key']);
+        }
         SystemSetting::set('wa_gateway_rate_limit_per_minute', (string) $data['rate_limit_per_minute']);
         SystemSetting::set('wa_gateway_rate_limit_per_phone_per_minute', (string) $data['rate_limit_per_phone_per_minute']);
 
@@ -51,6 +54,7 @@ class WaGatewayAdminController extends Controller
     {
         $data = $request->validate(['phone' => ['required', 'string', 'max:30']]);
         $ok = $wa->sendMessage($data['phone'], 'Tes WhatsApp Gateway SIBERMAS berhasil.');
+
         return $this->success(['ok' => $ok, 'message' => $ok ? 'Pesan test terkirim.' : 'Pesan test gagal. Cek konfigurasi/rate-limit/log.']);
     }
 }

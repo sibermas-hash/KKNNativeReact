@@ -36,13 +36,7 @@ class AdminOperationPolicy extends BasePolicy
 
     public function manageSettings(User $user): bool
     {
-        $bypass = $this->superAdminBypass($user, 'manageSettings');
-
-        if ($bypass !== null) {
-            return $bypass;
-        }
-
-        return $user->hasRole('admin');
+        return $this->superAdminBypass($user, 'manageSettings') ?? false;
     }
 
     public function syncData(User $user): bool

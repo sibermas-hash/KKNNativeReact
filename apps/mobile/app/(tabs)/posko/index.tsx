@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { View, Text, Alert, StyleSheet, TextInput, Linking } from 'react-native';
+import { View, Text, Alert, TextInput, Linking } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import {
-  colors,
+  useTheme,
+  useStyles,
+  useFormStyles,
   FieldLabel,
-  formStyles,
   HeroCard,
   InfoRow,
   LoadingState,
@@ -32,6 +33,18 @@ export default function PoskoScreen() {
     gmaps_link: '',
   });
   const [isEditing, setIsEditing] = useState(false);
+
+  const { colors } = useTheme();
+  const formStyles = useFormStyles();
+
+  const styles = useStyles((colors) => ({
+    card: { gap: 16 },
+    cardTitle: { fontSize: 17, fontWeight: '900' as const, color: colors.text },
+    formGroup: { gap: 8 },
+    coordinatesRow: { flexDirection: 'row' as const, gap: 10 },
+    coordinateInput: { flex: 1 },
+    actions: { gap: 10, marginTop: 4 },
+  }));
 
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'posko'],
@@ -157,12 +170,3 @@ export default function PoskoScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  card: { gap: 16 },
-  cardTitle: { fontSize: 17, fontWeight: '900', color: colors.text },
-  formGroup: { gap: 8 },
-  coordinatesRow: { flexDirection: 'row', gap: 10 },
-  coordinateInput: { flex: 1 },
-  actions: { gap: 10, marginTop: 4 },
-});

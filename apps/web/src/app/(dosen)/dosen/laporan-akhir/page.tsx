@@ -22,7 +22,7 @@ export default function DplFinalReportsPage(): React.JSX.Element {
       <PageHeader title="Laporan Akhir" />
 
       {isLoading ? (
-        <div className="h-32 animate-pulse rounded-2xl bg-slate-200" />
+        <div className="h-32 animate-pulse rounded-2xl bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)]" />
       ) : reports.length === 0 ? (
         <EmptyState
           icon={<FileText size={40} />}
@@ -35,14 +35,14 @@ export default function DplFinalReportsPage(): React.JSX.Element {
             <Link
               key={r.id as number}
               href={`/dosen/laporan-akhir/${r.id}`}
-              className="block rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200 hover:shadow-md"
+              className="block rounded-2xl bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] p-5 shadow-sm hover:shadow-md transition-all"
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-[color:var(--profile-muted)]">
                     {(r.mahasiswa as Record<string, unknown>)?.name as string || '-'}
                   </p>
-                  <p className="font-semibold text-slate-800">{r.title as string}</p>
+                  <p className="font-semibold text-[color:var(--profile-text)]">{r.title as string}</p>
                 </div>
                 <StatusBadge status={r.status as string} />
               </div>

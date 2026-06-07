@@ -54,7 +54,6 @@ class DocumentTemplateController extends Controller
         return $this->created(['template' => $this->serialize($template)], 'Template dokumen berhasil diunggah.');
     }
 
-
     public function update(Request $request, DocumentTemplate $documentTemplate): JsonResponse
     {
         $validated = $request->validate([
@@ -67,6 +66,7 @@ class DocumentTemplateController extends Controller
 
         return $this->success(['template' => $this->serialize($documentTemplate->refresh())], 'Metadata template berhasil diperbarui.');
     }
+
     public function destroy(DocumentTemplate $documentTemplate): JsonResponse
     {
         if ($documentTemplate->requirementDefaults()->exists() || $documentTemplate->periodAssignments()->exists()) {

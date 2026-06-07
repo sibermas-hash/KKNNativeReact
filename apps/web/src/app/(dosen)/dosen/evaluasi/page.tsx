@@ -51,7 +51,7 @@ export default function DplEvaluationsPage(): React.JSX.Element {
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       <PageHeader title="Evaluasi Mahasiswa" subtitle="Input nilai per aspek penilaian"
         actions={
-          <Link href="/dosen/evaluasi/import" className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 shadow-sm">
+          <Link href="/dosen/evaluasi/import" className="flex items-center gap-2 rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-surface)] px-4 py-2.5 text-sm font-semibold text-[color:var(--profile-text)] hover:bg-[color:var(--profile-soft)] shadow-sm">
             <Upload size={15} /> Import CSV
           </Link>
         }
@@ -61,16 +61,16 @@ export default function DplEvaluationsPage(): React.JSX.Element {
       : (
         <div className="space-y-6">
           {students.map((s) => (
-            <div key={String(s.id)} className="bg-white rounded-2xl p-6 ring-1 ring-slate-200 shadow-sm">
+            <div key={String(s.id)} className="bg-[color:var(--profile-surface)] rounded-2xl p-6 border border-[color:var(--profile-border)] shadow-sm">
               <div className="flex items-center justify-between mb-4">
-                <div><p className="font-black text-slate-900">{String(s.name || '-')}</p><p className="text-xs text-slate-400">NIM: {String(s.nim || '-')} | {String(s.group_name || '-')}</p></div>
-                <button onClick={() => handleSave(s.id as number, s.group_id as number)} disabled={saveMutation.isPending} className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-black uppercase">Simpan</button>
+                <div><p className="font-black text-[color:var(--profile-text)]">{String(s.name || '-')}</p><p className="text-xs text-[color:var(--profile-muted)]">NIM: {String(s.nim || '-')} | {String(s.group_name || '-')}</p></div>
+                <button onClick={() => handleSave(s.id as number, s.group_id as number)} disabled={saveMutation.isPending} className="px-4 py-2 bg-[color:var(--profile-primary)] text-white hover:opacity-90 rounded-xl text-xs font-black uppercase transition-all">Simpan</button>
               </div>
               <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
                 {aspects.map((aspect) => (
                   <div key={aspect}>
-                    <label className="text-[10px] font-black text-slate-400 uppercase">{aspectLabels[aspect]}</label>
-                    <input type="number" min={0} max={100} value={scores[s.id as number]?.[aspect] ?? (s as Record<string, unknown>)[aspect] ?? ''} onChange={(e) => updateScore(s.id as number, aspect, Number(e.target.value))} className="w-full h-10 bg-slate-50 border border-slate-200 rounded-lg px-3 text-sm font-bold mt-1" placeholder="0-100" />
+                    <label className="text-[10px] font-black text-[color:var(--profile-muted)] uppercase">{aspectLabels[aspect]}</label>
+                    <input type="number" min={0} max={100} value={scores[s.id as number]?.[aspect] ?? (s as Record<string, unknown>)[aspect] ?? ''} onChange={(e) => updateScore(s.id as number, aspect, Number(e.target.value))} className="w-full h-10 bg-[color:var(--profile-input-disabled)] border border-[color:var(--profile-border)] text-[color:var(--profile-text)] rounded-lg px-3 text-sm font-bold mt-1 focus:border-[color:var(--profile-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--profile-primary)]" placeholder="0-100" />
                   </div>
                 ))}
               </div>

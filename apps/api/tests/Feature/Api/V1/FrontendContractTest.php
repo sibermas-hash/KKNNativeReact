@@ -154,7 +154,6 @@ test('POST /api/v1/profile/notification-preferences with _method PATCH requires 
         ->assertStatus(401);
 });
 
-
 test('POST /api/v1/admin/jenis-kkn/1 with _method PUT requires auth', function () {
     $this->postJson('/api/v1/admin/jenis-kkn/1', ['_method' => 'PUT'])
         ->assertStatus(401);

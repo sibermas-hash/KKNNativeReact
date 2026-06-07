@@ -1,13 +1,14 @@
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl, TextInput, Alert } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, RefreshControl, TextInput, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
 import { useState } from 'react';
 import {
-  colors,
+  useTheme,
+  useStyles,
+  useFormStyles,
   EmptyState,
   FieldLabel,
-  formStyles,
   HeroCard,
   LoadingState,
   PrimaryButton,
@@ -46,6 +47,43 @@ export default function WorkProgramsScreen() {
   const endpoints = studentEndpoints(api);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ title: '', description: '', objectives: '', target_participants: '', budget: '', kategori: 'pendukung' });
+
+  const { colors } = useTheme();
+  const formStyles = useFormStyles();
+
+  const styles = useStyles((colors) => ({
+    container: { flex: 1, backgroundColor: colors.background },
+    content: { padding: 16, gap: 16, paddingBottom: 32 },
+    heroCount: { color: colors.text, fontSize: 28, fontWeight: '900' as const, fontVariant: ['tabular-nums' as const] },
+    card: { gap: 10 },
+    cardHeader: { flexDirection: 'row' as const, alignItems: 'center' as const, justifyContent: 'space-between' as const, gap: 10 },
+    kategoriTag: { fontSize: 10, fontWeight: '900' as const, color: colors.textSubtle, letterSpacing: 0 },
+    cardTitle: { fontSize: 16, fontWeight: '900' as const, color: colors.text, lineHeight: 21 },
+    cardBody: { fontSize: 13, color: colors.textMuted, lineHeight: 19 },
+    metaRow: { flexDirection: 'row' as const, flexWrap: 'wrap' as const, gap: 8 },
+    cardMeta: { fontSize: 12, color: colors.textMuted, fontWeight: '700' as const },
+    formCard: { gap: 16 },
+    formGroup: { gap: 8 },
+    kategoriRow: { flexDirection: 'row' as const, gap: 8 },
+    kategoriBtn: {
+      flex: 1,
+      minHeight: 42,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.border,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+      backgroundColor: colors.surface,
+    },
+    kategoriBtnActive: { backgroundColor: colors.emeraldSoft, borderColor: colors.emerald },
+    kategoriBtnText: { fontSize: 12, fontWeight: '800' as const, color: colors.textMuted },
+    kategoriBtnTextActive: { color: colors.primary },
+    twoColumn: { flexDirection: 'row' as const, gap: 10 },
+    flexItem: { flex: 1 },
+    formActions: { flexDirection: 'row' as const, gap: 10, marginTop: 4 },
+    actionButton: { flex: 1 },
+    actionButtonWide: { flex: 1.4 },
+  }));
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['student', 'work-programs'],
@@ -235,37 +273,3 @@ export default function WorkProgramsScreen() {
     />
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 16, gap: 16, paddingBottom: 32 },
-  heroCount: { color: colors.text, fontSize: 28, fontWeight: '900', fontVariant: ['tabular-nums'] },
-  card: { gap: 10 },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
-  kategoriTag: { fontSize: 10, fontWeight: '900', color: colors.textSubtle, letterSpacing: 0 },
-  cardTitle: { fontSize: 16, fontWeight: '900', color: colors.text, lineHeight: 21 },
-  cardBody: { fontSize: 13, color: colors.textMuted, lineHeight: 19 },
-  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  cardMeta: { fontSize: 12, color: colors.textMuted, fontWeight: '700' },
-  formCard: { gap: 16 },
-  formGroup: { gap: 8 },
-  kategoriRow: { flexDirection: 'row', gap: 8 },
-  kategoriBtn: {
-    flex: 1,
-    minHeight: 42,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surface,
-  },
-  kategoriBtnActive: { backgroundColor: '#E6FFFA', borderColor: '#99F6E4' },
-  kategoriBtnText: { fontSize: 12, fontWeight: '800', color: colors.textMuted },
-  kategoriBtnTextActive: { color: colors.primary },
-  twoColumn: { flexDirection: 'row', gap: 10 },
-  flexItem: { flex: 1 },
-  formActions: { flexDirection: 'row', gap: 10, marginTop: 4 },
-  actionButton: { flex: 1 },
-  actionButtonWide: { flex: 1.4 },
-});

@@ -48,17 +48,17 @@ export default function CreateMonitoringPage(): React.JSX.Element {
       <BackButton href="/dosen/monitoring" label="Kembali ke Monitoring" />
       <PageHeader title="Catat Kunjungan Monitoring" />
 
-      <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+      <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] p-6 shadow-sm">
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Kelompok</label>
+          <label className="mb-1.5 block text-sm font-medium text-[color:var(--profile-text)]">Kelompok</label>
           <select
             name="kelompok_id"
             required
-            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-cyan-500 focus:outline-none"
+            className="w-full rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-surface)] text-[color:var(--profile-text)] px-4 py-3 text-sm focus:border-[color:var(--profile-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--profile-primary)]"
           >
-            <option value="">-- Pilih Kelompok --</option>
+            <option value="" className="bg-[color:var(--profile-surface)] text-[color:var(--profile-text)]">-- Pilih Kelompok --</option>
             {(groupsData ?? []).map((g) => (
-              <option key={g.id} value={g.id}>
+              <option key={g.id} value={g.id} className="bg-[color:var(--profile-surface)] text-[color:var(--profile-text)]">
                 {g.name} ({g.code})
               </option>
             ))}
@@ -66,41 +66,41 @@ export default function CreateMonitoringPage(): React.JSX.Element {
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Tanggal Kunjungan</label>
+          <label className="mb-1.5 block text-sm font-medium text-[color:var(--profile-text)]">Tanggal Kunjungan</label>
           <input
             name="visit_date"
             type="date"
             required
             defaultValue={new Date().toISOString().split('T')[0]}
-            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-cyan-500 focus:outline-none"
+            className="w-full rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-surface)] text-[color:var(--profile-text)] px-4 py-3 text-sm focus:border-[color:var(--profile-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--profile-primary)]"
           />
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Catatan</label>
+          <label className="mb-1.5 block text-sm font-medium text-[color:var(--profile-text)]">Catatan</label>
           <textarea
             name="notes"
             rows={5}
             required
             placeholder="Jelaskan hasil kunjungan..."
-            className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:border-cyan-500 focus:outline-none"
+            className="w-full rounded-xl border border-[color:var(--profile-border)] bg-[color:var(--profile-surface)] text-[color:var(--profile-text)] px-4 py-3 text-sm focus:border-[color:var(--profile-primary)] focus:outline-none focus:ring-1 focus:ring-[color:var(--profile-primary)]"
           />
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Foto (opsional)</label>
+          <label className="mb-1.5 block text-sm font-medium text-[color:var(--profile-text)]">Foto (opsional)</label>
           <input
             name="photo"
             type="file"
             accept=".jpg,.jpeg,.png"
-            className="w-full text-sm text-slate-500 file:mr-4 file:rounded-xl file:border-0 file:bg-slate-100 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-slate-700"
+            className="w-full text-sm text-[color:var(--profile-muted)] file:mr-4 file:rounded-xl file:border file:border-[color:var(--profile-border)] file:bg-[color:var(--profile-soft)] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[color:var(--profile-text)] file:hover:bg-[color:var(--profile-soft)]/85 file:transition-all"
           />
         </div>
 
         <button
           type="submit"
           disabled={mutation.isPending}
-          className="w-full rounded-xl bg-cyan-600 py-3 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-50"
+          className="w-full rounded-xl bg-[color:var(--profile-primary)] py-3 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50 transition-all"
         >
           {mutation.isPending ? 'Menyimpan...' : 'Simpan Kunjungan'}
         </button>

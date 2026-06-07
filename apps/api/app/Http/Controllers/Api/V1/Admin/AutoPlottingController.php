@@ -6,13 +6,14 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
-use App\Services\KKN\AutoPlottingService;
-use App\Services\KKN\ExternalKebumenPlottingService;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
+use App\Services\KKN\AutoPlottingService;
+use App\Services\KKN\ExternalKebumenPlottingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use RuntimeException;
 
 class AutoPlottingController extends Controller
 {
@@ -44,6 +45,8 @@ class AutoPlottingController extends Controller
             $result['elapsed_seconds'] = round(microtime(true) - $startedAt, 2);
 
             return $this->success($result);
+        } catch (RuntimeException $e) {
+            return $this->error('PLOTTING_VALIDATION_ERROR', $e->getMessage(), 422);
         } finally {
             optional($lock)->release();
         }
@@ -81,6 +84,8 @@ class AutoPlottingController extends Controller
             $result['elapsed_seconds'] = round(microtime(true) - $startedAt, 2);
 
             return $this->success($result);
+        } catch (RuntimeException $e) {
+            return $this->error('PLOTTING_VALIDATION_ERROR', $e->getMessage(), 422);
         } finally {
             optional($lock)->release();
         }
@@ -95,6 +100,7 @@ class AutoPlottingController extends Controller
         $data = $request->validate([
             'periode_id' => ['nullable', 'exists:periode,id'],
             'confirm' => ['accepted'],
+            'placement_batch_id' => ['nullable', 'string', 'max:64'],
         ]);
 
         $periodeId = $this->resolveRegularActivePeriodId($data['periode_id'] ?? null);
@@ -102,18 +108,41 @@ class AutoPlottingController extends Controller
             return $this->error('PLOTTING_REGULER_ONLY', 'Plotting Live/Real otomatis hanya untuk KKN Reguler aktif. KKN non-Reguler memakai publish manual terpisah.', 422);
         }
 
-        $updated = PesertaKkn::query()
+        $draftQuery = PesertaKkn::query()
             ->where('periode_id', $periodeId)
             ->where('status', 'approved')
             ->whereNotNull('kelompok_id')
-            ->update([
-                'placement_is_live' => true,
-                'placement_published_at' => now(),
-                'placement_published_by' => auth()->id(),
-            ]);
+            ->where('placement_is_live', false);
+
+        $publishBatchId = $data['placement_batch_id'] ?? null;
+        if ($publishBatchId) {
+            $draftQuery->where('placement_batch_id', $publishBatchId);
+        } else {
+            $publishBatchId = (clone $draftQuery)
+                ->whereNotNull('placement_batch_id')
+                ->latest('updated_at')
+                ->value('placement_batch_id');
+
+            if ($publishBatchId) {
+                $draftQuery->where('placement_batch_id', $publishBatchId);
+            }
+        }
+
+        $draftCount = (clone $draftQuery)->count();
+        if ($draftCount === 0) {
+            return $this->error('NO_DRAFT_PLOTTING', 'Tidak ada draft plotting yang siap dipublish. Jalankan apply/simpan draft terlebih dahulu.', 422);
+        }
+
+        $updated = $draftQuery->update([
+            'placement_is_live' => true,
+            'placement_published_at' => now(),
+            'placement_published_by' => auth()->id(),
+        ]);
 
         return $this->success([
             'periode_id' => $periodeId,
+            'placement_batch_id' => $publishBatchId,
+            'draft_count' => $draftCount,
             'published_count' => $updated,
             'mode' => 'live',
         ], 'Plotting Live/Real dipublish. Dashboard mahasiswa sekarang menampilkan kelompok live.');

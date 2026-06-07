@@ -13,8 +13,10 @@ class TotpController extends Controller
     public function status(Request $request): JsonResponse
     {
         $user = $request->user();
+
         return response()->json(['success' => true, 'data' => [
             'enabled' => filled($user?->two_factor_secret),
+            'required' => (bool) ($user?->must_change_password ?? false),
             'recovery_codes_count' => $this->recoveryCodeCount($user?->two_factor_recovery_codes),
         ]]);
     }
@@ -26,17 +28,19 @@ class TotpController extends Controller
 
     public function confirm(Request $request): JsonResponse
     {
-        $data = $request->validate(['secret' => ['required','string','min:16'], 'code' => ['nullable','string']]);
+        $data = $request->validate(['secret' => ['required', 'string', 'min:16'], 'code' => ['nullable', 'string']]);
         $request->user()?->forceFill([
             'two_factor_secret' => Crypt::encryptString($data['secret']),
             'two_factor_recovery_codes' => json_encode($this->generateRecoveryCodes()),
         ])->save();
+
         return response()->json(['success' => true, 'message' => '2FA diaktifkan.', 'data' => ['enabled' => true]]);
     }
 
     public function disable(Request $request): JsonResponse
     {
         $request->user()?->forceFill(['two_factor_secret' => null, 'two_factor_recovery_codes' => null])->save();
+
         return response()->json(['success' => true, 'message' => '2FA dinonaktifkan.', 'data' => ['enabled' => false]]);
     }
 
@@ -44,6 +48,7 @@ class TotpController extends Controller
     {
         $codes = $this->generateRecoveryCodes();
         $request->user()?->forceFill(['two_factor_recovery_codes' => json_encode($codes)])->save();
+
         return response()->json(['success' => true, 'data' => ['recovery_codes' => $codes]]);
     }
 
@@ -54,9 +59,14 @@ class TotpController extends Controller
 
     private function recoveryCodeCount(mixed $codes): int
     {
-        if (!$codes) return 0;
-        if (is_array($codes)) return count($codes);
+        if (! $codes) {
+            return 0;
+        }
+        if (is_array($codes)) {
+            return count($codes);
+        }
         $decoded = json_decode((string) $codes, true);
+
         return is_array($decoded) ? count($decoded) : 0;
     }
 }

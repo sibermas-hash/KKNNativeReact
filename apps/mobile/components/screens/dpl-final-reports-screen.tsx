@@ -1,13 +1,23 @@
-import { View, Text, StyleSheet, RefreshControl, Alert, TextInput } from 'react-native';
+import { View, Text, RefreshControl, Alert, TextInput } from 'react-native';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { dplEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
 import { unwrapList } from '@/lib/api-helpers';
 import {
-  colors, radius, spacing, Screen, SectionTitle, SurfaceCard,
-  PrimaryButton, SecondaryButton, StatusPill, LoadingState, EmptyState,
-  FieldLabel, formStyles, type Tone,
+  useTheme,
+  useStyles,
+  useFormStyles,
+  Screen,
+  SectionTitle,
+  SurfaceCard,
+  PrimaryButton,
+  SecondaryButton,
+  StatusPill,
+  LoadingState,
+  EmptyState,
+  FieldLabel,
+  type Tone,
 } from '@/components/ui/primitives';
 
 type FinalReport = {
@@ -30,6 +40,21 @@ export function DplFinalReportsScreen() {
   const endpoints = dplEndpoints(api);
   const [activeId, setActiveId] = useState<number | null>(null);
   const [notes, setNotes] = useState('');
+
+  const { colors } = useTheme();
+  const formStyles = useFormStyles();
+
+  const styles = useStyles((colors) => ({
+    list: { gap: 12 },
+    card: { gap: 8 },
+    cardHeader: { flexDirection: 'row' as const, alignItems: 'flex-start' as const, justifyContent: 'space-between' as const, gap: 10 },
+    cardInfo: { flex: 1, gap: 2 },
+    name: { fontSize: 14, fontWeight: '900' as const, color: colors.text },
+    meta: { fontSize: 11, color: colors.textMuted, fontWeight: '700' as const },
+    title: { fontSize: 13, color: colors.text, lineHeight: 19 },
+    actions: { flexDirection: 'row' as const, gap: 10, marginTop: 4 },
+    revisionForm: { gap: 10, marginTop: 8, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.borderSoft },
+  }));
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['dpl', 'final-reports'],
@@ -83,7 +108,14 @@ export function DplFinalReportsScreen() {
               {activeId === r.id && (
                 <View style={styles.revisionForm}>
                   <FieldLabel required>Catatan Revisi</FieldLabel>
-                  <TextInput style={[formStyles.input, formStyles.textarea]} value={notes} onChangeText={setNotes} placeholder="Jelaskan yang perlu diperbaiki..." multiline />
+                  <TextInput
+                    style={[formStyles.input, formStyles.textarea]}
+                    value={notes}
+                    onChangeText={setNotes}
+                    placeholder="Jelaskan yang perlu diperbaiki..."
+                    placeholderTextColor={colors.textSubtle}
+                    multiline
+                  />
                   <PrimaryButton label="Kirim Revisi" tone="rose" onPress={() => revision.mutate({ id: r.id, review_notes: notes })} loading={revision.isPending} disabled={!notes.trim()} />
                 </View>
               )}
@@ -94,15 +126,3 @@ export function DplFinalReportsScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  list: { gap: 12 },
-  card: { gap: 8 },
-  cardHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 },
-  cardInfo: { flex: 1, gap: 2 },
-  name: { fontSize: 14, fontWeight: '900', color: colors.text },
-  meta: { fontSize: 11, color: colors.textMuted, fontWeight: '700' },
-  title: { fontSize: 13, color: colors.text, lineHeight: 19 },
-  actions: { flexDirection: 'row', gap: 10, marginTop: 4 },
-  revisionForm: { gap: 10, marginTop: 8, paddingTop: 10, borderTopWidth: 1, borderTopColor: colors.borderSoft },
-});

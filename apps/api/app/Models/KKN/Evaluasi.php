@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Evaluasi extends Model
 {
     use SoftDeletes;
+
     protected $table = 'evaluasi';
 
     protected $fillable = [

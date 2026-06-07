@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 class AvatarStorageHealth extends Command
 {
     protected $signature = 'avatar:storage-health';
+
     protected $description = 'Verify avatar storage directory, write/read/delete, and public symlink.';
 
     public function handle(): int
@@ -35,6 +36,7 @@ class AvatarStorageHealth extends Command
             'delete_ok' => ! Storage::disk('public')->exists($test),
         ];
         $this->info(json_encode($result, JSON_PRETTY_PRINT));
+
         return ($result['avatar_dir_exists'] && $result['avatar_dir_writable'] && $result['write_ok'] && $result['read_ok'] && $result['delete_ok']) ? 0 : 1;
     }
 }

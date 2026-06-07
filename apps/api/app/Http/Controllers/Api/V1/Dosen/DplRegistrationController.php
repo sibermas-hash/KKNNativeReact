@@ -16,8 +16,6 @@ class DplRegistrationController extends Controller
 {
     use ApiResponse;
 
-
-
     /**
      * GET /dosen/dpl-eligibility
      */
@@ -33,8 +31,12 @@ class DplRegistrationController extends Controller
         $hasNidn = filled($dosen->nidn);
         $hasPassedWorkshop = PesertaWorkshop::where('user_id', $user->id)->where('is_passed', true)->where('attendance_status', 'attended')->exists();
         $reasons = [];
-        if (! $hasNidn) $reasons[] = 'NIDN belum terisi.';
-        if (! $hasPassedWorkshop) $reasons[] = 'Belum tercatat hadir dan lulus Workshop Pembekalan DPL.';
+        if (! $hasNidn) {
+            $reasons[] = 'NIDN belum terisi.';
+        }
+        if (! $hasPassedWorkshop) {
+            $reasons[] = 'Belum tercatat hadir dan lulus Workshop Pembekalan DPL.';
+        }
 
         $registrations = DplPeriod::where('dosen_id', $dosen->id)
             ->with('periode:id,name,current_phase')

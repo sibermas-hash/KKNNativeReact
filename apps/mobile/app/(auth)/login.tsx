@@ -17,13 +17,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, type LoginFormData } from '@sibermas/schemas';
 import {
   BrandWordmark,
-  colors,
   FieldLabel,
-  formStyles,
   InlineAlert,
   PrimaryButton,
   SecondaryButton,
   SurfaceCard,
+  useStyles,
+  useFormStyles,
+  useTheme,
 } from '@/components/ui/primitives';
 
 const logoUin = require('../../assets/logo_uinsaizu.png');
@@ -34,6 +35,140 @@ export default function LoginScreen() {
   const login = useLoginAction();
   const isAuthenticated = useIsAuthenticated();
   const isLoading = useAuthIsLoading();
+  
+  const { colors } = useTheme();
+  const formStyles = useFormStyles();
+  const styles = useStyles((colors) => ({
+    root: { flex: 1, backgroundColor: colors.background },
+    content: {
+      flexGrow: 1,
+      justifyContent: 'center',
+      padding: 20,
+      gap: 20,
+    },
+    homePill: {
+      alignSelf: 'center',
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surfaceMuted,
+      paddingHorizontal: 16,
+      paddingVertical: 7,
+    },
+    homePillText: {
+      color: colors.textMuted,
+      fontSize: 10,
+      fontWeight: '900',
+      textTransform: 'uppercase',
+      letterSpacing: 1.2,
+    },
+    brandBlock: {
+      alignItems: 'center',
+      gap: 14,
+    },
+    logoRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 14,
+    },
+    logo: {
+      width: 48,
+      height: 48,
+    },
+    logoDivider: {
+      width: 1,
+      height: 32,
+      backgroundColor: colors.border,
+    },
+    brandTextWrap: {
+      alignItems: 'center',
+      gap: 6,
+    },
+    brand: {
+      color: colors.text,
+      fontSize: 28,
+      fontWeight: '900',
+      letterSpacing: 0,
+      textTransform: 'uppercase',
+    },
+    brandCyan: {
+      color: colors.primary,
+    },
+    brandEmerald: {
+      color: colors.accent,
+    },
+    subtitle: {
+      color: colors.textSubtle,
+      fontSize: 10,
+      fontWeight: '800',
+      textAlign: 'center',
+      lineHeight: 15,
+      textTransform: 'uppercase',
+      letterSpacing: 0.6,
+    },
+    card: {
+      gap: 16,
+      backgroundColor: colors.surface,
+      borderColor: colors.border,
+      borderWidth: 1,
+      shadowColor: colors.text,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.04,
+      shadowRadius: 8,
+      elevation: 2,
+    },
+    cardHeader: {
+      gap: 6,
+    },
+    cardTitle: {
+      color: colors.text,
+      fontSize: 20,
+      fontWeight: '900',
+    },
+    cardSubtitle: {
+      color: colors.textMuted,
+      fontSize: 13,
+      lineHeight: 19,
+    },
+    formGroup: {
+      gap: 8,
+    },
+    captchaPanel: {
+      gap: 10,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surfaceMuted,
+      padding: 12,
+    },
+    captchaHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 12,
+    },
+    captchaLabel: {
+      flex: 1,
+      color: colors.text,
+      fontSize: 13,
+      fontWeight: '800',
+    },
+    captchaQuestion: {
+      color: colors.text,
+      fontSize: 16,
+      fontWeight: '800',
+      lineHeight: 22,
+    },
+    reloadButton: {
+      minHeight: 34,
+      paddingVertical: 7,
+      paddingHorizontal: 10,
+    },
+    reloadButtonText: {
+      fontSize: 12,
+    },
+  }));
+
   const [captchaQuestion, setCaptchaQuestion] = useState<string | null>(null);
   const [captchaError, setCaptchaError] = useState<string | null>(null);
   const [loginError, setLoginError] = useState<string | null>(null);
@@ -251,133 +386,3 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#FFFFFF' },
-  content: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 20,
-    gap: 20,
-  },
-  homePill: {
-    alignSelf: 'center',
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#F8FAFC',
-    paddingHorizontal: 16,
-    paddingVertical: 7,
-  },
-  homePillText: {
-    color: '#64748B',
-    fontSize: 10,
-    fontWeight: '900',
-    textTransform: 'uppercase',
-    letterSpacing: 1.2,
-  },
-  brandBlock: {
-    alignItems: 'center',
-    gap: 14,
-  },
-  logoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-  },
-  logo: {
-    width: 48,
-    height: 48,
-  },
-  logoDivider: {
-    width: 1,
-    height: 32,
-    backgroundColor: '#E2E8F0',
-  },
-  brandTextWrap: {
-    alignItems: 'center',
-    gap: 6,
-  },
-  brand: {
-    color: '#0F172A',
-    fontSize: 28,
-    fontWeight: '900',
-    letterSpacing: 0,
-    textTransform: 'uppercase',
-  },
-  brandCyan: {
-    color: '#0891B2',
-  },
-  brandEmerald: {
-    color: '#059669',
-  },
-  subtitle: {
-    color: '#94A3B8',
-    fontSize: 10,
-    fontWeight: '800',
-    textAlign: 'center',
-    lineHeight: 15,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-  },
-  card: {
-    gap: 16,
-    backgroundColor: '#FFFFFF',
-    borderColor: '#E2E8F0',
-    borderWidth: 1,
-    shadowColor: '#0F172A',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  cardHeader: {
-    gap: 6,
-  },
-  cardTitle: {
-    color: '#0F172A',
-    fontSize: 20,
-    fontWeight: '900',
-  },
-  cardSubtitle: {
-    color: '#64748B',
-    fontSize: 13,
-    lineHeight: 19,
-  },
-  formGroup: {
-    gap: 8,
-  },
-  captchaPanel: {
-    gap: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-    backgroundColor: '#F8FAFC',
-    padding: 12,
-  },
-  captchaHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  captchaLabel: {
-    flex: 1,
-    color: '#0F172A',
-    fontSize: 13,
-    fontWeight: '800',
-  },
-  captchaQuestion: {
-    color: colors.text,
-    fontSize: 16,
-    fontWeight: '800',
-    lineHeight: 22,
-  },
-  reloadButton: {
-    minHeight: 34,
-    paddingVertical: 7,
-    paddingHorizontal: 10,
-  },
-  reloadButtonText: {
-    fontSize: 12,
-  },
-});

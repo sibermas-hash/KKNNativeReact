@@ -1,4 +1,5 @@
 <?php
+
 return [
     'enabled' => env('WA_GATEWAY_ENABLED', false),
     'url' => rtrim((string) env('WA_GATEWAY_URL', ''), '/'),

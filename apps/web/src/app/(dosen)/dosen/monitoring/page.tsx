@@ -24,7 +24,7 @@ export default function MonitoringPage(): React.JSX.Element {
         actions={
           <Link
             href="/dosen/monitoring/buat"
-            className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700"
+            className="inline-flex items-center gap-2 rounded-xl bg-[color:var(--profile-primary)] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-all"
           >
             <Plus size={16} />
             Catat Kunjungan
@@ -33,7 +33,7 @@ export default function MonitoringPage(): React.JSX.Element {
       />
 
       {isLoading ? (
-        <div className="h-32 animate-pulse rounded-2xl bg-slate-200" />
+        <div className="h-32 animate-pulse rounded-2xl bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)]" />
       ) : monitoring.length === 0 ? (
         <EmptyState
           icon={<MapPin size={40} />}
@@ -42,7 +42,7 @@ export default function MonitoringPage(): React.JSX.Element {
           action={
             <Link
               href="/dosen/monitoring/buat"
-              className="inline-flex items-center gap-2 rounded-xl bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700"
+              className="inline-flex items-center gap-2 rounded-xl bg-[color:var(--profile-primary)] px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-all"
             >
               <Plus size={16} />
               Catat Kunjungan
@@ -54,13 +54,13 @@ export default function MonitoringPage(): React.JSX.Element {
           {monitoring.map((m) => (
             <div
               key={m.id as number}
-              className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200"
+              className="rounded-2xl bg-[color:var(--profile-surface)] border border-[color:var(--profile-border)] p-5 shadow-sm"
             >
-              <p className="font-semibold text-slate-800">
+              <p className="font-semibold text-[color:var(--profile-text)]">
                 {(m.kelompok as Record<string, unknown>)?.nama_kelompok as string || '-'}
               </p>
-              <p className="text-sm text-slate-500">Tanggal: {m.visit_date as string}</p>
-              <p className="mt-2 text-sm text-slate-700">{m.notes as string}</p>
+              <p className="text-sm text-[color:var(--profile-muted)]">Tanggal: {m.visit_date as string}</p>
+              <p className="mt-2 text-sm text-[color:var(--profile-text)]">{m.notes as string}</p>
             </div>
           ))}
         </div>

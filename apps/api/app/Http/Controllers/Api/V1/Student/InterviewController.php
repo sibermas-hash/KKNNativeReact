@@ -23,7 +23,7 @@ class InterviewController extends Controller
         $user = auth()->user();
         $mahasiswa = $user->mahasiswa;
 
-        if (!$mahasiswa) {
+        if (! $mahasiswa) {
             return $this->success(['interviews' => []]);
         }
 
@@ -39,6 +39,7 @@ class InterviewController extends Controller
             ->get()
             ->map(function (InterviewParticipant $p) {
                 $s = $p->schedule;
+
                 return [
                     'id' => $p->id,
                     'result' => $p->result,

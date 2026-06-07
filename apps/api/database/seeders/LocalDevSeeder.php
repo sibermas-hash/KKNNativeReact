@@ -49,7 +49,7 @@ class LocalDevSeeder extends Seeder
         $this->command?->info('Seeding fake SIAKAD data for local development…');
 
         // Ensure the baseline roles exist (RoleSeeder normally does this).
-        foreach (['superadmin', 'admin', 'faculty_admin', 'dosen', 'dpl', 'student'] as $role) {
+        foreach (['superadmin', 'admin', 'faculty_admin', 'external_lppm_admin', 'dosen', 'dpl', 'student'] as $role) {
             Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
         }
 

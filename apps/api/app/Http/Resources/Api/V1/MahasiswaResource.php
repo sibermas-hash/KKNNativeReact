@@ -69,6 +69,7 @@ class MahasiswaResource extends JsonResource
             // User account info (loaded via whenLoaded to avoid N+1)
             'user' => $this->when($this->relationLoaded('user') && $this->user, function () {
                 $u = $this->user;
+
                 return [
                     'id' => $u->id,
                     'username' => $u->username,

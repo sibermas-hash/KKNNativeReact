@@ -12,12 +12,14 @@ use Illuminate\Http\Request;
 class CountdownSettingController extends Controller
 {
     use ApiResponse;
+
     public function show(int $periodeId): JsonResponse
     {
         $setting = CountdownSetting::where('periode_id', $periodeId)->first();
 
-        if (!$setting) {
+        if (! $setting) {
             $periode = Periode::findOrFail($periodeId);
+
             // Return default based on periode dates
             return $this->success([
                 'periode_id' => $periodeId,

@@ -41,7 +41,7 @@ class InterviewResultNotification extends Notification
             'title' => "Hasil Wawancara: {$this->resultLabel()}",
             'message' => $this->isPassed()
                 ? 'Selamat! Anda dinyatakan lulus wawancara KKN. Silakan tunggu informasi selanjutnya.'
-                : 'Mohon maaf, Anda dinyatakan tidak lulus wawancara KKN.' . ($this->participant->notes ? " Catatan: {$this->participant->notes}" : ''),
+                : 'Mohon maaf, Anda dinyatakan tidak lulus wawancara KKN.'.($this->participant->notes ? " Catatan: {$this->participant->notes}" : ''),
             'type' => 'interview_result',
             'priority' => 'high',
             'action' => '/mahasiswa/wawancara',

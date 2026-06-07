@@ -7,12 +7,13 @@ namespace App\Notifications\Channels;
 use App\Models\KKN\DeviceToken;
 use App\Models\User;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Contract\Messaging;
+use Kreait\Firebase\Exception\Messaging\InvalidMessage;
+use Kreait\Firebase\Exception\Messaging\NotFound;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification as FcmNotification;
-use Kreait\Firebase\Exception\Messaging\NotFound;
-use Kreait\Firebase\Exception\Messaging\InvalidMessage;
 
 /**
  * FCM (Firebase Cloud Messaging) notification channel — v2 (HTTP v1 API).
@@ -44,22 +45,24 @@ class FcmChannel
     public function send(mixed $notifiable, Notification $notification): void
     {
         // Preference gate
-        if ($notifiable instanceof User && !$notifiable->wantsNotificationVia('push')) {
+        if ($notifiable instanceof User && ! $notifiable->wantsNotificationVia('push')) {
             return;
         }
 
-        if (!method_exists($notification, 'toFcm')) {
+        if (! method_exists($notification, 'toFcm')) {
             Log::warning('[FcmChannel] Notification class has no toFcm() method', [
                 'notification' => $notification::class,
             ]);
+
             return;
         }
 
         $payload = $notification->toFcm($notifiable);
-        if (!is_array($payload) || empty($payload['title'])) {
+        if (! is_array($payload) || empty($payload['title'])) {
             Log::warning('[FcmChannel] toFcm() returned invalid payload', [
                 'notification' => $notification::class,
             ]);
+
             return;
         }
 
@@ -93,7 +96,7 @@ class FcmChannel
             );
 
             $data = array_map('strval', $payload['data'] ?? []);
-            if (!empty($payload['click_action'])) {
+            if (! empty($payload['click_action'])) {
                 $data['click_action'] = $payload['click_action'];
             }
 
@@ -125,7 +128,7 @@ class FcmChannel
             ]);
 
             // Web push config
-            if (!empty($payload['click_action'])) {
+            if (! empty($payload['click_action'])) {
                 $message = $message->withWebPushConfig([
                     'fcm_options' => [
                         'link' => $payload['click_action'],
@@ -142,7 +145,7 @@ class FcmChannel
                     if ($error instanceof NotFound || $error instanceof InvalidMessage) {
                         $token = $failure->target()->value();
                         DeviceToken::where('token', $token)->delete();
-                        Log::debug('[FcmChannel] Removed invalid token', ['token' => substr($token, 0, 20) . '...']);
+                        Log::debug('[FcmChannel] Removed invalid token', ['token' => substr($token, 0, 20).'...']);
                     }
                 }
             }
@@ -171,12 +174,13 @@ class FcmChannel
         $serverKey = (string) config('services.fcm.server_key', '');
         if ($serverKey === '') {
             Log::debug('[FcmChannel] Skipping — neither Firebase credentials nor FCM_SERVER_KEY configured');
+
             return;
         }
 
         try {
-            $response = \Illuminate\Support\Facades\Http::withHeaders([
-                'Authorization' => 'key=' . $serverKey,
+            $response = Http::withHeaders([
+                'Authorization' => 'key='.$serverKey,
                 'Content-Type' => 'application/json',
             ])->timeout(10)->post('https://fcm.googleapis.com/fcm/send', [
                 'registration_ids' => $tokens,
@@ -188,10 +192,11 @@ class FcmChannel
                 'data' => $payload['data'] ?? [],
             ]);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::warning('[FcmChannel] Legacy FCM returned non-2xx', [
                     'status' => $response->status(),
                 ]);
+
                 return;
             }
 

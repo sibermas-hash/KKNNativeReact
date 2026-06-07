@@ -11,7 +11,6 @@ use App\Models\KKN\Prodi;
 use App\Models\User;
 use App\Services\MasterApi\MasterDataSanitizer;
 use App\Services\MasterApi\SiakadRecordFilter;
-use App\Services\PasswordResetDispatchGuard;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -118,7 +117,7 @@ class StudentSyncService
             return false;
         }
 
-        return DB::transaction(function () use ($data, $useCachedMaps, $existingMhs) {
+        return DB::transaction(function () use ($data, $useCachedMaps, $existingMhs, $dispatchWelcomeEmail) {
             if ($useCachedMaps && $this->mapsLoaded) {
                 $organizationMasterId = $this->normalizeMasterId($data['organization_id'] ?? $data['fakultas_id'] ?? null);
                 $facultyId = $organizationMasterId !== null ? ($this->facultyMap[$organizationMasterId] ?? null) : null;

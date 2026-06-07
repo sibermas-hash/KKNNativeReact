@@ -25,11 +25,11 @@ interface Evaluation {
 }
 
 const GRADE_COLORS: Record<string, string> = {
-  A: 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800/40',
-  B: 'text-blue-700 bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:text-blue-400 dark:border-blue-800/40',
-  C: 'text-amber-700 bg-amber-50 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-800/40',
-  D: 'text-orange-700 bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:text-orange-400 dark:border-orange-800/40',
-  E: 'text-rose-700 bg-rose-50 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-800/40',
+  A: 'text-[color:var(--profile-soft-text)] bg-[color:var(--profile-soft)] border-[color:var(--profile-border)]',
+  B: 'text-[color:var(--profile-soft-text)] bg-[color:var(--profile-soft)] border-[color:var(--profile-border)]',
+  C: 'text-[color:var(--profile-warning-text)] bg-[color:var(--profile-warning)] border-[color:var(--profile-border)]',
+  D: 'text-[color:var(--profile-warning-text)] bg-[color:var(--profile-warning)] border-[color:var(--profile-border)]',
+  E: 'text-[color:var(--profile-danger-text)] bg-[color:var(--profile-danger)] border-[color:var(--profile-border)]',
 };
 
 export default function StudentEvaluasiPage(): React.JSX.Element {

@@ -416,6 +416,7 @@ class GroupSelectionService
             }
         }
     }
+
     /**
      * @param  Collection<int, SlotTerkunci>  $rules
      * @param  Collection<int, PesertaKkn>  $participants

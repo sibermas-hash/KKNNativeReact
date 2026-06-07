@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Traits\ApiResponse;
 use App\Http\Resources\Api\V1\DosenResource;
 use App\Http\Resources\Api\V1\DplPeriodResource;
 use App\Http\Resources\Api\V1\KelompokKknResource;
+use App\Http\Traits\ApiResponse;
 use App\Imports\DplAssignmentImport;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\DplKecamatanAssignment;

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Exports\BiodataPesertaExport;
+use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\PesertaKknResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\DokumenPesertaKkn;
@@ -20,6 +20,7 @@ use App\Services\KKN\RegistrationApprovalService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
@@ -306,6 +307,7 @@ class PesertaKknController extends Controller
 
         $force = (bool) ($validated['force'] ?? false);
         $isSuperadmin = (bool) auth()->user()?->hasRole('superadmin');
+        $batchId = 'manual:'.$pesertaKkn->periode_id.':'.now()->format('YmdHis').':'.Str::random(8);
 
         try {
             if ($force && $isSuperadmin) {
@@ -318,14 +320,25 @@ class PesertaKknController extends Controller
                 $pesertaKkn->update([
                     'kelompok_id' => $validated['kelompok_id'],
                     'joined_group_at' => now(),
+                    'placement_is_live' => false,
+                    'placement_published_at' => null,
+                    'placement_published_by' => null,
+                    'placement_batch_id' => $batchId,
                 ]);
             } else {
                 // Normal path: full validation via service.
-                app(GroupSelectionService::class)->assignGroup(
+                $pesertaKkn = app(GroupSelectionService::class)->assignGroup(
                     $pesertaKkn,
                     $pesertaKkn->mahasiswa,
                     (int) $validated['kelompok_id'],
                 );
+
+                $pesertaKkn->update([
+                    'placement_is_live' => false,
+                    'placement_published_at' => null,
+                    'placement_published_by' => null,
+                    'placement_batch_id' => $batchId,
+                ]);
             }
         } catch (ValidationException $e) {
             $firstMessage = collect($e->errors())->flatten()->first() ?? 'Penugasan kelompok gagal.';
@@ -334,8 +347,8 @@ class PesertaKknController extends Controller
         }
 
         return $this->success(
-            new PesertaKknResource($pesertaKkn->refresh()),
-            'Peserta berhasil ditugaskan ke kelompok.',
+            ['peserta' => new PesertaKknResource($pesertaKkn->refresh()), 'placement_batch_id' => $batchId],
+            'Peserta berhasil ditugaskan ke kelompok sebagai draft. Hasil belum tampil ke mahasiswa sampai Super Admin publish Live/Real.',
         );
     }
 

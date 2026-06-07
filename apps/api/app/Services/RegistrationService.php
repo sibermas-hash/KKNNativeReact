@@ -135,7 +135,7 @@ class RegistrationService
                         ->whereIn('status', ['pending', 'approved', 'document_submitted', 'document_verified'])
                         // Exclude record milik mahasiswa ini sendiri (re-register scenario)
                         ->where('mahasiswa_id', '!=', $mahasiswa->id)
-                        
+
                         ->count();
 
                     if ($activeCount >= (int) $periode->kuota) {

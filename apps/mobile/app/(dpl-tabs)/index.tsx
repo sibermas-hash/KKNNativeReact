@@ -1,11 +1,11 @@
-import { View, Text, StyleSheet, RefreshControl, TouchableOpacity } from 'react-native';
+import { View, Text, RefreshControl, TouchableOpacity } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { dplEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
 import { useAuthUser } from '@/stores';
 import {
-  colors,
+  useStyles,
   EmptyState,
   HeroCard,
   InlineAlert,
@@ -33,6 +33,29 @@ export default function DplDashboardScreen() {
   const user = useAuthUser();
   const router = useRouter();
   const endpoints = dplEndpoints(api);
+
+  const styles = useStyles((colors) => ({
+    statusSummary: { alignItems: 'center' as const, gap: 2 },
+    statusMiniLabel: { fontSize: 8, color: colors.textSubtle, fontWeight: '900' as const, textTransform: 'uppercase' as const },
+    pendingText: { color: colors.rose, fontSize: 24, fontWeight: '900' as const, fontVariant: ['tabular-nums' as const] },
+    statsGrid: { gap: 12 },
+    panel: { gap: 16 },
+    groupList: { gap: 8 },
+    groupRow: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.borderSoft },
+    groupCode: { minWidth: 48, borderRadius: 8, backgroundColor: colors.text, paddingHorizontal: 8, paddingVertical: 6, alignItems: 'center' as const },
+    groupCodeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '900' as const },
+    groupCopy: { flex: 1, gap: 3 },
+    groupName: { color: colors.text, fontSize: 13, fontWeight: '900' as const, textTransform: 'uppercase' as const },
+    groupMeta: { color: colors.textMuted, fontSize: 11, fontWeight: '700' as const },
+    attentionList: { gap: 8 },
+    attentionRow: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 12, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: colors.borderSoft, backgroundColor: colors.background },
+    avatarMini: { width: 36, height: 36, borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, alignItems: 'center' as const, justifyContent: 'center' as const },
+    avatarMiniText: { color: colors.rose, fontSize: 12, fontWeight: '900' as const },
+    quickNav: { gap: 8 },
+    navBtn: { flexDirection: 'row' as const, alignItems: 'center' as const, justifyContent: 'space-between' as const, paddingVertical: 12, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.background },
+    navBtnText: { fontSize: 13, fontWeight: '800' as const, color: colors.text },
+    navArrow: { fontSize: 16, color: colors.textSubtle },
+  }));
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['dpl', 'dashboard'],
@@ -135,26 +158,3 @@ export default function DplDashboardScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  statusSummary: { alignItems: 'center', gap: 2 },
-  statusMiniLabel: { fontSize: 8, color: colors.textSubtle, fontWeight: '900', textTransform: 'uppercase' },
-  pendingText: { color: colors.rose, fontSize: 24, fontWeight: '900', fontVariant: ['tabular-nums'] },
-  statsGrid: { gap: 12 },
-  panel: { gap: 16 },
-  groupList: { gap: 8 },
-  groupRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.borderSoft },
-  groupCode: { minWidth: 48, borderRadius: 8, backgroundColor: colors.text, paddingHorizontal: 8, paddingVertical: 6, alignItems: 'center' },
-  groupCodeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '900' },
-  groupCopy: { flex: 1, gap: 3 },
-  groupName: { color: colors.text, fontSize: 13, fontWeight: '900', textTransform: 'uppercase' },
-  groupMeta: { color: colors.textMuted, fontSize: 11, fontWeight: '700' },
-  attentionList: { gap: 8 },
-  attentionRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 8, borderWidth: 1, borderColor: colors.borderSoft, backgroundColor: colors.background },
-  avatarMini: { width: 36, height: 36, borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
-  avatarMiniText: { color: colors.rose, fontSize: 12, fontWeight: '900' },
-  quickNav: { gap: 8 },
-  navBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 12, paddingHorizontal: 14, borderRadius: 8, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.background },
-  navBtnText: { fontSize: 13, fontWeight: '800', color: colors.text },
-  navArrow: { fontSize: 16, color: colors.textSubtle },
-});

@@ -52,8 +52,8 @@ export default function FinalReportPage(): React.JSX.Element {
   if (isLoading) {
     return (
       <div className="max-w-4xl mx-auto p-6 space-y-6">
-        <div className="h-32 bg-slate-100/10 animate-pulse rounded-3xl" />
-        <div className="h-64 bg-slate-100/10 animate-pulse rounded-3xl" />
+        <div className="h-32 bg-[color:var(--profile-soft)] animate-pulse rounded-3xl" />
+        <div className="h-64 bg-[color:var(--profile-soft)] animate-pulse rounded-3xl" />
       </div>
     );
   }
@@ -93,9 +93,9 @@ export default function FinalReportPage(): React.JSX.Element {
                 <p className="text-sm text-[color:var(--profile-muted)] font-medium">Diunggah pada {new Date(report.created_at as string).toLocaleDateString('id-ID', { dateStyle: 'long' })}</p>
               </div>
             </div>
-            <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-              report.status === 'approved' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/30 dark:text-emerald-400' : 
-              report.status === 'rejected' ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/30 dark:text-rose-400' : 'bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400'
+            <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border border-[color:var(--profile-border)] ${
+              report.status === 'approved' ? 'bg-[color:var(--profile-soft)] text-[color:var(--profile-soft-text)]' : 
+              report.status === 'rejected' ? 'bg-[color:var(--profile-danger)] text-[color:var(--profile-danger-text)]' : 'bg-[color:var(--profile-warning)] text-[color:var(--profile-warning-text)]'
             }`}>
               {String(report.status_label || report.status || '')}
             </div>

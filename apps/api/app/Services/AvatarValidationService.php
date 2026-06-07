@@ -6,9 +6,9 @@ namespace App\Services;
 
 use App\Models\KKN\SystemSetting;
 use Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Cache;
 
 /**
  * Memvalidasi foto profil menggunakan AI Vision (Graceful Degradation 4 Lapis).
@@ -55,6 +55,7 @@ class AvatarValidationService
         foreach ($tiers as $tier) {
             if (empty($tier['key'])) {
                 Log::info("Avatar validation tier {$tier['label']} skipped: no API key configured");
+
                 continue;
             }
 
@@ -90,6 +91,7 @@ class AvatarValidationService
             Log::warning('All AI tiers failed for avatar validation. Auto-approved via local precheck.', [
                 'failed_tiers' => $failures,
             ]);
+
             return [
                 'is_valid' => true,
                 'reason' => 'Foto disetujui berdasarkan validasi lokal (AI tidak tersedia).',
@@ -100,6 +102,7 @@ class AvatarValidationService
         $rejects = array_values(array_filter($votes, fn ($vote) => ! (bool) ($vote['result']['is_valid'] ?? false)));
         if (! empty($rejects)) {
             $reason = $rejects[0]['result']['reason'] ?? 'Foto tidak memenuhi ketentuan.';
+
             return [
                 'is_valid' => false,
                 'reason' => $reason,
@@ -232,6 +235,7 @@ class AvatarValidationService
             if (! $response->successful()) {
                 Log::warning('AI router model discovery failed: HTTP '.$response->status().' '.$response->body());
                 Cache::put($cacheKey, [], now()->addMinutes(2));
+
                 return [];
             }
 
@@ -242,10 +246,12 @@ class AvatarValidationService
                 ->all();
 
             Cache::put($cacheKey, $models, now()->addMinutes(10));
+
             return $models;
         } catch (\Throwable $e) {
             Log::warning('AI router model discovery exception: '.$e->getMessage());
             Cache::put($cacheKey, [], now()->addMinutes(2));
+
             return [];
         }
     }
@@ -262,6 +268,7 @@ class AvatarValidationService
         Cache::put($cacheKey, $index + 1, now()->addDay());
 
         $offset = $index % count($tiers);
+
         return array_merge(array_slice($tiers, $offset), array_slice($tiers, 0, $offset));
     }
 

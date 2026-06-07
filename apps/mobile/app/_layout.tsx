@@ -43,6 +43,7 @@ import {
   handleNotificationReceived,
   handleNotificationResponse,
 } from '@/lib/notifications';
+import { ThemeProvider } from '@/components/ui/primitives';
 
 export default function RootLayout() {
   useQueryAppStateBridge();
@@ -197,17 +198,19 @@ export default function RootLayout() {
   return (
     <RootErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <StatusBar style="auto" />
-        {!appReady ? (
-          <AnimatedSplashScreen />
-        ) : (
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="(dpl-tabs)" />
-            <Stack.Screen name="unsupported" />
-          </Stack>
-        )}
+        <ThemeProvider>
+          <StatusBar style="auto" />
+          {!appReady ? (
+            <AnimatedSplashScreen />
+          ) : (
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="(dpl-tabs)" />
+              <Stack.Screen name="unsupported" />
+            </Stack>
+          )}
+        </ThemeProvider>
       </QueryClientProvider>
     </RootErrorBoundary>
   );

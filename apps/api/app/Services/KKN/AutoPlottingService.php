@@ -60,6 +60,8 @@ class AutoPlottingService
     public function apply(int $periodeId, int $groupSize = 15): array
     {
         return DB::transaction(function () use ($periodeId, $groupSize) {
+            $batchId = 'regular:'.$periodeId.':'.now()->format('YmdHis').':'.Str::random(8);
+
             $lockedIds = PesertaKkn::query()
                 ->where('periode_id', $periodeId)
                 ->where('status', 'approved')
@@ -108,13 +110,14 @@ class AutoPlottingService
                         'placement_is_live' => false,
                         'placement_published_at' => null,
                         'placement_published_by' => null,
+                        'placement_batch_id' => $batchId,
                         'joined_group_at' => now(),
                         'role' => $m['peserta_id'] === $ketuaId ? 'Ketua' : 'Anggota',
                     ]);
                 }
             }
 
-            return $result + ['applied' => true, 'message' => 'Plotting diterapkan.'];
+            return $result + ['applied' => true, 'placement_batch_id' => $batchId, 'message' => 'Plotting disimpan sebagai draft.'];
         });
     }
 
@@ -146,8 +149,8 @@ class AutoPlottingService
             $no = $i + 1;
             $groups[] = [
                 'no' => $no,
-                'code' => 'REG-' . str_pad((string) $no, 3, '0', STR_PAD_LEFT),
-                'nama_kelompok' => 'Kelompok Reguler ' . str_pad((string) $no, 3, '0', STR_PAD_LEFT),
+                'code' => 'REG-'.str_pad((string) $no, 3, '0', STR_PAD_LEFT),
+                'nama_kelompok' => 'Kelompok Reguler '.str_pad((string) $no, 3, '0', STR_PAD_LEFT),
                 'location' => $loc,
                 'members' => [],
                 'warnings' => [],
@@ -188,7 +191,6 @@ class AutoPlottingService
 
         return $students;
     }
-
 
     private function assignStudentsFast(array $students, array &$groups, int $groupSize): array
     {
@@ -234,18 +236,26 @@ class AutoPlottingService
             if ($best === null) {
                 foreach ($groups as $idx => $g) {
                     $st = $stats[$idx];
-                    if ($st['n'] >= $groupSize) continue;
+                    if ($st['n'] >= $groupSize) {
+                        continue;
+                    }
                     $locRegency = $g['location']['regency_norm'] ?? $this->norm($g['location']['regency_name'] ?? '');
                     $origin = $s['origin_norm'] ?? '';
-                    if ($locRegency !== '' && $origin !== '' && $locRegency === $origin) continue;
+                    if ($locRegency !== '' && $origin !== '' && $locRegency === $origin) {
+                        continue;
+                    }
                     $score = $this->scoreFast($st, $s, min(array_column($stats, 'n') ?: [0]), $groupSize) - 500;
-                    if ($score > $bestScore) { $best = $idx; $bestScore = $score; }
+                    if ($score > $bestScore) {
+                        $best = $idx;
+                        $bestScore = $score;
+                    }
                 }
             }
 
             if ($best === null) {
                 $s['warnings'][] = 'Tidak ada kelompok valid hard-constraint';
                 $unplaced[] = $s;
+
                 continue;
             }
 
@@ -277,12 +287,20 @@ class AutoPlottingService
         $sameOrigin = $origin !== '' ? ($st['origin'][$origin] ?? 0) : 0;
 
         $score += $sameFac === 0 ? 650 : -($sameFac * 120);
-        if ($sameFac >= 4) $score -= 350;
-        if ($sameFac >= 6) $score -= 1000;
+        if ($sameFac >= 4) {
+            $score -= 350;
+        }
+        if ($sameFac >= 6) {
+            $score -= 1000;
+        }
 
         $score += $samePro === 0 ? 550 : -($samePro * 160);
-        if ($samePro >= 4) $score -= 500;
-        if ($samePro >= 6) $score -= 2200;
+        if ($samePro >= 4) {
+            $score -= 500;
+        }
+        if ($samePro >= 6) {
+            $score -= 2200;
+        }
 
         $score += $sameOrigin === 0 ? 300 : -($sameOrigin * 350);
 
@@ -292,17 +310,25 @@ class AutoPlottingService
         }
 
         $score -= abs($groupSize - ($n + 1)) * 10;
+
         return $score;
     }
 
     private function addToStats(array &$st, array $s): void
     {
         $st['n']++;
-        if (($s['gender'] ?? 'P') === 'L') $st['male']++;
-        if (($s['gpa'] ?? 0) > 0) { $st['gpa_sum'] += (float) $s['gpa']; $st['gpa_count']++; }
+        if (($s['gender'] ?? 'P') === 'L') {
+            $st['male']++;
+        }
+        if (($s['gpa'] ?? 0) > 0) {
+            $st['gpa_sum'] += (float) $s['gpa'];
+            $st['gpa_count']++;
+        }
         foreach (['fakultas' => 'fac', 'prodi' => 'pro', 'origin_norm' => 'origin'] as $src => $dst) {
             $v = (string) ($s[$src] ?? '');
-            if ($v !== '') $st[$dst][$v] = ($st[$dst][$v] ?? 0) + 1;
+            if ($v !== '') {
+                $st[$dst][$v] = ($st[$dst][$v] ?? 0) + 1;
+            }
         }
     }
 
@@ -328,6 +354,7 @@ class AutoPlottingService
             if ($best === null) {
                 $s['warnings'][] = 'Tidak ada kelompok valid hard-constraint';
                 $unplaced[] = $s;
+
                 continue;
             }
 
@@ -375,14 +402,22 @@ class AutoPlottingService
         if (($s['fakultas'] ?? null) && ! in_array($s['fakultas'], $faculties, true)) {
             $score += 600;
         }
-        if ($sameFac >= 6) $score -= 900;
-        if ($sameFac >= 4) $score -= 350;
+        if ($sameFac >= 6) {
+            $score -= 900;
+        }
+        if ($sameFac >= 4) {
+            $score -= 350;
+        }
 
         if (($s['prodi'] ?? null) && ! in_array($s['prodi'], $prodis, true)) {
             $score += 500;
         }
-        if ($samePro >= 6) $score -= 2000;
-        if ($samePro >= 4) $score -= 500;
+        if ($samePro >= 6) {
+            $score -= 2000;
+        }
+        if ($samePro >= 4) {
+            $score -= 500;
+        }
 
         $score += $sameOrigin === 0 ? 250 : -($sameOrigin * 300);
 
@@ -404,7 +439,9 @@ class AutoPlottingService
             foreach ($groups as $i => $gi) {
                 foreach ($gi['members'] as $mi => $memberI) {
                     foreach ($groups as $j => $gj) {
-                        if ($j <= $i) continue;
+                        if ($j <= $i) {
+                            continue;
+                        }
                         foreach ($gj['members'] as $mj => $memberJ) {
                             if (! $this->hardEligibleForSwap($gi, $memberJ) || ! $this->hardEligibleForSwap($gj, $memberI)) {
                                 continue;
@@ -439,6 +476,7 @@ class AutoPlottingService
     {
         $locRegency = $g['location']['regency_norm'] ?? $this->norm($g['location']['regency_name'] ?? '');
         $origin = $s['origin_norm'] ?? $this->norm($s['origin_regency'] ?? '');
+
         return $locRegency === '' || $origin === '' || $locRegency !== $origin;
     }
 
@@ -451,7 +489,9 @@ class AutoPlottingService
     {
         $m = $g['members'];
         $n = count($m);
-        if ($n === 0) return -100000;
+        if ($n === 0) {
+            return -100000;
+        }
 
         $male = count(array_filter($m, fn ($x) => $x['gender'] === 'L'));
         $fac = count(array_unique(array_filter(array_column($m, 'fakultas'))));
@@ -463,10 +503,14 @@ class AutoPlottingService
         $score += $pro * 180;
 
         foreach (array_count_values(array_filter(array_column($m, 'prodi'))) as $cnt) {
-            if ($cnt > 6) $score -= ($cnt - 6) * 1200;
+            if ($cnt > 6) {
+                $score -= ($cnt - 6) * 1200;
+            }
         }
         foreach (array_count_values(array_filter(array_column($m, 'fakultas'))) as $cnt) {
-            if ($cnt > 6) $score -= ($cnt - 6) * 700;
+            if ($cnt > 6) {
+                $score -= ($cnt - 6) * 700;
+            }
         }
         foreach ($this->validateGroup($g, $groupSize) as $warning) {
             $score -= str_starts_with($warning, 'H') ? 10000 : 1000;
@@ -539,7 +583,7 @@ class AutoPlottingService
             ->filter(fn ($l) => in_array($this->norm((string) $l->regency_name), $targetNorm, true));
 
         if ($locs->isEmpty()) {
-            $locs = Lokasi::query()->whereNotNull('regency_name')->orderBy('regency_name')->orderBy('district_name')->limit(200)->get();
+            throw new RuntimeException('Belum ada lokasi/desa terpilih untuk plotting. Pilih lokasi terlebih dahulu di menu Lokasi sebelum menjalankan simulasi/apply draft.');
         }
 
         return $locs->map(fn ($l) => [
@@ -557,29 +601,43 @@ class AutoPlottingService
             'longitude' => $l->longitude,
             'capacity' => $l->capacity,
             'geofence_radius_meters' => $l->geofence_radius_meters,
-            'maps_url' => ($l->latitude && $l->longitude) ? 'https://www.google.com/maps?q=' . $l->latitude . ',' . $l->longitude : null,
-            'full_name' => trim(($l->village_name ? 'Desa ' . $l->village_name . ', ' : '') . ($l->district_name ? 'Kec. ' . $l->district_name . ', ' : '') . ($l->regency_name ? 'Kab. ' . $l->regency_name : '')),
+            'maps_url' => ($l->latitude && $l->longitude) ? 'https://www.google.com/maps?q='.$l->latitude.','.$l->longitude : null,
+            'full_name' => trim(($l->village_name ? 'Desa '.$l->village_name.', ' : '').($l->district_name ? 'Kec. '.$l->district_name.', ' : '').($l->regency_name ? 'Kab. '.$l->regency_name : '')),
         ])->values()->all();
     }
 
     private function validateGroup(array $g, int $groupSize): array
     {
         $m = $g['members'];
-        if (! count($m)) return ['Kelompok kosong'];
+        if (! count($m)) {
+            return ['Kelompok kosong'];
+        }
 
         $fac = count(array_unique(array_filter(array_column($m, 'fakultas'))));
         $pro = count(array_unique(array_filter(array_column($m, 'prodi'))));
         $male = count(array_filter($m, fn ($x) => $x['gender'] === 'L'));
         $warnings = [];
 
-        if (count($m) > $groupSize) $warnings[] = 'H2: Melebihi kapasitas';
-        if ($fac < 2) $warnings[] = 'S2: Fakultas kurang dari 2';
-        if ($pro < 3) $warnings[] = 'S3: Prodi kurang dari 3';
-        if ($male < 3) $warnings[] = 'S1: Laki-laki kurang dari 3';
-        if ($male > 6) $warnings[] = 'S1: Laki-laki lebih dari 6';
+        if (count($m) > $groupSize) {
+            $warnings[] = 'H2: Melebihi kapasitas';
+        }
+        if ($fac < 2) {
+            $warnings[] = 'S2: Fakultas kurang dari 2';
+        }
+        if ($pro < 3) {
+            $warnings[] = 'S3: Prodi kurang dari 3';
+        }
+        if ($male < 3) {
+            $warnings[] = 'S1: Laki-laki kurang dari 3';
+        }
+        if ($male > 6) {
+            $warnings[] = 'S1: Laki-laki lebih dari 6';
+        }
 
         foreach (array_count_values(array_filter(array_column($m, 'prodi'))) as $name => $cnt) {
-            if ($cnt > 6) $warnings[] = "S4: Prodi {$name} lebih dari 6";
+            if ($cnt > 6) {
+                $warnings[] = "S4: Prodi {$name} lebih dari 6";
+            }
         }
 
         $locRegency = $g['location']['regency_norm'] ?? $this->norm($g['location']['regency_name'] ?? '');
@@ -598,9 +656,12 @@ class AutoPlottingService
         $count = 0;
         foreach ($groups as $g) {
             foreach (($g['warnings'] ?? []) as $warning) {
-                if (str_starts_with($warning, 'H')) $count++;
+                if (str_starts_with($warning, 'H')) {
+                    $count++;
+                }
             }
         }
+
         return $count;
     }
 
@@ -647,8 +708,14 @@ class AutoPlottingService
         foreach ($groups as $g) {
             $filled += count($g['members']);
             $warnings = $g['warnings'] ?? [];
-            if ($warnings) $viol++;
-            foreach ($warnings as $w) if (str_starts_with($w, 'H')) $hard++;
+            if ($warnings) {
+                $viol++;
+            }
+            foreach ($warnings as $w) {
+                if (str_starts_with($w, 'H')) {
+                    $hard++;
+                }
+            }
             $quality += $g['quality_score'] ?? 0;
         }
 
@@ -666,7 +733,9 @@ class AutoPlottingService
 
     private function norm(?string $s): string
     {
-        if (blank($s)) return '';
+        if (blank($s)) {
+            return '';
+        }
 
         return Str::of($s)
             ->lower()

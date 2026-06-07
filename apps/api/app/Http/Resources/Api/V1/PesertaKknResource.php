@@ -106,7 +106,7 @@ class PesertaKknResource extends JsonResource
     }
 
     /**
-     * @param array<string, mixed>|null $existing
+     * @param  array<string, mixed>|null  $existing
      * @return array<string, mixed>
      */
     private function documentArray(

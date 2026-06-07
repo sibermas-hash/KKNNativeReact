@@ -28,8 +28,10 @@ class JenisKknFactory extends Factory
             'description' => $this->faker->sentence(),
             'registration_mode' => Periode::REGISTRATION_MODE_OPEN,
             'placement_mode' => Periode::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL,
-            'min_sks' => 100,
-            'min_gpa' => 2.0,
+            'requirements_config' => [
+                'min_sks' => 100,
+                'min_gpa' => 2.0,
+            ],
             'color' => $this->faker->hexColor(),
             'is_active' => true,
             'sort_order' => 0,

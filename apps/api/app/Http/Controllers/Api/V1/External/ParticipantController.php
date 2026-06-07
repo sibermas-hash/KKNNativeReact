@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\External;
 
 use App\Http\Controllers\Controller;
-use App\Models\KKN\CollaborationLetter;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use Illuminate\Http\JsonResponse;

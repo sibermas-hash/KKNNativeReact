@@ -4,7 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
 import {
-  colors,
+  useTheme,
+  useStyles,
   HeroCard,
   InlineAlert,
   LoadingState,
@@ -36,6 +37,13 @@ export default function DailyReportDetailScreen() {
   const router = useRouter();
   const id = Number(params.id);
   const endpoints = studentEndpoints(api);
+
+  const styles = useStyles((colors) => ({
+    body: { fontSize: 14, color: colors.text, lineHeight: 20 },
+    photoCard: { padding: 0, overflow: 'hidden' },
+    photo: { width: '100%', aspectRatio: 4 / 3, backgroundColor: colors.surfaceMuted },
+    actions: { gap: 10, marginTop: 16 },
+  }));
 
   const { data, isLoading, refetch, isRefetching, error } = useQuery({
     queryKey: ['student', 'daily-reports', id],
@@ -136,9 +144,4 @@ export default function DailyReportDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  body: { fontSize: 14, color: colors.text, lineHeight: 20 },
-  photoCard: { padding: 0, overflow: 'hidden' },
-  photo: { width: '100%', aspectRatio: 4 / 3, backgroundColor: colors.surfaceMuted },
-  actions: { gap: 10, marginTop: 16 },
-});
+

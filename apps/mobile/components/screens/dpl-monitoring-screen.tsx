@@ -1,14 +1,22 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, RefreshControl, Alert } from 'react-native';
+import { View, Text, TextInput, RefreshControl, Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { dplEndpoints } from '@sibermas/api-client';
 import * as ImagePicker from 'expo-image-picker';
 import { api } from '@/lib/api';
 import { unwrapList } from '@/lib/api-helpers';
 import {
-  colors, spacing, Screen, SectionTitle, SurfaceCard,
-  PrimaryButton, SecondaryButton, LoadingState, EmptyState,
-  FieldLabel, formStyles,
+  useTheme,
+  useStyles,
+  useFormStyles,
+  Screen,
+  SectionTitle,
+  SurfaceCard,
+  PrimaryButton,
+  SecondaryButton,
+  LoadingState,
+  EmptyState,
+  FieldLabel,
 } from '@/components/ui/primitives';
 
 type MonitoringVisit = {
@@ -28,6 +36,19 @@ export function DplMonitoringScreen() {
   const [location, setLocation] = useState('');
   const [notes, setNotes] = useState('');
   const [photo, setPhoto] = useState<ImagePicker.ImagePickerAsset | null>(null);
+
+  const { colors } = useTheme();
+  const formStyles = useFormStyles();
+
+  const styles = useStyles((colors) => ({
+    form: { gap: 12 },
+    formActions: { flexDirection: 'row' as const, gap: 10, marginTop: 4 },
+    list: { gap: 10 },
+    item: { gap: 4 },
+    date: { fontSize: 11, fontWeight: '900' as const, color: colors.primary, textTransform: 'uppercase' as const },
+    location: { fontSize: 14, fontWeight: '800' as const, color: colors.text },
+    notes: { fontSize: 13, color: colors.textMuted, lineHeight: 19 },
+  }));
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['dpl', 'monitoring'],
@@ -73,13 +94,32 @@ export function DplMonitoringScreen() {
       {showForm && (
         <SurfaceCard style={styles.form}>
           <FieldLabel required>Tanggal Kunjungan (YYYY-MM-DD)</FieldLabel>
-          <TextInput style={formStyles.input} value={visitDate} onChangeText={setVisitDate} placeholder="2026-05-10" />
+          <TextInput
+            style={formStyles.input}
+            value={visitDate}
+            onChangeText={setVisitDate}
+            placeholder="2026-05-10"
+            placeholderTextColor={colors.textSubtle}
+          />
 
           <FieldLabel required>Lokasi</FieldLabel>
-          <TextInput style={formStyles.input} value={location} onChangeText={setLocation} placeholder="Nama desa/lokasi" />
+          <TextInput
+            style={formStyles.input}
+            value={location}
+            onChangeText={setLocation}
+            placeholder="Nama desa/lokasi"
+            placeholderTextColor={colors.textSubtle}
+          />
 
           <FieldLabel>Catatan</FieldLabel>
-          <TextInput style={[formStyles.input, formStyles.textarea]} value={notes} onChangeText={setNotes} placeholder="Catatan kunjungan..." multiline />
+          <TextInput
+            style={[formStyles.input, formStyles.textarea]}
+            value={notes}
+            onChangeText={setNotes}
+            placeholder="Catatan kunjungan..."
+            placeholderTextColor={colors.textSubtle}
+            multiline
+          />
 
           <SecondaryButton label={photo ? '📷 Foto diambil' : '📷 Ambil Foto'} onPress={pickPhoto} />
 
@@ -106,13 +146,3 @@ export function DplMonitoringScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  form: { gap: 12 },
-  formActions: { flexDirection: 'row', gap: 10, marginTop: 4 },
-  list: { gap: 10 },
-  item: { gap: 4 },
-  date: { fontSize: 11, fontWeight: '900', color: colors.primary, textTransform: 'uppercase' },
-  location: { fontSize: 14, fontWeight: '800', color: colors.text },
-  notes: { fontSize: 13, color: colors.textMuted, lineHeight: 19 },
-});

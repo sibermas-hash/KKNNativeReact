@@ -81,10 +81,10 @@ export default function WorkProgramsPage(): React.JSX.Element {
 
       {/* Phase blocked */}
       {isPhaseBlocked && (
-        <div className="rounded-2xl border border-amber-200 dark:border-amber-800/40 bg-amber-50 dark:bg-amber-950/20 p-8 text-center space-y-3 text-amber-850 dark:text-amber-400">
-          <AlertCircle className="h-12 w-12 text-amber-600 dark:text-amber-450 mx-auto" />
-          <h2 className="text-lg font-black text-amber-900 dark:text-amber-300">Belum Bisa Mengakses Program Kerja</h2>
-          <p className="text-sm text-amber-800 dark:text-amber-400/90 font-medium">{phaseMessage ?? 'Fitur ini hanya tersedia saat fase pelaksanaan KKN.'}</p>
+        <div className="rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-warning)] p-8 text-center space-y-3 text-[color:var(--profile-warning-text)]">
+          <AlertCircle className="h-12 w-12 text-[color:var(--profile-warning-text)] mx-auto" />
+          <h2 className="text-lg font-black text-[color:var(--profile-warning-text)]">Belum Bisa Mengakses Program Kerja</h2>
+          <p className="text-sm text-[color:var(--profile-warning-text)] opacity-90 font-medium">{phaseMessage ?? 'Fitur ini hanya tersedia saat fase pelaksanaan KKN.'}</p>
         </div>
       )}
 
@@ -155,18 +155,18 @@ export default function WorkProgramsPage(): React.JSX.Element {
                       </span>
                     )}
                     {p.abcd_stage && (
-                      <span className="rounded-full bg-purple-50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-400 px-2 py-0.5 text-xs font-bold border border-purple-100 dark:border-purple-800/40 capitalize">
+                      <span className="rounded-full bg-[color:var(--profile-soft)] text-[color:var(--profile-primary)] px-2 py-0.5 text-xs font-bold border border-[color:var(--profile-border)] capitalize">
                         {p.abcd_stage}
                       </span>
                     )}
                     {Array.isArray(p.sdg_goals) && p.sdg_goals.length > 0 && (
-                      <span className="rounded-full bg-blue-50 dark:bg-blue-950/20 text-blue-700 dark:text-blue-400 px-2 py-0.5 text-xs font-black border border-blue-100 dark:border-blue-800/40 inline-flex items-center gap-1">
+                      <span className="rounded-full bg-[color:var(--profile-soft)] text-[color:var(--profile-accent)] px-2 py-0.5 text-xs font-black border border-[color:var(--profile-border)] inline-flex items-center gap-1">
                         <Globe size={10} /> SDG {p.sdg_goals.slice(0, 3).join(', ')}
                         {p.sdg_goals.length > 3 && ` +${p.sdg_goals.length - 3}`}
                       </span>
                     )}
                     {p.target_participants && (
-                      <span className="rounded-full bg-cyan-50 dark:bg-cyan-950/20 text-cyan-700 dark:text-cyan-400 px-2 py-0.5 text-xs font-bold border border-cyan-100 dark:border-cyan-800/40">
+                      <span className="rounded-full bg-[color:var(--profile-soft)] text-[color:var(--profile-soft-text)] px-2 py-0.5 text-xs font-bold border border-[color:var(--profile-border)]">
                         Target {p.target_participants}
                       </span>
                     )}
@@ -185,10 +185,10 @@ export default function WorkProgramsPage(): React.JSX.Element {
 function StatCard({ label, value, icon, color }: { label: string; value: number; icon: React.ReactNode; color: 'emerald' | 'amber' | 'rose' | 'blue' }) {
   const { config: themeConfig, surfaceClass } = useTheme();
   const cl = {
-    emerald: 'text-emerald-700 bg-emerald-50 dark:bg-emerald-950/20 dark:text-emerald-400 border-emerald-250/40',
-    amber: 'text-amber-700 bg-amber-50 dark:bg-amber-950/20 dark:text-amber-400 border-amber-250/40',
-    rose: 'text-rose-700 bg-rose-50 dark:bg-rose-950/20 dark:text-rose-400 border-rose-250/40',
-    blue: 'text-blue-700 bg-blue-50 dark:bg-blue-950/20 dark:text-blue-400 border-blue-250/40',
+    emerald: 'text-[color:var(--profile-soft-text)] bg-[color:var(--profile-soft)] border-[color:var(--profile-border)]',
+    amber: 'text-[color:var(--profile-warning-text)] bg-[color:var(--profile-warning)] border-[color:var(--profile-border)]',
+    rose: 'text-[color:var(--profile-danger-text)] bg-[color:var(--profile-danger)] border-[color:var(--profile-border)]',
+    blue: 'text-[color:var(--profile-primary)] bg-[color:var(--profile-soft)] border-[color:var(--profile-border)]',
   }[color];
   return (
     <div 
@@ -208,14 +208,12 @@ function StatusPill({ status }: { status: string }) {
   const s = status.toLowerCase();
   const cls =
     s === 'approved'
-      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-800/40'
+      ? 'bg-[color:var(--profile-soft)] text-[color:var(--profile-soft-text)] border-[color:var(--profile-border)]'
       : s === 'pending' || s === 'submitted'
-      ? 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/20 dark:text-amber-400 dark:border-amber-800/40'
-      : s === 'revision'
-      ? 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-800/40'
-      : s === 'rejected'
-      ? 'bg-slate-200 text-slate-700 border-slate-350 dark:bg-slate-800/40 dark:text-slate-400 dark:border-slate-700'
-      : 'bg-slate-100 text-slate-650 border-slate-200 dark:bg-slate-900/40 dark:text-slate-400 dark:border-slate-800';
+      ? 'bg-[color:var(--profile-warning)] text-[color:var(--profile-warning-text)] border-[color:var(--profile-border)]'
+      : s === 'revision' || s === 'rejected'
+      ? 'bg-[color:var(--profile-danger)] text-[color:var(--profile-danger-text)] border-[color:var(--profile-border)]'
+      : 'bg-[color:var(--profile-surface-strong)] text-[color:var(--profile-muted)] border-[color:var(--profile-border)]';
   const text =
     s === 'approved' ? 'Disetujui' :
     s === 'pending' || s === 'submitted' ? 'Menunggu' :

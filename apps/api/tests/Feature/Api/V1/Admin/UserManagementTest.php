@@ -1,12 +1,12 @@
 <?php
 
-use Illuminate\Auth\Notifications\ResetPassword;
-use Illuminate\Support\Facades\Notification;
 use App\Models\KKN\Dosen;
 use App\Models\KKN\Fakultas;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Prodi;
 use App\Models\User;
+use App\Notifications\Auth\ResetPasswordNotification;
+use Illuminate\Support\Facades\Notification;
 
 describe('Admin user management API', function () {
     beforeEach(function () {
@@ -206,7 +206,7 @@ describe('Admin user management API', function () {
         $user = User::factory()->create([
             'username' => 'reset-link-user',
             'email' => 'reset-link-user@example.test',
-            'password' => bcrypt('CurrentPassword123!'),
+            'password' => 'CurrentPassword123!',
             'must_change_password' => false,
         ]);
         $user->assignRole('student');
@@ -220,7 +220,7 @@ describe('Admin user management API', function () {
             ->assertJsonPath('data.email_sent', true);
 
         expect($user->fresh()->password)->toBe($originalHash);
-        Notification::assertSentTo($user, ResetPassword::class);
+        Notification::assertSentTo($user, ResetPasswordNotification::class);
     });
 
     it('rejects admin-triggered reset when the user has no email', function () {

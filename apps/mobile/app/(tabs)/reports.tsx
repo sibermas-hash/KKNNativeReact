@@ -4,11 +4,24 @@ import { useQuery } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
 import { unwrapList } from '@/lib/api-helpers';
-import { colors, EmptyState, HeroCard, LoadingState, PrimaryButton, Screen, SectionTitle, StatusPill, SurfaceCard } from '@/components/ui/primitives';
+import { useTheme, useStyles, EmptyState, HeroCard, LoadingState, PrimaryButton, Screen, SectionTitle, StatusPill, SurfaceCard } from '@/components/ui/primitives';
 
 export default function ReportsScreen() {
   const router = useRouter();
   const endpoints = studentEndpoints(api);
+  const { colors } = useTheme();
+
+  const styles = useStyles((colors, toneMap) => ({
+    heroCount: { color: colors.text, fontSize: 28, fontWeight: '900', fontVariant: ['tabular-nums'] },
+    cardButton: { marginBottom: 12 },
+    reportCard: { gap: 8 },
+    cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    cardDate: { fontSize: 12, color: colors.textMuted, fontWeight: '700' },
+    cardTitle: { fontSize: 16, fontWeight: '800', color: colors.text },
+    cardBody: { fontSize: 14, color: colors.textMuted, lineHeight: 20 },
+    noteBox: { marginTop: 4, backgroundColor: colors.warningSoft, borderRadius: 8, padding: 12, borderWidth: 1, borderColor: colors.border },
+    noteText: { fontSize: 13, color: colors.text === '#e2e8f0' ? colors.text : '#92400E', lineHeight: 19 },
+  }));
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['student', 'daily-reports'],
@@ -73,14 +86,4 @@ export default function ReportsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  heroCount: { color: colors.text, fontSize: 28, fontWeight: '900', fontVariant: ['tabular-nums'] },
-  cardButton: { marginBottom: 12 },
-  reportCard: { gap: 8 },
-  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  cardDate: { fontSize: 12, color: colors.textMuted, fontWeight: '700' },
-  cardTitle: { fontSize: 16, fontWeight: '800', color: colors.text },
-  cardBody: { fontSize: 14, color: colors.textMuted, lineHeight: 20 },
-  noteBox: { marginTop: 4, backgroundColor: '#FFFBEB', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: '#FDE68A' },
-  noteText: { fontSize: 13, color: '#92400E', lineHeight: 19 },
-});
+

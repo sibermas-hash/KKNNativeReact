@@ -33,6 +33,7 @@ class RetryPendingAvatarModeration extends Command
 
         if ($pending->isEmpty()) {
             $this->info('No pending avatars to process.');
+
             return 0;
         }
 
@@ -49,10 +50,10 @@ class RetryPendingAvatarModeration extends Command
                 continue;
             }
 
-            $absolutePath = storage_path('app/public/' . $user->avatar);
+            $absolutePath = storage_path('app/public/'.$user->avatar);
 
             // File missing — reject
-            if (!file_exists($absolutePath)) {
+            if (! file_exists($absolutePath)) {
                 $user->forceFill([
                     'avatar' => null,
                     'avatar_moderation_status' => 'rejected',
@@ -60,7 +61,8 @@ class RetryPendingAvatarModeration extends Command
                     'avatar_moderation_reviewed_at' => now(),
                 ])->save();
                 $rejected++;
-                $this->warn("    → REJECTED (file missing)");
+                $this->warn('    → REJECTED (file missing)');
+
                 continue;
             }
 
@@ -74,11 +76,11 @@ class RetryPendingAvatarModeration extends Command
                         'avatar_moderation_reviewed_at' => now(),
                     ])->save();
                     $approved++;
-                    $this->info("    → APPROVED");
+                    $this->info('    → APPROVED');
                 } elseif ($result['requires_manual_review']) {
                     // Keep as pending — will retry next cycle
                     $failed++;
-                    $this->warn("    → STILL PENDING (needs manual review)");
+                    $this->warn('    → STILL PENDING (needs manual review)');
                 } else {
                     Storage::disk('public')->delete($user->avatar);
                     $user->forceFill([
@@ -88,11 +90,11 @@ class RetryPendingAvatarModeration extends Command
                         'avatar_moderation_reviewed_at' => now(),
                     ])->save();
                     $rejected++;
-                    $this->warn("    → REJECTED: " . ($result['reason'] ?? 'N/A'));
+                    $this->warn('    → REJECTED: '.($result['reason'] ?? 'N/A'));
                 }
             } catch (\Throwable $e) {
                 $failed++;
-                $this->error("    → ERROR: " . $e->getMessage());
+                $this->error('    → ERROR: '.$e->getMessage());
                 Log::error('RetryPendingAvatarModeration error', [
                     'user_id' => $user->id,
                     'error' => $e->getMessage(),

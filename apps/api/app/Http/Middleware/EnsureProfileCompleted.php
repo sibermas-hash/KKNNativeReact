@@ -18,7 +18,7 @@ class EnsureProfileCompleted
             return $next($request);
         }
 
-        if ($user->hasAnyRole(['superadmin', 'admin', 'faculty_admin', 'external_lppm_admin'])) {
+        if ($user->hasAnyRole(['superadmin', 'admin', 'faculty_admin', 'external_lppm_admin', 'dosen', 'dpl'])) {
             return $next($request);
         }
 
@@ -27,6 +27,7 @@ class EnsureProfileCompleted
         if (
             $request->is('api/v1/auth/*')
             || $request->is('api/v1/profile*')
+            || $request->is('api/v1/student/registration/*/documents')
             || $request->is('api/v1/2fa*')
             || $request->is('api/v1/period-context')
         ) {

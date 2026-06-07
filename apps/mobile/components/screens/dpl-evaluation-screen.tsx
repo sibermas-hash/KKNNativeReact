@@ -1,17 +1,26 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Alert } from 'react-native';
+import { View, Text, TextInput, Alert } from 'react-native';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { studentEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
 import {
-  colors, spacing, Screen, SectionTitle, SurfaceCard,
-  PrimaryButton, LoadingState, EmptyState, InlineAlert, FieldLabel, formStyles,
+  useTheme,
+  useStyles,
+  useFormStyles,
+  Screen,
+  SectionTitle,
+  SurfaceCard,
+  PrimaryButton,
+  LoadingState,
+  EmptyState,
+  InlineAlert,
+  FieldLabel,
 } from '@/components/ui/primitives';
 
 type EvalQuestion = { id: number; question: string; type: 'rating' | 'text' };
 type EvalForm = { questions: EvalQuestion[]; dpl_name?: string; already_submitted?: boolean };
 
-function RatingInput({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+function RatingInput({ value, onChange, styles }: { value: number; onChange: (v: number) => void; styles: any }) {
   return (
     <View style={styles.ratingRow}>
       {[1, 2, 3, 4, 5].map((n) => (
@@ -26,6 +35,20 @@ function RatingInput({ value, onChange }: { value: number; onChange: (v: number)
 export function DplEvaluationScreen() {
   const endpoints = studentEndpoints(api);
   const [answers, setAnswers] = useState<Record<number, string | number>>({});
+
+  const { colors } = useTheme();
+  const formStyles = useFormStyles();
+
+  const styles = useStyles((colors) => ({
+    questionCard: { gap: 10 },
+    ratingRow: { flexDirection: 'row' as const, gap: 8 },
+    ratingBtn: {
+      width: 40, height: 40, borderRadius: 8, borderWidth: 1, borderColor: colors.border,
+      backgroundColor: colors.surface, alignItems: 'center' as const, justifyContent: 'center' as const,
+      textAlign: 'center' as const, lineHeight: 38, fontSize: 14, fontWeight: '800' as const, color: colors.textMuted,
+    },
+    ratingBtnActive: { backgroundColor: colors.soft, borderColor: colors.primary, color: colors.softText },
+  }));
 
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'dpl-evaluation'],
@@ -57,13 +80,14 @@ export function DplEvaluationScreen() {
         <SurfaceCard key={q.id} style={styles.questionCard}>
           <FieldLabel>{q.question}</FieldLabel>
           {q.type === 'rating' ? (
-            <RatingInput value={Number(answers[q.id] || 0)} onChange={(v) => setAnswers((p) => ({ ...p, [q.id]: v }))} />
+            <RatingInput value={Number(answers[q.id] || 0)} onChange={(v) => setAnswers((p) => ({ ...p, [q.id]: v }))} styles={styles} />
           ) : (
             <TextInput
               style={[formStyles.input, formStyles.textarea]}
               value={String(answers[q.id] || '')}
               onChangeText={(v) => setAnswers((p) => ({ ...p, [q.id]: v }))}
               placeholder="Tulis jawaban..."
+              placeholderTextColor={colors.textSubtle}
               multiline
             />
           )}
@@ -74,14 +98,3 @@ export function DplEvaluationScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  questionCard: { gap: 10 },
-  ratingRow: { flexDirection: 'row', gap: 8 },
-  ratingBtn: {
-    width: 40, height: 40, borderRadius: 8, borderWidth: 1, borderColor: colors.border,
-    backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center',
-    textAlign: 'center', lineHeight: 38, fontSize: 14, fontWeight: '800', color: colors.textMuted,
-  },
-  ratingBtnActive: { backgroundColor: colors.soft, borderColor: '#A5F3FC', color: colors.softText },
-});

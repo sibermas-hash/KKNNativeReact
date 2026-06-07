@@ -28,14 +28,19 @@ class KknStatementController extends Controller
     public function show(Request $request, Periode $periode): JsonResponse
     {
         $m = $request->user()?->mahasiswa;
-        if (! $m) return $this->forbidden('Profil mahasiswa tidak ditemukan.');
+        if (! $m) {
+            return $this->forbidden('Profil mahasiswa tidak ditemukan.');
+        }
+
         return $this->success(['version' => self::VERSION, 'student' => ['nama' => $m->nama, 'nim' => $m->nim], 'periode' => ['id' => $periode->id, 'name' => $periode->name], 'parts' => self::PARTS]);
     }
 
     public function agree(Request $request, Periode $periode): JsonResponse
     {
         $m = $request->user()?->mahasiswa;
-        if (! $m) return $this->forbidden('Profil mahasiswa tidak ditemukan.');
+        if (! $m) {
+            return $this->forbidden('Profil mahasiswa tidak ditemukan.');
+        }
         $v = $request->validate(['checklist' => ['required', 'array'], 'signature_nim' => ['required', 'string'], 'signature_name' => ['required', 'string']]);
         if (trim((string) $v['signature_nim']) !== (string) $m->nim) {
             throw ValidationException::withMessages(['signature_nim' => 'NIM tanda tangan tidak sesuai akun.']);
@@ -48,6 +53,7 @@ class KknStatementController extends Controller
             }
         }
         $a = KknStatementAgreement::create(['mahasiswa_id' => $m->id, 'periode_id' => $periode->id, 'jenis_kkn_id' => $periode->jenis_kkn_id, 'statement_version' => self::VERSION, 'checklist' => $v['checklist'], 'signature_name' => trim((string) $v['signature_name']), 'signature_nim' => trim((string) $v['signature_nim']), 'agreed_at' => now(), 'ip_address' => $request->ip(), 'user_agent' => substr((string) $request->userAgent(), 0, 1000)]);
+
         return $this->created(['agreement_id' => $a->id], 'Surat pernyataan disetujui.');
     }
 }

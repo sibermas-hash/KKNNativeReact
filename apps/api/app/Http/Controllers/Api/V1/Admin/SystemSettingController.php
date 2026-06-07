@@ -76,6 +76,7 @@ class SystemSettingController extends Controller
                 $configured++;
             } else {
                 $issues[] = "Tier {$tier['label']} belum punya API key.";
+
                 continue;
             }
 
@@ -124,12 +125,14 @@ class SystemSettingController extends Controller
 
                 if (! $response->successful()) {
                     $lastError = "HTTP {$response->status()}: ".mb_substr($response->body(), 0, 200);
+
                     continue;
                 }
 
                 $content = trim((string) $response->json('choices.0.message.content', ''));
                 if ($content === '') {
                     $lastError = 'AI merespons tanpa konten.';
+
                     continue;
                 }
 

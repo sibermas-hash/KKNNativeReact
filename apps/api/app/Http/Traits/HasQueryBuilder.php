@@ -6,16 +6,15 @@ namespace App\Http\Traits;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Spatie\QueryBuilder\QueryBuilder;
 use Spatie\QueryBuilder\AllowedFilter;
-use Spatie\QueryBuilder\AllowedSort;
+use Spatie\QueryBuilder\QueryBuilder;
 
 /**
  * Trait to easily integrate Spatie QueryBuilder into any controller.
- * 
+ *
  * Usage in controller:
  *   use HasQueryBuilder;
- * 
+ *
  *   public function index(Request $request) {
  *       $query = $this->buildQuery(
  *           model: PesertaKkn::class,
@@ -33,15 +32,14 @@ trait HasQueryBuilder
     /**
      * Build a Spatie QueryBuilder instance with common defaults.
      *
-     * @param class-string|Builder $model  Eloquent model class or existing query builder
-     * @param Request $request
-     * @param array $allowedFilters  Filters allowed from ?filter[key]=value
-     * @param array $allowedSorts    Sorts allowed from ?sort=key or ?sort=-key
-     * @param array $allowedIncludes Relations allowed from ?include=relation
-     * @param array $allowedFields   Fields allowed from ?fields[resource]=field1,field2
-     * @param string $defaultSort    Default sort if none specified
-     * @param int $defaultPerPage    Default items per page
-     * @param int $maxPerPage        Maximum items per page
+     * @param  class-string|Builder  $model  Eloquent model class or existing query builder
+     * @param  array  $allowedFilters  Filters allowed from ?filter[key]=value
+     * @param  array  $allowedSorts  Sorts allowed from ?sort=key or ?sort=-key
+     * @param  array  $allowedIncludes  Relations allowed from ?include=relation
+     * @param  array  $allowedFields  Fields allowed from ?fields[resource]=field1,field2
+     * @param  string  $defaultSort  Default sort if none specified
+     * @param  int  $defaultPerPage  Default items per page
+     * @param  int  $maxPerPage  Maximum items per page
      */
     protected function buildQuery(
         string|Builder $model,
@@ -58,21 +56,21 @@ trait HasQueryBuilder
             ? QueryBuilder::for($model, $request)
             : QueryBuilder::for($model, $request);
 
-        if (!empty($allowedFilters)) {
+        if (! empty($allowedFilters)) {
             $builder->allowedFilters(...$allowedFilters);
         }
 
-        if (!empty($allowedSorts)) {
+        if (! empty($allowedSorts)) {
             $builder->allowedSorts(...$allowedSorts);
         } else {
             $builder->allowedSorts('created_at', 'updated_at');
         }
 
-        if (!empty($allowedIncludes)) {
+        if (! empty($allowedIncludes)) {
             $builder->allowedIncludes(...$allowedIncludes);
         }
 
-        if (!empty($allowedFields)) {
+        if (! empty($allowedFields)) {
             $builder->allowedFields(...$allowedFields);
         }
 

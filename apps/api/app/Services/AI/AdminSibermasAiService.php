@@ -6,6 +6,7 @@ namespace App\Services\AI;
 
 use App\Services\WaGatewayService;
 use Illuminate\Support\Facades\Log;
+
 use function Laravel\Ai\agent;
 
 class AdminSibermasAiService
@@ -17,13 +18,18 @@ class AdminSibermasAiService
         $from = (string) ($payload['from'] ?? $payload['remoteJid'] ?? '');
         $text = trim((string) ($payload['message'] ?? $payload['text'] ?? $payload['content'] ?? ''));
         $phone = $this->waGateway->normalizePhone($from);
-        if ($text === '' || $phone === '') return ['status' => 'ignored'];
+        if ($text === '' || $phone === '') {
+            return ['status' => 'ignored'];
+        }
 
         $result = $this->classifyAndReply($phone, $text);
         $auto = (bool) config('wa_gateway.ai_auto_send', false) && (bool) ($result['should_auto_send'] ?? false);
         $reply = trim((string) ($result['reply'] ?? ''));
-        if ($auto && $reply !== '') $result['sent'] = $this->waGateway->sendMessage($phone, $reply);
+        if ($auto && $reply !== '') {
+            $result['sent'] = $this->waGateway->sendMessage($phone, $reply);
+        }
         Log::info('Admin Sibermas WA AI processed', ['phone' => $phone, 'intent' => $result['intent'] ?? null, 'auto' => $auto]);
+
         return ['status' => 'processed', 'phone' => $phone, 'ai' => $result];
     }
 
@@ -41,11 +47,15 @@ PROMPT;
             $raw = trim((string) $response->text);
             $raw = preg_replace('/^```json\s*|\s*```$/m', '', $raw) ?: $raw;
             $data = json_decode($raw, true);
-            if (! is_array($data)) throw new \RuntimeException('Invalid AI JSON');
+            if (! is_array($data)) {
+                throw new \RuntimeException('Invalid AI JSON');
+            }
+
             return $data;
         } catch (\Throwable $e) {
             Log::warning('Admin Sibermas AI failed', ['error' => $e->getMessage()]);
-            return ['intent'=>'unknown','confidence'=>0,'should_auto_send'=>false,'reply'=>'Terima kasih, pesan Anda sudah diterima. Admin akan menindaklanjuti.','case_type'=>'fallback','priority'=>'normal','required_fields_missing'=>[],'crm_action'=>'create_case','summary'=>$message,'tags'=>['ai_failed'],'escalate'=>true];
+
+            return ['intent' => 'unknown', 'confidence' => 0, 'should_auto_send' => false, 'reply' => 'Terima kasih, pesan Anda sudah diterima. Admin akan menindaklanjuti.', 'case_type' => 'fallback', 'priority' => 'normal', 'required_fields_missing' => [], 'crm_action' => 'create_case', 'summary' => $message, 'tags' => ['ai_failed'], 'escalate' => true];
         }
     }
 }

@@ -1,8 +1,16 @@
-import { View, Text, FlatList, StyleSheet, RefreshControl } from 'react-native';
+import { View, Text, FlatList, RefreshControl } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { dplEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
-import { colors, EmptyState, HeroCard, LoadingState, SectionTitle, StatusPill, SurfaceCard } from '@/components/ui/primitives';
+import {
+  useStyles,
+  EmptyState,
+  HeroCard,
+  LoadingState,
+  SectionTitle,
+  StatusPill,
+  SurfaceCard,
+} from '@/components/ui/primitives';
 
 type DplGroupsResponse = {
   groups?: Record<string, unknown>[];
@@ -14,6 +22,29 @@ function isDplGroupsResponse(value: unknown): value is DplGroupsResponse {
 
 export default function DplGroupsScreen() {
   const endpoints = dplEndpoints(api);
+
+  const styles = useStyles((colors) => ({
+    container: { flex: 1, backgroundColor: colors.background },
+    content: { padding: 16, gap: 16, paddingBottom: 32 },
+    heroCount: { color: colors.text, fontSize: 28, fontWeight: '900' as const, fontVariant: ['tabular-nums' as const] },
+    card: { gap: 14 },
+    cardHeader: { flexDirection: 'row' as const, alignItems: 'flex-start' as const, justifyContent: 'space-between' as const, gap: 12 },
+    cardCopy: { flex: 1, gap: 4 },
+    cardTitle: { fontSize: 16, fontWeight: '900' as const, color: colors.text, lineHeight: 21 },
+    cardSubtext: { fontSize: 13, color: colors.textMuted, lineHeight: 18 },
+    statsRow: { flexDirection: 'row' as const, gap: 10 },
+    miniStat: {
+      flex: 1,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.border,
+      backgroundColor: colors.surfaceMuted,
+      padding: 10,
+      gap: 3,
+    },
+    statValue: { fontSize: 18, fontWeight: '900' as const, color: colors.text, fontVariant: ['tabular-nums' as const] },
+    statLabel: { fontSize: 11, fontWeight: '800' as const, color: colors.textMuted },
+  }));
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['dpl', 'groups'],
@@ -80,26 +111,3 @@ export default function DplGroupsScreen() {
     />
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  content: { padding: 16, gap: 16, paddingBottom: 32 },
-  heroCount: { color: colors.text, fontSize: 28, fontWeight: '900', fontVariant: ['tabular-nums'] },
-  card: { gap: 14 },
-  cardHeader: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },
-  cardCopy: { flex: 1, gap: 4 },
-  cardTitle: { fontSize: 16, fontWeight: '900', color: colors.text, lineHeight: 21 },
-  cardSubtext: { fontSize: 13, color: colors.textMuted, lineHeight: 18 },
-  statsRow: { flexDirection: 'row', gap: 10 },
-  miniStat: {
-    flex: 1,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surfaceMuted,
-    padding: 10,
-    gap: 3,
-  },
-  statValue: { fontSize: 18, fontWeight: '900', color: colors.text, fontVariant: ['tabular-nums'] },
-  statLabel: { fontSize: 11, fontWeight: '800', color: colors.textMuted },
-});

@@ -6,8 +6,11 @@ import { dplApi } from '@/lib/api';
 import Link from 'next/link';
 import { Users } from 'lucide-react';
 import { PageHeader, EmptyState } from '@/components/ui/shared';
+import { useTheme } from '@/components/ui/theme-provider';
 
 export default function GroupsPage(): React.JSX.Element {
+  const { config: themeConfig, surfaceClass } = useTheme();
+
   const { data, isLoading } = useQuery({
     queryKey: QUERY_KEYS.dpl.groups,
     queryFn: async () => {
@@ -25,7 +28,7 @@ export default function GroupsPage(): React.JSX.Element {
       {isLoading ? (
         <div className="space-y-3">
           {[1, 2].map((i) => (
-            <div key={i} className="h-24 animate-pulse rounded-2xl bg-slate-200" />
+            <div key={i} className="h-24 animate-pulse rounded-2xl bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)]" />
           ))}
         </div>
       ) : groups.length === 0 ? (
@@ -40,15 +43,15 @@ export default function GroupsPage(): React.JSX.Element {
             <Link
               key={g.id as number}
               href={`/dosen/kelompok/${g.id}`}
-              className="block rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 transition hover:shadow-md"
+              className={`block rounded-2xl border border-[color:var(--profile-border)] p-6 transition hover:shadow-md ${surfaceClass} ${themeConfig.shadow}`}
             >
-              <p className="text-lg font-semibold text-slate-800">{g.name as string}</p>
-              <p className="text-sm text-slate-500">Kode: {g.code as string}</p>
-              <p className="text-sm text-slate-500">{g.village_name as string}</p>
-              <div className="mt-3 flex gap-4">
-                <span className="text-xs text-cyan-600">{g.member_count as number} anggota</span>
-                <span className="text-xs text-amber-600">{g.daily_report_count as number} laporan</span>
-                <span className="text-xs text-emerald-600">{g.work_program_count as number} progja</span>
+              <p className="text-lg font-semibold text-[color:var(--profile-text)]">{g.name as string}</p>
+              <p className="text-sm text-[color:var(--profile-muted)]">Kode: {g.code as string}</p>
+              <p className="text-sm text-[color:var(--profile-muted)]">{g.village_name as string}</p>
+              <div className="mt-3 flex gap-4 font-semibold">
+                <span className="text-xs text-[color:var(--profile-primary)]">{g.member_count as number} anggota</span>
+                <span className="text-xs text-[color:var(--profile-accent)]">{g.daily_report_count as number} laporan</span>
+                <span className="text-xs text-[color:var(--profile-soft-text)]">{g.work_program_count as number} progja</span>
               </div>
             </Link>
           ))}

@@ -4,20 +4,20 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
+use App\Exports\InterviewResultExport;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\InterviewParticipant;
 use App\Models\KKN\InterviewSchedule;
 use App\Models\KKN\Mahasiswa;
-use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\Periode;
+use App\Models\KKN\PesertaKkn;
+use App\Notifications\KKN\InterviewResultNotification;
+use App\Notifications\KKN\InterviewScheduledNotification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
-use App\Notifications\KKN\InterviewScheduledNotification;
-use App\Notifications\KKN\InterviewResultNotification;
-use App\Exports\InterviewResultExport;
 use Maatwebsite\Excel\Facades\Excel;
 
 class InterviewController extends Controller
@@ -167,6 +167,7 @@ class InterviewController extends Controller
 
             if (! $peserta) {
                 $skipped++;
+
                 continue;
             }
 
@@ -176,6 +177,7 @@ class InterviewController extends Controller
 
             if ($exists) {
                 $skipped++;
+
                 continue;
             }
 
@@ -296,7 +298,7 @@ class InterviewController extends Controller
                     ->where('interview_schedule_id', $interview->id)
                     ->first();
 
-                if (!$participant) {
+                if (! $participant) {
                     continue;
                 }
 
@@ -423,9 +425,8 @@ class InterviewController extends Controller
         $scheduleId = $request->input('schedule_id') ? (int) $request->input('schedule_id') : null;
         $periodeId = $request->input('periode_id') ? (int) $request->input('periode_id') : null;
 
-        $filename = 'hasil-wawancara-' . now()->format('Y-m-d') . '.xlsx';
+        $filename = 'hasil-wawancara-'.now()->format('Y-m-d').'.xlsx';
 
         return Excel::download(new InterviewResultExport($scheduleId, $periodeId), $filename);
     }
-
 }

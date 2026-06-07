@@ -57,6 +57,10 @@ export const THEMES: Record<string, ThemeDefinition> = {
       '--profile-heading-shadow': 'none',
       '--profile-text-shadow': 'none',
       '--profile-radius': '0.75rem',
+      '--profile-glass-sheen-start': 'rgba(255,255,255,0.12)',
+      '--profile-glass-sheen-end': 'rgba(255,255,255,0.02)',
+      '--profile-glass-spot-start': 'rgba(255,255,255,0.08)',
+      '--profile-glass-spot-accent': 'rgba(194,161,77,0.05)',
     } as ThemeVars,
   },
   /**
@@ -97,6 +101,10 @@ export const THEMES: Record<string, ThemeDefinition> = {
       '--profile-heading-shadow': 'none',
       '--profile-text-shadow': 'none',
       '--profile-radius': '1rem',
+      '--profile-glass-sheen-start': 'rgba(255,255,255,0.16)',
+      '--profile-glass-sheen-end': 'rgba(255,255,255,0.02)',
+      '--profile-glass-spot-start': 'rgba(255,255,255,0.10)',
+      '--profile-glass-spot-accent': 'rgba(14,165,233,0.15)',
     } as ThemeVars,
   },
   /**
@@ -137,6 +145,10 @@ export const THEMES: Record<string, ThemeDefinition> = {
       '--profile-heading-shadow': 'none',
       '--profile-text-shadow': 'none',
       '--profile-radius': '1.5rem',
+      '--profile-glass-sheen-start': 'rgba(255,255,255,0.14)',
+      '--profile-glass-sheen-end': 'rgba(255,255,255,0.02)',
+      '--profile-glass-spot-start': 'rgba(255,255,255,0.08)',
+      '--profile-glass-spot-accent': 'rgba(16,185,129,0.10)',
     } as ThemeVars,
   },
   /**
@@ -181,6 +193,10 @@ export const THEMES: Record<string, ThemeDefinition> = {
       '--profile-glass-end': 'rgba(15,23,42,0.4)',
       '--profile-glass-start-strong': 'rgba(22,32,50,0.6)',
       '--profile-glass-end-strong': 'rgba(11,17,28,0.5)',
+      '--profile-glass-sheen-start': 'rgba(255,255,255,0.06)',
+      '--profile-glass-sheen-end': 'rgba(255,255,255,0.01)',
+      '--profile-glass-spot-start': 'rgba(255,255,255,0.04)',
+      '--profile-glass-spot-accent': 'rgba(129,140,248,0.08)',
     } as ThemeVars,
   },
   /**
@@ -221,6 +237,10 @@ export const THEMES: Record<string, ThemeDefinition> = {
       '--profile-heading-shadow': 'none',
       '--profile-text-shadow': 'none',
       '--profile-radius': '1.5rem',
+      '--profile-glass-sheen-start': 'rgba(255,255,255,0.18)',
+      '--profile-glass-sheen-end': 'rgba(255,255,255,0.03)',
+      '--profile-glass-spot-start': 'rgba(255,255,255,0.12)',
+      '--profile-glass-spot-accent': 'rgba(244,63,94,0.10)',
     } as ThemeVars,
   },
 } as const;
@@ -278,7 +298,7 @@ export const THEME_TYPOGRAPHY: Record<ThemeKey, { page: string; eyebrow: string;
 };
 
 /** Utility classes for themed surfaces */
-export const GLASS_LAYER_CLASS = 'before:pointer-events-none before:absolute before:inset-px before:rounded-[inherit] before:bg-[linear-gradient(135deg,rgba(255,255,255,0.58),rgba(255,255,255,0.16)_14%,rgba(255,255,255,0.035)_32%,transparent_46%,rgba(255,255,255,0.16)_64%,transparent_82%)] before:opacity-90 before:mix-blend-screen before:content-[""] after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:bg-[radial-gradient(ellipse_at_16%_0%,rgba(255,255,255,0.42),transparent_34%),radial-gradient(circle_at_92%_10%,rgba(94,234,212,0.2),transparent_30%),linear-gradient(115deg,transparent_0%,rgba(255,255,255,0.22)_44%,rgba(255,255,255,0.055)_49%,transparent_64%)] after:opacity-90 after:content-[""]';
+export const GLASS_LAYER_CLASS = 'before:pointer-events-none before:absolute before:inset-px before:rounded-[inherit] before:bg-[linear-gradient(135deg,var(--profile-glass-sheen-start),var(--profile-glass-sheen-end)_30%,transparent_50%)] before:opacity-90 before:mix-blend-screen before:content-[""] after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:bg-[radial-gradient(circle_at_16%_0%,var(--profile-glass-spot-start),transparent_45%),radial-gradient(circle_at_92%_10%,var(--profile-glass-spot-accent),transparent_30%)] after:opacity-90 after:content-[""]';
 
 export function getSurfaceClass(useGlass: boolean) {
   const base = 'relative overflow-hidden bg-[color:var(--profile-surface)] text-[color:var(--profile-text)] transition-all duration-500 ease-out';

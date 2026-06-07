@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\KKN\Dosen;
+use App\Models\KKN\ExternalUniversity;
 
 describe('Role Isolation (Integration)', function () {
 
@@ -87,5 +88,39 @@ describe('Role Isolation (Integration)', function () {
         $user = createUserWithRole('superadmin');
         $this->actingAs($user)->getJson($route)->assertOk();
     })->with('protected_admin_routes');
+
+    it('external LPPM admin cannot access internal admin routes', function (string $route) {
+        $externalUniversity = ExternalUniversity::query()->create([
+            'code' => 'EXT-TEST',
+            'name' => 'External Test University',
+            'status' => 'active',
+        ]);
+        $user = createUserWithRole('external_lppm_admin');
+        $user->forceFill(['external_university_id' => $externalUniversity->id])->save();
+
+        $this->actingAs($user)->getJson($route)->assertStatus(403);
+    })->with('protected_admin_routes');
+
+    it('external LPPM admin can access external dashboard', function () {
+        $externalUniversity = ExternalUniversity::query()->create([
+            'code' => 'EXT-DASH',
+            'name' => 'External Dashboard University',
+            'status' => 'active',
+        ]);
+        $user = createUserWithRole('external_lppm_admin');
+        $user->forceFill(['external_university_id' => $externalUniversity->id])->save();
+
+        $this->actingAs($user)
+            ->getJson('/api/v1/external/dashboard')
+            ->assertOk()
+            ->assertJsonPath('role', 'external_lppm_admin')
+            ->assertJsonPath('external_university.id', $externalUniversity->id);
+    });
+
+    it('non-external roles cannot access external dashboard', function (string $role) {
+        $user = createUserWithRole($role);
+
+        $this->actingAs($user)->getJson('/api/v1/external/dashboard')->assertStatus(403);
+    })->with(['superadmin', 'admin', 'faculty_admin', 'dosen', 'dpl', 'student']);
 
 })->group('integration', 'rbac');

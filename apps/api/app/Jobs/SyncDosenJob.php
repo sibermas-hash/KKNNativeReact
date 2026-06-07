@@ -17,7 +17,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
-
 class SyncDosenJob implements ShouldBeUnique, ShouldQueue
 {
     use Queueable;
@@ -109,6 +108,7 @@ class SyncDosenJob implements ShouldBeUnique, ShouldQueue
             $nip = trim((string) ($lecturerData['nip'] ?? ''));
             if ($nip === '' || ! preg_match('/^\d+$/', $nip)) {
                 $skippedNoNip++;
+
                 continue;
             }
             try {

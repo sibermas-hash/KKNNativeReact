@@ -54,8 +54,8 @@ class ExternalParticipantController extends Controller
                 $s = '%'.strtolower((string) $request->query('search')).'%';
                 $q->where(function ($qq) use ($s) {
                     $qq->whereRaw('lower(external_nim) like ?', [$s])
-                       ->orWhereRaw('lower(home_university) like ?', [$s])
-                       ->orWhereHas('mahasiswa', fn ($m) => $m->whereRaw('lower(nama) like ?', [$s]));
+                        ->orWhereRaw('lower(home_university) like ?', [$s])
+                        ->orWhereHas('mahasiswa', fn ($m) => $m->whereRaw('lower(nama) like ?', [$s]));
                 });
             })
             ->latest('id');
@@ -87,6 +87,7 @@ class ExternalParticipantController extends Controller
         ]);
         $data['program_name'] = $data['program_name'] ?? 'KKN Kolaborasi PTKIN';
         $data['created_by'] = auth()->id();
+
         return $this->created(ExternalKknBatch::create($data), 'Batch peserta eksternal dibuat.');
     }
 
@@ -100,17 +101,30 @@ class ExternalParticipantController extends Controller
         $rows = $this->readCsv($request->file('file')->getRealPath());
         $faculty = Fakultas::firstOrCreate(['code' => 'EXT'], ['nama' => 'Mahasiswa Eksternal', 'short_name' => 'Eksternal']);
         $prodi = Prodi::firstOrCreate(['code' => 'EXT', 'fakultas_id' => $faculty->id], ['nama' => 'Program Studi Eksternal', 'short_name' => 'Eksternal']);
-        $created = 0; $skipped = 0; $accounts = [];
+        $created = 0;
+        $skipped = 0;
+        $accounts = [];
 
         DB::transaction(function () use ($rows, $batch, $faculty, $prodi, &$created, &$skipped, &$accounts) {
             foreach ($rows as $i => $row) {
                 $nama = trim((string) ($row['nama'] ?? $row['name'] ?? ''));
                 $nim = trim((string) ($row['nim'] ?? $row['nim_asal'] ?? $row['external_nim'] ?? ''));
-                if ($nama === '' || $nim === '') { $skipped++; continue; }
-                if (ExternalStudentProfile::where('batch_id', $batch->id)->where('external_nim', $nim)->exists()) { $skipped++; continue; }
+                if ($nama === '' || $nim === '') {
+                    $skipped++;
+
+                    continue;
+                }
+                if (ExternalStudentProfile::where('batch_id', $batch->id)->where('external_nim', $nim)->exists()) {
+                    $skipped++;
+
+                    continue;
+                }
                 $username = 'X-'.strtoupper($nim);
-                $base = $username; $n = 1;
-                while (User::where('username', $username)->exists()) { $username = $base.'-'.$n++; }
+                $base = $username;
+                $n = 1;
+                while (User::where('username', $username)->exists()) {
+                    $username = $base.'-'.$n++;
+                }
                 $password = 'KknReguler#2026!';
                 $user = User::create([
                     'username' => $username,
@@ -130,7 +144,7 @@ class ExternalParticipantController extends Controller
                     'fakultas_id' => $faculty->id,
                     'prodi_id' => $prodi->id,
                     'batch_year' => (int) now()->year,
-                    'gender' => strtoupper(substr((string)($row['jenis_kelamin'] ?? $row['gender'] ?? ''),0,1)) ?: null,
+                    'gender' => strtoupper(substr((string) ($row['jenis_kelamin'] ?? $row['gender'] ?? ''), 0, 1)) ?: null,
                     'phone' => $row['no_hp'] ?? $row['phone'] ?? null,
                     'birth_date' => $row['tgl_lahir'] ?? $row['tanggal_lahir'] ?? $row['birth_date'] ?? null,
                     'alamat' => $row['alamat'] ?? $row['address'] ?? null,
@@ -164,6 +178,7 @@ class ExternalParticipantController extends Controller
                 $accounts[] = ['nama' => $nama, 'nim_asal' => $nim, 'username' => $username, 'password' => $password];
             }
         });
+
         return $this->success(['created' => $created, 'skipped' => $skipped, 'accounts' => $accounts], 'Import peserta eksternal selesai.');
     }
 
@@ -175,12 +190,16 @@ class ExternalParticipantController extends Controller
         $rows = [];
         while (($line = fgetcsv($fh)) !== false) {
             $row = [];
-            foreach ($header as $i => $key) { $row[$key] = $line[$i] ?? null; }
+            foreach ($header as $i => $key) {
+                $row[$key] = $line[$i] ?? null;
+            }
             $rows[] = $row;
         }
         fclose($fh);
+
         return $rows;
     }
+
     public function export(Request $request)
     {
         $rows = ExternalStudentProfile::query()
@@ -192,7 +211,7 @@ class ExternalParticipantController extends Controller
 
         $rows = $rows->get();
 
-        $header = ['no','nama','username','nim_asal','kampus_asal','fakultas_asal','prodi_asal','periode','target_kabupaten','kelompok','lokasi_kelompok','status_peserta','no_hp','email'];
+        $header = ['no', 'nama', 'username', 'nim_asal', 'kampus_asal', 'fakultas_asal', 'prodi_asal', 'periode', 'target_kabupaten', 'kelompok', 'lokasi_kelompok', 'status_peserta', 'no_hp', 'email'];
         $lines = [$header];
         foreach ($rows as $i => $row) {
             $peserta = $row->mahasiswa?->peserta?->first();
@@ -221,11 +240,12 @@ class ExternalParticipantController extends Controller
             'Content-Disposition' => 'attachment; filename="peserta-eksternal-'.now()->format('Ymd-His').'.csv"',
         ]);
     }
+
     public function template()
     {
         $rows = [
-            ['nama','nim','kampus_asal','fakultas_asal','prodi_asal','jenis_kelamin','email','no_hp','tanggal_lahir','alamat'],
-            ['Contoh Mahasiswa','EXT001','Universitas Contoh','Fakultas Contoh','Program Studi Contoh','L','contoh@email.test','08123456789','2005-01-01','Alamat lengkap'],
+            ['nama', 'nim', 'kampus_asal', 'fakultas_asal', 'prodi_asal', 'jenis_kelamin', 'email', 'no_hp', 'tanggal_lahir', 'alamat'],
+            ['Contoh Mahasiswa', 'EXT001', 'Universitas Contoh', 'Fakultas Contoh', 'Program Studi Contoh', 'L', 'contoh@email.test', '08123456789', '2005-01-01', 'Alamat lengkap'],
         ];
         $csv = collect($rows)->map(fn ($row) => implode(',', array_map(fn ($v) => '"'.str_replace('"', '""', $v).'"', $row)))->implode("\n")."\n";
 

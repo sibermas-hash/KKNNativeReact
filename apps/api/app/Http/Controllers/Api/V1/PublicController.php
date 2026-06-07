@@ -34,13 +34,12 @@ class PublicController extends Controller
         $perPage = $request->input('per_page', 12);
         $cacheKey = "public:announcements:{$type}:p{$page}:pp{$perPage}";
 
-        $announcements = Cache::remember($cacheKey, 300, fn () =>
-            Announcement::where('is_active', true)
-                ->whereNotNull('published_at')
-                ->where('published_at', '<=', now())
-                ->ofType($request->input('type'))
-                ->orderByDesc('published_at')
-                ->paginate($perPage)
+        $announcements = Cache::remember($cacheKey, 300, fn () => Announcement::where('is_active', true)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->ofType($request->input('type'))
+            ->orderByDesc('published_at')
+            ->paginate($perPage)
         );
 
         return $this->successCollection(AnnouncementResource::collection($announcements));
@@ -67,12 +66,11 @@ class PublicController extends Controller
      */
     public function announcementBySlug(string $slug): JsonResponse
     {
-        $announcement = Cache::remember("public:announcement:{$slug}", 600, fn () =>
-            Announcement::where('slug', $slug)
-                ->where('is_active', true)
-                ->whereNotNull('published_at')
-                ->where('published_at', '<=', now())
-                ->first()
+        $announcement = Cache::remember("public:announcement:{$slug}", 600, fn () => Announcement::where('slug', $slug)
+            ->where('is_active', true)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now())
+            ->first()
         );
 
         if (! $announcement) {
@@ -90,13 +88,12 @@ class PublicController extends Controller
         $perPage = $request->input('per_page', 200);
         $page = $request->input('page', 1);
 
-        $locations = Cache::remember("public:locations:p{$page}:pp{$perPage}", 900, fn () =>
-            Lokasi::with([
-                'fakultas',
-                'kelompok' => fn ($q) => $q->withCount('peserta'),
-            ])
-                ->orderBy('village_name')
-                ->paginate($perPage)
+        $locations = Cache::remember("public:locations:p{$page}:pp{$perPage}", 900, fn () => Lokasi::with([
+            'fakultas',
+            'kelompok' => fn ($q) => $q->withCount('peserta'),
+        ])
+            ->orderBy('village_name')
+            ->paginate($perPage)
         );
 
         return $this->successCollection(LokasiResource::collection($locations));
@@ -107,10 +104,9 @@ class PublicController extends Controller
      */
     public function downloads(): JsonResponse
     {
-        $downloads = Cache::remember('public:downloads', 900, fn () =>
-            Download::where('is_active', true)
-                ->orderByDesc('created_at')
-                ->get()
+        $downloads = Cache::remember('public:downloads', 900, fn () => Download::where('is_active', true)
+            ->orderByDesc('created_at')
+            ->get()
         );
 
         return $this->success(DownloadResource::collection($downloads));
@@ -121,10 +117,9 @@ class PublicController extends Controller
      */
     public function verifyCertificate(string $token): JsonResponse
     {
-        $certificate = Cache::remember("public:cert:{$token}", 3600, fn () =>
-            SertifikatKkn::where('verification_token', $token)
-                ->valid()
-                ->first()
+        $certificate = Cache::remember("public:cert:{$token}", 3600, fn () => SertifikatKkn::where('verification_token', $token)
+            ->valid()
+            ->first()
         );
 
         if (! $certificate) {
@@ -199,11 +194,10 @@ class PublicController extends Controller
      */
     public function popupAnnouncement(): JsonResponse
     {
-        $announcement = Cache::remember('public:popup', 120, fn () =>
-            Announcement::activePopup()
-                ->forTarget(Announcement::TARGET_PUBLIC_HOME)
-                ->orderByDesc('published_at')
-                ->first()
+        $announcement = Cache::remember('public:popup', 120, fn () => Announcement::activePopup()
+            ->forTarget(Announcement::TARGET_PUBLIC_HOME)
+            ->orderByDesc('published_at')
+            ->first()
         );
 
         if (! $announcement) {
@@ -229,4 +223,3 @@ class PublicController extends Controller
         ]);
     }
 }
-

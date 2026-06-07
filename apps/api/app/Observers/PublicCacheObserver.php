@@ -46,12 +46,18 @@ class PublicCacheObserver
 
     private function flushPattern(string $pattern): void
     {
-        $redis = Cache::getStore()->getRedis();
-        $prefix = config('cache.prefix', 'laravel_cache') . ':';
+        $store = Cache::getStore();
+
+        if (! method_exists($store, 'getRedis')) {
+            return;
+        }
+
+        $redis = $store->getRedis();
+        $prefix = config('cache.prefix', 'laravel_cache').':';
         $cursor = null;
 
         do {
-            [$cursor, $keys] = $redis->scan($cursor ?? 0, ['match' => $prefix . $pattern, 'count' => 100]);
+            [$cursor, $keys] = $redis->scan($cursor ?? 0, ['match' => $prefix.$pattern, 'count' => 100]);
             if (! empty($keys)) {
                 $redis->del(...$keys);
             }

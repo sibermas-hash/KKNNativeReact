@@ -35,6 +35,7 @@ class UserResource extends JsonResource
                 $request->is('api/v1/auth/user'),
                 fn () => $this->getPermissionsViaRoles()->pluck('name')->unique()->values()->toArray()
             ),
+            'fakultas_id' => $this->fakultas_id ?? $this->mahasiswa?->fakultas_id ?? $this->dosen?->fakultas_id,
             'faculty' => new FakultasResource($this->whenLoaded('fakultas')),
             'external_university_id' => $this->external_university_id,
             'external_university' => $this->whenLoaded('externalUniversity', fn () => [

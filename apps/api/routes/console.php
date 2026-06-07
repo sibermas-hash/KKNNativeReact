@@ -35,7 +35,6 @@ Schedule::command('monitoring:health-check')->everyFiveMinutes()->withoutOverlap
 // Daily heartbeat di Telegram jam 08:00 WIB (1×/hari via dedup 12h di command)
 Schedule::command('monitoring:health-check --heartbeat')->dailyAt('08:00');
 
-
 // Auto-cleanup stale data every 6 hours (tokens, sessions, cache, old logs)
 Schedule::command('cleanup:stale-data --quiet-log')->everySixHours()->withoutOverlapping();
 
@@ -64,7 +63,7 @@ Schedule::command('audit:recompute-eligibility')->dailyAt('04:00')->withoutOverl
 Schedule::command('kkn:auto-sync-phase')->everyFiveMinutes()->withoutOverlapping();
 
 // Cache warmup every 6 hours to keep master data hot
-Schedule::command("cache:warmup")->everySixHours()->withoutOverlapping();
+Schedule::command('cache:warmup')->everySixHours()->withoutOverlapping();
 
 // Pulse metrics aggregation every minute
-Schedule::command("pulse:check")->everyMinute()->withoutOverlapping();
+Schedule::command('pulse:check')->everyMinute()->withoutOverlapping();

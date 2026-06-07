@@ -48,7 +48,7 @@ class KknDaftarController extends Controller
             ->with(['jenisKkn', 'tahunAkademik'])
             ->orderByDesc('registration_start')
             ->get()
-            ->map(function ($p) use ($mahasiswa, $hasRegistered, $existingRegistration) {
+            ->map(function ($p) use ($mahasiswa, $hasRegistered) {
                 // Route submit registration dikunci middleware phase:registration.
                 // Jangan tampilkan can_register=true pada placement karena user
                 // akan klik daftar lalu pasti gagal 403 PHASE_BLOCKED.

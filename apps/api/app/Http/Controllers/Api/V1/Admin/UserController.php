@@ -14,10 +14,12 @@ use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use App\Models\User;
 use App\Services\AuditService;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\Rule;
 
 class UserController extends Controller
@@ -110,7 +112,7 @@ class UserController extends Controller
             ->limit($limit)
             ->get()
             ->map(function ($row) {
-                $lastSeen = \Carbon\Carbon::parse($row->last_activity);
+                $lastSeen = Carbon::parse($row->last_activity);
 
                 return [
                     'id' => (int) $row->id,
@@ -205,9 +207,13 @@ class UserController extends Controller
 
     public function toggleActive(User $user): JsonResponse
     {
+        if ($user->id === auth()->id()) {
+            return $this->error('FORBIDDEN', 'Anda tidak dapat menonaktifkan akun sendiri.', 403);
+        }
+
         $user->update(['is_active' => ! $user->is_active]);
 
-        return $this->success(new UserResource($user->refresh()), 'Status pengguna berhasil diubah.');
+        return $this->success(new UserResource($user->refresh()->load('roles')), 'Status pengguna berhasil diperbarui.');
     }
 
     /**
@@ -337,10 +343,22 @@ class UserController extends Controller
                         $mahasiswa->{$field} = $value;
                         $newValues["mahasiswa.{$field}"] = $value;
                         $mahasiswaFieldsChanged[] = $field;
+
+                        if ($field === 'api_email') {
+                            $oldValues['user.email'] = $user->email;
+                            $user->email = $value;
+                            $newValues['user.email'] = $value;
+                            $userFieldsChanged[] = 'email';
+                        }
                     }
                     if ($mahasiswaFieldsChanged !== []) {
                         $mahasiswa->save();
                         $mahasiswa->lockFields($mahasiswaFieldsChanged);
+                    }
+
+                    if (in_array('email', $userFieldsChanged, true) && $user->isDirty('email')) {
+                        $user->save();
+                        $user->lockFields(['email']);
                     }
                 }
             }
@@ -395,14 +413,32 @@ class UserController extends Controller
             return $this->forbidden('Hanya superadmin yang dapat mereset password pengguna.');
         }
 
+        if (filled($user->email)) {
+            $token = Password::broker()->createToken($user);
+            $user->sendPasswordResetNotification($token);
+
+            AuditService::log(
+                'SUPERADMIN_SEND_RESET_LINK',
+                sprintf('Superadmin mengirim tautan reset password untuk user id=%d (%s)', $user->id, $user->username),
+                $user,
+                [],
+                ['delivery' => 'email']
+            );
+
+            return $this->success(
+                ['username' => $user->username, 'delivery' => 'email', 'email_sent' => true],
+                'Tautan reset password berhasil dikirim ke email pengguna.'
+            );
+        }
+
         $birthDate = Mahasiswa::where('user_id', $user->id)->value('birth_date')
             ?? Dosen::where('user_id', $user->id)->value('birth_date');
 
         if (! $birthDate) {
-            return $this->error('BIRTH_DATE_MISSING', 'Tanggal lahir pengguna belum tersedia. Isi tanggal lahir sebelum reset password default.', 422);
+            return $this->error('VALIDATION_ERROR', 'Email pengguna belum tersedia untuk pengiriman tautan reset password.', 422);
         }
 
-        $defaultPassword = \Carbon\Carbon::parse($birthDate)->format('dmY');
+        $defaultPassword = Carbon::parse($birthDate)->format('dmY');
         $user->update(['password' => Hash::make($defaultPassword), 'must_change_password' => true]);
 
         AuditService::log(
@@ -446,12 +482,15 @@ class UserController extends Controller
                 // nim encrypted — LIKE won't match ciphertext. Fall back to
                 // nama partial match + exact nim via blind index.
                 $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $s);
-                $q->where('nama', 'like', "%{$escaped}%");
-                if (preg_match('/^\d{6,20}$/', trim($s))) {
-                    $q->orWhere('nim_bidx', Mahasiswa::computeBlindIndex(trim($s)));
-                }
+                $q->where(function ($qq) use ($escaped, $s) {
+                    $qq->where('nama', 'like', "%{$escaped}%");
+                    if (preg_match('/^\d{6,20}$/', trim($s))) {
+                        $qq->orWhere('nim_bidx', Mahasiswa::computeBlindIndex(trim($s)));
+                    }
+                });
             })
             ->when($request->input('fakultas_id'), fn ($q, $id) => $q->where('fakultas_id', $id))
+            ->when($request->input('prodi_id'), fn ($q, $id) => $q->where('prodi_id', $id))
             ->orderByDesc('created_at');
 
         return $this->successCollection(MahasiswaResource::collection($query->paginate(25)));

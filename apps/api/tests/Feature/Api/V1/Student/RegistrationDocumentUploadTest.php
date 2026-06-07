@@ -9,9 +9,17 @@ use Illuminate\Support\Facades\Storage;
 
 it('rejects empty upload requests without changing registration status', function () {
     $user = createUserWithRole('student');
+    $user->forceFill([
+        'avatar' => 'avatars/test.jpg',
+        'phone' => '+6281234567890',
+        'address' => 'Jl. Test',
+        'address_verified_at' => now(),
+    ])->save();
     $period = createActivePeriod('registration');
     $mahasiswa = Mahasiswa::factory()->create([
         'user_id' => $user->id,
+        'nik' => '3376010101010001',
+        'mother_name' => 'Ibu Test',
         'health_certificate_path' => 'health-certificates/legacy-existing.pdf',
     ]);
 
@@ -34,6 +42,9 @@ it('rejects empty upload requests without changing registration status', functio
         'status' => 'pending',
     ]);
 
+    $user = $user->fresh();
+    $user->setRelation('mahasiswa', $mahasiswa);
+
     $this->actingAs($user)
         ->postJson("/api/v1/student/registration/{$period->id}/documents", [])
         ->assertStatus(422)
@@ -47,9 +58,17 @@ it('stores uploaded documents and updates registration status', function () {
     Storage::fake(config('filesystems.default'));
 
     $user = createUserWithRole('student');
+    $user->forceFill([
+        'avatar' => 'avatars/test.jpg',
+        'phone' => '+6281234567890',
+        'address' => 'Jl. Test',
+        'address_verified_at' => now(),
+    ])->save();
     $period = createActivePeriod('registration');
     $mahasiswa = Mahasiswa::factory()->create([
         'user_id' => $user->id,
+        'nik' => '3376010101010002',
+        'mother_name' => 'Ibu Test',
         'health_certificate_path' => null,
         'parent_permission_path' => null,
     ]);
@@ -72,6 +91,9 @@ it('stores uploaded documents and updates registration status', function () {
         'periode_id' => $period->id,
         'status' => 'pending',
     ]);
+
+    $user = $user->fresh();
+    $user->setRelation('mahasiswa', $mahasiswa);
 
     $this->actingAs($user)
         ->post("/api/v1/student/registration/{$period->id}/documents", [

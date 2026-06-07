@@ -1,11 +1,12 @@
-import { View, Text, TouchableOpacity, StyleSheet, Alert, Linking } from 'react-native';
+import { View, Text, TouchableOpacity, Alert, Linking } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as DocumentPicker from 'expo-document-picker';
 import { studentEndpoints } from '@sibermas/api-client';
 import { api } from '@/lib/api';
 import { useState } from 'react';
 import {
-  colors,
+  useTheme,
+  useStyles,
   HeroCard,
   InlineAlert,
   LoadingState,
@@ -38,6 +39,56 @@ export default function PosterScreen() {
   const qc = useQueryClient();
   const endpoints = studentEndpoints(api) as unknown as PosterEndpoints;
   const [selectedFile, setSelectedFile] = useState<{ name: string; uri: string; mimeType?: string } | null>(null);
+
+  const { colors } = useTheme();
+
+  const styles = useStyles((colors) => ({
+    card: { gap: 12 },
+    cardHeader: { flexDirection: 'row' as const, alignItems: 'center' as const, justifyContent: 'space-between' as const, gap: 12 },
+    cardCopy: { flex: 1, gap: 4 },
+    cardTitle: { fontSize: 17, fontWeight: '900' as const, color: colors.text },
+    fileName: { fontSize: 13, color: colors.textMuted, fontWeight: '700' as const },
+    smallButton: { minHeight: 38, paddingVertical: 8, paddingHorizontal: 14 },
+    uploadCard: { gap: 14 },
+    pickBox: {
+      minHeight: 78,
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      gap: 12,
+      borderWidth: 1,
+      borderStyle: 'dashed' as const,
+      borderColor: colors.borderStrong,
+      borderRadius: 8,
+      padding: 14,
+      backgroundColor: colors.surfaceMuted,
+    },
+    pickMark: {
+      width: 38,
+      height: 38,
+      borderRadius: 8,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+      backgroundColor: colors.emeraldSoft,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    pickMarkText: { fontSize: 11, fontWeight: '900' as const, color: colors.primary },
+    pickCopy: { flex: 1, gap: 3 },
+    pickTitle: { fontSize: 14, fontWeight: '800' as const, color: colors.text },
+    pickSubtitle: { fontSize: 12, color: colors.textMuted },
+    selectedRow: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      gap: 12,
+      borderRadius: 8,
+      padding: 12,
+      backgroundColor: colors.emeraldSoft,
+      borderWidth: 1,
+      borderColor: colors.borderStrong,
+    },
+    selectedName: { flex: 1, fontSize: 13, color: colors.softText, fontWeight: '800' as const },
+    removeText: { fontSize: 13, color: colors.rose, fontWeight: '800' as const },
+  }));
 
   const { data, isLoading } = useQuery({
     queryKey: ['student', 'poster'],
@@ -140,51 +191,3 @@ export default function PosterScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  card: { gap: 12 },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
-  cardCopy: { flex: 1, gap: 4 },
-  cardTitle: { fontSize: 17, fontWeight: '900', color: colors.text },
-  fileName: { fontSize: 13, color: colors.textMuted, fontWeight: '700' },
-  smallButton: { minHeight: 38, paddingVertical: 8, paddingHorizontal: 14 },
-  uploadCard: { gap: 14 },
-  pickBox: {
-    minHeight: 78,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: colors.borderStrong,
-    borderRadius: 8,
-    padding: 14,
-    backgroundColor: colors.surfaceMuted,
-  },
-  pickMark: {
-    width: 38,
-    height: 38,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#E6FFFA',
-    borderWidth: 1,
-    borderColor: '#99F6E4',
-  },
-  pickMarkText: { fontSize: 11, fontWeight: '900', color: colors.primary },
-  pickCopy: { flex: 1, gap: 3 },
-  pickTitle: { fontSize: 14, fontWeight: '800', color: colors.text },
-  pickSubtitle: { fontSize: 12, color: colors.textMuted },
-  selectedRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    borderRadius: 8,
-    padding: 12,
-    backgroundColor: '#ECFDF5',
-    borderWidth: 1,
-    borderColor: '#A7F3D0',
-  },
-  selectedName: { flex: 1, fontSize: 13, color: '#065F46', fontWeight: '800' },
-  removeText: { fontSize: 13, color: colors.rose, fontWeight: '800' },
-});

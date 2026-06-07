@@ -1,11 +1,55 @@
 import { useMemo } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useAuthUser, useLogoutAction } from '@/stores';
-import { colors } from '@/components/ui/primitives';
+import { useStyles } from '@/components/ui/primitives';
 
 export default function UnsupportedRoleScreen() {
   const user = useAuthUser();
   const logout = useLogoutAction();
+
+  const styles = useStyles((colors) => ({
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+      padding: 24,
+      backgroundColor: colors.background,
+    },
+    card: {
+      backgroundColor: colors.surface,
+      borderRadius: 8,
+      padding: 24,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: '900',
+      color: colors.text,
+      marginBottom: 12,
+    },
+    description: {
+      fontSize: 15,
+      lineHeight: 22,
+      color: colors.textMuted,
+      marginBottom: 16,
+    },
+    meta: {
+      fontSize: 14,
+      color: colors.textMuted,
+      marginBottom: 20,
+    },
+    button: {
+      backgroundColor: colors.primary,
+      borderRadius: 8,
+      paddingVertical: 14,
+      alignItems: 'center',
+    },
+    buttonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: '600',
+    },
+  }));
 
   const roles = useMemo(() => {
     const list = user?.roles || [];
@@ -27,47 +71,3 @@ export default function UnsupportedRoleScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 24,
-    backgroundColor: colors.background,
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: colors.text,
-    marginBottom: 12,
-  },
-  description: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: colors.textMuted,
-    marginBottom: 16,
-  },
-  meta: {
-    fontSize: 14,
-    color: colors.textMuted,
-    marginBottom: 20,
-  },
-  button: {
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});

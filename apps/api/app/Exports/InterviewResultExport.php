@@ -6,12 +6,12 @@ namespace App\Exports;
 
 use App\Models\KKN\InterviewParticipant;
 use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithTitle;
-use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
-class InterviewResultExport implements FromQuery, WithHeadings, WithMapping, WithTitle, ShouldAutoSize
+class InterviewResultExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapping, WithTitle
 {
     public function __construct(
         private readonly ?int $scheduleId = null,
@@ -73,7 +73,7 @@ class InterviewResultExport implements FromQuery, WithHeadings, WithMapping, Wit
             $mhs?->fakultas?->nama ?? '-',
             $schedule?->periode?->jenisKkn?->name ?? '-',
             $schedule?->interview_date?->format('d/m/Y') ?? '-',
-            ($schedule?->interview_time_start?->format('H:i') ?? '') . ' - ' . ($schedule?->interview_time_end?->format('H:i') ?? ''),
+            ($schedule?->interview_time_start?->format('H:i') ?? '').' - '.($schedule?->interview_time_end?->format('H:i') ?? ''),
             $schedule?->location ?? '-',
             match ($row->result) {
                 'passed' => 'LULUS',

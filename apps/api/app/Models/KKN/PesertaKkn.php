@@ -26,6 +26,7 @@ class PesertaKkn extends Model
         'placement_is_live',
         'placement_published_at',
         'placement_published_by',
+        'placement_batch_id',
         'status',
         'entry_scheme',
         'collaboration_letter_id',
@@ -58,6 +59,7 @@ class PesertaKkn extends Model
             'placement_is_live' => 'boolean',
             'placement_published_at' => 'datetime',
             'placement_published_by' => 'integer',
+            'placement_batch_id' => 'string',
             // R11 audit-pendaftaran fix — field di fillable tapi sebelumnya
             // tidak di-cast, sehingga strict comparison (PHP 8 strict_types)
             // bisa fail terhadap nilai string "0"/"1" dari PostgreSQL.
@@ -117,7 +119,7 @@ class PesertaKkn extends Model
      */
     public function scopeKetua(Builder $query): Builder
     {
-        return $query->where('role', 'Ketua');
+        return $query->whereRaw('LOWER(role) = ?', ['ketua']);
     }
 
     /**

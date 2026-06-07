@@ -1,8 +1,18 @@
 <?php
 
+use Spatie\Health\Checks\Checks\CacheCheck;
+use Spatie\Health\Checks\Checks\DatabaseCheck;
+use Spatie\Health\Checks\Checks\DebugModeCheck;
+use Spatie\Health\Checks\Checks\EnvironmentCheck;
+use Spatie\Health\Checks\Checks\HorizonCheck;
+use Spatie\Health\Checks\Checks\OptimizedAppCheck;
+use Spatie\Health\Checks\Checks\RedisCheck;
+use Spatie\Health\Checks\Checks\UsedDiskSpaceCheck;
+use Spatie\Health\ResultStores\CacheHealthResultStore;
+
 return [
     'result_stores' => [
-        Spatie\Health\ResultStores\CacheHealthResultStore::class => [
+        CacheHealthResultStore::class => [
             'store' => 'redis',
         ],
     ],
@@ -12,13 +22,13 @@ return [
     ],
 
     'checks' => [
-        Spatie\Health\Checks\Checks\CacheCheck::class,
-        Spatie\Health\Checks\Checks\DatabaseCheck::class,
-        Spatie\Health\Checks\Checks\DebugModeCheck::class,
-        Spatie\Health\Checks\Checks\EnvironmentCheck::class,
-        Spatie\Health\Checks\Checks\HorizonCheck::class,
-        Spatie\Health\Checks\Checks\OptimizedAppCheck::class,
-        Spatie\Health\Checks\Checks\RedisCheck::class,
-        Spatie\Health\Checks\Checks\UsedDiskSpaceCheck::class,
+        CacheCheck::class,
+        DatabaseCheck::class,
+        DebugModeCheck::class,
+        EnvironmentCheck::class,
+        HorizonCheck::class,
+        OptimizedAppCheck::class,
+        RedisCheck::class,
+        UsedDiskSpaceCheck::class,
     ],
 ];

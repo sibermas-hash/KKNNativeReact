@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Student\DailyReportController;
 use App\Http\Controllers\Api\V1\Student\DashboardController;
 use App\Http\Controllers\Api\V1\Student\DplEvaluationController;
 use App\Http\Controllers\Api\V1\Student\FinalReportController;
+use App\Http\Controllers\Api\V1\Student\InterviewController;
 use App\Http\Controllers\Api\V1\Student\IzinController;
 use App\Http\Controllers\Api\V1\Student\KknDaftarController;
 use App\Http\Controllers\Api\V1\Student\KknStatementController;
@@ -16,7 +17,6 @@ use App\Http\Controllers\Api\V1\Student\RegistrationController;
 use App\Http\Controllers\Api\V1\Student\RegistrationDocumentController;
 use App\Http\Controllers\Api\V1\Student\RekapitulasiController;
 use App\Http\Controllers\Api\V1\Student\WorkProgramController;
-use App\Http\Controllers\Api\V1\Student\InterviewController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -55,9 +55,9 @@ Route::prefix('student')
 
         // Rekapitulasi — selalu tersedia (sesuai codebase lama)
         Route::get('/rekapitulasi', [RekapitulasiController::class, 'index'])->name('api.v1.student.rekapitulasi.index');
-        Route::post("/rekapitulasi", [RekapitulasiController::class, "store"])->name("api.v1.student.rekapitulasi.store");
-        Route::put("/rekapitulasi/{rekapitulasi}", [RekapitulasiController::class, "update"])->name("api.v1.student.rekapitulasi.update");
-        Route::delete("/rekapitulasi/{rekapitulasi}", [RekapitulasiController::class, "destroy"])->name("api.v1.student.rekapitulasi.destroy");
+        Route::post('/rekapitulasi', [RekapitulasiController::class, 'store'])->name('api.v1.student.rekapitulasi.store');
+        Route::put('/rekapitulasi/{rekapitulasi}', [RekapitulasiController::class, 'update'])->name('api.v1.student.rekapitulasi.update');
+        Route::delete('/rekapitulasi/{rekapitulasi}', [RekapitulasiController::class, 'destroy'])->name('api.v1.student.rekapitulasi.destroy');
 
         // ─── FASE: PENDAFTARAN ────────────────────────────────────────
         Route::middleware('phase:registration')->group(function () {

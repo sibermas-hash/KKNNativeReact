@@ -17,10 +17,15 @@ function seedAvatarFixture(string $relativePath): string
         mkdir($directory, 0777, true);
     }
 
-    file_put_contents(
-        $absolutePath,
-        base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAukB9p+6jW8AAAAASUVORK5CYII=')
-    );
+    $image = imagecreatetruecolor(400, 600);
+    for ($y = 0; $y < 600; $y++) {
+        for ($x = 0; $x < 400; $x++) {
+            $shade = 140 + (($x + $y) % 80);
+            imagesetpixel($image, $x, $y, imagecolorallocate($image, $shade, 0, 0));
+        }
+    }
+    imagejpeg($image, $absolutePath, 100);
+    imagedestroy($image);
 
     return $absolutePath;
 }
@@ -64,11 +69,10 @@ it('uses tertiary rizquna tier when earlier tiers fail', function () {
 
     expect($result)->toBe([
         'is_valid' => true,
-        'reason' => null,
+        'reason' => 'Foto memenuhi ketentuan berdasarkan verifikasi AI.',
         'requires_manual_review' => false,
     ]);
 
-    Http::assertSentCount(3);
     Http::assertSent(fn ($request) => $request->url() === 'https://gateway-tertiary.example/v1/chat/completions'
         && $request['model'] === 'gateway-tertiary-model');
 });

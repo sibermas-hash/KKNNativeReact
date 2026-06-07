@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1\Admin;
 
+use App\Exports\PesertaKknFullExport;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
-use App\Exports\PesertaKknFullExport;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use Illuminate\Http\JsonResponse;
@@ -124,5 +124,4 @@ class PesertaKknListController extends Controller
 
         return Excel::download(new PesertaKknFullExport($rows), 'peserta-kkn-final-'.now()->format('Ymd-His').'.xlsx');
     }
-
 }

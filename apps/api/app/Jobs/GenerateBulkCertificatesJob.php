@@ -75,7 +75,7 @@ class GenerateBulkCertificatesJob implements ShouldQueue
             }
 
             foreach ($nilaiRecords as $nilai) {
-                    $pdf = $service->generateForStudent($nilai);
+                $pdf = $service->generateForStudent($nilai);
                 $fileName = 'Sertifikat_'.str_replace(' ', '_', $nilai->mahasiswa->nama)."_{$nilai->mahasiswa->nim}.pdf";
                 $zip->addFromString($fileName, $pdf->output());
             }

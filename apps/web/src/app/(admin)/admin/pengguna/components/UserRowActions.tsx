@@ -1,3 +1,5 @@
+'use client';
+
 import { Ban, CheckCircle2, ChevronDown, KeyRound, PencilLine, Shield } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';

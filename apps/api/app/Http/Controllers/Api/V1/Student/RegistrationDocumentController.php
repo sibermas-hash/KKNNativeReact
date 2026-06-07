@@ -172,7 +172,7 @@ class RegistrationDocumentController extends Controller
     }
 
     /**
-     * @param array<string, mixed> $items
+     * @param  array<string, mixed>  $items
      * @return array<int, UploadedFile>
      */
     private function flattenUploadedFiles(array $items): array
@@ -182,6 +182,7 @@ class RegistrationDocumentController extends Controller
         foreach ($items as $item) {
             if ($item instanceof UploadedFile) {
                 $flat[] = $item;
+
                 continue;
             }
 
@@ -194,7 +195,7 @@ class RegistrationDocumentController extends Controller
     }
 
     /**
-     * @param array<string, mixed> $items
+     * @param  array<string, mixed>  $items
      * @return array<string, mixed>
      */
     private function uploadedFileDebug(array $items): array
@@ -211,6 +212,7 @@ class RegistrationDocumentController extends Controller
                     'valid' => $item->isValid(),
                     'error' => $item->getError(),
                 ];
+
                 continue;
             }
 

@@ -26,6 +26,7 @@ class PesertaKknFactory extends Factory
         return $this->state([
             'status' => 'approved',
             'approved_at' => now(),
+            'placement_is_live' => true,
         ]);
     }
 }

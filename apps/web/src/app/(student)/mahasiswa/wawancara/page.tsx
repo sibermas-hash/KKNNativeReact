@@ -70,9 +70,9 @@ export default function MahasiswaWawancaraPage(): React.JSX.Element {
                 key={item.id} 
                 className={`p-6 border transition-all ${surfaceClass} ${themeConfig.shadow} ${
                   item.result === 'passed' 
-                    ? 'border-emerald-500/30 bg-emerald-50/10 dark:bg-emerald-950/10' 
+                    ? 'border-emerald-500/20 bg-[color:var(--profile-soft)]/20' 
                     : item.result === 'failed' 
-                      ? 'border-rose-500/30 bg-rose-50/10 dark:bg-rose-950/10' 
+                      ? 'border-rose-500/20 bg-[color:var(--profile-danger)]/20' 
                       : 'border-[color:var(--profile-border)]'
                 }`}
                 style={{ borderRadius: 'var(--profile-radius)' }}
@@ -94,7 +94,7 @@ export default function MahasiswaWawancaraPage(): React.JSX.Element {
 
                   <div className="self-start sm:self-auto">
                     {item.result === 'passed' && (
-                      <div className="flex items-center gap-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 px-4 py-2 border border-emerald-200 dark:border-emerald-800/40">
+                      <div className="flex items-center gap-2 rounded-xl bg-[color:var(--profile-soft)] text-[color:var(--profile-soft-text)] px-4 py-2 border border-[color:var(--profile-border)]">
                         <CheckCircle2 size={18} />
                         <div>
                           <p className="text-sm font-black tracking-wider">LULUS</p>
@@ -102,7 +102,7 @@ export default function MahasiswaWawancaraPage(): React.JSX.Element {
                       </div>
                     )}
                     {item.result === 'failed' && (
-                      <div className="flex items-center gap-2 rounded-xl bg-rose-50 dark:bg-rose-950/20 text-rose-700 dark:text-rose-400 px-4 py-2 border border-rose-200 dark:border-rose-800/40">
+                      <div className="flex items-center gap-2 rounded-xl bg-[color:var(--profile-danger)] text-[color:var(--profile-danger-text)] px-4 py-2 border border-[color:var(--profile-border)]">
                         <XCircle size={18} />
                         <div>
                           <p className="text-sm font-black tracking-wider">TIDAK LULUS</p>
@@ -110,7 +110,7 @@ export default function MahasiswaWawancaraPage(): React.JSX.Element {
                       </div>
                     )}
                     {item.result === 'pending' && (
-                      <div className="flex items-center gap-2 rounded-xl bg-amber-50 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 px-4 py-2 border border-amber-200 dark:border-amber-800/40">
+                      <div className="flex items-center gap-2 rounded-xl bg-[color:var(--profile-warning)] text-[color:var(--profile-warning-text)] px-4 py-2 border border-[color:var(--profile-border)]">
                         <AlertCircle size={18} />
                         <div>
                           <p className="text-sm font-black tracking-wider">{isPast ? 'MENUNGGU HASIL' : 'TERJADWAL'}</p>

@@ -368,11 +368,10 @@ export default function AdminDashboardPage(): React.JSX.Element {
         </motion.div>
       )}
 
-      {/* ── Main grid ── */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
 
         {/* Chart */}
-        <motion.div variants={ENTER} className="lg:col-span-8 bg-white rounded-xl border border-slate-100 overflow-hidden">
+        <motion.div variants={ENTER} className="lg:col-span-8 min-w-0 bg-white rounded-xl border border-slate-100 overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-50 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <TrendingUp size={15} className="text-slate-400" />
@@ -383,7 +382,7 @@ export default function AdminDashboardPage(): React.JSX.Element {
               <span className="flex items-center gap-1.5 text-slate-400"><span className="h-2 w-2 rounded-full bg-emerald-500" />Validasi</span>
             </div>
           </div>
-          <div className="p-4 h-52">
+          <div className="relative p-4 h-52 w-full">
             {isLoading || !trendData ? (
               <div className="h-full flex items-center justify-center">
                 <div className="h-6 w-6 animate-spin rounded-full border-2 border-slate-200 border-t-slate-400" />

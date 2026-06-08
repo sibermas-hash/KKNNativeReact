@@ -21,6 +21,7 @@ export default function TransferPesertaPage(): React.JSX.Element {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [angkatan, setAngkatan] = useState('58');
+  const [page, setPage] = useState(1);
   const [transferTarget, setTransferTarget] = useState<Peserta | null>(null);
   const [targetPeriodeId, setTargetPeriodeId] = useState('');
 
@@ -46,13 +47,13 @@ export default function TransferPesertaPage(): React.JSX.Element {
   });
 
   // Fetch peserta yang bisa di-transfer (interview_failed + approved yang mau dipindah)
-  const { data, isLoading } = useQuery<{ data: Peserta[] }>({
-    queryKey: ['admin', 'transfer-peserta', search, angkatan],
+  const { data, isLoading } = useQuery<{ data: Peserta[]; meta: { current_page: number; last_page: number; total: number } }>({
+    queryKey: ['admin', 'transfer-peserta', search, angkatan, page],
     queryFn: async () => {
       const res = await rawApi.get('/admin/transfer-peserta', {
-        params: { search: search || undefined, angkatan: angkatan || undefined },
+        params: { search: search || undefined, angkatan: angkatan || undefined, page },
       });
-      return ((res.data as { data?: unknown }).data ?? res.data) as { data: Peserta[] };
+      return ((res.data as { data?: unknown }).data ?? res.data) as { data: Peserta[]; meta: { current_page: number; last_page: number; total: number } };
     },
   });
 
@@ -82,6 +83,7 @@ export default function TransferPesertaPage(): React.JSX.Element {
   });
 
   const peserta = data?.data ?? [];
+  const meta = data?.meta;
   const periodes = periodesData ?? [];
 
   return (
@@ -93,9 +95,9 @@ export default function TransferPesertaPage(): React.JSX.Element {
       <div className="flex flex-wrap gap-3">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari NIM/Nama..." className="h-10 w-full rounded-xl border border-slate-200 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600" />
+          <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} placeholder="Cari NIM/Nama..." className="h-10 w-full rounded-xl border border-slate-200 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600" />
         </div>
-        <select value={angkatan} onChange={e => setAngkatan(e.target.value)} className="h-10 rounded-xl border border-slate-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600">
+        <select value={angkatan} onChange={e => { setAngkatan(e.target.value); setPage(1); }} className="h-10 rounded-xl border border-slate-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600">
           {uniqueAngkatans.length > 0 ? (
             uniqueAngkatans.map(a => (
               <option key={a} value={a}>Angkatan {a}</option>
@@ -149,6 +151,35 @@ export default function TransferPesertaPage(): React.JSX.Element {
               ))}
             </tbody>
           </table>
+          
+          {/* Pagination Controls */}
+          {meta && meta.last_page > 1 && (
+            <div className="flex items-center justify-between border-t border-slate-100 px-4 py-3 bg-slate-50/50">
+              <div className="text-xs text-slate-500">
+                Menampilkan <span className="font-bold text-slate-700">{(meta.current_page - 1) * 25 + 1}</span> sampai{' '}
+                <span className="font-bold text-slate-700">
+                  {Math.min(meta.current_page * 25, meta.total)}
+                </span>{' '}
+                dari <span className="font-bold text-slate-700">{meta.total}</span> peserta
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={meta.current_page === 1}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                >
+                  Sebelumnya
+                </button>
+                <button
+                  onClick={() => setPage(p => Math.min(meta.last_page, p + 1))}
+                  disabled={meta.current_page === meta.last_page}
+                  className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                >
+                  Selanjutnya
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

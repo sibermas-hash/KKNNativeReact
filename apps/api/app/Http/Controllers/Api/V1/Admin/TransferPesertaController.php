@@ -66,7 +66,17 @@ class TransferPesertaController extends Controller
 
         $this->scopeByFaculty($query);
 
-        return $this->success(['data' => $query->get()]);
+        $paginated = $query->paginate($request->integer('per_page', 25));
+
+        return $this->success([
+            'data' => $paginated->items(),
+            'meta' => [
+                'current_page' => $paginated->currentPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+                'last_page' => $paginated->lastPage(),
+            ],
+        ]);
     }
 
     /**

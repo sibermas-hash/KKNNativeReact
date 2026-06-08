@@ -24,6 +24,27 @@ export default function TransferPesertaPage(): React.JSX.Element {
   const [transferTarget, setTransferTarget] = useState<Peserta | null>(null);
   const [targetPeriodeId, setTargetPeriodeId] = useState('');
 
+  // Fetch all periodes to extract unique angkatans dynamically
+  const { data: allPeriodes } = useQuery<{ data: { id: number; periode: number }[] }>({
+    queryKey: ['admin', 'all-periodes'],
+    queryFn: async () => {
+      const res = await rawApi.get('/admin/periode');
+      return ((res.data as { data?: unknown }).data ?? res.data) as { data: { id: number; periode: number }[] };
+    },
+  });
+
+  // Extract unique angkatans
+  const uniqueAngkatans = Array.from(
+    new Set((allPeriodes?.data ?? []).map(p => String(p.periode)))
+  ).sort((a, b) => b.localeCompare(a));
+
+  // Set default angkatan when data loads
+  useState(() => {
+    if (uniqueAngkatans.length > 0 && !uniqueAngkatans.includes(angkatan)) {
+      setAngkatan(uniqueAngkatans[0]);
+    }
+  });
+
   // Fetch peserta yang bisa di-transfer (interview_failed + approved yang mau dipindah)
   const { data, isLoading } = useQuery<{ data: Peserta[] }>({
     queryKey: ['admin', 'transfer-peserta', search, angkatan],
@@ -66,7 +87,7 @@ export default function TransferPesertaPage(): React.JSX.Element {
   return (
     <div className="space-y-6">
       <BackButton href="/admin/peserta-kkn" label="Kembali ke Peserta" />
-      <PageHeader title="Transfer Peserta" subtitle="Pindahkan peserta gagal wawancara ke jenis KKN non-wawancara dengan aman." />
+      <PageHeader title="Transfer Peserta" subtitle="Pindahkan peserta gagal wawancara atau disetujui ke jenis KKN non-wawancara dengan aman." />
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
@@ -75,9 +96,14 @@ export default function TransferPesertaPage(): React.JSX.Element {
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari NIM/Nama..." className="h-10 w-full rounded-xl border border-slate-200 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600" />
         </div>
         <select value={angkatan} onChange={e => setAngkatan(e.target.value)} className="h-10 rounded-xl border border-slate-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600">
-          <option value="58">Angkatan 58</option>
-          <option value="59">Angkatan 59</option>
-          <option value="">Semua</option>
+          {uniqueAngkatans.length > 0 ? (
+            uniqueAngkatans.map(a => (
+              <option key={a} value={a}>Angkatan {a}</option>
+            ))
+          ) : (
+            <option value="58">Angkatan 58</option>
+          )}
+          <option value="">Semua Angkatan</option>
         </select>
       </div>
 
@@ -110,8 +136,8 @@ export default function TransferPesertaPage(): React.JSX.Element {
                   <td className="px-4 py-3 text-xs text-slate-500">{p.mahasiswa?.prodi?.nama ?? '-'}</td>
                   <td className="px-4 py-3 text-xs text-slate-600">{p.periode?.jenis_kkn?.name ?? '-'}</td>
                   <td className="px-4 py-3 text-center">
-                    <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${p.status === 'interview_failed' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}`}>
-                      {p.status === 'interview_failed' ? 'Gagal Wawancara' : p.status}
+                    <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${p.status === 'interview_failed' ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                      {p.status === 'interview_failed' ? 'Gagal Wawancara' : p.status === 'approved' ? 'Disetujui' : p.status}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-center">
@@ -145,8 +171,17 @@ export default function TransferPesertaPage(): React.JSX.Element {
             </div>
 
             <div className="mt-6 flex gap-3">
-              <button onClick={() => { setTransferTarget(null); setTargetPeriodeId(''); }} className="flex-1 rounded-xl border border-slate-200 py-2.5 text-sm font-bold">Batal</button>
-              <button onClick={() => transferMutation.mutate({ pesertaId: transferTarget.id, periodeId: Number(targetPeriodeId) })} disabled={!targetPeriodeId || transferMutation.isPending} className="flex-1 rounded-xl bg-cyan-600 py-2.5 text-sm font-bold text-white disabled:opacity-50">Transfer</button>
+              <button onClick={() => { setTransferTarget(null); setTargetPeriodeId(''); }} disabled={transferMutation.isPending} className="flex-1 rounded-xl border border-slate-200 py-2.5 text-sm font-bold disabled:opacity-50">Batal</button>
+              <button onClick={() => transferMutation.mutate({ pesertaId: transferTarget.id, periodeId: Number(targetPeriodeId) })} disabled={!targetPeriodeId || transferMutation.isPending} className="flex-1 rounded-xl bg-cyan-600 py-2.5 text-sm font-bold text-white disabled:opacity-50 flex items-center justify-center gap-1.5">
+                {transferMutation.isPending ? (
+                  <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+                    Memproses...
+                  </>
+                ) : (
+                  'Transfer'
+                )}
+              </button>
             </div>
           </div>
         </div>

@@ -44,12 +44,13 @@ class TransferPesertaController extends Controller
     }
 
     /**
-     * List peserta yang bisa di-transfer (interview_failed, atau admin mau pindah manual).
+     * List peserta yang bisa di-transfer (interview_failed, atau approved yang belum punya kelompok).
      */
     public function index(Request $request): JsonResponse
     {
         $query = PesertaKkn::with(['mahasiswa.prodi', 'mahasiswa.fakultas', 'periode.jenisKkn'])
-            ->where('status', 'interview_failed')
+            ->whereIn('status', ['interview_failed', 'approved'])
+            ->whereNull('kelompok_id')
             ->when($request->input('angkatan'), fn ($q, $a) => $q->whereHas('periode', fn ($p) => $p->where('periode', $a)))
             ->when($request->input('search'), function ($q, $search) {
                 $term = trim((string) $search);
@@ -98,8 +99,12 @@ class TransferPesertaController extends Controller
 
         $this->ensurePesertaInFacultyScope($peserta);
 
-        if ($peserta->status !== 'interview_failed') {
-            return $this->error('Hanya peserta dengan status gagal wawancara yang dapat ditransfer.', 422);
+        if (!in_array($peserta->status, ['interview_failed', 'approved'], true)) {
+            return $this->error('Hanya peserta dengan status gagal wawancara atau disetujui yang dapat ditransfer.', 422);
+        }
+
+        if ($peserta->kelompok_id !== null) {
+            return $this->error('Peserta yang sudah tergabung dalam kelompok tidak dapat ditransfer langsung.', 422);
         }
 
         if ($peserta->periode_id === $targetPeriode->id) {

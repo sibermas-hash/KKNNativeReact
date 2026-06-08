@@ -34,7 +34,7 @@ export default function PesertaKknPage(): React.JSX.Element {
   const [fakultasId, setFakultasId] = useState('');
   const [prodiId, setProdiId] = useState('');
   const [jenisKknId, setJenisKknId] = useState('');
-  const [originType, setOriginType] = useState('');
+  const [originType, setOriginType] = useState('internal');
 
   const { data, isLoading } = useQuery<{ data: Peserta[]; meta: Meta }>({
     queryKey: ['admin', 'peserta-kkn', page, search, angkatan, fakultasId, prodiId, jenisKknId, originType],
@@ -121,7 +121,6 @@ export default function PesertaKknPage(): React.JSX.Element {
           <option value="">Semua Angkatan</option>
         </select>
         <select value={originType} onChange={e => { setOriginType(e.target.value); setPage(1); }} className="h-10 rounded-xl border border-slate-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600">
-          <option value="">Semua Jenis Mhs</option>
           <option value="internal">Mahasiswa Internal</option>
           <option value="external">Mahasiswa Eksternal</option>
         </select>

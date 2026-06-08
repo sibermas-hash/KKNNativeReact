@@ -73,7 +73,7 @@ Route::prefix('v1')->group(function () {
     // enumeration (narrower wins over auth_challenge anyway).
     Route::prefix('auth')->group(function () {
         Route::get('/captcha', [AuthController::class, 'captcha'])
-            ->middleware('throttle:auth_challenge')
+            ->middleware('throttle:auth_captcha')
             ->name('api.v1.auth.captcha');
 
         Route::post('/login', [AuthController::class, 'login'])

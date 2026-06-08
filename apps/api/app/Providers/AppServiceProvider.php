@@ -223,11 +223,20 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(30)->by($request->ip());
         });
 
-        // Auth challenge — login, password reset, captcha. Very tight because
+        // Auth challenge — login, password reset. Very tight because
         // this is the brute-force attack surface. IP-based to avoid account
         // enumeration side-channels.
         RateLimiter::for('auth_challenge', function (Request $request) {
             return Limit::perMinute(10)->by($request->ip());
+        });
+
+        // Auth captcha — captcha image generation. Looser than auth_challenge
+        // because (a) captcha endpoint is read-only / non-destructive,
+        // (b) legitimate users behind shared NAT (campus network) reload
+        // captcha frequently on typos, and (c) the actual brute-force surface
+        // is the login POST, which remains tightly limited via auth_challenge.
+        RateLimiter::for('auth_captcha', function (Request $request) {
+            return Limit::perMinute(60)->by($request->ip());
         });
 
         // Authenticated — per-user, scaled by role. Key is user id so that

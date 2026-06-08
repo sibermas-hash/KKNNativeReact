@@ -8,10 +8,12 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class PesertaKknFullExport implements FromCollection, ShouldAutoSize, WithHeadings, WithStyles
+class PesertaKknFullExport implements FromCollection, ShouldAutoSize, WithHeadings, WithStyles, WithColumnFormatting
 {
     public function __construct(private $rows) {}
 
@@ -24,6 +26,13 @@ class PesertaKknFullExport implements FromCollection, ShouldAutoSize, WithHeadin
     {
         return [
             'No', 'NIM', 'Nama', 'Prodi', 'Jenis KKN',
+        ];
+    }
+
+    public function columnFormats(): array
+    {
+        return [
+            'B' => '0',
         ];
     }
 

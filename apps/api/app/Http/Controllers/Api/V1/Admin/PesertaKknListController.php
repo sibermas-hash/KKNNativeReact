@@ -89,7 +89,7 @@ class PesertaKknListController extends Controller
         $index = 1;
         $rows = $query->get()->map(fn (PesertaKkn $p) => [
             'no' => $index++,
-            'nim' => $p->mahasiswa?->nim,
+            'nim' => $p->mahasiswa?->nim ? (int) $p->mahasiswa->nim : null,
             'nama' => $p->mahasiswa?->nama,
             'prodi' => $p->mahasiswa?->prodi?->nama ?? $p->mahasiswa?->external_prodi_name ?? '-',
             'jenis_kkn' => $p->periode?->jenisKkn?->name ?? '-',

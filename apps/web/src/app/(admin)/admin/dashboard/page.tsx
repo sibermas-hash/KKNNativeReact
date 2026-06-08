@@ -394,7 +394,7 @@ export default function AdminDashboardPage(): React.JSX.Element {
                 <p className="mt-1 text-[11px] text-slate-400">Grafik disembunyikan supaya tidak menampilkan garis kosong.</p>
               </div>
             ) : (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={180}>
               <AreaChart data={trendData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="gBlue" x1="0" y1="0" x2="0" y2="1">

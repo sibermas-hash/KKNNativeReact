@@ -34,12 +34,13 @@ export default function PesertaKknPage(): React.JSX.Element {
   const [fakultasId, setFakultasId] = useState('');
   const [prodiId, setProdiId] = useState('');
   const [jenisKknId, setJenisKknId] = useState('');
+  const [originType, setOriginType] = useState('');
 
   const { data, isLoading } = useQuery<{ data: Peserta[]; meta: Meta }>({
-    queryKey: ['admin', 'peserta-kkn', page, search, angkatan, fakultasId, prodiId, jenisKknId],
+    queryKey: ['admin', 'peserta-kkn', page, search, angkatan, fakultasId, prodiId, jenisKknId, originType],
     queryFn: async () => {
       const res = await rawApi.get('/admin/peserta-kkn', {
-        params: { page, search: search || undefined, angkatan: angkatan || undefined, fakultas_id: fakultasId || undefined, prodi_id: prodiId || undefined, jenis_kkn_id: jenisKknId || undefined, per_page: 25 },
+        params: { page, search: search || undefined, angkatan: angkatan || undefined, fakultas_id: fakultasId || undefined, prodi_id: prodiId || undefined, jenis_kkn_id: jenisKknId || undefined, origin_type: originType || undefined, per_page: 25 },
       });
       return ((res.data as { data?: unknown }).data ?? res.data) as { data: Peserta[]; meta: Meta };
     },
@@ -81,7 +82,7 @@ export default function PesertaKknPage(): React.JSX.Element {
   const exportXlsx = async () => {
     try {
       const res = await rawApi.get('/admin/peserta-kkn/export', {
-        params: { angkatan: angkatan || undefined, fakultas_id: fakultasId || undefined, prodi_id: prodiId || undefined, jenis_kkn_id: jenisKknId || undefined, limit: 50000 },
+        params: { angkatan: angkatan || undefined, fakultas_id: fakultasId || undefined, prodi_id: prodiId || undefined, jenis_kkn_id: jenisKknId || undefined, origin_type: originType || undefined, limit: 50000 },
         responseType: 'blob',
       });
       const blob = res.data instanceof Blob ? res.data : new Blob([res.data as BlobPart]);
@@ -118,6 +119,11 @@ export default function PesertaKknPage(): React.JSX.Element {
           <option value="58">Angkatan 58</option>
           <option value="59">Angkatan 59</option>
           <option value="">Semua Angkatan</option>
+        </select>
+        <select value={originType} onChange={e => { setOriginType(e.target.value); setPage(1); }} className="h-10 rounded-xl border border-slate-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600">
+          <option value="">Semua Jenis Mhs</option>
+          <option value="internal">Mahasiswa Internal</option>
+          <option value="external">Mahasiswa Eksternal</option>
         </select>
         <select value={fakultasId} onChange={e => { setFakultasId(e.target.value); setProdiId(''); setPage(1); }} className="h-10 min-w-[220px] rounded-xl border border-slate-200 px-4 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-600">
           <option value="">Semua Fakultas</option>

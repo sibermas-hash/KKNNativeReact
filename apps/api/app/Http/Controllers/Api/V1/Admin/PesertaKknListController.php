@@ -41,6 +41,7 @@ class PesertaKknListController extends Controller
         $query = PesertaKkn::with(['mahasiswa.prodi', 'mahasiswa.fakultas', 'periode.jenisKkn', 'kelompok'])
             ->whereIn('status', ['approved', 'interview_passed', 'completed'])
             ->when($request->input('angkatan'), fn ($q, $a) => $q->whereHas('periode', fn ($p) => $p->where('periode', $a)))
+            ->when($request->input('origin_type'), fn ($q, $ot) => $q->whereHas('mahasiswa', fn ($m) => $m->where('origin_type', $ot)))
             ->when($request->input('search'), function ($q, $search) {
                 $term = trim((string) $search);
                 $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $term);
@@ -76,6 +77,7 @@ class PesertaKknListController extends Controller
         $query = PesertaKkn::with(['mahasiswa.user', 'mahasiswa.prodi', 'mahasiswa.fakultas', 'periode.jenisKkn', 'kelompok'])
             ->whereIn('status', ['approved', 'interview_passed', 'completed'])
             ->when($request->input('angkatan'), fn ($q, $a) => $q->whereHas('periode', fn ($p) => $p->where('periode', $a)))
+            ->when($request->input('origin_type'), fn ($q, $ot) => $q->whereHas('mahasiswa', fn ($m) => $m->where('origin_type', $ot)))
             ->when($request->input('jenis_kkn_id'), fn ($q, $id) => $q->whereHas('periode', fn ($p) => $p->where('jenis_kkn_id', $id)))
             ->when($request->input('fakultas_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $id)))
             ->when($request->input('prodi_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('prodi_id', $id)))

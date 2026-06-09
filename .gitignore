@@ -98,3 +98,6 @@ apps/api/storage/app/backups/
 # Laravel public storage symlink / local backups
 apps/api/public/storage
 *.bak-*
+
+# Design mockup/preview cruft
+sibermas-theme-system*/

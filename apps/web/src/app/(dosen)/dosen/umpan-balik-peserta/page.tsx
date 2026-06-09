@@ -29,7 +29,7 @@ export default function ParticipantFeedbackPage(): React.JSX.Element {
     queryKey: QUERY_KEYS.dpl.feedback,
     queryFn: async () => {
       const res = await dplApi.feedback();
-      return (res as unknown as { success: boolean; data: { summary: Summary | null; comments: CommentRow[] } }).data;
+      return res as unknown as { summary: Summary | null; comments: CommentRow[] };
     },
   });
 

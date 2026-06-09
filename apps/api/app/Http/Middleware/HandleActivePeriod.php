@@ -47,7 +47,7 @@ class HandleActivePeriod
                 fn () => $this->contextService->getDefaultPeriodId()
             );
             if ($defaultId) {
-                $this->contextService->setActivePeriod($defaultId);
+                $this->contextService->setActivePeriod((int) $defaultId);
             }
         }
 

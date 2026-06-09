@@ -20,8 +20,9 @@ class PeriodContextService
     /**
      * Set the active period for the current user session.
      */
-    public function setActivePeriod(int $periodId): void
+    public function setActivePeriod(int|string $periodId): void
     {
+        $periodId = (int) $periodId;
         $period = Periode::with(['tahunAkademik', 'jenisKkn'])->findOrFail($periodId);
 
         Session::put(self::SESSION_KEY, $periodId);

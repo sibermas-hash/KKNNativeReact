@@ -4,6 +4,12 @@ Sistem Informasi KKN untuk UIN Prof. K.H. Saifuddin Zuhri Purwokerto.
 
 **Platform:** FreeBSD 14.x · Monorepo (pnpm) · Laravel 13 · Next.js 15
 
+> ⚠️ **PRODUKSI — deploy target:** service `sibermas_web` membaca dari
+> `/usr/local/www/sibermas/current` → symlink ke `releases/<TIMESTAMP>`.
+> **JANGAN** deploy ke `/usr/local/www/apache24/data/Sibermas2026` (direktori lama, TIDAK dipakai).
+> `NEXT_PUBLIC_*` di-inline ke bundle saat build → `apps/web/.env.local` harus
+> `NEXT_PUBLIC_API_URL=/api/v1` (relatif via Nginx), JANGAN `http://localhost:8000`.
+
 ---
 
 ## 📚 Dokumentasi Lengkap
@@ -12,9 +18,9 @@ Sistem Informasi KKN untuk UIN Prof. K.H. Saifuddin Zuhri Purwokerto.
 |---------|-----|
 | [`docs/DEPLOY_FREEBSD.md`](docs/DEPLOY_FREEBSD.md) | Jalur paling sederhana: single-server FreeBSD native + `deploy-freebsd-simple.sh` |
 | [`docs/DEPLOY_APACHE24_NGINX.md`](docs/DEPLOY_APACHE24_NGINX.md) | Profile Apache24 backend + Nginx frontend + `rc.d` tanpa Supervisor |
-| [`docs/FREEBSD_AUDIT.md`](docs/FREEBSD_AUDIT.md) | Audit deploy FreeBSD dan keputusan simplifikasi |
-| [`docs/JAILS_MIGRATION.md`](docs/JAILS_MIGRATION.md) | Migrasi lanjutan ke FreeBSD Jails |
-| [`docs/SCALING_5000.md`](docs/SCALING_5000.md) | Scaling untuk 5000 concurrent users — PHP-FPM 200, Next.js cluster ×4, pgbouncer, PostgreSQL tuning, sysctl |
+| [`docs/DEPLOY_FREEBSD_SAFE.md`](docs/DEPLOY_FREEBSD_SAFE.md) | Deploy aman, kurangi risiko Cloudflare 522/524 |
+| [`docs/SCALING_5000.md`](docs/SCALING_5000.md) | Scaling 5000 concurrent users — PHP-FPM 200, Next.js cluster ×4, pgbouncer, PostgreSQL tuning, sysctl |
+| `docs/archive/` | Dokumen historis: audit, post-deploy fixes, jails migration |
 
 ---
 
@@ -110,13 +116,16 @@ bash deploy-freebsd-simple.sh
 │   ├── restore.sh        # Restore from backup
 │   └── ci-guard.mjs      # CI security guard
 ├── docs/
-│   ├── FREEBSD_AUDIT.md      # Audit + simplifikasi deploy FreeBSD
-│   ├── JAILS_MIGRATION.md    # Panduan migrasi jails (1165 baris)
-│   ├── SCALING_5000.md       # Panduan scaling 5000 user
-│   └── DEPLOY_FREEBSD.md     # Deploy single-server native
-├── deploy-atomic.sh      # Atomic zero-downtime deploy
+│   ├── DEPLOY_FREEBSD.md       # Deploy single-server native
+│   ├── DEPLOY_FREEBSD_SAFE.md  # Deploy aman (anti CF 522/524)
+│   ├── DEPLOY_APACHE24_NGINX.md # Apache24 backend + Nginx frontend (PRODUKSI)
+│   ├── CLOUDFLARE_PURGE_STRATEGY.md
+│   ├── SCALING_5000.md         # Panduan scaling 5000 user
+│   ├── PRD_REALTIME_LOG_VIEWER.md
+│   ├── archive/               # Dokumen historis (audit, post-deploy fixes, jails)
+│   └── ops-reports/           # Laporan operasional/insiden
+├── deploy-atomic.sh      # Atomic zero-downtime deploy (release+symlink) ← AUTHORITATIVE
 ├── deploy-freebsd-simple.sh # Deploy/redeploy single-server native
-├── jail_setup.sh         # Auto-setup jail + bridge + paket
 ├── install-freebsd.sh    # Install single-server native
 ├── remote-deploy.sh      # Remote deploy via SSH key
 └── nginx-freebsd.conf    # Template Nginx config

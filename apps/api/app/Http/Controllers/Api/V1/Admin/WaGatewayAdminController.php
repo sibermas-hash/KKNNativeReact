@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Traits\ApiResponse;
 use App\Models\KKN\SystemSetting;
 use App\Services\WaGatewayService;
 use Illuminate\Http\JsonResponse;
@@ -12,6 +13,8 @@ use Illuminate\Http\Request;
 
 class WaGatewayAdminController extends Controller
 {
+    use ApiResponse;
+
     public function show(): JsonResponse
     {
         $apiKey = (string) SystemSetting::get('wa_gateway_api_key', config('wa_gateway.api_key', ''));

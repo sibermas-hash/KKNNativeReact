@@ -62,9 +62,15 @@ class DashboardController extends Controller
 
     public function index(Request $request, PeriodContextService $periodContextService): JsonResponse
     {
-        $periodId = $request->integer('periode_id')
-            ?? $periodContextService->getActivePeriodId()
-            ?? $periodContextService->getDefaultPeriodId();
+        // CATATAN: $request->integer('periode_id') mengembalikan 0 (bukan null)
+        // saat param absent. Karena 0 !== null, operator ?? TIDAK akan jatuh ke
+        // getActivePeriodId()/getDefaultPeriodId(), sehingga dashboard salah
+        // mengira "tidak ada periode aktif". Gunakan filled() agar param hanya
+        // dipakai bila benar-benar dikirim.
+        $periodId = $request->filled('periode_id')
+            ? $request->integer('periode_id')
+            : ($periodContextService->getActivePeriodId()
+                ?? $periodContextService->getDefaultPeriodId());
 
         if (! $periodId) {
             return $this->success([

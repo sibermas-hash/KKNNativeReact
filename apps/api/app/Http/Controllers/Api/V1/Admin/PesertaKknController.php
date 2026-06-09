@@ -143,15 +143,16 @@ class PesertaKknController extends Controller
         $sort = (string) $request->input('sort', 'created_at');
         $direction = strtolower((string) $request->input('direction', 'desc')) === 'asc' ? 'asc' : 'desc';
 
+        // baseQuery: SEMUA filter KECUALI status / status_group.
+        // Dipakai untuk menghitung stats per-status agar kartu statistik
+        // tetap menampilkan jumlah seluruh status (bukan 0 saat memfilter
+        // ke satu status yang kebetulan kosong).
         $baseQuery = PesertaKkn::query()
-            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
             ->when($request->input('entry_scheme'), fn ($q, $s) => $q->where('entry_scheme', $s))
             ->when($request->input('origin_type'), fn ($q, $s) => $q->whereHas('mahasiswa', fn ($m) => $m->where('origin_type', $s)))
             ->when($request->input('fakultas_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $id)))
             ->when($request->input('prodi_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('prodi_id', $id)))
             ->when($request->input('external_university_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('external_university_id', $id)))
-            ->when($request->input('status_group') === 'unprocessed', fn ($q) => $q->whereIn('status', ['pending', 'document_submitted']))
-            ->when($request->input('status_group') === 'processed', fn ($q) => $q->whereIn('status', ['approved', 'rejected', 'interview_scheduled']))
             ->when($request->input('periode_id'), fn ($q, $id) => $q->where('periode_id', $id))
             ->when($request->input('jenis_kkn_id'), fn ($q, $id) => $q->whereHas('periode', fn ($p) => $p->where('jenis_kkn_id', $id)))
             ->when($request->input('search'), function ($q, $s) {
@@ -168,6 +169,7 @@ class PesertaKknController extends Controller
 
         $this->scopeByFaculty($baseQuery);
 
+        // Stats dihitung dari baseQuery TANPA filter status → angka kartu benar.
         $statusCounts = (clone $baseQuery)
             ->select('status', DB::raw('COUNT(*) as total'))
             ->groupBy('status')
@@ -187,7 +189,12 @@ class PesertaKknController extends Controller
             'by_status' => $statusCounts,
         ];
 
-        $query = $baseQuery->with(['mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'mahasiswa.externalUniversity', 'kelompok', 'periode.jenisKkn', 'dokumen', 'collaborationLetter']);
+        // Query list: terapkan filter status / status_group di atas baseQuery.
+        $query = (clone $baseQuery)
+            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
+            ->when($request->input('status_group') === 'unprocessed', fn ($q) => $q->whereIn('status', ['pending', 'document_submitted']))
+            ->when($request->input('status_group') === 'processed', fn ($q) => $q->whereIn('status', ['approved', 'rejected', 'interview_scheduled']))
+            ->with(['mahasiswa.user', 'mahasiswa.fakultas', 'mahasiswa.prodi', 'mahasiswa.externalUniversity', 'kelompok', 'periode.jenisKkn', 'dokumen', 'collaborationLetter']);
 
         if ($sort === 'first_uploaded_at') {
             $query->leftJoinSub(

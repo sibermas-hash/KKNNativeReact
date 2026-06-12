@@ -56,7 +56,8 @@ jobs:
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: CI guard
-        run: node ../../scripts/ci-guard.mjs
+        run: node scripts/ci-guard.mjs
+        working-directory: ${{ github.workspace }}
 
       - name: Prepare environment
         run: |
@@ -105,7 +106,8 @@ jobs:
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: CI guard
-        run: node ../../scripts/ci-guard.mjs
+        run: node scripts/ci-guard.mjs
+        working-directory: ${{ github.workspace }}
 
       - name: Pint (code style)
         run: vendor/bin/pint --test

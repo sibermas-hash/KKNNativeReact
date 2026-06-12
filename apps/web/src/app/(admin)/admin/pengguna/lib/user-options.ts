@@ -14,7 +14,8 @@ export const roleOptions = [
   { value: 'student', label: 'Mahasiswa' },
   { value: 'dosen', label: 'Dosen' },
   { value: 'dpl', label: 'DPL' },
-  { value: 'admin', label: 'Admin' },
+  { value: 'admin', label: 'Admin LPPM Internal' },
+  { value: 'external_lppm_admin', label: 'Admin LPPM Eksternal' },
   { value: 'faculty_admin', label: 'Admin Fakultas' },
   { value: 'superadmin', label: 'Superadmin' },
 ];

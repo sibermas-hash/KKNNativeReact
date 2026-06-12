@@ -10,6 +10,7 @@ use App\Http\Resources\Api\V1\MahasiswaResource;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\Dosen;
+use App\Models\KKN\ExternalStudentProfile;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use App\Models\User;
@@ -140,36 +141,87 @@ class UserController extends Controller
 
     public function store(Request $request): JsonResponse
     {
+        if (! auth()->user()?->hasRole('superadmin')) {
+            return $this->forbidden('Hanya superadmin yang dapat menambahkan pengguna.');
+        }
+
         $validated = $request->validate([
             'username' => ['required', 'string', 'max:255', 'unique:users,username'],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['nullable', 'email', 'unique:users,email'],
             'password' => ['required', 'string', ...User::PASSWORD_REQUIREMENTS],
-            'role' => ['required', 'string', Rule::in(['superadmin', 'admin', 'faculty_admin', 'external_lppm_admin', 'dosen', 'dpl', 'student'])],
-            'fakultas_id' => ['nullable', 'required_if:role,student', 'exists:fakultas,id'],
+            'account_type' => ['nullable', 'string', Rule::in(['admin_internal', 'admin_external', 'faculty_admin', 'dosen', 'dpl', 'student_internal', 'student_external'])],
+            'role' => ['required', 'string', Rule::in(['admin', 'faculty_admin', 'external_lppm_admin', 'dosen', 'dpl', 'student'])],
+            'fakultas_id' => ['nullable', 'required_if:role,faculty_admin', 'required_if:account_type,student_internal', 'required_if:account_type,dosen', 'required_if:account_type,dpl', 'exists:fakultas,id'],
             'external_university_id' => ['nullable', 'required_if:role,external_lppm_admin', 'exists:external_universities,id'],
             'mahasiswa' => ['required_if:role,student', 'array'],
-            'mahasiswa.nim' => ['required_if:role,student', 'string', 'max:20', 'unique:mahasiswa,nim'],
+            'mahasiswa.nim' => ['required_if:account_type,student_internal', 'string', 'max:20', 'unique:mahasiswa,nim'],
+            'mahasiswa.external_nim' => ['required_if:account_type,student_external', 'string', 'max:50', 'unique:mahasiswa,nim'],
+            'mahasiswa.external_batch_id' => ['required_if:account_type,student_external', 'integer', 'exists:external_kkn_batches,id'],
+            'mahasiswa.external_faculty' => ['required_if:account_type,student_external', 'string', 'max:255'],
+            'mahasiswa.external_study_program' => ['required_if:account_type,student_external', 'string', 'max:255'],
             'mahasiswa.prodi_id' => [
-                'required_if:role,student',
+                'required_if:account_type,student_internal',
                 'integer',
-                Rule::exists('prodi', 'id')->where(fn ($query) => $query->where('fakultas_id', $request->input('fakultas_id'))),
+                Rule::exists('prodi', 'id')->where(fn ($query) => $query->where('fakultas_id', $request->input('fakultas_id') ?: 0)),
             ],
             'mahasiswa.batch_year' => ['required_if:role,student', 'integer', 'min:2000', 'max:'.((int) date('Y') + 1)],
             'mahasiswa.semester' => ['nullable', 'integer', 'min:1', 'max:20'],
             'mahasiswa.gender' => ['nullable', Rule::in(['L', 'P'])],
             'mahasiswa.phone' => ['nullable', 'string', 'max:30'],
             'mahasiswa.status_aktif' => ['nullable', 'string', 'max:50'],
+            'dosen' => ['required_if:role,dosen', 'required_if:role,dpl', 'array'],
+            'dosen.nip' => ['required_if:role,dosen', 'required_if:role,dpl', 'string', 'max:50', 'unique:dosen,nip'],
+            'dosen.gender' => ['nullable', Rule::in(['L', 'P'])],
+            'dosen.phone' => ['nullable', 'string', 'max:30'],
+            'dosen.status_aktif' => ['nullable', 'string', 'max:50'],
         ]);
+
+        $accountType = $validated['account_type'] ?? match ($validated['role']) {
+            'admin' => 'admin_internal',
+            'external_lppm_admin' => 'admin_external',
+            'faculty_admin' => 'faculty_admin',
+            'dosen' => 'dosen',
+            'dpl' => 'dpl',
+            default => 'student_internal',
+        };
+
+        $expectedRole = match ($accountType) {
+            'admin_internal' => 'admin',
+            'admin_external' => 'external_lppm_admin',
+            'faculty_admin' => 'faculty_admin',
+            'dosen' => 'dosen',
+            'dpl' => 'dpl',
+            'student_internal', 'student_external' => 'student',
+        };
+
+        if ($validated['role'] !== $expectedRole) {
+            return $this->error('ROLE_ACCOUNT_TYPE_MISMATCH', 'Tipe akun tidak sesuai dengan role yang dipilih.', 422);
+        }
+
+        if ($accountType === 'student_external') {
+            validator($request->all(), [
+                'external_university_id' => ['required', 'exists:external_universities,id'],
+            ])->validate();
+        }
+
         $externalUniversityId = $validated['external_university_id'] ?? null;
-        if ($validated['role'] === 'external_lppm_admin') {
+        if (in_array($accountType, ['admin_external', 'student_external'], true)) {
             $externalUniversityId = validator(
                 ['external_university_id' => $request->input('external_university_id')],
                 ['external_university_id' => ['required', 'exists:external_universities,id']]
             )->validate()['external_university_id'];
         }
 
-        $user = DB::transaction(function () use ($validated, $externalUniversityId) {
+        if ($accountType === 'student_external') {
+            $batch = DB::table('external_kkn_batches')->where('id', $validated['mahasiswa']['external_batch_id'])->first();
+            $universityName = (string) DB::table('external_universities')->where('id', $externalUniversityId)->value('name');
+            if (! $batch || trim((string) $batch->home_university) !== trim($universityName)) {
+                return $this->error('EXTERNAL_BATCH_UNIVERSITY_MISMATCH', 'Batch eksternal tidak sesuai dengan kampus eksternal yang dipilih.', 422);
+            }
+        }
+
+        $user = DB::transaction(function () use ($validated, $externalUniversityId, $accountType) {
             $user = User::create([
                 'username' => $validated['username'],
                 'name' => $validated['name'],
@@ -181,21 +233,55 @@ class UserController extends Controller
                 'external_university_id' => $externalUniversityId,
             ]);
             $user->assignRole($validated['role']);
+            if ($accountType === 'dpl' && ! $user->hasRole('dosen')) {
+                $user->assignRole('dosen');
+            }
 
             if ($validated['role'] === 'student') {
                 $mahasiswa = $validated['mahasiswa'];
-                Mahasiswa::create([
+                $isExternal = $accountType === 'student_external';
+                $nim = $isExternal ? $mahasiswa['external_nim'] : $mahasiswa['nim'];
+                $student = Mahasiswa::create([
                     'user_id' => $user->id,
-                    'nim' => $mahasiswa['nim'],
+                    'nim' => $nim,
                     'nama' => $validated['name'],
-                    'fakultas_id' => $validated['fakultas_id'],
-                    'prodi_id' => $mahasiswa['prodi_id'],
+                    'origin_type' => $isExternal ? 'external' : 'internal',
+                    'external_university_id' => $isExternal ? $externalUniversityId : null,
+                    'external_nim' => $isExternal ? $mahasiswa['external_nim'] : null,
+                    'external_faculty_name' => $isExternal ? $mahasiswa['external_faculty'] : null,
+                    'external_prodi_name' => $isExternal ? $mahasiswa['external_study_program'] : null,
+                    'fakultas_id' => $isExternal ? null : $validated['fakultas_id'],
+                    'prodi_id' => $isExternal ? null : $mahasiswa['prodi_id'],
                     'batch_year' => $mahasiswa['batch_year'],
                     'semester' => $mahasiswa['semester'] ?? null,
                     'gender' => $mahasiswa['gender'] ?? null,
                     'phone' => $mahasiswa['phone'] ?? null,
                     'status_aktif' => $mahasiswa['status_aktif'] ?? 'Aktif',
                     'api_email' => $validated['email'] ?? null,
+                ]);
+
+                if ($isExternal) {
+                    ExternalStudentProfile::create([
+                        'mahasiswa_id' => $student->id,
+                        'batch_id' => $mahasiswa['external_batch_id'],
+                        'external_nim' => $mahasiswa['external_nim'],
+                        'home_university' => (string) DB::table('external_universities')->where('id', $externalUniversityId)->value('name'),
+                        'external_faculty' => $mahasiswa['external_faculty'],
+                        'external_study_program' => $mahasiswa['external_study_program'],
+                    ]);
+                }
+            }
+
+            if (in_array($accountType, ['dosen', 'dpl'], true)) {
+                $dosen = $validated['dosen'];
+                Dosen::create([
+                    'user_id' => $user->id,
+                    'nip' => $dosen['nip'],
+                    'nama' => $validated['name'],
+                    'fakultas_id' => $validated['fakultas_id'],
+                    'gender' => $dosen['gender'] ?? null,
+                    'phone' => $dosen['phone'] ?? null,
+                    'status_aktif' => $dosen['status_aktif'] ?? 'Aktif',
                 ]);
             }
 

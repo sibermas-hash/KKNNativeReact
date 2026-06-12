@@ -141,6 +141,7 @@ class DashboardController extends Controller
                     // Audit FLOW-003 fix: expose ketua mahasiswa dari DB.
                     // FE dulunya hardcode "Sedang Ditentukan".
                     'leader' => $this->leaderPayload($registration->kelompok, (int) $mahasiswa->id),
+                    'leader_voting' => $this->leaderVotingPayload($registration),
                 ] : null,
             ] : null,
             'daily_report_count' => $dailyReportCount,
@@ -186,6 +187,28 @@ class DashboardController extends Controller
             'rejected', 'ditolak', 'gugur' => 'rejected',
             default => $status,
         };
+    }
+
+    private function leaderVotingPayload(PesertaKkn $registration): ?array
+    {
+        if (! $registration->placement_is_live || ! $registration->kelompok_id) {
+            return null;
+        }
+
+        if (strtolower((string) $registration->role) === 'ketua') {
+            return ['open' => false, 'required' => false, 'reason' => 'leader_elected'];
+        }
+
+        $starts = $registration->placement_published_at ?? $registration->joined_group_at ?? $registration->updated_at;
+        $ends = $starts ? $starts->copy()->addDays(7) : now()->subSecond();
+
+        return [
+            'open' => now()->betweenIncluded($starts, $ends),
+            'required' => now()->lessThanOrEqualTo($ends),
+            'starts_at' => $starts?->toIso8601String(),
+            'ends_at' => $ends->toIso8601String(),
+            'endpoint' => '/api/v1/student/group-leader-vote',
+        ];
     }
 
     /**

@@ -19,13 +19,15 @@ class AutoPlottingService
     public function simulate(int $periodeId, int $groupSize = 15): array
     {
         $periode = Periode::with('jenisKkn')->findOrFail($periodeId);
+        $this->assertStudentDataComplete($periodeId);
         $students = $this->students($periodeId);
-        $locations = $this->locations($periode);
+        $locations = $this->locations($periode, $groupSize);
+        $existingGroups = $this->existingGroupCount($periodeId);
 
         if ($students === []) {
             return [
                 'summary' => $this->summary([], [], [], $groupSize),
-                'meta' => $this->meta([], $locations, $periode),
+                'meta' => $this->meta([], $locations, $periode) + ['existing_group_count' => $existingGroups],
                 'groups' => [],
                 'unplaced' => [],
             ];
@@ -51,7 +53,7 @@ class AutoPlottingService
 
         return [
             'summary' => $this->summary($groups, $students, $unplaced, $groupSize),
-            'meta' => $this->meta($students, $locations, $periode),
+            'meta' => $this->meta($students, $locations, $periode) + ['existing_group_count' => $existingGroups],
             'groups' => $groups,
             'unplaced' => array_values($unplaced),
         ];
@@ -61,6 +63,54 @@ class AutoPlottingService
     {
         return DB::transaction(function () use ($periodeId, $groupSize) {
             $batchId = 'regular:'.$periodeId.':'.now()->format('YmdHis').':'.Str::random(8);
+
+            $livePlaced = PesertaKkn::query()
+                ->where('periode_id', $periodeId)
+                ->where('status', 'approved')
+                ->whereNotNull('kelompok_id')
+                ->where('placement_is_live', true)
+                ->count();
+
+            if ($livePlaced > 0) {
+                return [
+                    'summary' => [
+                        'students' => 0,
+                        'groups' => 0,
+                        'placed' => 0,
+                        'unplaced' => 0,
+                        'violating_groups' => 0,
+                        'hard_violations' => 0,
+                        'quality_score' => 0,
+                        'group_size' => $groupSize,
+                    ],
+                    'meta' => ['periode_id' => $periodeId, 'live_placed' => $livePlaced],
+                    'groups' => [],
+                    'unplaced' => [],
+                    'applied' => false,
+                    'message' => 'Auto plotting dikunci: periode ini sudah Plotting Live/Real. Gunakan fitur Plotting Ulang khusus Super Admin jika memang perlu mengulang.',
+                ];
+            }
+
+            // Draft boleh digenerate ulang: hapus draft lama agar simulasi berikutnya
+            // kembali memakai seluruh peserta approved periode ini.
+            PesertaKkn::query()
+                ->where('periode_id', $periodeId)
+                ->where('status', 'approved')
+                ->whereNotNull('kelompok_id')
+                ->where('placement_is_live', false)
+                ->update([
+                    'kelompok_id' => null,
+                    'placement_batch_id' => null,
+                    'joined_group_at' => null,
+                    'role' => 'Anggota',
+                ]);
+
+            // Force delete draft groups: DB unique (periode_id, location_id) tetap melihat
+            // soft-deleted rows, sehingga soft delete akan membuat apply draft ulang gagal.
+            KelompokKkn::query()
+                ->where('periode_id', $periodeId)
+                ->whereDoesntHave('peserta', fn ($q) => $q->where('placement_is_live', true))
+                ->forceDelete();
 
             $lockedIds = PesertaKkn::query()
                 ->where('periode_id', $periodeId)
@@ -96,10 +146,6 @@ class AutoPlottingService
                     ]
                 );
 
-                $members = $g['members'];
-                usort($members, fn ($a, $b) => [$b['gpa'] ?? 0, $a['nama'] ?? ''] <=> [$a['gpa'] ?? 0, $b['nama'] ?? '']);
-                $ketuaId = $members[0]['peserta_id'] ?? null;
-
                 foreach ($g['members'] as $m) {
                     if (! in_array($m['peserta_id'], $lockedIds, true)) {
                         continue;
@@ -112,7 +158,9 @@ class AutoPlottingService
                         'placement_published_by' => null,
                         'placement_batch_id' => $batchId,
                         'joined_group_at' => now(),
-                        'role' => $m['peserta_id'] === $ketuaId ? 'Ketua' : 'Anggota',
+                        // Ketua tidak ditentukan oleh plotting. Semua peserta mulai sebagai Anggota;
+                        // ketua dipilih setelah publish live lewat voting kelompok.
+                        'role' => 'Anggota',
                     ]);
                 }
             }
@@ -143,7 +191,7 @@ class AutoPlottingService
         $groups = [];
         for ($i = 0; $i < $count; $i++) {
             if ($count > count($locations)) {
-                throw new RuntimeException('Jumlah kelompok melebihi desa terpilih. Pilih minimal '.$count.' desa karena 1 desa hanya boleh 1 kelompok.');
+                throw new RuntimeException('Jumlah desa/lokasi belum mencukupi: butuh '.$count.' lokasi untuk '.$count * $groupSize.' kapasitas plotting @'.$groupSize.' mahasiswa/kelompok, lokasi valid tersedia '.count($locations).'. Tambahkan lokasi terpilih atau turunkan ukuran kelompok.');
             }
             $loc = $locations[$i];
             $no = $i + 1;
@@ -519,6 +567,56 @@ class AutoPlottingService
         return $score;
     }
 
+    private function assertStudentDataComplete(int $periodeId): void
+    {
+        $rows = DB::table('peserta_kkn as p')
+            ->join('mahasiswa as m', 'm.id', '=', 'p.mahasiswa_id')
+            ->leftJoin('users as u', 'u.id', '=', 'm.user_id')
+            ->leftJoin('fakultas as f', 'f.id', '=', 'm.fakultas_id')
+            ->leftJoin('prodi as pr', 'pr.id', '=', 'm.prodi_id')
+            ->where('p.periode_id', $periodeId)
+            ->where('p.status', 'approved')
+            ->whereNull('p.deleted_at')
+            ->whereNull('m.deleted_at')
+            ->select([
+                'm.nim',
+                'm.nama',
+                'm.gender',
+                'm.birth_place',
+                'u.address_regency_name',
+                'f.nama as fakultas',
+                'pr.nama as prodi',
+            ])
+            ->get();
+
+        $missing = [];
+        foreach ($rows as $row) {
+            $fields = [];
+            $gender = strtoupper(trim((string) $row->gender));
+            if (! in_array($gender, ['L', 'P'], true)) {
+                $fields[] = 'gender';
+            }
+            if (blank($row->fakultas)) {
+                $fields[] = 'fakultas';
+            }
+            if (blank($row->prodi)) {
+                $fields[] = 'prodi';
+            }
+            if (blank($row->address_regency_name) && blank($row->birth_place)) {
+                $fields[] = 'domisili/tempat lahir';
+            }
+            if ($fields !== []) {
+                $missing[] = trim(($row->nim ?: '-') . ' ' . ($row->nama ?: '-') . ' [' . implode(', ', $fields) . ']');
+            }
+        }
+
+        if ($missing !== []) {
+            $sample = implode('; ', array_slice($missing, 0, 15));
+            $more = count($missing) > 15 ? '; +' . (count($missing) - 15) . ' peserta lain' : '';
+            throw new RuntimeException('Plotting dikunci: profil peserta belum lengkap. Lengkapi data berikut: ' . $sample . $more);
+        }
+    }
+
     private function students(int $periodeId): array
     {
         return DB::table('peserta_kkn as p')
@@ -567,7 +665,7 @@ class AutoPlottingService
             ->all();
     }
 
-    private function locations(Periode $periode): array
+    private function locations(Periode $periode, int $groupSize = 15): array
     {
         $allowed = $periode->jenisKkn?->allowed_regencies;
         $target = is_array($allowed) && $allowed !== [] ? $allowed : self::DEFAULT_REGENCIES;
@@ -580,13 +678,26 @@ class AutoPlottingService
             ->orderBy('district_name')
             ->orderBy('village_name')
             ->get()
-            ->filter(fn ($l) => in_array($this->norm((string) $l->regency_name), $targetNorm, true));
+            ->filter(fn ($l) => in_array($this->norm((string) $l->regency_name), $targetNorm, true))
+            ->filter(fn ($l) => $l->capacity === null || (int) $l->capacity >= $groupSize);
 
         if ($locs->isEmpty()) {
             throw new RuntimeException('Belum ada lokasi/desa terpilih untuk plotting. Pilih lokasi terlebih dahulu di menu Lokasi sebelum menjalankan simulasi/apply draft.');
         }
 
-        return $locs->map(fn ($l) => [
+        $buckets = $locs->groupBy(fn ($l) => $this->norm((string) $l->regency_name))->sortKeys();
+        $balanced = collect();
+        while ($buckets->filter(fn ($bucket) => $bucket->isNotEmpty())->isNotEmpty()) {
+            foreach ($buckets as $key => $bucket) {
+                if ($bucket->isEmpty()) {
+                    continue;
+                }
+                $balanced->push($bucket->shift());
+                $buckets[$key] = $bucket;
+            }
+        }
+
+        return $balanced->map(fn ($l) => [
             'id' => $l->id,
             'village_name' => $l->village_name,
             'district_name' => $l->district_name,
@@ -604,6 +715,13 @@ class AutoPlottingService
             'maps_url' => ($l->latitude && $l->longitude) ? 'https://www.google.com/maps?q='.$l->latitude.','.$l->longitude : null,
             'full_name' => trim(($l->village_name ? 'Desa '.$l->village_name.', ' : '').($l->district_name ? 'Kec. '.$l->district_name.', ' : '').($l->regency_name ? 'Kab. '.$l->regency_name : '')),
         ])->values()->all();
+    }
+
+    private function existingGroupCount(int $periodeId): int
+    {
+        return KelompokKkn::query()
+            ->where('periode_id', $periodeId)
+            ->count();
     }
 
     private function validateGroup(array $g, int $groupSize): array

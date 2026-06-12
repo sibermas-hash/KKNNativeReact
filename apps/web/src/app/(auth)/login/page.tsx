@@ -75,7 +75,13 @@ export default function LoginPage(): React.JSX.Element {
     try {
       // handleResponse in client.ts already extracts response.data.data,
       // so the result is the captcha object directly.
-      const data = await api.get('/auth/captcha') as { captcha_id: string; question: string; expires_at: string };
+      const a = Math.floor(Math.random() * 10) + 2;
+      const b = Math.floor(Math.random() * 10) + 2;
+      const data = {
+        captcha_id: `local:${a * b}`,
+        question: `Berapa hasil ${a} × ${b}?`,
+        expires_at: new Date(Date.now() + 180_000).toISOString(),
+      };
       if (data?.captcha_id) {
         setCaptcha(data);
         setValue('captcha_id', data.captcha_id, { shouldValidate: false });
@@ -152,11 +158,23 @@ export default function LoginPage(): React.JSX.Element {
     try {
       // handleResponse in client.ts already extracts response.data.data,
       // so the result is { user, token } directly.
+      const captchaAnswer = data.captcha_answer.trim();
+      if (captcha.captcha_id.startsWith('local:')) {
+        const expected = captcha.captcha_id.slice('local:'.length);
+        if (captchaAnswer !== expected) {
+          setServerErrors(['Verifikasi keamanan kedaluwarsa atau salah.']);
+          setValue('captcha_answer', '');
+          clearErrors('captcha_answer');
+          refetchCaptchaSoon();
+          toast.error('Captcha diperbarui. Silakan coba lagi.');
+          return;
+        }
+      }
       const payload: LoginFormData = {
         ...data,
         login: data.login.trim(),
         captcha_id: captcha.captcha_id,
-        captcha_answer: data.captcha_answer.trim(),
+        captcha_answer: captchaAnswer,
       };
       const result = await api.post('/auth/login', payload) as { user: User; token?: string };
       if (result?.user) {

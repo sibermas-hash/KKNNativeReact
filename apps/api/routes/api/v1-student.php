@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\Student\DailyReportController;
 use App\Http\Controllers\Api\V1\Student\DashboardController;
 use App\Http\Controllers\Api\V1\Student\DplEvaluationController;
 use App\Http\Controllers\Api\V1\Student\FinalReportController;
+use App\Http\Controllers\Api\V1\Student\GroupLeaderVoteController;
 use App\Http\Controllers\Api\V1\Student\InterviewController;
 use App\Http\Controllers\Api\V1\Student\IzinController;
 use App\Http\Controllers\Api\V1\Student\KknDaftarController;
@@ -52,6 +53,10 @@ Route::prefix('student')
         Route::get('/posko', [PoskoController::class, 'show'])->name('api.v1.student.posko.show');
         Route::post('/posko', [PoskoController::class, 'store'])->name('api.v1.student.posko.store');
         Route::get('/posko/{posko}/photo', [PoskoController::class, 'photo'])->name('api.v1.student.posko.photo');
+
+        // Voting ketua kelompok — aktif setelah plotting live; 1 suara per anggota, bisa diubah selama 7 hari.
+        Route::get('/group-leader-vote', [GroupLeaderVoteController::class, 'show'])->name('api.v1.student.group-leader-vote.show');
+        Route::post('/group-leader-vote', [GroupLeaderVoteController::class, 'vote'])->name('api.v1.student.group-leader-vote.vote');
 
         // Rekapitulasi — selalu tersedia (sesuai codebase lama)
         Route::get('/rekapitulasi', [RekapitulasiController::class, 'index'])->name('api.v1.student.rekapitulasi.index');

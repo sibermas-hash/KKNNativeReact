@@ -1,0 +1,308 @@
+#!/usr/bin/env bash
+# deploy-atomic.sh — Atomic zero-downtime deploy for SIBERMAS FreeBSD
+# Strategy: release directory + symlink switch + health check + rollback
+#
+# Usage:
+#   bash deploy-atomic.sh                              # deploy dari GitHub
+#   bash deploy-atomic.sh /path/to/local/code.tar.gz   # deploy dari tarball (preferred)
+#
+# Rollback manual:
+#   unlink /usr/local/www/sibermas/current
+#   ln -s /usr/local/www/sibermas/releases/<PREV_TIMESTAMP> /usr/local/www/sibermas/current
+#   supervisorctl restart workers:*
+#   service php-fpm reload
+
+set -euo pipefail
+
+# ─── Config ────────────────────────────────────────────────────────────────
+# Single-server mode (default) — all services on one machine.
+# For jails mode, set JAIL_WEB_IP / JAIL_API_IP / JAIL_PROXY_IP env vars.
+APP_DIR="${APP_DIR:-/usr/local/www/sibermas}"
+DURABLE_STORAGE="${SIBERMAS_DURABLE_STORAGE:-/usr/local/www/apache24/data/Sibermas2026/apps/api/storage}"
+FIX_STORAGE_LINKS="${FIX_STORAGE_LINKS:-/usr/local/www/sibermas/bin/fix-storage-links.sh}"
+RELEASES_DIR="${APP_DIR}/releases"
+CURRENT_LINK="${APP_DIR}/current"
+SHARED_DIR="${APP_DIR}/shared"
+SHARED_ENV="${SHARED_DIR}/api.env"
+WEB_USER="www"
+TIMESTAMP=$(date '+%Y%m%d_%H%M%S')
+RELEASE_DIR="${RELEASES_DIR}/${TIMESTAMP}"
+LOG_DIR="/var/log/sibermas"
+REPO_URL="${REPO_URL:-https://github.com/putrihati-cmd/KKNNATIVE.git}"
+SKIP_MIGRATE="${SKIP_MIGRATE:-0}"
+PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://${WEB_DOMAIN:-sibermas.uinsaizu.ac.id}}"
+JAIL_WEB_IP="${JAIL_WEB_IP:-}"
+JAIL_API_IP="${JAIL_API_IP:-}"
+JAIL_PROXY_IP="${JAIL_PROXY_IP:-}"
+
+WEB_IP="${JAIL_WEB_IP:-127.0.0.1}"
+API_IP="${JAIL_API_IP:-127.0.0.1}"
+WEB_PORT="${WEB_PORT:-3000}"
+if [ -n "${WEB_CLUSTER_PORTS:-}" ]; then
+  WEB_CLUSTER_PORTS="${WEB_CLUSTER_PORTS}"
+elif [ -n "${JAIL_WEB_IP}" ]; then
+  WEB_CLUSTER_PORTS="3000,3001,3002,3003"
+else
+  WEB_CLUSTER_PORTS="3000"
+fi
+HEALTH_RETRIES="${HEALTH_RETRIES:-12}"
+HEALTH_INTERVAL="${HEALTH_INTERVAL:-5}"
+
+echo "═══════════════════════════════════════════════"
+echo "  SIBERMAS Atomic Deploy — ${TIMESTAMP}"
+echo "═══════════════════════════════════════════════"
+
+# ─── Pre-flight checks ────────────────────────────────────────────────────
+if [ "$(id -u)" -ne 0 ] && [ "$(id -u)" -ne "$(id -u "${WEB_USER}")" ]; then
+  echo "❌ Jalankan sebagai root atau ${WEB_USER}"
+  exit 1
+fi
+
+mkdir -p "${RELEASES_DIR}" "${SHARED_DIR}" "${LOG_DIR}"
+
+# ─── Step 1: Get code ─────────────────────────────────────────────────────
+if [ -n "${1:-}" ] && [ -f "$1" ]; then
+  echo "[1/8] Extracting tarball: $1 ..."
+  mkdir -p "${RELEASE_DIR}"
+  tar xzf "$1" -C "${RELEASE_DIR}" --strip-components=1
+else
+  echo "[1/8] Cloning from GitHub (${REPO_URL})..."
+  git clone --depth=1 "${REPO_URL}" "${RELEASE_DIR}"
+fi
+
+# ─── Step 2: Install backend deps ─────────────────────────────────────────
+echo "[2/8] Installing backend dependencies..."
+cd "${RELEASE_DIR}/apps/api"
+composer install --no-dev --optimize-autoloader --no-interaction
+
+lint_backend_php() {
+  local api_dir="$1"
+  local file
+
+  while IFS= read -r file; do
+    php -l "${file}" >/dev/null
+  done < <(
+    printf '%s\n' \
+      "${api_dir}/artisan" \
+      "${api_dir}/bootstrap/app.php"
+    find \
+      "${api_dir}/app" \
+      "${api_dir}/config" \
+      "${api_dir}/database" \
+      "${api_dir}/routes" \
+      -type f -name '*.php'
+  )
+}
+
+echo "  Linting backend PHP syntax..."
+lint_backend_php "${RELEASE_DIR}/apps/api"
+
+# ─── Step 3: Build frontend ───────────────────────────────────────────────
+# TURBO_INSTALL_SKIP_DOWNLOAD=1 wajib di FreeBSD — tidak ada turbo binary
+# native. Script root package.json `build:web` sekarang pakai pnpm langsung
+# (bukan turbo), jadi turbo tidak pernah di-invoke.
+echo "[3/8] Installing frontend dependencies & building..."
+cd "${RELEASE_DIR}"
+export NEXT_PUBLIC_API_URL="${NEXT_PUBLIC_API_URL:-${PUBLIC_BASE_URL%/}/api/v1}"
+export SERVER_API_URL="${SERVER_API_URL:-http://127.0.0.1/api/v1}"
+export NEXT_PUBLIC_APP_URL="${NEXT_PUBLIC_APP_URL:-${PUBLIC_BASE_URL%/}}"
+export NEXT_PUBLIC_SITE_URL="${NEXT_PUBLIC_SITE_URL:-${PUBLIC_BASE_URL%/}}"
+# NOTE: devDependencies DIBUTUHKAN untuk Next.js build (typescript, postcss).
+# Hanya remove setelah build selesai.
+TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm install --frozen-lockfile --filter web...
+# Build packages dependency chain dulu (shared-types, schemas, etc), lalu web.
+TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:packages
+TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm build:web
+
+echo "  [i] Cleaning Next runtime cache..."
+rm -rf apps/web/.next/cache apps/web/.next/standalone/apps/web/.next/cache 2>/dev/null || true
+
+# Copy static & public ke standalone (required for FreeBSD).
+# NOTE: apps/web/package.json postbuild sudah melakukan ini, tapi kita
+# ulang di sini untuk defensive — kalau postbuild gagal atau build
+# jalan tanpa postbuild hook.
+mkdir -p apps/web/.next/standalone/apps/web/.next/static apps/web/.next/standalone/apps/web/public
+cp -r apps/web/.next/static/. apps/web/.next/standalone/apps/web/.next/static
+cp -r apps/web/public/.       apps/web/.next/standalone/apps/web/public
+
+# Prune devDependencies setelah build selesai untuk hemat disk.
+TURBO_INSTALL_SKIP_DOWNLOAD=1 pnpm prune --prod || true
+
+# ─── Step 4: Configure .env ───────────────────────────────────────────────
+# CRITICAL: .env harus di-seed dari release sebelumnya, BUKAN dari
+# .env.production.example (itu cuma template dengan APP_KEY kosong).
+# Kalau tidak ada release sebelumnya, abort — operator harus setup manual.
+echo "[4/8] Configuring Laravel .env..."
+cd "${RELEASE_DIR}/apps/api"
+if [ -L "${CURRENT_LINK}" ] && [ -f "${CURRENT_LINK}/apps/api/.env" ]; then
+  cp "${CURRENT_LINK}/apps/api/.env" .env
+  cp .env "${SHARED_ENV}"
+  chmod 600 "${SHARED_ENV}"
+  echo "  ℹ️  .env copied from previous release"
+elif [ -f "${SHARED_ENV}" ]; then
+  cp "${SHARED_ENV}" .env
+  echo "  ℹ️  .env copied from ${SHARED_ENV}"
+else
+  if [ -f ".env.production.example" ]; then
+    cp .env.production.example "${SHARED_ENV}"
+    chmod 600 "${SHARED_ENV}"
+    echo "  ⚠️  First deploy — seeded ${SHARED_ENV} from .env.production.example."
+  fi
+  echo "  ❗ EDIT ${SHARED_ENV} SEKARANG, lalu re-run deploy."
+  echo "     Isi: APP_KEY, DB_PASSWORD, MASTER_WEBHOOK_SECRET, API_ADMIN_SECRET, APP_BLIND_INDEX_KEY"
+  exit 1
+fi
+
+# key:generate HANYA kalau APP_KEY benar-benar kosong.
+# Pattern check `^APP_KEY=base64` sebelumnya bisa false-positive dan
+# rotating APP_KEY → semua encrypted_casts & password reset token invalid.
+if ! grep -qE '^APP_KEY=base64:[A-Za-z0-9+/=]{44,}' .env; then
+  if grep -qE '^APP_KEY=\s*$' .env; then
+    echo "  APP_KEY empty — generating..."
+    php artisan key:generate --force
+  else
+    echo "  ❌ APP_KEY format invalid and not empty. Refusing to overwrite (may be legitimate key)."
+    echo "     Check .env manually. If you really want to regenerate, run:"
+    echo "     php artisan key:generate --force"
+    exit 1
+  fi
+fi
+
+# Migrasi DB (opt-out via SKIP_MIGRATE=1 untuk hot-fix yang tidak perlu migrate).
+if [ "${SKIP_MIGRATE}" != "1" ]; then
+  php artisan migrate --force
+fi
+"${FIX_STORAGE_LINKS}" "${RELEASE_DIR}"
+php artisan config:cache
+php artisan route:cache
+php artisan event:cache 2>/dev/null || true
+
+# ─── Step 5: Fix permissions ──────────────────────────────────────────────
+# Use -exec ... + (batch) untuk kecepatan di storage ribuan file.
+echo "[5/8] Setting permissions..."
+"${FIX_STORAGE_LINKS}" "${RELEASE_DIR}"
+chown -R "${WEB_USER}:${WEB_USER}" "${RELEASE_DIR}/apps/api/bootstrap/cache"
+chown -R "${DEPLOY_USER:-kampelmas}:www" "${RELEASE_DIR}/apps/web/.next"
+
+# ─── Step 6: Switch symlink (atomic) ──────────────────────────────────────
+echo "[6/8] Switching symlink..."
+ln -sfn "${RELEASE_DIR}" "${CURRENT_LINK}.new"
+# FreeBSD mv tidak punya -T (GNU extension), jadi pakai rm + mv.
+# Ini tetap atomic-enough: symlink .new → final via mv is single rename() syscall.
+rm -f "${CURRENT_LINK}" && mv "${CURRENT_LINK}.new" "${CURRENT_LINK}"
+echo "  ✅ current → ${RELEASE_DIR}"
+
+# ─── Step 7: Reload PHP-FPM + restart workers ─────────────────────────────
+# OPcache dengan validate_timestamps=0 TIDAK reload kode baru sampai FPM
+# direstart. Ini dulu silent bug — kode lama terus di-serve setelah deploy.
+echo "[7/8] Reloading PHP-FPM + restarting workers..."
+
+restart_native_web() {
+  if [ -x /usr/local/etc/rc.d/sibermas_web ]; then
+    service sibermas_web stop 2>/dev/null || true
+    sleep 1
+    service sibermas_web restart
+    return
+  fi
+
+  supervisorctl restart sibermas-web 2>/dev/null
+}
+
+restart_native_queue() {
+  if [ -x /usr/local/etc/rc.d/sibermas_queue ]; then
+    service sibermas_queue restart
+    return
+  fi
+
+  supervisorctl restart workers:* 2>/dev/null
+}
+
+check_http_status() {
+  local url="$1"
+  local expected="$2"
+  local label="$3"
+  local code
+
+  code=$(curl -s -o /dev/null -m 8 -w '%{http_code}' "${url}" 2>/dev/null || printf '000')
+  if [ "${code}" != "${expected}" ]; then
+    echo "  ❌ ${label} returned HTTP ${code} (expected ${expected})"
+    return 1
+  fi
+
+  echo "  ✅ ${label} returned HTTP ${expected}"
+}
+
+if [ -n "${JAIL_WEB_IP:-}" ]; then
+  # Jails mode — restart via jexec.
+  jexec api service php-fpm reload 2>/dev/null || \
+    echo "  ⚠️  php-fpm reload gagal di api jail"
+  jexec api supervisorctl restart workers:* 2>/dev/null || \
+    echo "  ⚠️  supervisorctl restart workers gagal"
+  jexec web supervisorctl restart sibermas-web 2>/dev/null || \
+    echo "  ⚠️  restart sibermas-web gagal"
+  jexec nginx-proxy service nginx reload 2>/dev/null || \
+    echo "  ⚠️  nginx reload gagal"
+else
+  # Single-server mode.
+  service php-fpm reload 2>/dev/null || service php-fpm restart || true
+  restart_native_web || true
+  restart_native_queue || true
+  service nginx reload 2>/dev/null || true
+fi
+
+# ─── Step 8: Health check ─────────────────────────────────────────────────
+echo "[8/8] Health check — waiting for web cluster..."
+echo "  Targets: ${WEB_IP} ports=${WEB_CLUSTER_PORTS}"
+for i in $(seq 1 "${HEALTH_RETRIES}"); do
+  sleep "${HEALTH_INTERVAL}"
+  ALL_OK=true
+  for port in ${WEB_CLUSTER_PORTS//,/ }; do
+    if ! curl -sf -o /dev/null -m 5 "http://${WEB_IP}:${port}/" 2>/dev/null; then
+      ALL_OK=false
+      break
+    fi
+  done
+  if $ALL_OK; then
+    echo "  ✅ Web cluster responded OK (attempt ${i})"
+    break
+  fi
+  if [ "${i}" -eq "${HEALTH_RETRIES}" ]; then
+    echo "  ❌ Web cluster did not respond after ${HEALTH_RETRIES} attempts"
+    echo "  ⚠️  Deploy RUNNING, but health check failed. Check logs:"
+    echo "     tail -f ${LOG_DIR}/web.log"
+    echo ""
+    echo "  Rollback command:"
+    echo "    unlink ${CURRENT_LINK}"
+    PREV=$(find "${RELEASES_DIR}" -maxdepth 1 -type d -not -path "${RELEASES_DIR}" | sort -r | sed -n '2p')
+    if [ -n "${PREV}" ]; then
+      echo "    ln -s ${PREV} ${CURRENT_LINK}"
+    fi
+    echo "    service php-fpm reload"
+    echo "    service sibermas_queue restart"
+    exit 1
+  fi
+  echo "  ... not ready yet (attempt ${i}/${HEALTH_RETRIES})"
+done
+
+echo "  Running API smoke checks..."
+check_http_status "http://127.0.0.1/api/v1/auth/captcha" "200" "Public auth captcha"
+check_http_status "http://127.0.0.1/api/v1/profile" "401" "Protected profile guard"
+check_http_status "http://127.0.0.1/api/v1/admin/dashboard" "401" "Protected admin dashboard guard"
+
+# Prune old releases (keep last 3).
+# find -print0 + sort -rz untuk handle spaces/newlines di filename (paranoia).
+echo ""
+echo "Pruning old releases (keeping last 3)..."
+# BSD stat format: "%m" = mtime (epoch).
+find "${RELEASES_DIR}" -maxdepth 1 -mindepth 1 -type d -exec \
+  stat -f '%m %N' {} + 2>/dev/null | \
+  sort -rn | tail -n +4 | while read -r _ old; do
+  rm -rf "${old}"
+  echo "  🗑️  Removed: ${old##*/}"
+done
+
+echo ""
+echo "═══════════════════════════════════════════════"
+echo "  ✅ Deploy ${TIMESTAMP} BERHASIL!"
+echo "  current → ${RELEASE_DIR}"
+echo "═══════════════════════════════════════════════"

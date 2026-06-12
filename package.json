@@ -1,0 +1,43 @@
+{
+    "name": "sibermas-monorepo",
+    "private": true,
+    "packageManager": "pnpm@10.0.0",
+    "scripts": {
+        "dev": "pnpm --filter web dev",
+        "build": "pnpm build:packages && pnpm build:web",
+        "build:packages": "pnpm --filter @sibermas/shared-types build && pnpm --filter @sibermas/schemas build && pnpm --filter @sibermas/constants build && pnpm --filter @sibermas/api-client build && pnpm --filter @sibermas/hooks build",
+        "build:web": "pnpm --filter web build",
+        "build:turbo": "turbo build",
+        "lint": "pnpm --filter web lint",
+        "test": "pnpm --filter @sibermas/schemas test 2>/dev/null; pnpm --filter @sibermas/api-client test 2>/dev/null; pnpm --filter web test 2>/dev/null",
+        "type-check": "pnpm --filter web type-check",
+        "ci:guard": "node scripts/ci-guard.mjs",
+        "deploy:web": "bash scripts/deploy-web.sh",
+        "dev:web": "pnpm --filter web dev",
+        "dev:api": "cd apps/api && php artisan serve"
+    },
+    "engines": {
+        "node": ">=22"
+    },
+    "devDependencies": {
+        "turbo": "^2.9.14"
+    },
+    "pnpm": {
+        "onlyBuiltDependencies": [
+            "@sentry/cli",
+            "canvas",
+            "sharp",
+            "unrs-resolver"
+        ],
+        "overrides": {
+            "@types/react": "^19.1.0",
+            "@types/react-dom": "^19.1.0",
+            "postcss": "8.5.14",
+            "brace-expansion": "5.0.6",
+            "uuid": "11.1.1"
+        }
+    },
+    "dependencies": {
+        "uuid": "11.1.1"
+    }
+}

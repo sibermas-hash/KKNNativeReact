@@ -1,0 +1,62 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Models\KKN;
+
+use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class PesertaWorkshop extends Model
+{
+    protected $table = 'peserta_workshop';
+
+    protected $fillable = [
+        'workshop_id',
+        'user_id',
+        'jabatan_sk',
+        'nomor_dokumen',
+        'registered_at',
+        'attendance_status',
+        'is_passed',
+        'passing_notes',
+        'checked_in_at',
+        'certificate_generated',
+        'certificate_path',
+        'certificate_issued_at',
+    ];
+
+    protected $casts = [
+        'registered_at' => 'datetime',
+        'checked_in_at' => 'datetime',
+        'certificate_generated' => 'boolean',
+        'certificate_issued_at' => 'datetime',
+        'is_passed' => 'boolean',
+    ];
+
+    use HasFactory;
+
+    public function workshop(): BelongsTo
+    {
+        return $this->belongsTo(Workshop::class, 'workshop_id');
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function scopeForPeriod(Builder $query, ?int $periodId): Builder
+    {
+        if (! $periodId || ! Workshop::supportsPeriodAssignment()) {
+            return $query;
+        }
+
+        return $query->whereHas('workshop', function (Builder $workshopQuery) use ($periodId) {
+            $workshopQuery->where('periode_id', $periodId);
+        });
+    }
+}

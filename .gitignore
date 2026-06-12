@@ -1,0 +1,100 @@
+# ── Root ──────────────────────────────────────────────
+node_modules/
+.turbo/
+.DS_Store
+**/.DS_Store
+*.log
+
+# ── Generated files (should not be committed) ───────
+nginx-freebsd.rendered.conf
+deploy_success.txt
+
+# ── Debug/diagnostic files ──────────────────────────
+pest_results.txt
+route_list.txt
+migrate_status.txt
+
+# ── Local SSH/debug helpers (never commit) ──────────
+apps/api/run_ssh.sh
+apps/api/ssh_login.exp
+apps/api/start_tunnel.sh
+apps/api/ai_ssh_output.txt
+
+# ── apps/api (Laravel) ──────────────────────────────
+apps/api/vendor/
+apps/api/node_modules/
+apps/api/storage/logs/*
+apps/api/storage/framework/cache/*
+apps/api/storage/framework/sessions/*
+apps/api/storage/framework/testing/*
+apps/api/storage/framework/views/*
+apps/api/storage/app/public/*
+apps/api/storage/app/private/*
+apps/api/storage/debugbar/*
+apps/api/storage/pail/
+apps/api/storage/DOC\ DB/
+apps/api/storage/DPL/
+apps/api/storage/surat/
+apps/api/bootstrap/cache/*
+apps/api/.env
+apps/api/.env.backup
+apps/api/.env.production
+apps/api/.env.testing
+apps/api/.phpunit.result.cache
+apps/api/.phpunit.cache/
+
+# ── apps/web (Next.js) ─────────────────────────────
+apps/web/node_modules/
+apps/web/.next/
+apps/web/.next.prebuild-*/
+apps/web/.next.deploy-backup/
+apps/web/out/
+apps/web/.env.local
+apps/web/.env
+apps/web/.env.production
+apps/web/.env.development
+apps/web/tsconfig.tsbuildinfo
+
+# ── apps/mobile (Expo) ─────────────────────────────
+apps/mobile/node_modules/
+apps/mobile/.expo/
+apps/mobile/dist/
+apps/mobile/android/app/build/
+apps/mobile/android/.gradle/
+apps/mobile/ios/Pods/
+
+# ── packages ────────────────────────────────────────
+packages/*/node_modules/
+packages/*/dist/
+
+# ── Sensitive data ──────────────────────────────────
+*.xlsx
+*.xls
+*.csv
+*.sql
+*.sql.gz
+*.dump
+*.backup
+*.bak
+*.sqlite
+*.sqlite3
+database-backups/
+**/database-backups/
+apps/api/storage/app/backups/
+**/storage/app/backups/
+!template.xlsx
+.db_password.initial
+**/.db_password.initial
+
+# ── Defense-in-depth: blokir semua .env* di seluruh repo, ────────────
+#    kecuali template .example yang memang wajib di-commit.
+#    Dipasang paling bawah supaya menang atas rule per-app di atas.
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.production.example
+!**/.env.*.example
+
+# Laravel public storage symlink / local backups
+apps/api/public/storage
+*.bak-*

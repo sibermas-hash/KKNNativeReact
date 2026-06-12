@@ -1,0 +1,138 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services\KKN;
+
+use App\Enums\KknType;
+use App\Models\KKN\KonfigurasiPenilaian;
+use App\Models\KKN\LaporanAkhir;
+use App\Models\KKN\NilaiKkn;
+use App\Services\AuditService;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+
+class NilaiAkhirService
+{
+    /**
+     * Calculate and save the final score for a student in a specific group.
+     * ALIGNED with GradingService - uses weighted sum calculation.
+     */
+    public function finalize(int $nilaiKknId): NilaiKkn
+    {
+        return DB::transaction(function () use ($nilaiKknId) {
+            $nilai = NilaiKkn::with('kelompok.periode', 'mahasiswa')->findOrFail($nilaiKknId);
+            $period = $nilai->kelompok?->periode;
+
+            if (! $period) {
+                throw new \Exception('Periode KKN tidak ditemukan untuk penilaian ini.');
+            }
+
+            // Guard: Laporan Akhir must be approved before finalization
+            $mahasiswaId = $nilai->mahasiswa?->id;
+            if ($mahasiswaId) {
+                $reportApproved = LaporanAkhir::where('mahasiswa_id', $mahasiswaId)
+                    ->where('kelompok_id', $nilai->kelompok_id)
+                    ->workflowApproved()
+                    ->exists();
+
+                if (! $reportApproved) {
+                    throw new \Exception('Laporan akhir mahasiswa belum disetujui. Nilai tidak dapat difinalisasi.');
+                }
+            }
+
+            // Get KKN type and load grading configuration (aligned with GradingService)
+            $kknType = self::resolveKknType($nilai->kelompok?->periode);
+
+            $cacheKey = 'grading_configs_'.$kknType->value;
+            $configs = Cache::remember($cacheKey, 3600, function () use ($kknType) {
+                return KonfigurasiPenilaian::getForType($kknType)->pluck('percentage', 'config_key');
+            });
+
+            // 1. Calculate Komponen A (DPL) — all 5 criteria × 20% each
+            $dplWeighted = (
+                floatval($nilai->dpl_relevansi_score ?? 0) +
+                floatval($nilai->dpl_ketercapaian_score ?? 0) +
+                floatval($nilai->dpl_inovasi_score ?? 0) +
+                floatval($nilai->dpl_administrasi_score ?? 0) +
+                floatval($nilai->dpl_artikel_score ?? 0)
+            ) / 5;
+
+            // 2. Calculate Komponen B (Village/Mitra) — 3 criteria weighted
+            $villageWeighted = (
+                floatval($nilai->desa_interaksi_score ?? 0) * 0.30 +
+                floatval($nilai->desa_disiplin_score ?? 0) * 0.40 +
+                floatval($nilai->desa_kinerja_score ?? 0) * 0.30
+            );
+
+            // 3. Calculate Komponen C (LPPM)
+            $lppmWeighted = floatval($nilai->administration_score ?? 0);
+
+            // 4. Apply main weights: DPL 40%, Village 20%, LPPM 40% (with defensive zero check)
+            $dplWeight = floatval($configs['weight_main_dpl'] ?? 40);
+            $villageWeight = floatval($configs['weight_main_village'] ?? 20);
+            $lppmWeight = floatval($configs['weight_main_lppm'] ?? 40);
+
+            $totalScore = (
+                ($dplWeighted * ($dplWeight > 0 ? $dplWeight / 100 : 0)) +
+                ($villageWeighted * ($villageWeight > 0 ? $villageWeight / 100 : 0)) +
+                ($lppmWeighted * ($lppmWeight > 0 ? $lppmWeight / 100 : 0))
+            );
+
+            // G-10 fix: clamp to [0, 100]
+            $totalScore = max(0.0, min(100.0, $totalScore));
+
+            // 5. Map to Grade & Index
+            $gradeData = GradeConversionService::convert($totalScore);
+
+            // 6. Update Record
+            $nilai->update([
+                'dpl_weighted_score' => round($dplWeighted, 2),
+                'village_weighted_score' => round($villageWeighted, 2),
+                'lppm_weighted_score' => round($lppmWeighted, 2),
+                'total_score' => round($totalScore, 2),
+                'letter_grade' => $gradeData['grade'],
+                'admin_graded_at' => Carbon::now(),
+                'is_finalized' => true,
+            ]);
+
+            // 7. Audit logging
+            AuditService::log(
+                'FINALIZE_NILAI_AKHIR',
+                "Memfinalisasi nilai mahasiswa: {$mahasiswaId}, Total Score: {$totalScore}, Grade: {$gradeData['grade']}",
+                $nilai,
+                null,
+                ['total_score' => round($totalScore, 2), 'letter_grade' => $gradeData['grade']]
+            );
+
+            return $nilai;
+        });
+    }
+
+    private static function resolveKknType(?object $period): KknType
+    {
+        if (! $period) {
+            return KknType::REGULER;
+        }
+
+        $jenisKkn = $period->jenisKkn ?? null;
+        if ($jenisKkn) {
+            return match ($jenisKkn->code ?? 'REGULER') {
+                'NUSANTARA' => KknType::NUSANTARA,
+                'INTERNASIONAL' => KknType::INTERNASIONAL,
+                'KOLABORASI_PTKIN' => KknType::KOLABORASI_PTKIN,
+                'KAMPUNG_ZAKAT' => KknType::KAMPUNG_ZAKAT,
+                'DESA_KATANA' => KknType::DESA_KATANA,
+                'TEMATIK' => KknType::TEMATIK,
+                default => KknType::REGULER,
+            };
+        }
+
+        $jenisAttr = $period->jenis ?? $period->program_type ?? null;
+
+        return $jenisAttr instanceof KknType
+            ? $jenisAttr
+            : KknType::tryFrom($jenisAttr ?? 'REGULER') ?? KknType::REGULER;
+    }
+}

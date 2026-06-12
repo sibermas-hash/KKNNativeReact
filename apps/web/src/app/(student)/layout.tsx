@@ -1,0 +1,256 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useRouter, usePathname } from 'next/navigation';
+import { useAuthStore, usePeriodStore } from '@/stores';
+import { studentApi } from '@/lib/api';
+import { dashboardPathForRoles } from '@/lib/role-routing';
+import { QUERY_KEYS, ROLE_LABELS, PHASE_LABELS } from '@sibermas/constants';
+import Link from 'next/link';
+import Image from 'next/image';
+import { clsx } from 'clsx';
+import { ThemeSwitcher, useTheme } from '@/components/ui/theme-provider';
+import { NotificationBell } from '@/components/ui/notification-bell';
+import { ProfileIncompleteGuard } from "@/components/ui/profile-incomplete-guard";
+import {
+  LayoutDashboard, ClipboardList, Target, FileText, FileCheck,
+  Star, BookOpen, Plane, Home, Image as ImageIcon,
+  Menu, Power, Award, GraduationCap, MessageCircle,
+} from 'lucide-react';
+
+type NavItem = {
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  /** Phases where this item is visible. null = always visible */
+  phases: string[] | null;
+  external?: boolean;
+};
+
+const NAV_ITEMS: NavItem[] = [
+  { href: '/mahasiswa', label: 'Dashboard', icon: LayoutDashboard, phases: null },
+  { href: '/mahasiswa/pendaftaran', label: 'Daftar KKN', icon: ClipboardList, phases: ['registration', 'placement'] },
+  { href: '/mahasiswa/cek-pendaftaran', label: 'Status Pendaftaran', icon: FileCheck, phases: ['registration', 'placement'] },
+  { href: '/mahasiswa/posko', label: 'Posko', icon: Home, phases: ['placement', 'execution', 'grading', 'finished'] },
+  { href: '/mahasiswa/laporan-harian', label: 'Logbook Harian', icon: FileText, phases: ['execution', 'grading'] },
+  { href: '/mahasiswa/program-kerja', label: 'Program Kerja', icon: Target, phases: ['execution', 'grading'] },
+  { href: '/mahasiswa/izin', label: 'Izin', icon: Plane, phases: ['execution', 'grading'] },
+  { href: '/mahasiswa/poster', label: 'Poster Potensi Desa', icon: ImageIcon, phases: ['execution', 'grading'] },
+  { href: '/mahasiswa/laporan-akhir', label: 'Laporan Akhir', icon: BookOpen, phases: ['grading', 'finished'] },
+  { href: '/mahasiswa/evaluasi-dpl', label: 'Evaluasi DPL', icon: Star, phases: ['grading', 'finished'] },
+  { href: '/mahasiswa/sertifikat', label: 'Sertifikat', icon: Award, phases: ['grading', 'finished'] },
+];
+
+export default function StudentLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
+  const router = useRouter();
+  const pathname = usePathname() ?? "";
+  const { user, isAuthenticated, isLoading, clearUser } = useAuthStore();
+  const { currentPhase, activePeriod } = usePeriodStore();
+  const { config: themeConfig } = useTheme();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isProfilePage = pathname === '/profil';
+  const { data: dashboardData, isLoading: isDashboardLoading } = useQuery<Record<string, unknown> | null>({
+    queryKey: [...QUERY_KEYS.student.dashboard, user?.id],
+    queryFn: () => studentApi.dashboard() as unknown as Promise<Record<string, unknown> | null>,
+    enabled: isAuthenticated && !!user?.roles?.includes('student') && !!user?.id,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
+  });
+  const registration = dashboardData?.registration as { status?: string; group?: unknown; period?: { name?: string; current_phase?: string } | null } | null | undefined;
+  const headerPeriodName = registration?.period?.name || activePeriod?.name || 'SIBERMAS';
+  const effectivePhase = registration?.period?.current_phase || currentPhase || 'upcoming';
+  const normalizedRegistrationStatus = String(registration?.status || '').toLowerCase();
+  const hasRegistration = !!registration;
+  const hasGroup = !!registration?.group;
+  const canRegister = !hasRegistration || ['rejected', 'ditolak', 'gugur'].includes(normalizedRegistrationStatus);
+  const visibleNavItems = NAV_ITEMS.filter((item) => {
+    if (item.href === '/mahasiswa/pendaftaran') return canRegister;
+    if (item.href === '/mahasiswa/cek-pendaftaran') return hasRegistration;
+    if (item.href === '/mahasiswa/posko') return hasGroup;
+    if (item.phases !== null && !item.phases.includes(effectivePhase)) return false;
+    return true;
+  });
+  const currentNavItem = NAV_ITEMS.find((item) => pathname === item.href || pathname.startsWith(`${item.href}/`));
+  const isPhaseAllowed = !currentNavItem?.phases || currentNavItem.phases.includes(effectivePhase);
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (!isAuthenticated) { router.replace('/login'); return; }
+    if (user) {
+      if (!user.password_changed_at) { router.replace('/ganti-password'); return; }
+      const roles = user.roles ?? [];
+      const isStudentRole = roles.includes('student');
+      if (user.must_change_password && !isProfilePage) { router.replace('/profil'); return; }
+      if (!isStudentRole) { router.replace(dashboardPathForRoles(roles)); return; }
+      if (isProfilePage) return;
+      if (!isPhaseAllowed && currentNavItem) {
+        router.replace(`/phase-blocked?phase=${encodeURIComponent(effectivePhase)}&required=${encodeURIComponent(currentNavItem.phases?.join(',') || '')}`);
+      }
+    }
+  }, [isLoading, isAuthenticated, isProfilePage, user, router, isPhaseAllowed, currentNavItem, effectivePhase]);
+
+  if (isLoading || isDashboardLoading || !isAuthenticated || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[color:var(--profile-page,#F7F9F8)]">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[color:var(--profile-primary)] border-t-transparent" />
+      </div>
+    );
+  }
+  const handleLogout = async () => {
+    try { await (await import('@/lib/api')).api.post('/auth/logout'); } catch { /* noop */ }
+    clearUser();
+    router.replace('/');
+  };
+  const roleLabel = ROLE_LABELS[user.roles?.[0] || 'student'] || user.roles?.[0] || 'Mahasiswa';
+
+  return (
+    <div className="app-readable min-h-screen font-sans transition-colors duration-500" style={{ ...themeConfig.vars, background: themeConfig.backdrop }}>
+      {/* Sidebar overlay mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Tutup sidebar"
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside className={clsx(
+        'fixed inset-y-0 left-0 z-50 w-64 border-r border-[color:var(--profile-border)] bg-[color:var(--profile-surface-strong)] backdrop-blur-xl shadow-sm flex flex-col transition-transform duration-300 lg:translate-x-0',
+        sidebarOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full',
+      )}>
+        {/* Logo / Brand */}
+        <div className="h-28 px-6 flex flex-col justify-center sticky top-0 z-10 bg-[color:var(--profile-surface-strong)]">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 flex items-center justify-center rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-input)] p-1.5 shadow-sm shrink-0">
+              <Image src="/images/logo_uinsaizu.png" alt="Logo UIN" width={48} height={48} className="h-full w-full object-contain" />
+            </div>
+            <div className="h-12 w-12 flex items-center justify-center rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-input)] p-1 shadow-sm shrink-0">
+              <Image src="/images/Logo_SIBERMAS.png" alt="Logo SIBERMAS" width={48} height={48} className="h-full w-full object-contain" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <h1 className="text-base font-black leading-none tracking-tight flex items-center gap-2 font-display uppercase text-[color:var(--profile-text)]">
+              <span><span className="text-[color:var(--profile-primary)]">SIBER</span><span className="text-[color:var(--profile-accent)]">MAS</span></span>
+              <span className="h-1.5 w-1.5 rounded-full bg-[color:var(--profile-accent)] animate-pulse" />
+            </h1>
+            <p className="text-[9px] font-bold text-[color:var(--profile-muted)] mt-2 font-sans tracking-wider leading-relaxed uppercase">
+              Portal Mahasiswa
+            </p>
+          </div>
+        </div>
+
+        {/* User Info → Profile */}
+        <div className="px-4 py-2">
+          <Link href="/profil" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 rounded-2xl bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+            <div className="h-11 w-11 overflow-hidden rounded-2xl bg-[color:var(--profile-primary)] flex items-center justify-center text-white shrink-0 shadow-inner">
+              {user.avatar_url ? <img src={user.avatar_url} alt={user.name} className="h-full w-full object-cover" /> : <span className="text-xs font-black uppercase">{user.name.substring(0, 2)}</span>}
+            </div>
+            <div className="min-w-0">
+              <p className="text-[9px] font-black text-[color:var(--profile-soft-text)] uppercase tracking-[0.15em]">{roleLabel}</p>
+              <p className="text-sm font-black text-[color:var(--profile-text)] truncate mt-0.5">{user.name}</p>
+              <p className="text-[10px] font-bold text-[color:var(--profile-muted)] mt-0.5 truncate">{user.nim || user.username}</p>
+            </div>
+          </Link>
+        </div>
+
+        {/* Phase indicator */}
+        {effectivePhase && (
+          <div className="mx-4 mb-2 rounded-lg bg-[color:var(--profile-warning)] border border-[color:var(--profile-border)] px-3 py-2">
+            <p className="text-[9px] font-black text-[color:var(--profile-warning-text)] uppercase tracking-wider">
+              Fase: {PHASE_LABELS[effectivePhase] || effectivePhase}
+            </p>
+          </div>
+        )}
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto px-4 py-3">
+          <h3 className="px-3 mb-2 text-[10px] font-black text-[color:var(--profile-text)] uppercase tracking-widest font-sans">
+            MENU UTAMA
+          </h3>
+          <div className="space-y-1">
+            {visibleNavItems.map((item) => {
+              const isActive = !item.external && (pathname === item.href || ((item.href !== '/mahasiswa' && item.href !== '/dosen') && pathname.startsWith(item.href + '/')));
+              const linkProps = item.external ? { target: "_blank", rel: "noopener noreferrer" } : {};
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => !item.external && setSidebarOpen(false)}
+                  {...linkProps}
+                  className={clsx(
+                    'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 group relative overflow-hidden',
+                    isActive
+                      ? 'bg-[color:var(--profile-soft)] text-[color:var(--profile-text)] font-bold shadow-sm border border-[color:var(--profile-border)] shadow-[inset_3px_0_0_0_var(--profile-accent)]'
+                      : 'text-[color:var(--profile-muted)] hover:text-[color:var(--profile-text)] hover:bg-[color:var(--profile-soft)]',
+                  )}
+                >
+                  <item.icon
+                    className={clsx(
+                      'h-5 w-5 shrink-0 transition-colors',
+                      isActive ? 'text-[color:var(--profile-accent)]' : 'text-[color:var(--profile-muted)] group-hover:text-[color:var(--profile-primary)]'
+                    )}
+                    strokeWidth={isActive ? 2.5 : 2}
+                  />
+                  <span className="truncate font-display font-black uppercase tracking-tight text-[11px]">
+                    {item.label}
+                  </span>
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+
+      </aside>
+
+      {/* Main */}
+      <div className="lg:pl-64 flex flex-col min-h-screen transition-all duration-300 w-full overflow-x-hidden">
+        {/* Header */}
+        <header className="sticky top-0 z-40 h-14 bg-[color:var(--profile-surface-strong)] border-b border-[color:var(--profile-border)] px-6 flex items-center justify-between backdrop-blur-xl">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="p-2 text-[color:var(--profile-muted)] hover:text-[color:var(--profile-text)] hover:bg-[color:var(--profile-soft)] rounded-lg lg:hidden transition-colors"
+              title="Buka Menu Sidebar"
+              aria-label="Buka Menu Sidebar"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <h2 className="text-[1.1rem] font-black text-[color:var(--profile-text)] uppercase tracking-tighter font-display leading-none">
+              {headerPeriodName}
+            </h2>
+          </div>
+          <div className="flex items-center gap-3">
+            <NotificationBell />
+            <ThemeSwitcher className="hidden md:flex" />
+            <span className="hidden md:flex items-center gap-1.5 px-2.5 py-1 bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] rounded-md text-xs font-medium text-[color:var(--profile-soft-text)]">
+              <GraduationCap size={12} /> {roleLabel}
+            </span>
+            <button onClick={handleLogout} className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-[color:var(--profile-muted)] hover:text-[color:var(--profile-danger-text)] hover:bg-[color:var(--profile-danger)] rounded-lg transition-colors">
+              <Power className="h-4 w-4" />
+              <span className="hidden sm:inline">Keluar</span>
+            </button>
+          </div>
+        </header>
+
+        <ProfileIncompleteGuard />
+        <main className="flex-1 p-4 lg:p-8 text-[color:var(--profile-text)]">{children}</main>
+      </div>
+
+      <a
+        href="https://t.me/Sibermas58"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Chat Admin Sibermas via Telegram"
+        title="Chat Admin Sibermas via Telegram"
+        className="fixed bottom-5 right-5 z-[60] flex h-14 w-14 items-center justify-center rounded-full bg-sky-600 text-white shadow-2xl shadow-black/20 ring-4 ring-[color:var(--profile-surface)] transition-all hover:-translate-y-0.5 hover:bg-sky-700 focus:outline-none focus:ring-4 focus:ring-sky-200 md:bottom-6 md:right-6"
+      >
+        <MessageCircle className="h-6 w-6" strokeWidth={2.5} />
+        <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full border-2 border-white bg-rose-500" />
+        <span className="sr-only">Chat Admin Sibermas via Telegram</span>
+      </a>
+    </div>
+  );
+}

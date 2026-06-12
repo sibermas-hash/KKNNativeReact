@@ -1,0 +1,53 @@
+name: Shared Packages
+
+on:
+  push:
+    branches: [main, develop]
+    paths: ['packages/**']
+  pull_request:
+    branches: [main, develop]
+    paths: ['packages/**']
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Type Check & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: CI guard
+        run: pnpm run ci:guard
+
+      - name: Type check shared-types
+        run: pnpm --filter @sibermas/shared-types exec tsc --noEmit
+
+      - name: Type check constants
+        run: pnpm --filter @sibermas/constants exec tsc --noEmit
+
+      - name: Type check schemas
+        run: pnpm --filter @sibermas/schemas exec tsc --noEmit
+
+      - name: Type check api-client
+        run: pnpm --filter @sibermas/api-client exec tsc --noEmit --skipLibCheck
+
+      - name: Type check hooks
+        run: pnpm --filter @sibermas/hooks exec tsc --noEmit --skipLibCheck
+
+      - name: Run package tests
+        run: |
+          pnpm --filter @sibermas/shared-types test
+          pnpm --filter @sibermas/schemas test
+          pnpm --filter @sibermas/api-client test

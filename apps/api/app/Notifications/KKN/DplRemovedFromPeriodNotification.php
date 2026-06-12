@@ -1,0 +1,54 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Notifications\KKN;
+
+use App\Notifications\Channels\WaGatewayChannel;
+use App\Notifications\Concerns\ResolvesNotificationChannels;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
+
+class DplRemovedFromPeriodNotification extends Notification implements ShouldQueue
+{
+    use Queueable, ResolvesNotificationChannels;
+
+    public function __construct(
+        public string $periodName,
+        public string $reason = '',
+    ) {}
+
+    public function via(object $notifiable): array
+    {
+        return $this->preferredChannels($notifiable, ['mail', 'database', WaGatewayChannel::class]);
+    }
+
+    public function toMail(object $notifiable): MailMessage
+    {
+        $mail = (new MailMessage)
+            ->subject('Pencabutan Penugasan DPL — SIBERMAS')
+            ->greeting("Assalamu'alaikum, {$notifiable->name}")
+            ->line("Penugasan Anda sebagai Dosen Pembimbing Lapangan (DPL) pada periode **{$this->periodName}** telah dicabut.");
+
+        if ($this->reason) {
+            $mail->line("Alasan: {$this->reason}");
+        }
+
+        return $mail
+            ->line('Jika Anda memiliki pertanyaan, silakan hubungi LPPM.')
+            ->action('Buka Portal SIBERMAS', url('/'))
+            ->line('Terima kasih atas kontribusi Anda.');
+    }
+
+    public function toArray(object $notifiable): array
+    {
+        return [
+            'type' => 'dpl_removed_from_period',
+            'period_name' => $this->periodName,
+            'reason' => $this->reason,
+            'message' => "Penugasan DPL Anda pada periode {$this->periodName} telah dicabut.",
+        ];
+    }
+}

@@ -1,0 +1,143 @@
+/* apps/web/src/app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Fallback theme tokens (= "akademik" default), incl. typography.
+ * ThemeProvider / ThemeNoFlashScript override these on :root at runtime.
+ */
+:root {
+  --profile-page: #f7f9f8;
+  --profile-text: #102a26;
+  --profile-muted: #5b716c;
+  --profile-surface: #ffffff;
+  --profile-surface-strong: #ecf2f0;
+  --profile-border: #d8e2df;
+  --profile-soft: #e6f2ef;
+  --profile-soft-text: #0f766e;
+  --profile-primary: #0f766e;
+  --profile-primary-hover: #0b5c56;
+  --profile-accent: #c2a14d;
+  --profile-ring: rgba(15, 118, 110, 0.35);
+  --profile-input: #ffffff;
+  --profile-input-disabled: #ecf2f0;
+  --profile-stat: #e6f2ef;
+  --profile-warning: #fef3c7;
+  --profile-warning-text: #92400e;
+  --profile-danger: #fee2e2;
+  --profile-danger-text: #b91c1c;
+  --profile-radius: 12px;
+  --profile-font-heading: "Lora", Georgia, serif;
+  --profile-font-body: "Inter", system-ui, sans-serif;
+  --profile-font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+html,
+body {
+  background: var(--profile-page);
+  color: var(--profile-text);
+  font-family: var(--profile-font-body);
+}
+
+/* Headings adopt the theme's display font automatically. */
+h1,
+h2,
+h3,
+h4,
+.font-heading {
+  font-family: var(--profile-font-heading);
+}
+
+.font-mono,
+code,
+kbd,
+samp {
+  font-family: var(--profile-font-mono);
+}
+
+/*
+ * Dark "professional" theme: primary is a light sky color, so primary
+ * buttons need dark ink for accessible contrast.
+ */
+[data-theme="professional"] [data-variant="primary"] {
+  color: #0b1220;
+}
+
+/* =========================================================
+ * Glassmorphism layer
+ * Frosted translucent surfaces over a soft themed backdrop.
+ * Tokens default to "akademik"; ThemeProvider sets data-theme,
+ * and these [data-theme] rules supply the per-theme glass values.
+ * ========================================================= */
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.58);
+  --glass-side: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.75);
+  --glass-blur: 16px;
+  --g-blob-1: rgba(15, 118, 110, 0.2);
+  --g-blob-2: rgba(194, 161, 77, 0.22);
+}
+
+[data-theme="nusantara"] {
+  --glass-bg: rgba(255, 255, 255, 0.52);
+  --glass-side: rgba(255, 255, 255, 0.5);
+  --glass-border: rgba(255, 255, 255, 0.72);
+  --glass-blur: 16px;
+  --g-blob-1: rgba(181, 83, 42, 0.2);
+  --g-blob-2: rgba(226, 160, 63, 0.24);
+}
+
+[data-theme="minimal"] {
+  --glass-bg: rgba(255, 255, 255, 0.62);
+  --glass-side: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.85);
+  --glass-blur: 14px;
+  --g-blob-1: rgba(37, 99, 235, 0.16);
+  --g-blob-2: rgba(20, 184, 166, 0.18);
+}
+
+[data-theme="sustainability"] {
+  --glass-bg: rgba(255, 255, 255, 0.55);
+  --glass-side: rgba(255, 255, 255, 0.52);
+  --glass-border: rgba(255, 255, 255, 0.75);
+  --glass-blur: 16px;
+  --g-blob-1: rgba(5, 150, 105, 0.2);
+  --g-blob-2: rgba(101, 163, 13, 0.2);
+}
+
+[data-theme="professional"] {
+  --glass-bg: rgba(20, 30, 50, 0.52);
+  --glass-side: rgba(20, 30, 50, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-blur: 18px;
+  --g-blob-1: rgba(56, 189, 248, 0.2);
+  --g-blob-2: rgba(129, 140, 248, 0.22);
+}
+
+/* Soft themed backdrop so frosted surfaces have something to refract. */
+body {
+  background:
+    radial-gradient(820px 460px at 8% -4%, var(--g-blob-1), transparent 60%),
+    radial-gradient(820px 480px at 104% 6%, var(--g-blob-2), transparent 58%),
+    radial-gradient(700px 700px at 60% 110%, var(--g-blob-1), transparent 62%),
+    var(--profile-page);
+  background-attachment: fixed;
+}
+
+/* Reusable frosted-glass primitive. */
+.glass {
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+  border: 1px solid var(--glass-border);
+}
+
+/* Graceful fallback when backdrop-filter is unsupported: more opaque. */
+@supports not (
+  (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))
+) {
+  .glass {
+    background: var(--profile-surface);
+  }
+}

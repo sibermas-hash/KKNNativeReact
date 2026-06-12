@@ -1,0 +1,241 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Http\Controllers\Api\V1\Admin;
+
+use App\Helpers\QueryHelper;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\Api\V1\AnnouncementResource;
+use App\Http\Traits\ApiResponse;
+use App\Jobs\BroadcastNotificationJob;
+use App\Models\KKN\Announcement;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
+
+class AnnouncementController extends Controller
+{
+    use ApiResponse;
+
+    public function index(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'search' => ['nullable', 'string', 'max:200'],
+            'category' => ['nullable', 'string', Rule::in(Announcement::CATEGORY_OPTIONS)],
+            'is_active' => ['nullable', 'boolean'],
+            'type' => ['nullable', 'string', Rule::in([Announcement::TYPE_BERITA, Announcement::TYPE_PENGUMUMAN])],
+            'target' => ['nullable', 'string', Rule::in(Announcement::TARGET_OPTIONS)],
+        ]);
+
+        $query = Announcement::query()
+            ->when($validated['search'] ?? null, function ($q, $s) {
+                $safe = QueryHelper::escapeLike($s);
+                $q->where(function ($inner) use ($safe) {
+                    $inner->where('title', 'like', "%{$safe}%")
+                        ->orWhere('excerpt', 'like', "%{$safe}%")
+                        ->orWhere('content', 'like', "%{$safe}%");
+                });
+            })
+            ->when($validated['category'] ?? null, fn ($q, $c) => $q->where('category', $c))
+            ->when($request->filled('is_active'), fn ($q) => $q->where('is_active', $request->boolean('is_active')))
+            // Filter berdasarkan content-type ('berita' | 'pengumuman').
+            // Shortcut supaya admin UI bisa tab tanpa perlu expand kategori manual.
+            ->ofType($validated['type'] ?? null)
+            ->when($validated['target'] ?? null, fn ($q, $target) => $q->forTarget($target))
+            ->orderByDesc('published_at');
+
+        return $this->successCollection(AnnouncementResource::collection($query->paginate(25)));
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'title' => ['required', 'string', 'max:255'],
+            'content' => ['required', 'string'],
+            'excerpt' => ['nullable', 'string', 'max:500'],
+            'category' => ['nullable', 'string', Rule::in(Announcement::CATEGORY_OPTIONS)],
+            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'file' => ['nullable', 'file', 'mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,zip', 'max:10240'],
+            'is_active' => ['nullable', 'boolean'],
+            'show_as_popup' => ['nullable', 'boolean'],
+            'popup_until' => ['nullable', 'date'],
+            'popup_dismissable' => ['nullable', 'boolean'],
+            'meta_title' => ['nullable', 'string', 'max:255'],
+            'meta_description' => ['nullable', 'string', 'max:500'],
+            'meta_keywords' => ['nullable', 'string', 'max:255'],
+            'announcement_targets' => ['nullable', 'array'],
+            'announcement_targets.*' => ['string', Rule::in(Announcement::TARGET_OPTIONS)],
+            // If true, a notification is broadcast to all active students after creation.
+            'notify_students' => ['nullable', 'boolean'],
+        ]);
+
+        // Normalize boolean & category — multipart FormData arrives as string '0'/'1'/'true'/'false'.
+        foreach (['is_active', 'show_as_popup', 'popup_dismissable', 'notify_students'] as $boolField) {
+            if (array_key_exists($boolField, $validated)) {
+                $validated[$boolField] = filter_var($validated[$boolField], FILTER_VALIDATE_BOOLEAN);
+            }
+        }
+        if (empty($validated['category'])) {
+            $validated['category'] = 'PENGUMUMAN';
+        }
+        $validated['announcement_targets'] = $this->normalizeTargets($validated['announcement_targets'] ?? null);
+
+        $disk = 'public';
+
+        // Handle image upload
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('announcements/images', $disk);
+        }
+
+        // Handle file/document attachment upload
+        $filePath = null;
+        $fileName = null;
+        if ($request->hasFile('file')) {
+            $uploadedFile = $request->file('file');
+            $fileName = $uploadedFile->getClientOriginalName();
+            $filePath = $uploadedFile->store('announcements/files', $disk);
+        }
+
+        // Remove non-model fields before create
+        $shouldNotify = (bool) ($validated['notify_students'] ?? false);
+        unset($validated['notify_students'], $validated['image'], $validated['file']);
+
+        $announcement = Announcement::create(array_merge($validated, [
+            'image' => $imagePath,
+            'file_path' => $filePath,
+            'file_name' => $fileName,
+            'published_at' => now(),
+            // Slug is auto-generated by Announcement::booted() — no duplicate logic needed.
+        ]));
+
+        // Optionally broadcast a notification to all students
+        if ($shouldNotify) {
+            BroadcastNotificationJob::dispatch(
+                title: '📢 '.$announcement->title,
+                message: $announcement->excerpt_text,
+                priority: 'info',
+                action: Announcement::resolveType($announcement->category) === Announcement::TYPE_PENGUMUMAN
+                    ? '/pengumuman/'.$announcement->slug
+                    : '/berita/'.$announcement->slug,
+                type: 'announcement',
+                target: 'role:student',
+                userIds: [],
+                adminUserId: $request->user()->id,
+            );
+        }
+
+        return $this->created(new AnnouncementResource($announcement->refresh()), 'Berita berhasil dipublikasikan.');
+    }
+
+    public function update(Request $request, Announcement $announcement): JsonResponse
+    {
+        $validated = $request->validate([
+            'title' => ['sometimes', 'string', 'max:255'],
+            'content' => ['sometimes', 'string'],
+            'excerpt' => ['nullable', 'string', 'max:500'],
+            'category' => ['nullable', 'string', Rule::in(Announcement::CATEGORY_OPTIONS)],
+            'image' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
+            'remove_image' => ['nullable', 'boolean'],
+            'file' => ['nullable', 'file', 'mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,zip', 'max:10240'],
+            'remove_file' => ['nullable', 'boolean'],
+            'is_active' => ['nullable', 'boolean'],
+            'show_as_popup' => ['nullable', 'boolean'],
+            'popup_until' => ['nullable', 'date'],
+            'popup_dismissable' => ['nullable', 'boolean'],
+            'meta_title' => ['nullable', 'string', 'max:255'],
+            'meta_description' => ['nullable', 'string', 'max:500'],
+            'meta_keywords' => ['nullable', 'string', 'max:255'],
+            'announcement_targets' => ['nullable', 'array'],
+            'announcement_targets.*' => ['string', Rule::in(Announcement::TARGET_OPTIONS)],
+        ]);
+
+        // Normalize booleans — multipart FormData arrives as string '0'/'1'/'true'/'false'.
+        foreach (['is_active', 'show_as_popup', 'popup_dismissable', 'remove_image', 'remove_file'] as $boolField) {
+            if (array_key_exists($boolField, $validated)) {
+                $validated[$boolField] = filter_var($validated[$boolField], FILTER_VALIDATE_BOOLEAN);
+            }
+        }
+        if (array_key_exists('announcement_targets', $validated)) {
+            $validated['announcement_targets'] = $this->normalizeTargets($validated['announcement_targets']);
+        }
+
+        $disk = 'public';
+
+        // Handle image replacement
+        if ($request->hasFile('image')) {
+            if ($announcement->image) {
+                Storage::disk($disk)->delete($announcement->image);
+            }
+            $validated['image'] = $request->file('image')->store('announcements/images', $disk);
+        }
+
+        // Handle image removal without replacement
+        if (! $request->hasFile('image') && ! empty($validated['remove_image']) && $announcement->image) {
+            Storage::disk($disk)->delete($announcement->image);
+            $validated['image'] = null;
+        }
+
+        // Handle file replacement
+        if ($request->hasFile('file')) {
+            if ($announcement->file_path) {
+                Storage::disk($disk)->delete($announcement->file_path);
+            }
+            $uploadedFile = $request->file('file');
+            $validated['file_path'] = $uploadedFile->store('announcements/files', $disk);
+            $validated['file_name'] = $uploadedFile->getClientOriginalName();
+        }
+
+        // Handle file removal (without replacement)
+        if (! $request->hasFile('file') && ! empty($validated['remove_file']) && $announcement->file_path) {
+            Storage::disk($disk)->delete($announcement->file_path);
+            $validated['file_path'] = null;
+            $validated['file_name'] = null;
+        }
+
+        // Remove non-model fields before update
+        unset($validated['file'], $validated['remove_file'], $validated['remove_image']);
+
+        // Regenerate slug if title changed
+        if (isset($validated['title']) && $validated['title'] !== $announcement->title) {
+            $validated['slug'] = Announcement::makeUniqueSlug($validated['title'], $announcement->id);
+        }
+
+        $announcement->update($validated);
+
+        return $this->success(new AnnouncementResource($announcement->refresh()), 'Berita berhasil diperbarui.');
+    }
+
+    public function destroy(Announcement $announcement): JsonResponse
+    {
+        $disk = 'public';
+
+        if ($announcement->image) {
+            Storage::disk($disk)->delete($announcement->image);
+        }
+        if ($announcement->file_path) {
+            Storage::disk($disk)->delete($announcement->file_path);
+        }
+
+        $announcement->delete();
+
+        return $this->noContent('Berita berhasil dihapus.');
+    }
+
+    public function preview(Announcement $announcement): JsonResponse
+    {
+        return $this->success(new AnnouncementResource($announcement));
+    }
+
+    private function normalizeTargets(?array $targets): array
+    {
+        $normalized = array_values(array_unique(array_filter(
+            $targets ?? [Announcement::TARGET_PUBLIC_HOME],
+            fn ($target) => in_array($target, Announcement::TARGET_OPTIONS, true)
+        )));
+
+        return $normalized ?: [Announcement::TARGET_PUBLIC_HOME];
+    }
+}

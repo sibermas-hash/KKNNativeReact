@@ -1,0 +1,448 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Portal KKN AI Configuration Schema",
+  "description": "Comprehensive JSON schema for AI provider and model configuration",
+  "version": "1.0.0",
+  "type": "object",
+  
+  "definitions": {
+    "apiProvider": {
+      "type": "object",
+      "required": ["name", "api_key"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "enum": [
+            "gemini",
+            "openai",
+            "anthropic",
+            "azure",
+            "groq",
+            "mistral",
+            "deepseek",
+            "cohere",
+            "ollama",
+            "rizquna"
+          ],
+          "description": "AI provider name"
+        },
+        "api_key": {
+          "type": "string",
+          "description": "API key for authentication (will be encrypted)",
+          "minLength": 10
+        },
+        "enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable this provider"
+        },
+        "primary": {
+          "type": "boolean",
+          "default": false,
+          "description": "Set as primary provider"
+        },
+        "api_url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Custom API endpoint URL (optional for some providers)"
+        },
+        "provider_specific": {
+          "type": "object",
+          "description": "Provider-specific configuration",
+          "properties": {
+            "deployment": {
+              "type": "string",
+              "description": "For Azure OpenAI: deployment name"
+            },
+            "base_url": {
+              "type": "string",
+              "description": "For Ollama: local server URL"
+            },
+            "api_version": {
+              "type": "string",
+              "description": "For Azure OpenAI: API version"
+            }
+          }
+        }
+      }
+    },
+    
+    "modelConfig": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["text", "vision", "audio", "embeddings"],
+          "description": "Model capability type"
+        },
+        "default": {
+          "type": "string",
+          "description": "Default model for this type"
+        },
+        "cheapest": {
+          "type": "string",
+          "description": "Fastest/cheapest model for high-volume"
+        },
+        "smartest": {
+          "type": "string",
+          "description": "Most capable model for complex tasks"
+        },
+        "models": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "name"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Model identifier (as used in API)"
+              },
+              "name": {
+                "type": "string",
+                "description": "Human-readable model name"
+              },
+              "tier": {
+                "type": "string",
+                "enum": ["lite", "standard", "pro", "enterprise"],
+                "description": "Model tier (cost/capability)"
+              },
+              "latency_ms": {
+                "type": "number",
+                "description": "Average response time in milliseconds"
+              },
+              "accuracy_score": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 100,
+                "description": "Accuracy percentage (0-100)"
+              },
+              "cost_per_1m_tokens": {
+                "type": "number",
+                "description": "Cost per 1 million tokens (input)"
+              },
+              "use_cases": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Recommended use cases"
+              },
+              "context_window": {
+                "type": "integer",
+                "description": "Max context tokens"
+              },
+              "supported": {
+                "type": "boolean",
+                "default": true,
+                "description": "Is this model currently supported"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  "properties": {
+    "ai_config": {
+      "type": "object",
+      "required": ["default_provider"],
+      "properties": {
+        "default_provider": {
+          "type": "string",
+          "description": "Default AI provider to use"
+        },
+        "fallback_provider": {
+          "type": "string",
+          "description": "Fallback provider if default fails"
+        },
+        "enable_ai": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable all AI features"
+        },
+        "cache_ttl_hours": {
+          "type": "integer",
+          "default": 1,
+          "minimum": 0,
+          "description": "Cache TTL for AI responses"
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "default": 15,
+          "minimum": 5,
+          "description": "API call timeout in seconds"
+        },
+        "max_retries": {
+          "type": "integer",
+          "default": 3,
+          "minimum": 1,
+          "description": "Number of retry attempts"
+        }
+      }
+    },
+
+    "providers": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/apiProvider"
+      },
+      "examples": {
+        "rizquna": {
+          "name": "rizquna",
+          "api_key": "sk-rizquna-...",
+          "enabled": true,
+          "primary": true,
+          "api_url": "https://router.rizquna.id/v1"
+        },
+        "gemini": {
+          "name": "gemini",
+          "api_key": "AIzaSy...",
+          "enabled": true,
+          "primary": false
+        },
+        "openai": {
+          "name": "openai",
+          "api_key": "sk-proj-...",
+          "enabled": true,
+          "primary": false,
+          "api_url": "https://api.openai.com/v1"
+        },
+        "azure": {
+          "name": "azure",
+          "api_key": "...",
+          "enabled": false,
+          "api_url": "https://your-resource.openai.azure.com/",
+          "provider_specific": {
+            "deployment": "gpt-4o",
+            "api_version": "2024-10-21"
+          }
+        },
+        "ollama": {
+          "name": "ollama",
+          "api_key": "",
+          "enabled": false,
+          "provider_specific": {
+            "base_url": "http://localhost:11434"
+          }
+        }
+      }
+    },
+
+    "models": {
+      "type": "object",
+      "properties": {
+        "gemini": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "$ref": "#/definitions/modelConfig",
+              "properties": {
+                "models": {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "gemini-2.5-flash",
+                      "gemini-2.5-flash-lite",
+                      "gemini-2.5-pro",
+                      "gemini-2.0-flash",
+                      "gemini-2.0-flash-lite"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "openai": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "$ref": "#/definitions/modelConfig",
+              "properties": {
+                "models": {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "gpt-4o",
+                      "gpt-4-turbo",
+                      "gpt-4",
+                      "gpt-3.5-turbo"
+                    ]
+                  }
+                }
+              }
+            },
+            "vision": {
+              "$ref": "#/definitions/modelConfig"
+            }
+          }
+        },
+        "anthropic": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "$ref": "#/definitions/modelConfig",
+              "properties": {
+                "models": {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "claude-3-5-sonnet",
+                      "claude-3-opus",
+                      "claude-3-haiku"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "groq": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "$ref": "#/definitions/modelConfig",
+              "properties": {
+                "models": {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "llama-3.1-70b-versatile",
+                      "mixtral-8x7b-32768",
+                      "gemma-7b-it"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "mistral": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "$ref": "#/definitions/modelConfig",
+              "properties": {
+                "models": {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "mistral-large",
+                      "mistral-medium",
+                      "mistral-small"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "deepseek": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "$ref": "#/definitions/modelConfig",
+              "properties": {
+                "models": {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "deepseek-chat",
+                      "deepseek-coder"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "rizquna": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "$ref": "#/definitions/modelConfig",
+              "properties": {
+                "models": {
+                  "type": "array",
+                  "items": {
+                    "enum": [
+                      "ag/gemini-3-flash",
+                      "ag/gemini-3.1-pro-low",
+                      "cx/gpt-5.3-codex"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+    "usage_config": {
+      "type": "object",
+      "description": "Track and manage AI usage",
+      "properties": {
+        "enable_usage_tracking": {
+          "type": "boolean",
+          "default": true,
+          "description": "Track AI API usage"
+        },
+        "monthly_token_limit": {
+          "type": "integer",
+          "description": "Monthly token limit (null = unlimited)"
+        },
+        "daily_token_limit": {
+          "type": "integer",
+          "description": "Daily token limit (null = unlimited)"
+        },
+        "cost_per_1m_input_tokens": {
+          "type": "number",
+          "description": "Cost calculation for input tokens"
+        },
+        "cost_per_1m_output_tokens": {
+          "type": "number",
+          "description": "Cost calculation for output tokens"
+        },
+        "monthly_budget_usd": {
+          "type": "number",
+          "description": "Monthly budget in USD"
+        }
+      }
+    },
+
+    "feature_flags": {
+      "type": "object",
+      "description": "Enable/disable specific AI features",
+      "properties": {
+        "student_assistant": {
+          "type": "boolean",
+          "default": true,
+          "description": "Student AI assistant"
+        },
+        "document_verification": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automated document verification"
+        },
+        "report_analysis": {
+          "type": "boolean",
+          "default": true,
+          "description": "KKN report analysis"
+        },
+        "placement_recommendation": {
+          "type": "boolean",
+          "default": true,
+          "description": "Smart group placement"
+        },
+        "notification_generation": {
+          "type": "boolean",
+          "default": true,
+          "description": "AI-generated notifications"
+        }
+      }
+    }
+  },
+
+  "required": ["ai_config", "providers", "models"]
+}

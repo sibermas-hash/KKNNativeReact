@@ -1,0 +1,164 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+concurrency:
+  group: sibermas-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run ci:guard
+      - run: pnpm build:packages
+      - run: pnpm run type-check
+      - run: pnpm run lint
+      - run: pnpm run build
+        env:
+          NEXT_PUBLIC_API_URL: /api/v1
+          NEXT_PUBLIC_APP_URL: https://sibermas.uinsaizu.ac.id
+          NEXT_PUBLIC_SITE_URL: https://sibermas.uinsaizu.ac.id
+      - run: pnpm run test
+      - run: pnpm audit --audit-level=critical
+
+  backend:
+    name: Backend
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: kkn_test
+          POSTGRES_USER: kkn_test
+          POSTGRES_PASSWORD: kkn_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+      redis:
+        image: redis:7
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
+    defaults:
+      run:
+        working-directory: apps/api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: pdo_pgsql, redis, mbstring, xml, curl, zip, gd, pcntl, intl, bcmath, sodium
+          coverage: none
+      - uses: actions/cache@v4
+        with:
+          path: apps/api/vendor
+          key: composer-${{ hashFiles('apps/api/composer.lock') }}
+          restore-keys: composer-
+      - run: composer install --no-interaction --prefer-dist --optimize-autoloader
+      - name: Prepare env
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          cat >> .env <<'EOF'
+          DB_CONNECTION=pgsql
+          DB_HOST=127.0.0.1
+          DB_PORT=5432
+          DB_DATABASE=kkn_test
+          DB_USERNAME=kkn_test
+          DB_PASSWORD=kkn_test
+          REDIS_HOST=127.0.0.1
+          QUEUE_CONNECTION=sync
+          SESSION_DRIVER=array
+          CACHE_STORE=array
+          MAIL_MAILER=array
+          AUTH_TEST_AUTO_LOGIN_ENABLED=false
+          APP_BLIND_INDEX_KEY=base64:dGVzdGluZ2tleWZvcmNpcGlwZWxpbmVydW4xMjM0NTY=
+          EOF
+      - run: php artisan migrate --force
+      - run: php artisan test --no-coverage
+      - run: composer stan
+      - run: ./vendor/bin/pint --test
+      - run: composer audit
+
+  deploy:
+    name: Deploy FreeBSD live
+    needs: [frontend, backend]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    environment: production
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          port: ${{ secrets.DEPLOY_PORT || '22' }}
+          command_timeout: 30m
+          script: |
+            set -Eeuo pipefail
+            APP_DIR="${{ vars.DEPLOY_APP_DIR || '/usr/local/www/apache24/data/Sibermas2026' }}"
+            DOMAIN="${{ vars.DEPLOY_DOMAIN || 'sibermas.uinsaizu.ac.id' }}"
+            cd "$APP_DIR"
+
+            echo "[1/8] Sync git"
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "[2/8] Backend deps"
+            cd "$APP_DIR/apps/api"
+            composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+
+            echo "[3/8] Laravel migrate/cache"
+            php artisan migrate --force
+            php artisan optimize:clear
+            php artisan config:cache
+            php artisan route:cache
+            php artisan event:cache || true
+            php artisan storage:link || true
+
+            echo "[4/8] Frontend deps/build"
+            cd "$APP_DIR"
+            export TURBO_INSTALL_SKIP_DOWNLOAD=1
+            export NEXT_PUBLIC_API_URL="https://${DOMAIN}/api/v1"
+            export NEXT_PUBLIC_APP_URL="https://${DOMAIN}"
+            export NEXT_PUBLIC_SITE_URL="https://${DOMAIN}"
+            pnpm install --frozen-lockfile
+            pnpm run build
+            yes | pnpm prune --prod
+
+            echo "[5/8] Permissions"
+            sudo -n chown -R www:www "$APP_DIR/apps/api/storage" "$APP_DIR/apps/api/bootstrap/cache" "$APP_DIR/apps/web/.next"
+            sudo -n chmod -R ug+rwX "$APP_DIR/apps/api/storage" "$APP_DIR/apps/api/bootstrap/cache" "$APP_DIR/apps/web/.next"
+
+            echo "[6/8] Restart services"
+            sudo -n service sibermas_web restart
+            sudo -n service php_fpm restart
+            sudo -n service nginx configtest
+            sudo -n service nginx restart
+
+            echo "[7/8] Health checks"
+            curl -fsS "https://${DOMAIN}/" >/dev/null
+            curl -fsS "https://${DOMAIN}/external/dashboard" >/dev/null
+            curl -fsS "https://${DOMAIN}/api/v1/auth/captcha" >/dev/null
+            code="$(curl -sk -o /dev/null -w '%{http_code}' "https://${DOMAIN}/api/v1/external/dashboard")"
+            test "$code" = "401"
+
+            echo "[8/8] OK $(git rev-parse --short HEAD)"

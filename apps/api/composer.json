@@ -1,0 +1,92 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "laravel/laravel",
+    "type": "project",
+    "description": "SIBERMAS - Laravel 13 Ultimate AI-Native Stack",
+    "keywords": [
+        "laravel",
+        "framework"
+    ],
+    "license": "MIT",
+    "require": {
+        "php": "^8.4",
+        "bacon/bacon-qr-code": "^3.1",
+        "barryvdh/laravel-dompdf": "^3.1.2",
+        "dedoc/scramble": "^0.13.23",
+        "intervention/image": "^3.11",
+        "knuckleswtf/scribe": "^5.9",
+        "kreait/laravel-firebase": "^7.2",
+        "laravel-notification-channels/fcm": "^6.1",
+        "laravel/ai": "^0.5.1",
+        "laravel/boost": "^2.4",
+        "laravel/framework": "^13.0",
+        "laravel/horizon": "^5.47",
+        "laravel/mcp": "^0.6.5",
+        "laravel/pulse": "^1.7",
+        "laravel/reverb": "^1.10",
+        "laravel/sanctum": "^4.0",
+        "laravel/tinker": "^3.0",
+        "league/csv": "^9.28",
+        "league/flysystem-aws-s3-v3": "^3.32",
+        "lorisleiva/laravel-actions": "^2.10",
+        "maatwebsite/excel": "^3.1.68",
+        "phpoffice/phpword": "^1.4.0",
+        "pragmarx/google2fa": "^9.0",
+        "predis/predis": "^2.3",
+        "prism-php/prism": "^0.100",
+        "spatie/laravel-data": "^4.23",
+        "spatie/laravel-fractal": "^6.4",
+        "spatie/laravel-health": "^1.39",
+        "spatie/laravel-permission": "^7.3.0",
+        "spatie/laravel-query-builder": "^7.3",
+        "spatie/laravel-rate-limited-job-middleware": "^2.9",
+        "spatie/laravel-responsecache": "^8.4",
+        "spatie/laravel-schedule-monitor": "^4.3",
+        "spatie/laravel-sluggable": "^4.0",
+        "spatie/laravel-tags": "^4.11",
+        "spatie/once": "^3.1",
+        "tightenco/ziggy": "^2.6"
+    },
+    "require-dev": {
+        "fakerphp/faker": "^1.23",
+        "larastan/larastan": "^3.9",
+        "laravel/pail": "^1.2",
+        "laravel/pint": "^1.18",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.1",
+        "pestphp/pest": "^4.0",
+        "pestphp/pest-plugin-laravel": "^4.1"
+    },
+    "scripts": {
+        "test": "pest --no-coverage",
+        "test:filter": "pest --no-coverage --filter=",
+        "lint": "pint",
+        "lint:fix": "pint --fix",
+        "format": "pint --fix",
+        "stan": "phpstan analyse --memory-limit=512M",
+        "stan:baseline": "phpstan analyse --memory-limit=512M --generate-baseline"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

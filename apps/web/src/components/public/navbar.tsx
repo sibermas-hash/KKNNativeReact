@@ -1,0 +1,250 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { usePathname } from 'next/navigation';
+import { Menu, X, CircleHelp } from 'lucide-react';
+import { useScroll, useTransform, motion, AnimatePresence } from 'motion/react';
+import { useAuthStore } from '@/stores';
+
+// Assign motion components to local constants. Workaround untuk Next.js 15 SWC
+// yang kadang gagal parse JSX member expressions seperti <motion.nav>.
+const MotionNav = motion.nav;
+const MotionDiv = motion.div;
+
+interface NavItem {
+  label: string;
+  href: string;
+}
+
+export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.JSX.Element {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const { user, isAuthenticated } = useAuthStore();
+
+  // ── Hydration guard ─────────────────────────────────────────────────────
+  // Server + first-client render harus menghasilkan HTML IDENTIK. Semua
+  // efek yang bergantung pada browser APIs (framer-motion useScroll,
+  // zustand state yang mungkin baru di-hydrate, pathname yang kadang
+  // lagging di client) di-defer ke setelah mount.
+  //
+  // Sebelum mount (SSR + first client render):
+  //   - MotionValue-based styles TIDAK dipakai (render static transparent nav)
+  //   - allNavItems berisi 5 items (dengan "Login" placeholder — jumlah
+  //     elemen IDENTIK antara server dan client, menghindari mismatch).
+  //   - isScrolled = false
+  //
+  // Setelah mount: full motion + auth-aware rendering aktif.
+  // Label/href item terakhir berubah via re-render biasa (post-hydration,
+  // aman).
+  const [hasMounted, setHasMounted] = useState(false);
+  useEffect(() => setHasMounted(true), []);
+
+  const { scrollY } = useScroll();
+
+  // All useTransform calls must be unconditional (Rules of Hooks)
+  const bgOpacity = useTransform(scrollY, [0, 200], [0, 1]);
+  const blurValue = useTransform(scrollY, [0, 200], [0, 16]);
+  const navHeight = useTransform(scrollY, [0, 200], [90, 70]);
+  const shadowOpacity = useTransform(scrollY, [150, 250], [0, 0.1]);
+
+  const bgColor = useTransform(bgOpacity, (o) =>
+    `rgba(255, 255, 255, ${o})`
+  );
+  const backdropBlur = useTransform(blurValue, (b) => `blur(${b}px)`);
+  const boxShadow = useTransform(shadowOpacity, (s) => `0 4px 30px rgba(0,0,0,${s})`);
+
+  const [isScrolled, setIsScrolled] = useState(false);
+  useEffect(() => {
+    if (!hasMounted) return;
+    const unsubscribe = scrollY.on('change', (v) => setIsScrolled(v > 100));
+    return () => unsubscribe();
+  }, [scrollY, hasMounted]);
+
+  const navItems: NavItem[] = [
+    { label: 'Home', href: '/' },
+    { label: 'Berita', href: '/berita' },
+    { label: 'Lokasi', href: '/lokasi' },
+    { label: 'Unduhan', href: '/unduhan' },
+  ];
+
+  // Always render 5 items (same count on server + client) to prevent
+  // hydration mismatch from structural DOM changes. Before mount the
+  // auth item renders as "Login" — after mount the label/href update
+  // happens via a regular state-driven re-render (post-hydration, safe).
+  const authLabel = hasMounted
+    ? isAuthenticated
+      ? 'Dashboard'
+      : 'Login'
+    : 'Login';
+
+  const authHref = !hasMounted
+    ? '/login'
+    : isAuthenticated
+      ? (() => {
+          const roles = user?.roles || [];
+          if (roles.some((role) => ['superadmin', 'admin', 'faculty_admin'].includes(role))) return '/admin';
+          if (roles.includes('external_lppm_admin')) return '/external/dashboard';
+          if (roles.some((role) => ['dosen', 'dpl'].includes(role))) return '/dosen';
+          if (roles.includes('student')) return '/mahasiswa';
+          return '/';
+        })()
+      : pathname === '/login'
+        ? '/login'
+        : `/login?redirect=${encodeURIComponent(pathname ?? '/')}`;
+
+  // Same number of items on every render — only label/href change post-hydration
+  const allNavItems: NavItem[] = [
+    ...navItems,
+    { label: authLabel, href: authHref },
+  ];
+
+  // Determine text color — saat belum mount, assume non-scrolled (matches SSR)
+  const navTextClass = overlayNav
+    ? hasMounted && isScrolled
+      ? 'text-emerald-950 hover:text-emerald-600'
+      : 'text-white hover:text-white/80'
+    : 'text-emerald-950 hover:text-emerald-700';
+
+  const helpIconClass = overlayNav
+    ? hasMounted && isScrolled
+      ? 'text-emerald-700 hover:text-emerald-500 hover:bg-emerald-50'
+      : 'text-white/80 hover:text-white hover:bg-white/10'
+    : 'text-emerald-700 hover:text-emerald-500 hover:bg-emerald-50';
+
+  // MotionValue styles HANYA aktif setelah mount. Sebelum mount pakai
+  // static style object (rgba 0 = transparent, minHeight 90 = initial
+  // state sebelum scroll). Server-rendered HTML otomatis match client's
+  // first render karena MotionValue ditangani oleh framer-motion hanya di
+  // browser.
+  const overlayStyle = overlayNav && hasMounted
+    ? { backgroundColor: bgColor, backdropFilter: backdropBlur, minHeight: navHeight, boxShadow }
+    : overlayNav
+      ? { backgroundColor: 'rgba(255, 255, 255, 0)', minHeight: 90 }
+      : {};
+
+  return (
+    <MotionNav
+      style={overlayStyle}
+      className={
+        overlayNav
+          ? 'fixed inset-x-0 top-0 z-50 flex items-center min-h-[70px] transition-colors duration-500 border-b border-transparent overflow-visible'
+          : 'sticky top-0 z-50 border-b border-emerald-100 bg-white/95 backdrop-blur-xl py-4 h-[72px] flex items-center overflow-visible'
+      }
+    >
+      <div className="mx-auto w-full max-w-[1920px] px-6 py-4 sm:px-10 lg:px-12">
+        <div className="flex items-center justify-between h-full">
+          {/* Logo (Kiri) */}
+          <div className="flex-1 flex justify-start">
+            <Link href="/" className="flex items-center gap-2.5 no-underline shrink-0 py-1">
+              <Image
+                src="/images/logo_uinsaizu.png"
+                alt="Logo UIN SAIZU"
+                width={44}
+                height={44}
+                className="h-9 max-h-11 w-auto object-contain sm:h-11"
+                priority
+              />
+              <div className="w-px h-6 bg-emerald-200/50 mx-0.5" />
+              <Image
+                src="/images/Logo_SIBERMAS.png"
+                alt="Logo SIBERMAS"
+                width={132}
+                height={44}
+                className="h-9 max-h-11 w-auto object-contain sm:h-11"
+                priority
+              />
+            </Link>
+          </div>
+
+          {/* Menu Navigasi (Tengah) */}
+          <div className="hidden lg:flex flex-none items-center justify-center gap-8">
+            {allNavItems.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={`group relative font-display text-[0.76rem] font-bold uppercase tracking-[0.16em] no-underline transition-colors cursor-pointer ${navTextClass}`}
+              >
+                {item.label}
+                <span className={`absolute -bottom-1 left-0 h-0.5 w-0 transition-all duration-300 group-hover:w-full ${overlayNav && !(hasMounted && isScrolled) ? 'bg-white' : 'bg-emerald-600'}`} />
+              </Link>
+            ))}
+          </div>
+
+          {/* Action (Kanan) — Icon Bantuan + Mobile Hamburger */}
+          <div className="flex-1 flex items-center justify-end gap-3">
+            {/* Icon Bantuan / Support — selalu tampil */}
+            <Link
+              href="/support"
+              title="Bantuan"
+              className={`relative rounded-full p-2 transition-all duration-300 ${helpIconClass}`}
+            >
+              <CircleHelp size={20} strokeWidth={2} />
+              <span className="sr-only">Bantuan</span>
+            </Link>
+
+            {/* Hamburger — hanya tampil di mobile */}
+            <button
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              aria-label={isMenuOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
+              className={
+                overlayNav
+                  ? `rounded-full border p-2.5 lg:hidden transition-all duration-300 ${
+                      hasMounted && isScrolled
+                        ? 'border-emerald-100 bg-emerald-50 text-emerald-950 shadow-sm'
+                        : 'border-white/20 bg-white/10 text-white backdrop-blur-md'
+                    }`
+                  : 'rounded-full border border-emerald-100 bg-white p-2.5 text-emerald-950 lg:hidden'
+              }
+            >
+              {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
+        </div>
+
+        <AnimatePresence>
+          {isMenuOpen && (
+            <MotionDiv
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-x-0 top-full mt-4 mx-5 lg:hidden"
+            >
+              <div className={`p-6 rounded-3xl border shadow-2xl transition-all duration-500 ${
+                overlayNav
+                  ? hasMounted && isScrolled
+                    ? 'bg-white/95 border-emerald-100 text-emerald-950 backdrop-blur-xl'
+                    : 'bg-emerald-950/90 border-white/10 text-white backdrop-blur-md'
+                  : 'bg-white border-emerald-100 text-emerald-950'
+              }`}>
+                <div className="flex flex-col gap-5">
+                  {allNavItems.map((item) => (
+                    <Link
+                      key={item.label}
+                      href={item.href}
+                      onClick={() => setIsMenuOpen(false)}
+                      className="font-display text-xs font-semibold uppercase tracking-[0.16em] no-underline [color:inherit]"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                  {/* Bantuan di mobile dropdown */}
+                  <Link
+                    href="/support"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center gap-2 font-display text-xs font-semibold uppercase tracking-[0.16em] no-underline [color:inherit]"
+                  >
+                    <CircleHelp size={14} strokeWidth={2} />
+                    Bantuan
+                  </Link>
+                </div>
+              </div>
+            </MotionDiv>
+          )}
+        </AnimatePresence>
+      </div>
+    </MotionNav>
+  );
+}

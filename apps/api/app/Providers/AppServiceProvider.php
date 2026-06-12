@@ -1,0 +1,381 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Providers;
+
+use App\Models\KKN\Announcement;
+use App\Models\KKN\Download;
+use App\Models\KKN\Evaluasi;
+use App\Models\KKN\IzinMeninggalkan;
+use App\Models\KKN\KegiatanKkn;
+use App\Models\KKN\KelompokKkn;
+use App\Models\KKN\KonfigurasiPenilaian;
+use App\Models\KKN\KonfigurasiSertifikat;
+use App\Models\KKN\Laporan;
+use App\Models\KKN\LogAudit;
+use App\Models\KKN\Lokasi;
+use App\Models\KKN\Mahasiswa;
+use App\Models\KKN\NilaiKkn;
+use App\Models\KKN\Periode;
+use App\Models\KKN\PesertaKkn;
+use App\Models\KKN\SystemSetting;
+use App\Notifications\Channels\FcmChannel;
+use App\Observers\AuditObserver;
+use App\Observers\PublicCacheObserver;
+use App\Policies\AdminOperationPolicy;
+use App\Policies\AuditLogPolicy;
+use App\Policies\EvaluasiPolicy;
+use App\Policies\IzinPolicy;
+use App\Policies\KegiatanKknPolicy;
+use App\Policies\KknScorePolicy;
+use App\Policies\PeriodPolicy;
+use App\Repositories\Contracts\RegistrationRepositoryInterface;
+use App\Repositories\Eloquent\RegistrationRepository;
+use App\Services\AI\ErrorAlertService;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Queue\Events\JobFailed;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider;
+use Kreait\Firebase\Contract\Messaging;
+
+class AppServiceProvider extends ServiceProvider
+{
+    /**
+     * Register any application services.
+     */
+    public function register(): void
+    {
+        // FCM Channel — inject Firebase Messaging if credentials configured
+        $this->app->bind(FcmChannel::class, function ($app) {
+            $messaging = null;
+            try {
+                if (config('firebase.projects.app.credentials.file') || config('firebase.projects.app.credentials')) {
+                    $messaging = $app->make(Messaging::class);
+                }
+            } catch (\Throwable) {
+                // Firebase not configured — FcmChannel will use legacy fallback
+            }
+
+            return new FcmChannel($messaging);
+        });
+
+        $this->app->bind(RegistrationRepositoryInterface::class, RegistrationRepository::class);
+
+        Gate::policy(NilaiKkn::class, KknScorePolicy::class);
+
+        // H-005 fix (re-audit 2026-05-10): Laravel policy auto-discovery
+        // expects policy class at `App\Policies\{Model}Policy`, but models
+        // under `App\Models\KKN\` don't follow that flat namespace convention.
+        // Register these explicitly so `Gate::authorize(...)` lookups resolve.
+        Gate::policy(KegiatanKkn::class, KegiatanKknPolicy::class);
+        Gate::policy(Evaluasi::class, EvaluasiPolicy::class);
+        Gate::policy(Periode::class, PeriodPolicy::class);
+        Gate::policy(IzinMeninggalkan::class, IzinPolicy::class);
+        Gate::policy(LogAudit::class, AuditLogPolicy::class);
+    }
+
+    /**
+     * Bootstrap any application services.
+     */
+    public function boot(): void
+    {
+        $this->applyMasterApiRuntimeOverrides();
+
+        // 1. Unified Authorization Gates (from AuthServiceProvider)
+        Gate::before(function ($user, $ability) {
+            // Only superadmin gets blanket bypass (god mode).
+            // Regular admin must go through policies for proper faculty scoping.
+            if ($user->hasRole('superadmin')) {
+                return true;
+            }
+
+            return null;
+        });
+
+        // Dashboard access gates
+        Gate::define('access-admin-panel', fn ($user) => $user->hasAnyRole(['superadmin', 'admin', 'faculty_admin']));
+        Gate::define('access-dosen-panel', fn ($user) => $user->hasAnyRole(['dosen', 'dpl']));
+        Gate::define('access-dpl-panel', fn ($user) => $user->hasRole('dpl'));
+        Gate::define('access-student-panel', fn ($user) => $user->hasRole('student'));
+        Gate::define('view-reports', fn ($user) => $user->hasAnyRole(['superadmin', 'admin', 'faculty_admin', 'dpl']));
+
+        // Admin operation gates
+        $adminPolicy = new AdminOperationPolicy;
+        Gate::define('manage-master-data', fn ($user) => $adminPolicy->manageMasterData($user));
+        Gate::define('manage-groups', fn ($user) => $adminPolicy->manageGroups($user));
+        Gate::define('manage-settings', fn ($user) => $adminPolicy->manageSettings($user));
+        Gate::define('sync-data', fn ($user) => $adminPolicy->syncData($user));
+        Gate::define('manageDplAssignment', fn ($user) => $adminPolicy->manageDplAssignment($user));
+        Gate::define('manage-participants', fn ($user) => $adminPolicy->manageParticipants($user));
+        Gate::define('view-participants', fn ($user) => $adminPolicy->viewParticipants($user));
+        Gate::define('transfer-students', fn ($user) => $adminPolicy->transferStudents($user));
+        Gate::define('manage-users', fn ($user) => $adminPolicy->manageUsers($user));
+        Gate::define('manage-grades', fn ($user) => $adminPolicy->manageGrades($user));
+        Gate::define('view-grades', fn ($user) => $adminPolicy->viewGrades($user));
+        Gate::define('manage-content', fn ($user) => $adminPolicy->manageContent($user));
+        Gate::define('view-audit-logs', fn ($user) => $adminPolicy->viewAuditLogs($user));
+        Gate::define('manage-dpl', fn ($user) => $adminPolicy->manageDplAssignment($user));
+        Gate::define('manage-reports', fn ($user) => $adminPolicy->manageReports($user));
+        Gate::define('manage-kkn-operations', fn ($user) => $adminPolicy->manageKknOperations($user));
+        Gate::define('manage-eligibility', fn ($user) => $adminPolicy->manageEligibility($user));
+        Gate::define('manage-requirements', fn ($user) => $adminPolicy->manageRequirements($user));
+        Gate::define('manage-workshops', fn ($user) => $adminPolicy->manageWorkshops($user));
+        Gate::define('manage-database-sync', fn ($user) => $adminPolicy->manageDatabaseSync($user));
+
+        // 2. Event Listeners (from EventServiceProvider)
+        Event::listen(
+            Registered::class,
+            [SendEmailVerificationNotification::class, 'handle']
+        );
+
+        // Queue failed job → AI Telegram alert
+        Event::listen(JobFailed::class, function ($event) {
+            try {
+                app(ErrorAlertService::class)->alertJobFailed(
+                    $event->job->resolveName(),
+                    $event->exception->getMessage(),
+                    $event->job->getQueue(),
+                );
+            } catch (\Throwable) {
+                // Alert failure must never break queue processing
+            }
+        });
+
+        // 3. Model Observers
+        if (class_exists('App\Models\KKN\NilaiKkn')) {
+            NilaiKkn::observe(AuditObserver::class);
+        }
+        if (class_exists('App\Models\KKN\Laporan')) {
+            Laporan::observe(AuditObserver::class);
+        }
+        if (class_exists('App\Models\KKN\KegiatanKkn')) {
+            KegiatanKkn::observe(AuditObserver::class);
+        }
+        if (class_exists('App\Models\KKN\Mahasiswa')) {
+            Mahasiswa::observe(AuditObserver::class);
+        }
+        if (class_exists('App\Models\KKN\Evaluasi')) {
+            Evaluasi::observe(AuditObserver::class);
+        }
+        if (class_exists('App\Models\KKN\KonfigurasiSertifikat')) {
+            KonfigurasiSertifikat::observe(AuditObserver::class);
+        }
+        // Audit coverage expansion (R11-DB-013 mitigation): KonfigurasiPenilaian
+        // (bobot grading) dan PesertaKkn (perubahan role ketua) adalah dua
+        // model berikutnya yang paling fraud-sensitive. Audit trail lebih
+        // tepat untuk data akademik daripada enkripsi kolom skor (yang akan
+        // break semua SQL aggregate + grade distribution reports).
+        if (class_exists('App\Models\KKN\KonfigurasiPenilaian')) {
+            KonfigurasiPenilaian::observe(AuditObserver::class);
+        }
+        if (class_exists('App\Models\KKN\PesertaKkn')) {
+            PesertaKkn::observe(AuditObserver::class);
+
+            // 3b. Public cache invalidation
+            Announcement::observe(PublicCacheObserver::class);
+            Download::observe(PublicCacheObserver::class);
+            Lokasi::observe(PublicCacheObserver::class);
+            KelompokKkn::observe(PublicCacheObserver::class);
+            PesertaKkn::observe(PublicCacheObserver::class);
+        }
+
+        // 4. Global URL Scheme
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+
+        // 5. H-011: CORS runtime guard for production.
+        // supports_credentials=true combined with a wildcard or localhost origin
+        // is a configuration catastrophe. Fail fast at boot to prevent misconfig.
+        $this->assertSafeCorsInProduction();
+
+        // 6. Named rate limiters per-tier (roadmap §3.4).
+        // These are opt-in via `throttle:<name>` on any route. The existing
+        // per-route `throttle:60,1` style still works for backward compat.
+        $this->registerTieredRateLimiters();
+    }
+
+    /**
+     * Tier structure (per-minute):
+     *   public         → 30 req (guest/IP-based)
+     *   auth_challenge → 10 req (login, password reset — brute-force surface)
+     *   authenticated  → role-scaled (superadmin unlimited, admin/faculty_admin 120,
+     *                    dpl/dosen 60, student 60, guest 30)
+     *   bulk           → 5  req  (destructive bulk endpoints)
+     *   file_upload    → 10 req (multipart/form-data uploads)
+     *
+     * The 429 response already uses the global JSON envelope (RATE_LIMITED
+     * code) via `bootstrap/app.php`'s ThrottleRequestsException renderer.
+     * Laravel automatically emits X-RateLimit-Limit, X-RateLimit-Remaining,
+     * and Retry-After headers on every rate-limited response.
+     */
+    private function registerTieredRateLimiters(): void
+    {
+        // Guest / public — anonymous read endpoints keyed by IP.
+        RateLimiter::for('public', function (Request $request) {
+            return Limit::perMinute(30)->by($request->ip());
+        });
+
+        // Auth challenge — login, password reset. Very tight because
+        // this is the brute-force attack surface. IP-based to avoid account
+        // enumeration side-channels.
+        RateLimiter::for('auth_challenge', function (Request $request) {
+            return Limit::perMinute(10)->by($request->ip());
+        });
+
+        // Auth captcha — captcha image generation. Looser than auth_challenge
+        // because (a) captcha endpoint is read-only / non-destructive,
+        // (b) legitimate users behind shared NAT (campus network) reload
+        // captcha frequently on typos, and (c) the actual brute-force surface
+        // is the login POST, which remains tightly limited via auth_challenge.
+        RateLimiter::for('auth_captcha', function (Request $request) {
+            return Limit::perMinute(60)->by($request->ip());
+        });
+
+        // Authenticated — per-user, scaled by role. Key is user id so that
+        // multiple users behind the same NAT/office proxy don't throttle
+        // each other.
+        RateLimiter::for('authenticated', function (Request $request) {
+            $user = $request->user();
+
+            if (! $user) {
+                // Fallback for routes that accidentally end up here without
+                // auth (shouldn't happen, but a safe default). Treat as guest.
+                return Limit::perMinute(200)->by('guest:'.$request->ip());
+            }
+
+            $key = 'user:'.$user->id;
+
+            // Superadmin: unlimited (explicit — they run bulk ops that
+            // legitimately burst traffic).
+            if ($user->hasRole('superadmin')) {
+                return Limit::none();
+            }
+
+            if ($user->hasAnyRole(['admin', 'faculty_admin'])) {
+                return Limit::perMinute(120)->by($key);
+            }
+
+            if ($user->hasAnyRole(['dpl', 'dosen'])) {
+                return Limit::perMinute(60)->by($key);
+            }
+
+            if ($user->hasRole('student')) {
+                return Limit::perMinute(60)->by($key);
+            }
+
+            // Unknown role — treat as guest to avoid granting unintended
+            // throughput to accounts with no role.
+            return Limit::perMinute(200)->by($key);
+        });
+
+        // Destructive bulk operations (bulk-approve, mass-finalize, etc.).
+        // Intentionally VERY tight — a slip-up here is expensive.
+        RateLimiter::for('bulk', function (Request $request) {
+            $user = $request->user();
+            $key = $user ? ('user:'.$user->id) : ('ip:'.$request->ip());
+
+            // Superadmin keeps a (still-bounded) higher allowance for legit
+            // seasonal bulk work; others get 5/min.
+            if ($user && $user->hasRole('superadmin')) {
+                return Limit::perMinute(200)->by($key);
+            }
+
+            return Limit::perMinute(5)->by($key);
+        });
+
+        // Multipart uploads — proportional to server IO cost.
+        RateLimiter::for('file_upload', function (Request $request) {
+            $user = $request->user();
+            $key = $user ? ('user:'.$user->id) : ('ip:'.$request->ip());
+
+            if ($user && $user->hasRole('superadmin')) {
+                return Limit::perMinute(60)->by($key);
+            }
+
+            return Limit::perMinute(10)->by($key);
+        });
+    }
+
+    /**
+     * H-011 fix. Verifies that in production the CORS origin list does not
+     * include '*' or dev-only origins. Fails boot with a clear error otherwise.
+     *
+     * Pola `localhost`/`127.0.0.1` — dengan atau tanpa port — langsung ditolak
+     * supaya deployer cepat menyadari kesalahan. Pesan error meng-embed
+     * seluruh nilai CORS_ALLOWED_ORIGINS yang terbaca supaya operator bisa
+     * debug langsung dari log tanpa perlu SSH ke server.
+     */
+    private function assertSafeCorsInProduction(): void
+    {
+        if (! $this->app->environment('production')) {
+            return;
+        }
+
+        $origins = array_map('trim', (array) config('cors.allowed_origins', []));
+        $supportsCredentials = (bool) config('cors.supports_credentials', false);
+
+        if (! $supportsCredentials) {
+            return;
+        }
+
+        // Blacklist literal plus regex untuk menangkap variasi port.
+        $literalForbidden = ['*', 'null'];
+        $bad = array_values(array_intersect($origins, $literalForbidden));
+
+        // Pola regex: localhost / 127.0.0.1 / 0.0.0.0 (dengan optional scheme + port).
+        $devPatterns = '#^(https?://)?(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])(:[0-9]+)?$#i';
+        foreach ($origins as $origin) {
+            if ($origin !== '' && preg_match($devPatterns, $origin)) {
+                $bad[] = $origin;
+            }
+        }
+
+        $bad = array_values(array_unique($bad));
+
+        if ($bad === []) {
+            return;
+        }
+
+        $hint = 'Set CORS_ALLOWED_ORIGINS di .env.production hanya ke host publik, '.
+            'contohnya: "https://sibermas.uinsaizu.ac.id,https://api.sibermas.uinsaizu.ac.id". '.
+            'Jangan sertakan origin development (localhost, 127.0.0.1) di production '.
+            'saat supports_credentials=true — ini mencegah kebocoran cookie sesi ke origin dev.';
+
+        throw new \RuntimeException(
+            'Unsafe CORS configuration detected in production. '.
+            'Forbidden origin(s) found with supports_credentials=true: ['.implode(', ', $bad).']. '.
+            'Origins saat ini: ['.implode(', ', $origins).']. '.
+            $hint
+        );
+    }
+
+    private function applyMasterApiRuntimeOverrides(): void
+    {
+        $settingsMap = [
+            'services.master_api.url' => 'master_api_url',
+            'services.master_api.token' => 'master_api_token',
+        ];
+
+        $overrides = [];
+
+        foreach ($settingsMap as $configKey => $settingKey) {
+            $value = SystemSetting::get($settingKey);
+
+            if ($value !== null && $value !== '') {
+                $overrides[$configKey] = $value;
+            }
+        }
+
+        if ($overrides !== []) {
+            config($overrides);
+        }
+    }
+}

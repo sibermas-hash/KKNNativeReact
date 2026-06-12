@@ -1,0 +1,105 @@
+@import "tailwindcss";
+
+/* ─── Theme / Custom Utilities (Tailwind v4) ───────────────────────────────── */
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-glass: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-neo: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace;
+}
+
+/* ─── Base ─────────────────────────────────────────────────────────────────── */
+html, body {
+  min-width: 320px;
+}
+
+/* ─── Custom utilities ─────────────────────────────────────────────────────── */
+@utility typing-cursor {
+  animation: blink 1s step-end infinite;
+}
+
+@utility home-kicker {
+  letter-spacing: 0.18em;
+}
+
+/* ─── Keyframes ────────────────────────────────────────────────────────────── */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+
+/* ─── Protected app readability guard ────────────────────────────────────────
+   Halaman setelah login banyak memakai class Tailwind statis (slate/cyan/etc),
+   sementara layout membawa theme variables. Guard ini memastikan tombol, input,
+   tabel, badge, dan teks tetap terbaca di semua tema tanpa rewrite 165 file. */
+.app-readable {
+  color: #0f172a;
+  color-scheme: light;
+}
+.app-readable main,
+.app-readable header,
+.app-readable aside {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+.app-readable button,
+.app-readable a,
+.app-readable input,
+.app-readable select,
+.app-readable textarea {
+  color: inherit;
+}
+.app-readable input,
+.app-readable select,
+.app-readable textarea {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+.app-readable input::placeholder,
+.app-readable textarea::placeholder {
+  color: #64748b;
+  opacity: 1;
+}
+.app-readable button:disabled,
+.app-readable a[aria-disabled='true'] {
+  opacity: .62;
+  cursor: not-allowed;
+}
+.app-readable .bg-white,
+.app-readable .bg-slate-50,
+.app-readable .bg-slate-100,
+.app-readable .bg-emerald-50,
+.app-readable .bg-cyan-50,
+.app-readable .bg-teal-50,
+.app-readable .bg-blue-50,
+.app-readable .bg-indigo-50,
+.app-readable .bg-amber-50,
+.app-readable .bg-rose-50 {
+  color: #0f172a;
+}
+.app-readable .text-white,
+.app-readable [class*='bg-emerald-6'],
+.app-readable [class*='bg-teal-6'],
+.app-readable [class*='bg-cyan-6'],
+.app-readable [class*='bg-blue-6'],
+.app-readable [class*='bg-indigo-6'],
+.app-readable [class*='bg-rose-6'],
+.app-readable [class*='bg-red-6'],
+.app-readable [class*='bg-slate-9'],
+.app-readable [class*='bg-slate-8'] {
+  color: #ffffff;
+}
+.app-readable table,
+.app-readable th,
+.app-readable td {
+  color: #0f172a;
+}
+.app-readable thead,
+.app-readable thead * {
+  color: #334155;
+}
+
+:root{--sibermas-asset-version:20260602;}

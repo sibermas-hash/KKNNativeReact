@@ -1,0 +1,114 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Services;
+
+use App\Models\KKN\KegiatanKkn;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+
+class LogbookService
+{
+    /**
+     * Create a new logbook entry using KegiatanKkn model
+     */
+    public function createEntry(
+        int $mahasiswaId,
+        int $kelompokId,
+        string $date,
+        string $title,
+        string $activity,
+        ?string $reflection = null,
+        ?string $output = null,
+        ?float $latitude = null,
+        ?float $longitude = null,
+        ?string $locationName = null,
+        array $documentationFiles = []
+    ): KegiatanKkn {
+        return DB::transaction(function () use ($mahasiswaId, $kelompokId, $date, $title, $activity, $reflection, $output, $latitude, $longitude, $locationName, $documentationFiles) {
+            $kegiatan = KegiatanKkn::create([
+                'mahasiswa_id' => $mahasiswaId,
+                'kelompok_id' => $kelompokId,
+                'date' => $date,
+                'title' => $title,
+                'activity' => $activity,
+                'reflection' => $reflection,
+                'output' => $output,
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'location_name' => $locationName,
+                'status' => KegiatanKkn::STATUS_SUBMITTED,
+            ]);
+
+            // If there are files, we can handle them
+            foreach ($documentationFiles as $file) {
+                $extension = strtolower($file->getClientOriginalExtension());
+                $safeFilename = time().'_'.$mahasiswaId.'_'.Str::uuid().'.'.$extension;
+                // Audit follow-up: store on the private default disk (`local`)
+                // instead of `public`. Daily-report docs include GPS-tagged
+                // photos of students at KKN sites — sensitive. The admin/DPL
+                // download paths read from the default disk, so this also
+                // fixes a pre-existing mismatch that broke file preview.
+                $path = $file->storeAs("daily_reports/{$kelompokId}", $safeFilename, config('filesystems.default'));
+
+                if (method_exists($kegiatan, 'fileKegiatan')) {
+                    $kegiatan->fileKegiatan()->create(['file_path' => $path]);
+                }
+            }
+
+            return $kegiatan;
+        });
+    }
+
+    /**
+     * Review logbook entry
+     */
+    public function reviewEntry(
+        int $kegiatanId,
+        int $reviewerId,
+        string $status,
+        ?string $reviewNotes = null
+    ): KegiatanKkn {
+        $kegiatan = KegiatanKkn::findOrFail($kegiatanId);
+        $nextStatus = KegiatanKkn::normalizeWorkflowStatus($status);
+
+        if ($nextStatus === KegiatanKkn::STATUS_DRAFT) {
+            $nextStatus = KegiatanKkn::STATUS_SUBMITTED;
+        }
+
+        $kegiatan->update([
+            'status' => $nextStatus,
+            'review_notes' => $reviewNotes,
+            'reviewed_by' => $reviewerId,
+            'reviewed_at' => now(),
+        ]);
+
+        return $kegiatan->fresh();
+    }
+
+    /**
+     * Get student's logbook summary
+     */
+    public function getStudentLogbooks(int $mahasiswaId, int $kelompokId): array
+    {
+        $kegiatan = KegiatanKkn::where('mahasiswa_id', $mahasiswaId)
+            ->where('kelompok_id', $kelompokId)
+            ->orderBy('date', 'desc')
+            ->get();
+
+        return [
+            'entries' => $kegiatan,
+            'statistics' => [
+                'total' => $kegiatan->count(),
+                'approved' => $kegiatan->filter(fn (KegiatanKkn $report) => $report->isApproved())->count(),
+                'pending' => $kegiatan->filter(
+                    fn (KegiatanKkn $report) => $report->canonicalStatus() === KegiatanKkn::STATUS_SUBMITTED
+                )->count(),
+                'revision' => $kegiatan->filter(
+                    fn (KegiatanKkn $report) => $report->canonicalStatus() === KegiatanKkn::STATUS_REVISION
+                )->count(),
+            ],
+        ];
+    }
+}

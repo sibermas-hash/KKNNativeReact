@@ -1,0 +1,73 @@
+#!/bin/sh
+#
+# PROVIDE: sibermas_web
+# REQUIRE: NETWORKING LOGIN
+# KEYWORD: shutdown
+#
+# rc.conf:
+#   sibermas_web_enable="YES"
+#   sibermas_web_app_dir="/usr/local/www/apache24/data/Sibermas2026"
+
+. /etc/rc.subr
+
+name="sibermas_web"
+rcvar="sibermas_web_enable"
+
+load_rc_config "$name"
+
+: ${sibermas_web_enable:="NO"}
+: ${sibermas_web_app_dir:="/usr/local/www/apache24/data/Sibermas2026"}
+: ${sibermas_web_user:="www"}
+: ${sibermas_web_node:="/usr/local/bin/node"}
+: ${sibermas_web_host:="127.0.0.1"}
+: ${sibermas_web_port:="3000"}
+: ${sibermas_web_public_api_url:="https://sibermas.uinsaizu.ac.id/api/v1"}
+: ${sibermas_web_server_api_url:="http://127.0.0.1/api/v1"}
+: ${sibermas_web_public_app_url:="https://sibermas.uinsaizu.ac.id"}
+: ${sibermas_web_logfile:="/var/log/sibermas/web.log"}
+: ${sibermas_web_pidfile:="/var/run/sibermas-web.pid"}
+: ${sibermas_web_child_pidfile:="/var/run/sibermas-web.child.pid"}
+: ${sibermas_web_runtime_dir:="/var/db/sibermas-web"}
+
+pidfile="${sibermas_web_pidfile}"
+command="/usr/sbin/daemon"
+procname="/usr/sbin/daemon"
+server_js="${sibermas_web_app_dir}/apps/web/.next/standalone/apps/web/server.js"
+required_files="${server_js}"
+start_precmd="sibermas_web_precmd"
+# Host ini gagal menjalankan `daemon -u www` dan juga `su -m www -c ...`.
+# Fallback pragmatis: biarkan `daemon` supervise proses secara langsung agar
+# Next.js tetap hidup setelah reboot. Permission storage dijaga via setgid + umask.
+command_args="-f -P ${sibermas_web_pidfile} -p ${sibermas_web_child_pidfile} -o ${sibermas_web_logfile} -t sibermas-web -r -R 5 /usr/bin/env NODE_ENV=production PORT=${sibermas_web_port} HOSTNAME=${sibermas_web_host} NEXT_PUBLIC_API_URL=${sibermas_web_public_api_url} SERVER_API_URL=${sibermas_web_server_api_url} NEXT_PUBLIC_APP_URL=${sibermas_web_public_app_url} NEXT_PUBLIC_SITE_URL=${sibermas_web_public_app_url} UMASK=0002 ${sibermas_web_node} ${server_js}"
+
+sibermas_web_precmd()
+{
+    source_next="${sibermas_web_app_dir}/apps/web/.next"
+    source_static="${source_next}/static"
+    source_public="${sibermas_web_app_dir}/apps/web/public"
+    standalone_root="${sibermas_web_app_dir}/apps/web/.next/standalone"
+    standalone_app="${standalone_root}/apps/web"
+    standalone_next="${standalone_app}/.next"
+
+    mkdir -p /var/log/sibermas
+    chown "${sibermas_web_user}:${sibermas_web_user}" /var/log/sibermas 2>/dev/null || true
+
+    mkdir -p "${sibermas_web_runtime_dir}"
+    chown "${sibermas_web_user}:${sibermas_web_user}" "${sibermas_web_runtime_dir}" 2>/dev/null || true
+    chmod 0775 "${sibermas_web_runtime_dir}" 2>/dev/null || true
+
+    if [ -d "${standalone_root}" ]; then
+        mkdir -p "${standalone_next}/cache" "${standalone_next}/static" "${standalone_app}/public"
+        if [ -d "${source_static}" ]; then
+            cp -R "${source_static}/." "${standalone_next}/static/" 2>/dev/null || true
+        fi
+        if [ -d "${source_public}" ]; then
+            cp -R "${source_public}/." "${standalone_app}/public/" 2>/dev/null || true
+        fi
+        chown -R "${sibermas_web_user}:${sibermas_web_user}" "${standalone_root}" 2>/dev/null || true
+        find "${standalone_root}" -type d -exec chmod 2775 {} + 2>/dev/null || true
+        find "${standalone_root}" -type f -exec chmod u+rw,g+r {} + 2>/dev/null || true
+    fi
+}
+
+run_rc_command "$1"

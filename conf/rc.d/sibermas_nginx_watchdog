@@ -1,0 +1,36 @@
+#!/bin/sh
+#
+# PROVIDE: sibermas_nginx_watchdog
+# REQUIRE: NETWORKING LOGIN nginx
+# KEYWORD: shutdown
+#
+# rc.conf:
+#   sibermas_nginx_watchdog_enable="YES"
+#   sibermas_nginx_watchdog_interval="5"
+
+. /etc/rc.subr
+
+name="sibermas_nginx_watchdog"
+rcvar="sibermas_nginx_watchdog_enable"
+
+load_rc_config "$name"
+
+: ${sibermas_nginx_watchdog_enable:="NO"}
+: ${sibermas_nginx_watchdog_interval:="5"}
+: ${sibermas_nginx_watchdog_logfile:="/var/log/sibermas/nginx-watchdog.log"}
+: ${sibermas_nginx_watchdog_pidfile:="/var/run/sibermas-nginx-watchdog.pid"}
+: ${sibermas_nginx_watchdog_script:="/usr/local/libexec/sibermas_nginx_watchdog.sh"}
+
+pidfile="${sibermas_nginx_watchdog_pidfile}"
+command="/usr/sbin/daemon"
+procname="/usr/sbin/daemon"
+required_files="${sibermas_nginx_watchdog_script}"
+start_precmd="sibermas_nginx_watchdog_precmd"
+command_args="-f -P ${sibermas_nginx_watchdog_pidfile} -o ${sibermas_nginx_watchdog_logfile} -t sibermas-nginx-watchdog ${sibermas_nginx_watchdog_script} ${sibermas_nginx_watchdog_interval}"
+
+sibermas_nginx_watchdog_precmd()
+{
+    mkdir -p /var/log/sibermas
+}
+
+run_rc_command "$1"

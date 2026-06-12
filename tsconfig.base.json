@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "lib": ["ES2020"],
+    "strict": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "preserve",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "types": ["node"],
+    "paths": {
+      "@sibermas/shared-types": ["./packages/shared-types/src/index.ts"],
+      "@sibermas/api-client": ["./packages/api-client/src/index.ts"],
+      "@sibermas/schemas": ["./packages/schemas/src/index.ts"],
+      "@sibermas/hooks": ["./packages/hooks/src/index.ts"],
+      "@sibermas/constants": ["./packages/constants/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "dist", ".next", ".expo"]
+}

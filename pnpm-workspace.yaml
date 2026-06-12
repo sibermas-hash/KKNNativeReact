@@ -1,0 +1,7 @@
+packages:
+  # Deploy-profile: scripts deploy memakai filtered install agar server FreeBSD
+  # tidak menarik Expo/RN toolchain dari apps/mobile.
+  - "apps/api"
+  - "apps/mobile"
+  - "apps/web"
+  - "packages/*"

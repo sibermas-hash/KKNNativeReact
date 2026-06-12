@@ -1,0 +1,52 @@
+name: Web Frontend
+
+on:
+  push:
+    branches: [main, develop]
+    paths: ['apps/web/**', 'packages/**']
+  pull_request:
+    branches: [main, develop]
+    paths: ['apps/web/**', 'packages/**']
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: CI guard
+        run: pnpm run ci:guard
+
+      - name: Type check
+        run: pnpm --filter web type-check
+
+      - name: Lint
+        run: pnpm --filter web lint
+
+      - name: Build packages (shared-types → schemas → constants → api-client → hooks)
+        run: pnpm build:packages
+
+      - name: Build web
+        run: pnpm --filter web build
+        env:
+          NEXT_PUBLIC_API_URL: /api/v1
+
+      - name: Run tests
+        run: pnpm --filter web test
+
+      - name: Security audit
+        run: pnpm audit --audit-level=critical

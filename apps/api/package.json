@@ -1,0 +1,4 @@
+{
+  "private": true,
+  "_comment": "This is a pure Laravel API backend. No Node.js dependencies required."
+}

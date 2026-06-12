@@ -1,0 +1,38 @@
+<svg width="1600" height="900" viewBox="0 0 1600 900" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1600" height="900" fill="url(#bg2)"/>
+  <circle cx="1316" cy="165" r="108" fill="#F8E08B"/>
+  <ellipse cx="786" cy="800" rx="930" ry="248" fill="#BBF7D0"/>
+  <ellipse cx="812" cy="839" rx="994" ry="230" fill="#86EFAC"/>
+  <path d="M192 274H1416L1293 560H314L192 274Z" fill="#F8FAFC" fill-opacity="0.66"/>
+  <rect x="318" y="336" width="256" height="146" rx="28" fill="#ECFDF5"/>
+  <rect x="350" y="372" width="164" height="20" rx="10" fill="#059669" fill-opacity="0.2"/>
+  <rect x="350" y="408" width="188" height="20" rx="10" fill="#059669" fill-opacity="0.12"/>
+  <rect x="350" y="444" width="142" height="20" rx="10" fill="#059669" fill-opacity="0.1"/>
+  <rect x="640" y="334" width="646" height="230" rx="32" fill="#064E3B" fill-opacity="0.84"/>
+  <rect x="678" y="372" width="328" height="22" rx="11" fill="#ECFDF5" fill-opacity="0.24"/>
+  <rect x="678" y="412" width="462" height="18" rx="9" fill="#ECFDF5" fill-opacity="0.16"/>
+  <path d="M1133 483L1192 430L1238 463L1294 404" stroke="#34D399" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="1133" cy="483" r="14" fill="#A7F3D0"/>
+  <circle cx="1192" cy="430" r="14" fill="#A7F3D0"/>
+  <circle cx="1238" cy="463" r="14" fill="#A7F3D0"/>
+  <circle cx="1294" cy="404" r="14" fill="#A7F3D0"/>
+  <circle cx="478" cy="598" r="39" fill="#F3C99F"/>
+  <path d="M428 715C428 660.324 472.324 616 527 616H536C590.676 616 635 660.324 635 715V738H428V715Z" fill="#0F766E"/>
+  <rect x="481" y="651" width="56" height="94" rx="28" fill="#14B8A6"/>
+  <circle cx="706" cy="592" r="36" fill="#F4C597"/>
+  <path d="M664 696C664 648.503 702.503 610 750 610H758C805.497 610 844 648.503 844 696V738H664V696Z" fill="#14532D"/>
+  <rect x="719" y="642" width="52" height="100" rx="26" fill="#FB7185"/>
+  <circle cx="923" cy="597" r="35" fill="#EFC39E"/>
+  <path d="M881 692C881 645.072 919.072 607 966 607H972C1018.93 607 1057 645.072 1057 692V738H881V692Z" fill="#065F46"/>
+  <rect x="934" y="639" width="50" height="100" rx="24" fill="#FBBF24"/>
+  <circle cx="1147" cy="593" r="34" fill="#F1CAA7"/>
+  <path d="M1107 690C1107 644.19 1144.19 607 1190 607H1199C1244.81 607 1282 644.19 1282 690V738H1107V690Z" fill="#134E4A"/>
+  <rect x="1157" y="637" width="50" height="100" rx="24" fill="#60A5FA"/>
+  <rect x="438" y="742" width="845" height="28" rx="14" fill="#022C22" fill-opacity="0.12"/>
+  <defs>
+    <linearGradient id="bg2" x1="800" y1="0" x2="800" y2="900" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F0FDF4"/>
+      <stop offset="1" stop-color="#DCFCE7"/>
+    </linearGradient>
+  </defs>
+</svg>

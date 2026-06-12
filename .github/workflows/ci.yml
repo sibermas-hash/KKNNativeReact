@@ -101,7 +101,7 @@ jobs:
     name: Deploy FreeBSD live
     needs: [frontend, backend]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && vars.DEPLOY_ENABLED == 'true'
     environment: production
     steps:
       - name: Deploy via SSH

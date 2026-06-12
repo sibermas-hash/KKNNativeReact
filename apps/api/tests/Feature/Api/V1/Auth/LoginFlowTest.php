@@ -18,7 +18,7 @@ function getCaptchaAnswerPeek(string $captchaId): string
         return '0';
     }
 
-    for ($i = 0; $i <= 40; $i++) {
+    for ($i = 0; $i <= 250; $i++) {
         if (Hash::check((string) $i, $hashedAnswer)) {
             return (string) $i;
         }

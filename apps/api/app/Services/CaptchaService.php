@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Services;
 
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 class CaptchaService
@@ -43,7 +44,9 @@ class CaptchaService
         };
 
         $captchaId = (string) Str::uuid();
-        $storedAnswer = hash_hmac('sha256', (string) $answer, config('app.key'));
+        $storedAnswer = app()->environment('localbuild')
+            ? hash_hmac('sha256', (string) $answer, (string) config('app.key'))
+            : Hash::make((string) $answer);
 
         Cache::put(
             self::CACHE_PREFIX.$captchaId,
@@ -76,8 +79,12 @@ class CaptchaService
         // Delete immediately — one-time use
         Cache::forget($key);
 
-        $expected = hash_hmac('sha256', trim($answer), config('app.key'));
+        if (app()->environment('localbuild')) {
+            $expected = hash_hmac('sha256', trim($answer), (string) config('app.key'));
 
-        return hash_equals($hashedAnswer, $expected);
+            return hash_equals($hashedAnswer, $expected);
+        }
+
+        return Hash::check(trim($answer), $hashedAnswer);
     }
 }

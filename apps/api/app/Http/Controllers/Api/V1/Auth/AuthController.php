@@ -2,10 +2,7 @@
 
 declare(strict_types=1);
 
-
 namespace App\Http\Controllers\Api\V1\Auth;
-
-use App\Support\MediaUrl;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
@@ -137,7 +134,7 @@ class AuthController extends Controller
         }
 
         if (! $authenticated) {
-            RateLimiter::hit($throttleKey);
+            RateLimiter::hit($throttleKey, 300);
 
             ActivityLogger::log('login', 'failed', null, [
                 'attempted_username' => $loginValue,
@@ -319,7 +316,7 @@ Berlaku 5 menit. Jangan bagikan kode ini.", fn ($m) => $m->to($user->email)->sub
         $user = $request->user();
 
         if (! $user) {
-            return $this->success(["authenticated" => false, "user" => null]);
+            return $this->unauthorized();
         }
 
         return $this->success($this->buildUserData($user));
@@ -414,7 +411,7 @@ Berlaku 5 menit. Jangan bagikan kode ini.", fn ($m) => $m->to($user->email)->sub
             'username' => $user->username,
             'name' => $user->name,
             'email' => $user->email,
-            'avatar_url' => $user->avatar ? MediaUrl::publicStorageUrl($user->avatar) : null,
+            'avatar_url' => $user->avatar ? asset('storage/'.$user->avatar) : null,
             'avatar_moderation_status' => $user->avatar_moderation_status,
             'avatar_moderation_reason' => $user->avatar_moderation_reason,
             'nim' => $user->mahasiswa?->nim,

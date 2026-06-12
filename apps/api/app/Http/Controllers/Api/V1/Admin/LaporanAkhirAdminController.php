@@ -34,9 +34,6 @@ class LaporanAkhirAdminController extends Controller
 
     private function ensureReportInFacultyScope(LaporanAkhir $report): void
     {
-        $report->loadMissing('kelompok.periode');
-        abort_unless($report->kelompok?->periode?->is_active, 404, 'Laporan akhir ini bukan periode aktif.');
-
         if ($facultyId = $this->facultyScopeId()) {
             $report->loadMissing('mahasiswa');
             abort_unless($report->mahasiswa?->fakultas_id === $facultyId, 403, 'Anda tidak memiliki akses ke laporan ini.');
@@ -45,19 +42,7 @@ class LaporanAkhirAdminController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = LaporanAkhir::with(['mahasiswa.user', 'kelompok.periode'])
-            ->whereHas('kelompok.periode', fn ($q) => $q->where('is_active', true))
-            ->when($request->input('kelompok_id'), fn ($q, $id) => $q->where('kelompok_id', $id))
-            ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
-            ->when($request->filled('search'), function ($q) use ($request) {
-                $search = '%'.strtolower(trim((string) $request->input('search'))).'%';
-                $q->where(function ($qq) use ($search) {
-                    $qq->whereRaw('lower(title) like ?', [$search])
-                        ->orWhereHas('mahasiswa', fn ($m) => $m->whereRaw('lower(nama) like ?', [$search])->orWhereRaw('lower(nim) like ?', [$search]))
-                        ->orWhereHas('kelompok', fn ($g) => $g->whereRaw('lower(nama_kelompok) like ?', [$search])->orWhereRaw('lower(code) like ?', [$search]));
-                });
-            })
-            ->orderByDesc('submitted_at');
+        $query = LaporanAkhir::with(['mahasiswa.user', 'kelompok'])->when($request->input('kelompok_id'), fn ($q, $id) => $q->where('kelompok_id', $id))->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))->orderByDesc('submitted_at');
 
         $this->scopeByFaculty($query);
 
@@ -67,7 +52,7 @@ class LaporanAkhirAdminController extends Controller
     public function show(LaporanAkhir $report): JsonResponse
     {
         $this->ensureReportInFacultyScope($report);
-        $report->load(['mahasiswa.user', 'kelompok.periode']);
+        $report->load(['mahasiswa.user', 'kelompok']);
 
         return $this->success(new LaporanAkhirResource($report));
     }
@@ -75,10 +60,7 @@ class LaporanAkhirAdminController extends Controller
     public function updateStatus(Request $request, LaporanAkhir $report): JsonResponse
     {
         $this->ensureReportInFacultyScope($report);
-        $request->validate([
-            'status' => ['required', 'string', 'in:approved,revision'],
-            'review_notes' => ['required_if:status,revision', 'nullable', 'string', 'min:10'],
-        ]);
+        $request->validate(['status' => ['required', 'string', 'in:approved,revision'], 'review_notes' => ['nullable', 'string']]);
         $report->update(['status' => $request->input('status'), 'reviewed_by' => auth()->id(), 'reviewed_at' => now(), 'review_notes' => $request->input('review_notes')]);
 
         return $this->success(new LaporanAkhirResource($report->refresh()), 'Status laporan diperbarui.');

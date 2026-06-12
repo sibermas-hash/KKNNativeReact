@@ -19,7 +19,7 @@ class PoskoResource extends JsonResource
             'latitude' => $this->latitude,
             'longitude' => $this->longitude,
             'radius_meters' => $this->radius_meters,
-            'photo_url' => $this->photo_path ? rtrim((string) config('app.frontend_url', preg_replace('#/api$#', '', (string) config('app.url'))), '/').'/storage/'.$this->photo_path : null,
+            'photo_url' => $this->photo_path ? asset('storage/'.$this->photo_path) : null,
             'gmaps_link' => $this->gmaps_link,
         ];
     }

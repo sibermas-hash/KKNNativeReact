@@ -34,11 +34,7 @@ class GradeController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = NilaiKkn::with(['user', 'kelompok.periode'])
-            // Menu /admin/nilai untuk penilaian aktif KKN 58+.
-            // Data historis 51-57 ditampilkan di /admin/legacy-kkn agar tidak mencampuri grading aktif.
-            ->when(! $request->boolean('include_legacy'), fn ($q) => $q->whereNull('legacy_periode_kkn'))
-            ->whereHas('kelompok.periode', fn ($q) => $q->where('is_active', true))
+        $query = NilaiKkn::with(['user', 'kelompok'])
             ->when($request->input('kelompok_id'), fn ($q, $id) => $q->where('kelompok_id', $id))
             ->orderByDesc('created_at');
 
@@ -64,12 +60,6 @@ class GradeController extends Controller
             'kelompok_id' => ['required', 'exists:kelompok_kkn,id'],
             'scores' => ['required', 'array'],
         ]);
-
-        // Active-only guard: tolak nilai untuk kelompok di periode non-aktif.
-        $kelompok = \App\Models\KKN\KelompokKkn::with('periode')->find($validated['kelompok_id']);
-        if (! $kelompok?->periode?->is_active) {
-            return $this->error('INVALID_PERIOD', 'Nilai hanya bisa diinput untuk kelompok pada periode aktif.', 422);
-        }
 
         $score = NilaiKkn::updateOrCreate(
             ['user_id' => $validated['user_id'], 'kelompok_id' => $validated['kelompok_id']],

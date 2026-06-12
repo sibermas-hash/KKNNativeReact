@@ -48,7 +48,7 @@ class RekapNilaiController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = NilaiKkn::with(['user', 'kelompok.periode'])->whereHas('kelompok.periode', fn ($q) => $q->where('is_active', true))->when($request->input('periode_id'), fn ($q, $id) => $q->whereHas('kelompok', fn ($q2) => $q2->where('periode_id', $id)))->when($request->input('kelompok_id'), fn ($q, $id) => $q->where('kelompok_id', $id))->orderByDesc('created_at');
+        $query = NilaiKkn::with(['user', 'kelompok.periode'])->when($request->input('periode_id'), fn ($q, $id) => $q->whereHas('kelompok', fn ($q2) => $q2->where('periode_id', $id)))->when($request->input('kelompok_id'), fn ($q, $id) => $q->where('kelompok_id', $id))->orderByDesc('created_at');
         $this->scopeByFaculty($query);
 
         return $this->successCollection(NilaiKknResource::collection($query->paginate(25)));
@@ -56,7 +56,6 @@ class RekapNilaiController extends Controller
 
     public function finalize(NilaiKkn $score): JsonResponse
     {
-        abort_unless($score->kelompok?->periode?->is_active, 404, 'Nilai ini bukan dari periode aktif.');
         $this->ensureScoreInFacultyScope($score);
 
         if ($deny = $this->enforceBimbinganRequirement($score)) {
@@ -82,7 +81,6 @@ class RekapNilaiController extends Controller
 
         $scoresQuery = NilaiKkn::whereIn('id', $request->input('ids'))
             ->whereHas('kelompok', fn ($q) => $q->where('periode_id', $request->input('periode_id')))
-            ->whereHas('kelompok.periode', fn ($q) => $q->where('is_active', true))
             ->with('kelompok');
         $this->scopeByFaculty($scoresQuery);
         $scores = $scoresQuery->get();

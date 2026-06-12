@@ -18,7 +18,7 @@ class AttendanceResource extends JsonResource
             'check_out_at' => $this->check_out_at?->toIso8601String(),
             'latitude' => $this->latitude,
             'longitude' => $this->longitude,
-            'photo_url' => $this->photo_path ? rtrim((string) config('app.frontend_url', preg_replace('#/api$#', '', (string) config('app.url'))), '/').'/storage/'.$this->photo_path : null,
+            'photo_url' => $this->photo_path ? asset('storage/'.$this->photo_path) : null,
             'method' => $this->method,
             'status' => $this->status,
             'created_at' => $this->created_at?->toIso8601String(),

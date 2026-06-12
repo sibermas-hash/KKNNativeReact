@@ -58,7 +58,6 @@ class GeneratorNilaiController extends Controller
         $periodId = $request->input('periode_id');
 
         $groups = KelompokKkn::when($periodId, fn ($q) => $q->where('periode_id', $periodId))
-            ->whereHas('periode', fn ($q) => $q->where('is_active', true))
             ->withCount('peserta');
 
         $this->scopeGroupsByFaculty($groups);
@@ -77,7 +76,6 @@ class GeneratorNilaiController extends Controller
 
     public function students(KelompokKkn $kelompokKkn): JsonResponse
     {
-        abort_unless($kelompokKkn->periode?->is_active, 404, 'Data ini bukan dari periode aktif.');
         $this->ensureGroupInFacultyScope($kelompokKkn);
 
         $students = PesertaKkn::where('kelompok_id', $kelompokKkn->id)
@@ -100,47 +98,15 @@ class GeneratorNilaiController extends Controller
     public function saveScores(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'scores' => ['required', 'array', 'min:1', 'max:200'],
+            'scores' => ['required', 'array'],
             'scores.*.user_id' => ['required', 'integer'],
             'scores.*.kelompok_id' => ['required', 'integer'],
-            'scores.*.scores' => ['required', 'array:discipline_score,attitude_score,execution_score,article_score,final_report_score,workshop_score,administration_score'],
-            'scores.*.scores.discipline_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'scores.*.scores.attitude_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'scores.*.scores.execution_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'scores.*.scores.article_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'scores.*.scores.final_report_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'scores.*.scores.workshop_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'scores.*.scores.administration_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'scores.*.scores' => ['required', 'array'],
         ]);
 
-        $allowedScoreFields = [
-            'discipline_score', 'attitude_score', 'execution_score', 'article_score',
-            'final_report_score', 'workshop_score', 'administration_score',
-        ];
-
         $saved = 0;
-        $skipped = 0;
-        $invalid = [];
-
-        foreach ($validated['scores'] as $index => $item) {
-            $unknownFields = array_diff(array_keys($item['scores']), $allowedScoreFields);
-            if ($unknownFields !== []) {
-                $invalid[] = ['index' => $index, 'reason' => 'UNKNOWN_SCORE_FIELDS', 'fields' => array_values($unknownFields)];
-                continue;
-            }
-
-            $scoreValues = array_intersect_key($item['scores'], array_flip($allowedScoreFields));
-            if ($scoreValues === []) {
-                $invalid[] = ['index' => $index, 'reason' => 'EMPTY_SCORE_FIELDS'];
-                continue;
-            }
-
-            $group = KelompokKkn::with('periode')->find($item['kelompok_id']);
-            if (! $group?->periode?->is_active) {
-                $skipped++;
-                continue;
-            }
-
+        foreach ($validated['scores'] as $item) {
+            // Verify student is registered in the specified group
             $inGroup = PesertaKkn::where('kelompok_id', $item['kelompok_id'])
                 ->whereHas('mahasiswa', function ($q) use ($item) {
                     $q->where('user_id', $item['user_id']);
@@ -149,39 +115,25 @@ class GeneratorNilaiController extends Controller
                         $q->where('fakultas_id', $facultyId);
                     }
                 })
-                ->where('status', 'approved')
+                ->whereIn('status', ['approved', 'pending'])
                 ->exists();
 
             if (! $inGroup) {
-                $skipped++;
-                continue;
+                continue; // Skip unauthorized entries silently
             }
 
             $score = NilaiKkn::updateOrCreate(
                 ['user_id' => $item['user_id'], 'kelompok_id' => $item['kelompok_id']],
-                array_merge($scoreValues, ['admin_graded_by' => auth()->id(), 'admin_graded_at' => now()])
+                array_merge($item['scores'], ['admin_graded_by' => auth()->id(), 'admin_graded_at' => now()])
             );
 
+            // G-05 fix: recalc after batch save
             app(GradingService::class)->calculateFinalGrade($score);
 
             $saved++;
         }
 
-        if ($invalid !== []) {
-            return $this->error('INVALID_SCORE_FIELDS', 'Payload nilai berisi field tidak valid.', 422, ['invalid' => $invalid]);
-        }
-
-        return $this->success(['saved' => $saved, 'skipped' => $skipped], "{$saved} nilai berhasil disimpan.");
-    }
-
-
-    private function requireSuperadminForBulkExport(): ?JsonResponse
-    {
-        if (! auth()->user()?->hasRole('superadmin')) {
-            return $this->error('FORBIDDEN', 'Export massal generator nilai hanya untuk Super Admin.', 403);
-        }
-
-        return null;
+        return $this->success(['saved' => $saved], "{$saved} nilai berhasil disimpan.");
     }
 
     /**
@@ -189,10 +141,6 @@ class GeneratorNilaiController extends Controller
      */
     public function studentsAll(Request $request): JsonResponse
     {
-        if ($forbidden = $this->requireSuperadminForBulkExport()) {
-            return $forbidden;
-        }
-
         $periodeId = $request->input('periode_id');
 
         $students = DB::table('mahasiswa as s')
@@ -202,8 +150,6 @@ class GeneratorNilaiController extends Controller
             ->leftJoin('nilai_kkn as ks', function ($join) {
                 $join->on('ks.user_id', '=', 'u.id')->on('ks.kelompok_id', '=', 'g.id');
             })
-            ->join('periode as p', 'g.periode_id', '=', 'p.id')
-            ->where('p.is_active', true)
             ->when($periodeId, fn ($q) => $q->where('g.periode_id', $periodeId))
             ->when($this->facultyScopeId(), fn ($q, $facultyId) => $q->where('s.fakultas_id', $facultyId))
             ->whereIn('r.status', ['approved', 'pending'])
@@ -231,10 +177,6 @@ class GeneratorNilaiController extends Controller
      */
     public function exportPdf(KelompokKkn $kelompokKkn)
     {
-        if ($forbidden = $this->requireSuperadminForBulkExport()) {
-            return $forbidden;
-        }
-
         $this->ensureGroupInFacultyScope($kelompokKkn);
 
         $students = $this->getStudentsForGroup($kelompokKkn);
@@ -247,15 +189,10 @@ class GeneratorNilaiController extends Controller
      */
     public function exportZip(Request $request)
     {
-        if ($forbidden = $this->requireSuperadminForBulkExport()) {
-            return $forbidden;
-        }
-
         $periodeId = $request->validate(['periode_id' => ['required', 'exists:periode,id']])['periode_id'];
 
         $groups = KelompokKkn::with(['lokasi', 'dosen.user', 'periode.tahunAkademik'])
             ->where('periode_id', $periodeId)
-            ->whereHas('periode', fn ($q) => $q->where('is_active', true))
             ->orderBy('code');
 
         $this->scopeGroupsByFaculty($groups);

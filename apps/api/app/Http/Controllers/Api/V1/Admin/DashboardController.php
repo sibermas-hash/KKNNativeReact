@@ -62,17 +62,16 @@ class DashboardController extends Controller
 
     public function index(Request $request, PeriodContextService $periodContextService): JsonResponse
     {
-        [$periodId, $periodWarning] = $this->resolveDashboardPeriodId($request, $periodContextService);
+        $periodId = $request->integer('periode_id')
+            ?? $periodContextService->getActivePeriodId()
+            ?? $periodContextService->getDefaultPeriodId();
 
         if (! $periodId) {
             return $this->success([
                 'stats' => null,
                 'weekly_trend' => [],
                 'period' => null,
-                'current_phase' => 'upcoming',
-                'phase_context' => ['hint' => 'Tidak ada periode tersedia.'],
-                'available_periods' => $periodContextService->getAvailablePeriods(),
-                'period_warning' => $periodWarning,
+                'phase_context' => ['hint' => 'Tidak ada periode aktif.'],
             ]);
         }
 
@@ -87,7 +86,6 @@ class DashboardController extends Controller
                 'current_phase' => 'upcoming',
                 'phase_context' => ['hint' => 'Periode tidak ditemukan.'],
                 'available_periods' => $periodContextService->getAvailablePeriods(),
-                'period_warning' => $periodWarning ?: 'Periode tidak ditemukan.',
             ]);
         }
 
@@ -124,48 +122,7 @@ class DashboardController extends Controller
             'current_phase' => $period->current_phase ?? 'upcoming',
             'phase_context' => $phaseContext,
             'available_periods' => $periodContextService->getAvailablePeriods(),
-            'period_warning' => $periodWarning,
         ]);
-    }
-
-    /**
-     * Resolve dashboard period safely without relying on stale default IDs.
-     * Priority: valid request > valid active > valid default > latest active > latest.
-     *
-     * @return array{0:?int,1:?string}
-     */
-    private function resolveDashboardPeriodId(Request $request, PeriodContextService $periodContextService): array
-    {
-        $requested = $request->integer('periode_id') ?: null;
-        if ($requested && Periode::whereKey($requested)->exists()) {
-            return [$requested, null];
-        }
-
-        $active = $periodContextService->getActivePeriodId();
-        if ($active && Periode::whereKey($active)->exists()) {
-            return [(int) $active, $requested ? 'Periode yang diminta tidak ditemukan. Dashboard memakai periode aktif.' : null];
-        }
-
-        $default = $periodContextService->getDefaultPeriodId();
-        if ($default && Periode::whereKey($default)->exists()) {
-            return [(int) $default, $requested ? 'Periode yang diminta tidak ditemukan. Dashboard memakai periode default.' : null];
-        }
-
-        $latestActive = Periode::query()
-            ->where('is_active', true)
-            ->orderByDesc('periode')
-            ->orderByDesc('id')
-            ->value('id');
-        if ($latestActive) {
-            return [(int) $latestActive, 'Dashboard memakai periode aktif terbaru karena periode default tidak valid.'];
-        }
-
-        $latest = Periode::query()->orderByDesc('id')->value('id');
-        if ($latest) {
-            return [(int) $latest, 'Dashboard memakai periode terbaru karena tidak ada periode aktif/default valid.'];
-        }
-
-        return [null, 'Tidak ada periode tersedia.'];
     }
 
     private function getPhaseContext(?object $period, int $periodId): array
@@ -338,10 +295,6 @@ class DashboardController extends Controller
 
         $periodId = (int) $request->input('periode_id');
         $phase = $request->input('phase');
-
-        if (! auth()->user()?->hasRole('superadmin')) {
-            return $this->error('FORBIDDEN', 'Hanya Super Admin yang boleh mengubah fase dashboard.', 403);
-        }
 
         // State machine: define valid transitions
         $validTransitions = [

@@ -109,6 +109,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 EnsurePasswordChanged::class,
                 EnsureProfileCompleted::class,
                 EnsureUserIsActive::class,
+                SecurityHeaders::class,
                 // Global per-tier rate limiter (roadmap §3.4).
                 // Superadmin: Limit::none (unlimited). Admin/faculty_admin: 120/min.
                 // DPL/Dosen: 60/min. Student: 60/min. Guest: 30/min IP-based.

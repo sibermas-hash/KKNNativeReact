@@ -227,7 +227,7 @@ class AppServiceProvider extends ServiceProvider
         // this is the brute-force attack surface. IP-based to avoid account
         // enumeration side-channels.
         RateLimiter::for('auth_challenge', function (Request $request) {
-            return Limit::perMinute(10)->by($request->ip());
+            return Limit::perMinute(6)->by($request->ip());
         });
 
         // Auth captcha — captcha image generation. Looser than auth_challenge

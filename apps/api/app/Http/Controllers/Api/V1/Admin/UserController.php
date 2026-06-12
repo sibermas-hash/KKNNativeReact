@@ -2,10 +2,7 @@
 
 declare(strict_types=1);
 
-
 namespace App\Http\Controllers\Api\V1\Admin;
-
-use App\Support\MediaUrl;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\DosenResource;
@@ -122,7 +119,7 @@ class UserController extends Controller
                     'username' => $row->username,
                     'name' => $row->name,
                     'email' => $row->email,
-                    'avatar_url' => $row->avatar ? MediaUrl::publicStorageUrl($row->avatar) : null,
+                    'avatar_url' => $row->avatar ? asset('storage/'.$row->avatar) : null,
                     'roles' => $row->roles ? explode(',', $row->roles) : [],
                     'session_count' => (int) $row->session_count,
                     'ip_address' => null,

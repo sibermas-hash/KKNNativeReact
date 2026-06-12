@@ -94,30 +94,6 @@ class CertificateController extends Controller
             return $this->error('FORBIDDEN', 'Sertifikat telah dibatalkan.', 403);
         }
 
-        // KKN selesai (legacy 51-57, Magang FTIK): sertifikat tidak terikat
-        // kelompok/laporan-akhir. Render langsung dari row sertifikat yang sudah
-        // diterbitkan. Tidak perlu cek nilai/kelompok/logbook.
-        if ($sertifikat->kelompok_id === null) {
-            try {
-                $pdf = app(CertificateService::class)->generateFromSertifikat($sertifikat);
-                $safeName = preg_replace(
-                    '/[^A-Za-z0-9_\-\.]/',
-                    '_',
-                    'Sertifikat_KKN_'.($sertifikat->nim ?: (string) $user->id).'.pdf'
-                );
-
-                return $pdf->download($safeName);
-            } catch (\Throwable $e) {
-                Log::error('Certificate (finished-KKN) download failed', [
-                    'sertifikat_id' => $sertifikat->id,
-                    'user_id' => $user->id,
-                    'error' => $e->getMessage(),
-                ]);
-
-                return $this->error('SERVER_ERROR', 'Gagal menghasilkan sertifikat. Silakan coba lagi atau hubungi admin.', 500);
-            }
-        }
-
         // Resolve the NilaiKkn source for the certificate. Prefer explicit FK
         // (nilai_kkn_id on the sertifikat row), fall back to user + periode
         // lookup for legacy rows.

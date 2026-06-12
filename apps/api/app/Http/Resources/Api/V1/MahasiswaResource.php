@@ -2,10 +2,7 @@
 
 declare(strict_types=1);
 
-
 namespace App\Http\Resources\Api\V1;
-
-use App\Support\MediaUrl;
 
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -79,9 +76,8 @@ class MahasiswaResource extends JsonResource
                     'email' => $u->email,
                     'is_active' => $u->is_active,
                     'avatar_url' => $u->avatar
-                        ? MediaUrl::publicStorageUrl($u->avatar)
+                        ? rtrim(preg_replace('#/api$#', '', (string) config('app.url')), '/').'/storage/'.$u->avatar
                         : null,
-                    'avatar' => $u->avatar,
                     'password_changed_at' => $u->password_changed_at,
                     'last_login_at' => $u->last_login_at,
                 ];

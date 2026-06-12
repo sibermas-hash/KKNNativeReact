@@ -2,10 +2,7 @@
 
 declare(strict_types=1);
 
-
 namespace App\Http\Resources\Api\V1;
-
-use App\Support\MediaUrl;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -19,7 +16,7 @@ class UserResource extends JsonResource
             'username' => $this->username,
             'name' => $this->name,
             'email' => $this->email,
-            'avatar_url' => $this->avatar ? MediaUrl::publicStorageUrl($this->avatar) : null,
+            'avatar_url' => $this->avatar ? asset('storage/'.$this->avatar) : null,
             'phone' => $this->phone,
             'address' => $this->address,
             'address_village_name' => $this->address_village_name,

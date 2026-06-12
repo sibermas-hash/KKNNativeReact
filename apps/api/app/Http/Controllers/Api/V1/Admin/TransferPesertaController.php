@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
+use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
@@ -51,7 +52,6 @@ class TransferPesertaController extends Controller
         $query = PesertaKkn::with(['mahasiswa.prodi', 'mahasiswa.fakultas', 'periode.jenisKkn'])
             ->whereIn('status', ['interview_failed', 'approved'])
             ->whereNull('kelompok_id')
-            ->whereHas('periode', fn ($p) => $p->where('is_active', true))
             ->when($request->input('angkatan'), fn ($q, $a) => $q->whereHas('periode', fn ($p) => $p->where('periode', $a)))
             ->when($request->input('search'), function ($q, $search) {
                 $term = trim((string) $search);
@@ -88,7 +88,6 @@ class TransferPesertaController extends Controller
         $angkatan = $request->input('angkatan', 58);
 
         $periodes = Periode::with('jenisKkn')
-            ->where('is_active', true)
             ->where('periode', $angkatan)
             ->whereHas('jenisKkn', fn ($q) => $q->where('requires_interview', false))
             ->get();
@@ -111,24 +110,20 @@ class TransferPesertaController extends Controller
 
         $this->ensurePesertaInFacultyScope($peserta);
 
-        if (! $peserta->periode?->is_active || ! $targetPeriode->is_active) {
-            return $this->error('Transfer hanya boleh dilakukan pada periode aktif.', 422);
-        }
-
         if (!in_array($peserta->status, ['interview_failed', 'approved'], true)) {
-            return $this->error('Hanya peserta dengan status gagal wawancara atau disetujui yang dapat ditransfer.', 422);
+            return $this->error('VALIDATION_ERROR', 'Hanya peserta dengan status gagal wawancara atau disetujui yang dapat ditransfer.', 422);
         }
 
         if ($peserta->kelompok_id !== null) {
-            return $this->error('Peserta yang sudah tergabung dalam kelompok tidak dapat ditransfer langsung.', 422);
+            return $this->error('VALIDATION_ERROR', 'Peserta yang sudah tergabung dalam kelompok tidak dapat ditransfer langsung.', 422);
         }
 
         if ($peserta->periode_id === $targetPeriode->id) {
-            return $this->error('Periode tujuan sama dengan periode asal.', 422);
+            return $this->error('VALIDATION_ERROR', 'Periode tujuan sama dengan periode asal.', 422);
         }
 
         if ($peserta->attendances_count > 0 || $peserta->location_dispensations_count > 0) {
-            return $this->error('Peserta sudah memiliki data operasional lapangan; transfer manual diblokir agar relasi data tetap aman.', 422);
+            return $this->error('VALIDATION_ERROR', 'Peserta sudah memiliki data operasional lapangan; transfer manual diblokir agar relasi data tetap aman.', 422);
         }
 
         $alreadyRegistered = PesertaKkn::where('mahasiswa_id', $peserta->mahasiswa_id)
@@ -137,17 +132,17 @@ class TransferPesertaController extends Controller
             ->exists();
 
         if ($alreadyRegistered) {
-            return $this->error('Mahasiswa sudah terdaftar pada periode tujuan.', 422);
+            return $this->error('VALIDATION_ERROR', 'Mahasiswa sudah terdaftar pada periode tujuan.', 422);
         }
 
         // Validate target periode doesn't require interview
         if ($targetPeriode->jenisKkn?->requires_interview) {
-            return $this->error('Tidak dapat memindahkan ke jenis KKN yang memerlukan wawancara.', 422);
+            return $this->error('VALIDATION_ERROR', 'Tidak dapat memindahkan ke jenis KKN yang memerlukan wawancara.', 422);
         }
 
         // Validate same angkatan
         if ($peserta->periode?->periode !== $targetPeriode->periode) {
-            return $this->error('Periode tujuan harus dalam angkatan yang sama.', 422);
+            return $this->error('VALIDATION_ERROR', 'Periode tujuan harus dalam angkatan yang sama.', 422);
         }
 
         DB::transaction(function () use ($peserta, $targetPeriode) {
@@ -181,4 +176,147 @@ class TransferPesertaController extends Controller
 
         return $this->success($peserta->fresh()->load(['mahasiswa', 'periode.jenisKkn']), 'Peserta berhasil dipindahkan.');
     }
+
+    /**
+     * Peserta final yang aman dipindahkan antar kelompok dalam periode sama.
+     */
+    public function placementCandidates(Request $request): JsonResponse
+    {
+        $query = PesertaKkn::with(['mahasiswa.prodi', 'mahasiswa.fakultas', 'periode.jenisKkn', 'kelompok.lokasi'])
+            ->whereIn('status', ['approved', 'interview_passed'])
+            ->when($request->input('angkatan'), fn ($q, $a) => $q->whereHas('periode', fn ($p) => $p->where('periode', $a)))
+            ->when($request->input('periode_id'), fn ($q, $id) => $q->where('periode_id', $id))
+            ->when($request->input('kelompok_id'), fn ($q, $id) => $q->where('kelompok_id', $id))
+            ->when($request->input('search'), function ($q, $search) {
+                $term = trim((string) $search);
+                $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $term);
+                $q->whereHas('mahasiswa', function ($m) use ($term, $escaped) {
+                    $m->where('nama', 'ilike', "%{$escaped}%");
+                    if (preg_match('/^\d{6,20}$/', $term)) {
+                        $m->orWhere('nim_bidx', Mahasiswa::computeBlindIndex($term));
+                    }
+                });
+            })
+            ->orderBy('id');
+
+        $this->scopeByFaculty($query);
+
+        $paginated = $query->paginate($request->integer('per_page', 25));
+
+        return $this->success([
+            'data' => $paginated->items(),
+            'meta' => [
+                'current_page' => $paginated->currentPage(),
+                'per_page' => $paginated->perPage(),
+                'total' => $paginated->total(),
+                'last_page' => $paginated->lastPage(),
+            ],
+        ]);
+    }
+
+    /**
+     * Kelompok tujuan dalam periode yang sama; dipakai dropdown mutasi lokasi/kelompok.
+     */
+    public function placementGroups(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'periode_id' => 'required|integer|exists:periode,id',
+            'search' => 'nullable|string|max:100',
+        ]);
+
+        $search = trim((string) ($validated['search'] ?? ''));
+
+        $groups = KelompokKkn::with('lokasi')
+            ->withCount('peserta')
+            ->where('periode_id', $validated['periode_id'])
+            ->when($search !== '', function ($q) use ($search) {
+                $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $search);
+                $q->where(function ($qq) use ($escaped) {
+                    $qq->where('nama_kelompok', 'ilike', "%{$escaped}%")
+                        ->orWhere('code', 'ilike', "%{$escaped}%")
+                        ->orWhereHas('lokasi', fn ($l) => $l
+                            ->where('village_name', 'ilike', "%{$escaped}%")
+                            ->orWhere('district_name', 'ilike', "%{$escaped}%")
+                            ->orWhere('regency_name', 'ilike', "%{$escaped}%"));
+                });
+            })
+            ->orderBy('nama_kelompok')
+            ->limit(100)
+            ->get();
+
+        return $this->success(['data' => $groups]);
+    }
+
+    /**
+     * Mutasi peserta antar kelompok/lokasi dalam periode yang sama.
+     * Guardrails: admin pusat saja, periode sama, kapasitas dicek, audit tercatat.
+     */
+    public function movePlacement(Request $request): JsonResponse
+    {
+        if (auth()->user()?->hasRole('faculty_admin')) {
+            return $this->forbidden('Admin fakultas hanya memiliki akses baca untuk mutasi lokasi/kelompok.');
+        }
+
+        $validated = $request->validate([
+            'peserta_kkn_id' => 'required|integer|exists:peserta_kkn,id',
+            'target_kelompok_id' => 'required|integer|exists:kelompok_kkn,id',
+            'reason' => 'required|string|min:5|max:500',
+        ]);
+
+        $peserta = PesertaKkn::with(['mahasiswa', 'periode.jenisKkn', 'kelompok'])
+            ->withCount(['attendances', 'locationDispensations'])
+            ->findOrFail($validated['peserta_kkn_id']);
+        $target = KelompokKkn::with('lokasi')->withCount('peserta')->findOrFail($validated['target_kelompok_id']);
+
+        if (! in_array($peserta->status, ['approved', 'interview_passed'], true)) {
+            return $this->error('VALIDATION_ERROR', 'Hanya peserta final/disetujui yang dapat dimutasi lokasi/kelompok.', 422);
+        }
+
+        if ((int) $peserta->periode_id !== (int) $target->periode_id) {
+            return $this->error('VALIDATION_ERROR', 'Kelompok tujuan harus berada pada periode/jenis KKN yang sama.', 422);
+        }
+
+        if ($peserta->kelompok_id !== null && (int) $peserta->kelompok_id === (int) $target->id) {
+            return $this->error('VALIDATION_ERROR', 'Kelompok tujuan sama dengan kelompok asal.', 422);
+        }
+
+        if ($peserta->attendances_count > 0 || $peserta->location_dispensations_count > 0) {
+            return $this->error('VALIDATION_ERROR', 'Peserta sudah memiliki data operasional lapangan; mutasi lokasi/kelompok diblokir agar relasi data tetap aman.', 422);
+        }
+
+        if ($target->capacity !== null && $target->peserta_count >= $target->capacity) {
+            return $this->error('VALIDATION_ERROR', 'Kapasitas kelompok tujuan sudah penuh.', 422);
+        }
+
+        DB::transaction(function () use ($peserta, $target, $validated) {
+            $oldKelompokId = $peserta->kelompok_id;
+            $oldKelompokName = $peserta->kelompok?->nama_kelompok ?? '-';
+
+            RegistrationHistory::create([
+                'peserta_kkn_id' => $peserta->id,
+                'from_periode_id' => $peserta->periode_id,
+                'to_periode_id' => $peserta->periode_id,
+                'from_kelompok_id' => $oldKelompokId,
+                'to_kelompok_id' => $target->id,
+                'reason' => $validated['reason'],
+                'processed_by' => auth()->id(),
+                'processed_at' => now(),
+            ]);
+
+            $peserta->update([
+                'kelompok_id' => $target->id,
+                'role' => $peserta->role === 'ketua' ? 'member' : ($peserta->role ?? 'member'),
+                'joined_group_at' => now(),
+            ]);
+
+            AuditService::log(
+                'PESERTA_PLACEMENT_MOVE',
+                "Peserta dipindahkan dari kelompok {$oldKelompokName} ke {$target->nama_kelompok}",
+                $peserta
+            );
+        });
+
+        return $this->success($peserta->fresh()->load(['mahasiswa', 'periode.jenisKkn', 'kelompok.lokasi']), 'Peserta berhasil dimutasi lokasi/kelompok.');
+    }
 }
+

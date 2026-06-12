@@ -17,11 +17,25 @@ class LaporanAkhirResource extends JsonResource
             'kelompok_id' => $this->kelompok_id,
             'title' => $this->title,
             'abstract' => $this->abstract,
+            'file_path' => $this->file_path,
             'file_name' => $this->file_name,
             'file_url' => $this->download_url,
             'video_link' => $this->video_link,
             'news_link' => $this->news_link,
-            'artifacts' => $this->adminArtifacts(),
+            'article_1_path' => $this->article_1_path,
+            'article_2_path' => $this->article_2_path,
+            'poster_1_path' => $this->poster_1_path,
+            'poster_2_path' => $this->poster_2_path,
+            'poster_3_path' => $this->poster_3_path,
+            'articles' => [
+                'article_1_path' => $this->article_1_path,
+                'article_2_path' => $this->article_2_path,
+            ],
+            'posters' => [
+                'poster_1_path' => $this->poster_1_path,
+                'poster_2_path' => $this->poster_2_path,
+                'poster_3_path' => $this->poster_3_path,
+            ],
             'status' => $this->canonicalStatus(),
             'status_label' => $this->status_label,
             'status_color' => $this->status_color,
@@ -32,21 +46,5 @@ class LaporanAkhirResource extends JsonResource
             'mahasiswa' => new MahasiswaResource($this->whenLoaded('mahasiswa')),
             'kelompok' => new KelompokKknResource($this->whenLoaded('kelompok')),
         ];
-    }
-    private function adminArtifacts(): array
-    {
-        return collect([
-            ['key' => 'file', 'label' => 'Laporan Utama', 'path' => $this->file_path],
-            ['key' => 'article_1', 'label' => 'Artikel Ilmiah 1', 'path' => $this->article_1_path],
-            ['key' => 'article_2', 'label' => 'Artikel Ilmiah 2', 'path' => $this->article_2_path],
-            ['key' => 'poster_1', 'label' => 'Poster Peta 1', 'path' => $this->poster_1_path],
-            ['key' => 'poster_2', 'label' => 'Poster Peta 2', 'path' => $this->poster_2_path],
-            ['key' => 'poster_3', 'label' => 'Poster Peta 3', 'path' => $this->poster_3_path],
-        ])->map(fn ($item) => [
-            'key' => $item['key'],
-            'label' => $item['label'],
-            'available' => filled($item['path']),
-            'download_url' => filled($item['path']) ? route('api.v1.admin.laporan-akhir.download', ['report' => $this->id, 'asset' => $item['path']], false) : null,
-        ])->all();
     }
 }

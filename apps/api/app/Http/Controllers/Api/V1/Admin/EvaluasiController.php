@@ -16,8 +16,7 @@ class EvaluasiController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $evaluasi = Evaluasi::with(['mahasiswa.user', 'kelompok.periode', 'item'])
-            ->whereHas('kelompok.periode', fn ($q) => $q->where('is_active', true))
+        $evaluasi = Evaluasi::with(['mahasiswa.user', 'kelompok', 'item'])
             ->when($request->input('periode_id'), fn ($q, $id) => $q->whereHas('kelompok', fn ($q2) => $q2->where('periode_id', $id)))
             ->when($request->input('kelompok_id'), fn ($q, $id) => $q->where('kelompok_id', $id))
             ->latest()

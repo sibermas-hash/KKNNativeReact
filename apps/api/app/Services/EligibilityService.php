@@ -10,7 +10,6 @@ use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\SystemSetting;
 use App\Services\KKN\RegistrationDocumentService;
-use Illuminate\Support\Facades\DB;
 
 class EligibilityService
 {
@@ -247,20 +246,6 @@ class EligibilityService
             : PesertaKkn::where('mahasiswa_id', $mahasiswa->id)
                 ->where('status', 'completed')
                 ->exists();
-
-        // Guard tambahan untuk data KKN Reguler historis periode 51-57:
-        // jika akun/NIM muncul belakangan, tetap blokir berdasarkan file nilai legacy.
-        // Nilai 0/abnormal (< 60) tidak dianggap lulus (boleh daftar ulang).
-        if (! $hasCompleted) {
-            $legacyCompleted = $preloadedIds['legacy_completed_nims'][$mahasiswa->nim] ?? null;
-            if ($legacyCompleted === null) {
-                $legacyCompleted = DB::table('legacy_kkn_completed_students')
-                    ->where('nim', $mahasiswa->nim)
-                    ->where('latest_total', '>=', 60)
-                    ->exists();
-            }
-            $hasCompleted = (bool) $legacyCompleted;
-        }
 
         return [
             'passed' => ! $hasCompleted,
@@ -622,13 +607,6 @@ class EligibilityService
             ->pluck('mahasiswa_id')
             ->toArray();
 
-        $legacyCompletedNims = DB::table('legacy_kkn_completed_students')
-            ->whereIn('nim', $studentNims)
-            ->where('latest_total', '>=', 60)
-            ->pluck('nim')
-            ->mapWithKeys(fn ($nim) => [$nim => true])
-            ->toArray();
-
         $activeRegIds = PesertaKkn::whereIn('mahasiswa_id', $studentIds)
             ->whereIn('status', ['pending', 'approved', 'document_submitted'])
             ->when($periodeId, fn ($q) => $q->where('periode_id', '!=', $periodeId))
@@ -647,7 +625,6 @@ class EligibilityService
         $preloadedData = [
             'periode' => $periode,
             'completed_ids' => array_flip($completedIds),
-            'legacy_completed_nims' => $legacyCompletedNims,
             'active_reg_ids' => array_flip($activeRegIds),
             'dispensations' => $dispensations,
             'settings' => $settings,

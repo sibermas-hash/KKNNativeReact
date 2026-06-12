@@ -10,7 +10,7 @@ use Illuminate\Support\Str;
 
 class CaptchaService
 {
-    private const TTL_SECONDS = 300; // 5 minutes
+    private const TTL_SECONDS = 180; // 3 minutes
 
     private const CACHE_PREFIX = 'captcha:';
 
@@ -22,19 +22,24 @@ class CaptchaService
      */
     public function generate(): array
     {
-        $operators = ['+', '-'];
+        $operators = ['+', '-', '×'];
         $operator = $operators[array_rand($operators)];
 
-        $a = random_int(2, 20);
-        $b = match ($operator) {
-            '+' => random_int(1, 20),
-            '-' => random_int(1, $a - 1),
-            default => random_int(1, 20),
+        [$a, $b] = match ($operator) {
+            '+' => [random_int(10, 99), random_int(10, 99)],
+            '-' => (function (): array {
+                $left = random_int(20, 99);
+
+                return [$left, random_int(1, $left - 1)];
+            })(),
+            '×' => [random_int(2, 12), random_int(2, 12)],
+            default => [random_int(10, 99), random_int(10, 99)],
         };
 
         $answer = match ($operator) {
             '+' => $a + $b,
             '-' => $a - $b,
+            '×' => $a * $b,
             default => $a + $b,
         };
 

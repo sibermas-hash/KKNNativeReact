@@ -23,12 +23,7 @@ class YudisiumController extends Controller
     {
         $periodeId = $request->integer('periode_id') ?: null;
 
-        $periodes = Periode::where('is_active', true)->orderByDesc('start_date')->get(['id', 'name']);
-        $activePeriodIds = $periodes->pluck('id')->all();
-
-        if ($periodeId !== null && ! in_array($periodeId, $activePeriodIds, true)) {
-            abort(404, 'Periode yudisium tidak aktif.');
-        }
+        $periodes = Periode::orderByDesc('start_date')->get(['id', 'name']);
 
         $rekap = $periodeId
             ? $this->yudisiumService->generateRekapYudisium($periodeId)
@@ -46,12 +41,6 @@ class YudisiumController extends Controller
         $validated = $request->validate([
             'periode_id' => ['required', 'exists:periode,id'],
         ]);
-
-        abort_unless(
-            Periode::whereKey((int) $validated['periode_id'])->where('is_active', true)->exists(),
-            422,
-            'Proses yudisium hanya boleh untuk periode aktif.'
-        );
 
         $hasil = $this->yudisiumService->prosesYudisiumPeriode((int) $validated['periode_id']);
 

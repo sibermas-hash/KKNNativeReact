@@ -181,12 +181,10 @@ echo "  [i] Copying static & public to standalone..."
   echo "  [j] Fixing permissions..."
   if [ -n "${SUDO_PASS:-}" ]; then
     echo "$SUDO_PASS" | sudo -S chown -R ${DEPLOY_USER:-kampelmas}:www apps/web/.next || true
-    echo "$SUDO_PASS" | sudo -S /usr/local/www/sibermas/bin/fix-storage-links.sh "$(pwd)" || true
-    echo "$SUDO_PASS" | sudo -S chown -R www:www apps/api/bootstrap/cache || true
+    echo "$SUDO_PASS" | sudo -S chown -R www:www apps/api/storage apps/api/bootstrap/cache || true
   else
     chown -R ${DEPLOY_USER:-kampelmas}:www apps/web/.next || true
-    /usr/local/www/sibermas/bin/fix-storage-links.sh "$(pwd)" || true
-    chown -R www:www apps/api/bootstrap/cache || true
+    chown -R www:www apps/api/storage apps/api/bootstrap/cache || true
   fi
   find apps/web/.next/standalone -type d -exec chmod 2775 {} + 2>/dev/null || true
   find apps/web/.next/standalone -type f -exec chmod u+rw,g+r {} + 2>/dev/null || true

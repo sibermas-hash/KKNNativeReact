@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\V1\Admin\AutoPlottingController;
 use App\Http\Controllers\Api\V1\Admin\AvatarModerationController;
 use App\Http\Controllers\Api\V1\Admin\BulkCertificateDownloadController;
 use App\Http\Controllers\Api\V1\Admin\CertificateConfigController;
+use App\Http\Controllers\Api\V1\Admin\CertificateManagementController;
 use App\Http\Controllers\Api\V1\Admin\CollaborationLetterController;
 use App\Http\Controllers\Api\V1\Admin\ComprehensiveReportController;
 use App\Http\Controllers\Api\V1\Admin\CountdownSettingController;
@@ -171,6 +172,7 @@ class EnsureAdminAuthorization
 
         // Settings
         CertificateConfigController::class => 'manage-settings',
+        CertificateManagementController::class => 'manage-settings',
         SystemSettingController::class => 'manage-settings',
         WaGatewayAdminController::class => 'manage-settings',
         PlaygroundController::class => 'manage-settings',

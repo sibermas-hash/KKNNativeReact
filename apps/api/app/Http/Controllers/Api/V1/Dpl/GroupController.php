@@ -95,7 +95,7 @@ class GroupController extends Controller
             'posko' => $group->posko ? [
                 'latitude' => $group->posko->latitude,
                 'longitude' => $group->posko->longitude,
-                'photo_url' => $group->posko->photo_path ? rtrim((string) config('app.frontend_url', preg_replace('#/api$#', '', (string) config('app.url'))), '/').'/storage/'.$group->posko->photo_path : null,
+                'photo_url' => $group->posko->photo_path ? asset('storage/'.$group->posko->photo_path) : null,
                 'updated_at' => $group->posko->updated_at?->format('d M Y H:i'),
             ] : null,
         ]);

@@ -18,8 +18,6 @@ set -euo pipefail
 # Single-server mode (default) — all services on one machine.
 # For jails mode, set JAIL_WEB_IP / JAIL_API_IP / JAIL_PROXY_IP env vars.
 APP_DIR="${APP_DIR:-/usr/local/www/sibermas}"
-DURABLE_STORAGE="${SIBERMAS_DURABLE_STORAGE:-/usr/local/www/apache24/data/Sibermas2026/apps/api/storage}"
-FIX_STORAGE_LINKS="${FIX_STORAGE_LINKS:-/usr/local/www/sibermas/bin/fix-storage-links.sh}"
 RELEASES_DIR="${APP_DIR}/releases"
 CURRENT_LINK="${APP_DIR}/current"
 SHARED_DIR="${APP_DIR}/shared"
@@ -172,7 +170,7 @@ fi
 if [ "${SKIP_MIGRATE}" != "1" ]; then
   php artisan migrate --force
 fi
-"${FIX_STORAGE_LINKS}" "${RELEASE_DIR}"
+php artisan storage:link --force
 php artisan config:cache
 php artisan route:cache
 php artisan event:cache 2>/dev/null || true
@@ -180,9 +178,11 @@ php artisan event:cache 2>/dev/null || true
 # ─── Step 5: Fix permissions ──────────────────────────────────────────────
 # Use -exec ... + (batch) untuk kecepatan di storage ribuan file.
 echo "[5/8] Setting permissions..."
-"${FIX_STORAGE_LINKS}" "${RELEASE_DIR}"
+chown -R "${WEB_USER}:${WEB_USER}" "${RELEASE_DIR}/apps/api/storage"
 chown -R "${WEB_USER}:${WEB_USER}" "${RELEASE_DIR}/apps/api/bootstrap/cache"
 chown -R "${DEPLOY_USER:-kampelmas}:www" "${RELEASE_DIR}/apps/web/.next"
+find "${RELEASE_DIR}/apps/api/storage" -type d -exec chmod 775 {} +
+find "${RELEASE_DIR}/apps/api/storage" -type f -exec chmod 664 {} +
 
 # ─── Step 6: Switch symlink (atomic) ──────────────────────────────────────
 echo "[6/8] Switching symlink..."

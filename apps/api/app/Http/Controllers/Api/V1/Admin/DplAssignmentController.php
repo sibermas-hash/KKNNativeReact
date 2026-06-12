@@ -36,7 +36,6 @@ class DplAssignmentController extends Controller
         Gate::authorize('manageDplAssignment');
 
         $query = DplPeriod::with(['dosen.user', 'dosen.fakultas', 'periode', 'kelompok'])
-            ->whereHas('periode', fn ($p) => $p->where('is_active', true))
             ->when($request->input('periode_id'), fn ($q, $id) => $q->where('periode_id', $id))
             ->orderByDesc('created_at');
 
@@ -114,9 +113,6 @@ class DplAssignmentController extends Controller
 
         $dosen = Dosen::findOrFail($validated['dosen_id']);
         $periode = Periode::findOrFail($validated['periode_id']);
-        if (! $periode->is_active) {
-            return $this->error('INVALID_PERIOD', 'Penugasan DPL hanya boleh untuk periode aktif.', 422);
-        }
 
         // Get DPL period for this dosen
         $dplPeriod = DplPeriod::where('dosen_id', $dosen->id)
@@ -187,9 +183,6 @@ class DplAssignmentController extends Controller
         $periodeId = $request->input('periode_id');
         if (! $periodeId) {
             return $this->error('VALIDATION_ERROR', 'periode_id is required', 422);
-        }
-        if (! Periode::whereKey($periodeId)->where('is_active', true)->exists()) {
-            return $this->error('INVALID_PERIOD', 'DPL tersedia hanya untuk periode aktif.', 422);
         }
 
         return $this->success(

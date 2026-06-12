@@ -2,10 +2,7 @@
 
 declare(strict_types=1);
 
-
 namespace App\Http\Controllers\Api\V1\Admin;
-
-use App\Support\MediaUrl;
 
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
@@ -73,7 +70,7 @@ class AvatarModerationController extends Controller
             $avatarUrl = null;
 
             if ($u->avatar && Storage::disk('public')->exists($u->avatar)) {
-                $avatarUrl = MediaUrl::publicStorageUrl($u->avatar);
+                $avatarUrl = rtrim((string) config('app.frontend_url', config('app.url')), '/').'/storage/'.$u->avatar;
             }
 
             return [

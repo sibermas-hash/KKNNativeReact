@@ -7,11 +7,11 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Exports\PesertaKknFullExport;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
-use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PesertaKknListController extends Controller
 {
@@ -38,12 +38,9 @@ class PesertaKknListController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = PesertaKkn::with(['mahasiswa.prodi', 'mahasiswa.fakultas', 'mahasiswa.externalUniversity', 'periode.jenisKkn', 'periode.tahunAkademik', 'kelompok'])
+        $query = PesertaKkn::with(['mahasiswa.prodi', 'mahasiswa.fakultas', 'periode.jenisKkn', 'kelompok'])
             ->whereIn('status', ['approved', 'interview_passed', 'completed'])
-            ->whereHas('periode', fn ($p) => $p->where('is_active', true))
             ->when($request->input('angkatan'), fn ($q, $a) => $q->whereHas('periode', fn ($p) => $p->where('periode', $a)))
-            ->when($request->input('periode_id'), fn ($q, $id) => $q->where('periode_id', $id))
-            ->when($request->input('academic_year_id'), fn ($q, $id) => $q->whereHas('periode', fn ($p) => $p->where('academic_year_id', $id)))
             ->when($request->input('origin_type'), fn ($q, $ot) => $q->whereHas('mahasiswa', fn ($m) => $m->where('origin_type', $ot)))
             ->when($request->input('search'), function ($q, $search) {
                 $term = trim((string) $search);
@@ -51,14 +48,13 @@ class PesertaKknListController extends Controller
                 $q->whereHas('mahasiswa', function ($m) use ($term, $escaped) {
                     $m->where('nama', 'ilike', "%{$escaped}%");
                     if (preg_match('/^\d{6,20}$/', $term)) {
-                        $m->orWhere('nim_bidx', Mahasiswa::computeBlindIndex($term));
+                        $m->orWhere('nim_bidx', \App\Models\KKN\Mahasiswa::computeBlindIndex($term));
                     }
                 });
             })
             ->when($request->input('jenis_kkn_id'), fn ($q, $id) => $q->whereHas('periode', fn ($p) => $p->where('jenis_kkn_id', $id)))
             ->when($request->input('fakultas_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $id)))
             ->when($request->input('prodi_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('prodi_id', $id)))
-            ->when($request->input('external_university_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('external_university_id', $id)))
             ->orderBy('id');
 
         $this->scopeByFaculty($query);
@@ -78,17 +74,13 @@ class PesertaKknListController extends Controller
 
     public function export(Request $request)
     {
-        $query = PesertaKkn::with(['mahasiswa.user', 'mahasiswa.prodi', 'mahasiswa.fakultas', 'mahasiswa.externalUniversity', 'periode.jenisKkn', 'periode.tahunAkademik', 'kelompok'])
+        $query = PesertaKkn::with(['mahasiswa.user', 'mahasiswa.prodi', 'mahasiswa.fakultas', 'periode.jenisKkn', 'kelompok'])
             ->whereIn('status', ['approved', 'interview_passed', 'completed'])
-            ->whereHas('periode', fn ($p) => $p->where('is_active', true))
             ->when($request->input('angkatan'), fn ($q, $a) => $q->whereHas('periode', fn ($p) => $p->where('periode', $a)))
-            ->when($request->input('periode_id'), fn ($q, $id) => $q->where('periode_id', $id))
-            ->when($request->input('academic_year_id'), fn ($q, $id) => $q->whereHas('periode', fn ($p) => $p->where('academic_year_id', $id)))
             ->when($request->input('origin_type'), fn ($q, $ot) => $q->whereHas('mahasiswa', fn ($m) => $m->where('origin_type', $ot)))
             ->when($request->input('jenis_kkn_id'), fn ($q, $id) => $q->whereHas('periode', fn ($p) => $p->where('jenis_kkn_id', $id)))
             ->when($request->input('fakultas_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $id)))
             ->when($request->input('prodi_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('prodi_id', $id)))
-            ->when($request->input('external_university_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('external_university_id', $id)))
             ->orderBy('id')
             ->limit(min($request->integer('limit', 50000), 50000));
 
@@ -104,5 +96,27 @@ class PesertaKknListController extends Controller
         ])->values();
 
         return Excel::download(new PesertaKknFullExport($rows), 'peserta-kkn-final-'.now()->format('Ymd-His').'.xlsx');
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $query = PesertaKkn::with(['mahasiswa.prodi', 'mahasiswa.fakultas', 'periode.jenisKkn'])
+            ->whereIn('status', ['approved', 'interview_passed', 'completed'])
+            ->when($request->input('angkatan'), fn ($q, $a) => $q->whereHas('periode', fn ($p) => $p->where('periode', $a)))
+            ->when($request->input('origin_type'), fn ($q, $ot) => $q->whereHas('mahasiswa', fn ($m) => $m->where('origin_type', $ot)))
+            ->when($request->input('jenis_kkn_id'), fn ($q, $id) => $q->whereHas('periode', fn ($p) => $p->where('jenis_kkn_id', $id)))
+            ->when($request->input('fakultas_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('fakultas_id', $id)))
+            ->when($request->input('prodi_id'), fn ($q, $id) => $q->whereHas('mahasiswa', fn ($m) => $m->where('prodi_id', $id)))
+            ->orderBy('id')
+            ->limit(min($request->integer('limit', 5000), 5000)); // limit 5000 max for PDF performance
+
+        $this->scopeByFaculty($query);
+
+        $peserta = $query->get();
+        $angkatan = $request->input('angkatan', '58');
+
+        $pdf = Pdf::loadView('exports.peserta-kkn-pdf', compact('peserta', 'angkatan'));
+        
+        return $pdf->download('peserta-kkn-final-'.now()->format('Ymd-His').'.pdf');
     }
 }

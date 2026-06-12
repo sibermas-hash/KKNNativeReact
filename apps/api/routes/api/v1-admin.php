@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\V1\Admin\AutoPlottingController;
 use App\Http\Controllers\Api\V1\Admin\AvatarModerationController;
 use App\Http\Controllers\Api\V1\Admin\BulkCertificateDownloadController;
 use App\Http\Controllers\Api\V1\Admin\CertificateConfigController;
+use App\Http\Controllers\Api\V1\Admin\CertificateManagementController;
 use App\Http\Controllers\Api\V1\Admin\CollaborationLetterController;
 use App\Http\Controllers\Api\V1\Admin\ComprehensiveReportController;
 use App\Http\Controllers\Api\V1\Admin\CountdownSettingController;
@@ -138,10 +139,9 @@ Route::prefix('admin')
         Route::get('/peserta-eksternal/template', [ExternalParticipantController::class, 'template']);
         Route::get('/peserta-eksternal/batches', [ExternalParticipantController::class, 'batches']);
         Route::post('/peserta-eksternal/batches', [ExternalParticipantController::class, 'storeBatch']);
-        Route::post('/peserta-eksternal/import/preview', [ExternalParticipantController::class, 'importPreview'])->middleware('throttle:10,1');
-        Route::post('/peserta-eksternal/import/confirm', [ExternalParticipantController::class, 'importConfirm'])->middleware('throttle:5,1');
         Route::post('/peserta-eksternal/import', [ExternalParticipantController::class, 'import'])->middleware('throttle:5,1');
         Route::get('/peserta-eksternal/export', [ExternalParticipantController::class, 'export']);
+        Route::post('/peserta-eksternal/bulk-assign', [ExternalParticipantController::class, 'bulkAssign']);
         Route::get('/peserta-eksternal', [ExternalParticipantController::class, 'index']);
         Route::get('/pendaftaran/export', [PesertaKknController::class, 'export']);
         Route::get('/pendaftaran/export-biodata', [PesertaKknController::class, 'exportBiodata']);
@@ -157,12 +157,16 @@ Route::prefix('admin')
 
         // Wawancara / Interview
         Route::get('/peserta-kkn/export', [PesertaKknListController::class, 'export']);
+        Route::get('/peserta-kkn/export-pdf', [PesertaKknListController::class, 'exportPdf']);
         Route::get('/peserta-kkn', [PesertaKknListController::class, 'index']);
         Route::get('/peserta-wawancara', [InterviewController::class, 'pesertaWawancara']);
 
         Route::get('/transfer-peserta', [TransferPesertaController::class, 'index']);
         Route::get('/transfer-peserta/periodes', [TransferPesertaController::class, 'periodes']);
         Route::post('/transfer-peserta', [TransferPesertaController::class, 'transfer']);
+        Route::get('/transfer-peserta/placement-candidates', [TransferPesertaController::class, 'placementCandidates']);
+        Route::get('/transfer-peserta/placement-groups', [TransferPesertaController::class, 'placementGroups']);
+        Route::post('/transfer-peserta/placement', [TransferPesertaController::class, 'movePlacement']);
 
         Route::prefix('wawancara')->group(function () {
             Route::get('/', [InterviewController::class, 'index']);
@@ -249,10 +253,10 @@ Route::prefix('admin')
         Route::get('/generator-nilai', [GeneratorNilaiController::class, 'index']);
         Route::get('/generator-nilai/kelompok/semua/mahasiswa', [GeneratorNilaiController::class, 'studentsAll']);
         Route::get('/generator-nilai/kelompok/{kelompokKkn}/mahasiswa', [GeneratorNilaiController::class, 'students']);
-        Route::post('/generator-nilai/skor', [GeneratorNilaiController::class, 'saveScores'])->middleware('throttle:30,1');
+        Route::post('/generator-nilai/skor', [GeneratorNilaiController::class, 'saveScores']);
         Route::get('/generator-nilai/ekspor/{kelompokKkn}', [GeneratorNilaiController::class, 'exportExcel']);
-        Route::get('/generator-nilai/ekspor-pdf/{kelompokKkn}', [GeneratorNilaiController::class, 'exportPdf'])->middleware('throttle:10,1');
-        Route::get('/generator-nilai/ekspor-zip', [GeneratorNilaiController::class, 'exportZip'])->middleware('throttle:3,1');
+        Route::get('/generator-nilai/ekspor-pdf/{kelompokKkn}', [GeneratorNilaiController::class, 'exportPdf']);
+        Route::get('/generator-nilai/ekspor-zip', [GeneratorNilaiController::class, 'exportZip']);
 
         // Evaluasi DPL
         Route::get('/evaluasi-dpl', [DplParticipantEvaluationController::class, 'index']);
@@ -296,7 +300,7 @@ Route::prefix('admin')
         Route::get('/laporan/harian/file/{fileKegiatan}/preview', [KegiatanKknAdminController::class, 'previewFile']);
         Route::get('/laporan/akhir', [LaporanAkhirAdminController::class, 'index']);
         Route::get('/laporan/akhir/{report}', [LaporanAkhirAdminController::class, 'show']);
-        Route::patch('/laporan/akhir/{report}/status', [LaporanAkhirAdminController::class, 'updateStatus'])->middleware('throttle:30,1');
+        Route::patch('/laporan/akhir/{report}/status', [LaporanAkhirAdminController::class, 'updateStatus']);
         Route::get('/laporan/akhir/{report}/unduh', [LaporanAkhirAdminController::class, 'download']);
 
         Route::middleware('role:superadmin')->group(function () {
@@ -344,6 +348,17 @@ Route::prefix('admin')
         });
 
         // AI Playground (superadmin only — PRD_AI_PLAYGROUND.md)
+        // Certificate Management (Admin/Superadmin)
+        Route::prefix('sertifikat')->group(function () {
+            Route::get('/', [CertificateManagementController::class, 'index']);
+            Route::post('/', [CertificateManagementController::class, 'update']);
+            Route::post('/upload-background', [CertificateManagementController::class, 'uploadBackground']);
+            Route::post('/regenerate', [CertificateManagementController::class, 'regenerate']);
+            Route::post('/zip', [CertificateManagementController::class, 'zip']);
+            Route::get('/{sertifikat}/preview', [CertificateManagementController::class, 'preview']);
+            Route::get('/{sertifikat}/download', [CertificateManagementController::class, 'download']);
+        });
+
         Route::middleware('role:superadmin')->prefix('playground')->group(function () {
             Route::get('/models', [PlaygroundController::class, 'models']);
             Route::post('/chat', [PlaygroundController::class, 'chat'])

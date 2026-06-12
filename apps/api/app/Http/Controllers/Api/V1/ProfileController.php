@@ -2,10 +2,7 @@
 
 declare(strict_types=1);
 
-
 namespace App\Http\Controllers\Api\V1;
-
-use App\Support\MediaUrl;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\DosenResource;
@@ -545,7 +542,7 @@ class ProfileController extends Controller
         };
 
         return $this->success([
-            'avatar_url' => $user->avatar ? MediaUrl::publicStorageUrl($user->avatar) : null,
+            'avatar_url' => $user->avatar ? asset('storage/'.$user->avatar) : null,
             'moderation_status' => $currentStatus,
             'moderation_reason' => $currentReason,
         ], $msg);

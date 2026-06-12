@@ -211,7 +211,7 @@ class PublicController extends Controller
             'excerpt' => $announcement->excerpt_text,
             'category' => $announcement->category,
             'image_url' => $announcement->image
-                ? rtrim((string) config('app.frontend_url', preg_replace('#/api$#', '', (string) config('app.url'))), '/').'/storage/'.$announcement->image
+                ? asset('storage/'.$announcement->image)
                 : null,
             'published_at' => $announcement->published_at?->toIso8601String(),
             'popup_until' => $announcement->popup_until?->toIso8601String(),

@@ -89,18 +89,6 @@ class DashboardController extends Controller
                 ->first()
             : null;
 
-        // KKN selesai (legacy 51-57, Magang FTIK): nilai tidak terikat kelompok
-        // aktif. Jika registration sudah completed dan belum ketemu grade dari
-        // kelompok, ambil nilai finalized terbaru milik user apa adanya.
-        if (! $grade && $user->id && $registration
-            && in_array($this->normalizeStatus($registration->status), ['completed'], true)) {
-            $grade = NilaiKkn::where('user_id', $user->id)
-                ->where('is_finalized', true)
-                ->latest('admin_graded_at')
-                ->latest('id')
-                ->first();
-        }
-
         $certificateMinScore = (float) SystemSetting::get('certificate_min_score', '70');
         $minDailyReports = (int) SystemSetting::get('min_daily_reports', '30');
         $dashboardAnnouncements = Announcement::query()

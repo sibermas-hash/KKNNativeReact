@@ -10,14 +10,15 @@ use App\Models\KKN\ExternalKknBatch;
 use App\Models\KKN\ExternalStudentProfile;
 use App\Models\KKN\Fakultas;
 use App\Models\KKN\Mahasiswa;
-use App\Models\KKN\Periode;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\Prodi;
 use App\Models\User;
+use App\Services\GroupSelectionService;
+use App\Models\KKN\KelompokKkn;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class ExternalParticipantController extends Controller
@@ -47,62 +48,29 @@ class ExternalParticipantController extends Controller
         }
     }
 
-    private function requireSuperadmin(): ?JsonResponse
-    {
-        if (! auth()->user()?->hasRole('superadmin')) {
-            return $this->error('FORBIDDEN', 'Fitur import/bulk peserta eksternal sementara hanya untuk Super Admin.', 403);
-        }
-
-        return null;
-    }
-
-    private function activePeriodIds(): array
-    {
-        return Periode::query()->where('is_active', true)->pluck('id')->map(fn ($id) => (int) $id)->all();
-    }
-
     public function index(Request $request): JsonResponse
     {
         $query = ExternalStudentProfile::query()
-            ->with([
-                'batch:id,periode_id,home_university,target_regency',
-                'batch.periode:id,name,periode',
-                'mahasiswa:id,user_id,nim,nama,phone',
-                'mahasiswa.user:id,username,name,email,phone',
-                'mahasiswa.peserta:id,mahasiswa_id,kelompok_id,status',
-                'mahasiswa.peserta.kelompok:id,nama_kelompok,lokasi_id',
-                'mahasiswa.peserta.kelompok.lokasi:id,regency_name,district_name,village_name',
-            ])
-            ->whereHas('batch.periode', fn ($q) => $q->where('is_active', true))
+            ->with(['batch.periode', 'mahasiswa.user', 'mahasiswa.peserta.kelompok.lokasi'])
             ->when($request->filled('batch_id'), fn ($q) => $q->where('batch_id', $request->integer('batch_id')))
             ->when($request->filled('search'), function ($q) use ($request) {
-                $raw = strtolower(trim((string) $request->query('search')));
-                $words = preg_split('/\s+/', $raw);
-                foreach ($words as $word) {
-                    if ($word === '') continue;
-                    $s = '%' . $word . '%';
-                    $q->where(function ($qq) use ($s) {
-                        $qq->whereRaw('lower(external_nim) like ?', [$s])
-                            ->orWhereRaw('lower(home_university) like ?', [$s])
-                            ->orWhereRaw('lower(external_faculty) like ?', [$s])
-                            ->orWhereRaw('lower(external_study_program) like ?', [$s])
-                            ->orWhereHas('mahasiswa', fn ($m) => $m->whereRaw('lower(nama) like ?', [$s]));
-                    });
-                }
+                $s = '%'.strtolower((string) $request->query('search')).'%';
+                $q->where(function ($qq) use ($s) {
+                    $qq->whereRaw('lower(external_nim) like ?', [$s])
+                        ->orWhereRaw('lower(home_university) like ?', [$s])
+                        ->orWhereHas('mahasiswa', fn ($m) => $m->whereRaw('lower(nama) like ?', [$s]));
+                });
             })
             ->latest('id');
 
         $this->scopeProfilesByFaculty($query);
 
-        $page = $query->paginate(min((int) $request->query('per_page', 25), 100));
-        $page->setCollection($page->getCollection()->map(fn (ExternalStudentProfile $profile) => $this->serializeExternalProfile($profile)));
-
-        return $this->success($page);
+        return $this->success($query->paginate(min((int) $request->query('per_page', 25), 100)));
     }
 
     public function batches(): JsonResponse
     {
-        $query = ExternalKknBatch::withCount('students')->with('periode:id,name,periode,is_active')->whereHas('periode', fn ($q) => $q->where('is_active', true))->latest('id');
+        $query = ExternalKknBatch::withCount('students')->with('periode:id,name,periode')->latest('id');
         $this->scopeBatchesByFaculty($query);
 
         return $this->success($query->get());
@@ -110,10 +78,6 @@ class ExternalParticipantController extends Controller
 
     public function storeBatch(Request $request): JsonResponse
     {
-        if ($forbidden = $this->requireSuperadmin()) {
-            return $forbidden;
-        }
-
         $data = $request->validate([
             'periode_id' => ['required', 'exists:periode,id'],
             'home_university' => ['required', 'string', 'max:150'],
@@ -123,35 +87,21 @@ class ExternalParticipantController extends Controller
             'expected_participants' => ['nullable', 'integer', 'min:1'],
             'target_regency' => ['nullable', 'string', 'max:100'],
             'notes' => ['nullable', 'string'],
-            'letter_file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);
-        if (! Periode::whereKey($data['periode_id'])->where('is_active', true)->exists()) {
-            return $this->error('INVALID_PERIOD', 'Batch peserta eksternal hanya boleh dibuat untuk periode aktif.', 422);
-        }
-
         $data['program_name'] = $data['program_name'] ?? 'KKN Kolaborasi PTKIN';
         $data['created_by'] = auth()->id();
-
-        if ($request->hasFile('letter_file')) {
-            $path = $request->file('letter_file')->store('letters/external', 'public');
-            $data['letter_file_path'] = $path;
-        }
 
         return $this->created(ExternalKknBatch::create($data), 'Batch peserta eksternal dibuat.');
     }
 
     public function import(Request $request): JsonResponse
     {
-        if ($forbidden = $this->requireSuperadmin()) {
-            return $forbidden;
-        }
-
         $data = $request->validate([
             'batch_id' => ['required', 'exists:external_kkn_batches,id'],
-            'file' => ['required', 'file', 'mimes:csv,txt,xlsx,xls', 'max:10240'],
+            'file' => ['required', 'file', 'mimes:csv,txt', 'max:2048'],
         ]);
-        $batch = $this->findScopedBatch((int) $data['batch_id']);
-        $rows = $this->extractRowsFromUpload($request->file('file'), $batch);
+        $batch = ExternalKknBatch::findOrFail($data['batch_id']);
+        $rows = $this->readCsv($request->file('file')->getRealPath());
         $faculty = Fakultas::firstOrCreate(['code' => 'EXT'], ['nama' => 'Mahasiswa Eksternal', 'short_name' => 'Eksternal']);
         $prodi = Prodi::firstOrCreate(['code' => 'EXT', 'fakultas_id' => $faculty->id], ['nama' => 'Program Studi Eksternal', 'short_name' => 'Eksternal']);
         $created = 0;
@@ -178,7 +128,7 @@ class ExternalParticipantController extends Controller
                 while (User::where('username', $username)->exists()) {
                     $username = $base.'-'.$n++;
                 }
-                $password = Str::password(16);
+                $password = 'KknReguler#2026!';
                 $user = User::create([
                     'username' => $username,
                     'name' => $nama,
@@ -257,7 +207,6 @@ class ExternalParticipantController extends Controller
     {
         $rows = ExternalStudentProfile::query()
             ->with(['batch.periode', 'mahasiswa.user', 'mahasiswa.peserta.kelompok.lokasi'])
-            ->whereHas('batch.periode', fn ($q) => $q->where('is_active', true))
             ->when($request->filled('batch_id'), fn ($q) => $q->where('batch_id', $request->integer('batch_id')))
             ->oldest('id');
 
@@ -287,7 +236,7 @@ class ExternalParticipantController extends Controller
                 $row->mahasiswa?->user?->email ?? '',
             ];
         }
-        $csv = collect($lines)->map(fn ($line) => implode(',', array_map(fn ($v) => $this->csvCell($v), $line)))->implode("\n")."\n";
+        $csv = collect($lines)->map(fn ($line) => implode(',', array_map(fn ($v) => '"'.str_replace('"', '""', (string) $v).'"', $line)))->implode("\n")."\n";
 
         return response($csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
@@ -301,7 +250,7 @@ class ExternalParticipantController extends Controller
             ['nama', 'nim', 'kampus_asal', 'fakultas_asal', 'prodi_asal', 'jenis_kelamin', 'email', 'no_hp', 'tanggal_lahir', 'alamat'],
             ['Contoh Mahasiswa', 'EXT001', 'Universitas Contoh', 'Fakultas Contoh', 'Program Studi Contoh', 'L', 'contoh@email.test', '08123456789', '2005-01-01', 'Alamat lengkap'],
         ];
-        $csv = collect($rows)->map(fn ($row) => implode(',', array_map(fn ($v) => $this->csvCell($v), $row)))->implode("\n")."\n";
+        $csv = collect($rows)->map(fn ($row) => implode(',', array_map(fn ($v) => '"'.str_replace('"', '""', $v).'"', $row)))->implode("\n")."\n";
 
         return response($csv, 200, [
             'Content-Type' => 'text/csv',
@@ -309,166 +258,106 @@ class ExternalParticipantController extends Controller
         ]);
     }
 
-    public function importPreview(Request $request): JsonResponse
+    public function bulkAssign(Request $request): JsonResponse
     {
-        if ($forbidden = $this->requireSuperadmin()) return $forbidden;
-        $data = $request->validate(['batch_id'=>['required','exists:external_kkn_batches,id'],'file'=>['required','file','mimes:csv,txt,xlsx,xls','max:10240']]);
-        $batch = $this->findScopedBatch((int) $data['batch_id']);
-        $rows = $this->normalizeImportRows($this->extractRowsFromUpload($request->file('file'), $batch), $batch);
-        return $this->success(['rows'=>array_slice($rows,0,200),'total_rows'=>count($rows),'valid_rows'=>collect($rows)->where('valid',true)->count(),'invalid_rows'=>collect($rows)->where('valid',false)->count(),'needs_review'=>true], 'Preview import berhasil. Periksa data sebelum import final.');
-    }
-
-    public function importConfirm(Request $request): JsonResponse
-    {
-        if ($forbidden = $this->requireSuperadmin()) return $forbidden;
-        $data = $request->validate(['batch_id'=>['required','exists:external_kkn_batches,id'],'rows'=>['required','array','max:1000']]);
-        $batch = $this->findScopedBatch((int) $data['batch_id']);
-        $rows = collect($data['rows'])->filter(fn($row)=>is_array($row) && ($row['valid'] ?? true))->values()->all();
-        return $this->importRowsArray($rows, $batch);
-    }
-
-    private function importRowsArray(array $rows, ExternalKknBatch $batch): JsonResponse
-    {
-        $faculty = Fakultas::firstOrCreate(['code'=>'EXT'], ['nama'=>'Mahasiswa Eksternal','short_name'=>'Eksternal']);
-        $prodi = Prodi::firstOrCreate(['code'=>'EXT','fakultas_id'=>$faculty->id], ['nama'=>'Program Studi Eksternal','short_name'=>'Eksternal']);
-        $created=0; $skipped=0; $accounts=[];
-        DB::transaction(function() use($rows,$batch,$faculty,$prodi,&$created,&$skipped,&$accounts){
-            foreach($rows as $i=>$row){
-                $nama=trim((string)($row['nama']??$row['name']??'')); $nim=trim((string)($row['nim']??$row['nim_asal']??$row['external_nim']??''));
-                if($nama===''||$nim===''||ExternalStudentProfile::where('batch_id',$batch->id)->where('external_nim',$nim)->exists()){ $skipped++; continue; }
-                $username='X-'.strtoupper($nim); $base=$username; $n=1; while(User::where('username',$username)->exists()) $username=$base.'-'.$n++;
-                $password=Str::password(16);
-                $user=User::create(['username'=>$username,'name'=>$nama,'email'=>$row['email']??null,'phone'=>$row['no_hp']??$row['phone']??null,'address'=>$row['alamat']??$row['address']??null,'is_active'=>true,'must_change_password'=>true,'password'=>$password]);
-                $user->assignRole('student');
-                $m=Mahasiswa::create(['user_id'=>$user->id,'nim'=>$nim,'nama'=>$nama,'fakultas_id'=>$faculty->id,'prodi_id'=>$prodi->id,'batch_year'=>(int)now()->year,'gender'=>strtoupper(substr((string)($row['jenis_kelamin']??$row['gender']??''),0,1))?:null,'phone'=>$row['no_hp']??$row['phone']??null,'birth_date'=>$row['tgl_lahir']??$row['tanggal_lahir']??$row['birth_date']??null,'alamat'=>$row['alamat']??$row['address']??null,'status_aktif'=>'aktif','sks_completed'=>0,'gpa'=>0,'is_paid_ukt'=>false,'origin_type'=>'external']);
-                ExternalStudentProfile::create(['mahasiswa_id'=>$m->id,'batch_id'=>$batch->id,'external_nim'=>$nim,'home_university'=>$row['kampus_asal']??$row['home_university']??$batch->home_university,'external_faculty'=>$row['fakultas_asal']??$row['external_faculty']??null,'external_study_program'=>$row['prodi_asal']??$row['external_study_program']??null,'source_row_number'=>$i+2]);
-                PesertaKkn::firstOrCreate(['mahasiswa_id'=>$m->id,'periode_id'=>$batch->periode_id], ['status'=>'approved','role'=>'member','registration_date'=>now(),'approved_at'=>now(),'approved_by'=>auth()->id(),'notes'=>'Peserta eksternal import batch #'.$batch->id]);
-                $created++; $accounts[]=['nama'=>$nama,'nim_asal'=>$nim,'username'=>$username,'password'=>$password];
-            }
-        });
-        return $this->success(['created'=>$created,'skipped'=>$skipped,'accounts'=>$accounts], 'Import peserta eksternal selesai.');
-    }
-
-    private function extractRowsFromUpload($file, ExternalKknBatch $batch): array
-    {
-        $ext=strtolower($file->getClientOriginalExtension() ?: $file->extension()); $path=$file->getRealPath();
-        if(in_array($ext,['csv','txt'],true)) return $this->readCsv($path);
-        if(in_array($ext,['xlsx','xls'],true)) return $this->readSpreadsheet($path);
-        return [];
-    }
-
-    private function readSpreadsheet(string $path): array
-    {
-        if(!class_exists(\PhpOffice\PhpSpreadsheet\IOFactory::class)) abort(422,'Parser XLSX belum terpasang.');
-        $data=\PhpOffice\PhpSpreadsheet\IOFactory::load($path)->getActiveSheet()->toArray(null,true,true,false); if(count($data)<1) return [];
-        $header=array_map(fn($h)=>Str::snake(trim((string)$h)), array_shift($data)); $rows=[];
-        foreach($data as $line){ if(collect($line)->filter(fn($v)=>trim((string)$v)!=='')->isEmpty()) continue; $row=[]; foreach($header as $i=>$key) $row[$key ?: 'kolom_'.$i]=$line[$i]??null; $rows[]=$row; }
-        return $rows;
-    }
-
-    private function runExtractText(array $cmd): string
-    {
-        $spec=[1=>['pipe','w'],2=>['pipe','w']]; $process=proc_open($cmd,$spec,$pipes); if(!is_resource($process)) return ''; $out=stream_get_contents($pipes[1]); fclose($pipes[1]); fclose($pipes[2]); proc_close($process); return (string)$out;
-    }
-
-    private function ocrPdf(string $path): string
-    {
-        $dir=sys_get_temp_dir().'/sibermas-ocr-'.Str::random(8); @mkdir($dir,0700,true); $prefix=$dir.'/page';
-        $this->runExtractText(['gs','-q','-dNOPAUSE','-dBATCH','-sDEVICE=png16m','-r200','-sOutputFile='.$prefix.'-%03d.png',$path]);
-        $out=''; foreach(glob($prefix.'-*.png')?:[] as $img){ $out .= "\n".$this->runExtractText(['tesseract',$img,'stdout','-l','ind+eng','--psm','6']); @unlink($img); } @rmdir($dir); return $out;
-    }
-
-    private function parseLooseRows(string $text, ExternalKknBatch $batch): array
-    {
-        $rows=[]; foreach(preg_split('/\R+/',$text) as $line){ $line=trim(preg_replace('/\s{2,}/',' ',$line)); if($line===''||preg_match('/^(no\.?|nama|nim|daftar|lampiran|surat)\b/i',$line)) continue; if(!preg_match('/\b([A-Z0-9][A-Z0-9.\-\/]{3,})\b/u',$line,$m)) continue; $nim=trim($m[1]); $name=trim(str_replace($m[0],'',$line)); $name=preg_replace('/^\d+[\).\-\s]+/','',$name); $name=trim(preg_replace('/\b(L|P|LAKI-LAKI|PEREMPUAN)\b.*$/i','',$name)); if($name===''||strlen($name)<3) continue; $rows[]=['nama'=>$name,'nim'=>$nim,'kampus_asal'=>$batch->home_university,'_raw'=>$line]; } return $rows;
-    }
-
-    private function normalizeImportRows(array $rows, ExternalKknBatch $batch): array
-    {
-        return collect($rows)->values()->map(function($row,$idx)use($batch){ $nama=trim((string)($row['nama']??$row['name']??'')); $nim=trim((string)($row['nim']??$row['nim_asal']??$row['external_nim']??'')); $errors=[]; if($nama==='')$errors[]='Nama kosong'; if($nim==='')$errors[]='NIM kosong'; if($nim!==''&&ExternalStudentProfile::where('batch_id',$batch->id)->where('external_nim',$nim)->exists())$errors[]='Duplikat di batch'; return ['row'=>$idx+1,'nama'=>$nama,'nim'=>$nim,'kampus_asal'=>$row['kampus_asal']??$row['home_university']??$batch->home_university,'fakultas_asal'=>$row['fakultas_asal']??$row['external_faculty']??null,'prodi_asal'=>$row['prodi_asal']??$row['external_study_program']??null,'jenis_kelamin'=>$row['jenis_kelamin']??$row['gender']??null,'email'=>$row['email']??null,'no_hp'=>$row['no_hp']??$row['phone']??null,'tanggal_lahir'=>$row['tanggal_lahir']??$row['tgl_lahir']??$row['birth_date']??null,'alamat'=>$row['alamat']??$row['address']??null,'valid'=>count($errors)===0,'errors'=>$errors,'raw'=>$row['_raw']??null]; })->all();
-    }
-
-    private function findScopedBatch(int $batchId): ExternalKknBatch
-    {
-        $query = ExternalKknBatch::query()->whereKey($batchId);
-        $this->scopeBatchesByFaculty($query);
-
-        return $query->firstOrFail();
-    }
-
-    private function serializeExternalProfile(ExternalStudentProfile $profile): array
-    {
-        $peserta = $profile->mahasiswa?->peserta?->first();
-        $kelompok = $peserta?->kelompok;
-        $lokasi = $kelompok?->lokasi;
-
-        return [
-            'id' => $profile->id,
-            'mahasiswa_id' => $profile->mahasiswa_id,
-            'batch_id' => $profile->batch_id,
-            'external_nim' => $profile->external_nim,
-            'home_university' => $profile->home_university,
-            'external_faculty' => $profile->external_faculty,
-            'external_study_program' => $profile->external_study_program,
-            'source_row_number' => $profile->source_row_number,
-            'created_at' => $profile->created_at,
-            'updated_at' => $profile->updated_at,
-            'target_regency' => $profile->target_regency,
-            'target_district' => $profile->target_district,
-            'target_village' => $profile->target_village,
-            'target_group' => $profile->target_group,
-            'placement_notes' => $profile->placement_notes,
-            'batch' => $profile->batch ? [
-                'id' => $profile->batch->id,
-                'periode_id' => $profile->batch->periode_id,
-                'home_university' => $profile->batch->home_university,
-                'target_regency' => $profile->batch->target_regency,
-                'periode' => $profile->batch->periode ? [
-                    'id' => $profile->batch->periode->id,
-                    'name' => $profile->batch->periode->name,
-                    'periode' => $profile->batch->periode->periode,
-                ] : null,
-            ] : null,
-            'mahasiswa' => $profile->mahasiswa ? [
-                'id' => $profile->mahasiswa->id,
-                'user_id' => $profile->mahasiswa->user_id,
-                'nim' => $profile->mahasiswa->nim,
-                'nama' => $profile->mahasiswa->nama,
-                'phone' => $profile->mahasiswa->phone,
-                'user' => $profile->mahasiswa->user ? [
-                    'id' => $profile->mahasiswa->user->id,
-                    'username' => $profile->mahasiswa->user->username,
-                    'name' => $profile->mahasiswa->user->name,
-                    'email' => $profile->mahasiswa->user->email,
-                    'phone' => $profile->mahasiswa->user->phone,
-                ] : null,
-                'peserta' => $peserta ? [[
-                    'id' => $peserta->id,
-                    'mahasiswa_id' => $peserta->mahasiswa_id,
-                    'kelompok_id' => $peserta->kelompok_id,
-                    'status' => $peserta->status,
-                    'kelompok' => $kelompok ? [
-                        'id' => $kelompok->id,
-                        'nama_kelompok' => $kelompok->nama_kelompok,
-                        'lokasi' => $lokasi ? [
-                            'id' => $lokasi->id,
-                            'regency_name' => $lokasi->regency_name,
-                            'district_name' => $lokasi->district_name,
-                            'village_name' => $lokasi->village_name,
-                        ] : null,
-                    ] : null,
-                ]] : [],
-            ] : null,
-        ];
-    }
-
-    private function csvCell($value): string
-    {
-        $value = (string) $value;
-        if ($value !== '' && preg_match('/^[=+\-@]/', $value)) {
-            $value = "'".$value;
+        if (auth()->user()?->hasRole("faculty_admin")) {
+            return $this->error("FORBIDDEN", "Admin fakultas hanya memiliki akses baca (read-only).", 403);
         }
 
-        return '"'.str_replace('"', '""', $value).'"';
+        $validated = $request->validate([
+            "peserta_ids" => ["required", "array", "min:1"],
+            "peserta_ids.*" => ["required", "integer", "exists:peserta_kkn,id"],
+            "kelompok_id" => ["required", "exists:kelompok_kkn,id"],
+            "force" => ["sometimes", "boolean"],
+        ]);
+
+        $pesertaIds = $validated["peserta_ids"];
+        $kelompokId = (int) $validated["kelompok_id"];
+        $force = (bool) ($validated["force"] ?? false);
+        $isSuperadmin = (bool) auth()->user()?->hasRole("superadmin");
+
+        $batchId = "manual:bulk-ext:" . now()->format("YmdHis") . ":" . \Illuminate\Support\Str::random(8);
+        $service = app(GroupSelectionService::class);
+
+        $results = [];
+        $errors = [];
+
+        try {
+            DB::transaction(function () use ($pesertaIds, $kelompokId, $force, $isSuperadmin, $batchId, $service, &$results, &$errors) {
+                $group = KelompokKkn::lockForUpdate()->findOrFail($kelompokId);
+
+                foreach ($pesertaIds as $pesertaId) {
+                    $pesertaKkn = PesertaKkn::lockForUpdate()->findOrFail($pesertaId);
+
+                    if ($pesertaKkn->status !== "approved") {
+                        $errors[] = [
+                            "peserta_id" => $pesertaId,
+                            "nama" => $pesertaKkn->mahasiswa?->nama ?? "N/A",
+                            "error" => "Status peserta \"" . $pesertaKkn->status . "\", harus \"approved\"."
+                        ];
+                        continue;
+                    }
+
+                    $pesertaKkn->loadMissing("mahasiswa");
+                    if (!$pesertaKkn->mahasiswa) {
+                        $errors[] = [
+                            "peserta_id" => $pesertaId,
+                            "nama" => "Unknown",
+                            "error" => "Data mahasiswa tidak ditemukan."
+                        ];
+                        continue;
+                    }
+
+                    try {
+                        if ($force && $isSuperadmin) {
+                            $service->validateGroupAcceptance($group, $pesertaKkn->mahasiswa, $pesertaKkn->id);
+                            $pesertaKkn->update([
+                                "kelompok_id" => $kelompokId,
+                                "joined_group_at" => now(),
+                                "placement_is_live" => false,
+                                "placement_published_at" => null,
+                                "placement_published_by" => null,
+                                "placement_batch_id" => $batchId,
+                            ]);
+                        } else {
+                            $service->assignGroup($pesertaKkn, $pesertaKkn->mahasiswa, $kelompokId);
+                            $pesertaKkn->update([
+                                "placement_is_live" => false,
+                                "placement_published_at" => null,
+                                "placement_published_by" => null,
+                                "placement_batch_id" => $batchId,
+                            ]);
+                        }
+
+                        $results[] = [
+                            "peserta_id" => $pesertaId,
+                            "nama" => $pesertaKkn->mahasiswa->nama,
+                            "status" => "success"
+                        ];
+                    } catch (ValidationException $e) {
+                        $errors[] = [
+                            "peserta_id" => $pesertaId,
+                            "nama" => $pesertaKkn->mahasiswa->nama,
+                            "error" => collect($e->errors())->flatten()->first() ?? "Gagal validasi kelompok."
+                        ];
+                    }
+                }
+
+                if (count($errors) > 0) {
+                    throw new \RuntimeException("Validation failed for one or more participants");
+                }
+            });
+        } catch (\Throwable $e) {
+            return $this->error("VALIDATION_ERROR", "Beberapa peserta gagal divalidasi.", 422, [
+                "errors" => $errors
+            ]);
+        }
+
+        return $this->success([
+            "assigned_count" => count($results),
+            "placement_batch_id" => $batchId,
+            "results" => $results
+        ], "Bulk assign berhasil diproses sebagai draft.");
     }
+
 }

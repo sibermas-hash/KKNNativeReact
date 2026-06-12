@@ -93,6 +93,7 @@ Route::prefix('v1')->group(function () {
             ->name('api.v1.auth.logout');
 
         Route::get('/user', [AuthController::class, 'user'])
+            ->middleware('auth:sanctum')
             ->name('api.v1.auth.user');
 
         Route::post('/lupa-kata-sandi', [AuthController::class, 'forgotPassword'])

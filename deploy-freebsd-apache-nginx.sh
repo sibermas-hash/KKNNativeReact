@@ -24,8 +24,6 @@ ENV_FILE="${API_DIR}/.env"
 DB_PASS_FILE="${APP_DIR}/.db_password.initial"
 
 WEB_USER="${WEB_USER:-www}"
-DURABLE_STORAGE="${SIBERMAS_DURABLE_STORAGE:-/usr/local/www/apache24/data/Sibermas2026/apps/api/storage}"
-FIX_STORAGE_LINKS="${FIX_STORAGE_LINKS:-/usr/local/www/sibermas/bin/fix-storage-links.sh}"
 WEB_DOMAIN="${WEB_DOMAIN:-sibermas.uinsaizu.ac.id}"
 CERT_BASE="${CERT_BASE:-${WEB_DOMAIN}}"
 PUBLIC_BASE_URL="${PUBLIC_BASE_URL:-https://${WEB_DOMAIN}}"
@@ -375,7 +373,7 @@ else
   echo "Skipping SuperAdminSeeder. Set KKN_SUPERADMIN_PASSWORD to seed/update the superadmin."
 fi
 
-"${FIX_STORAGE_LINKS}" "${APP_DIR}"
+php artisan storage:link --force
 php artisan config:cache
 php artisan route:cache
 php artisan event:cache 2>/dev/null || true

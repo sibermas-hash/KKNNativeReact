@@ -9,7 +9,6 @@ use App\Http\Resources\Api\V1\KelompokKknResource;
 use App\Http\Traits\ApiResponse;
 use App\Imports\KelompokKknImport;
 use App\Models\KKN\KelompokKkn;
-use App\Models\KKN\Periode;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -71,7 +70,6 @@ class KelompokKknAdminController extends Controller
 
         $query = KelompokKkn::with(['lokasi', 'dosen', 'periode'])
             ->withCount('peserta')
-            ->whereHas('periode', fn ($p) => $p->where('is_active', true))
             ->when($request->input('periode_id'), fn ($q, $id) => $q->where('periode_id', $id))
             ->when($search !== '', function ($q) use ($search): void {
                 $q->where(function ($qq) use ($search): void {
@@ -116,10 +114,6 @@ class KelompokKknAdminController extends Controller
             'code' => ['required', 'string', 'max:50'],
             'capacity' => ['nullable', 'integer', 'min:1'],
         ]);
-
-        if (! Periode::whereKey($validated['periode_id'])->where('is_active', true)->exists()) {
-            return $this->error('INVALID_PERIOD', 'Kelompok hanya boleh dibuat pada periode aktif.', 422);
-        }
 
         return $this->created(new KelompokKknResource(KelompokKkn::create($validated)->load(['lokasi', 'periode'])), 'Kelompok berhasil dibuat.');
     }

@@ -16,7 +16,7 @@ class DownloadResource extends JsonResource
             'title' => $this->title,
             'file_name' => $this->file_name,
             'file_path' => $this->file_path,
-            'file_url' => $this->file_path ? rtrim((string) config('app.frontend_url', preg_replace('#/api$#', '', (string) config('app.url'))), '/').'/storage/'.$this->file_path : null,
+            'file_url' => $this->file_path ? asset('storage/'.$this->file_path) : null,
             'external_url' => $this->external_url,
             'file_type' => $this->file_type,
             'is_active' => $this->is_active,

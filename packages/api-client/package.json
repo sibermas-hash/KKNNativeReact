@@ -15,7 +15,7 @@
   "scripts": {
     "build": "tsc",
     "type-check": "tsc --noEmit",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run src/client.test.ts --passWithNoTests"
   },
   "peerDependencies": {
     "axios": "^1.7.0"

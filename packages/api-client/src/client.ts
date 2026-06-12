@@ -61,6 +61,25 @@ function emitLogout(): void {
   } catch { /* noop */ }
 }
 
+function spoofRestMethod(config: InternalAxiosRequestConfig): InternalAxiosRequestConfig {
+  const method = config.method?.toLowerCase();
+  if (method !== 'patch' && method !== 'put' && method !== 'delete') {
+    return config;
+  }
+
+  if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+    config.data.append('_method', method.toUpperCase());
+  } else {
+    const payload = config.data && typeof config.data === 'object'
+      ? config.data as Record<string, unknown>
+      : {};
+    config.data = { ...payload, _method: method.toUpperCase() };
+  }
+
+  config.method = 'post';
+  return config;
+}
+
 export function createWebClient(baseURL?: string): AxiosInstance {
   const client = axios.create({
     baseURL: baseURL || (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL) || '/api/v1',
@@ -73,6 +92,7 @@ export function createWebClient(baseURL?: string): AxiosInstance {
   });
 
   client.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+    spoofRestMethod(config);
     if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
       delete config.headers['Content-Type'];
     }
@@ -116,6 +136,7 @@ export function createMobileClient(getToken: () => Promise<string | null>, baseU
   });
 
   client.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
+    spoofRestMethod(config);
     try {
       const token = await getToken();
       if (token) {

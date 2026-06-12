@@ -163,6 +163,30 @@ export default function LoginPage(): React.JSX.Element {
         if (result.token) setAuthToken(result.token);
         setUser(result.user);
         toast.success('Login berhasil!');
+
+        const isSuperadmin = result.user.roles?.includes('superadmin');
+        if (isSuperadmin) {
+          router.replace(normalizedRedirect ?? '/admin');
+          return;
+        }
+
+        if (result.user.must_change_password || !result.user.password_changed_at) {
+          router.replace('/ganti-password');
+          return;
+        }
+
+        const isAdmin = ['admin', 'faculty_admin'].some((role) => result.user.roles?.includes(role));
+        if (isAdmin) {
+          router.replace(normalizedRedirect ?? '/admin');
+          return;
+        }
+
+        if (!result.user.profile_complete) {
+          router.replace('/profil');
+          return;
+        }
+
+        router.replace(normalizedRedirect ?? dashboardPathForRoles(result.user.roles));
       }
     } catch (err: unknown) {
       if (err && typeof err === 'object' && 'response' in err) {

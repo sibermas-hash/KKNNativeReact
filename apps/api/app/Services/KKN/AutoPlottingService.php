@@ -606,14 +606,14 @@ class AutoPlottingService
                 $fields[] = 'domisili/tempat lahir';
             }
             if ($fields !== []) {
-                $missing[] = trim(($row->nim ?: '-') . ' ' . ($row->nama ?: '-') . ' [' . implode(', ', $fields) . ']');
+                $missing[] = trim(($row->nim ?: '-').' '.($row->nama ?: '-').' ['.implode(', ', $fields).']');
             }
         }
 
         if ($missing !== []) {
             $sample = implode('; ', array_slice($missing, 0, 15));
-            $more = count($missing) > 15 ? '; +' . (count($missing) - 15) . ' peserta lain' : '';
-            throw new RuntimeException('Plotting dikunci: profil peserta belum lengkap. Lengkapi data berikut: ' . $sample . $more);
+            $more = count($missing) > 15 ? '; +'.(count($missing) - 15).' peserta lain' : '';
+            throw new RuntimeException('Plotting dikunci: profil peserta belum lengkap. Lengkapi data berikut: '.$sample.$more);
         }
     }
 

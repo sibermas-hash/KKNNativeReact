@@ -6,7 +6,8 @@ import { Download, Loader2, Search, Users, Plus, Upload, ChevronLeft, ChevronRig
 import { useState, useRef } from 'react';
 
 type Periode = { id: number; name?: string; periode?: number; is_active?: boolean };
-type Batch = { id: number; home_university: string; program_name?: string; target_regency?: string|null; students_count?: number; periode?: Periode; letter_number?: string|null; letter_date?: string|null; expected_participants?: number|null };
+type ExternalUniversity = { id: number; name: string; code?: string };
+type Batch = { id: number; external_university_id?: number|null; home_university: string; program_name?: string; target_regency?: string|null; students_count?: number; periode?: Periode; external_university?: ExternalUniversity; letter_number?: string|null; letter_date?: string|null; expected_participants?: number|null };
 type Row = { id: number; external_nim: string; home_university: string; external_faculty?: string|null; external_study_program?: string|null; mahasiswa?: { nama?: string; nim?: string; phone?: string|null; user?: { username?: string }; peserta?: Array<{ status: string; kelompok?: { nama_kelompok?: string; lokasi?: { regency_name?: string } } }> } };
 type Paginated<T> = { data?: T[]; current_page?: number; per_page?: number; total?: number; last_page?: number };
 type ImportPreviewRow = { row: number; nama: string; nim: string; kampus_asal?: string; fakultas_asal?: string|null; prodi_asal?: string|null; valid: boolean; errors?: string[] };
@@ -54,6 +55,16 @@ export default function PesertaEksternalPage(): React.JSX.Element {
     staleTime: 60000,
   });
 
+  const externalUniversitiesQ = useQuery<ExternalUniversity[]>({
+    queryKey: ['admin', 'external-universities', 'peserta-eksternal-batch'],
+    queryFn: async () => {
+      const res = await rawApi.get('/admin/external-universities', { params: { per_page: 200 } });
+      const payload = unwrap<ExternalUniversity[] | Paginated<ExternalUniversity>>(res);
+      return asArray<ExternalUniversity>(payload);
+    },
+    placeholderData: [],
+  });
+
   // Batches
   const batchesQ = useQuery<Batch[]>({
     queryKey: ['external-batches', 'active-only'],
@@ -74,6 +85,7 @@ export default function PesertaEksternalPage(): React.JSX.Element {
   });
 
   const batches = batchesQ.data ?? [];
+  const externalUniversities = externalUniversitiesQ.data ?? [];
   const pagination: Paginated<Row> = listQ.data ?? { data: [], current_page: 1, per_page: 15, total: 0, last_page: 1 };
   const rows: Row[] = Array.isArray(pagination.data) ? pagination.data : [];
   const totalParticipants = batches.reduce((sum, b) => sum + (b.students_count ?? 0), 0);
@@ -297,11 +309,15 @@ export default function PesertaEksternalPage(): React.JSX.Element {
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs font-bold text-slate-600">Kampus Asal *</label>
+              <label className="mb-1 block text-xs font-bold text-slate-600">Kampus Eksternal *</label>
               <div className="relative">
                 <Building2 size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/>
-                <input name="home_university" required placeholder="Universitas..." className="w-full rounded-xl border border-slate-200 py-2.5 pl-9 pr-3 text-sm outline-none focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100" />
+                <select name="external_university_id" required className="w-full rounded-xl border border-slate-200 py-2.5 pl-9 pr-3 text-sm outline-none focus:border-cyan-500 focus:ring-4 focus:ring-cyan-100">
+                  <option value="">Pilih kampus eksternal...</option>
+                  {externalUniversities.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
+                </select>
               </div>
+              <p className="mt-1 text-[11px] text-slate-400">Belum ada? Tambahkan dulu di menu Kampus Eksternal.</p>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

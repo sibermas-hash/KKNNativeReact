@@ -110,7 +110,7 @@ class TransferPesertaController extends Controller
 
         $this->ensurePesertaInFacultyScope($peserta);
 
-        if (!in_array($peserta->status, ['interview_failed', 'approved'], true)) {
+        if (! in_array($peserta->status, ['interview_failed', 'approved'], true)) {
             return $this->error('VALIDATION_ERROR', 'Hanya peserta dengan status gagal wawancara atau disetujui yang dapat ditransfer.', 422);
         }
 
@@ -319,4 +319,3 @@ class TransferPesertaController extends Controller
         return $this->success($peserta->fresh()->load(['mahasiswa', 'periode.jenisKkn', 'kelompok.lokasi']), 'Peserta berhasil dimutasi lokasi/kelompok.');
     }
 }
-

@@ -7,11 +7,12 @@ namespace App\Http\Controllers\Api\V1\Admin;
 use App\Exports\PesertaKknFullExport;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
+use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
-use Barryvdh\DomPDF\Facade\Pdf;
 
 class PesertaKknListController extends Controller
 {
@@ -48,7 +49,7 @@ class PesertaKknListController extends Controller
                 $q->whereHas('mahasiswa', function ($m) use ($term, $escaped) {
                     $m->where('nama', 'ilike', "%{$escaped}%");
                     if (preg_match('/^\d{6,20}$/', $term)) {
-                        $m->orWhere('nim_bidx', \App\Models\KKN\Mahasiswa::computeBlindIndex($term));
+                        $m->orWhere('nim_bidx', Mahasiswa::computeBlindIndex($term));
                     }
                 });
             })
@@ -116,7 +117,7 @@ class PesertaKknListController extends Controller
         $angkatan = $request->input('angkatan', '58');
 
         $pdf = Pdf::loadView('exports.peserta-kkn-pdf', compact('peserta', 'angkatan'));
-        
+
         return $pdf->download('peserta-kkn-final-'.now()->format('Ymd-His').'.pdf');
     }
 }

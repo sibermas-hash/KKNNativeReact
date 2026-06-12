@@ -41,7 +41,9 @@ class CertificateManagementController extends Controller
             ? Periode::with('jenisKkn')->find($periodeId)
             : Periode::with('jenisKkn')->where('name', 'ilike', '%PAMMT%')->orWhere('name', 'ilike', '%MAGANG%FTIK%')->latest('id')->first();
 
-        if (! $periode) return $this->error('not_found', 'Periode sertifikat tidak ditemukan.', 404);
+        if (! $periode) {
+            return $this->error('not_found', 'Periode sertifikat tidak ditemukan.', 404);
+        }
 
         $configs = KonfigurasiSertifikat::where('periode_id', $periode->id)->get()->keyBy('config_key');
         $result = [];
@@ -51,6 +53,7 @@ class CertificateManagementController extends Controller
         }
 
         $certQuery = SertifikatKkn::where('periode_id', $periode->id);
+
         return $this->success([
             'periode' => ['id' => $periode->id, 'name' => $periode->name, 'current_phase' => $periode->current_phase, 'jenis' => $periode->jenisKkn?->name],
             'stats' => ['total' => (clone $certQuery)->count(), 'active' => (clone $certQuery)->whereNull('revoked_at')->count(), 'revoked' => (clone $certQuery)->whereNotNull('revoked_at')->count(), 'with_token' => (clone $certQuery)->whereNotNull('verification_token')->count()],
@@ -72,6 +75,7 @@ class CertificateManagementController extends Controller
             [$label, $type] = self::KEYS[$item['config_key']];
             $saved[] = KonfigurasiSertifikat::updateOrCreate(['periode_id' => $validated['periode_id'], 'config_key' => $item['config_key']], ['label' => $label, 'type' => $type, 'value' => $item['value'] ?? '']);
         }
+
         return $this->success(['configs' => $saved], 'Konfigurasi sertifikat tersimpan.');
     }
 
@@ -86,18 +90,25 @@ class CertificateManagementController extends Controller
         $path = $request->file('file')->store('certificate-assets', 'public');
         [$label, $type] = self::KEYS[$key];
         KonfigurasiSertifikat::updateOrCreate(['periode_id' => $validated['periode_id'], 'config_key' => $key], ['label' => $label, 'type' => $type, 'value' => $path]);
+
         return $this->success(['path' => $path, 'url' => Storage::disk('public')->url($path)], 'Asset sertifikat diunggah.');
     }
 
     public function preview(SertifikatKkn $sertifikat): Response|JsonResponse
     {
-        if ($sertifikat->isRevoked()) return $this->error('FORBIDDEN', 'Sertifikat telah dibatalkan.', 403);
+        if ($sertifikat->isRevoked()) {
+            return $this->error('FORBIDDEN', 'Sertifikat telah dibatalkan.', 403);
+        }
+
         return app(CertificateService::class)->generateForStudent($sertifikat)->stream($this->safePdfName($sertifikat));
     }
 
     public function download(SertifikatKkn $sertifikat): Response|JsonResponse
     {
-        if ($sertifikat->isRevoked()) return $this->error('FORBIDDEN', 'Sertifikat telah dibatalkan.', 403);
+        if ($sertifikat->isRevoked()) {
+            return $this->error('FORBIDDEN', 'Sertifikat telah dibatalkan.', 403);
+        }
+
         return app(CertificateService::class)->generateForStudent($sertifikat)->download($this->safePdfName($sertifikat));
     }
 
@@ -105,15 +116,33 @@ class CertificateManagementController extends Controller
     {
         $validated = $request->validate(['periode_id' => ['required', 'integer', 'exists:periode,id']]);
         $certificates = SertifikatKkn::where('periode_id', $validated['periode_id'])->whereNull('revoked_at')->orderBy('nim')->get();
-        if ($certificates->isEmpty()) return $this->error('not_found', 'Belum ada sertifikat aktif untuk periode ini.', 404);
-        $dir = storage_path('app/tmp'); if (! is_dir($dir)) mkdir($dir, 0775, true);
+        if ($certificates->isEmpty()) {
+            return $this->error('not_found', 'Belum ada sertifikat aktif untuk periode ini.', 404);
+        }
+        $dir = storage_path('app/tmp');
+        if (! is_dir($dir)) {
+            mkdir($dir, 0775, true);
+        }
         $zipPath = $dir.'/sertifikat-periode-'.$validated['periode_id'].'-'.now()->format('Ymd-His').'.zip';
         $zip = new \ZipArchive;
-        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) return $this->error('SERVER_ERROR', 'Gagal membuat ZIP sertifikat.', 500);
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            return $this->error('SERVER_ERROR', 'Gagal membuat ZIP sertifikat.', 500);
+        }
         $ok = 0;
-        foreach ($certificates as $cert) { try { $zip->addFromString($this->safePdfName($cert), app(CertificateService::class)->generateForStudent($cert)->output()); $ok++; } catch (\Throwable) {} }
+        foreach ($certificates as $cert) {
+            try {
+                $zip->addFromString($this->safePdfName($cert), app(CertificateService::class)->generateForStudent($cert)->output());
+                $ok++;
+            } catch (\Throwable) {
+            }
+        }
         $zip->close();
-        if ($ok === 0) { @unlink($zipPath); return $this->error('SERVER_ERROR', 'Tidak ada sertifikat yang berhasil digenerate.', 500); }
+        if ($ok === 0) {
+            @unlink($zipPath);
+
+            return $this->error('SERVER_ERROR', 'Tidak ada sertifikat yang berhasil digenerate.', 500);
+        }
+
         return response()->download($zipPath, 'Sertifikat_Periode_'.$validated['periode_id'].'.zip')->deleteFileAfterSend(true);
     }
 
@@ -125,20 +154,27 @@ class CertificateManagementController extends Controller
         $updated = 0;
         foreach ($certificates as $cert) {
             $token = $cert->verification_token;
-            if ($force || ! $token) $token = CertificateService::generateVerificationToken($cert);
+            if ($force || ! $token) {
+                $token = CertificateService::generateVerificationToken($cert);
+            }
             $number = $cert->certificate_number;
-            if ($force || ! $number) $number = 'KKN/'.$cert->periode_id.'/'.$token;
+            if ($force || ! $number) {
+                $number = 'KKN/'.$cert->periode_id.'/'.$token;
+            }
             if ($token !== $cert->verification_token || $number !== $cert->certificate_number || ! $cert->issued_at) {
                 $cert->forceFill(['verification_token' => $token, 'certificate_number' => $number, 'issued_at' => $cert->issued_at ?: now(), 'issued_by' => auth()->id()])->save();
                 $updated++;
             }
         }
+
         return $this->success(['total' => $certificates->count(), 'updated' => $updated, 'force' => $force], $force ? 'Nomor/token sertifikat digenerate ulang.' : 'Nomor/token kosong dilengkapi.');
     }
+
     private function safePdfName(SertifikatKkn $sertifikat): string
     {
         $nim = $sertifikat->nim ?: (string) $sertifikat->id;
         $name = Str::slug($sertifikat->nama_mahasiswa ?: 'sertifikat', '_');
+
         return preg_replace('/[^A-Za-z0-9_\-\.]/', '_', "Sertifikat_{$nim}_{$name}.pdf") ?: 'Sertifikat.pdf';
     }
 }

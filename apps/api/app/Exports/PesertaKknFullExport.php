@@ -6,14 +6,13 @@ namespace App\Exports;
 
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class PesertaKknFullExport implements FromCollection, ShouldAutoSize, WithHeadings, WithStyles, WithColumnFormatting
+class PesertaKknFullExport implements FromCollection, ShouldAutoSize, WithColumnFormatting, WithHeadings, WithStyles
 {
     public function __construct(private $rows) {}
 

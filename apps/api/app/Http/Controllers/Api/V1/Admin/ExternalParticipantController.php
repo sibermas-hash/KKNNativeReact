@@ -8,18 +8,19 @@ use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\ExternalKknBatch;
 use App\Models\KKN\ExternalStudentProfile;
+use App\Models\KKN\ExternalUniversity;
 use App\Models\KKN\Fakultas;
+use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\PesertaKkn;
 use App\Models\KKN\Prodi;
 use App\Models\User;
 use App\Services\GroupSelectionService;
-use App\Models\KKN\KelompokKkn;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class ExternalParticipantController extends Controller
 {
@@ -70,7 +71,9 @@ class ExternalParticipantController extends Controller
 
     public function batches(): JsonResponse
     {
-        $query = ExternalKknBatch::withCount('students')->with('periode:id,name,periode')->latest('id');
+        $query = ExternalKknBatch::withCount('students')
+            ->with(['periode:id,name,periode', 'externalUniversity:id,name,code'])
+            ->latest('id');
         $this->scopeBatchesByFaculty($query);
 
         return $this->success($query->get());
@@ -80,7 +83,7 @@ class ExternalParticipantController extends Controller
     {
         $data = $request->validate([
             'periode_id' => ['required', 'exists:periode,id'],
-            'home_university' => ['required', 'string', 'max:150'],
+            'external_university_id' => ['required', 'exists:external_universities,id'],
             'program_name' => ['nullable', 'string', 'max:150'],
             'letter_number' => ['nullable', 'string', 'max:120'],
             'letter_date' => ['nullable', 'date'],
@@ -88,6 +91,8 @@ class ExternalParticipantController extends Controller
             'target_regency' => ['nullable', 'string', 'max:100'],
             'notes' => ['nullable', 'string'],
         ]);
+        $university = ExternalUniversity::findOrFail($data['external_university_id']);
+        $data['home_university'] = $university->name;
         $data['program_name'] = $data['program_name'] ?? 'KKN Kolaborasi PTKIN';
         $data['created_by'] = auth()->id();
 
@@ -260,23 +265,23 @@ class ExternalParticipantController extends Controller
 
     public function bulkAssign(Request $request): JsonResponse
     {
-        if (auth()->user()?->hasRole("faculty_admin")) {
-            return $this->error("FORBIDDEN", "Admin fakultas hanya memiliki akses baca (read-only).", 403);
+        if (auth()->user()?->hasRole('faculty_admin')) {
+            return $this->error('FORBIDDEN', 'Admin fakultas hanya memiliki akses baca (read-only).', 403);
         }
 
         $validated = $request->validate([
-            "peserta_ids" => ["required", "array", "min:1"],
-            "peserta_ids.*" => ["required", "integer", "exists:peserta_kkn,id"],
-            "kelompok_id" => ["required", "exists:kelompok_kkn,id"],
-            "force" => ["sometimes", "boolean"],
+            'peserta_ids' => ['required', 'array', 'min:1'],
+            'peserta_ids.*' => ['required', 'integer', 'exists:peserta_kkn,id'],
+            'kelompok_id' => ['required', 'exists:kelompok_kkn,id'],
+            'force' => ['sometimes', 'boolean'],
         ]);
 
-        $pesertaIds = $validated["peserta_ids"];
-        $kelompokId = (int) $validated["kelompok_id"];
-        $force = (bool) ($validated["force"] ?? false);
-        $isSuperadmin = (bool) auth()->user()?->hasRole("superadmin");
+        $pesertaIds = $validated['peserta_ids'];
+        $kelompokId = (int) $validated['kelompok_id'];
+        $force = (bool) ($validated['force'] ?? false);
+        $isSuperadmin = (bool) auth()->user()?->hasRole('superadmin');
 
-        $batchId = "manual:bulk-ext:" . now()->format("YmdHis") . ":" . \Illuminate\Support\Str::random(8);
+        $batchId = 'manual:bulk-ext:'.now()->format('YmdHis').':'.Str::random(8);
         $service = app(GroupSelectionService::class);
 
         $results = [];
@@ -289,22 +294,24 @@ class ExternalParticipantController extends Controller
                 foreach ($pesertaIds as $pesertaId) {
                     $pesertaKkn = PesertaKkn::lockForUpdate()->findOrFail($pesertaId);
 
-                    if ($pesertaKkn->status !== "approved") {
+                    if ($pesertaKkn->status !== 'approved') {
                         $errors[] = [
-                            "peserta_id" => $pesertaId,
-                            "nama" => $pesertaKkn->mahasiswa?->nama ?? "N/A",
-                            "error" => "Status peserta \"" . $pesertaKkn->status . "\", harus \"approved\"."
+                            'peserta_id' => $pesertaId,
+                            'nama' => $pesertaKkn->mahasiswa?->nama ?? 'N/A',
+                            'error' => 'Status peserta "'.$pesertaKkn->status.'", harus "approved".',
                         ];
+
                         continue;
                     }
 
-                    $pesertaKkn->loadMissing("mahasiswa");
-                    if (!$pesertaKkn->mahasiswa) {
+                    $pesertaKkn->loadMissing('mahasiswa');
+                    if (! $pesertaKkn->mahasiswa) {
                         $errors[] = [
-                            "peserta_id" => $pesertaId,
-                            "nama" => "Unknown",
-                            "error" => "Data mahasiswa tidak ditemukan."
+                            'peserta_id' => $pesertaId,
+                            'nama' => 'Unknown',
+                            'error' => 'Data mahasiswa tidak ditemukan.',
                         ];
+
                         continue;
                     }
 
@@ -312,52 +319,51 @@ class ExternalParticipantController extends Controller
                         if ($force && $isSuperadmin) {
                             $service->validateGroupAcceptance($group, $pesertaKkn->mahasiswa, $pesertaKkn->id);
                             $pesertaKkn->update([
-                                "kelompok_id" => $kelompokId,
-                                "joined_group_at" => now(),
-                                "placement_is_live" => false,
-                                "placement_published_at" => null,
-                                "placement_published_by" => null,
-                                "placement_batch_id" => $batchId,
+                                'kelompok_id' => $kelompokId,
+                                'joined_group_at' => now(),
+                                'placement_is_live' => false,
+                                'placement_published_at' => null,
+                                'placement_published_by' => null,
+                                'placement_batch_id' => $batchId,
                             ]);
                         } else {
                             $service->assignGroup($pesertaKkn, $pesertaKkn->mahasiswa, $kelompokId);
                             $pesertaKkn->update([
-                                "placement_is_live" => false,
-                                "placement_published_at" => null,
-                                "placement_published_by" => null,
-                                "placement_batch_id" => $batchId,
+                                'placement_is_live' => false,
+                                'placement_published_at' => null,
+                                'placement_published_by' => null,
+                                'placement_batch_id' => $batchId,
                             ]);
                         }
 
                         $results[] = [
-                            "peserta_id" => $pesertaId,
-                            "nama" => $pesertaKkn->mahasiswa->nama,
-                            "status" => "success"
+                            'peserta_id' => $pesertaId,
+                            'nama' => $pesertaKkn->mahasiswa->nama,
+                            'status' => 'success',
                         ];
                     } catch (ValidationException $e) {
                         $errors[] = [
-                            "peserta_id" => $pesertaId,
-                            "nama" => $pesertaKkn->mahasiswa->nama,
-                            "error" => collect($e->errors())->flatten()->first() ?? "Gagal validasi kelompok."
+                            'peserta_id' => $pesertaId,
+                            'nama' => $pesertaKkn->mahasiswa->nama,
+                            'error' => collect($e->errors())->flatten()->first() ?? 'Gagal validasi kelompok.',
                         ];
                     }
                 }
 
                 if (count($errors) > 0) {
-                    throw new \RuntimeException("Validation failed for one or more participants");
+                    throw new \RuntimeException('Validation failed for one or more participants');
                 }
             });
         } catch (\Throwable $e) {
-            return $this->error("VALIDATION_ERROR", "Beberapa peserta gagal divalidasi.", 422, [
-                "errors" => $errors
+            return $this->error('VALIDATION_ERROR', 'Beberapa peserta gagal divalidasi.', 422, [
+                'errors' => $errors,
             ]);
         }
 
         return $this->success([
-            "assigned_count" => count($results),
-            "placement_batch_id" => $batchId,
-            "results" => $results
-        ], "Bulk assign berhasil diproses sebagai draft.");
+            'assigned_count' => count($results),
+            'placement_batch_id' => $batchId,
+            'results' => $results,
+        ], 'Bulk assign berhasil diproses sebagai draft.');
     }
-
 }

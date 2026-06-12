@@ -11,7 +11,7 @@ import {
   MapPin, ArrowRight, ClipboardList, CheckCircle2,
   Presentation, AlertTriangle, Target,
   ScrollText, LayoutGrid, UserCheck, Users, Lightbulb, Plane, Star, Image,
-  GraduationCap, ShieldCheck, Activity, Send, Megaphone,
+  GraduationCap, ShieldCheck, Activity, Send, Megaphone, Vote,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { StatusBadge } from '@/components/ui/shared';
@@ -27,6 +27,22 @@ type DashboardAnnouncement = {
   published_at?: string | null;
   show_as_popup?: boolean;
   popup_until?: string | null;
+};
+
+type LeaderVoteCandidate = {
+  peserta_id: number;
+  mahasiswa_id?: number;
+  nim?: string;
+  nama?: string;
+  role?: string;
+  votes?: number;
+};
+
+type LeaderVotePayload = {
+  voting?: { open?: boolean; ends_at?: string | null };
+  my_vote?: number | null;
+  leader?: LeaderVoteCandidate | null;
+  candidates?: LeaderVoteCandidate[];
 };
 
 function extractFirstUrl(text: string): string | null {
@@ -57,6 +73,7 @@ export default function StudentDashboard(): React.JSX.Element {
   const queryClient = useQueryClient();
   const [showPopup, setShowPopup] = useState(false);
   const [dismissedAnnouncementId, setDismissedAnnouncementId] = useState<number | null>(null);
+  const [selectedLeaderCandidate, setSelectedLeaderCandidate] = useState<number | null>(null);
 
 
   
@@ -96,6 +113,25 @@ export default function StudentDashboard(): React.JSX.Element {
   const dplName = ((group?.lecturer as Record<string, unknown>)?.name as string) || 'Belum Ditentukan';
   const leader = group?.leader as { name?: string; is_self?: boolean } | null | undefined;
   const leaderName = leader?.name ? (leader.is_self ? `${leader.name} (Anda)` : leader.name) : 'Sedang Ditentukan';
+  const leaderVoting = group?.leader_voting as { open?: boolean; required?: boolean; ends_at?: string | null } | null | undefined;
+  const shouldLoadLeaderVote = Boolean(leaderVoting?.open && group?.id);
+
+  const leaderVoteQuery = useQuery<LeaderVotePayload | null>({
+    queryKey: ['student', 'group-leader-vote', group?.id],
+    queryFn: async () => {
+      const res = await studentApi.groupLeaderVote.show() as unknown as { data?: LeaderVotePayload } | LeaderVotePayload;
+      return ((res as { data?: LeaderVotePayload })?.data ?? res) as LeaderVotePayload;
+    },
+    enabled: shouldLoadLeaderVote,
+  });
+
+  const leaderVoteMutation = useMutation({
+    mutationFn: (candidatePesertaId: number) => studentApi.groupLeaderVote.vote(candidatePesertaId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student', 'group-leader-vote', group?.id] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.student.dashboard });
+    },
+  });
   // Jika mahasiswa sudah punya pendaftaran, label periode harus ikut data pendaftaran
   // supaya tidak campur dengan active/default period global.
   const periodData = registration?.period as { name?: string; jenis?: string; jenis_code?: string; jenis_color?: string; current_phase?: string } | null | undefined;
@@ -138,6 +174,11 @@ export default function StudentDashboard(): React.JSX.Element {
 
   const shouldShowPopup = isApproved && registration && !registration.notification_shown;
   useEffect(() => { if (shouldShowPopup) setShowPopup(true); }, [shouldShowPopup]);
+
+  useEffect(() => {
+    const currentVote = leaderVoteQuery.data?.my_vote ?? null;
+    if (currentVote) setSelectedLeaderCandidate(currentVote);
+  }, [leaderVoteQuery.data?.my_vote]);
 
   const handleClosePopup = useCallback(() => {
     setShowPopup(false);
@@ -461,6 +502,75 @@ export default function StudentDashboard(): React.JSX.Element {
                     {registration ? 'Cek Detail Status' : 'Mulai Pendaftaran'} <ArrowRight size={16} />
                   </Link>
                 </div>
+              </div>
+            )}
+
+            {/* LEADER VOTING */}
+            {shouldLoadLeaderVote && (
+              <div className="bg-[color:var(--profile-surface)] ring-1 ring-[color:var(--profile-border)] rounded-xl p-6 shadow-sm">
+                <div className="mb-5 flex items-start justify-between gap-4">
+                  <div className="flex items-start gap-4">
+                    <div className="h-12 w-12 rounded-lg bg-[color:var(--profile-soft)] text-[color:var(--profile-primary)] flex items-center justify-center shrink-0">
+                      <Vote size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-black uppercase tracking-widest text-[color:var(--profile-text)]">Voting Ketua Kelompok</h3>
+                      <p className="mt-1 text-xs font-semibold leading-relaxed text-[color:var(--profile-muted)]">
+                        Diskusikan dulu dengan kelompok. Pilih satu calon ketua; suara bisa diubah sampai batas waktu.
+                      </p>
+                      {leaderVoting?.ends_at && (
+                        <p className="mt-2 text-[10px] font-black uppercase tracking-widest text-[color:var(--profile-accent)]">
+                          Batas voting: {new Date(leaderVoting.ends_at).toLocaleString('id-ID')}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {leaderVoteQuery.isLoading ? (
+                  <div className="h-24 animate-pulse rounded-xl bg-[color:var(--profile-soft)]" />
+                ) : leaderVoteQuery.isError ? (
+                  <p className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-xs font-bold text-rose-700">Gagal memuat kandidat ketua. Refresh halaman.</p>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {(leaderVoteQuery.data?.candidates ?? []).map((candidate) => {
+                        const checked = selectedLeaderCandidate === candidate.peserta_id;
+                        return (
+                          <label
+                            key={candidate.peserta_id}
+                            className={clsx(
+                              'cursor-pointer rounded-xl border p-4 transition-all',
+                              checked ? 'border-[color:var(--profile-primary)] bg-[color:var(--profile-soft)] ring-2 ring-[color:var(--profile-primary)]/20' : 'border-[color:var(--profile-border)] bg-[color:var(--profile-surface)] hover:border-[color:var(--profile-primary)]/60',
+                            )}
+                          >
+                            <div className="flex items-start gap-3">
+                              <input
+                                type="radio"
+                                name="leader_candidate"
+                                checked={checked}
+                                onChange={() => setSelectedLeaderCandidate(candidate.peserta_id)}
+                                className="mt-1 h-4 w-4 accent-[color:var(--profile-primary)]"
+                              />
+                              <div className="min-w-0">
+                                <p className="truncate text-sm font-black text-[color:var(--profile-text)]">{candidate.nama || '-'}</p>
+                                <p className="text-[10px] font-bold uppercase tracking-wider text-[color:var(--profile-muted)]">{candidate.nim || '-'} · {candidate.votes ?? 0} suara</p>
+                              </div>
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <button
+                      type="button"
+                      disabled={!selectedLeaderCandidate || leaderVoteMutation.isPending}
+                      onClick={() => selectedLeaderCandidate && leaderVoteMutation.mutate(selectedLeaderCandidate)}
+                      className="inline-flex h-11 items-center gap-2 rounded-lg bg-[color:var(--profile-primary)] px-5 text-xs font-black uppercase tracking-widest text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {leaderVoteMutation.isPending ? 'Menyimpan...' : 'Simpan Pilihan Ketua'} <ArrowRight size={14} />
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 

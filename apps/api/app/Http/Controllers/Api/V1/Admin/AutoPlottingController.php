@@ -154,7 +154,11 @@ class AutoPlottingController extends Controller
             'periode_id' => ['nullable', 'exists:periode,id'],
         ]);
 
-        return $this->success($service->preview(isset($data['periode_id']) ? (int) $data['periode_id'] : null));
+        try {
+            return $this->success($service->preview(isset($data['periode_id']) ? (int) $data['periode_id'] : null));
+        } catch (RuntimeException $e) {
+            return $this->error('EXTERNAL_KEBUMEN_VALIDATION_ERROR', $e->getMessage(), 422);
+        }
     }
 
     public function externalKebumenApply(Request $request, ExternalKebumenPlottingService $service): JsonResponse
@@ -168,7 +172,11 @@ class AutoPlottingController extends Controller
             'confirm' => ['accepted'],
         ]);
 
-        return $this->success($service->apply(isset($data['periode_id']) ? (int) $data['periode_id'] : null));
+        try {
+            return $this->success($service->apply(isset($data['periode_id']) ? (int) $data['periode_id'] : null));
+        } catch (RuntimeException $e) {
+            return $this->error('EXTERNAL_KEBUMEN_VALIDATION_ERROR', $e->getMessage(), 422);
+        }
     }
 
     private function resolveRegularActivePeriodId(null|int|string $periodeId): ?int

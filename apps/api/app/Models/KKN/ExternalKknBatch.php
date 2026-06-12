@@ -11,9 +11,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class ExternalKknBatch extends Model
 {
-    protected $fillable = ['periode_id', 'home_university', 'program_name', 'letter_number', 'letter_date', 'letter_file_path', 'expected_participants', 'target_regency', 'notes', 'created_by'];
+    protected $fillable = ['periode_id', 'external_university_id', 'home_university', 'program_name', 'letter_number', 'letter_date', 'letter_file_path', 'expected_participants', 'target_regency', 'notes', 'created_by'];
 
-    protected $casts = ['letter_date' => 'date', 'expected_participants' => 'integer'];
+    protected $casts = ['letter_date' => 'date', 'expected_participants' => 'integer', 'external_university_id' => 'integer'];
 
     public function periode(): BelongsTo
     {
@@ -23,6 +23,11 @@ class ExternalKknBatch extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function externalUniversity(): BelongsTo
+    {
+        return $this->belongsTo(ExternalUniversity::class, 'external_university_id');
     }
 
     public function students(): HasMany

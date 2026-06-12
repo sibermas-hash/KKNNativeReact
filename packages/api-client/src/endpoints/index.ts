@@ -65,6 +65,10 @@ export function studentEndpoints(client: AxiosInstance) {
       store: (data: FormData) => client.post('/student/poster-potensi-desa', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
     },
     notificationShown: (id: number) => client.patch(`/student/peserta-kkn/${id}/notification-shown`),
+    groupLeaderVote: {
+      show: () => client.get('/student/group-leader-vote'),
+      vote: (candidatePesertaId: number) => client.post('/student/group-leader-vote', { candidate_peserta_id: candidatePesertaId }),
+    },
 
     // GAP-1: document upload for registration
     documents: (periodeId: number, data: FormData) =>

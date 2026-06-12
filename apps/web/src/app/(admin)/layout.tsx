@@ -41,6 +41,7 @@ const getNavGroups = (pathname: string, roles: string[]) => {
       { label: 'Direktori Mahasiswa', href: '/admin/mahasiswa', icon: Users },
       { label: 'Audit Kelayakan', href: '/admin/audit-kualifikasi', icon: ShieldCheck },
       { label: 'Dispensasi', href: '/admin/dispensasi', icon: Award },
+      { label: 'Kampus Eksternal', href: '/admin/external-universities', icon: Building2 },
       { label: 'Peserta Eksternal', href: '/admin/peserta-eksternal', icon: Globe },
       { label: 'Registrasi Mahasiswa', href: '/admin/pendaftaran', icon: ClipboardList },
       { label: 'Wawancara', href: '/admin/wawancara', icon: FileCheck },

@@ -85,6 +85,42 @@ parameters:
 			path: app/Console/Commands/KKN/SendDeadlineRemindersCommand.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\Mahasiswa\:\:\$manually_edited_fields\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/LockFilledProfilesCommand.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$address\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/LockFilledProfilesCommand.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/LockFilledProfilesCommand.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$manually_edited_fields\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/LockFilledProfilesCommand.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/LockFilledProfilesCommand.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/LockFilledProfilesCommand.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
 			identifier: property.notFound
 			count: 1
@@ -277,6 +313,36 @@ parameters:
 			path: app/Exports/BpjsParticipantExport.php
 
 		-
+			message: '#^Method App\\Exports\\InterviewResultExport\:\:query\(\) has invalid return type Laravel\\Scout\\Builder\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Exports/InterviewResultExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>location" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/InterviewResultExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Exports/InterviewResultExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Exports/InterviewResultExport.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nim" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Exports/InterviewResultExport.php
+
+		-
 			message: '#^Method App\\Exports\\PesertaKknExport\:\:query\(\) has invalid return type Laravel\\Scout\\Builder\.$#'
 			identifier: class.notFound
 			count: 1
@@ -355,58 +421,88 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Admin/ActivityAuditController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$body\.$#'
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
+			path: app/Http/Controllers/Api/V1/Admin/AutoPlottingController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
 			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$username\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
 			count: 1
-			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
+			path: app/Http/Controllers/Api/V1/Admin/AutoPlottingController.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, sender\: array\{id\: mixed, name\: mixed, is_admin\: bool\}, body\: string, attachment_url\: string\|null, attachment_name\: string\|null, is_read\: bool, created_at\: string\|null\}, Closure\(App\\Models\\KKN\\ChatMessage\)\: array\{id\: int, sender\: array\{id\: mixed, name\: mixed, is_admin\: bool\}, body\: string, attachment_url\: string\|null, attachment_name\: string\|null, is_read\: bool, created_at\: string\|null\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\KKN\\ChatConversation\>\:\:transform\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
-
-		-
-			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
+			message: '#^Using nullsafe property access "\?\-\>code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
-			path: app/Http/Controllers/Api/V1/Admin/AdminChatController.php
+			path: app/Http/Controllers/Api/V1/Admin/AutoPlottingController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/AutoPlottingController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fakultas\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/AvatarModerationController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/AvatarModerationController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$prodi\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/AvatarModerationController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\User\>\:\:transform\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/AvatarModerationController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/CertificateManagementController.php
+
+		-
+			message: '#^Parameter \#1 \$score of method App\\Services\\CertificateService\:\:generateForStudent\(\) expects App\\Models\\KKN\\NilaiKkn, App\\Models\\KKN\\SertifikatKkn given\.$#'
+			identifier: argument.type
+			count: 3
+			path: app/Http/Controllers/Api/V1/Admin/CertificateManagementController.php
+
+		-
+			message: '#^Parameter \#1 \$score of static method App\\Services\\CertificateService\:\:generateVerificationToken\(\) expects App\\Models\\KKN\\NilaiKkn, App\\Models\\KKN\\SertifikatKkn given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/CertificateManagementController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>label" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/CertificateManagementController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>type" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/CertificateManagementController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/CertificateManagementController.php
 
 		-
 			message: '#^Cannot call method isFuture\(\) on string\.$#'
@@ -445,51 +541,9 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Admin/DatabaseSyncController.php
 
 		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\DplAssignmentController\:\:created\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/Admin/DplAssignmentController.php
-
-		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\DplAssignmentController\:\:error\(\)\.$#'
-			identifier: method.notFound
-			count: 6
-			path: app/Http/Controllers/Api/V1/Admin/DplAssignmentController.php
-
-		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\DplAssignmentController\:\:noContent\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/Admin/DplAssignmentController.php
-
-		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\DplAssignmentController\:\:success\(\)\.$#'
-			identifier: method.notFound
-			count: 3
-			path: app/Http/Controllers/Api/V1/Admin/DplAssignmentController.php
-
-		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\DplAssignmentController\:\:successCollection\(\)\.$#'
-			identifier: method.notFound
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
+			identifier: property.notFound
 			count: 1
-			path: app/Http/Controllers/Api/V1/Admin/DplAssignmentController.php
-
-		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\DplRegistrationController\:\:error\(\)\.$#'
-			identifier: method.notFound
-			count: 2
-			path: app/Http/Controllers/Api/V1/Admin/DplRegistrationController.php
-
-		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\DplRegistrationController\:\:noContent\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/Admin/DplRegistrationController.php
-
-		-
-			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\DplRegistrationController\:\:success\(\)\.$#'
-			identifier: method.notFound
-			count: 4
 			path: app/Http/Controllers/Api/V1/Admin/DplRegistrationController.php
 
 		-
@@ -503,6 +557,162 @@ parameters:
 			identifier: argument.type
 			count: 2
 			path: app/Http/Controllers/Api/V1/Admin/DplRegistrationController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fakultas\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/EligibilityController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/EligibilityController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$updated_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/EligibilityController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/EligibilityController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/EligibilityController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\User\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/EligibilityController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$peserta\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$target_regency\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
+
+		-
+			message: '#^Parameter \#1 \$value of function collect contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
+
+		-
+			message: '#^Parameter \#2 \$mahasiswa of method App\\Services\\GroupSelectionService\:\:assignGroup\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
+
+		-
+			message: '#^Parameter \#2 \$mahasiswa of method App\\Services\\GroupSelectionService\:\:validateGroupAcceptance\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>email" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama_kelompok" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nim" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>phone" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>regency_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>status" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>target_regency" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>username" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ExternalParticipantController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
@@ -541,6 +751,72 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Admin/GeneratorNilaiController.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\InterviewParticipant\:\:\$interview_schedule_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/InterviewController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\InterviewParticipant\:\:\$notes\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/InterviewController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\InterviewParticipant\:\:\$peserta_kkn_id\.$#'
+			identifier: property.notFound
+			count: 7
+			path: app/Http/Controllers/Api/V1/Admin/InterviewController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\InterviewSchedule\:\:\$periode_id\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Http/Controllers/Api/V1/Admin/InterviewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$mahasiswa\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/InterviewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/InterviewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Admin/InterviewController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\Admin\\InterviewController\:\:error\(\) invoked with 2 parameters, 3\-4 required\.$#'
+			identifier: arguments.count
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/InterviewController.php
+
+		-
+			message: '#^Parameter \#2 \$message of method App\\Http\\Controllers\\Api\\V1\\Admin\\InterviewController\:\:error\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/InterviewController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>periode" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/InterviewController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\KKN\\PesertaKkn\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/InterviewController.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$file_name\.$#'
 			identifier: property.notFound
 			count: 1
@@ -569,6 +845,18 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/JenisKknDocumentRequirementController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fakultas_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/KegiatanKknAdminController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$mahasiswa\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/KegiatanKknAdminController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
@@ -613,16 +901,40 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Admin/KonfigurasiPenilaianController.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fakultas_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/LaporanAkhirAdminController.php
+
+		-
 			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, App\\Models\\KKN\\Periode\|null given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/LogbookPdfController.php
 
 		-
+			message: '#^Parameter \#1 \$boolean of function abort_if expects bool, int\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/LokasiController.php
+
+		-
 			message: '#^Parameter \#1 \$array \(list\<array\{component\: ''cache''\|''database''\|''failed_jobs''\|''queue''\|''redis''\|''storage'', type\: ''telegram_alert'', severity\: ''critical'', last_sent_at\: mixed, source\: ''telegram_dedup_cache''\}\|array\{component\: non\-falsy\-string, type\: ''failed_job'', severity\: ''warning'', last_sent_at\: mixed, source\: ''failed_jobs_table'', details\: string, uuid\: mixed\}\>\) of array_values is already a list, call has no effect\.$#'
 			identifier: arrayValues.list
 			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/MonitoringController.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Http/Controllers/Api/V1/Admin/PeriodeController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>jenis_kkn_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PeriodeController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$documentRequirements\.$#'
@@ -649,19 +961,7 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Admin/PeriodeDocumentTemplateController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fakultas\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fakultas_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$gpa\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
@@ -669,55 +969,43 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$mother_name\.$#'
 			identifier: property.notFound
-			count: 2
+			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
 			identifier: property.notFound
-			count: 5
+			count: 4
 			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_kelompok\.$#'
 			identifier: property.notFound
-			count: 2
+			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nik\.$#'
 			identifier: property.notFound
-			count: 2
+			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
 			identifier: property.notFound
-			count: 6
-			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$prodi\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sks_completed\.$#'
-			identifier: property.notFound
-			count: 1
+			count: 5
 			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user\.$#'
 			identifier: property.notFound
-			count: 4
+			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
 
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\PesertaKkn\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
-			count: 2
+			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
 
 		-
@@ -745,10 +1033,58 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
 
 		-
-			message: '#^Relation ''pesertaKkn'' is not found in App\\Models\\KKN\\DokumenPesertaKkn model\.$#'
-			identifier: larastan.relationExistence
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$external_prodi_name\.$#'
+			identifier: property.notFound
 			count: 1
-			path: app/Http/Controllers/Api/V1/Admin/PesertaKknController.php
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknListController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jenisKkn\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknListController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknListController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknListController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$prodi\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknListController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\PesertaKkn\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknListController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>external_prodi_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknListController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknListController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/PesertaKknListController.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>current_phase" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -775,14 +1111,32 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Admin/ProfileChangeRequestController.php
 
 		-
-			message: '#^Argument of an invalid type string supplied for foreach, only iterables are supported\.$#'
-			identifier: foreach.nonIterable
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:lockFields\(\)\.$#'
+			identifier: method.notFound
 			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/ProfileChangeRequestController.php
 
 		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:lockFields\(\)\.$#'
-			identifier: method.notFound
+			message: '#^Empty array passed to foreach\.$#'
+			identifier: foreach.emptyArray
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ProfileChangeRequestController.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ProfileChangeRequestController.php
+
+		-
+			message: '#^Left side of && is always false\.$#'
+			identifier: booleanAnd.leftAlwaysFalse
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ProfileChangeRequestController.php
+
+		-
+			message: '#^Right side of && is always false\.$#'
+			identifier: booleanAnd.rightAlwaysFalse
 			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/ProfileChangeRequestController.php
 
@@ -799,7 +1153,19 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Admin/ProfileLockController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			message: '#^Access to an undefined property App\\Models\\KKN\\ProgramKerja\:\:\$c\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/ProgramKerjaController.php
+
+		-
+			message: '#^Cannot cast App\\Enums\\AbcdStage to string\.$#'
+			identifier: cast.string
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/ProgramKerjaController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$mahasiswa\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/RekapNilaiController.php
@@ -807,12 +1173,6 @@ parameters:
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:kelompokKkn\(\)\.$#'
 			identifier: method.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/Admin/RekapNilaiController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/RekapNilaiController.php
 
@@ -877,6 +1237,54 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Admin/StudentTransferController.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fakultas_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/TransferPesertaController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/TransferPesertaController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jenisKkn\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/TransferPesertaController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama_kelompok\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/TransferPesertaController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/TransferPesertaController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/TransferPesertaController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$requires_interview\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/TransferPesertaController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>nama_kelompok" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/TransferPesertaController.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\KKN\\UserActivityLog\:\:\$attempts\.$#'
 			identifier: property.notFound
 			count: 1
@@ -929,6 +1337,24 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/V1/Admin/UserActivityController.php
+
+		-
+			message: '#^Match expression does not handle remaining value\: mixed$#'
+			identifier: match.unhandled
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/UserController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\WaGatewayAdminController\:\:noContent\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Admin/WaGatewayAdminController.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Controllers\\Api\\V1\\Admin\\WaGatewayAdminController\:\:success\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Admin/WaGatewayAdminController.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$attended\.$#'
@@ -1009,6 +1435,12 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Auth/AuthController.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$username\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Auth/AuthController.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 1
@@ -1023,7 +1455,25 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
-			count: 2
+			count: 3
+			path: app/Http/Controllers/Api/V1/Dosen/DplRegistrationController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Dosen/DplRegistrationController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nidn\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/Api/V1/Dosen/DplRegistrationController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\DplPeriod\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
 			path: app/Http/Controllers/Api/V1/Dosen/DplRegistrationController.php
 
 		-
@@ -1186,24 +1636,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Imports\\EvaluationImport\:\:\$validRows\.$#'
 			identifier: property.notFound
 			count: 2
-			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\KKN\\KonfigurasiPenilaian\:\:\$dpl_weight\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\KKN\\KonfigurasiPenilaian\:\:\$lppm_weight\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\KKN\\KonfigurasiPenilaian\:\:\$village_weight\.$#'
-			identifier: property.notFound
-			count: 1
 			path: app/Http/Controllers/Api/V1/Dpl/EvaluationController.php
 
 		-
@@ -1489,7 +1921,25 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Dpl/ParticipantFeedbackController.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$external_university_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/External/ParticipantController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/External/ParticipantController.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\KKN\\PesertaWorkshop\:\:\$dosen\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/PrivateFileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$dpl\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Api/V1/PrivateFileController.php
@@ -1503,6 +1953,30 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$mahasiswa\.$#'
 			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/PrivateFileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$user_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/PrivateFileController.php
+
+		-
+			message: '#^Access to property \$fakultas_id on an unknown class App\\Models\\Mahasiswa\.$#'
+			identifier: class.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/PrivateFileController.php
+
+		-
+			message: '#^Parameter \#2 \$mahasiswa of method App\\Http\\Controllers\\Api\\V1\\PrivateFileController\:\:facultyAdminCanAccessMahasiswa\(\) expects App\\Models\\Mahasiswa\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/PrivateFileController.php
+
+		-
+			message: '#^Parameter \$mahasiswa of method App\\Http\\Controllers\\Api\\V1\\PrivateFileController\:\:facultyAdminCanAccessMahasiswa\(\) has invalid type App\\Models\\Mahasiswa\.$#'
+			identifier: class.notFound
 			count: 1
 			path: app/Http/Controllers/Api/V1/PrivateFileController.php
 
@@ -1522,6 +1996,12 @@ parameters:
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$birth_place\.$#'
 			identifier: property.notFound
 			count: 3
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$externalProfile\.$#'
+			identifier: property.notFound
+			count: 6
 			path: app/Http/Controllers/Api/V1/ProfileController.php
 
 		-
@@ -1621,7 +2101,43 @@ parameters:
 			path: app/Http/Controllers/Api/V1/ProfileController.php
 
 		-
-			message: '#^Parameter \#3 \$mahasiswa of method App\\Http\\Controllers\\Api\\V1\\ProfileController\:\:applyProfileChanges\(\) expects App\\Models\\KKN\\Mahasiswa\|null, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			message: '#^Call to an undefined method DateTimeInterface\:\:toIso8601String\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 2
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\V1\\ProfileController\:\:error\(\) invoked with 2 parameters, 3\-4 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Parameter \#2 \$message of method App\\Http\\Controllers\\Api\\V1\\ProfileController\:\:error\(\) expects string, int given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/ProfileController.php
+
+		-
+			message: '#^Parameter \#3 \$mahasiswa of method App\\Http\\Controllers\\Api\\V1\\ProfileController\:\:applyProfileChanges\(\) expects App\\Models\\KKN\\Mahasiswa\|null, Illuminate\\Database\\Eloquent\\Model given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Api/V1/ProfileController.php
@@ -1663,60 +2179,6 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Student/CertificateController.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$body\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/Student/ChatController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/Student/ChatController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$is_read\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/Student/ChatController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/Student/ChatController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sender_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/Api/V1/Student/ChatController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/Student/ChatController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, sender\: array\{id\: mixed, name\: mixed, is_self\: bool\}, body\: string, attachment_url\: string\|null, attachment_name\: string\|null, is_read\: bool, created_at\: string\|null\}, Closure\(App\\Models\\KKN\\ChatMessage\)\: array\{id\: int, sender\: array\{id\: mixed, name\: mixed, is_self\: bool\}, body\: string, attachment_url\: string\|null, attachment_name\: string\|null, is_read\: bool, created_at\: string\|null\} given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Http/Controllers/Api/V1/Student/ChatController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\KKN\\ChatConversation\>\:\:transform\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/Api/V1/Student/ChatController.php
-
-		-
-			message: '#^Using nullsafe method call on non\-nullable type Carbon\\Carbon\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/Api/V1/Student/ChatController.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$file_path\.$#'
 			identifier: property.notFound
 			count: 1
@@ -1725,7 +2187,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
-			count: 3
+			count: 4
 			path: app/Http/Controllers/Api/V1/Student/DailyReportController.php
 
 		-
@@ -1754,6 +2216,12 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/DashboardController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$current_phase\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/Api/V1/Student/DashboardController.php
@@ -1813,6 +2281,18 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Student/DashboardController.php
 
 		-
+			message: '#^Using nullsafe property access "\?\-\>placement_is_live" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/DashboardController.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\KKN\\PesertaKkn\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/DashboardController.php
+
+		-
 			message: '#^Call to an undefined method Illuminate\\Http\\Request\:\:validated\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -1843,6 +2323,96 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Student/FinalReportController.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\GroupLeaderVote\:\:\$total\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Student/GroupLeaderVoteController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/GroupLeaderVoteController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/GroupLeaderVoteController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/GroupLeaderVoteController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\InterviewParticipant\:\:\$notes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/InterviewController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\InterviewParticipant\:\:\$processed_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/InterviewController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\InterviewParticipant\:\:\$result\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/InterviewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Student/InterviewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$interview_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/InterviewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$interview_time_end\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/InterviewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$interview_time_start\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/InterviewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$location\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/InterviewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$notes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/InterviewController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$periode\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Student/InterviewController.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\KKN\\InterviewParticipant\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/InterviewController.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 2
@@ -1851,6 +2421,12 @@ parameters:
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:peserta\(\)\.$#'
 			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/IzinController.php
+
+		-
+			message: '#^Parameter \#3 \$parameters of static method Illuminate\\Support\\Facades\\URL\:\:temporarySignedRoute\(\) expects array, App\\Models\\KKN\\IzinMeninggalkan given\.$#'
+			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Api/V1/Student/IzinController.php
 
@@ -1909,9 +2485,21 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$placement_mode\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$regency_name\.$#'
 			identifier: property.notFound
 			count: 2
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$registration_mode\.$#'
+			identifier: property.notFound
+			count: 1
 			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
 
 		-
@@ -1924,6 +2512,18 @@ parameters:
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$village_name\.$#'
 			identifier: property.notFound
 			count: 2
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:placementModeLabel\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:registrationModeLabel\(\)\.$#'
+			identifier: method.notFound
+			count: 1
 			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
 
 		-
@@ -1985,6 +2585,24 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/Api/V1/Student/KknDaftarController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/KknStatementController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/KknStatementController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Controllers/Api/V1/Student/KknStatementController.php
 
 		-
 			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, App\\Models\\KKN\\Periode\|null given\.$#'
@@ -2055,7 +2673,13 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
-			count: 3
+			count: 4
+			path: app/Http/Controllers/Api/V1/Student/RegistrationController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
+			identifier: property.notFound
+			count: 1
 			path: app/Http/Controllers/Api/V1/Student/RegistrationController.php
 
 		-
@@ -2071,9 +2695,15 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Student/RegistrationController.php
 
 		-
+			message: '#^Property App\\Http\\Controllers\\Api\\V1\\Student\\RegistrationController\:\:\$periodContextService is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/RegistrationController.php
+
+		-
 			message: '#^Using nullsafe property access on non\-nullable type mixed\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 13
+			count: 9
 			path: app/Http/Controllers/Api/V1/Student/RegistrationController.php
 
 		-
@@ -2085,7 +2715,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 5
 			path: app/Http/Controllers/Api/V1/Student/RegistrationDocumentController.php
 
 		-
@@ -2097,6 +2727,12 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$template\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/RegistrationDocumentController.php
+
+		-
+			message: '#^Parameter \#1 \$period of method App\\Services\\KKN\\RegistrationDocumentService\:\:validationRules\(\) expects App\\Models\\KKN\\Periode, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
 			count: 1
 			path: app/Http/Controllers/Api/V1/Student/RegistrationDocumentController.php
 
@@ -2113,6 +2749,24 @@ parameters:
 			path: app/Http/Controllers/Api/V1/Student/RegistrationDocumentController.php
 
 		-
+			message: '#^Parameter \#2 \$period of method App\\Services\\KKN\\RegistrationDocumentService\:\:uploadedDocumentFields\(\) expects App\\Models\\KKN\\Periode, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/RegistrationDocumentController.php
+
+		-
+			message: '#^Parameter \#2 \$periode of method App\\Http\\Controllers\\Api\\V1\\Student\\RegistrationDocumentController\:\:normalizeUploadedDocumentFiles\(\) expects App\\Models\\KKN\\Periode, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/RegistrationDocumentController.php
+
+		-
+			message: '#^Parameter \#3 \$period of method App\\Services\\KKN\\RegistrationDocumentService\:\:persistUploadedDocuments\(\) expects App\\Models\\KKN\\Periode, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/Api/V1/Student/RegistrationDocumentController.php
+
+		-
 			message: '#^Using nullsafe property access "\?\-\>template" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -2121,7 +2775,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
-			count: 3
+			count: 5
 			path: app/Http/Controllers/Api/V1/Student/RekapitulasiController.php
 
 		-
@@ -2147,6 +2801,24 @@ parameters:
 			identifier: method.notFound
 			count: 3
 			path: app/Http/Controllers/Api/V1/Student/WorkProgramController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$two_factor_recovery_codes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/TotpController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$two_factor_secret\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/Api/V1/TotpController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>must_change_password" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/Api/V1/TotpController.php
 
 		-
 			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
@@ -2383,6 +3055,12 @@ parameters:
 			path: app/Http/Resources/Api/V1/DatabaseSyncLogResource.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DokumenPesertaResource\:\:\$archived_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DokumenPesertaResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DokumenPesertaResource\:\:\$document_type\.$#'
 			identifier: property.notFound
 			count: 1
@@ -2407,13 +3085,25 @@ parameters:
 			path: app/Http/Resources/Api/V1/DokumenPesertaResource.php
 
 		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DokumenPesertaResource\:\:\$peserta_kkn_id\.$#'
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DokumenPesertaResource\:\:\$is_archived\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Resources/Api/V1/DokumenPesertaResource.php
 
 		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DokumenPesertaResource\:\:\$rejection_reason\.$#'
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DokumenPesertaResource\:\:\$is_verified\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DokumenPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DokumenPesertaResource\:\:\$notes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DokumenPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DokumenPesertaResource\:\:\$peserta_kkn_id\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Resources/Api/V1/DokumenPesertaResource.php
@@ -2431,6 +3121,18 @@ parameters:
 			path: app/Http/Resources/Api/V1/DokumenPesertaResource.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DokumenPesertaResource\:\:\$verified_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DokumenPesertaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DokumenPesertaResource\:\:\$verified_by\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DokumenPesertaResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$alamat\.$#'
 			identifier: property.notFound
 			count: 1
@@ -2438,6 +3140,12 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$birth_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$fakultas_id\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Resources/Api/V1/DosenResource.php
@@ -2540,6 +3248,12 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$pangkat\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/DosenResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\DosenResource\:\:\$pendidikan_terakhir\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Resources/Api/V1/DosenResource.php
@@ -3007,6 +3721,18 @@ parameters:
 			path: app/Http/Resources/Api/V1/JenisKknResource.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\JenisKknResource\:\:\$requires_interview\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/JenisKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\JenisKknResource\:\:\$sort_order\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/JenisKknResource.php
+
+		-
 			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\JenisKknResource\:\:getAttendanceConfig\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -3212,6 +3938,12 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KelompokKknResource\:\:\$ketua_dpl\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/KelompokKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\KelompokKknResource\:\:\$lokasi_manual\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Resources/Api/V1/KelompokKknResource.php
@@ -3511,6 +4243,12 @@ parameters:
 			path: app/Http/Resources/Api/V1/LokasiResource.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:\$is_selected_for_kkn\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/LokasiResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\LokasiResource\:\:\$kelompok\.$#'
 			identifier: property.notFound
 			count: 3
@@ -3565,6 +4303,18 @@ parameters:
 			path: app/Http/Resources/Api/V1/LokasiResource.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$alamat\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$api_email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$batch_year\.$#'
 			identifier: property.notFound
 			count: 1
@@ -3583,9 +4333,39 @@ parameters:
 			path: app/Http/Resources/Api/V1/MahasiswaResource.php
 
 		-
-			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$fakultas_id\.$#'
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$externalUniversity\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$external_faculty_name\.$#'
 			identifier: property.notFound
 			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$external_nim\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$external_prodi_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$external_university_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$fakultas_id\.$#'
+			identifier: property.notFound
+			count: 2
 			path: app/Http/Resources/Api/V1/MahasiswaResource.php
 
 		-
@@ -3619,6 +4399,12 @@ parameters:
 			path: app/Http/Resources/Api/V1/MahasiswaResource.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$marital_status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$mother_name\.$#'
 			identifier: property.notFound
 			count: 1
@@ -3643,7 +4429,31 @@ parameters:
 			path: app/Http/Resources/Api/V1/MahasiswaResource.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$origin_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$parent_permission_path\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$peserta\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$phone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$prodi_id\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Resources/Api/V1/MahasiswaResource.php
@@ -3685,8 +4495,20 @@ parameters:
 			path: app/Http/Resources/Api/V1/MahasiswaResource.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$user\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:\$user_id\.$#'
 			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/MahasiswaResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\MahasiswaResource\:\:relationLoaded\(\)\.$#'
+			identifier: method.notFound
 			count: 2
 			path: app/Http/Resources/Api/V1/MahasiswaResource.php
 
@@ -3889,6 +4711,12 @@ parameters:
 			path: app/Http/Resources/Api/V1/NilaiKknResource.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$academic_year_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$current_phase\.$#'
 			identifier: property.notFound
 			count: 2
@@ -3937,6 +4765,12 @@ parameters:
 			path: app/Http/Resources/Api/V1/PeriodeResource.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$jenis_kkn_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$kuota\.$#'
 			identifier: property.notFound
 			count: 1
@@ -3956,6 +4790,12 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$registration_end\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:\$registration_mode\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Resources/Api/V1/PeriodeResource.php
@@ -3985,15 +4825,27 @@ parameters:
 			path: app/Http/Resources/Api/V1/PeriodeResource.php
 
 		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\PeriodeResource\:\:usesSelfServiceRegistration\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PeriodeResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$approved_at\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Resources/Api/V1/PesertaKknResource.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$dokumen\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$id\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Http/Resources/Api/V1/PesertaKknResource.php
 
 		-
@@ -4004,6 +4856,12 @@ parameters:
 
 		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$kelompok_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$mahasiswa\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Resources/Api/V1/PesertaKknResource.php
@@ -4024,6 +4882,12 @@ parameters:
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$notification_shown\.$#'
 			identifier: property.notFound
 			count: 1
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$periode\.$#'
+			identifier: property.notFound
+			count: 2
 			path: app/Http/Resources/Api/V1/PesertaKknResource.php
 
 		-
@@ -4060,6 +4924,42 @@ parameters:
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:\$status\.$#'
 			identifier: property.notFound
 			count: 1
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\PesertaKknResource\:\:relationLoaded\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>file_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>file_path" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_archived" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/Api/V1/PesertaKknResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_verified" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
 			path: app/Http/Resources/Api/V1/PesertaKknResource.php
 
 		-
@@ -4411,6 +5311,12 @@ parameters:
 			path: app/Http/Resources/Api/V1/SertifikatKknResource.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\TahunAkademikResource\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/TahunAkademikResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\TahunAkademikResource\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 1
@@ -4495,7 +5401,25 @@ parameters:
 			path: app/Http/Resources/Api/V1/UserResource.php
 
 		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$dosen\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
 			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$externalUniversity\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\Api\\V1\\UserResource\:\:\$external_university_id\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Resources/Api/V1/UserResource.php
@@ -4551,6 +5475,12 @@ parameters:
 		-
 			message: '#^Call to an undefined method App\\Http\\Resources\\Api\\V1\\UserResource\:\:getRoleNames\(\)\.$#'
 			identifier: method.notFound
+			count: 1
+			path: app/Http/Resources/Api/V1/UserResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>fakultas_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Resources/Api/V1/UserResource.php
 
@@ -4663,6 +5593,12 @@ parameters:
 			path: app/Http/Resources/Api/V1/WorkshopResource.php
 
 		-
+			message: '#^Trait App\\Http\\Traits\\HasQueryBuilder is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: app/Http/Traits/HasQueryBuilder.php
+
+		-
 			message: '#^Constant App\\Imports\\DosenDataImport\:\:COL_EMAIL is unused\.$#'
 			identifier: classConstant.unused
 			count: 1
@@ -4753,12 +5689,6 @@ parameters:
 			path: app/Jobs/FinalizeMassScoresJob.php
 
 		-
-			message: '#^Access to an undefined property App\\Jobs\\GenerateBulkCertificatesJob\:\:\$periodId\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Jobs/GenerateBulkCertificatesJob.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
 			identifier: property.notFound
 			count: 1
@@ -4767,12 +5697,6 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nim\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Jobs/GenerateBulkCertificatesJob.php
-
-		-
-			message: '#^Call to an undefined method App\\Services\\CertificateService\:\:generateCertificatePdf\(\)\.$#'
-			identifier: method.notFound
 			count: 1
 			path: app/Jobs/GenerateBulkCertificatesJob.php
 
@@ -4871,6 +5795,12 @@ parameters:
 			identifier: new.static
 			count: 1
 			path: app/Models/KKN/EvaluasiDplPeserta.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\InterviewParticipant\:\:\$notes\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Models/KKN/InterviewParticipant.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model&object\{pivot\: Illuminate\\Database\\Eloquent\\Relations\\Pivot\}\:\:\$id\.$#'
@@ -5001,7 +5931,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$placement_mode\.$#'
 			identifier: property.notFound
-			count: 2
+			count: 1
 			path: app/Models/KKN/Periode.php
 
 		-
@@ -5065,6 +5995,12 @@ parameters:
 			path: app/Models/User.php
 
 		-
+			message: '#^Class App\\Models\\App\\Notifications\\Channels\\FcmChannel not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: app/Models/User.php
+
+		-
 			message: '#^Cannot call method format\(\) on string\.$#'
 			identifier: method.nonObject
 			count: 1
@@ -5077,10 +6013,322 @@ parameters:
 			path: app/Notifications/DeadlineReminderNotification.php
 
 		-
+			message: '#^Constant database not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/AccountActivatedNotification.php
+
+		-
+			message: '#^Constant mail not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/AccountActivatedNotification.php
+
+		-
+			message: '#^Constant wa not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/AccountActivatedNotification.php
+
+		-
+			message: '#^Constant database not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/DailyLogbookReminderNotification.php
+
+		-
+			message: '#^Constant mail not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/DailyLogbookReminderNotification.php
+
+		-
+			message: '#^Constant wa not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/DailyLogbookReminderNotification.php
+
+		-
+			message: '#^Constant database not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/DplAssignedToGroupNotification.php
+
+		-
+			message: '#^Constant mail not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/DplAssignedToGroupNotification.php
+
+		-
+			message: '#^Constant wa not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/DplAssignedToGroupNotification.php
+
+		-
+			message: '#^Constant database not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/DplChangedForGroupNotification.php
+
+		-
+			message: '#^Constant mail not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/DplChangedForGroupNotification.php
+
+		-
+			message: '#^Constant wa not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/DplChangedForGroupNotification.php
+
+		-
+			message: '#^Constant database not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/DplRemovedFromPeriodNotification.php
+
+		-
+			message: '#^Constant mail not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/DplRemovedFromPeriodNotification.php
+
+		-
+			message: '#^Constant wa not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/DplRemovedFromPeriodNotification.php
+
+		-
+			message: '#^Constant database not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/GroupPlacementConfirmedNotification.php
+
+		-
+			message: '#^Constant mail not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/GroupPlacementConfirmedNotification.php
+
+		-
+			message: '#^Constant wa not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/GroupPlacementConfirmedNotification.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\InterviewParticipant\:\:\$notes\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Notifications/KKN/InterviewResultNotification.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\InterviewParticipant\:\:\$result\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Notifications/KKN/InterviewResultNotification.php
+
+		-
+			message: '#^Constant database not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/InterviewResultNotification.php
+
+		-
+			message: '#^Constant mail not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/InterviewResultNotification.php
+
+		-
+			message: '#^Constant wa not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/InterviewResultNotification.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\InterviewSchedule\:\:\$interview_date\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Notifications/KKN/InterviewScheduledNotification.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\InterviewSchedule\:\:\$interview_time_end\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Notifications/KKN/InterviewScheduledNotification.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\InterviewSchedule\:\:\$interview_time_start\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Notifications/KKN/InterviewScheduledNotification.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\InterviewSchedule\:\:\$location\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Notifications/KKN/InterviewScheduledNotification.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\KKN\\InterviewSchedule\:\:\$notes\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Notifications/KKN/InterviewScheduledNotification.php
+
+		-
+			message: '#^Constant database not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/InterviewScheduledNotification.php
+
+		-
+			message: '#^Constant mail not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/InterviewScheduledNotification.php
+
+		-
+			message: '#^Constant wa not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/InterviewScheduledNotification.php
+
+		-
+			message: '#^Constant database not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/NewRegistrationForAdminNotification.php
+
+		-
+			message: '#^Constant mail not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/NewRegistrationForAdminNotification.php
+
+		-
+			message: '#^Constant wa not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/NewRegistrationForAdminNotification.php
+
+		-
+			message: '#^Constant database not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/RegistrationApprovedNotification.php
+
+		-
+			message: '#^Constant mail not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/RegistrationApprovedNotification.php
+
+		-
+			message: '#^Constant wa not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/RegistrationApprovedNotification.php
+
+		-
+			message: '#^Constant database not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/RegistrationRejectedNotification.php
+
+		-
+			message: '#^Constant mail not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/RegistrationRejectedNotification.php
+
+		-
+			message: '#^Constant wa not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/RegistrationRejectedNotification.php
+
+		-
+			message: '#^Constant database not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/RegistrationSubmittedNotification.php
+
+		-
+			message: '#^Constant mail not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/RegistrationSubmittedNotification.php
+
+		-
+			message: '#^Constant wa not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/RegistrationSubmittedNotification.php
+
+		-
+			message: '#^Constant database not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/StudentDismissedNotification.php
+
+		-
+			message: '#^Constant mail not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/StudentDismissedNotification.php
+
+		-
+			message: '#^Constant wa not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/StudentDismissedNotification.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
 			identifier: property.notFound
 			count: 2
 			path: app/Notifications/KKN/StudentLeaveRequestedNotification.php
+
+		-
+			message: '#^Constant database not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/StudentLeaveRequestedNotification.php
+
+		-
+			message: '#^Constant mail not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/StudentLeaveRequestedNotification.php
+
+		-
+			message: '#^Constant wa not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/KKN/StudentLeaveRequestedNotification.php
+
+		-
+			message: '#^Constant database not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/ScorePublished.php
+
+		-
+			message: '#^Constant mail not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/ScorePublished.php
+
+		-
+			message: '#^Constant wa not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: app/Notifications/ScorePublished.php
 
 		-
 			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Http\\Request\. Use \-\> instead\.$#'
@@ -5293,7 +6541,7 @@ parameters:
 			path: app/Services/AutomaticGroupPlacementService.php
 
 		-
-			message: '#^Match arm comparison between ''\-'' and ''\-'' is always true\.$#'
+			message: '#^Match arm comparison between ''×'' and ''×'' is always true\.$#'
 			identifier: match.alwaysTrue
 			count: 2
 			path: app/Services/CaptchaService.php
@@ -5481,11 +6729,17 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fakultas\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Services/EligibilityService.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$min_gpa\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/EligibilityService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$min_semester\.$#'
 			identifier: property.notFound
 			count: 1
 			path: app/Services/EligibilityService.php
@@ -5499,7 +6753,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$nama\.$#'
 			identifier: property.notFound
-			count: 2
+			count: 4
 			path: app/Services/EligibilityService.php
 
 		-
@@ -5539,9 +6793,21 @@ parameters:
 			path: app/Services/EligibilityService.php
 
 		-
+			message: '#^Using nullsafe method call on non\-nullable type Illuminate\\Http\\Request\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/EligibilityService.php
+
+		-
 			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 2
+			path: app/Services/EligibilityService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>min_semester" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
 			path: app/Services/EligibilityService.php
 
 		-
@@ -5553,7 +6819,7 @@ parameters:
 		-
 			message: '#^Using nullsafe property access "\?\-\>nama" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 3
+			count: 6
 			path: app/Services/EligibilityService.php
 
 		-
@@ -5671,6 +6937,12 @@ parameters:
 			path: app/Services/GroupSelectionService.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$origin_type\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/GroupSelectionService.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$regency_name\.$#'
 			identifier: property.notFound
 			count: 1
@@ -5771,6 +7043,24 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Services/KKN/AttendanceValidationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$allowed_regencies\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/KKN/AutoPlottingService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/AutoPlottingService.php
+
+		-
+			message: '#^Method App\\Services\\KKN\\AutoPlottingService\:\:assignStudents\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: app/Services/KKN/AutoPlottingService.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
@@ -5935,18 +7225,6 @@ parameters:
 			path: app/Services/KKN/DplParticipantEvaluationService.php
 
 		-
-			message: '#^Call to private method haversineDistance\(\) of class App\\Models\\KKN\\Attendance\.$#'
-			identifier: method.private
-			count: 1
-			path: app/Services/KKN/FraudDetectionService.php
-
-		-
-			message: '#^Method App\\Services\\KKN\\FraudDetectionService\:\:haversineDistance\(\) is unused\.$#'
-			identifier: method.unused
-			count: 1
-			path: app/Services/KKN/FraudDetectionService.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$code\.$#'
 			identifier: property.notFound
 			count: 1
@@ -6055,6 +7333,18 @@ parameters:
 			path: app/Services/KKN/PeriodeGovernanceService.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$is_verified\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/KKN/RegistrationApprovalService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jenisKkn\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Services/KKN/RegistrationApprovalService.php
+
+		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:usesAutomaticPlacementAfterApproval\(\)\.$#'
 			identifier: method.notFound
 			count: 1
@@ -6079,6 +7369,18 @@ parameters:
 			path: app/Services/KKN/RegistrationApprovalService.php
 
 		-
+			message: '#^Parameter \#1 \$mahasiswa of method App\\Services\\KKN\\RegistrationDocumentService\:\:existingDocuments\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/KKN/RegistrationApprovalService.php
+
+		-
+			message: '#^Parameter \#1 \$period of method App\\Services\\KKN\\RegistrationDocumentService\:\:requirementsForPeriod\(\) expects App\\Models\\KKN\\Periode, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/KKN/RegistrationApprovalService.php
+
+		-
 			message: '#^Parameter \#2 \$mahasiswa of method App\\Services\\GroupSelectionService\:\:assignGroup\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model given\.$#'
 			identifier: argument.type
 			count: 1
@@ -6098,6 +7400,12 @@ parameters:
 
 		-
 			message: '#^Parameter \#2 \$mahasiswa of method App\\Services\\GroupSelectionService\:\:validateGroupAcceptance\(\) expects App\\Models\\KKN\\Mahasiswa, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/KKN/RegistrationApprovalService.php
+
+		-
+			message: '#^Parameter \#2 \$period of method App\\Services\\KKN\\RegistrationDocumentService\:\:existingDocuments\(\) expects App\\Models\\KKN\\Periode, Illuminate\\Database\\Eloquent\\Model given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Services/KKN/RegistrationApprovalService.php
@@ -6293,18 +7601,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Services/MasterApi/EntityMapperService.php
-
-		-
-			message: '#^Property App\\Services\\MasterApi\\MasterApiTokenService\:\:\$baseUrl is never read, only written\.$#'
-			identifier: property.onlyWritten
-			count: 1
-			path: app/Services/MasterApi/MasterApiTokenService.php
-
-		-
-			message: '#^Property App\\Services\\MasterApi\\MasterApiTokenService\:\:\$verifySsl is never read, only written\.$#'
-			identifier: property.onlyWritten
-			count: 1
-			path: app/Services/MasterApi/MasterApiTokenService.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
@@ -6679,7 +7975,7 @@ parameters:
 			path: app/Services/WorkshopService.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, user_id\: int\<0, max\>, name\: mixed, email\: mixed, identity_number\: mixed, attendance_status\: ''absent''\|''attended''\|''excused''\|''registered'', certificate_generated\: bool, checked_in_at\: string\|null\}, Closure\(App\\Models\\KKN\\PesertaWorkshop\)\: array\{id\: int, user_id\: int\<0, max\>, name\: mixed, email\: mixed, identity_number\: mixed, attendance_status\: ''absent''\|''attended''\|''excused''\|''registered'', certificate_generated\: bool, checked_in_at\: string\|null\} given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{id\: int, user_id\: int\<0, max\>, name\: mixed, email\: mixed, identity_number\: mixed, attendance_status\: ''absent''\|''attended''\|''excused''\|''registered'', is_passed\: bool, certificate_generated\: bool, registered_at\: string\|null, checked_in_at\: string\|null\}, Closure\(App\\Models\\KKN\\PesertaWorkshop\)\: array\{id\: int, user_id\: int\<0, max\>, name\: mixed, email\: mixed, identity_number\: mixed, attendance_status\: ''absent''\|''attended''\|''excused''\|''registered'', is_passed\: bool, certificate_generated\: bool, registered_at\: string\|null, checked_in_at\: string\|null\} given\.$#'
 			identifier: argument.type
 			count: 1
 			path: app/Services/WorkshopService.php

@@ -63,7 +63,7 @@
         "lint": "pint",
         "lint:fix": "pint --fix",
         "format": "pint --fix",
-        "stan": "APP_ENV=testing APP_URL=http://localhost CORS_ALLOWED_ORIGINS=http://localhost phpstan analyse --memory-limit=512M",
+        "stan": "APP_ENV=testing APP_URL=http://localhost APP_KEY=base64:dGVzdGluZ2tleWZvcmNpcGlwaHBzdGFuMTIzNDU2Nzg5MDEy CORS_ALLOWED_ORIGINS=http://localhost phpstan analyse --memory-limit=512M",
         "stan:baseline": "phpstan analyse --memory-limit=512M --generate-baseline"
     },
     "autoload": {

@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { View, Text, Alert, TextInput, Linking, TouchableOpacity } from 'react-native';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
 import { studentEndpoints } from '@sibermas/api-client';
-import { api } from '@/lib/api';
+import { api, getAuthToken } from '@/lib/api';
 import {
   useTheme,
   useStyles,
@@ -178,6 +179,25 @@ export default function FinalReportScreen() {
     );
   };
 
+  const handleDownloadReport = async () => {
+    if (!report?.id) return;
+
+    try {
+      const token = await getAuthToken();
+      const baseURL = String(api.defaults.baseURL || '').replace(/\/$/, '');
+      const target = `${baseURL}/student/final-report/${report.id}/preview`;
+      const filename = `laporan-akhir-${report.id}.pdf`;
+      const destination = `${FileSystem.cacheDirectory || FileSystem.documentDirectory}${filename}`;
+      const result = await FileSystem.downloadAsync(target, destination, {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      await Linking.openURL(result.uri);
+    } catch (error: any) {
+      Alert.alert('Error', error?.message || 'Gagal mengunduh laporan akhir');
+    }
+  };
+
   function EditableSection({
     title,
     value,
@@ -244,7 +264,7 @@ export default function FinalReportScreen() {
           {report.file_url ? (
             <SecondaryButton
               label="Unduh PDF"
-              onPress={() => Linking.openURL(report.file_url || `${api.defaults.baseURL}/student/final-report/${report.id}/preview`)}
+              onPress={handleDownloadReport}
               style={styles.downloadButton}
             />
           ) : null}

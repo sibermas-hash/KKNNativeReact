@@ -8,10 +8,15 @@ import type { User } from '@sibermas/shared-types';
 import { toast } from 'sonner';
 import { RefreshCw } from 'lucide-react';
 
-type GoogleOtpUser = User & { roles?: any[] };
+type GoogleOtpRole = string | { name?: unknown };
+type GoogleOtpUser = Omit<User, 'roles'> & { roles?: GoogleOtpRole[] | null };
 
 function dashboardFor(user: GoogleOtpUser): string {
-  const roles = Array.isArray(user.roles) ? user.roles.map((role) => typeof role === 'string' ? role : (role as any).name).filter(Boolean) : [];
+  const roles = Array.isArray(user.roles)
+    ? user.roles
+      .map((role) => (typeof role === 'string' ? role : String(role.name ?? '')))
+      .filter(Boolean)
+    : [];
   if (roles.some((role) => ['superadmin', 'super-admin', 'admin', 'faculty_admin', 'operator'].includes(String(role)))) return '/admin';
   if (roles.some((role) => ['lecturer', 'dosen', 'dpl'].includes(String(role)))) return '/dosen';
   if (roles.some((role) => ['student', 'mahasiswa'].includes(String(role)))) return '/mahasiswa';
@@ -33,9 +38,15 @@ export default function GoogleOtpPage(): React.JSX.Element {
     setLoading(true);
     try {
       const res = await api.post('/auth/google/otp-verify', { challenge_token: challenge, code: otp }) as { user: GoogleOtpUser };
-      setUser(res.user);
+      const normalizedUser = {
+        ...res.user,
+        roles: Array.isArray(res.user.roles)
+          ? res.user.roles.map((role) => (typeof role === 'string' ? role : String(role.name ?? ''))).filter(Boolean)
+          : [],
+      } as User;
+      setUser(normalizedUser);
       toast.success('Login Google berhasil.');
-      router.replace(dashboardFor(res.user));
+      router.replace(dashboardFor(normalizedUser));
     } catch {
       toast.error('OTP salah/kedaluwarsa.');
     } finally { setLoading(false); }

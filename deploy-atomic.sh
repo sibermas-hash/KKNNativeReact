@@ -166,6 +166,21 @@ if ! grep -qE '^APP_KEY=base64:[A-Za-z0-9+/=]{44,}' .env; then
   fi
 fi
 
+# Durable storage must live outside release dirs so rollback/prune never deletes
+# uploaded/public files or logs. Keep framework cache/session/view dirs per
+# release, but share storage/app/public + logs across atomic releases.
+echo "  Linking durable Laravel storage..."
+mkdir -p \
+  "${SHARED_DIR}/storage/app/public" \
+  "${SHARED_DIR}/storage/logs" \
+  "${RELEASE_DIR}/apps/api/storage/app" \
+  "${RELEASE_DIR}/apps/api/storage/framework/cache" \
+  "${RELEASE_DIR}/apps/api/storage/framework/sessions" \
+  "${RELEASE_DIR}/apps/api/storage/framework/views"
+rm -rf "${RELEASE_DIR}/apps/api/storage/app/public" "${RELEASE_DIR}/apps/api/storage/logs"
+ln -sfn "${SHARED_DIR}/storage/app/public" "${RELEASE_DIR}/apps/api/storage/app/public"
+ln -sfn "${SHARED_DIR}/storage/logs" "${RELEASE_DIR}/apps/api/storage/logs"
+
 # Migrasi DB (opt-out via SKIP_MIGRATE=1 untuk hot-fix yang tidak perlu migrate).
 if [ "${SKIP_MIGRATE}" != "1" ]; then
   php artisan migrate --force

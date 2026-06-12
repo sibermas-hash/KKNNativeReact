@@ -2,7 +2,7 @@
 
 import { useQuery, keepPreviousData, useMutation, useQueryClient } from '@tanstack/react-query';
 import { rawApi } from '@/lib/api';
-import { Download, Loader2, Search, Users, Plus, Upload, ChevronLeft, ChevronRight, X, FileUp, Calendar, Building2, Hash, FileText, MapPin } from 'lucide-react';
+import { Download, Loader2, Search, Users, Plus, Upload, ChevronLeft, ChevronRight, X, FileUp, Building2, MapPin } from 'lucide-react';
 import { useState, useRef } from 'react';
 
 type Periode = { id: number; name?: string; periode?: number; is_active?: boolean };

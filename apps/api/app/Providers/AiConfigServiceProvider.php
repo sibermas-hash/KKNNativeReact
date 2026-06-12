@@ -145,9 +145,20 @@ class AiConfigServiceProvider extends ServiceProvider
      */
     private function loadAiRuntimeConfig(): void
     {
-        $overrides = Cache::remember(self::RUNTIME_CONFIG_CACHE_KEY, 3600, function (): array {
-            return $this->buildRuntimeConfig();
-        });
+        try {
+            $overrides = Cache::remember(self::RUNTIME_CONFIG_CACHE_KEY, 3600, function (): array {
+                return $this->buildRuntimeConfig();
+            });
+        } catch (\Throwable) {
+            // Artisan bootstrap (route:cache/config:cache) must not hard-fail when
+            // the configured cache backend is unavailable/missing locally (e.g.
+            // redis store without phpredis). Fall back to uncached DB reads.
+            try {
+                $overrides = $this->buildRuntimeConfig();
+            } catch (\Throwable) {
+                $overrides = [];
+            }
+        }
 
         if ($overrides !== []) {
             config($overrides);

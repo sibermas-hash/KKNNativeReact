@@ -1,7 +1,7 @@
 'use client';
 
 import { Virtuoso } from 'react-virtuoso';
-import { useCallback, forwardRef } from 'react';
+import { useCallback } from 'react';
 
 interface VirtualListProps<T> {
   data: T[];
@@ -48,11 +48,6 @@ export function VirtualList<T>({
   className = '',
   overscan = 5,
 }: VirtualListProps<T>): React.JSX.Element {
-  const itemContent = useCallback(
-    (index: number) => renderItem(data[index], index),
-    [data, renderItem]
-  );
-
   const handleEndReached = useCallback(() => {
     if (onEndReached && !isLoadingMore) {
       onEndReached();

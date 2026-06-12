@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { driver } from 'driver.js';
 import 'driver.js/dist/driver.css';
-import { AlertCircle, BadgeCheck, Camera, ChevronDown, GraduationCap, IdCard, Info, LayoutDashboard, Lock, LogOut, Medal, PencilLine, RefreshCw, Save, User as UserIcon } from 'lucide-react';
+import { AlertCircle, BadgeCheck, Camera, ChevronDown, GraduationCap, IdCard, Info, LayoutDashboard, Lock, Medal, PencilLine, RefreshCw, Save, User as UserIcon } from 'lucide-react';
 import type { User } from '@sibermas/shared-types';
 import { useTheme } from '@/components/ui/theme-provider';
 import { THEMES, THEME_KEYS, THEME_TYPOGRAPHY, SOFT_CLASS, PRIMARY_CLASS, MUTED_TEXT_CLASS, ACCENT_TEXT_CLASS, FIELD_CLASS, type ThemeKey, type ThemeDefinition } from '@/lib/theme-config';
@@ -356,7 +356,7 @@ function StatusRow({ label, complete, subtitle, typography }: { label: string; c
   );
 }
 
-function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, surfaceClass, isLecturer, profileComplete, profileStatusKnown, isEditing, pendingRequest, onThemeChange, onDashboard, onToggleEdit, onLogout }: ProfileHeaderProps) {
+function ProfileHeader({ refTarget, themeRef, theme, typography, themeConfig, surfaceClass, isLecturer, profileComplete, profileStatusKnown, isEditing, pendingRequest, onThemeChange, onDashboard, onToggleEdit, onLogout: _onLogout }: ProfileHeaderProps) {
   const dashboardDisabled = profileStatusKnown && !profileComplete;
 
   return (
@@ -489,8 +489,8 @@ export default function ProfilePage(): React.JSX.Element {
   const [isEditing, setIsEditing] = useState(false);
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
-  const [reverseGeocoding, setReverseGeocoding] = useState(false);
-  const [forwardGeocoding, setForwardGeocoding] = useState(false);
+  const [_reverseGeocoding, setReverseGeocoding] = useState(false);
+  const [_forwardGeocoding, setForwardGeocoding] = useState(false);
   const lastMapSyncedQueryRef = useRef('');
   const tutorialTargets = useRef<Record<TutorialTarget, HTMLElement | null>>({ intro: null, theme: null, avatar: null, status: null, form: null });
   const rootRef = useRef<HTMLDivElement>(null);
@@ -531,7 +531,7 @@ export default function ProfilePage(): React.JSX.Element {
     setTheme(nextTheme);
   };
 
-  const handleAddressPointChange = async (point: { lat: number; lng: number }) => {
+  const _handleAddressPointChange = async (point: { lat: number; lng: number }) => {
     setValue('address_lat', point.lat, { shouldDirty: true });
     setValue('address_lng', point.lng, { shouldDirty: true });
     setReverseGeocoding(true);
@@ -570,7 +570,7 @@ export default function ProfilePage(): React.JSX.Element {
     }
   };
 
-  const syncMapFromAddress = async () => {
+  const _syncMapFromAddress = async () => {
     const queries = buildAddressQueries({
       fullAddress: addressValue,
       village: villageValue,

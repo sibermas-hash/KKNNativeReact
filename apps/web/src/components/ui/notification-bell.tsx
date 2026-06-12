@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Popover from '@radix-ui/react-popover';
-import { Bell, BellRing, CheckCheck, AlertTriangle, CheckCircle2, Info, ArrowRight, Clock3 } from 'lucide-react';
+import { Bell, BellRing, CheckCheck, AlertTriangle, CheckCircle2, Info, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -358,7 +358,7 @@ function PriorityIcon({ priority }: { priority?: string }): React.JSX.Element {
   return <Icon className={`h-4 w-4 shrink-0 mt-0.5 ${meta.cls}`} />;
 }
 
-function notificationView(n: NotificationItem): { title: string; badge?: string } {
+function _notificationView(n: NotificationItem): { title: string; badge?: string } {
   const rawTitle = (n.title || 'Notifikasi').trim();
   const rawMessage = (n.message || '').trim();
   const haystack = rawTitle + ' ' + rawMessage;

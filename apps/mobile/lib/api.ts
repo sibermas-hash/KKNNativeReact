@@ -20,11 +20,11 @@ if (__DEV__) {
   console.log('[SIBERMAS] API_URL resolved to:', API_URL);
 }
 
-async function getToken(): Promise<string | null> {
+export async function getAuthToken(): Promise<string | null> {
   return SecureStore.getItemAsync('auth_token');
 }
 
-export const api = createMobileClient(getToken, API_URL);
+export const api = createMobileClient(getAuthToken, API_URL);
 
 export async function storeToken(token: string) {
   await SecureStore.setItemAsync('auth_token', token);

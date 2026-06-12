@@ -37,7 +37,7 @@ interface QueryPersistProps {
 export function QueryPersist({ queryClient }: QueryPersistProps): null {
   useEffect(() => {
     const [unsubscribe] = persistQueryClient({
-      queryClient: queryClient as any,
+      queryClient: queryClient as unknown as Parameters<typeof persistQueryClient>[0]['queryClient'],
       persister: idbPersister,
       maxAge: 1000 * 60 * 60 * 24, // 24 hours
       buster: 'admin-dashboard-cache-v3', // cache buster — change to invalidate all persisted data

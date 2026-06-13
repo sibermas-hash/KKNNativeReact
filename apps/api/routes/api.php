@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\NotificationStreamController;
 use App\Http\Controllers\Api\PublicDataController;
 use App\Http\Controllers\Api\RegistrationController;
 use App\Http\Controllers\Api\V1\Admin\CountdownSettingController;
+use App\Http\Controllers\Api\V1\Admin\IndonesiaRegionController;
 use App\Http\Controllers\Api\V1\Auth\AuthController;
 use App\Http\Controllers\Api\V1\PeriodContextController;
 use App\Http\Controllers\Api\V1\PrivateFileController;
@@ -109,6 +110,16 @@ Route::prefix('v1')->group(function () {
     Route::get('/period-context', [PeriodContextController::class, 'show'])
         ->middleware('auth:sanctum')
         ->name('api.v1.period-context');
+
+    // Region master — authenticated dropdowns for profile/location forms
+    Route::prefix('regions')
+        ->middleware('auth:sanctum')
+        ->group(function () {
+            Route::get('/provinsi', [IndonesiaRegionController::class, 'provinces'])->name('api.v1.regions.provinces');
+            Route::get('/kabupaten', [IndonesiaRegionController::class, 'regencies'])->name('api.v1.regions.regencies');
+            Route::get('/kecamatan', [IndonesiaRegionController::class, 'districts'])->name('api.v1.regions.districts');
+            Route::get('/desa', [IndonesiaRegionController::class, 'villages'])->name('api.v1.regions.villages');
+        });
 
     // Profile — authenticated
     Route::prefix('profile')

@@ -17,6 +17,7 @@ use App\Models\ProfileChangeRequest;
 use App\Models\User;
 use App\Services\ActivityLogger;
 use App\Services\AvatarValidationService;
+use App\Services\Region\NominatimGeocodingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -149,10 +150,6 @@ class ProfileController extends Controller
             'address_district_name' => ['nullable', 'string', 'max:150'],
             'address_regency_name' => ['nullable', 'string', 'max:150'],
             'address_postal_code' => ['nullable', 'string', 'max:10'],
-            'address_lat' => ['nullable', 'numeric', 'between:-90,90'],
-            'address_lng' => ['nullable', 'numeric', 'between:-180,180'],
-            'address_verified' => ['nullable', 'boolean'],
-            'address_verified_at' => ['nullable'],
             // Mahasiswa biodata
             'nik' => ['nullable', 'regex:/^\d{16}$/'],
             'mother_name' => ['nullable', 'string', 'max:150'],
@@ -177,10 +174,30 @@ class ProfileController extends Controller
             'dosen_alamat' => ['nullable', 'string', 'max:500'],
         ]);
 
-        // Logistics-style rule: written address is the source of truth; map pin
-        // is operational metadata. Save coordinate/geocoding fields immediately
-        // even after profile is complete, otherwise user corrections disappear
-        // while waiting for approval.
+        $addressInputChanged = collect(['address', 'address_village_name', 'address_district_name', 'address_regency_name', 'address_postal_code'])
+            ->contains(fn (string $field) => array_key_exists($field, $validated));
+
+        if ($addressInputChanged) {
+            $addressPayload = [
+                'address' => $validated['address'] ?? $user->address,
+                'address_village_name' => $validated['address_village_name'] ?? $user->address_village_name,
+                'address_district_name' => $validated['address_district_name'] ?? $user->address_district_name,
+                'address_regency_name' => $validated['address_regency_name'] ?? $user->address_regency_name,
+                'address_postal_code' => $validated['address_postal_code'] ?? $user->address_postal_code,
+            ];
+            $coords = $this->geocodeAddressPayload($addressPayload);
+            if ($coords) {
+                $validated['address_lat'] = $coords['latitude'];
+                $validated['address_lng'] = $coords['longitude'];
+                $validated['address_verified_at'] = now();
+            } else {
+                $validated['address_lat'] = null;
+                $validated['address_lng'] = null;
+                $validated['address_verified_at'] = null;
+            }
+        }
+
+        // Address is written by the user; coordinates are backend-only metadata.
         $mapFields = [
             'address', 'address_village_name', 'address_district_name', 'address_regency_name',
             'address_postal_code', 'address_lat', 'address_lng', 'address_verified_at',
@@ -343,6 +360,33 @@ class ProfileController extends Controller
         ]);
 
         return $this->success(null, 'Permintaan perubahan profil berhasil dikirim. Menunggu persetujuan superadmin.', 202);
+    }
+
+    /** @param array<string, mixed> $payload @return array{latitude: float, longitude: float}|null */
+    private function geocodeAddressPayload(array $payload): ?array
+    {
+        $query = collect([
+            $payload['address'] ?? null,
+            $payload['address_village_name'] ?? null,
+            $payload['address_district_name'] ?? null,
+            $payload['address_regency_name'] ?? null,
+            $payload['address_postal_code'] ?? null,
+            'Indonesia',
+        ])->filter(fn ($value) => filled($value))->implode(', ');
+
+        if (blank($query)) {
+            return null;
+        }
+
+        $result = app(NominatimGeocodingService::class)->search($query);
+        if (! $result) {
+            return null;
+        }
+
+        return [
+            'latitude' => $result['latitude'],
+            'longitude' => $result['longitude'],
+        ];
     }
 
     private function valuesDiffer(mixed $oldValue, mixed $newValue): bool

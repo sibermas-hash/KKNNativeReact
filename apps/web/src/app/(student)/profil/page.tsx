@@ -98,11 +98,24 @@ interface ProfileSidebarProps {
   onAvatarChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
+type WilayahOption = { code: string; name: string };
+
 interface StudentAddressSectionProps {
   register: ReturnType<typeof useForm<UpdateProfileFormData>>['register'];
   errors: ReturnType<typeof useForm<UpdateProfileFormData>>['formState']['errors'];
   isEditing: boolean;
   typography: TypographyKeys;
+  provinceCode: string;
+  regencyCode: string;
+  districtCode: string;
+  provinces: WilayahOption[];
+  regencies: WilayahOption[];
+  districts: WilayahOption[];
+  villages: WilayahOption[];
+  setValue: ReturnType<typeof useForm<UpdateProfileFormData>>['setValue'];
+  setProvinceCode: (value: string) => void;
+  setRegencyCode: (value: string) => void;
+  setDistrictCode: (value: string) => void;
 }
 
 const FIELD_LABELS: Record<string, string> = {

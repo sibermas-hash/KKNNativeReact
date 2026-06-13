@@ -83,12 +83,33 @@ class PermissionSeeder extends Seeder
             $superadmin->syncPermissions($permissions);
         }
 
-        // Admin: semua kecuali manage-settings (sengaja dibatasi —
-        // SystemSetting + AI key rotation hanya superadmin).
+        // Admin (LPPM Internal): operational KKN only.
+        // TIDAK dapat: manage-settings, manage-users, manage-database-sync,
+        // manage-announcements (semua ini superadmin-only, route pun
+        // di-guard role:superadmin atau policy return false).
         $admin = Role::where('name', 'admin')->first();
         if ($admin) {
-            $adminPermissions = array_filter($permissions, fn ($p) => $p !== 'manage-settings');
-            $admin->syncPermissions($adminPermissions);
+            $admin->syncPermissions([
+                'access-admin-panel',
+                'manage-master-data',
+                'view-grades',
+                'manage-grades',
+                'view-participants',
+                'manage-participants',
+                'transfer-students',
+                'manage-groups',
+                'manage-dpl',
+                'manageDplAssignment',
+                'manage-content',
+                'view-audit-logs',
+                'manage-reports',
+                'view-reports',
+                'manage-workshops',
+                'manage-kkn-operations',
+                'manage-eligibility',
+                'manage-requirements',
+                'sync-data',
+            ]);
         }
 
         // Faculty Admin: READ-ONLY. Lihat data mahasiswa/nilai/kelompok di

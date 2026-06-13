@@ -120,6 +120,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('manage-grades', fn ($user) => $adminPolicy->manageGrades($user));
         Gate::define('view-grades', fn ($user) => $adminPolicy->viewGrades($user));
         Gate::define('manage-content', fn ($user) => $adminPolicy->manageContent($user));
+        Gate::define('manage-announcements', fn ($user) => $adminPolicy->manageAnnouncements($user));
         Gate::define('view-audit-logs', fn ($user) => $adminPolicy->viewAuditLogs($user));
         Gate::define('manage-dpl', fn ($user) => $adminPolicy->manageDplAssignment($user));
         Gate::define('manage-reports', fn ($user) => $adminPolicy->manageReports($user));

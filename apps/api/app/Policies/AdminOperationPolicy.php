@@ -46,13 +46,7 @@ class AdminOperationPolicy extends BasePolicy
 
     public function syncData(User $user): bool
     {
-        $bypass = $this->superAdminBypass($user, 'syncData');
-
-        if ($bypass !== null) {
-            return $bypass;
-        }
-
-        return $user->hasRole('admin');
+        return $this->superAdminBypass($user, 'syncData') ?? false;
     }
 
     public function transferStudents(User $user): bool
@@ -87,13 +81,7 @@ class AdminOperationPolicy extends BasePolicy
 
     public function manageUsers(User $user): bool
     {
-        $bypass = $this->superAdminBypass($user, 'manageUsers');
-
-        if ($bypass !== null) {
-            return $bypass;
-        }
-
-        return $user->hasRole('admin');
+        return $this->superAdminBypass($user, 'manageUsers') ?? false;
     }
 
     public function manageGrades(User $user): bool
@@ -128,13 +116,7 @@ class AdminOperationPolicy extends BasePolicy
 
     public function viewAuditLogs(User $user): bool
     {
-        $bypass = $this->superAdminBypass($user, 'viewAuditLogs');
-
-        if ($bypass !== null) {
-            return $bypass;
-        }
-
-        return $user->hasRole('admin');
+        return $this->superAdminBypass($user, 'viewAuditLogs') ?? false;
     }
 
     public function manageAnnouncements(User $user): bool
@@ -180,6 +162,6 @@ class AdminOperationPolicy extends BasePolicy
 
     public function manageDatabaseSync(User $user): bool
     {
-        return $user->hasAnyRole(['superadmin', 'admin']);
+        return $this->superAdminBypass($user, 'manageDatabaseSync') ?? false;
     }
 }

@@ -57,7 +57,7 @@ it('faculty_admin role has read-only permissions needed for admin panel', functi
     }
 });
 
-it('admin role has all permissions except manage-settings', function () {
+it('admin role has operational permissions but not superadmin-only permissions', function () {
     $admin = Role::where('name', 'admin')->first();
     expect($admin)->not->toBeNull();
 
@@ -66,7 +66,9 @@ it('admin role has all permissions except manage-settings', function () {
     expect($permissions)->toContain('manage-participants');
     expect($permissions)->toContain('view-participants');
     expect($permissions)->toContain('view-grades');
-    expect($permissions)->not->toContain('manage-settings');
+    foreach (['manage-settings', 'manage-users', 'manage-database-sync', 'view-audit-logs', 'sync-data'] as $forbidden) {
+        expect($permissions)->not->toContain($forbidden);
+    }
 });
 
 it('superadmin role has all permissions including manage-settings', function () {

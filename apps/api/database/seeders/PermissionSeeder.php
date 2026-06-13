@@ -103,14 +103,12 @@ class PermissionSeeder extends Seeder
                 'manage-dpl',
                 'manageDplAssignment',
                 'manage-content',
-                'view-audit-logs',
                 'manage-reports',
                 'view-reports',
                 'manage-workshops',
                 'manage-kkn-operations',
                 'manage-eligibility',
                 'manage-requirements',
-                'sync-data',
             ]);
         }
 

@@ -120,6 +120,14 @@ class AiConfigServiceProvider extends ServiceProvider
      */
     private function bootstrapAiConfig(): void
     {
+        // Local dev/test builds must boot fast and independently from runtime
+        // system_settings reads. In localbuild the app often talks to production
+        // through an SSH tunnel; querying settings during every HTTP bootstrap
+        // can stall unrelated routes (captcha/login) when the tunnel/DB is slow.
+        if ($this->app->environment(['localbuild', 'testing'])) {
+            return;
+        }
+
         if (! $this->isDatabaseReady()) {
             return;
         }

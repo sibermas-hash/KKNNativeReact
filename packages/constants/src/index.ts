@@ -86,6 +86,7 @@ export const ROLE_REDIRECT_MAP: Record<string, string> = {
   superadmin: '/admin',
   admin: '/admin',
   faculty_admin: '/admin',
+  external_lppm_admin: '/external/dashboard',
   dosen: '/dosen',
   dpl: '/dosen',
   student: '/mahasiswa',

@@ -30,7 +30,6 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | 
 }
 
 const PUBLIC_PATHS = ['/', '/login', '/lupa-kata-sandi', '/atur-ulang-kata-sandi', '/ganti-password', '/berita', '/lokasi', '/unduhan', '/verify-certificate', '/phase-blocked', '/pengumuman', '/support'];
-const PROTECTED_PREFIXES = ['/admin', '/external', '/mahasiswa', '/dosen', '/profil', '/ganti-password', '/notifikasi'];
 const POPUP_PATHS = ['/', '/berita', '/lokasi', '/unduhan', '/pengumuman', '/support'];
 
 export function Providers({ children }: { children: ReactNode }): React.JSX.Element {
@@ -59,22 +58,23 @@ export function Providers({ children }: { children: ReactNode }): React.JSX.Elem
       return;
     }
 
-    const path = window.location.pathname;
-    const isProtected = PROTECTED_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
-    // Only probe auth on protected routes. Probing /auth/user on /login while
-    // anonymous creates expected 401 noise in DevTools and confuses users.
-    // HttpOnly cookies are still sent automatically when protected pages load.
-    if (isProtected) {
-      useAuthStore.getState().fetchUser().then(() => {
-        if (useAuthStore.getState().isAuthenticated) {
-          usePeriodStore.getState().fetchPeriodContext();
-        } else {
-          usePeriodStore.setState({ isLoading: false, hasFetched: true });
-        }
-      });
-    } else {
-      resetAuthState();
-    }
+    // Selalu probe `/auth/user` di awal load. HttpOnly cookies otomatis
+    // terkirim — server reply 200 + user payload untuk authenticated, atau
+    // 401 + null untuk anonymous. Token tidak pernah dipegang JS; middleware
+    // server-side yang authorize route protected.
+    //
+    // Penting: JANGAN `resetAuthState()` di public route. Itu yang bikin
+    // user complain "kok login lagi padahal tidak log out" — padahal
+    // cookie HttpOnly masih ada, tapi store di-clear paksa setiap kali
+    // navigasi ke `/`, `/berita`, dll. Navbar jadi tidak tahu user sudah
+    // login, dan tetap tampilkan tombol "Login".
+    void useAuthStore.getState().fetchUser().then(() => {
+      if (useAuthStore.getState().isAuthenticated) {
+        usePeriodStore.getState().fetchPeriodContext();
+      } else {
+        usePeriodStore.setState({ isLoading: false, hasFetched: true });
+      }
+    });
 
     const handleLogout = () => {
       resetAuthState();

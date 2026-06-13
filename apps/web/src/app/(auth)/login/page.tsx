@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { loginSchema, type LoginFormData } from '@sibermas/schemas';
 import { useAuthStore, setAuthToken } from '@/stores';
 import type { User } from '@sibermas/shared-types';
-import { api, apiUrl } from '@/lib/api';
+import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { Lock, Eye, EyeOff, RefreshCw, User as UserIcon, AlertCircle, ArrowRight, Home } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -463,7 +463,7 @@ export default function LoginPage(): React.JSX.Element {
 
               <div className="pt-2">
                 <a
-                  href={apiUrl('/auth/google/redirect')}
+                  href="/api/v1/auth/google/redirect"
                   className="w-full h-12 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm hover:-translate-y-0.5 active:scale-[0.98]"
                 >
                   <svg aria-hidden="true" viewBox="0 0 24 24" className="h-[18px] w-[18px]">

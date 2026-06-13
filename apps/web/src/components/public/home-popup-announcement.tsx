@@ -113,7 +113,6 @@ export function PopupAnnouncement(): React.JSX.Element | null {
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm data-[state=open]:animate-in data-[state=open]:fade-in-0" />
         <Dialog.Content
-          aria-describedby="popup-announcement-body"
           className="fixed left-1/2 top-1/2 z-50 w-[min(92vw,480px)] max-h-[85vh] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl bg-white shadow-2xl data-[state=open]:animate-in data-[state=open]:zoom-in-95"
         >
           {data.image_url && (
@@ -146,11 +145,18 @@ export function PopupAnnouncement(): React.JSX.Element | null {
               </Dialog.Close>
             </div>
 
-            {data.excerpt && (
-              <p id="popup-announcement-body" className="text-sm text-slate-600 leading-relaxed">
-                {data.excerpt}
-              </p>
-            )}
+            {/* Dialog.Description is required by Radix for a11y; rendered
+                unconditionally with a sr-only fallback when no excerpt. */}
+            <Dialog.Description
+              id="popup-announcement-body"
+              className={
+                data.excerpt
+                  ? 'text-sm text-slate-600 leading-relaxed'
+                  : 'sr-only'
+              }
+            >
+              {data.excerpt || data.title}
+            </Dialog.Description>
 
             {data.popup_until && (
               <p className="flex items-center gap-1 text-[11px] text-slate-400">

@@ -143,7 +143,10 @@ const nextConfig: NextConfig = {
   },
 
   async rewrites() {
-    const apiUrl = process.env.SERVER_API_URL || process.env.NEXT_PUBLIC_API_URL;
+    const publicApiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const apiUrl = process.env.SERVER_API_URL
+      || (publicApiUrl && /^https?:\/\//i.test(publicApiUrl) ? publicApiUrl : undefined)
+      || (process.env.NODE_ENV !== 'production' ? 'http://localhost:8000/api/v1' : undefined);
     const rewrites = [
       ...dashboardRouteAliases,
       ...operationalRouteAliases,

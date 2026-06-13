@@ -1,0 +1,155 @@
+import type { Metadata } from 'next';
+import Link from 'next/link';
+import { fetchApiStrict } from '@/lib/server-api';
+import { Navbar } from '@/components/public/navbar';
+import { Footer } from '@/components/public/footer';
+import { Megaphone } from 'lucide-react';
+
+export const revalidate = 300;
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: 'Pengumuman — SIBERMAS UIN SAIZU',
+    description:
+      'Pengumuman resmi seputar pelaksanaan KKN UIN Prof. K.H. Saifuddin Zuhri Purwokerto.',
+  };
+}
+
+interface Announcement {
+  id: number;
+  title: string;
+  slug?: string;
+  excerpt?: string;
+  content?: string;
+  image_url?: string | null;
+  category?: string;
+  published_at?: string;
+  popup_until?: string | null;
+}
+
+const formatDate = (dateStr?: string): string => {
+  if (!dateStr) return '';
+  try {
+    return new Intl.DateTimeFormat('id-ID', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    }).format(new Date(dateStr));
+  } catch {
+    return '';
+  }
+};
+
+export default async function AnnouncementsListPage() {
+  const result = await fetchApiStrict<{
+    success: boolean;
+    data: Announcement[];
+  }>('/public/pengumuman');
+  const announcements: Announcement[] =
+    result.kind === 'ok' ? result.data?.data || [] : [];
+  const isServiceDown = result.kind === 'service_unavailable';
+
+  return (
+    <div className="min-h-screen bg-white text-emerald-950">
+      <Navbar />
+
+      <main className="mx-auto max-w-7xl px-6 py-14 lg:px-8">
+        <div className="max-w-3xl">
+          <p className="text-xs font-semibold uppercase tracking-widest text-amber-600">
+            Warta Resmi
+          </p>
+          <h1 className="mt-3 flex items-center gap-3 text-3xl font-display font-bold tracking-tight text-emerald-950 sm:text-4xl">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-600 sm:h-12 sm:w-12">
+              <Megaphone size={22} />
+            </span>
+            Pengumuman
+          </h1>
+          <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
+            Informasi resmi dari LPPM UIN Prof. K.H. Saifuddin Zuhri Purwokerto
+            terkait jadwal, ketentuan, dan pengumuman penting pelaksanaan KKN.
+          </p>
+        </div>
+
+        <div className="mt-10">
+          {isServiceDown ? (
+            <div className="rounded-[1.6rem] border border-dashed border-amber-300 bg-amber-50/60 p-8 text-center">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700">
+                Gagal Memuat Pengumuman
+              </p>
+              <p className="mt-3 text-sm leading-7 text-slate-600">
+                Sistem pengumuman sedang mengalami gangguan. Silakan coba muat
+                ulang halaman beberapa saat kemudian.
+              </p>
+              <div className="mt-4">
+                <Link
+                  href="/pengumuman"
+                  className="inline-block rounded-xl bg-amber-600 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700"
+                >
+                  Muat Ulang
+                </Link>
+              </div>
+            </div>
+          ) : announcements.length === 0 ? (
+            <div className="rounded-[1.6rem] border border-dashed border-emerald-200 bg-emerald-50/60 p-8 text-center">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                Belum ada pengumuman
+              </p>
+              <p className="mt-3 text-sm leading-7 text-slate-600">
+                Saat ini belum ada pengumuman yang dipublikasikan. Pengumuman
+                terbaru akan muncul di halaman ini.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {announcements.map((item) => (
+                <Link
+                  key={item.id}
+                  href={`/pengumuman/${item.slug || ''}`}
+                  className="group flex flex-col overflow-hidden rounded-[1.6rem] border border-emerald-100 bg-white shadow-[0_18px_45px_rgba(6,78,59,0.05)] transition-all hover:shadow-[0_24px_60px_rgba(6,78,59,0.1)] no-underline"
+                >
+                  {item.image_url ? (
+                    <div className="aspect-[16/10] overflow-hidden bg-emerald-50">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.image_url}
+                        alt={item.title}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex aspect-[16/10] items-center justify-center bg-gradient-to-br from-amber-50 to-amber-100">
+                      <span className="text-4xl" aria-hidden="true">📣</span>
+                    </div>
+                  )}
+                  <div className="flex flex-1 flex-col space-y-3 p-5">
+                    <div className="flex flex-wrap items-center gap-2 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-amber-700">
+                      <span className="rounded-full bg-amber-50 px-2.5 py-1">
+                        {item.category || 'Pengumuman'}
+                      </span>
+                      <span className="text-slate-500 normal-case tracking-normal font-medium">
+                        {formatDate(item.published_at)}
+                      </span>
+                    </div>
+                    <h3 className="text-base font-display font-bold leading-snug text-emerald-950 group-hover:text-emerald-700 transition-colors">
+                      {item.title}
+                    </h3>
+                    <p className="line-clamp-3 text-sm leading-6 text-slate-600">
+                      {item.excerpt ||
+                        'Baca selengkapnya untuk mengetahui rincian pengumuman.'}
+                    </p>
+                    <span className="mt-auto pt-2 text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700 group-hover:text-emerald-800">
+                      Baca selengkapnya →
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}

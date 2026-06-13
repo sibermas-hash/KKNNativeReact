@@ -5,6 +5,13 @@ import { sanitizeHtml } from '@/lib/sanitize';
 import { notFound } from 'next/navigation';
 
 export const revalidate = 1800;
+// Audit fix (2026-06-13): pakai `dynamicParams = false` agar slug yang
+// tidak ada di `generateStaticParams` (mis. 'foo-bar-baz') mengembalikan
+// 404 beneran. Tanpa flag ini, App Router fall through ke SSR untuk
+// unknown params → `notFound()` dipanggil, tapi response tetap HTTP 200
+// dengan x-nextjs-prerender: 1 (lihat issue Next.js #60005). SEO dan
+// monitoring 404 jadi kacau.
+export const dynamicParams = false;
 
 interface Announcement {
   id: number;

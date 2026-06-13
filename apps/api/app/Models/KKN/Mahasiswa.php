@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models\KKN;
 
 use App\Models\User;
+use Illuminate\Contracts\Encryption\DecryptException;
 use App\Traits\HasBlindIndex;
 use App\Traits\HasManuallyEditedFields;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -208,9 +209,9 @@ class Mahasiswa extends Model
     public function getProfileCompletionAttribute(): int
     {
         $fields = ['nik', 'mother_name', 'birth_date', 'health_certificate_path', 'parent_permission_path'];
-        $filled = collect($fields)->filter(fn ($f) => ! empty($this->{$f}))->count();
+        $filled = collect($fields)->filter(fn ($f) => $this->safeFilledAttribute($f))->count();
 
-        $hasPhone = $this->relationLoaded('user') && ! empty($this->user?->phone);
+        $hasPhone = $this->relationLoaded('user') && $this->safeUserPhoneFilled();
         if ($hasPhone) {
             $filled++;
         }
@@ -218,5 +219,23 @@ class Mahasiswa extends Model
         $totalFields = count($fields) + ($this->relationLoaded('user') ? 1 : 0);
 
         return $totalFields > 0 ? (int) (($filled / $totalFields) * 100) : 0;
+    }
+
+    private function safeFilledAttribute(string $field): bool
+    {
+        try {
+            return ! empty($this->{$field});
+        } catch (DecryptException) {
+            return false;
+        }
+    }
+
+    private function safeUserPhoneFilled(): bool
+    {
+        try {
+            return ! empty($this->user?->phone);
+        } catch (DecryptException) {
+            return false;
+        }
     }
 }

@@ -6,6 +6,7 @@ namespace App\Http\Resources\Api\V1;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Contracts\Encryption\DecryptException;
 
 class UserResource extends JsonResource
 {
@@ -17,12 +18,12 @@ class UserResource extends JsonResource
             'name' => $this->name,
             'email' => $this->email,
             'avatar_url' => $this->avatar ? asset('storage/'.$this->avatar) : null,
-            'phone' => $this->phone,
-            'address' => $this->address,
-            'address_village_name' => $this->address_village_name,
-            'address_district_name' => $this->address_district_name,
-            'address_regency_name' => $this->address_regency_name,
-            'address_postal_code' => $this->address_postal_code,
+            'phone' => $this->safeAttr('phone'),
+            'address' => $this->safeAttr('address'),
+            'address_village_name' => $this->safeAttr('address_village_name'),
+            'address_district_name' => $this->safeAttr('address_district_name'),
+            'address_regency_name' => $this->safeAttr('address_regency_name'),
+            'address_postal_code' => $this->safeAttr('address_postal_code'),
             'address_province_code' => $this->address_province_code,
             'address_regency_code' => $this->address_regency_code,
             'address_district_code' => $this->address_district_code,
@@ -51,5 +52,14 @@ class UserResource extends JsonResource
             'dosen' => new DosenResource($this->whenLoaded('dosen')),
             'created_at' => $this->created_at?->toIso8601String(),
         ];
+    }
+
+    private function safeAttr(string $key): mixed
+    {
+        try {
+            return $this->{$key};
+        } catch (DecryptException) {
+            return null;
+        }
     }
 }

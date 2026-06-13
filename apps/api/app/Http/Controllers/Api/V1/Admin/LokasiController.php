@@ -10,14 +10,16 @@ use App\Http\Resources\Api\V1\LokasiResource;
 use App\Http\Traits\ApiResponse;
 use App\Models\KKN\KelompokKkn;
 use App\Models\KKN\Lokasi;
+use App\Models\Region\IndonesiaDistrict;
+use App\Models\Region\IndonesiaRegency;
+use App\Models\Region\IndonesiaVillage;
+use App\Services\Region\NominatimGeocodingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class LokasiController extends Controller
 {
     use ApiResponse;
-
-    private const TARGET_REGENCIES = ['Banyumas', 'Banjarnegara', 'Kebumen', 'Purbalingga', 'Pangandaran'];
 
     private function facultyScopeId(): ?int
     {
@@ -45,8 +47,12 @@ class LokasiController extends Controller
     public function index(Request $request): JsonResponse
     {
         $lokasi = Lokasi::with('fakultas')
-            ->whereIn('regency_name', self::TARGET_REGENCIES)
+            ->when($request->input('province_code'), fn ($q, $code) => $q->where('province_code', $code))
+            ->when($request->input('regency_code'), fn ($q, $code) => $q->where('regency_code', $code))
+            ->when($request->input('district_code'), fn ($q, $code) => $q->where('district_code', $code))
             ->when($request->input('search'), fn ($q, $s) => $q->where('village_name', 'like', '%'.QueryHelper::escapeLike($s).'%'))
+            ->orderBy('regency_name')
+            ->orderBy('district_name')
             ->orderBy('village_name');
 
         $this->scopeByFaculty($lokasi);
@@ -66,8 +72,22 @@ class LokasiController extends Controller
             'is_selected_for_kkn' => ['required', 'boolean'],
         ]);
 
+        if ((bool) $validated['is_selected_for_kkn']) {
+            $missingCoordinates = Lokasi::query()
+                ->whereIn('id', $validated['ids'])
+                ->where(fn ($q) => $q->whereNull('latitude')->orWhereNull('longitude'))
+                ->count();
+
+            if ($missingCoordinates > 0) {
+                return $this->error(
+                    'LOCATION_COORDINATES_REQUIRED',
+                    "{$missingCoordinates} lokasi belum punya latitude/longitude. Lengkapi koordinat sebelum diceklist untuk KKN.",
+                    422,
+                );
+            }
+        }
+
         $updated = Lokasi::whereIn('id', $validated['ids'])
-            ->whereIn('regency_name', self::TARGET_REGENCIES)
             ->update(['is_selected_for_kkn' => (bool) $validated['is_selected_for_kkn']]);
 
         return $this->success(['updated' => $updated], 'Pilihan lokasi berhasil disimpan.');
@@ -77,8 +97,39 @@ class LokasiController extends Controller
     {
         $this->denyFacultyAdminMutation();
 
+        $validated = $this->validatedPayload($request);
+        $validated = $this->ensureCoordinates($validated);
+
+        return $this->created(new LokasiResource(Lokasi::create($validated)), 'Lokasi berhasil dibuat.');
+    }
+
+    public function update(Request $request, Lokasi $lokasi): JsonResponse
+    {
+        $this->denyFacultyAdminMutation();
+
+        $payload = $this->validatedPayload($request, false);
+        $nextLatitude = array_key_exists('latitude', $payload) ? $payload['latitude'] : $lokasi->latitude;
+        $nextLongitude = array_key_exists('longitude', $payload) ? $payload['longitude'] : $lokasi->longitude;
+
+        if ($lokasi->is_selected_for_kkn && (blank($nextLatitude) || blank($nextLongitude))) {
+            return $this->error('LOCATION_COORDINATES_REQUIRED', 'Lokasi terpilih untuk KKN wajib punya latitude/longitude.', 422);
+        }
+
+        $lokasi->update($payload);
+
+        return $this->success(new LokasiResource($lokasi->refresh()), 'Lokasi berhasil diperbarui.');
+    }
+
+    /** @return array<string, mixed> */
+    private function validatedPayload(Request $request, bool $creating = true): array
+    {
+        $required = $creating ? 'required_without:village_code' : 'sometimes';
         $validated = $request->validate([
-            'village_name' => ['required', 'string', 'max:255'],
+            'province_code' => ['nullable', 'string', 'size:2', 'exists:indonesia_provinces,code'],
+            'regency_code' => ['nullable', 'string', 'size:5', 'exists:indonesia_regencies,code'],
+            'district_code' => ['nullable', 'string', 'size:8', 'exists:indonesia_districts,code'],
+            'village_code' => ['nullable', 'string', 'max:13', 'exists:indonesia_villages,code'],
+            'village_name' => [$required, 'string', 'max:255'],
             'district_name' => ['nullable', 'string', 'max:255'],
             'regency_name' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string'],
@@ -89,26 +140,43 @@ class LokasiController extends Controller
             'is_selected_for_kkn' => ['sometimes', 'boolean'],
         ]);
 
-        return $this->created(new LokasiResource(Lokasi::create($validated)), 'Lokasi berhasil dibuat.');
+        if (! empty($validated['village_code'])) {
+            $village = IndonesiaVillage::query()->findOrFail($validated['village_code']);
+            $district = IndonesiaDistrict::query()->findOrFail($village->district_code);
+            $regency = IndonesiaRegency::query()->findOrFail($district->regency_code);
+
+            $validated['village_name'] = $village->name;
+            $validated['district_code'] = $district->code;
+            $validated['district_name'] = $district->name;
+            $validated['regency_code'] = $regency->code;
+            $validated['regency_name'] = $regency->name;
+            $validated['province_code'] = $regency->province_code;
+        }
+
+        return $validated;
     }
 
-    public function update(Request $request, Lokasi $lokasi): JsonResponse
+    /** @param array<string, mixed> $payload @return array<string, mixed> */
+    private function ensureCoordinates(array $payload): array
     {
-        $this->denyFacultyAdminMutation();
+        if (filled($payload['latitude'] ?? null) && filled($payload['longitude'] ?? null)) {
+            return $payload;
+        }
 
-        $lokasi->update($request->validate([
-            'village_name' => ['sometimes', 'string', 'max:255'],
-            'district_name' => ['nullable', 'string', 'max:255'],
-            'regency_name' => ['nullable', 'string', 'max:255'],
-            'address' => ['nullable', 'string'],
-            'latitude' => ['nullable', 'numeric'],
-            'longitude' => ['nullable', 'numeric'],
-            'capacity' => ['nullable', 'integer', 'min:0'],
-            'fakultas_id' => ['nullable', 'exists:fakultas,id'],
-            'is_selected_for_kkn' => ['sometimes', 'boolean'],
-        ]));
+        $query = collect([
+            $payload['village_name'] ?? null,
+            $payload['district_name'] ?? null,
+            $payload['regency_name'] ?? null,
+            'Indonesia',
+        ])->filter(fn ($value) => filled($value))->implode(', ');
 
-        return $this->success(new LokasiResource($lokasi->refresh()), 'Lokasi berhasil diperbarui.');
+        $result = app(NominatimGeocodingService::class)->search($query);
+        abort_if(! $result, 422, 'Koordinat wajib. Sistem tidak menemukan latitude/longitude otomatis; isi manual.');
+
+        $payload['latitude'] = $result['latitude'];
+        $payload['longitude'] = $result['longitude'];
+
+        return $payload;
     }
 
     public function destroy(Lokasi $lokasi): JsonResponse
@@ -136,6 +204,33 @@ class LokasiController extends Controller
         } catch (\Throwable $e) {
             return $this->error('VALIDATION_ERROR', 'Gagal menghapus: '.$e->getMessage(), 422);
         }
+    }
+
+    public function geocode(Lokasi $lokasi, NominatimGeocodingService $geocoding): JsonResponse
+    {
+        $this->denyFacultyAdminMutation();
+
+        $query = collect([
+            $lokasi->village_name,
+            $lokasi->district_name,
+            $lokasi->regency_name,
+            'Indonesia',
+        ])->filter(fn ($value) => filled($value))->implode(', ');
+
+        $result = $geocoding->search($query);
+        if (! $result) {
+            return $this->error('GEOCODING_NOT_FOUND', 'Koordinat tidak ditemukan. Isi latitude/longitude manual atau cek nama wilayah.', 422);
+        }
+
+        $lokasi->update([
+            'latitude' => $result['latitude'],
+            'longitude' => $result['longitude'],
+        ]);
+
+        return $this->success([
+            'location' => new LokasiResource($lokasi->refresh()),
+            'geocoding' => $result,
+        ], 'Koordinat lokasi berhasil ditemukan.');
     }
 
     public function import(Request $request): JsonResponse

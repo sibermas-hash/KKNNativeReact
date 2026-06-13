@@ -29,6 +29,7 @@ use App\Http\Controllers\Api\V1\Admin\ExternalUniversityController;
 use App\Http\Controllers\Api\V1\Admin\FakultasController;
 use App\Http\Controllers\Api\V1\Admin\GeneratorNilaiController;
 use App\Http\Controllers\Api\V1\Admin\GradeController;
+use App\Http\Controllers\Api\V1\Admin\IndonesiaRegionController;
 use App\Http\Controllers\Api\V1\Admin\InterviewController;
 use App\Http\Controllers\Api\V1\Admin\JenisKknController;
 use App\Http\Controllers\Api\V1\Admin\JenisKknDocumentRequirementController;
@@ -113,7 +114,12 @@ Route::prefix('admin')
             Route::patch('/prodi/{prodi}', [ProdiController::class, 'update']);
             Route::delete('/prodi/{prodi}', [ProdiController::class, 'destroy']);
         });
+        Route::get('/wilayah/provinsi', [IndonesiaRegionController::class, 'provinces']);
+        Route::get('/wilayah/kabupaten', [IndonesiaRegionController::class, 'regencies']);
+        Route::get('/wilayah/kecamatan', [IndonesiaRegionController::class, 'districts']);
+        Route::get('/wilayah/desa', [IndonesiaRegionController::class, 'villages']);
         Route::post('/lokasi/selection', [LokasiController::class, 'updateSelection']);
+        Route::post('/lokasi/{lokasi}/geocode', [LokasiController::class, 'geocode']);
         Route::apiResource('lokasi', LokasiController::class)->only(['index', 'store', 'update', 'destroy']);
         Route::post('/lokasi/import', [LokasiController::class, 'import']);
         Route::get('/lokasi/export', [LokasiController::class, 'export']);
@@ -286,11 +292,12 @@ Route::prefix('admin')
         Route::get('/grade-reports/export-ledger', [RekapNilaiController::class, 'exportLedger']);
         Route::get('/grade-reports/certificate-progress', [RekapNilaiController::class, 'getCertificateProgress']);
         Route::get('/grade-reports/finalisasi-progres', [RekapNilaiController::class, 'getFinalizeProgress']);
-        Route::get('/grade-reports/{score}/certificate-word', [RekapNilaiController::class, 'downloadWordCertificate']);
-        Route::get('/grade-reports/{score}/sertifikat', [RekapNilaiController::class, 'downloadCertificate']);
-        Route::get('/grade-reports/{score}/preview-sertifikat', [RekapNilaiController::class, 'previewCertificate']);
-        Route::post('/grade-reports/sertifikat-massal', [RekapNilaiController::class, 'bulkCertificates']);
-        Route::get('/grade-reports/bulk-download', [RekapNilaiController::class, 'bulkDownload']);
+        Route::middleware('role:superadmin')->group(function () {
+            Route::get('/grade-reports/{score}/sertifikat', [RekapNilaiController::class, 'downloadCertificate']);
+            Route::get('/grade-reports/{score}/preview-sertifikat', [RekapNilaiController::class, 'previewCertificate']);
+            Route::post('/grade-reports/sertifikat-massal', [RekapNilaiController::class, 'bulkCertificates']);
+            Route::get('/grade-reports/bulk-download', [RekapNilaiController::class, 'bulkDownload']);
+        });
 
         Route::get('/laporan/harian', [KegiatanKknAdminController::class, 'index']);
         Route::get('/laporan/harian/{dailyReport}', [KegiatanKknAdminController::class, 'show']);
@@ -349,7 +356,7 @@ Route::prefix('admin')
 
         // AI Playground (superadmin only — PRD_AI_PLAYGROUND.md)
         // Certificate Management (Admin/Superadmin)
-        Route::prefix('sertifikat')->group(function () {
+        Route::middleware('role:superadmin')->prefix('sertifikat')->group(function () {
             Route::get('/', [CertificateManagementController::class, 'index']);
             Route::post('/', [CertificateManagementController::class, 'update']);
             Route::post('/upload-background', [CertificateManagementController::class, 'uploadBackground']);

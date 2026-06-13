@@ -14,8 +14,11 @@ class LokasiResource extends JsonResource
         return [
             'id' => $this->id,
             'province_id' => $this->province_id,
+            'province_code' => $this->province_code,
             'regency_id' => $this->regency_id,
+            'regency_code' => $this->regency_code,
             'district_id' => $this->district_id,
+            'district_code' => $this->district_code,
             'regency_name' => $this->regency_name,
             'district_name' => $this->district_name,
             'village_code' => $this->village_code,

@@ -17,8 +17,11 @@ import {
 type Lokasi = {
   id: number;
   province_id?: number | null;
+  province_code?: string | null;
   regency_id?: number | null;
+  regency_code?: string | null;
   district_id?: number | null;
+  district_code?: string | null;
   regency_name?: string | null;
   district_name?: string | null;
   village_code?: string | null;
@@ -43,25 +46,30 @@ type Pagination = {
 };
 
 type Fakultas = { id: number; name?: string; nama?: string };
+type WilayahOption = { code: string; name: string; province_code?: string; regency_code?: string; district_code?: string };
 
 type LokasiForm = {
+  province_code: string;
+  regency_code: string;
+  district_code: string;
+  village_code: string;
   village_name: string;
   district_name: string;
   regency_name: string;
   address: string;
-  latitude: string;
-  longitude: string;
   capacity: string;
   fakultas_id: string;
 };
 
 const EMPTY_FORM: LokasiForm = {
+  province_code: '',
+  regency_code: '',
+  district_code: '',
+  village_code: '',
   village_name: '',
   district_name: '',
   regency_name: '',
   address: '',
-  latitude: '',
-  longitude: '',
   capacity: '',
   fakultas_id: '',
 };
@@ -102,7 +110,6 @@ export default function AdminLokasiPage(): React.JSX.Element {
       const items = body.data ?? [];
       const byRegency: Record<string, number> = {};
       const districtSet: Record<string, Set<string>> = {};
-      let withCoord = 0;
       let withCapacity = 0;
       let selectedDesa = 0;
       let selectedCapacity = 0;
@@ -111,7 +118,6 @@ export default function AdminLokasiPage(): React.JSX.Element {
         byRegency[r] = (byRegency[r] ?? 0) + 1;
         if (!districtSet[r]) districtSet[r] = new Set();
         if (l.district_name) districtSet[r].add(l.district_name);
-        if (l.latitude && l.longitude) withCoord++;
         if ((l.capacity ?? 0) > 0) withCapacity++;
         if (l.is_selected_for_kkn) { selectedDesa++; selectedCapacity += l.capacity ?? 0; }
       });
@@ -120,7 +126,6 @@ export default function AdminLokasiPage(): React.JSX.Element {
         byRegency,
         kecamatanByRegency: Object.fromEntries(Object.entries(districtSet).map(([k, v]) => [k, v.size])),
         regencyCount: Object.keys(byRegency).length,
-        withCoord,
         withCapacity,
         selectedDesa,
         selectedCapacity,
@@ -160,15 +165,37 @@ export default function AdminLokasiPage(): React.JSX.Element {
     },
   });
 
+  const provincesQ = useQuery({
+    queryKey: ['admin', 'wilayah', 'provinsi'],
+    queryFn: async () => ((await rawApi.get('/admin/wilayah/provinsi')).data as { data?: WilayahOption[] }).data ?? [],
+  });
+  const regenciesQ = useQuery({
+    queryKey: ['admin', 'wilayah', 'kabupaten', form.province_code],
+    queryFn: async () => ((await rawApi.get('/admin/wilayah/kabupaten', { params: { province_code: form.province_code } })).data as { data?: WilayahOption[] }).data ?? [],
+    enabled: Boolean(form.province_code),
+  });
+  const districtsQ = useQuery({
+    queryKey: ['admin', 'wilayah', 'kecamatan', form.regency_code],
+    queryFn: async () => ((await rawApi.get('/admin/wilayah/kecamatan', { params: { regency_code: form.regency_code } })).data as { data?: WilayahOption[] }).data ?? [],
+    enabled: Boolean(form.regency_code),
+  });
+  const villagesQ = useQuery({
+    queryKey: ['admin', 'wilayah', 'desa', form.district_code],
+    queryFn: async () => ((await rawApi.get('/admin/wilayah/desa', { params: { district_code: form.district_code } })).data as { data?: WilayahOption[] }).data ?? [],
+    enabled: Boolean(form.district_code),
+  });
+
   const save = useMutation({
     mutationFn: async () => {
       const payload: Record<string, unknown> = {
+        province_code: form.province_code || null,
+        regency_code: form.regency_code || null,
+        district_code: form.district_code || null,
+        village_code: form.village_code || null,
         village_name: form.village_name,
         district_name: form.district_name || null,
         regency_name: form.regency_name || null,
         address: form.address || null,
-        latitude: form.latitude ? Number(form.latitude) : null,
-        longitude: form.longitude ? Number(form.longitude) : null,
         capacity: form.capacity ? Number(form.capacity) : null,
         fakultas_id: form.fakultas_id ? Number(form.fakultas_id) : null,
       };
@@ -247,12 +274,14 @@ export default function AdminLokasiPage(): React.JSX.Element {
   const openEdit = (l: Lokasi) => {
     setEditing(l);
     setForm({
+      province_code: l.province_code ?? '',
+      regency_code: l.regency_code ?? '',
+      district_code: l.district_code ?? '',
+      village_code: l.village_code ?? '',
       village_name: l.village_name ?? '',
       district_name: l.district_name ?? '',
       regency_name: l.regency_name ?? '',
       address: l.address ?? '',
-      latitude: l.latitude != null ? String(l.latitude) : '',
-      longitude: l.longitude != null ? String(l.longitude) : '',
       capacity: l.capacity != null ? String(l.capacity) : '',
       fakultas_id: l.fakultas_id != null ? String(l.fakultas_id) : '',
     });
@@ -276,7 +305,7 @@ export default function AdminLokasiPage(): React.JSX.Element {
       toast.error('Data belum tersedia');
       return;
     }
-    const headers = ['id', 'diceklist', 'village_name', 'district_name', 'regency_name', 'address', 'latitude', 'longitude', 'capacity', 'fakultas'];
+    const headers = ['id', 'diceklist', 'village_name', 'district_name', 'regency_name', 'address', 'capacity', 'fakultas'];
     const rows = all.map((l) => [
       l.id,
       l.is_selected_for_kkn ? 'YA' : 'TIDAK',
@@ -284,8 +313,6 @@ export default function AdminLokasiPage(): React.JSX.Element {
       l.district_name ?? '',
       l.regency_name ?? '',
       (l.address ?? '').replace(/\n/g, ' '),
-      l.latitude ?? '',
-      l.longitude ?? '',
       l.capacity ?? '',
       l.faculty?.nama ?? l.faculty?.name ?? '',
     ]);
@@ -444,11 +471,7 @@ export default function AdminLokasiPage(): React.JSX.Element {
           <option value={50}>50/page</option>
           <option value={100}>100/page</option>
         </select>
-        {(stats.data?.withCoord ?? 0) === 0 && (
-          <span className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded px-2 py-1">
-            ⚠ Semua lokasi belum punya koordinat lat/lng
-          </span>
-        )}
+
       </div>
 
       {/* Tree checklist */}
@@ -500,34 +523,30 @@ export default function AdminLokasiPage(): React.JSX.Element {
               }}
               className="p-5 space-y-4"
             >
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <Field label="Nama Desa *">
-                  <input
-                    required
-                    value={form.village_name}
-                    onChange={(e) => setForm({ ...form, village_name: e.target.value })}
-                    className="h-10 w-full rounded-lg border px-3 text-sm"
-                  />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <Field label="Provinsi *">
+                  <select value={form.province_code} onChange={(e) => setForm({ ...form, province_code: e.target.value, regency_code: '', district_code: '', village_code: '', regency_name: '', district_name: '', village_name: '' })} className="h-10 w-full rounded-lg border px-3 text-sm" required>
+                    <option value="">Pilih provinsi</option>
+                    {(provincesQ.data ?? []).map((x) => <option key={x.code} value={x.code}>{x.name}</option>)}
+                  </select>
                 </Field>
-                <Field label="Kecamatan">
-                  <input
-                    value={form.district_name}
-                    onChange={(e) => setForm({ ...form, district_name: e.target.value })}
-                    className="h-10 w-full rounded-lg border px-3 text-sm"
-                  />
+                <Field label="Kabupaten/Kota *">
+                  <select value={form.regency_code} onChange={(e) => { const opt = (regenciesQ.data ?? []).find((x) => x.code === e.target.value); setForm({ ...form, regency_code: e.target.value, district_code: '', village_code: '', regency_name: opt?.name ?? '', district_name: '', village_name: '' }); }} className="h-10 w-full rounded-lg border px-3 text-sm" required disabled={!form.province_code}>
+                    <option value="">Pilih kab/kota</option>
+                    {(regenciesQ.data ?? []).map((x) => <option key={x.code} value={x.code}>{x.name}</option>)}
+                  </select>
                 </Field>
-                <Field label="Kabupaten">
-                  <input
-                    list="regency-list"
-                    value={form.regency_name}
-                    onChange={(e) => setForm({ ...form, regency_name: e.target.value })}
-                    className="h-10 w-full rounded-lg border px-3 text-sm"
-                  />
-                  <datalist id="regency-list">
-                    {regencies.map((r) => (
-                      <option key={r} value={r} />
-                    ))}
-                  </datalist>
+                <Field label="Kecamatan *">
+                  <select value={form.district_code} onChange={(e) => { const opt = (districtsQ.data ?? []).find((x) => x.code === e.target.value); setForm({ ...form, district_code: e.target.value, village_code: '', district_name: opt?.name ?? '', village_name: '' }); }} className="h-10 w-full rounded-lg border px-3 text-sm" required disabled={!form.regency_code}>
+                    <option value="">Pilih kecamatan</option>
+                    {(districtsQ.data ?? []).map((x) => <option key={x.code} value={x.code}>{x.name}</option>)}
+                  </select>
+                </Field>
+                <Field label="Desa/Kelurahan *">
+                  <select value={form.village_code} onChange={(e) => { const opt = (villagesQ.data ?? []).find((x) => x.code === e.target.value); setForm({ ...form, village_code: e.target.value, village_name: opt?.name ?? '' }); }} className="h-10 w-full rounded-lg border px-3 text-sm" required disabled={!form.district_code}>
+                    <option value="">Pilih desa/kelurahan</option>
+                    {(villagesQ.data ?? []).map((x) => <option key={x.code} value={x.code}>{x.name}</option>)}
+                  </select>
                 </Field>
               </div>
               <Field label="Alamat Lengkap">
@@ -538,27 +557,7 @@ export default function AdminLokasiPage(): React.JSX.Element {
                   className="w-full rounded-lg border px-3 py-2 text-sm"
                 />
               </Field>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                <Field label="Latitude">
-                  <input
-                    type="number"
-                    step="any"
-                    value={form.latitude}
-                    onChange={(e) => setForm({ ...form, latitude: e.target.value })}
-                    className="h-10 w-full rounded-lg border px-3 text-sm"
-                    placeholder="-7.4225"
-                  />
-                </Field>
-                <Field label="Longitude">
-                  <input
-                    type="number"
-                    step="any"
-                    value={form.longitude}
-                    onChange={(e) => setForm({ ...form, longitude: e.target.value })}
-                    className="h-10 w-full rounded-lg border px-3 text-sm"
-                    placeholder="109.2422"
-                  />
-                </Field>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <Field label="Kapasitas (mahasiswa)">
                   <input
                     type="number"

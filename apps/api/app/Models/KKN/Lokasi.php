@@ -18,8 +18,11 @@ class Lokasi extends Model
 
     protected $fillable = [
         'province_id',
+        'province_code',
         'regency_id',
+        'regency_code',
         'district_id',
+        'district_code',
         'regency_name',
         'district_name',
         'village_code',

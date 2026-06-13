@@ -93,6 +93,7 @@ export default async function LandingPage() {
   const featuredDownloads = data.featuredDownloads || [];
   const stats = data.stats;
   const visi = data.aboutContent?.visi;
+  const heroVideoUrl = process.env.NEXT_PUBLIC_HERO_VIDEO_URL || '/videos/Video.mp4';
 
   return (
     <div className="min-h-screen bg-white text-emerald-950" data-app-version="20260602">
@@ -123,7 +124,7 @@ export default async function LandingPage() {
               preload="none"
               poster="/images/uin-saizu_1712224471.webp"
             >
-              <source src="/videos/Video.mp4" type="video/mp4" />
+              <source src={heroVideoUrl} type="video/mp4" />
             </video>
           </div>
         }

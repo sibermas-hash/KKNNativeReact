@@ -233,6 +233,93 @@ class CertificateService
     }
 
     /**
+     * Generate PDF from an already-issued certificate record.
+     * Used by admin/student download paths where source-of-truth is sertifikat_kkn.
+     */
+    public function generateForIssuedCertificate(SertifikatKkn $certificate)
+    {
+        $certificate->loadMissing(['periode', 'kelompok.lokasi', 'user']);
+        if ($certificate->isRevoked()) {
+            throw new RuntimeException('Sertifikat telah dibatalkan.');
+        }
+
+        $periode = $certificate->periode;
+        if (! $periode) {
+            throw new RuntimeException('Data periode sertifikat tidak ditemukan');
+        }
+
+        $configService = app(KonfigurasiSertifikatService::class);
+        $configs = $configService->getAllForPeriode((int) $periode->id);
+        $body = $configs['cert_body'] ?? 'Telah mengikuti Kuliah Kerja Nyata (KKN) periode [Periode] di lokasi [Lokasi].';
+        $body = str_replace(
+            ['[Nama]', '[NIM]', '[Fakultas]', '[Prodi]', '[Kelompok]', '[Lokasi]', '[Periode]', '[StudentName]', '[LOKASI]', '[PERIODE]'],
+            [
+                $certificate->nama_mahasiswa ?? '-',
+                $certificate->nim ?? '-',
+                $certificate->nama_fakultas ?? '-',
+                $certificate->nama_prodi ?? '-',
+                $certificate->kelompok?->nama ?? '-',
+                $certificate->lokasi_kkn ?? '-',
+                $periode->name ?? '-',
+                $certificate->nama_mahasiswa ?? '-',
+                $certificate->lokasi_kkn ?? '-',
+                $periode->name ?? '-',
+            ],
+            $body
+        );
+
+        $bgFile = public_path('images/cert-bg-default.png');
+        $bgPath = $configs['cert_background'] ?? null;
+        if ($bgPath && Storage::disk('public')->exists($bgPath)) {
+            $bgFile = storage_path('app/public/'.$bgPath);
+        }
+        $bgBase64 = $this->imageDataUri($bgFile);
+
+        $layout = $this->decodeCertificateLayout($configs['cert_layout_json'] ?? null);
+        $photoBase64 = '';
+        $avatarPath = $certificate->user?->avatar;
+        if (is_string($avatarPath) && $avatarPath !== '') {
+            $photoBase64 = $this->publicStorageImageDataUri($avatarPath);
+        }
+        $signerLeftSignature = $this->publicStorageImageDataUri($configs['cert_signer_left_signature'] ?? null);
+        $signerRightSignature = $this->publicStorageImageDataUri($configs['cert_signer_right_signature'] ?? null);
+        $stampImage = $this->publicStorageImageDataUri($configs['cert_stamp'] ?? null);
+
+        $verificationToken = $certificate->verification_token ?: self::generateIssuedCertificateToken($certificate);
+        $verificationUrl = url("/verify-certificate/{$verificationToken}");
+        try {
+            $renderer = new ImageRenderer(new RendererStyle(150), new SvgImageBackEnd);
+            $qrBase64 = 'data:image/svg+xml;base64,'.base64_encode((new QrWriter($renderer))->writeString($verificationUrl));
+        } catch (\Throwable) {
+            $qrBase64 = 'https://api.qrserver.com/v1/create-qr-code/?size=150x150&data='.urlencode($verificationUrl);
+        }
+
+        return Pdf::loadView('reports.certificate', [
+            'title' => $configs['cert_title'] ?? 'SERTIFIKAT PENGHARGAAN',
+            'body' => $body,
+            'name' => $certificate->nama_mahasiswa ?? '-',
+            'nim' => $certificate->nim ?? '-',
+            'period' => $periode->name ?? '-',
+            'location' => $certificate->lokasi_kkn ?? '-',
+            'score' => $certificate->total_score,
+            'grade' => $certificate->letter_grade,
+            'date' => ($certificate->issued_at ?: now())->translatedFormat('d F Y'),
+            'certificate_no' => $certificate->certificate_number ?: 'KKN/'.$periode->id.'/'.$verificationToken,
+            'signer1_name' => $configs['cert_signer_left_name'] ?? '-',
+            'signer1_title' => $configs['cert_signer_left_title'] ?? '-',
+            'signer2_name' => $configs['cert_signer_right_name'] ?? '-',
+            'signer2_title' => $configs['cert_signer_right_title'] ?? '-',
+            'bg_image' => $bgBase64,
+            'qr_url' => $qrBase64,
+            'layout' => $layout,
+            'photo_image' => $photoBase64,
+            'signer_left_signature' => $signerLeftSignature,
+            'signer_right_signature' => $signerRightSignature,
+            'stamp_image' => $stampImage,
+        ])->setPaper('a4', 'landscape');
+    }
+
+    /**
      * Generate a fast preview (base64) for the admin dashboard
      */
     public function preview(NilaiKkn $score): string
@@ -282,6 +369,56 @@ class CertificateService
         $payload = "CERT-{$score->id}-{$score->user_id}";
 
         return strtoupper(substr(hash_hmac('sha256', $payload, $secret), 0, 16));
+    }
+
+    public static function generateIssuedCertificateToken(SertifikatKkn $certificate): string
+    {
+        $secret = config('app.key');
+        $source = $certificate->nilai_kkn_id ?: $certificate->id;
+        $payload = "CERT-{$source}-{$certificate->user_id}";
+
+        return strtoupper(substr(hash_hmac('sha256', $payload, $secret), 0, 16));
+    }
+
+    private function imageDataUri(?string $absolutePath): string
+    {
+        if (! $absolutePath || ! file_exists($absolutePath)) {
+            return '';
+        }
+
+        return 'data:image/'.pathinfo($absolutePath, PATHINFO_EXTENSION).';base64,'.base64_encode((string) file_get_contents($absolutePath));
+    }
+
+    private function publicStorageImageDataUri(mixed $path): string
+    {
+        if (! is_string($path) || $path === '') {
+            return '';
+        }
+        $normalized = ltrim(str_replace('storage/', '', $path), '/');
+        if (! Storage::disk('public')->exists($normalized)) {
+            return '';
+        }
+
+        return $this->imageDataUri(storage_path('app/public/'.$normalized));
+    }
+
+    private function decodeCertificateLayout(?string $json): array
+    {
+        $defaults = [
+            'photo' => ['visible' => false, 'x' => 77, 'y' => 23, 'width' => 11, 'height' => 14],
+            'signer_left_signature' => ['visible' => true, 'width' => 16, 'height' => 8],
+            'signer_right_signature' => ['visible' => true, 'width' => 16, 'height' => 8],
+            'stamp' => ['visible' => true, 'width' => 11, 'height' => 11],
+        ];
+        if (! $json) {
+            return $defaults;
+        }
+        $decoded = json_decode($json, true);
+        if (! is_array($decoded)) {
+            return $defaults;
+        }
+
+        return array_replace_recursive($defaults, $decoded);
     }
 
     /**

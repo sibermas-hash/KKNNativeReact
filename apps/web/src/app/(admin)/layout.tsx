@@ -25,7 +25,7 @@ import {
 const getNavGroups = (pathname: string, roles: string[]) => {
   const isSuperadmin = roles.includes('superadmin');
   const isBlog = pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi') || pathname.includes('/admin/konten-publik');
-  const isSystem = pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/prodi') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/konfigurasi-penilaian') || pathname.includes('/admin/monitoring');
+  const isSystem = pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/sertifikat') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/prodi') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/monitoring');
 
   const operationalGroups = [
     { title: 'SENTRAL OPERASIONAL', items: [
@@ -90,7 +90,8 @@ const getNavGroups = (pathname: string, roles: string[]) => {
     { title: 'KONFIGURASI SISTEM', items: [
       { label: 'Pengaturan Global', href: '/admin/pengaturan/sistem', icon: Cpu },
       { label: 'Pengaturan Notifikasi', href: '/admin/pengaturan/notifikasi', icon: Bell },
-      { label: 'Template Sertifikat', href: '/admin/pengaturan/sertifikat', icon: Award },
+      { label: 'Sertifikat', href: '/admin/sertifikat', icon: Award },
+      { label: 'Pengaturan Sertifikat', href: '/admin/pengaturan/sertifikat', icon: Award },
       { label: 'Skema Penilaian', href: '/admin/pengaturan/penilaian', icon: Settings },
     ]},
     { title: 'MASTER DATA', items: [
@@ -138,7 +139,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pageTitle = activeNav?.item.label ?? (pathname === '/admin' ? 'Hub Utama' : 'SIBERMAS');
   const pageContext = activeNav?.group ?? (pathname === '/admin' ? 'Pusat Navigasi' : 'Operasional');
   const isBlog = useMemo(() => pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi'), [pathname]);
-  const isSystem = useMemo(() => pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/prodi') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/monitoring'), [pathname]);
+  const isSystem = useMemo(() => pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/sertifikat') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/prodi') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/monitoring'), [pathname]);
   const portalLabel = isSystem ? 'Portal Superadmin Sistem' : isBlog ? 'Portal Konten Publik' : 'Portal Operasional KKN';
   const portalHint = isSystem
     ? 'Konfigurasi global, pengguna, keamanan, audit, dan integrasi.'

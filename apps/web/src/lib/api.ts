@@ -15,10 +15,7 @@ import {
 } from '@sibermas/api-client';
 
 function getBaseUrl(): string {
-  const envUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (!envUrl) {
-    throw new Error('NEXT_PUBLIC_API_URL is not set. Define it in .env.local or .env.production');
-  }
+  const envUrl = process.env.NEXT_PUBLIC_API_URL || '/api/v1';
   return envUrl;
 }
 

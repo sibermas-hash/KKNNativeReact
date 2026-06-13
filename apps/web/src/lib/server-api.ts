@@ -31,8 +31,7 @@ export type AuthFetchResult<T> =
   | AuthFetchErrorResult;
 
 function getServerApiBase(): string {
-  const apiBase = process.env.SERVER_API_URL || process.env.NEXT_PUBLIC_API_URL;
-  if (!apiBase) throw new Error('SERVER_API_URL or NEXT_PUBLIC_API_URL is not set');
+  const apiBase = process.env.SERVER_API_URL || process.env.NEXT_PUBLIC_API_URL || '/api/v1';
   return apiBase.replace(/\/$/, '');
 }
 

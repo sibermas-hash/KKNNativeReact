@@ -32,6 +32,7 @@ class CertificateManagementController extends Controller
         'cert_signer_left_signature' => ['TTD Penandatangan Kiri', 'image'],
         'cert_signer_right_signature' => ['TTD Penandatangan Kanan', 'image'],
         'cert_stamp' => ['Stempel', 'image'],
+        'cert_layout_json' => ['Layout Sertifikat (JSON)', 'textarea'],
     ];
 
     public function index(Request $request): JsonResponse
@@ -100,7 +101,7 @@ class CertificateManagementController extends Controller
             return $this->error('FORBIDDEN', 'Sertifikat telah dibatalkan.', 403);
         }
 
-        return app(CertificateService::class)->generateForStudent($sertifikat)->stream($this->safePdfName($sertifikat));
+        return app(CertificateService::class)->generateForIssuedCertificate($sertifikat)->stream($this->safePdfName($sertifikat));
     }
 
     public function download(SertifikatKkn $sertifikat): Response|JsonResponse
@@ -109,7 +110,7 @@ class CertificateManagementController extends Controller
             return $this->error('FORBIDDEN', 'Sertifikat telah dibatalkan.', 403);
         }
 
-        return app(CertificateService::class)->generateForStudent($sertifikat)->download($this->safePdfName($sertifikat));
+        return app(CertificateService::class)->generateForIssuedCertificate($sertifikat)->download($this->safePdfName($sertifikat));
     }
 
     public function zip(Request $request): BinaryFileResponse|JsonResponse
@@ -131,7 +132,7 @@ class CertificateManagementController extends Controller
         $ok = 0;
         foreach ($certificates as $cert) {
             try {
-                $zip->addFromString($this->safePdfName($cert), app(CertificateService::class)->generateForStudent($cert)->output());
+                $zip->addFromString($this->safePdfName($cert), app(CertificateService::class)->generateForIssuedCertificate($cert)->output());
                 $ok++;
             } catch (\Throwable) {
             }
@@ -155,7 +156,7 @@ class CertificateManagementController extends Controller
         foreach ($certificates as $cert) {
             $token = $cert->verification_token;
             if ($force || ! $token) {
-                $token = CertificateService::generateVerificationToken($cert);
+                $token = CertificateService::generateIssuedCertificateToken($cert);
             }
             $number = $cert->certificate_number;
             if ($force || ! $number) {

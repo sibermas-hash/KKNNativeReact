@@ -117,6 +117,8 @@ const nextConfig: NextConfig = {
       '@radix-ui/react-dialog',
       '@radix-ui/react-select',
       '@radix-ui/react-dropdown-menu',
+      'framer-motion',
+      'motion/react',
     ],
   },
 

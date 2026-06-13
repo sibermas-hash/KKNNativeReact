@@ -281,7 +281,6 @@ class CertificateService
         if (is_string($avatarPath) && $avatarPath !== '') {
             $photoBase64 = $this->publicStorageImageDataUri($avatarPath);
         }
-        $signerLeftSignature = $this->publicStorageImageDataUri($configs['cert_signer_left_signature'] ?? null);
         $signerRightSignature = $this->publicStorageImageDataUri($configs['cert_signer_right_signature'] ?? null);
         $stampImage = $this->publicStorageImageDataUri($configs['cert_stamp'] ?? null);
 
@@ -313,7 +312,6 @@ class CertificateService
             'qr_url' => $qrBase64,
             'layout' => $layout,
             'photo_image' => $photoBase64,
-            'signer_left_signature' => $signerLeftSignature,
             'signer_right_signature' => $signerRightSignature,
             'stamp_image' => $stampImage,
         ])->setPaper('a4', 'landscape');
@@ -406,7 +404,6 @@ class CertificateService
     {
         $defaults = [
             'photo' => ['visible' => false, 'x' => 77, 'y' => 23, 'width' => 11, 'height' => 14],
-            'signer_left_signature' => ['visible' => true, 'width' => 16, 'height' => 8],
             'signer_right_signature' => ['visible' => true, 'width' => 16, 'height' => 8],
             'stamp' => ['visible' => true, 'width' => 11, 'height' => 11],
         ];

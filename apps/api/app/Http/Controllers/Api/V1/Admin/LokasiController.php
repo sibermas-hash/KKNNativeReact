@@ -81,7 +81,7 @@ class LokasiController extends Controller
             if ($missingCoordinates > 0) {
                 return $this->error(
                     'LOCATION_COORDINATES_REQUIRED',
-                    "{$missingCoordinates} lokasi belum punya latitude/longitude. Lengkapi koordinat sebelum diceklist untuk KKN.",
+                    "{$missingCoordinates} lokasi belum dapat diverifikasi sebagai wilayah kerja KKN. Sistem akan memproses koordinat di backend; coba simpan ulang lokasi atau hubungi admin teknis.",
                     422,
                 );
             }
@@ -112,7 +112,7 @@ class LokasiController extends Controller
         $nextLongitude = array_key_exists('longitude', $payload) ? $payload['longitude'] : $lokasi->longitude;
 
         if ($lokasi->is_selected_for_kkn && (blank($nextLatitude) || blank($nextLongitude))) {
-            return $this->error('LOCATION_COORDINATES_REQUIRED', 'Lokasi terpilih untuk KKN wajib punya latitude/longitude.', 422);
+            return $this->error('LOCATION_COORDINATES_REQUIRED', 'Lokasi terpilih untuk KKN belum terverifikasi sebagai wilayah kerja.', 422);
         }
 
         $lokasi->update($payload);
@@ -133,8 +133,8 @@ class LokasiController extends Controller
             'district_name' => ['nullable', 'string', 'max:255'],
             'regency_name' => ['nullable', 'string', 'max:255'],
             'address' => ['nullable', 'string'],
-            'latitude' => ['nullable', 'numeric'],
-            'longitude' => ['nullable', 'numeric'],
+            'latitude' => ['nullable', 'numeric', 'between:-11,6.5'],
+            'longitude' => ['nullable', 'numeric', 'between:95,141.5'],
             'capacity' => ['nullable', 'integer', 'min:0'],
             'fakultas_id' => ['nullable', 'exists:fakultas,id'],
             'is_selected_for_kkn' => ['sometimes', 'boolean'],
@@ -171,7 +171,7 @@ class LokasiController extends Controller
         ])->filter(fn ($value) => filled($value))->implode(', ');
 
         $result = app(NominatimGeocodingService::class)->search($query);
-        abort_if(! $result, 422, 'Koordinat wajib. Sistem tidak menemukan latitude/longitude otomatis; isi manual.');
+        abort_if(! $result, 422, 'Lokasi belum dapat diverifikasi otomatis sebagai wilayah kerja KKN. Coba simpan ulang beberapa saat lagi.');
 
         $payload['latitude'] = $result['latitude'];
         $payload['longitude'] = $result['longitude'];

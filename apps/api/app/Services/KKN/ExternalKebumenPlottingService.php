@@ -248,6 +248,10 @@ class ExternalKebumenPlottingService
     {
         return Lokasi::query()
             ->whereRaw('lower(regency_name) like ?', ['%kebumen%'])
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->whereBetween('latitude', [-11, 6.5])
+            ->whereBetween('longitude', [95, 141.5])
             ->where('is_selected_for_kkn', true)
             ->where(fn ($q) => $q->whereNull('capacity')->orWhere('capacity', '>=', self::GROUP_SIZE))
             ->orderBy('district_name')

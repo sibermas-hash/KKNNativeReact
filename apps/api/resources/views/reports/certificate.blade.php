@@ -206,6 +206,30 @@
             padding: 2px;
             background: #fff;
         }
+
+        .student-photo {
+            position: absolute;
+            object-fit: cover;
+            border: 3px solid #d4af37;
+            background: #fff;
+            z-index: 20;
+        }
+
+        .signature-img {
+            display: block;
+            margin: 8px auto -42px;
+            object-fit: contain;
+        }
+
+        .stamp-img {
+            position: absolute;
+            left: 50%;
+            bottom: 48px;
+            transform: translateX(-50%);
+            object-fit: contain;
+            opacity: .9;
+            z-index: 15;
+        }
     </style>
 </head>
 
@@ -214,6 +238,9 @@
         <div class="cert-border-main">
             <div class="cert-border-inner">
                 <div class="watermark">UIN SAIZU</div>
+                @if(!empty($photo_image) && !empty($layout['photo']['visible']))
+                    <img src="{{ $photo_image }}" class="student-photo" alt="Foto Peserta" style="left: {{ (float)($layout['photo']['x'] ?? 77) }}%; top: {{ (float)($layout['photo']['y'] ?? 23) }}%; width: {{ (float)($layout['photo']['width'] ?? 11) }}%; height: {{ (float)($layout['photo']['height'] ?? 14) }}%;">
+                @endif
 
                 <div class="header">
                     <h1>{{ $title }}</h1>
@@ -238,21 +265,25 @@
                 <div class="signatures">
                     <table class="sig-table">
                         <tr>
-                            <td class="sig-cell">
-                                Mengetahui,<br>{{ $signer1_title }}
-                                <div class="sig-name">{{ $signer1_name }}</div>
-                            </td>
+                            <td class="sig-cell">&nbsp;</td>
                             <td class="sig-qr">
                                 <img src="{{ $qr_url }}" class="qr-img" alt="QR Code Verification">
                                 <div style="font-size: 7px; margin-top: 5px; color: #718096;">VERIFIKASI DIGITAL</div>
                             </td>
                             <td class="sig-cell">
                                 Purwokerto, {{ $date }}<br>{{ $signer2_title }}
+                                @if(!empty($signer_right_signature) && !empty($layout['signer_right_signature']['visible']))
+                                    <img src="{{ $signer_right_signature }}" class="signature-img" alt="TTD Kanan" style="width: {{ (float)($layout['signer_right_signature']['width'] ?? 16) }}%; height: {{ (float)($layout['signer_right_signature']['height'] ?? 8) }}%;">
+                                @endif
                                 <div class="sig-name">{{ $signer2_name }}</div>
                             </td>
                         </tr>
                     </table>
                 </div>
+
+                @if(!empty($stamp_image) && !empty($layout['stamp']['visible']))
+                    <img src="{{ $stamp_image }}" class="stamp-img" alt="Stempel" style="width: {{ (float)($layout['stamp']['width'] ?? 11) }}%; height: {{ (float)($layout['stamp']['height'] ?? 11) }}%;">
+                @endif
 
                 <div class="footer-info">
                     ID Sertifikat: {{ $certificate_no }}<br>

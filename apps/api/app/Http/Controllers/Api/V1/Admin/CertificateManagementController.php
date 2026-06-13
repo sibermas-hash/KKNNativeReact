@@ -25,12 +25,9 @@ class CertificateManagementController extends Controller
         'cert_title' => ['Judul Sertifikat', 'text'],
         'cert_body' => ['Isi Sertifikat', 'textarea'],
         'cert_background' => ['Background Sertifikat', 'image'],
-        'cert_signer_left_name' => ['Nama Penandatangan Kiri', 'text'],
-        'cert_signer_left_title' => ['Jabatan Penandatangan Kiri', 'text'],
-        'cert_signer_right_name' => ['Nama Penandatangan Kanan', 'text'],
-        'cert_signer_right_title' => ['Jabatan Penandatangan Kanan', 'text'],
-        'cert_signer_left_signature' => ['TTD Penandatangan Kiri', 'image'],
-        'cert_signer_right_signature' => ['TTD Penandatangan Kanan', 'image'],
+        'cert_signer_right_name' => ['Nama Penandatangan', 'text'],
+        'cert_signer_right_title' => ['Jabatan Penandatangan', 'text'],
+        'cert_signer_right_signature' => ['TTD Sertifikat', 'image'],
         'cert_stamp' => ['Stempel', 'image'],
         'cert_layout_json' => ['Layout Sertifikat (JSON)', 'textarea'],
     ];
@@ -84,7 +81,7 @@ class CertificateManagementController extends Controller
     {
         $validated = $request->validate([
             'periode_id' => ['required', 'integer', 'exists:periode,id'],
-            'key' => ['nullable', 'string', 'in:cert_background,cert_signer_left_signature,cert_signer_right_signature,cert_stamp'],
+            'key' => ['nullable', 'string', 'in:cert_background,cert_signer_right_signature,cert_stamp'],
             'file' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
         ]);
         $key = $validated['key'] ?? 'cert_background';

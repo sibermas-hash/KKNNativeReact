@@ -673,6 +673,10 @@ class AutoPlottingService
 
         $locs = Lokasi::query()
             ->whereNotNull('regency_name')
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->whereBetween('latitude', [-11, 6.5])
+            ->whereBetween('longitude', [95, 141.5])
             ->where('is_selected_for_kkn', true)
             ->orderBy('regency_name')
             ->orderBy('district_name')
@@ -704,8 +708,11 @@ class AutoPlottingService
             'regency_name' => $l->regency_name,
             'regency_norm' => $this->norm((string) $l->regency_name),
             'province_id' => $l->province_id,
+            'province_code' => $l->province_code,
             'regency_id' => $l->regency_id,
+            'regency_code' => $l->regency_code,
             'district_id' => $l->district_id,
+            'district_code' => $l->district_code,
             'village_code' => $l->village_code,
             'address' => $l->address,
             'latitude' => $l->latitude,

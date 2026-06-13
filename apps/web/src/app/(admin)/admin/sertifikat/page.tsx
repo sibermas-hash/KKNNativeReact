@@ -139,8 +139,7 @@ export default function AdminSertifikatPage(): React.JSX.Element {
         <div className="flex flex-wrap items-center gap-3">
           <select value={uploadKey} onChange={(e) => setUploadKey(e.target.value)} className="rounded-xl border px-3 py-2 text-sm">
             <option value="cert_background">Background</option>
-            <option value="cert_signer_left_signature">TTD Kiri</option>
-            <option value="cert_signer_right_signature">TTD Kanan</option>
+            <option value="cert_signer_right_signature">TTD Sertifikat</option>
             <option value="cert_stamp">Stempel</option>
           </select>
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold"><Upload size={16}/>Pilih File<input type="file" accept="image/*" className="hidden" onChange={(e) => upload(e.target.files?.[0])}/></label>

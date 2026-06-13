@@ -138,7 +138,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [navGroups, pathname]);
   const pageTitle = activeNav?.item.label ?? (pathname === '/admin' ? 'Hub Utama' : 'SIBERMAS');
   const pageContext = activeNav?.group ?? (pathname === '/admin' ? 'Pusat Navigasi' : 'Operasional');
-  const isBlog = useMemo(() => pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi'), [pathname]);
+  const isBlog = useMemo(() => pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi') || pathname.includes('/admin/konten-publik'), [pathname]);
   const isSystem = useMemo(() => pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/sertifikat') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/prodi') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/monitoring'), [pathname]);
   const portalLabel = isSystem ? 'Portal Superadmin Sistem' : isBlog ? 'Portal Konten Publik' : 'Portal Operasional KKN';
   const portalHint = isSystem

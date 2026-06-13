@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4987a9991872bdb834ac110e02120fb6",
+    "content-hash": "3467628960c463458dbd0a46e0463c5a",
     "packages": [
         {
             "name": "artisansdk/ratelimiter",
@@ -2217,6 +2217,121 @@
                 }
             ],
             "time": "2025-12-03T09:33:47+00:00"
+        },
+        {
+            "name": "google/apiclient",
+            "version": "v2.19.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/googleapis/google-api-php-client.git",
+                "reference": "a1f02761994fd9defb20f6f1449205fd66f450de"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/googleapis/google-api-php-client/zipball/a1f02761994fd9defb20f6f1449205fd66f450de",
+                "reference": "a1f02761994fd9defb20f6f1449205fd66f450de",
+                "shasum": ""
+            },
+            "require": {
+                "firebase/php-jwt": "^6.0||^7.0",
+                "google/apiclient-services": "~0.350",
+                "google/auth": "^1.37",
+                "guzzlehttp/guzzle": "^7.4.5",
+                "guzzlehttp/psr7": "^2.6",
+                "monolog/monolog": "^2.9||^3.0",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "cache/filesystem-adapter": "^1.1",
+                "composer/composer": "^2.9",
+                "phpcompatibility/php-compatibility": "^9.2",
+                "phpspec/prophecy-phpunit": "^2.1",
+                "phpunit/phpunit": "^9.6",
+                "squizlabs/php_codesniffer": "^3.8",
+                "symfony/css-selector": "~2.1",
+                "symfony/dom-crawler": "~2.1"
+            },
+            "suggest": {
+                "cache/filesystem-adapter": "For caching certs and tokens (using Google\\Client::setCache)"
+            },
+            "type": "library",
+            "extra": {
+                "component": {
+                    "entry": "src/Client.php"
+                },
+                "branch-alias": {
+                    "dev-main": "2.x-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "src/aliases.php"
+                ],
+                "psr-4": {
+                    "Google\\": "src/"
+                },
+                "classmap": [
+                    "src/aliases.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "description": "Client library for Google APIs",
+            "homepage": "http://developers.google.com/api-client-library/php",
+            "keywords": [
+                "google"
+            ],
+            "support": {
+                "issues": "https://github.com/googleapis/google-api-php-client/issues",
+                "source": "https://github.com/googleapis/google-api-php-client/tree/v2.19.3"
+            },
+            "time": "2026-05-04T21:00:36+00:00"
+        },
+        {
+            "name": "google/apiclient-services",
+            "version": "v0.444.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/googleapis/google-api-php-client-services.git",
+                "reference": "b38b3329e67bf68ef184997c047e6ff5952feca5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/googleapis/google-api-php-client-services/zipball/b38b3329e67bf68ef184997c047e6ff5952feca5",
+                "reference": "b38b3329e67bf68ef184997c047e6ff5952feca5",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.6"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "autoload.php"
+                ],
+                "psr-4": {
+                    "Google\\Service\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "description": "Client library for Google APIs",
+            "homepage": "http://developers.google.com/api-client-library/php",
+            "keywords": [
+                "google"
+            ],
+            "support": {
+                "issues": "https://github.com/googleapis/google-api-php-client-services/issues",
+                "source": "https://github.com/googleapis/google-api-php-client-services/tree/v0.444.0"
+            },
+            "time": "2026-06-08T01:52:31+00:00"
         },
         {
             "name": "google/auth",
@@ -6148,6 +6263,72 @@
                 "source": "https://github.com/MarkBaker/PHPMatrix/tree/3.0.1"
             },
             "time": "2022-12-02T22:17:43+00:00"
+        },
+        {
+            "name": "masbug/flysystem-google-drive-ext",
+            "version": "v2.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/masbug/flysystem-google-drive-ext.git",
+                "reference": "90123f15752da2e2e290e8630c41eebf172d7fec"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/masbug/flysystem-google-drive-ext/zipball/90123f15752da2e2e290e8630c41eebf172d7fec",
+                "reference": "90123f15752da2e2e290e8630c41eebf172d7fec",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "google/apiclient": "^2.2",
+                "guzzlehttp/guzzle": "^6.3 | ^7.0",
+                "guzzlehttp/psr7": "^1.7|^2.0",
+                "league/flysystem": "^2.1.1|^3.0",
+                "php": "^7.2 | ^8.0"
+            },
+            "require-dev": {
+                "league/flysystem-adapter-test-utilities": "^2.0|^3.0",
+                "phpunit/phpunit": "^8.0 | ^9.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Masbug\\Flysystem\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Naoki Sawada",
+                    "email": "hypweb@gmail.com"
+                },
+                {
+                    "name": "Mitja Spes",
+                    "email": "mitja@lxnav.com"
+                }
+            ],
+            "description": "Flysystem adapter for Google Drive with seamless virtual<=>display path translation",
+            "keywords": [
+                "Flysystem",
+                "extended",
+                "google-drive",
+                "laravel",
+                "translated"
+            ],
+            "support": {
+                "issues": "https://github.com/masbug/flysystem-google-drive-ext/issues",
+                "source": "https://github.com/masbug/flysystem-google-drive-ext/tree/v2.5.0"
+            },
+            "funding": [
+                {
+                    "url": "https://ko-fi.com/masbug",
+                    "type": "ko_fi"
+                }
+            ],
+            "time": "2026-04-13T13:12:26+00:00"
         },
         {
             "name": "masterminds/html5",

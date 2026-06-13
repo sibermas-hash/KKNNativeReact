@@ -30,12 +30,14 @@ class BimbinganController extends Controller
 
         $peserta = $mahasiswa->peserta()
             ->when($request->integer('periode'), fn ($q, $p) => $q->where('periode_id', $p))
+            ->where('status', 'approved')
+            ->where('placement_is_live', true)
             ->whereNotNull('kelompok_id')
             ->latest('periode_id')
             ->first();
 
         if (! $peserta) {
-            return $this->success(['sessions' => [], 'message' => 'Belum ditempatkan di kelompok.']);
+            return $this->success(['sessions' => [], 'message' => 'Kelompok belum dipublikasikan. Bimbingan tersedia setelah plotting kelompok ditetapkan.']);
         }
 
         $sessions = BimbinganSession::where('kelompok_id', $peserta->kelompok_id)
@@ -43,6 +45,13 @@ class BimbinganController extends Controller
             ->when($request->input('status'), fn ($q, $s) => $q->where('status', $s))
             ->orderByDesc('scheduled_at')
             ->paginate(20);
+
+        if ($sessions->total() === 0) {
+            return $this->success([
+                'sessions' => [],
+                'message' => 'Belum ada sesi bimbingan. Menunggu penempatan dosen pembimbing lapangan (DPL).',
+            ]);
+        }
 
         return $this->success($sessions);
     }
@@ -53,9 +62,12 @@ class BimbinganController extends Controller
         $mahasiswa = $user?->mahasiswa;
         abort_unless($mahasiswa, 403);
 
-        // Cek akses — mahasiswa harus di kelompok sesi
-        $peserta = $mahasiswa->peserta()->where('kelompok_id', $session->kelompok_id)->first();
-        abort_unless($peserta, 403, 'Anda tidak berada di kelompok sesi ini.');
+        // Cek akses — mahasiswa harus di kelompok sesi DAN plotting sudah live
+        $peserta = $mahasiswa->peserta()
+            ->where('kelompok_id', $session->kelompok_id)
+            ->where('placement_is_live', true)
+            ->first();
+        abort_unless($peserta, 403, 'Anda tidak berada di kelompok sesi ini atau kelompok belum dipublikasikan.');
 
         $session->load(['dosen.user', 'attendances' => fn ($q) => $q->where('mahasiswa_id', $mahasiswa->id)]);
 
@@ -70,6 +82,8 @@ class BimbinganController extends Controller
 
         $peserta = $mahasiswa->peserta()
             ->when($request->integer('periode'), fn ($q, $p) => $q->where('periode_id', $p))
+            ->where('status', 'approved')
+            ->where('placement_is_live', true)
             ->whereNotNull('kelompok_id')
             ->latest('periode_id')
             ->first();
@@ -79,7 +93,7 @@ class BimbinganController extends Controller
                 'meets_requirement' => false,
                 'completed_sessions' => 0,
                 'required_min' => BimbinganSession::MIN_SESSIONS_REQUIRED,
-                'message' => 'Belum ditempatkan di kelompok.',
+                'message' => 'Kelompok belum dipublikasikan. Bimbingan tersedia setelah plotting kelompok ditetapkan.',
             ]);
         }
 

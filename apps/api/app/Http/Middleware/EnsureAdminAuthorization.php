@@ -33,6 +33,7 @@ use App\Http\Controllers\Api\V1\Admin\ExternalUniversityController;
 use App\Http\Controllers\Api\V1\Admin\FakultasController;
 use App\Http\Controllers\Api\V1\Admin\GeneratorNilaiController;
 use App\Http\Controllers\Api\V1\Admin\GradeController;
+use App\Http\Controllers\Api\V1\Admin\IndonesiaRegionController;
 use App\Http\Controllers\Api\V1\Admin\InterviewController;
 use App\Http\Controllers\Api\V1\Admin\JenisKknController;
 use App\Http\Controllers\Api\V1\Admin\JenisKknDocumentRequirementController;
@@ -114,6 +115,7 @@ class EnsureAdminAuthorization
         // routes for these controllers are additionally guarded role:superadmin.
         FakultasController::class => 'view-master-data',
         ProdiController::class => 'view-master-data',
+        IndonesiaRegionController::class => 'view-master-data',
         LokasiController::class => 'manage-master-data',
         JenisKknController::class => 'manage-master-data',
         JenisKknDocumentRequirementController::class => 'manage-master-data',

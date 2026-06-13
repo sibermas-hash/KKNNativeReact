@@ -52,7 +52,8 @@ class KknDaftarController extends Controller
                 // Route submit registration dikunci middleware phase:registration.
                 // Jangan tampilkan can_register=true pada placement karena user
                 // akan klik daftar lalu pasti gagal 403 PHASE_BLOCKED.
-                $canRegister = $p->current_phase === 'registration';
+                $canRegister = $p->current_phase === 'registration'
+                    && $p->usesSelfServiceRegistration();
                 $eligibility = $this->checkEligibility($mahasiswa, $p);
                 $documentRequirements = $this->documentService->requirementsForPeriod($p);
 

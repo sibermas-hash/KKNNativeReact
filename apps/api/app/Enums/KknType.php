@@ -22,8 +22,7 @@ enum KknType: string
             self::NUSANTARA => __('KKN Nusantara'),
             self::INTERNASIONAL => __('KKN Terpadu Internasional Mandiri'),
             self::TEMATIK => __('KKN Tematik'),
-            // Legacy compatibility: "Responsif" is normalized to the thematic governance track.
-            self::RESPONSIF => __('KKN Tematik'),
+            self::RESPONSIF => __('KKN Responsif (Rumah Masing-masing)'),
             self::KOLABORASI_PTKIN => __('KKN Kolaborasi PTKIN'),
             self::KAMPUNG_ZAKAT => __('KKN Tematik Kampung Zakat'),
             self::DESA_KATANA => __('KKN Tematik Desa Katana'),
@@ -37,7 +36,7 @@ enum KknType: string
             self::NUSANTARA => __('KKN tingkat nasional berbasis Asta Protas Kemenag RI (Min 85 SKS, IPK 3.25).'),
             self::INTERNASIONAL => __('KKN di wilayah Asia Tenggara dengan masa tinggal minimal 1 bulan (Min 100 SKS, IPK 3.25).'),
             self::TEMATIK => __('KKN dengan tema khusus berdasarkan usulan dosen atau kebutuhan LPPM.'),
-            self::RESPONSIF => __('KKN dengan tema khusus berdasarkan usulan dosen atau kebutuhan LPPM.'),
+            self::RESPONSIF => __('KKN mandiri di rumah masing-masing dengan pendaftaran terbuka dan penempatan swadaya.'),
             self::KOLABORASI_PTKIN => __('KKN hasil kolaborasi antar PTKIN se-Indonesia.'),
             self::KAMPUNG_ZAKAT => __('KKN tematik khusus mahasiswa Prodi Mazawa untuk pemberdayaan berbasis zakat.'),
             self::DESA_KATANA => __('KKN tematik Desa Tanggap Bencana fokus pada mitigasi dan edukasi.'),
@@ -47,8 +46,8 @@ enum KknType: string
     public function registrationMode(): string
     {
         return match ($this) {
-            self::REGULER => 'open', // Pendaftaran mandiri
-            self::TEMATIK, self::RESPONSIF, self::KAMPUNG_ZAKAT, self::DESA_KATANA => 'proposal_based', // Berbasis program dosen
+            self::REGULER, self::RESPONSIF => 'open', // Pendaftaran mandiri
+            self::TEMATIK => 'proposal_based', // KKN Tematik/pengabdian dosen
             default => 'selective', // Seleksi khusus panitia
         };
     }
@@ -57,7 +56,8 @@ enum KknType: string
     {
         return match ($this) {
             self::REGULER => 'automatic_after_approval', // Sistem yang menempatkan
-            self::TEMATIK, self::RESPONSIF, self::KAMPUNG_ZAKAT, self::DESA_KATANA => 'proposal_defined', // Mengikuti proposal
+            self::RESPONSIF => 'self_determined', // Rumah/lokasi masing-masing mahasiswa
+            self::TEMATIK => 'proposal_defined', // Mengikuti proposal pengabdian dosen
             self::INTERNASIONAL, self::KOLABORASI_PTKIN => 'host_defined', // Ditentukan mitra/host
             default => 'manual_admin', // Manual oleh admin LPPM
         };

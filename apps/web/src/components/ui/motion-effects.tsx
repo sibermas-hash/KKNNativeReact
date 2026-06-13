@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
-import { motion, useInView } from 'motion/react';
+import { motion, useInView, useMotionValue, useSpring, useTransform } from 'motion/react';
 
 interface RevealOnScrollProps {
   children: React.ReactNode;
@@ -290,3 +290,77 @@ export function ParallaxSection({
     </div>
   );
 }
+
+interface PerspectiveTiltProps {
+  children: React.ReactNode;
+  className?: string;
+  intensity?: number;
+  scale?: number;
+}
+
+/**
+ * PerspectiveTilt — Memberikan efek kemiringan 3D interaktif mengikuti gerakan kursor.
+ * Dilengkapi dengan spring dynamics untuk gerakan memantul yang halus.
+ */
+export function PerspectiveTilt({
+  children,
+  className = '',
+  intensity = 15,
+  scale = 1.02,
+}: PerspectiveTiltProps): React.JSX.Element {
+  const ref = useRef<HTMLDivElement>(null);
+  const x = useMotionValue(0.5);
+  const y = useMotionValue(0.5);
+
+  const rotateX = useSpring(
+    useTransform(y, [0, 1], [intensity, -intensity]),
+    { damping: 25, stiffness: 220 }
+  );
+  const rotateY = useSpring(
+    useTransform(x, [0, 1], [-intensity, intensity]),
+    { damping: 25, stiffness: 220 }
+  );
+  const scaleSpring = useSpring(1, { damping: 20, stiffness: 300 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    x.set(mouseX / width);
+    y.set(mouseY / height);
+  };
+
+  const handleMouseEnter = () => {
+    scaleSpring.set(scale);
+  };
+
+  const handleMouseLeave = () => {
+    x.set(0.5);
+    y.set(0.5);
+    scaleSpring.set(1);
+  };
+
+  return (
+    <motion.div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateX,
+        rotateY,
+        scale: scaleSpring,
+        transformStyle: 'preserve-3d',
+        perspective: 1200,
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+

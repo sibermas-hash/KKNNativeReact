@@ -63,7 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
         <link rel="preconnect" href="//fonts.googleapis.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="//fonts.gstatic.com" crossOrigin="anonymous" />
       </head>
-      <body className="min-h-screen bg-white font-sans antialiased">
+      <body className="min-h-screen bg-white font-sans antialiased" suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>

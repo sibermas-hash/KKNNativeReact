@@ -16,6 +16,7 @@ class JenisKknSeeder extends Seeder
                 'description' => 'KKN wajib (Gasal/Genap, minimal 100 SKS, durasi 40 hari).',
                 'registration_mode' => 'open',
                 'placement_mode' => 'automatic_after_approval',
+                'requires_interview' => false,
                 // Audit REGULER-001 fix: min_gpa dari 0.00 → 2.00 (policy minimum kelulusan UIN SAIZU).
                 // 0.00 artinya mahasiswa IPK 0 bisa daftar — ini bug, bukan design.
                 'requirements_config' => json_encode(['min_sks' => 100, 'min_gpa' => 2.00, 'require_bta_ppi' => true]),
@@ -37,6 +38,7 @@ class JenisKknSeeder extends Seeder
                 'description' => 'KKN tingkat nasional berbasis Asta Protas Kemenag RI (Min 85 SKS, IPK 3.25).',
                 'registration_mode' => 'selective',
                 'placement_mode' => 'manual_admin',
+                'requires_interview' => true,
                 'requirements_config' => json_encode([
                     'min_sks' => 85,
                     'min_gpa' => 3.25,
@@ -61,6 +63,7 @@ class JenisKknSeeder extends Seeder
                 'description' => 'KKN di wilayah Asia Tenggara dengan masa tinggal minimal 1 bulan (Min 100 SKS, IPK 3.25).',
                 'registration_mode' => 'selective',
                 'placement_mode' => 'host_defined',
+                'requires_interview' => true,
                 'requirements_config' => json_encode([
                     'min_sks' => 100,
                     'min_gpa' => 3.25,
@@ -88,6 +91,7 @@ class JenisKknSeeder extends Seeder
                 'description' => 'KKN dengan tema khusus berdasarkan usulan dosen atau kebutuhan LPPM.',
                 'registration_mode' => 'proposal_based',
                 'placement_mode' => 'proposal_defined',
+                'requires_interview' => false,
                 // Audit REGULER-001 fix: min_gpa 2.00 (sama dengan Reguler).
                 'requirements_config' => json_encode(['min_sks' => 100, 'min_gpa' => 2.00, 'require_bta_ppi' => true]),
                 // Tematik: area kerja bisa urban atau rural, radius menengah.

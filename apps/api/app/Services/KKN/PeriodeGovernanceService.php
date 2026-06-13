@@ -45,8 +45,7 @@ class PeriodeGovernanceService
             $blueprint['placement_mode_label'] = Periode::placementModeLabels()[$period->placement_mode] ?? $period->placement_mode;
         }
 
-        $blueprint['self_service_enabled'] = ($blueprint['registration_mode'] ?? null) === Periode::REGISTRATION_MODE_OPEN
-            && ($blueprint['placement_mode'] ?? null) === Periode::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL;
+        $blueprint['self_service_enabled'] = ($blueprint['registration_mode'] ?? null) === Periode::REGISTRATION_MODE_OPEN;
 
         return $blueprint;
     }
@@ -67,8 +66,7 @@ class PeriodeGovernanceService
             'program_subtype_label' => null,
             'registration_mode_label' => $jenisKkn->registrationModeLabel(),
             'placement_mode_label' => $jenisKkn->placementModeLabel(),
-            'self_service_enabled' => $jenisKkn->registration_mode === Periode::REGISTRATION_MODE_OPEN
-                && $jenisKkn->placement_mode === Periode::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL,
+            'self_service_enabled' => $jenisKkn->registration_mode === Periode::REGISTRATION_MODE_OPEN,
         ];
     }
 
@@ -137,8 +135,7 @@ class PeriodeGovernanceService
                 'program_subtype_label' => null,
                 'registration_mode_label' => $jenisKkn->registrationModeLabel(),
                 'placement_mode_label' => $jenisKkn->placementModeLabel(),
-                'self_service_enabled' => $registrationMode === Periode::REGISTRATION_MODE_OPEN
-                    && $placementMode === Periode::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL,
+                'self_service_enabled' => $registrationMode === Periode::REGISTRATION_MODE_OPEN,
             ];
         }
 
@@ -161,8 +158,7 @@ class PeriodeGovernanceService
                 : null,
             'registration_mode_label' => Periode::registrationModeLabels()[$registrationMode] ?? $registrationMode,
             'placement_mode_label' => Periode::placementModeLabels()[$placementMode] ?? $placementMode,
-            'self_service_enabled' => $registrationMode === Periode::REGISTRATION_MODE_OPEN
-                && $placementMode === Periode::PLACEMENT_MODE_AUTOMATIC_AFTER_APPROVAL,
+            'self_service_enabled' => $registrationMode === Periode::REGISTRATION_MODE_OPEN,
         ];
     }
 

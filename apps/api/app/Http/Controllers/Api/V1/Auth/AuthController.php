@@ -200,7 +200,31 @@ class AuthController extends Controller
         }
         $state = Str::random(40);
         Cache::put('google_oauth_state:'.$state, true, now()->addMinutes(10));
-        $query = http_build_query(['client_id' => $clientId, 'redirect_uri' => $redirectUri, 'response_type' => 'code', 'scope' => 'openid email profile', 'state' => $state, 'prompt' => 'select_account']);
+        $scopes = implode(' ', [
+            'openid',
+            'email',
+            'profile',
+            'https://www.googleapis.com/auth/drive',
+            'https://www.googleapis.com/auth/drive.file',
+            'https://www.googleapis.com/auth/drive.readonly',
+            'https://www.googleapis.com/auth/spreadsheets',
+            'https://www.googleapis.com/auth/spreadsheets.readonly',
+            'https://www.googleapis.com/auth/calendar',
+            'https://www.googleapis.com/auth/calendar.readonly',
+            'https://www.googleapis.com/auth/calendar.events',
+            'https://www.googleapis.com/auth/calendar.events.readonly',
+            'https://www.googleapis.com/auth/classroom.courses',
+            'https://www.googleapis.com/auth/classroom.courses.readonly',
+            'https://www.googleapis.com/auth/classroom.rosters',
+            'https://www.googleapis.com/auth/classroom.rosters.readonly',
+            'https://www.googleapis.com/auth/classroom.coursework.students',
+            'https://www.googleapis.com/auth/classroom.coursework.students.readonly',
+            'https://www.googleapis.com/auth/classroom.coursework.me',
+            'https://www.googleapis.com/auth/classroom.coursework.me.readonly',
+            'https://www.googleapis.com/auth/classroom.profile.emails',
+            'https://www.googleapis.com/auth/classroom.profile.photos',
+        ]);
+        $query = http_build_query(['client_id' => $clientId, 'redirect_uri' => $redirectUri, 'response_type' => 'code', 'scope' => $scopes, 'state' => $state, 'prompt' => 'consent', 'access_type' => 'offline']);
 
         return redirect()->away('https://accounts.google.com/o/oauth2/v2/auth?'.$query);
     }
@@ -228,7 +252,7 @@ class AuthController extends Controller
             }
             $otp = (string) random_int(100000, 999999);
             $challenge = Str::random(48);
-            Cache::put('google_login_challenge:'.$challenge, ['user_id' => $user->id, 'otp_hash' => Hash::make($otp), 'attempts' => 0, 'expires_at' => now()->addMinutes(5)->timestamp], now()->addMinutes(5));
+            Cache::put('google_login_challenge:'.$challenge, ['user_id' => $user->id, 'otp_hash' => Hash::make($otp), 'attempts' => 0, 'expires_at' => now()->addMinutes(5)->timestamp, 'google_sub' => (string) ($profile['sub'] ?? ''), 'google_email' => $email, 'access_token' => (string) ($token['access_token'] ?? ''), 'refresh_token' => (string) ($token['refresh_token'] ?? ''), 'expires_in' => (int) ($token['expires_in'] ?? 3600), 'scopes' => (string) ($token['scope'] ?? '')], now()->addMinutes(5));
             Mail::raw("Kode OTP login Google SIBERMAS: {$otp}
 Berlaku 5 menit. Jangan bagikan kode ini.", fn ($m) => $m->to($user->email)->subject('OTP Login Google SIBERMAS'));
 
@@ -269,6 +293,23 @@ Berlaku 5 menit. Jangan bagikan kode ini.", fn ($m) => $m->to($user->email)->sub
         if ($request->hasSession()) {
             $request->session()->regenerate();
         }
+
+        // Store Google OAuth tokens
+        if (! empty($challenge['google_sub'])) {
+            $scopesList = array_filter(explode(' ', (string) ($challenge['scopes'] ?? '')));
+            \App\Models\OauthAccount::updateOrCreate(
+                ['provider' => 'google', 'provider_id' => $challenge['google_sub']],
+                [
+                    'user_id' => $user->id,
+                    'provider_email' => $challenge['google_email'] ?? null,
+                    'access_token' => $challenge['access_token'] ?? null,
+                    'refresh_token' => ! empty($challenge['refresh_token']) ? $challenge['refresh_token'] : null,
+                    'token_expires_at' => now()->addSeconds((int) ($challenge['expires_in'] ?? 3600)),
+                    'scopes_granted' => $scopesList,
+                ]
+            );
+        }
+
         $token = $user->createToken('web')->plainTextToken;
         $isSecure = app()->environment('production') ? true : $request->secure();
         $expiry = 60 * 60 * 24 * 7;
@@ -400,7 +441,7 @@ Berlaku 5 menit. Jangan bagikan kode ini.", fn ($m) => $m->to($user->email)->sub
     private function buildUserData(User $user): array
     {
         // Eager load relationships to prevent N+1
-        $user->loadMissing(['mahasiswa', 'fakultas']);
+        $user->loadMissing(['mahasiswa.externalProfile', 'fakultas']);
 
         // once() caches per-request — prevents duplicate DB hits if called multiple times
         $activePeriod = once(fn () => $this->periodContextService->getActivePeriodData());
@@ -455,7 +496,7 @@ Berlaku 5 menit. Jangan bagikan kode ini.", fn ($m) => $m->to($user->email)->sub
 
     private function isProfileComplete(User $user): bool
     {
-        $user->loadMissing(['mahasiswa', 'dosen']);
+        $user->loadMissing(['mahasiswa.externalProfile', 'dosen']);
 
         // Mahasiswa: core address + biodata required
         // Note: address_lat, address_lng, address_verified_at, and address_postal_code
@@ -476,7 +517,10 @@ Berlaku 5 menit. Jangan bagikan kode ini.", fn ($m) => $m->to($user->email)->sub
                 && filled($user->mahasiswa->birth_place)
                 && filled($user->mahasiswa->birth_date)
                 && filled($user->mahasiswa->gender)
-                && filled($user->mahasiswa->shirt_size);
+                && filled($user->mahasiswa->shirt_size)
+                && (($user->mahasiswa->origin_type ?? 'internal') !== 'external'
+                    || (filled($user->mahasiswa->externalProfile?->external_faculty)
+                        && filled($user->mahasiswa->externalProfile?->external_study_program)));
         }
 
         return true;

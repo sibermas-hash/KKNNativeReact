@@ -145,6 +145,8 @@ Route::prefix('admin')
         Route::get('/peserta-eksternal/template', [ExternalParticipantController::class, 'template']);
         Route::get('/peserta-eksternal/batches', [ExternalParticipantController::class, 'batches']);
         Route::post('/peserta-eksternal/batches', [ExternalParticipantController::class, 'storeBatch']);
+        Route::post('/peserta-eksternal/import/preview', [ExternalParticipantController::class, 'importPreview'])->middleware('throttle:10,1');
+        Route::post('/peserta-eksternal/import/confirm', [ExternalParticipantController::class, 'importConfirm'])->middleware('throttle:5,1');
         Route::post('/peserta-eksternal/import', [ExternalParticipantController::class, 'import'])->middleware('throttle:5,1');
         Route::get('/peserta-eksternal/export', [ExternalParticipantController::class, 'export']);
         Route::post('/peserta-eksternal/bulk-assign', [ExternalParticipantController::class, 'bulkAssign']);

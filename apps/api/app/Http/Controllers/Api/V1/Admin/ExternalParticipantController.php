@@ -99,6 +99,79 @@ class ExternalParticipantController extends Controller
         return $this->created(ExternalKknBatch::create($data), 'Batch peserta eksternal dibuat.');
     }
 
+
+    public function importPreview(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'batch_id' => ['required', 'exists:external_kkn_batches,id'],
+            'file' => ['required', 'file', 'mimes:csv,txt', 'max:2048'],
+        ]);
+
+        $batch = ExternalKknBatch::findOrFail($data['batch_id']);
+        $rows = $this->readCsv($request->file('file')->getRealPath());
+        $preview = [];
+
+        foreach ($rows as $i => $row) {
+            $nama = trim((string) ($row['nama'] ?? $row['name'] ?? ''));
+            $nim = trim((string) ($row['nim'] ?? $row['nim_asal'] ?? $row['external_nim'] ?? ''));
+            $errors = [];
+
+            if ($nama === '') {
+                $errors[] = 'Nama wajib diisi.';
+            }
+            if ($nim === '') {
+                $errors[] = 'NIM wajib diisi.';
+            }
+            if ($nim !== '' && ExternalStudentProfile::where('batch_id', $batch->id)->where('external_nim', $nim)->exists()) {
+                $errors[] = 'NIM sudah ada dalam batch ini.';
+            }
+            if ($nim !== '' && Mahasiswa::where('origin_type', 'external')->where('nim', $nim)->exists()) {
+                $errors[] = 'NIM sudah terdaftar sebagai mahasiswa eksternal.';
+            }
+
+            $preview[] = [
+                'row' => $i + 2,
+                'nama' => $nama,
+                'nim' => $nim,
+                'kampus_asal' => $row['kampus_asal'] ?? $row['home_university'] ?? $batch->home_university,
+                'fakultas_asal' => $row['fakultas_asal'] ?? $row['external_faculty'] ?? null,
+                'prodi_asal' => $row['prodi_asal'] ?? $row['external_study_program'] ?? null,
+                'valid' => $errors === [],
+                'errors' => $errors,
+                'raw' => $row,
+            ];
+        }
+
+        $valid = collect($preview)->where('valid', true)->count();
+
+        return $this->success([
+            'rows' => $preview,
+            'total_rows' => count($preview),
+            'valid_rows' => $valid,
+            'invalid_rows' => count($preview) - $valid,
+        ]);
+    }
+
+    public function importConfirm(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'batch_id' => ['required', 'exists:external_kkn_batches,id'],
+            'rows' => ['required', 'array', 'min:1'],
+            'rows.*.nama' => ['required', 'string', 'max:200'],
+            'rows.*.nim' => ['required', 'string', 'max:50'],
+            'rows.*.kampus_asal' => ['nullable', 'string', 'max:150'],
+            'rows.*.fakultas_asal' => ['nullable', 'string', 'max:150'],
+            'rows.*.prodi_asal' => ['nullable', 'string', 'max:150'],
+            'rows.*.valid' => ['sometimes', 'boolean'],
+            'rows.*.raw' => ['sometimes', 'array'],
+        ]);
+
+        $batch = ExternalKknBatch::findOrFail($data['batch_id']);
+        $rows = collect($data['rows'])->filter(fn ($row) => (bool) ($row['valid'] ?? true))->values()->all();
+
+        return $this->createExternalParticipants($batch, $rows, false);
+    }
+
     public function import(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -175,12 +248,91 @@ class ExternalParticipantController extends Controller
                     'mahasiswa_id' => $mahasiswa->id,
                     'periode_id' => $batch->periode_id,
                 ], [
-                    'status' => 'approved',
+                    'status' => 'pending',
                     'role' => 'member',
                     'registration_date' => now(),
-                    'approved_at' => now(),
-                    'approved_by' => auth()->id(),
                     'notes' => 'Peserta eksternal import batch #'.$batch->id,
+                ]);
+                $created++;
+                $accounts[] = ['nama' => $nama, 'nim_asal' => $nim, 'username' => $username, 'password' => $password];
+            }
+        });
+
+        return $this->success(['created' => $created, 'skipped' => $skipped, 'accounts' => $accounts], 'Import peserta eksternal selesai.');
+    }
+
+
+    private function createExternalParticipants(ExternalKknBatch $batch, array $rows, bool $legacyImport = false): JsonResponse
+    {
+        $faculty = Fakultas::firstOrCreate(['code' => 'EXT'], ['nama' => 'Mahasiswa Eksternal', 'short_name' => 'Eksternal']);
+        $prodi = Prodi::firstOrCreate(['code' => 'EXT', 'fakultas_id' => $faculty->id], ['nama' => 'Program Studi Eksternal', 'short_name' => 'Eksternal']);
+        $created = 0;
+        $skipped = 0;
+        $accounts = [];
+
+        DB::transaction(function () use ($rows, $batch, $faculty, $prodi, &$created, &$skipped, &$accounts) {
+            foreach ($rows as $i => $row) {
+                $raw = $row['raw'] ?? $row;
+                $nama = trim((string) ($row['nama'] ?? $raw['nama'] ?? $raw['name'] ?? ''));
+                $nim = trim((string) ($row['nim'] ?? $raw['nim'] ?? $raw['nim_asal'] ?? $raw['external_nim'] ?? ''));
+                if ($nama === '' || $nim === '') { $skipped++; continue; }
+                if (ExternalStudentProfile::where('batch_id', $batch->id)->where('external_nim', $nim)->exists()) { $skipped++; continue; }
+                if (Mahasiswa::where('origin_type', 'external')->where('nim', $nim)->exists()) { $skipped++; continue; }
+
+                $username = 'X-'.strtoupper($nim);
+                $base = $username;
+                $n = 1;
+                while (User::where('username', $username)->exists()) { $username = $base.'-'.$n++; }
+                $password = 'KknReguler#2026!';
+                $user = User::create([
+                    'username' => $username,
+                    'name' => $nama,
+                    'email' => $raw['email'] ?? null,
+                    'phone' => $raw['no_hp'] ?? $raw['phone'] ?? null,
+                    'address' => $raw['alamat'] ?? $raw['address'] ?? null,
+                    'is_active' => true,
+                    'must_change_password' => true,
+                    'password' => $password,
+                ]);
+                $user->assignRole('student');
+                $mahasiswa = Mahasiswa::create([
+                    'user_id' => $user->id,
+                    'nim' => $nim,
+                    'nama' => $nama,
+                    'fakultas_id' => $faculty->id,
+                    'prodi_id' => $prodi->id,
+                    'batch_year' => (int) now()->year,
+                    'gender' => strtoupper(substr((string) ($raw['jenis_kelamin'] ?? $raw['gender'] ?? ''), 0, 1)) ?: null,
+                    'phone' => $raw['no_hp'] ?? $raw['phone'] ?? null,
+                    'birth_date' => $raw['tgl_lahir'] ?? $raw['tanggal_lahir'] ?? $raw['birth_date'] ?? null,
+                    'alamat' => $raw['alamat'] ?? $raw['address'] ?? null,
+                    'status_aktif' => 'aktif',
+                    'sks_completed' => 0,
+                    'gpa' => 0,
+                    'is_paid_ukt' => false,
+                    'origin_type' => 'external',
+                    'external_university_id' => $batch->external_university_id,
+                    'external_nim' => $nim,
+                    'external_faculty_name' => $row['fakultas_asal'] ?? $raw['fakultas_asal'] ?? $raw['external_faculty'] ?? null,
+                    'external_prodi_name' => $row['prodi_asal'] ?? $raw['prodi_asal'] ?? $raw['external_study_program'] ?? null,
+                ]);
+                ExternalStudentProfile::create([
+                    'mahasiswa_id' => $mahasiswa->id,
+                    'batch_id' => $batch->id,
+                    'external_nim' => $nim,
+                    'home_university' => $row['kampus_asal'] ?? $raw['kampus_asal'] ?? $raw['home_university'] ?? $batch->home_university,
+                    'external_faculty' => $row['fakultas_asal'] ?? $raw['fakultas_asal'] ?? $raw['external_faculty'] ?? null,
+                    'external_study_program' => $row['prodi_asal'] ?? $raw['prodi_asal'] ?? $raw['external_study_program'] ?? null,
+                    'source_row_number' => (int) ($row['row'] ?? ($i + 2)),
+                ]);
+                PesertaKkn::firstOrCreate([
+                    'mahasiswa_id' => $mahasiswa->id,
+                    'periode_id' => $batch->periode_id,
+                ], [
+                    'status' => 'pending',
+                    'role' => 'member',
+                    'registration_date' => now(),
+                    'notes' => 'Peserta eksternal import batch #'.$batch->id.' (menunggu verifikasi admin)',
                 ]);
                 $created++;
                 $accounts[] = ['nama' => $nama, 'nim_asal' => $nim, 'username' => $username, 'password' => $password];

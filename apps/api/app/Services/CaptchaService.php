@@ -80,15 +80,19 @@ class CaptchaService
             return false;
         }
 
-        // Delete immediately — one-time use
-        Cache::forget($key);
+        $valid = false;
 
         if (app()->environment('localbuild')) {
             $expected = hash_hmac('sha256', trim($answer), (string) config('app.key'));
-
-            return hash_equals($hashedAnswer, $expected);
+            $valid = hash_equals($hashedAnswer, $expected);
+        } else {
+            $valid = Hash::check(trim($answer), $hashedAnswer);
         }
 
-        return Hash::check(trim($answer), $hashedAnswer);
+        if ($valid) {
+            Cache::forget($key);
+        }
+
+        return $valid;
     }
 }

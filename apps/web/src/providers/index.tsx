@@ -61,14 +61,10 @@ export function Providers({ children }: { children: ReactNode }): React.JSX.Elem
 
     const path = window.location.pathname;
     const isProtected = PROTECTED_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`));
-    // Fix login-stuck-bug: also fetch user on /login so that a still-valid
-    // session cookie can trigger the auto-redirect in the login page itself.
-    const isLoginPage = path === "/login" || path.startsWith("/login/");
-
-    // Always attempt to fetch user on protected routes. The HttpOnly
-    // sibermas_token cookie is sent automatically via credentials — we
-    // cannot read it client-side, so we just try the API call.
-    if (isProtected || isLoginPage) {
+    // Only probe auth on protected routes. Probing /auth/user on /login while
+    // anonymous creates expected 401 noise in DevTools and confuses users.
+    // HttpOnly cookies are still sent automatically when protected pages load.
+    if (isProtected) {
       useAuthStore.getState().fetchUser().then(() => {
         if (useAuthStore.getState().isAuthenticated) {
           usePeriodStore.getState().fetchPeriodContext();

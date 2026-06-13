@@ -74,8 +74,9 @@ export default function LoginPage(): React.JSX.Element {
     setIsRefreshing(true);
 
     try {
-      const response = await fetch(apiUrl('/auth/captcha'), {
+      const response = await fetch('/api/v1/auth/captcha', {
         credentials: 'include',
+        cache: 'no-store',
         headers: { Accept: 'application/json' },
       });
 

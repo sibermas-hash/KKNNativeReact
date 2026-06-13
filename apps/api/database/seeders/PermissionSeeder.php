@@ -16,6 +16,7 @@ class PermissionSeeder extends Seeder
         // setiap permission name yang di-reference sudah ter-seed.
         $permissions = [
             // Master Data
+            'view-master-data',
             'manage-master-data',
 
             // User Management
@@ -91,6 +92,7 @@ class PermissionSeeder extends Seeder
         if ($admin) {
             $admin->syncPermissions([
                 'access-admin-panel',
+                'view-master-data',
                 'manage-master-data',
                 'view-grades',
                 'manage-grades',
@@ -123,13 +125,13 @@ class PermissionSeeder extends Seeder
                 'view-participants',
                 'view-grades',
                 'view-reports',
-                'view-audit-logs',
+                // Read-only master-data dropdown/list endpoints.
+                'view-master-data',
                 // Masih perlu permission level-koleksi untuk endpoint admin
                 // yang fundamental (kelompok listing/search, DPL list).
                 // Controller filter dengan faculty scoping.
                 'manage-groups',
                 'manage-dpl',
-                'manage-master-data',
             ]);
         }
 

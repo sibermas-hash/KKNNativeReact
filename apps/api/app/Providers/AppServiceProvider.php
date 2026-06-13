@@ -115,6 +115,7 @@ class AppServiceProvider extends ServiceProvider
         // Admin operation gates
         $adminPolicy = new AdminOperationPolicy;
         Gate::define('manage-master-data', fn ($user) => $adminPolicy->manageMasterData($user));
+        Gate::define('view-master-data', fn ($user) => $adminPolicy->viewMasterData($user));
         Gate::define('manage-groups', fn ($user) => $adminPolicy->manageGroups($user));
         Gate::define('manage-settings', fn ($user) => $adminPolicy->manageSettings($user));
         Gate::define('sync-data', fn ($user) => $adminPolicy->syncData($user));

@@ -23,6 +23,11 @@ class AdminOperationPolicy extends BasePolicy
         return $user->hasAnyRole(['admin', 'superadmin']);
     }
 
+    public function viewMasterData(User $user): bool
+    {
+        return $user->hasAnyRole(['superadmin', 'admin', 'faculty_admin']);
+    }
+
     public function manageGroups(User $user): bool
     {
         $bypass = $this->superAdminBypass($user, 'manageGroups');

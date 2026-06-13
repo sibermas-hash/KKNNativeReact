@@ -110,8 +110,10 @@ class EnsureAdminAuthorization
         TahunAkademikController::class => 'manage-master-data',
         PeriodeController::class => 'manage-master-data',
         PeriodeDocumentTemplateController::class => 'manage-master-data',
-        FakultasController::class => 'manage-master-data',
-        ProdiController::class => 'manage-master-data',
+        // Read-only list endpoints are shared with faculty_admin; mutating
+        // routes for these controllers are additionally guarded role:superadmin.
+        FakultasController::class => 'view-master-data',
+        ProdiController::class => 'view-master-data',
         LokasiController::class => 'manage-master-data',
         JenisKknController::class => 'manage-master-data',
         JenisKknDocumentRequirementController::class => 'manage-master-data',

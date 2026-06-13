@@ -47,12 +47,14 @@ it('faculty_admin role has read-only permissions needed for admin panel', functi
     $permissions = $facultyAdmin->permissions->pluck('name')->all();
 
     // Core read-only permissions yang diperlukan UI admin bagi faculty admin.
-    foreach (['access-admin-panel', 'view-participants', 'view-grades', 'view-reports'] as $required) {
+    foreach (['access-admin-panel', 'view-master-data', 'view-participants', 'view-grades', 'view-reports'] as $required) {
         expect($permissions)->toContain($required);
     }
 
-    // Faculty_admin TIDAK boleh punya manage-settings (privileged admin only).
-    expect($permissions)->not->toContain('manage-settings');
+    // Faculty_admin TIDAK boleh punya privileged/write permissions.
+    foreach (['manage-settings', 'manage-master-data', 'view-audit-logs'] as $forbidden) {
+        expect($permissions)->not->toContain($forbidden);
+    }
 });
 
 it('admin role has all permissions except manage-settings', function () {

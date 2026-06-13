@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@sibermas/constants';
 import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
@@ -9,7 +9,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { updateProfileSchema, type UpdateProfileFormData } from '@sibermas/schemas';
 import { setProfileCompleteCookie, useAuthStore } from '@/stores';
-import { profileApi } from '@/lib/api';
+import { profileApi, rawApi } from '@/lib/api';
 import { toast } from 'sonner';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { driver } from 'driver.js';
@@ -108,6 +108,7 @@ interface StudentAddressSectionProps {
   provinceCode: string;
   regencyCode: string;
   districtCode: string;
+  villageCode: string;
   provinces: WilayahOption[];
   regencies: WilayahOption[];
   districts: WilayahOption[];
@@ -116,6 +117,7 @@ interface StudentAddressSectionProps {
   setProvinceCode: (value: string) => void;
   setRegencyCode: (value: string) => void;
   setDistrictCode: (value: string) => void;
+  setVillageCode: (value: string) => void;
 }
 
 const FIELD_LABELS: Record<string, string> = {
@@ -477,17 +479,25 @@ function ProfileSidebar({ avatarRef, statusRef, avatarInputRef, user, student, l
   );
 }
 
-function StudentAddressSection({ register, errors, isEditing, typography }: StudentAddressSectionProps) {
+function StudentAddressSection({ register, errors, isEditing, typography, provinceCode, regencyCode, districtCode, villageCode, provinces, regencies, districts, villages, setValue, setProvinceCode, setRegencyCode, setDistrictCode, setVillageCode }: StudentAddressSectionProps) {
   return (
     <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5">
-      <div className="space-y-1">
-        <h2 className={`${typography.label} text-[color:var(--profile-text)]`}>Alamat Asli sesuai KTP</h2>
-        <p className={`${typography.meta} text-[color:var(--profile-muted)]`}>Isi alamat asli sesuai KTP, bukan alamat kos atau alamat tinggal sementara. Alamat tertulis ini menjadi acuan utama data profil.</p>
+      <div>
+        <h3 className={`${typography.label} text-[color:var(--profile-text)]`}>Alamat KTP</h3>
+        <p className={`${typography.body} text-xs text-[color:var(--profile-muted)]`}>Pilih wilayah sesuai KTP. Verifikasi titik alamat diproses otomatis di backend.</p>
       </div>
-      <TextArea label="Alamat Lengkap sesuai KTP" registration={register('address')} disabled={!isEditing} error={errors.address?.message} />
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"><TextInput label="Desa/Kelurahan KTP" registration={register('address_village_name')} disabled={!isEditing} /><TextInput label="Kecamatan KTP" registration={register('address_district_name')} disabled={!isEditing} /><TextInput label="Kabupaten/Kota KTP" registration={register('address_regency_name')} disabled={!isEditing} /><TextInput label="Kode Pos KTP" registration={register('address_postal_code')} disabled={!isEditing} /></div>
-      <input type="hidden" {...register('address_lat', { valueAsNumber: true })} />
-      <input type="hidden" {...register('address_lng', { valueAsNumber: true })} />
+      <TextArea label="Alamat Detail sesuai KTP" registration={register('address')} disabled={!isEditing} error={errors.address?.message} />
+      <input type="hidden" {...register('address_province_code')} />
+      <input type="hidden" {...register('address_regency_code')} />
+      <input type="hidden" {...register('address_district_code')} />
+      <input type="hidden" {...register('address_village_code')} />
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <SelectInput label="Provinsi KTP" disabled={!isEditing} value={provinceCode} options={provinces} placeholder="Pilih provinsi" onChange={(value) => { setProvinceCode(value); setRegencyCode(''); setDistrictCode(''); setVillageCode(''); setValue('address_province_code', value, { shouldDirty: true }); setValue('address_regency_code', '', { shouldDirty: true }); setValue('address_district_code', '', { shouldDirty: true }); setValue('address_village_code', '', { shouldDirty: true }); setValue('address_regency_name', '', { shouldDirty: true }); setValue('address_district_name', '', { shouldDirty: true }); setValue('address_village_name', '', { shouldDirty: true }); }} />
+        <SelectInput label="Kabupaten/Kota KTP" disabled={!isEditing || !provinceCode} value={regencyCode} options={regencies} placeholder="Pilih kab/kota" onChange={(value) => { const selected = regencies.find((item) => item.code === value); setRegencyCode(value); setDistrictCode(''); setVillageCode(''); setValue('address_regency_code', value, { shouldDirty: true }); setValue('address_district_code', '', { shouldDirty: true }); setValue('address_village_code', '', { shouldDirty: true }); setValue('address_regency_name', selected?.name ?? '', { shouldDirty: true }); setValue('address_district_name', '', { shouldDirty: true }); setValue('address_village_name', '', { shouldDirty: true }); }} />
+        <SelectInput label="Kecamatan KTP" disabled={!isEditing || !regencyCode} value={districtCode} options={districts} placeholder="Pilih kecamatan" onChange={(value) => { const selected = districts.find((item) => item.code === value); setDistrictCode(value); setVillageCode(''); setValue('address_district_code', value, { shouldDirty: true }); setValue('address_village_code', '', { shouldDirty: true }); setValue('address_district_name', selected?.name ?? '', { shouldDirty: true }); setValue('address_village_name', '', { shouldDirty: true }); }} />
+        <SelectInput label="Desa/Kelurahan KTP" disabled={!isEditing || !districtCode} value={villageCode} options={villages} placeholder="Pilih desa" onChange={(value) => { const selected = villages.find((item) => item.code === value); setVillageCode(value); setValue('address_village_code', value, { shouldDirty: true }); setValue('address_village_name', selected?.name ?? '', { shouldDirty: true }); }} />
+        <TextInput label="Kode Pos KTP" registration={register('address_postal_code')} disabled={!isEditing} />
+      </div>
     </section>
   );
 }
@@ -502,9 +512,10 @@ export default function ProfilePage(): React.JSX.Element {
   const [isEditing, setIsEditing] = useState(false);
   const [avatarLoading, setAvatarLoading] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
-  const [_reverseGeocoding, setReverseGeocoding] = useState(false);
-  const [_forwardGeocoding, setForwardGeocoding] = useState(false);
-  const lastMapSyncedQueryRef = useRef('');
+  const [provinceCode, setProvinceCode] = useState('');
+  const [regencyCode, setRegencyCode] = useState('');
+  const [districtCode, setDistrictCode] = useState('');
+  const [villageCode, setVillageCode] = useState('');
   const tutorialTargets = useRef<Record<TutorialTarget, HTMLElement | null>>({ intro: null, theme: null, avatar: null, status: null, form: null });
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -516,8 +527,28 @@ export default function ProfilePage(): React.JSX.Element {
     el.style.background = themeConfig.backdrop;
   }, [themeConfig]);
 
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting, isDirty } } = useForm<UpdateProfileFormData>({
+  const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting, isDirty } } = useForm<UpdateProfileFormData>({
     resolver: zodResolver(updateProfileSchema),
+  });
+
+  const provincesQ = useQuery({
+    queryKey: ['regions', 'provinsi'],
+    queryFn: async () => ((await rawApi.get('/regions/provinsi')).data as { data?: WilayahOption[] }).data ?? [],
+  });
+  const regenciesQ = useQuery({
+    queryKey: ['regions', 'kabupaten', provinceCode],
+    queryFn: async () => ((await rawApi.get('/regions/kabupaten', { params: { province_code: provinceCode } })).data as { data?: WilayahOption[] }).data ?? [],
+    enabled: Boolean(provinceCode),
+  });
+  const districtsQ = useQuery({
+    queryKey: ['regions', 'kecamatan', regencyCode],
+    queryFn: async () => ((await rawApi.get('/regions/kecamatan', { params: { regency_code: regencyCode } })).data as { data?: WilayahOption[] }).data ?? [],
+    enabled: Boolean(regencyCode),
+  });
+  const villagesQ = useQuery({
+    queryKey: ['regions', 'desa', districtCode],
+    queryFn: async () => ((await rawApi.get('/regions/desa', { params: { district_code: districtCode } })).data as { data?: WilayahOption[] }).data ?? [],
+    enabled: Boolean(districtCode),
   });
 
   const student = profileData?.student ?? null;
@@ -528,108 +559,12 @@ export default function ProfilePage(): React.JSX.Element {
   const isLecturer = !!lecturer;
   const externalProfile = student?.external_profile ?? null;
   const isExternalStudent = !!externalProfile;
-  const addressValue = watch('address');
-  const addressLat = watch('address_lat');
-  const addressLng = watch('address_lng');
-  const villageValue = watch('address_village_name');
-  const districtValue = watch('address_district_name');
-  const regencyValue = watch('address_regency_name');
-  const postalCodeValue = watch('address_postal_code');
-
   const setTutorialTargetRef = (target: TutorialTarget) => (node: HTMLElement | null) => {
     tutorialTargets.current[target] = node;
   };
 
   const changeTheme = (nextTheme: ThemeKey) => {
     setTheme(nextTheme);
-  };
-
-  const _handleAddressPointChange = async (point: { lat: number; lng: number }) => {
-    setValue('address_lat', point.lat, { shouldDirty: true });
-    setValue('address_lng', point.lng, { shouldDirty: true });
-    setReverseGeocoding(true);
-    try {
-      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${point.lat}&lon=${point.lng}&zoom=18&addressdetails=1`, {
-        headers: { Accept: 'application/json' },
-      });
-      if (!response.ok) throw new Error('Reverse geocoding failed');
-      const data = await response.json() as { display_name?: string; address?: ReverseGeocodeAddress };
-      const address = data.address ?? {};
-      // Do not overwrite user's manual KTP address from reverse geocode.
-      // Logistics-style: manual address = truth; pin/geocode = delivery aid.
-      const nextAddress = addressValue || composeAddress(data.display_name, address);
-      const nextVillage = cleanAdminName(address.village || address.suburb || address.neighbourhood || address.town);
-      const nextDistrict = cleanAdminName(address.municipality || address.county || address.state_district);
-      const nextRegency = cleanAdminName(address.city || address.county || address.state_district);
-      const nextPostalCode = address.postcode ?? '';
-
-      if (!addressValue) setValue('address', nextAddress, { shouldDirty: true });
-      setValue('address_village_name', nextVillage, { shouldDirty: true });
-      setValue('address_district_name', nextDistrict, { shouldDirty: true });
-      setValue('address_regency_name', nextRegency, { shouldDirty: true });
-      setValue('address_postal_code', nextPostalCode, { shouldDirty: true });
-      lastMapSyncedQueryRef.current = buildAddressQueries({
-        fullAddress: nextAddress,
-        village: nextVillage,
-        district: nextDistrict,
-        regency: nextRegency,
-        postalCode: nextPostalCode,
-      })[0] ?? '';
-      toast.success('Titik peta tersimpan. Alamat manual tidak diubah.');
-    } catch {
-      toast.warning('Titik tersimpan. Alamat otomatis gagal dibaca, silakan lengkapi manual.');
-    } finally {
-      setReverseGeocoding(false);
-    }
-  };
-
-  const _syncMapFromAddress = async () => {
-    const queries = buildAddressQueries({
-      fullAddress: addressValue,
-      village: villageValue,
-      district: districtValue,
-      regency: regencyValue,
-      postalCode: postalCodeValue,
-    });
-    const primaryQuery = queries[0];
-
-    if (!primaryQuery) {
-      toast.warning('Lengkapi alamat KTP terlebih dahulu sebelum mencari titik peta.');
-      return;
-    }
-    if (primaryQuery === lastMapSyncedQueryRef.current && typeof addressLat === 'number' && typeof addressLng === 'number') {
-      return;
-    }
-
-    setForwardGeocoding(true);
-    try {
-      let bestResult: ForwardGeocodeResult | null = null;
-      let matchedQuery = '';
-
-      for (const query of queries) {
-        const response = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&countrycodes=id&limit=5&q=${encodeURIComponent(query)}`, {
-          headers: { Accept: 'application/json', 'Accept-Language': 'id,en' },
-        });
-        if (!response.ok) throw new Error('Forward geocoding failed');
-        const results = await response.json() as ForwardGeocodeResult[];
-        const candidate = pickBestForwardGeocodeResult(results, query);
-        if (candidate) {
-          bestResult = candidate;
-          matchedQuery = query;
-          break;
-        }
-      }
-
-      if (!bestResult) throw new Error('Location not found');
-      setValue('address_lat', Number(bestResult.lat), { shouldDirty: true });
-      setValue('address_lng', Number(bestResult.lon), { shouldDirty: true });
-      lastMapSyncedQueryRef.current = matchedQuery;
-      toast.success('Peta alamat KTP disesuaikan dari alamat terdekat');
-    } catch {
-      toast.warning('Lokasi tidak ditemukan dari alamat. Lengkapi alamat lebih detail atau pilih titik pada peta.');
-    } finally {
-      setForwardGeocoding(false);
-    }
   };
 
   const _closeTutorial = () => {
@@ -678,10 +613,14 @@ export default function ProfilePage(): React.JSX.Element {
   useEffect(() => {
     if (!user) return;
     profileApi.get().then((res: unknown) => {
-      const r = res as { student?: StudentProfile; lecturer?: LecturerProfile; user?: { phone?: string; address?: string; address_village_name?: string; address_district_name?: string; address_regency_name?: string; address_postal_code?: string; address_verified_at?: string; address_lat?: number; address_lng?: number; mahasiswa?: StudentProfile; dosen?: LecturerProfile }; pending_change_request?: ChangeRequest };
+      const r = res as { student?: StudentProfile; lecturer?: LecturerProfile; user?: { phone?: string; address?: string; address_village_name?: string; address_district_name?: string; address_regency_name?: string; address_postal_code?: string; address_province_code?: string; address_regency_code?: string; address_district_code?: string; address_village_code?: string; address_verified_at?: string; address_lat?: number; address_lng?: number; mahasiswa?: StudentProfile; dosen?: LecturerProfile }; pending_change_request?: ChangeRequest };
       const nextStudent = r?.student ?? r?.user?.mahasiswa ?? null;
       const nextLecturer = r?.lecturer ?? r?.user?.dosen ?? null;
       const pending = r?.pending_change_request?.status === 'pending' ? r.pending_change_request : null;
+      setProvinceCode(r?.user?.address_province_code ?? '');
+      setRegencyCode(r?.user?.address_regency_code ?? '');
+      setDistrictCode(r?.user?.address_district_code ?? '');
+      setVillageCode(r?.user?.address_village_code ?? '');
       setProfileData({ student: nextStudent, lecturer: nextLecturer, pending });
       reset({
         name: user.name ?? '',
@@ -692,9 +631,11 @@ export default function ProfilePage(): React.JSX.Element {
         address_district_name: (r?.user?.address_district_name ?? (user as unknown as { address_district_name?: string }).address_district_name ?? '') as string,
         address_regency_name: (r?.user?.address_regency_name ?? (user as unknown as { address_regency_name?: string }).address_regency_name ?? '') as string,
         address_postal_code: (r?.user?.address_postal_code ?? (user as unknown as { address_postal_code?: string }).address_postal_code ?? '') as string,
-        address_verified: !!r?.user?.address_verified_at,
-        address_lat: r?.user?.address_lat != null ? Number(r.user.address_lat) : null,
-        address_lng: r?.user?.address_lng != null ? Number(r.user.address_lng) : null,
+        address_province_code: r?.user?.address_province_code ?? '',
+        address_regency_code: r?.user?.address_regency_code ?? '',
+        address_district_code: r?.user?.address_district_code ?? '',
+        address_village_code: r?.user?.address_village_code ?? '',
+
         nik: (nextStudent?.nik as string) ?? '',
         mother_name: (nextStudent?.mother_name as string) ?? '',
         gender: ((nextStudent?.gender ?? nextLecturer?.gender) as '' | 'L' | 'P') ?? '',
@@ -988,7 +929,7 @@ export default function ProfilePage(): React.JSX.Element {
  
              {isExternalStudent && <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5"><h2 className={`flex items-center gap-2 ${typography.label} text-[color:var(--profile-text)]`}><GraduationCap size={16} /> Data Kampus Asal</h2><div className="grid grid-cols-1 gap-4 md:grid-cols-2"><TextInput label="NIM Asal" value={externalProfile?.external_nim ?? '-'} disabled /><TextInput label="Kampus Asal" value={externalProfile?.home_university ?? '-'} disabled /><TextInput label="Fakultas Asal" registration={register('external_faculty')} disabled={!isEditing} error={errors.external_faculty?.message} /><TextInput label="Prodi Asal" registration={register('external_study_program')} disabled={!isEditing} error={errors.external_study_program?.message} /></div><div className={`flex gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] transition-colors ${typography.meta}`}><Info size={18} className="shrink-0" />Jika data sudah terisi dari import, cukup cek. Jika kosong atau salah, lengkapi/perbaiki di sini.</div></section>}
  
-             {isStudent && <StudentAddressSection register={register} errors={errors} isEditing={isEditing} typography={typography} />}
+             {isStudent && <StudentAddressSection register={register} errors={errors} isEditing={isEditing} typography={typography} provinceCode={provinceCode} regencyCode={regencyCode} districtCode={districtCode} villageCode={villageCode} provinces={provincesQ.data ?? []} regencies={regenciesQ.data ?? []} districts={districtsQ.data ?? []} villages={villagesQ.data ?? []} setValue={setValue} setProvinceCode={setProvinceCode} setRegencyCode={setRegencyCode} setDistrictCode={setDistrictCode} setVillageCode={setVillageCode} />}
  
              {isLecturer && <section className="space-y-4 border-t border-[color:var(--profile-border)] pt-5"><h2 className={`${typography.label} text-[color:var(--profile-text)]`}>Data Kepegawaian, Keuangan & Pajak</h2><div className="grid grid-cols-1 gap-4 md:grid-cols-2"><TextInput label="Nama Bergelar" registration={register('nama_gelar')} disabled={!isEditing} /><TextInput label="NIDN" registration={register('nidn')} disabled={!isEditing} /><TextInput label="NIK Dosen" registration={register('dosen_nik')} disabled={!isEditing} /><TextInput label="Jabatan Fungsional" registration={register('jabatan')} disabled={!isEditing} /><TextInput label="Kelas Jabatan" registration={register('kelas_jabatan')} disabled={!isEditing} /><TextInput label="Tugas Tambahan" registration={register('tugas_tambahan')} disabled={!isEditing} /><TextInput label="Golongan" registration={register('golongan')} disabled={!isEditing} /><TextInput label="Pangkat" registration={register('pangkat')} disabled={!isEditing} /><TextArea label="Alamat Dosen" registration={register('dosen_alamat')} disabled={!isEditing} /><TextInput label="No. Rekening" registration={register('no_rekening')} disabled={!isEditing} /><TextInput label="Nama Bank" registration={register('nama_bank')} disabled={!isEditing} /><TextInput label="NPWP" registration={register('npwp')} disabled={!isEditing} /><TextInput label="Status Aktif" value={(lecturer?.status_aktif as string) ?? '-'} disabled /><TextInput label="Status Pegawai" value={(lecturer?.status_pegawai as string) ?? '-'} disabled /><TextInput label="Workshop DPL" value={lecturer?.has_workshop ? `Sudah (${(lecturer?.workshop_date as string) ?? '-'})` : 'Belum'} disabled /></div><div className={`flex gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-4 text-[color:var(--profile-soft-text)] transition-colors ${typography.meta}`}><Info size={18} className="shrink-0" />Kolom yang tidak relevan untuk proses KKN seperti tanggal pensiun dan pendidikan terakhir tidak ditampilkan. Pengisian awal disimpan langsung; perubahan setelah profil lengkap menunggu persetujuan admin.</div></section>}
  
@@ -1014,6 +955,8 @@ function TextArea({ label, registration, disabled, error }: { label: string; reg
   return <div className="space-y-1.5"><label className="text-sm font-medium text-[color:var(--profile-text)]">{label}</label><textarea {...registration} disabled={disabled} rows={3} className={cx('w-full rounded-xl border px-3 py-2 text-sm leading-6 tracking-[-0.01em] shadow-sm transition focus:-translate-y-0.5 focus:shadow-md', fieldClass)} />{error && <p className="text-xs text-rose-600">{error}</p>}</div>;
 }
 
-function SelectInput({ label, registration, disabled, options, error }: { label: string; registration?: Record<string, unknown>; disabled?: boolean; options: string[][]; error?: string }) {
-  return <div className="space-y-1.5"><label className="text-sm font-medium text-[color:var(--profile-text)]">{label}</label><select {...registration} disabled={disabled} className={cx('h-10 w-full rounded-xl border px-3 text-sm tracking-[-0.01em] shadow-sm transition focus:-translate-y-0.5 focus:shadow-md', fieldClass)}>{options.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>{error && <p className="text-xs text-rose-600">{error}</p>}</div>;
+function SelectInput({ label, registration, disabled, options, error, value, placeholder, onChange }: { label: string; registration?: Record<string, unknown>; disabled?: boolean; options: string[][] | WilayahOption[]; error?: string; value?: string; placeholder?: string; onChange?: (value: string) => void }) {
+  const normalized = options.map((option) => Array.isArray(option) ? { code: option[0], name: option[1] } : option);
+  const controlledProps = onChange ? { value, onChange: (event: React.ChangeEvent<HTMLSelectElement>) => onChange(event.target.value) } : {};
+  return <div className="space-y-1.5"><label className="text-sm font-medium text-[color:var(--profile-text)]">{label}</label><select {...registration} {...controlledProps} disabled={disabled} className={cx('h-10 w-full rounded-xl border px-3 text-sm tracking-[-0.01em] shadow-sm transition focus:-translate-y-0.5 focus:shadow-md', fieldClass)}>{placeholder && <option value="">{placeholder}</option>}{normalized.map((option) => <option key={option.code} value={option.code}>{option.name}</option>)}</select>{error && <p className="text-xs text-rose-600">{error}</p>}</div>;
 }

@@ -14,6 +14,10 @@ export interface User {
   address_district_name?: string | null;
   address_regency_name?: string | null;
   address_postal_code?: string | null;
+  address_province_code?: string | null;
+  address_regency_code?: string | null;
+  address_district_code?: string | null;
+  address_village_code?: string | null;
   address_lat?: number | null;
   address_lng?: number | null;
   address_registered_at?: string | null;

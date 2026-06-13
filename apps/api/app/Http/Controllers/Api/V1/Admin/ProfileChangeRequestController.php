@@ -21,6 +21,7 @@ class ProfileChangeRequestController extends Controller
     private const USER_FIELDS = [
         'name', 'email', 'phone', 'address', 'address_village_name',
         'address_district_name', 'address_regency_name', 'address_postal_code',
+        'address_province_code', 'address_regency_code', 'address_district_code', 'address_village_code',
         'address_lat', 'address_lng', 'address_registered_at', 'address_verified_at',
     ];
 

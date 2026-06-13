@@ -14,6 +14,12 @@ type CertIndex = {
   sample?: { id: number; nama_mahasiswa?: string; nim?: string; certificate_number?: string; verification_token?: string } | null;
 };
 
+const DEFAULT_LAYOUT = JSON.stringify({
+  photo: { visible: true, x: 77, y: 23, width: 11, height: 14 },
+  signer_right_signature: { visible: true, width: 16, height: 8 },
+  stamp: { visible: true, width: 11, height: 11 },
+}, null, 2);
+
 function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
@@ -40,9 +46,13 @@ export default function AdminSertifikatPage(): React.JSX.Element {
   });
 
   const saveM = useMutation({
-    mutationFn: () => api.post('/admin/sertifikat', { periode_id: Number(periodeId), configs }),
+    mutationFn: () => {
+      const layout = configs.find((c) => c.config_key === 'cert_layout_json')?.value;
+      if (layout) JSON.parse(layout);
+      return api.post('/admin/sertifikat', { periode_id: Number(periodeId), configs });
+    },
     onSuccess: () => { toast.success('Konfigurasi tersimpan'); qc.invalidateQueries({ queryKey: ['admin-sertifikat'] }); },
-    onError: () => toast.error('Gagal menyimpan konfigurasi'),
+    onError: () => toast.error('Gagal menyimpan konfigurasi. Pastikan Layout JSON valid.'),
   });
 
   const regenM = useMutation({
@@ -75,6 +85,11 @@ export default function AdminSertifikatPage(): React.JSX.Element {
 
   const data = q.data;
   const sampleId = data?.sample?.id;
+
+  function applyDefaultLayout() {
+    setConfigs((prev) => prev.map((c) => c.config_key === 'cert_layout_json' ? { ...c, value: DEFAULT_LAYOUT } : c));
+    toast.success('Layout default foto + TTD kanan diterapkan');
+  }
 
   return (
     <div className="space-y-6">
@@ -119,7 +134,13 @@ export default function AdminSertifikatPage(): React.JSX.Element {
       </div>
 
       <div className="rounded-2xl border bg-white p-5 shadow-sm space-y-4">
-        <div className="flex items-center justify-between"><h2 className="font-black">Konfigurasi Tampilan</h2><button onClick={() => saveM.mutate()} disabled={!periodeId} className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-40"><Save size={16}/>Simpan</button></div>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="font-black">Konfigurasi Tampilan</h2>
+          <div className="flex gap-2">
+            <button onClick={applyDefaultLayout} type="button" className="rounded-xl border px-4 py-2 text-sm font-bold">Pakai Layout Default</button>
+            <button onClick={() => saveM.mutate()} disabled={!periodeId} className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-bold text-white disabled:opacity-40"><Save size={16}/>Simpan</button>
+          </div>
+        </div>
         <div className="grid gap-4 md:grid-cols-2">
           {configs.filter(c => c.type !== 'image').map((c, idx) => (
             <label key={c.config_key} className="block">
@@ -144,7 +165,7 @@ export default function AdminSertifikatPage(): React.JSX.Element {
           </select>
           <label className="inline-flex cursor-pointer items-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold"><Upload size={16}/>Pilih File<input type="file" accept="image/*" className="hidden" onChange={(e) => upload(e.target.files?.[0])}/></label>
         </div>
-        <p className="text-xs text-slate-500">Format: jpg/png/webp, maks 4MB. Placeholder body: [Nama], [NIM], [Fakultas], [Prodi], [Kelompok], [Lokasi], [Periode].</p>
+        <p className="text-xs text-slate-500">Format: jpg/png/webp, maks 4MB. Foto peserta otomatis dari avatar mahasiswa. Placeholder body: [Nama], [NIM], [Fakultas], [Prodi], [Kelompok], [Lokasi], [Periode].</p>
       </div>
     </div>
   );

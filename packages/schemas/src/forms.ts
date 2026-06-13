@@ -69,6 +69,10 @@ export const updateProfileSchema = z.object({
   address_district_name: z.string().max(255).optional(),
   address_regency_name: z.string().max(255).optional(),
   address_postal_code: z.string().max(10, 'Kode pos maksimal 10 karakter').optional(),
+  address_province_code: z.string().max(2).optional(),
+  address_regency_code: z.string().max(5).optional(),
+  address_district_code: z.string().max(8).optional(),
+  address_village_code: z.string().max(13).optional(),
   address_lat: z.preprocess(
     (value) => (value === '' || Number.isNaN(value) ? null : value),
     z.number().min(-90, 'Latitude tidak valid').max(90, 'Latitude tidak valid').nullable().optional(),

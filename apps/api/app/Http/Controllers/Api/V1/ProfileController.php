@@ -15,6 +15,9 @@ use App\Models\KKN\Mahasiswa;
 use App\Models\KKN\SystemSetting;
 use App\Models\ProfileChangeRequest;
 use App\Models\User;
+use App\Models\Region\IndonesiaDistrict;
+use App\Models\Region\IndonesiaRegency;
+use App\Models\Region\IndonesiaVillage;
 use App\Services\ActivityLogger;
 use App\Services\AvatarValidationService;
 use App\Services\Region\NominatimGeocodingService;
@@ -150,6 +153,10 @@ class ProfileController extends Controller
             'address_district_name' => ['nullable', 'string', 'max:150'],
             'address_regency_name' => ['nullable', 'string', 'max:150'],
             'address_postal_code' => ['nullable', 'string', 'max:10'],
+            'address_province_code' => ['nullable', 'string', 'size:2', 'exists:indonesia_provinces,code'],
+            'address_regency_code' => ['nullable', 'string', 'size:5', 'exists:indonesia_regencies,code'],
+            'address_district_code' => ['nullable', 'string', 'size:8', 'exists:indonesia_districts,code'],
+            'address_village_code' => ['nullable', 'string', 'max:13', 'exists:indonesia_villages,code'],
             // Mahasiswa biodata
             'nik' => ['nullable', 'regex:/^\d{16}$/'],
             'mother_name' => ['nullable', 'string', 'max:150'],
@@ -174,7 +181,21 @@ class ProfileController extends Controller
             'dosen_alamat' => ['nullable', 'string', 'max:500'],
         ]);
 
-        $addressInputChanged = collect(['address', 'address_village_name', 'address_district_name', 'address_regency_name', 'address_postal_code'])
+        if (! empty($validated['address_village_code'])) {
+            $village = IndonesiaVillage::query()->find($validated['address_village_code']);
+            if ($village) {
+                $district = IndonesiaDistrict::query()->find($village->district_code);
+                $regency = $district ? IndonesiaRegency::query()->find($district->regency_code) : null;
+                $validated['address_village_name'] = $village->name;
+                $validated['address_district_code'] = $district?->code;
+                $validated['address_district_name'] = $district?->name;
+                $validated['address_regency_code'] = $regency?->code;
+                $validated['address_regency_name'] = $regency?->name;
+                $validated['address_province_code'] = $regency?->province_code;
+            }
+        }
+
+        $addressInputChanged = collect(['address', 'address_village_name', 'address_district_name', 'address_regency_name', 'address_postal_code', 'address_province_code', 'address_regency_code', 'address_district_code', 'address_village_code'])
             ->contains(fn (string $field) => array_key_exists($field, $validated));
 
         if ($addressInputChanged) {
@@ -200,7 +221,9 @@ class ProfileController extends Controller
         // Address is written by the user; coordinates are backend-only metadata.
         $mapFields = [
             'address', 'address_village_name', 'address_district_name', 'address_regency_name',
-            'address_postal_code', 'address_lat', 'address_lng', 'address_verified_at',
+            'address_postal_code', 'address_province_code', 'address_regency_code',
+            'address_district_code', 'address_village_code', 'address_lat', 'address_lng',
+            'address_verified_at',
         ];
         $immediateMapUpdates = [];
         $mapChanges = [];
@@ -454,7 +477,7 @@ class ProfileController extends Controller
 
     private function applyProfileChanges(User $user, array $changes, ?Mahasiswa $mahasiswa, ?Dosen $dosen): void
     {
-        $userFields = ['name', 'email', 'phone', 'address', 'address_village_name', 'address_district_name', 'address_regency_name', 'address_postal_code', 'address_lat', 'address_lng', 'address_registered_at', 'address_verified_at'];
+        $userFields = ['name', 'email', 'phone', 'address', 'address_village_name', 'address_district_name', 'address_regency_name', 'address_postal_code', 'address_province_code', 'address_regency_code', 'address_district_code', 'address_village_code', 'address_lat', 'address_lng', 'address_registered_at', 'address_verified_at'];
         $mahasiswaFields = ['nik', 'mother_name', 'gender', 'shirt_size', 'birth_place', 'birth_date'];
         $externalProfileFields = ['external_faculty', 'external_study_program'];
         $dosenFields = ['nama_gelar', 'nidn', 'dosen_nik', 'jabatan', 'kelas_jabatan', 'tugas_tambahan', 'golongan', 'pangkat', 'no_rekening', 'nama_bank', 'npwp', 'gender', 'birth_date', 'dosen_alamat'];

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
-import { motion, useInView, useMotionValue, useSpring } from 'motion/react';
+import { motion, useInView } from 'motion/react';
 
 interface RevealOnScrollProps {
   children: React.ReactNode;
@@ -288,64 +288,5 @@ export function ParallaxSection({
         {children}
       </div>
     </div>
-  );
-}
-
-interface MagneticProps {
-  children: React.ReactElement;
-  range?: number;
-  strength?: number;
-}
-
-/**
- * Magnetic — Membungkus tombol untuk efek tarikan magnetik yang realistis.
- * Menggunakan useSpring untuk redaman elastis saat kursor mendekat.
- */
-export function Magnetic({ children, range = 35, strength = 0.35 }: MagneticProps): React.JSX.Element {
-  const ref = useRef<HTMLDivElement>(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const springX = useSpring(x, { stiffness: 120, damping: 18 });
-  const springY = useSpring(y, { stiffness: 120, damping: 18 });
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!ref.current) return;
-      const { clientX, clientY } = e;
-      const { left, top, width, height } = ref.current.getBoundingClientRect();
-      const centerX = left + width / 2;
-      const centerY = top + height / 2;
-      
-      const distanceX = clientX - centerX;
-      const distanceY = clientY - centerY;
-      const distance = Math.hypot(distanceX, distanceY);
-      
-      if (distance < range) {
-        x.set(distanceX * strength);
-        y.set(distanceY * strength);
-      } else {
-        x.set(0);
-        y.set(0);
-      }
-    };
-
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, [range, strength, x, y]);
-
-  return (
-    <motion.div
-      ref={ref}
-      onMouseLeave={() => {
-        x.set(0);
-        y.set(0);
-      }}
-      style={{ x: springX, y: springY }}
-      className="inline-block"
-    >
-      {children}
-    </motion.div>
   );
 }

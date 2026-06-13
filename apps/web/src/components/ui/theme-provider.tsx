@@ -18,23 +18,12 @@ export function ThemeProvider({ children }: { children: ReactNode }): React.JSX.
   const [theme, setThemeState] = useState<ThemeKey>('default');
 
   useEffect(() => {
-    const active = getStoredTheme();
-    setThemeState(active);
-    if (active === 'midnight') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    setThemeState(getStoredTheme());
   }, []);
 
   const setTheme = (next: ThemeKey) => {
     setThemeState(next);
     storeTheme(next);
-    if (next === 'midnight') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
   };
 
   const config = THEMES[theme];

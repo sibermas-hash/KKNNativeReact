@@ -24,6 +24,7 @@ import {
 
 const getNavGroups = (pathname: string, roles: string[]) => {
   const isSuperadmin = roles.includes('superadmin');
+  const isFacultyAdmin = roles.includes('faculty_admin') && !isSuperadmin;
   const isBlog = pathname.includes('/admin/warta') || pathname.includes('/admin/unduhan') || pathname.includes('/admin/notifikasi') || pathname.includes('/admin/konten-publik');
   const isSystem = pathname.includes('/admin/audit-log') || pathname.includes('/admin/activity-log') || pathname.includes('/admin/playground') || pathname.includes('/admin/database-sync') || pathname.includes('/admin/sinkron-siakad') || pathname.includes('/admin/sertifikat') || pathname.includes('/admin/pengaturan') || pathname.includes('/admin/pengguna') || pathname.includes('/admin/prodi') || pathname.includes('/admin/fakultas') || pathname.includes('/admin/profile-change-requests') || pathname.includes('/admin/avatar-moderation') || pathname.includes('/admin/monitoring');
 
@@ -114,10 +115,32 @@ const getNavGroups = (pathname: string, roles: string[]) => {
     ]},
   ];
 
+  const facultyReadableHrefs = new Set([
+    '/admin/dashboard',
+    '/admin/mahasiswa',
+    '/admin/audit-kualifikasi',
+    '/admin/pendaftaran',
+    '/admin/peserta-kkn',
+    '/admin/kelompok',
+    '/admin/laporan/harian',
+    '/admin/laporan/program-kerja',
+    '/admin/laporan/akhir',
+    '/admin/nilai',
+    '/admin/generator-nilai',
+    '/admin/rekapitulasi',
+    '/admin/evaluasi',
+  ]);
+
+  const visibleOperationalGroups = isFacultyAdmin
+    ? operationalGroups
+        .map((group) => ({ ...group, items: group.items.filter((item) => facultyReadableHrefs.has(item.href)) }))
+        .filter((group) => group.items.length > 0)
+    : operationalGroups;
+
   // Hub-separated sidebar: each admin portal shows only its own menu cluster.
   if (isSystem) return isSuperadmin ? systemGroups : [];
-  if (isBlog) return contentGroups;
-  return operationalGroups;
+  if (isBlog) return isFacultyAdmin ? [] : contentGroups;
+  return visibleOperationalGroups;
 };
 
 export default function AdminLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
@@ -161,10 +184,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       const isSuperadmin = r.includes('superadmin');
       if (!isSuperadmin && !user.password_changed_at) { router.replace('/ganti-password'); return; }
       if (!isSuperadmin && (!user.profile_complete || user.must_change_password)) { router.replace('/profil'); return; }
+      const isFaculty = r.includes('faculty_admin') && !isSuperadmin;
       if (!r.includes('superadmin') && !r.includes('admin') && !r.includes('faculty_admin')) router.replace('/');
       if (!isSuperadmin && isSystem) { router.replace('/admin'); return; }
+      if (isFaculty && isBlog) { router.replace('/admin'); return; }
     }
-  }, [isLoading, isAuthenticated, user, router, pathname, isSystem, fetchUser]);
+  }, [isLoading, isAuthenticated, user, router, pathname, isSystem, isBlog, fetchUser]);
 
   const roles = user?.roles || [];
   const hasAdminRole = roles.includes('superadmin') || roles.includes('admin') || roles.includes('faculty_admin');

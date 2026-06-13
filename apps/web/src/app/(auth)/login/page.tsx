@@ -74,19 +74,28 @@ export default function LoginPage(): React.JSX.Element {
     setIsRefreshing(true);
 
     try {
-      // handleResponse in client.ts already extracts response.data.data,
-      // so the result is the captcha object directly.
-      const data = await api.get('/auth/captcha') as {
-        captcha_id: string;
-        question: string;
-        expires_at: string;
-      };
-      if (data?.captcha_id) {
-        setCaptcha(data);
-        setValue('captcha_id', data.captcha_id, { shouldValidate: false });
-        setValue('captcha_answer', '', { shouldValidate: false });
-        clearErrors(['captcha_id', 'captcha_answer']);
+      const response = await fetch(apiUrl('/auth/captcha'), {
+        credentials: 'include',
+        headers: { Accept: 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new Error(`CAPTCHA request failed with status ${response.status}`);
       }
+
+      const payload = await response.json() as {
+        data?: { captcha_id: string; question: string; expires_at: string };
+      };
+      const data = payload.data;
+
+      if (!data?.captcha_id) {
+        throw new Error('CAPTCHA response missing captcha_id');
+      }
+
+      setCaptcha(data);
+      setValue('captcha_id', data.captcha_id, { shouldValidate: false });
+      setValue('captcha_answer', '', { shouldValidate: false });
+      clearErrors(['captcha_id', 'captcha_answer']);
     } catch {
       toast.error('Gagal memuat CAPTCHA');
     } finally {

@@ -44,6 +44,12 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Kreait\Firebase\Contract\Messaging;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Filesystem\FilesystemAdapter;
+use League\Flysystem\Filesystem;
+use Google\Client as GoogleClient;
+use Google\Service\Drive as GoogleDrive;
+use Masbug\Flysystem\GoogleDriveAdapter;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -201,6 +207,23 @@ class AppServiceProvider extends ServiceProvider
         // These are opt-in via `throttle:<name>` on any route. The existing
         // per-route `throttle:60,1` style still works for backward compat.
         $this->registerTieredRateLimiters();
+
+        // 7. Register Google Drive storage driver
+        Storage::extend('google', function ($app, $config) {
+            $client = new GoogleClient();
+            $client->setClientId($config['clientId']);
+            $client->setClientSecret($config['clientSecret']);
+            $client->refreshToken($config['refreshToken']);
+
+            $service = new GoogleDrive($client);
+            $adapter = new GoogleDriveAdapter($service, $config['folder'] ?? '/');
+
+            return new FilesystemAdapter(
+                new Filesystem($adapter),
+                $adapter,
+                $config
+            );
+        });
     }
 
     /**

@@ -14,7 +14,8 @@
         "ci:guard": "node scripts/ci-guard.mjs",
         "deploy:web": "bash scripts/deploy-web.sh",
         "dev:web": "pnpm --filter web dev",
-        "dev:api": "cd apps/api && php artisan serve"
+        "dev:api": "cd apps/api && php artisan serve",
+        "dev:api:local": "cd apps/api && APP_ENV=localbuild php artisan serve --env=localbuild"
     },
     "engines": {
         "node": ">=22"

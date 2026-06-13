@@ -34,12 +34,12 @@ export default function ExternalLayout({ children }: { children: React.ReactNode
   if (isLoading || !isAuthenticated || !user || !user.roles?.includes('external_lppm_admin')) {
     return <div className="flex min-h-screen items-center justify-center bg-slate-50"><div className="h-8 w-8 animate-spin rounded-full border-4 border-cyan-500 border-t-transparent" /></div>;
   }
-  return <div className="min-h-screen bg-[color:var(--profile-bg)] text-[color:var(--profile-text)] flex">
+  return <div className="app-readable min-h-screen bg-[color:var(--profile-page)] text-[color:var(--profile-text)] flex">
     <aside className="w-64 border-r border-[color:var(--profile-border)] bg-[color:var(--profile-surface)] p-4 hidden md:block">
       <div className="font-black text-lg mb-4">External LPPM</div>
       <Link href="/profil" className="mb-5 flex items-center gap-3 rounded-2xl border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)] p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
         <div className="h-11 w-11 overflow-hidden rounded-2xl bg-[color:var(--profile-primary)] flex items-center justify-center text-white shrink-0 shadow-inner">
-          {user.avatar_url ? <img src={user.avatar_url} alt={user.name} className="h-full w-full object-cover" /> : <span className="text-xs font-black uppercase">{user.name.substring(0, 2)}</span>}
+          {user.avatar_url ? <img src={user.avatar_url} alt={user.name} className="h-full w-full object-cover aspect-square" /> : <span className="text-xs font-black uppercase">{user.name.substring(0, 2)}</span>}
         </div>
         <div className="min-w-0">
           <p className="text-[9px] font-black uppercase tracking-[0.15em] text-[color:var(--profile-soft-text)]">External Admin</p>

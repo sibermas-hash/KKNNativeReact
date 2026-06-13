@@ -1,10 +1,12 @@
 import { Metadata } from 'next';
+import Image from 'next/image';
 import { fetchApi } from '@/lib/server-api';
 import { Navbar } from '@/components/public/navbar';
 import { Footer } from '@/components/public/footer';
 import { HeroSection } from '@/components/countdown/hero-section';
 import { Showcase3D, HomeContent } from '@/components/public/lazy';
 import { LandingMapPreview } from '@/components/public/landing-map-preview';
+import { HeroParallax } from '@/components/public/hero-parallax';
 
 export const revalidate = 3600; // 1 hour
 
@@ -96,38 +98,46 @@ export default async function LandingPage() {
     <div className="min-h-screen bg-white text-emerald-950" data-app-version="20260602">
       <Navbar overlayNav={true} />
 
-      {/* --- HERO SECTION --- */}
-      <section className="relative z-0 h-screen min-h-[100svh] overflow-hidden bg-emerald-950">
-        <div className="absolute inset-0 h-full w-full bg-emerald-950 pointer-events-none">
-          <video
-            className="h-full w-full object-cover brightness-[0.58] saturate-[0.9]"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            poster="/images/uin-saizu_1712224471.webp"
-          >
-            <source src="/videos/Video.mp4" type="video/mp4" />
-          </video>
-        </div>
-
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.54)_0%,rgba(0,0,0,0.62)_36%,rgba(0,0,0,0.68)_100%)] pointer-events-none" />
-
-        <div className="relative z-10 flex h-screen min-h-[100svh] items-center justify-center px-6 pb-16 pt-24 sm:pt-28 lg:px-8">
-          <div className="mx-auto max-w-4xl text-center">
-            <HeroSection 
-              title="SIBERMAS" 
-              subtitle={
-                <p className="mx-auto max-w-2xl text-base font-medium leading-relaxed text-slate-100 sm:text-lg drop-shadow-lg">
-                  Mengabdi tanpa batas, membangun masyarakat cerdas. <br className="hidden sm:block" />
-                  Platform digital terintegrasi Pelaksanaan KKN UIN Prof. K.H. Saifuddin Zuhri Purwokerto.
-                </p>
-              }
-            />
+      {/* --- HERO SECTION with Mouse Parallax & Springs --- */}
+      <HeroParallax
+        background={
+          <div className="h-full w-full bg-emerald-950">
+            {/* Static poster image for mobile / LCP optimization */}
+            <div className="absolute inset-0 h-full w-full md:hidden">
+              <Image
+                src="/images/uin-saizu_1712224471.webp"
+                alt="UIN Saizu Kampus"
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover brightness-[0.58] saturate-[0.9]"
+              />
+            </div>
+            {/* Lazy-loaded video for desktop/tablet only */}
+            <video
+              className="hidden md:block h-full w-full object-cover brightness-[0.58] saturate-[0.9]"
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="none"
+              poster="/images/uin-saizu_1712224471.webp"
+            >
+              <source src="/videos/Video.mp4" type="video/mp4" />
+            </video>
           </div>
-        </div>
-      </section>
+        }
+      >
+        <HeroSection 
+          title="SIBERMAS" 
+          subtitle={
+            <p className="mx-auto max-w-2xl text-base font-medium leading-relaxed text-slate-100 sm:text-lg drop-shadow-lg">
+              Mengabdi tanpa batas, membangun masyarakat cerdas. <br className="hidden sm:block" />
+              Platform digital terintegrasi Pelaksanaan KKN UIN Prof. K.H. Saifuddin Zuhri Purwokerto.
+            </p>
+          }
+        />
+      </HeroParallax>
 
 
       {/* --- 3D Showcase Section --- */}

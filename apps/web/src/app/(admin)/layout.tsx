@@ -167,11 +167,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const roles = user?.roles || [];
   const hasAdminRole = roles.includes('superadmin') || roles.includes('admin') || roles.includes('faculty_admin');
-  const activeRole = roles.includes('superadmin') ? 'Superadmin' : roles.includes('admin') ? 'Admin Pusat' : roles.includes('faculty_admin') ? 'Admin Fakultas' : 'Admin';
+  const activeRole = roles.includes('superadmin') ? 'Superadmin' : roles.includes('admin') ? 'Admin LPPM Internal' : roles.includes('faculty_admin') ? 'Admin Fakultas' : 'Admin';
   const accessScope = roles.includes('superadmin')
     ? 'Semua sistem'
     : roles.includes('admin')
-      ? 'Operasional pusat'
+      ? 'Operasional LPPM'
       : roles.includes('faculty_admin')
         ? (user?.faculty?.nama ?? user?.faculty?.code ?? 'Fakultas')
         : 'Admin';
@@ -198,7 +198,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="app-readable min-h-screen font-sans transition-colors duration-500" style={{ ...themeConfig.vars, background: themeConfig.backdrop }}>
+    <div className="app-readable min-h-screen font-sans transition-colors duration-300" style={{ ...themeConfig.vars, background: themeConfig.backdrop }}>
       <CommandPalette />
       {/* Sidebar overlay mobile */}
       {sidebarOpen && (

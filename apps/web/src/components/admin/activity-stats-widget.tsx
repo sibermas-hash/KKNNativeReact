@@ -29,8 +29,8 @@ const ROLE_LABELS: Record<string, string> = {
   student: 'Mahasiswa',
   dosen: 'Dosen',
   dpl: 'DPL',
-  admin: 'Admin',
-  faculty_admin: 'Faculty Admin',
+  admin: 'Admin LPPM Internal',
+  faculty_admin: 'Admin Fakultas',
   superadmin: 'Superadmin',
 };
 

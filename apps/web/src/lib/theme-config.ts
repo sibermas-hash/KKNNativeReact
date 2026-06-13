@@ -20,16 +20,16 @@ export interface ThemeDefinition {
 export const THEMES: Record<string, ThemeDefinition> = {
   /**
    * DEFAULT — Akademik Islami.
-   * Refined SIBERMAS identity: institutional teal + subtle gold accent.
+   * Refined SIBERMAS identity: institutional teal + emerald accents.
    */
   default: {
     label: 'Akademik Islami',
     strength: 'Default',
-    description: 'Tenang, terpercaya, institusional dengan aksen emas tipis.',
-    preview: 'from-teal-700 via-teal-800 to-amber-400',
+    description: 'Tenang, terpercaya, institusional dengan aksen hijau emerald.',
+    preview: 'from-teal-700 via-teal-800 to-emerald-400',
     frame: 'border',
     shadow: 'shadow-sm',
-    backdrop: 'radial-gradient(1200px 600px at 100% -10%, rgba(194,161,77,.10), transparent 60%), #F7F9F8',
+    backdrop: 'radial-gradient(1200px 600px at 100% -10%, rgba(14,159,110,.10), transparent 60%), #F7F9F8',
     useGlassLayer: false,
     useParticles: false,
     vars: {
@@ -43,7 +43,7 @@ export const THEMES: Record<string, ThemeDefinition> = {
       '--profile-soft-text': '#0F766E',
       '--profile-primary': '#0F766E',
       '--profile-primary-hover': '#0B5C56',
-      '--profile-accent': '#C2A14D',
+      '--profile-accent': '#0E9F6E',
       '--profile-ring': 'rgba(15,118,110,.35)',
       '--profile-input': '#FFFFFF',
       '--profile-input-disabled': '#ECF2F0',
@@ -60,7 +60,7 @@ export const THEMES: Record<string, ThemeDefinition> = {
       '--profile-glass-sheen-start': 'rgba(255,255,255,0.12)',
       '--profile-glass-sheen-end': 'rgba(255,255,255,0.02)',
       '--profile-glass-spot-start': 'rgba(255,255,255,0.08)',
-      '--profile-glass-spot-accent': 'rgba(194,161,77,0.05)',
+      '--profile-glass-spot-accent': 'rgba(14,159,110,0.05)',
     } as ThemeVars,
   },
   /**
@@ -301,14 +301,14 @@ export const THEME_TYPOGRAPHY: Record<ThemeKey, { page: string; eyebrow: string;
 export const GLASS_LAYER_CLASS = 'before:pointer-events-none before:absolute before:inset-px before:rounded-[inherit] before:bg-[linear-gradient(135deg,var(--profile-glass-sheen-start),var(--profile-glass-sheen-end)_30%,transparent_50%)] before:opacity-90 before:mix-blend-screen before:content-[""] after:pointer-events-none after:absolute after:inset-0 after:rounded-[inherit] after:bg-[radial-gradient(circle_at_16%_0%,var(--profile-glass-spot-start),transparent_45%),radial-gradient(circle_at_92%_10%,var(--profile-glass-spot-accent),transparent_30%)] after:opacity-90 after:content-[""]';
 
 export function getSurfaceClass(useGlass: boolean) {
-  const base = 'relative overflow-hidden bg-[color:var(--profile-surface)] text-[color:var(--profile-text)] transition-all duration-500 ease-out';
+  const base = 'relative overflow-hidden bg-[color:var(--profile-surface)] text-[color:var(--profile-text)] transition-all duration-300 ease-out';
   return useGlass
     ? `${base} bg-[linear-gradient(140deg,var(--profile-glass-start,rgba(255,255,255,0.34)),var(--profile-glass-end,rgba(255,255,255,0.05)))] backdrop-blur-3xl backdrop-saturate-200 ${GLASS_LAYER_CLASS}`
     : base;
 }
 
 export function getSurfaceStrongClass(useGlass: boolean) {
-  const base = 'relative overflow-hidden bg-[color:var(--profile-surface-strong)] text-[color:var(--profile-text)] transition-all duration-500 ease-out';
+  const base = 'relative overflow-hidden bg-[color:var(--profile-surface-strong)] text-[color:var(--profile-text)] transition-all duration-300 ease-out';
   return useGlass
     ? `${base} bg-[linear-gradient(140deg,var(--profile-glass-start-strong,rgba(255,255,255,0.38)),var(--profile-glass-end-strong,rgba(255,255,255,0.06)))] backdrop-blur-3xl backdrop-saturate-200 ${GLASS_LAYER_CLASS}`
     : base;
@@ -320,6 +320,18 @@ export const MUTED_TEXT_CLASS = 'text-[color:var(--profile-muted)]';
 export const ACCENT_TEXT_CLASS = 'text-[color:var(--profile-accent)]';
 export const FIELD_CLASS = 'border-[color:var(--profile-border)] bg-[color:var(--profile-input)] text-[color:var(--profile-text)] shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] outline-none transition-all duration-300 placeholder:text-[color:var(--profile-muted)] focus:border-[color:var(--profile-accent)] focus:ring-4 focus:ring-[color:var(--profile-ring)] disabled:bg-[color:var(--profile-input-disabled)] disabled:text-[color:var(--profile-muted)]';
 
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const nameEQ = name + "=";
+  const ca = document.cookie.split(';');
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+  }
+  return null;
+}
+
 export const STORAGE_KEY = 'sibermas_theme';
 
 export function getStoredTheme(): ThemeKey {
@@ -327,6 +339,13 @@ export function getStoredTheme(): ThemeKey {
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY);
     if (stored && stored in THEMES) return stored as ThemeKey;
+
+    const cookieVal = getCookie(STORAGE_KEY);
+    if (cookieVal && cookieVal in THEMES) {
+      window.localStorage.setItem(STORAGE_KEY, cookieVal);
+      return cookieVal as ThemeKey;
+    }
+
     const legacy = window.localStorage.getItem('sibermas_profile_theme');
     if (legacy && legacy in THEMES) {
       window.localStorage.setItem(STORAGE_KEY, legacy);
@@ -339,5 +358,10 @@ export function getStoredTheme(): ThemeKey {
 
 export function storeTheme(theme: ThemeKey): void {
   if (typeof window === 'undefined') return;
-  try { window.localStorage.setItem(STORAGE_KEY, theme); } catch { /* private browsing */ }
+  try {
+    window.localStorage.setItem(STORAGE_KEY, theme);
+  } catch { /* private browsing */ }
+  try {
+    document.cookie = `${STORAGE_KEY}=${theme}; path=/; max-age=31536000; SameSite=Lax`;
+  } catch { /* ignored */ }
 }

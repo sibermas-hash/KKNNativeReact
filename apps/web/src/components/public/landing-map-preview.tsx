@@ -2,6 +2,7 @@
 
 import nextDynamic from 'next/dynamic';
 import Link from 'next/link';
+import { Magnetic } from '@/components/ui/motion-effects';
 import { useEffect, useState } from 'react';
 import { MapPin, ArrowUpRight, Layers, Users } from 'lucide-react';
 import type { MapLocation } from './locations-map';
@@ -100,72 +101,72 @@ export function LandingMapPreview(): React.JSX.Element | null {
   );
 
   return (
-    <section className="relative py-20 bg-gradient-to-b from-white via-emerald-50/30 to-white">
+    <section className="relative py-24 bg-white border-t border-slate-100">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-widest text-emerald-600">
+            <p className="text-[#065F46] font-bold uppercase tracking-[0.25em] text-xs">
               Sebaran Wilayah Pengabdian
             </p>
-            <h2 className="mt-3 text-3xl font-display font-bold tracking-tight text-emerald-950 sm:text-4xl">
-              Peta Lokasi & Kelompok KKN
+            <h2 className="mt-4 text-3xl font-serif font-bold tracking-tight text-emerald-950 sm:text-4xl">
+              Peta Geografis & Lokasi KKN
             </h2>
-            <p className="mt-4 text-sm leading-7 text-slate-600 sm:text-base">
-              Mahasiswa UIN SAIZU tersebar di berbagai desa mitra. Jelajahi titik
-              pada peta untuk melihat komposisi kelompok di setiap lokasi.
+            <p className="mt-4 text-sm leading-relaxed text-slate-500">
+              Mahasiswa UIN SAIZU tersebar aktif mengabdi di berbagai desa mitra. Jelajahi titik-titik pada peta interaktif di bawah untuk melihat kelompok pengabdian.
             </p>
           </div>
 
-          <Link
-            href="/lokasi"
-            className="inline-flex items-center gap-2 self-start rounded-full border border-emerald-600 bg-emerald-600 px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white shadow-sm transition-all hover:bg-emerald-700 hover:shadow-md lg:self-end"
-          >
-            Lihat Peta Lengkap
-            <ArrowUpRight size={15} />
-          </Link>
+          <Magnetic>
+            <Link
+              href="/lokasi"
+              className="inline-flex items-center gap-2 self-start rounded-full border border-slate-200 bg-white hover:bg-slate-50 px-6 py-3.5 text-xs font-bold uppercase tracking-[0.16em] text-slate-800 shadow-sm transition-all duration-300 hover:-translate-y-0.5 group lg:self-end"
+            >
+              Lihat Peta Lengkap
+              <ArrowUpRight size={15} className="transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 text-[#065F46]" />
+            </Link>
+          </Magnetic>
         </div>
 
         {/* Quick stats row */}
         {loaded && geoLocations.length > 0 && (
-          <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-3">
             <StatPill
               icon={MapPin}
-              label="Lokasi Aktif"
+              label="Titik Lokasi Aktif"
               value={geoLocations.length.toLocaleString('id-ID')}
-              tone="emerald"
             />
             <StatPill
               icon={Layers}
-              label="Kelompok"
+              label="Total Kelompok KKN"
               value={totalGroups.toLocaleString('id-ID')}
-              tone="sky"
             />
             <StatPill
               icon={Users}
-              label="Mahasiswa KKN"
+              label="Mahasiswa Terjun"
               value={totalStudents.toLocaleString('id-ID')}
-              tone="orange"
             />
           </div>
         )}
 
         <div className="mt-10">
           {error && !loaded ? (
-            <div className="flex h-[380px] w-full items-center justify-center rounded-[1.6rem] border border-dashed border-rose-200 bg-rose-50/40 px-6 text-center text-sm font-semibold text-rose-700">
+            <div className="flex h-[400px] w-full items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/40 px-6 text-center text-sm text-slate-500">
               Peta belum tersedia saat ini. Silakan coba lagi nanti.
             </div>
           ) : loaded && geoLocations.length === 0 ? (
-            <div className="flex h-[380px] w-full items-center justify-center rounded-[1.6rem] border border-dashed border-emerald-200 bg-emerald-50/40 px-6 text-center text-sm font-semibold text-emerald-700">
+            <div className="flex h-[400px] w-full items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/40 px-6 text-center text-sm text-slate-500">
               Data lokasi akan ditampilkan setelah periode aktif dimulai.
             </div>
           ) : loaded ? (
-            // Pakai container terbatas supaya tidak setinggi /lokasi full page
-            <div className="overflow-hidden rounded-[1.6rem]">
-              <LocationsMap initialLocations={geoLocations} />
+            /* Clean Minimalist Frameless Bezel for WebGL Map */
+            <div className="p-2.5 rounded-2xl border border-slate-100 bg-white shadow-sm">
+              <div className="overflow-hidden rounded-xl bg-slate-50">
+                <LocationsMap initialLocations={geoLocations} />
+              </div>
             </div>
           ) : (
-            <div className="flex h-[380px] w-full items-center justify-center rounded-[1.6rem] border border-dashed border-emerald-200 bg-emerald-50/40 text-sm font-semibold text-emerald-700">
-              Memuat data lokasi…
+            <div className="flex h-[400px] w-full items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/40 text-sm font-semibold text-slate-400">
+              Memuat data lokasi sebaran…
             </div>
           )}
         </div>
@@ -178,27 +179,21 @@ function StatPill({
   icon: Icon,
   label,
   value,
-  tone,
 }: {
   icon: React.ComponentType<{ size?: number }>;
   label: string;
   value: string;
-  tone: 'sky' | 'emerald' | 'orange';
 }) {
-  const palette = {
-    sky: 'border-sky-100 bg-sky-50 text-sky-900 [&_svg]:text-sky-700',
-    emerald: 'border-emerald-100 bg-emerald-50 text-emerald-900 [&_svg]:text-emerald-700',
-    orange: 'border-orange-100 bg-orange-50 text-orange-900 [&_svg]:text-orange-700',
-  }[tone];
-
   return (
-    <div className={`flex items-center gap-3 rounded-2xl border px-4 py-3 ${palette}`}>
-      <Icon size={18} />
+    <div className="flex items-center gap-4 rounded-xl border border-slate-100 bg-[#F4F8F6]/40 shadow-sm text-slate-900 hover:border-slate-200 hover:shadow-md transition-all duration-300 group cursor-default px-5 py-4">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-slate-600 border border-slate-100 transition-transform duration-500 group-hover:scale-105 shadow-inner">
+        <Icon size={18} />
+      </div>
       <div>
-        <p className="text-[0.66rem] font-semibold uppercase tracking-[0.14em] opacity-75">
+        <p className="text-[0.66rem] font-bold uppercase tracking-[0.16em] text-slate-400">
           {label}
         </p>
-        <p className="mt-0.5 text-xl font-bold tabular-nums">{value}</p>
+        <p className="mt-0.5 text-2xl font-serif font-bold text-slate-900">{value}</p>
       </div>
     </div>
   );

@@ -29,7 +29,7 @@ const ROLE_OPTIONS = [
   { value: 'dpl',           label: 'DPL' },
   { value: 'dosen',         label: 'Dosen (semua)' },
   { value: 'faculty_admin', label: 'Admin Fakultas' },
-  { value: 'admin',         label: 'Admin' },
+  { value: 'admin',         label: 'Admin LPPM Internal' },
 ];
 
 export default function BroadcastPage(): React.JSX.Element {

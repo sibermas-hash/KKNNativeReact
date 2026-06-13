@@ -11,7 +11,7 @@ import {
   MapPin, ArrowRight, ClipboardList, CheckCircle2,
   Presentation, AlertTriangle, Target,
   ScrollText, LayoutGrid, UserCheck, Users, Lightbulb, Plane, Star, Image,
-  GraduationCap, ShieldCheck, Activity, Send, Megaphone, Vote,
+  GraduationCap, ShieldCheck, Activity, Send, Megaphone, Vote, Lock,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { StatusBadge } from '@/components/ui/shared';
@@ -642,13 +642,13 @@ export default function StudentDashboard(): React.JSX.Element {
                         <span className={clsx('block text-xs font-bold uppercase tracking-tight transition-colors', locked ? 'text-[color:var(--profile-muted)]' : 'text-[color:var(--profile-text)] group-hover:text-[color:var(--profile-text)]')}>{item.label}</span>
                         {locked && <span className="block text-[10px] font-semibold text-[color:var(--profile-muted)] normal-case">Terkunci — {item.lockReason}</span>}
                       </div>
-                      {locked ? <ShieldCheck size={14} className="ml-auto text-[color:var(--profile-muted)]" /> : <ArrowRight size={14} className="ml-auto text-[color:var(--profile-muted)] group-hover:text-[color:var(--profile-primary)] group-hover:translate-x-1 transition-all" />}
+                      {locked ? <Lock size={14} className="ml-auto text-[color:var(--profile-muted)] shrink-0" /> : <ArrowRight size={14} className="ml-auto text-[color:var(--profile-muted)] group-hover:text-[color:var(--profile-primary)] group-hover:translate-x-1 transition-all" />}
                     </>
                   );
 
                   if (locked) {
                     return (
-                      <div key={item.href} title={item.lockReason} className="flex cursor-not-allowed items-center gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)]/70 p-3 opacity-80">
+                      <div key={item.href} title={item.lockReason} className="flex cursor-not-allowed items-center gap-3 rounded-lg border border-[color:var(--profile-border)] bg-[color:var(--profile-soft)]/50 p-3 grayscale opacity-45 select-none relative">
                         {content}
                       </div>
                     );

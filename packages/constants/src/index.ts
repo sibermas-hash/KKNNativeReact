@@ -93,7 +93,7 @@ export const ROLE_REDIRECT_MAP: Record<string, string> = {
 
 export const ROLE_LABELS: Record<string, string> = {
   superadmin: 'Superadmin',
-  admin: 'Admin',
+  admin: 'Admin LPPM Internal',
   faculty_admin: 'Admin Fakultas',
   dosen: 'Dosen',
   dpl: 'DPL',

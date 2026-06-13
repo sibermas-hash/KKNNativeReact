@@ -106,7 +106,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   const roleLabel = ROLE_LABELS[user.roles?.[0] || 'student'] || user.roles?.[0] || 'Mahasiswa';
 
   return (
-    <div className="app-readable min-h-screen font-sans transition-colors duration-500" style={{ ...themeConfig.vars, background: themeConfig.backdrop }}>
+    <div className="app-readable min-h-screen font-sans transition-colors duration-300" style={{ ...themeConfig.vars, background: themeConfig.backdrop }}>
       {/* Sidebar overlay mobile */}
       {sidebarOpen && (
         <div
@@ -146,7 +146,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
         <div className="px-4 py-2">
           <Link href="/profil" onClick={() => setSidebarOpen(false)} className="flex items-center gap-3 rounded-2xl bg-[color:var(--profile-soft)] border border-[color:var(--profile-border)] p-3 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
             <div className="h-11 w-11 overflow-hidden rounded-2xl bg-[color:var(--profile-primary)] flex items-center justify-center text-white shrink-0 shadow-inner">
-              {user.avatar_url ? <img src={user.avatar_url} alt={user.name} className="h-full w-full object-cover" /> : <span className="text-xs font-black uppercase">{user.name.substring(0, 2)}</span>}
+              {user.avatar_url ? <img src={user.avatar_url} alt={user.name} className="h-full w-full object-cover aspect-square" /> : <span className="text-xs font-black uppercase">{user.name.substring(0, 2)}</span>}
             </div>
             <div className="min-w-0">
               <p className="text-[9px] font-black text-[color:var(--profile-soft-text)] uppercase tracking-[0.15em]">{roleLabel}</p>

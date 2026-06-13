@@ -2,9 +2,10 @@
 
 /* ─── Theme / Custom Utilities (Tailwind v4) ───────────────────────────────── */
 @theme {
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
-  --font-glass: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-sans), 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-sans);
+  --font-glass: var(--font-sans);
+  --font-serif: var(--font-serif), Georgia, serif;
   --font-neo: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
   --font-mono: ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace;
 }
@@ -35,8 +36,8 @@ html, body {
    sementara layout membawa theme variables. Guard ini memastikan tombol, input,
    tabel, badge, dan teks tetap terbaca di semua tema tanpa rewrite 165 file. */
 .app-readable {
-  color: #0f172a;
-  color-scheme: light;
+  color: var(--profile-text);
+  color-scheme: normal;
 }
 .app-readable main,
 .app-readable header,
@@ -54,14 +55,14 @@ html, body {
 .app-readable input,
 .app-readable select,
 .app-readable textarea {
-  background-color: #ffffff;
-  color: #0f172a;
-  border-color: #cbd5e1;
+  background-color: var(--profile-input);
+  color: var(--profile-text);
+  border-color: var(--profile-border);
 }
 .app-readable input::placeholder,
 .app-readable textarea::placeholder {
-  color: #64748b;
-  opacity: 1;
+  color: var(--profile-muted);
+  opacity: 0.7;
 }
 .app-readable button:disabled,
 .app-readable a[aria-disabled='true'] {
@@ -70,7 +71,6 @@ html, body {
 }
 .app-readable .bg-white,
 .app-readable .bg-slate-50,
-.app-readable .bg-slate-100,
 .app-readable .bg-emerald-50,
 .app-readable .bg-cyan-50,
 .app-readable .bg-teal-50,
@@ -78,7 +78,12 @@ html, body {
 .app-readable .bg-indigo-50,
 .app-readable .bg-amber-50,
 .app-readable .bg-rose-50 {
-  color: #0f172a;
+  background-color: var(--profile-surface) !important;
+  color: var(--profile-text);
+}
+.app-readable .bg-slate-100 {
+  background-color: var(--profile-surface-strong) !important;
+  color: var(--profile-text);
 }
 .app-readable .text-white,
 .app-readable [class*='bg-emerald-6'],
@@ -95,11 +100,12 @@ html, body {
 .app-readable table,
 .app-readable th,
 .app-readable td {
-  color: #0f172a;
+  color: var(--profile-text);
+  border-color: var(--profile-border);
 }
 .app-readable thead,
 .app-readable thead * {
-  color: #334155;
+  color: var(--profile-muted);
 }
 
 :root{--sibermas-asset-version:20260602;}

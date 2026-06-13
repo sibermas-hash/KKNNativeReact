@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Menu, X, CircleHelp } from 'lucide-react';
+import { Menu, X, CircleHelp, Phone, Mail, Globe, Youtube, Instagram } from 'lucide-react';
 import { useScroll, useTransform, motion, AnimatePresence } from 'motion/react';
 import { useAuthStore } from '@/stores';
 
@@ -32,7 +32,7 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
   // Sebelum mount (SSR + first client render):
   //   - MotionValue-based styles TIDAK dipakai (render static transparent nav)
   //   - allNavItems berisi 5 items (dengan "Login" placeholder — jumlah
-  //     elemen IDENTIK antara server dan client, menghindari mismatch).
+  //     elemen IDENTIK antara server dan client, avoiding mismatch).
   //   - isScrolled = false
   //
   // Setelah mount: full motion + auth-aware rendering aktif.
@@ -46,7 +46,9 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
   // All useTransform calls must be unconditional (Rules of Hooks)
   const bgOpacity = useTransform(scrollY, [0, 200], [0, 1]);
   const blurValue = useTransform(scrollY, [0, 200], [0, 16]);
-  const navHeight = useTransform(scrollY, [0, 200], [90, 70]);
+  const navHeight = useTransform(scrollY, [0, 200], [126, 72]);
+  const topbarHeight = useTransform(scrollY, [0, 100], [36, 0]);
+  const topbarOpacity = useTransform(scrollY, [0, 50], [1, 0]);
   const shadowOpacity = useTransform(scrollY, [150, 250], [0, 0.1]);
 
   const bgColor = useTransform(bgOpacity, (o) =>
@@ -114,14 +116,14 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
     : 'text-emerald-700 hover:text-emerald-500 hover:bg-emerald-50';
 
   // MotionValue styles HANYA aktif setelah mount. Sebelum mount pakai
-  // static style object (rgba 0 = transparent, minHeight 90 = initial
+  // static style object (rgba 0 = transparent, minHeight 126 = initial
   // state sebelum scroll). Server-rendered HTML otomatis match client's
   // first render karena MotionValue ditangani oleh framer-motion hanya di
   // browser.
   const overlayStyle = overlayNav && hasMounted
     ? { backgroundColor: bgColor, backdropFilter: backdropBlur, minHeight: navHeight, boxShadow }
     : overlayNav
-      ? { backgroundColor: 'rgba(255, 255, 255, 0)', minHeight: 90 }
+      ? { backgroundColor: 'rgba(255, 255, 255, 0)', minHeight: 126 }
       : {};
 
   return (
@@ -129,12 +131,54 @@ export function Navbar({ overlayNav = false }: { overlayNav?: boolean }): React.
       style={overlayStyle}
       className={
         overlayNav
-          ? 'fixed inset-x-0 top-0 z-50 flex items-center min-h-[70px] transition-colors duration-500 border-b border-transparent overflow-visible'
-          : 'sticky top-0 z-50 border-b border-emerald-100 bg-white/95 backdrop-blur-xl py-4 h-[72px] flex items-center overflow-visible'
+          ? 'fixed inset-x-0 top-0 z-50 flex flex-col transition-colors duration-500 border-b border-transparent overflow-visible'
+          : 'sticky top-0 z-50 border-b border-emerald-100 bg-white/95 backdrop-blur-xl flex flex-col overflow-visible'
       }
     >
-      <div className="mx-auto w-full max-w-[1920px] px-6 py-4 sm:px-10 lg:px-12">
-        <div className="flex items-center justify-between h-full">
+      {/* Top Bar Strip (Institutional Prestige Info) */}
+      <MotionDiv
+        style={hasMounted && overlayNav ? { height: topbarHeight, opacity: topbarOpacity } : {}}
+        className={`hidden lg:flex w-full border-b text-[0.7rem] font-medium tracking-wide overflow-hidden ${
+          overlayNav
+            ? 'border-white/10 bg-emerald-950/35 text-white/80'
+            : 'border-emerald-50 bg-emerald-950 text-white/90'
+        }`}
+      >
+        <div className="mx-auto w-full max-w-[1920px] px-6 lg:px-12 flex h-9 items-center justify-between">
+          <div className="flex items-center gap-4">
+            <span className="font-semibold uppercase tracking-[0.1em] text-emerald-300">UIN Prof. K.H. Saifuddin Zuhri</span>
+            <span className="text-white/40">|</span>
+            <span className="text-white/70">Lembaga Penelitian dan Pengabdian kepada Masyarakat (LPPM)</span>
+          </div>
+          <div className="flex items-center gap-6">
+            <a href="tel:+62281635624" className="flex items-center gap-1.5 hover:text-white transition-colors">
+              <Phone size={11} className="text-emerald-400" />
+              <span>+62 281 635624</span>
+            </a>
+            <a href="mailto:lppm@uinsaizu.ac.id" className="flex items-center gap-1.5 hover:text-white transition-colors">
+              <Mail size={11} className="text-emerald-400" />
+              <span>lppm@uinsaizu.ac.id</span>
+            </a>
+            <div className="h-3 w-px bg-white/20" />
+            <div className="flex items-center gap-3">
+              <a href="https://uinsaizu.ac.id" target="_blank" rel="noopener noreferrer" title="Website Resmi UIN SAIZU" className="hover:text-white transition-colors">
+                <Globe size={12} className="text-emerald-400" />
+              </a>
+              <a href="https://instagram.com/uinsaizuofficial" target="_blank" rel="noopener noreferrer" title="Instagram" className="hover:text-white transition-colors">
+                <Instagram size={12} className="text-emerald-400" />
+              </a>
+              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" title="YouTube" className="hover:text-white transition-colors">
+                <Youtube size={12} className="text-emerald-400" />
+              </a>
+            </div>
+          </div>
+        </div>
+      </MotionDiv>
+
+      <div className={`mx-auto w-full max-w-[1920px] px-6 sm:px-10 lg:px-12 flex-1 flex flex-col justify-center ${
+        overlayNav ? 'py-4' : 'h-[72px] py-4'
+      }`}>
+        <div className="flex items-center justify-between h-full w-full">
           {/* Logo (Kiri) */}
           <div className="flex-1 flex justify-start">
             <Link href="/" className="flex items-center gap-2.5 no-underline shrink-0 py-1">
